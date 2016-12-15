@@ -628,6 +628,7 @@ create table type_of_widget (
 create table validation_token (
   person_email              varchar(255) not null,
   auth_token                varchar(255),
+  created                   timestamp,
   constraint pk_validation_token primary key (person_email))
 ;
 

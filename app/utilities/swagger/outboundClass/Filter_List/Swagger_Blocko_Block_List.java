@@ -4,7 +4,7 @@ import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.BlockoBlock;
-import utilities.swagger.outboundClass.Swagger_Blocko_Block_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Blocko_Block_Filter_Detail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Swagger_Blocko_Block_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_Blocko_Block_Short_Detail> content = new ArrayList<>();
+    public List<Swagger_Blocko_Block_Filter_Detail> content = new ArrayList<>();
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@ public class Swagger_Blocko_Block_List {
 
         for(BlockoBlock blockoBlock : blocko_blocks){
 
-            Swagger_Blocko_Block_Short_Detail help = new Swagger_Blocko_Block_Short_Detail();
+            Swagger_Blocko_Block_Filter_Detail help = new Swagger_Blocko_Block_Filter_Detail();
 
             help.blocko_block_id = blockoBlock.id;
             help.blocko_block_name = blockoBlock.name;

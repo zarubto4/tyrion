@@ -13,8 +13,7 @@
     <h1> User Summary </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
-        <li class="active"><i class="fa fa-share"></i> Server Management </li>
-        <li class="active"><i class="fa fa-wrench"></i> User Summary </li>
+        <li class="active"><i class="fa fa-wrench"></i> Helpdesk Tool </li>
     </ol>
 </section>
 
@@ -59,7 +58,7 @@
                                 @if(edit_person.mailValidated){
                                     <p class="text-green text-center">  Validated </p>
                                 }else{
-                                    <p class="text-red text-center">   Not Validate </p>
+                                    <p class="text-red text-center">   Not Validated </p>
                                 }
 
                                 <ul class="list-group list-group-unbordered">
@@ -421,13 +420,13 @@
 
                         <div class="tab-pane" id="projects">
 
-                            <div class="box">
+                            <div class="box" id="projectsInner">
                                 <div class="box-header with-border">
                                     <h3 class="box-title">Projects</h3>
 
                                         <div class="pull-right">
                                             <div class="btn-group">
-                                                <td><button class="btn btn-block btn-success" type="button" onclick="">Create new Project</button></td>
+                                                <button class="btn btn-block btn-success" type="button" data-toggle="modal" data-target="#newProjectModal">Create new Project</button>
                                             </div>
                                         </div>
                                 </div>
@@ -448,8 +447,8 @@
                                                             <td>Project name</td>
                                                             <td>@participant.project.name</td>
                                                             <td rowspan="2">
-                                                               <button class="btn btn-block btn-info" type="button" onclick="">Project Details</button>
-                                                                <button class="btn btn-block btn-danger" type="button" onclick="">Remove</button>
+                                                               <button class="btn btn-block btn-info" type="button" onclick="window.location.replace('/admin/helpdesk_tool/project/@participant.project.id')">Project Details</button>
+                                                                <button class="btn btn-block btn-danger" type="button" onclick="deleteProject('@participant.project.id')">Remove</button>
                                                             </td>
                                                         </tr>
 
@@ -467,7 +466,6 @@
 
                             </div>
                         </div>
-
 
                         <div class="tab-pane" id="permissions">
 
@@ -678,7 +676,7 @@
                 <h4 id="editCompilationServerModalTitle" class="modal-title">Edit Type of Board</h4>
             </div>
             <div class="modal-body">
-                <form id="editCompilationServer")>
+                <form id="editCompilationServer">
 
                     <label id="typeOfBoardId" style="display: block">ID</label>
                     <label>Server name</label> <input style="display: block" type="text" name="name" >
@@ -688,6 +686,42 @@
             <div class="modal-footer">
                 <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="editCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="editCompilationServer(this.value)">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newProjectModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newProjectModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newProjectModalTitle" class="modal-title">New Project</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newProject">
+
+                    <div style="float: left; width: 30%;">
+                        <label>Name</label>
+                        <input placeholder="Name" style="display: block" id="new_project_name" type="text" name="project_name" >
+                    </div>
+                    <div style="width: 100%;">
+                        <label>Description</label>
+                        <input placeholder="Description" style="display: block; width: 70%;" id="new_project_description" type="text" name="project_description" >
+                    </div>
+                    <label>Product</label>
+                    <select style="display: block;" name="product_id">
+                        <option selected disabled>Select Product</option>
+                        @for(product <- Product.find.where().eq("payment_details.person.id", person.id).findList()) {
+                            <option value="@product.id">@product.product_individual_name</option>
+                        }
+                    </select>
+
+                </form>
+                <div id="newProjectModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newProject()">New project</button>
             </div>
         </div>
     </div>
@@ -725,7 +759,7 @@
                     url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/remove/" + id ,
                     type: 'DELETE',
                     headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "X-AUTH-TOKEN":getCookie("authToken")
                     },
                     success:function(e){
                         $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
@@ -741,7 +775,7 @@
                     url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/deactivate/" + id ,
                     type: 'PUT',
                     headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "X-AUTH-TOKEN":getCookie("authToken")
                     },
                     success:function(e){
                         $('#person_detail').load(document.URL +  ' #person_detail');
@@ -757,7 +791,7 @@
                     url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/activate/" + id ,
                     type: 'PUT',
                     headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "X-AUTH-TOKEN":getCookie("authToken")
                     },
                     success:function(e){
                         $('#person_detail').load(document.URL +  ' #person_detail');
@@ -774,7 +808,7 @@
                     url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/valid_email/" + id ,
                     type: 'PUT',
                     headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "X-AUTH-TOKEN":getCookie("authToken")
                     },
                     success:function(e){
                         $('#person_detail').load(document.URL +  ' #person_detail');
@@ -790,7 +824,7 @@
                     url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/clean_all_tokens/" + id ,
                     type: 'DELETE',
                     headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "X-AUTH-TOKEN":getCookie("authToken")
                     },
                     success:function(e){
                         $('#person_detail').load(document.URL +  ' #person_detail');
@@ -808,5 +842,47 @@
                 $("#editPerson input[name=nick_name]").val(nick_name);
                 $("#editPerson input[name=mail]").val(mail);
             }
+
+            function newProject(){
+                model_data = $("#newProject").serializeObject();
+
+                $.ajax({
+                    url: '@routes.ProgramingPackageController.project_create()' ,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: JSON.stringify(model_data),
+                    dataType: 'json',
+                    success:function(e){
+                        $('#projects').load(document.URL +  ' #projectsInner');
+                        $("#newProjectModalMessage").css("display", "none");
+                        $("#newProjectModal").modal('hide');
+                    },
+                    error:function(e) {
+                        $("#newProjectModalMessage").css("display", "block");
+                        $("#newProjectModalMessage p").text(JSON.parse(e.responseText).message);
+                        $("#newProjectModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+                    }
+                })}
+
+            function deleteProject(id){
+
+                $.ajax({
+                    url: '@routes.ProgramingPackageController.project_delete("")' + id  ,
+                    type: 'DELETE',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken")
+                    },
+                    dataType: 'json',
+                    success:function(e){
+                        $('#projects').load(document.URL +  ' #projectsInner');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful");
+                    }
+                })}
 
 </script>

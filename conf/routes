@@ -481,6 +481,7 @@ GET             /admin/bootloader_settings/:type_of_board_id    @controllers.Das
 GET             /admin/external_servers                         @controllers.DashboardController.external_servers()
 GET             /admin/user_summary/                            @controllers.DashboardController.user_summary(email: String?="")
 GET             /admin/user_summary/:mail                       @controllers.DashboardController.user_summary(mail)
+GET             /admin/helpdesk_tool/project/:id                @controllers.DashboardController.project_detail(id)
 GET             /admin/permission/permission_summary            @controllers.DashboardController.permissions_summary()
 GET             /admin/permission/role/:role_id                 @controllers.DashboardController.role(role_id)
 GET             /admin/blocko_objects                           @controllers.DashboardController.blocko_objects()

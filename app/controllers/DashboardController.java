@@ -9,6 +9,7 @@ import models.person.Person;
 import models.person.SecurityRole;
 import models.project.b_program.instnace.Homer_Instance;
 import models.project.b_program.servers.Cloud_Homer_Server;
+import models.project.global.Project;
 import models.project.global.financial.GeneralTariff;
 import models.project.global.financial.GeneralTariff_Extensions;
 import org.pegdown.PegDownProcessor;
@@ -28,6 +29,7 @@ import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
+import views.html.helpdesk_tool.project_detail;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
 import views.html.super_general.login;
@@ -42,7 +44,7 @@ import views.html.publiccprograms.approvalprocedurecprogram;
 import views.html.publiccprograms.publiccode;
 import views.html.reports.*;
 import views.html.hardware_generator.*;
-import views.html.user_summary.user_summary;
+import views.html.helpdesk_tool.user_summary;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
 import views.html.websocket.websocket_homer_server_detail;
@@ -571,6 +573,21 @@ public class DashboardController extends Controller {
 
             Html grid_management_content = grid_management.render();
             return return_page(grid_management_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result project_detail(String id){
+        try {
+
+            Project project = Project.find.byId(id);
+            if (project == null) return GlobalResult.notFoundObject("Project not found");
+
+            Html project_detail_content = project_detail.render(project);
+            return return_page(project_detail_content);
 
         }catch (Exception e){
             return ok();

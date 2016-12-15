@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import java.util.Date;
 import java.util.UUID;
 
 @Entity
@@ -17,6 +18,7 @@ public class ValidationToken extends Model{
 
     @Id public String personEmail;
         public String authToken;
+        public Date created;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -26,6 +28,7 @@ public class ValidationToken extends Model{
     public ValidationToken  setValidation(String mail){
 
         this.personEmail = mail;
+        this.created = new Date();
 
         while(true){ // I need Unique Value
             authToken = UUID.randomUUID().toString();

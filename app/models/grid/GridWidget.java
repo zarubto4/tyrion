@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.person.Person;
 import utilities.enums.Approval_state;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -66,6 +67,18 @@ public class GridWidget extends Model{
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_GridWidget_Short_Detail get_grid_widget_short_detail(){
+        Swagger_GridWidget_Short_Detail help = new Swagger_GridWidget_Short_Detail();
+        help.id = id;
+        help.name = name;
+        help.description = description;
+
+        help.edit_permission = edit_permission();
+        help.delete_permission = delete_permission();
+        help.update_permission = update_permission();
+        return help;
+    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

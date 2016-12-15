@@ -2,6 +2,7 @@ package utilities.schedules_activities;
 
 
 import models.person.Person;
+import models.person.ValidationToken;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -33,16 +34,18 @@ public class Unauthenticated_Person_Removal implements Job {
 
             while (true){
 
-                List<Person> persons = Person.find.where().lt("created", created).setMaxRows(100).findList(); // TODO podle čeho zjistím, kdy se registroval
-                if (persons.isEmpty()) {
+                List<ValidationToken> tokens = ValidationToken.find.where().lt("created", created).setMaxRows(100).findList();
+                if (tokens.isEmpty()) {
                     logger.info("Unauthenticated_Person_Removal has no persons to remove");
                     break;
                 }
 
                 logger.info("CRON Task is removing unauthenticated persons (100 per cycle)");
 
-                for (Person person : persons){
-                    person.delete();
+                for (ValidationToken token : tokens){
+                    Person person = Person.find.where().eq("mail", token.personEmail).findUnique();
+                    if (person != null && !person.mailValidated) person.delete();
+                    token.delete();
                 }
             }
 

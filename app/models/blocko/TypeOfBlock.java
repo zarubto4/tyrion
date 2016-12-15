@@ -50,6 +50,8 @@ public class TypeOfBlock extends Model {
         help.name = name;
         help.description = description;
 
+        for (BlockoBlock block : blocko_blocks) help.blocko_blocks.add(block.get_blocko_block_short_detail());
+
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
