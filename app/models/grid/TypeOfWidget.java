@@ -47,6 +47,8 @@ public class TypeOfWidget extends Model{
         help.name = name;
         help.description = description;
 
+        for (GridWidget widget : grid_widgets) help.grid_widgets.add(widget.get_grid_widget_short_detail());
+
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();

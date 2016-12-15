@@ -2020,7 +2020,97 @@ public class Demo_Data_Controller extends Controller {
             version_c_program_4.compile_program_procedure();
             version_c_program_4.update();
 
+            TypeOfBlock typeOfBlock_1 = new TypeOfBlock();
+            typeOfBlock_1.name =  "Pepkovy Bloky 1";
+            typeOfBlock_1.description = "Bla bla description that says nothing";
+            typeOfBlock_1.project = project_1;
+            typeOfBlock_1.save();
 
+            TypeOfBlock typeOfBlock_2 = new TypeOfBlock();
+            typeOfBlock_2.name =  "Pepkovy Bloky 2";
+            typeOfBlock_2.description = "Bla bla description that says nothing";
+            typeOfBlock_2.project = project_1;
+            typeOfBlock_2.save();
+
+            BlockoBlock blockoBlock_1_1 = new BlockoBlock();
+            blockoBlock_1_1.author = person;
+            blockoBlock_1_1.name = "Blocko block";
+            blockoBlock_1_1.description = "m.n,a sldjkfbnlskjd bjsdnf jkbsjndafio bjkvc,mxnymf můiwljhkn bfm,mn.adsjlůxkbcvnymn klnaf m,mnbjlů§k nbasldfb,n jkl.lkn nmsgl,můfjk br,mn.fl kbmfkllykbv vkůljmyn,d.mckůlxůklxbvnm,dsf m.ylp§foigkljsadůjfndmsvoija kdsfvůljnkjb fkljgfbvclasgfbnlfagkbkcnlsgkfklndgdk an dsja";
+            blockoBlock_1_1.type_of_block = typeOfBlock_1;
+            blockoBlock_1_1.save();
+
+            BlockoBlock blockoBlock_1_2 = new BlockoBlock();
+            blockoBlock_1_2.author = person;
+            blockoBlock_1_2.name = "Empty block";
+            blockoBlock_1_2.description = "Lorem ipsum di lasjdhflkj dshaflj  sadfsdfas dfsadf sad gsfgsdf sadfsd fas";
+            blockoBlock_1_2.type_of_block = typeOfBlock_1;
+            blockoBlock_1_2.save();
+
+            BlockoBlockVersion version_1_1_1 = new BlockoBlockVersion();
+            version_1_1_1.blocko_block = blockoBlock_1_1;
+            version_1_1_1.date_of_create = new Date();
+            version_1_1_1.logic_json = "{}";
+            version_1_1_1.design_json = "{}";
+            version_1_1_1.version_description = "První verze";
+            version_1_1_1.version_name = "1.0.1";
+            version_1_1_1.approval_state = Approval_state.approved;
+            version_1_1_1.save();
+
+            BlockoBlockVersion version_1_1_2 = new BlockoBlockVersion();
+            version_1_1_2.blocko_block = blockoBlock_1_1;
+            version_1_1_2.date_of_create = new Date();
+            version_1_1_2.logic_json = "{}";
+            version_1_1_2.design_json = "{}";
+            version_1_1_2.version_description = "Druhá verze";
+            version_1_1_2.version_name = "1.0.2";
+            version_1_1_2.approval_state = Approval_state.approved;
+            version_1_1_2.save();
+
+            TypeOfWidget typeOfWidget_1 = new TypeOfWidget();
+            typeOfWidget_1.name =  "Pepkovy Widgety 1";
+            typeOfWidget_1.description = "Bla bla description that says nothing";
+            typeOfWidget_1.project = project_1;
+            typeOfWidget_1.save();
+
+            TypeOfWidget typeOfWidget_2 = new TypeOfWidget();
+            typeOfWidget_2.name =  "Pepkovy Widgety 2";
+            typeOfWidget_2.description = "Bla bla description that says nothing";
+            typeOfWidget_2.project = project_1;
+            typeOfWidget_2.save();
+
+            GridWidget gridWidget_1_1 = new GridWidget();
+            gridWidget_1_1.author = person;
+            gridWidget_1_1.name = "Grid Widget";
+            gridWidget_1_1.description = "m.n,a sldjkfbnlskjd bjsdnf jkbsjndafio bjkvc,mxnymf můiwljhkn bfm,mn.adsjlůxkbcvnymn klnaf m,mnbjlů§k nbasldfb,n jkl.lkn nmsgl,můfjk br,mn.fl kbmfkllykbv vkůljmyn,d.mckůlxůklxbvnm,dsf m.ylp§foigkljsadůjfndmsvoija kdsfvůljnkjb fkljgfbvclasgfbnlfagkbkcnlsgkfklndgdk an dsja";
+            gridWidget_1_1.type_of_widget = typeOfWidget_1;
+            gridWidget_1_1.save();
+
+            GridWidget gridWidget_1_2 = new GridWidget();
+            gridWidget_1_2.author = person;
+            gridWidget_1_2.name = "Empty widget";
+            gridWidget_1_2.description = "Lorem ipsum di lasjdhflkj dshaflj  sadfsdfas dfsadf sad gsfgsdf sadfsd fas";
+            gridWidget_1_2.type_of_widget = typeOfWidget_1;
+            gridWidget_1_2.save();
+
+            GridWidgetVersion grid_version_1_1_1 = new GridWidgetVersion();
+            grid_version_1_1_1.grid_widget = gridWidget_1_1;
+            grid_version_1_1_1.date_of_create = new Date();
+            grid_version_1_1_1.logic_json = "{}";
+            grid_version_1_1_1.design_json = "{}";
+            grid_version_1_1_1.version_description = "První verze";
+            grid_version_1_1_1.version_name = "1.0.1";
+            grid_version_1_1_1.approval_state = Approval_state.approved;
+            grid_version_1_1_1.save();
+
+            GridWidgetVersion grid_version_1_1_2 = new GridWidgetVersion();
+            grid_version_1_1_2.grid_widget = gridWidget_1_1;
+            grid_version_1_1_2.date_of_create = new Date();
+            grid_version_1_1_2.logic_json = "{}";
+            grid_version_1_1_2.design_json = "{}";
+            grid_version_1_1_2.version_description = "Druhá verze";
+            grid_version_1_1_2.version_name = "1.0.2";
+            grid_version_1_1_2.approval_state = Approval_state.approved;
+            grid_version_1_1_2.save();
 
             M_Project m_project = new M_Project();
             m_project.project = project_1;

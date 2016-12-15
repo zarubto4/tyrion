@@ -3,9 +3,9 @@ package utilities.swagger.outboundClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(description = "Blocko_Block Light (only few properties)",
-        value = "Blocko_Block_Short_Detail")
-public class Swagger_Blocko_Block_Short_Detail {
+@ApiModel(description = "GridWidget Light (only few properties)",
+        value = "GridWidget_Light")
+public class Swagger_GridWidget_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
     public String id;
@@ -24,5 +24,4 @@ public class Swagger_Blocko_Block_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean delete_permission;
-
 }

@@ -31,10 +31,7 @@ import play.Configuration;
 import play.Play;
 import utilities.hardware_updater.Master_Updater;
 import utilities.notifications.Notification_Handler;
-import utilities.schedules_activities.Old_Floating_Person_Token_Removal;
-import utilities.schedules_activities.Old_Notification_Removal;
-import utilities.schedules_activities.Removing_Unused_Tokens;
-import utilities.schedules_activities.Sending_Invoices;
+import utilities.schedules_activities.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -398,6 +395,7 @@ public class Server {
             TriggerKey every_day_key1 = TriggerKey.triggerKey("every_day_03:00");
             TriggerKey every_day_key2 = TriggerKey.triggerKey("every_day_03:10");
             TriggerKey every_day_key3 = TriggerKey.triggerKey("every_day_03:20");
+            TriggerKey every_day_key4 = TriggerKey.triggerKey("every_day_03:30");
             TriggerKey every_second_day_key = TriggerKey.triggerKey("every_second_day_4:00");
 
             //-------------------------
@@ -421,6 +419,10 @@ public class Server {
                         .withSchedule(dailyAtHourAndMinute(3,20))// Spuštění každý den v 03:20 AM
                         .build();
 
+                Trigger every_day_4 = newTrigger().withIdentity(every_day_key4).startNow()
+                        .withSchedule(dailyAtHourAndMinute(3,30))// Spuštění každý den v 03:30 AM
+                        .build();
+
                 /**
                  *  !!!
                  *  Každý Job musí mít Trigger, který má unikátní TriggerKey
@@ -441,11 +443,15 @@ public class Server {
                 logger.info("Scheduling new Job - Removing_Unused_Tokens");
                 scheduler.scheduleJob( newJob(Removing_Unused_Tokens.class).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day_3);
 
-                // 4) Kontrola a fakturace klientů na měsíční bázi
+                // 4) Odstraňování nezvalidovaných účtů, které jsou starší, než měsíc
+                logger.info("Scheduling new Job - Unauthenticated_Person_Removal");
+                scheduler.scheduleJob( newJob(Unauthenticated_Person_Removal.class).withIdentity( JobKey.jobKey("unauthenticated_person_removal") ).build(), every_day_4);
+
+                // 5) Kontrola a fakturace klientů na měsíční bázi
                 // logger.info("Scheduling new Job - Sending_Invoices");
                 //scheduler.scheduleJob( newJob(Sending_Invoices.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_4); // nemůže být Job se stejným triggrem
 
-                // 5) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
+                // 6) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
 
 
 

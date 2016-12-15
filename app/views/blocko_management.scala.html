@@ -384,6 +384,7 @@
               $("#newTypeOfBlock input[type=text]").val("");
               $("#newTypeOfBlockModal").modal('hide');
               $('#typeOfBlockTableWrapper').html("").load(document.URL +  ' #allTypesOfBlocks');
+              $("#newTypeOfBlockModalMessage").css("display", "none");
             },
             error:function(e) {
               $("#newTypeOfBlockModalMessage").css("display", "block");

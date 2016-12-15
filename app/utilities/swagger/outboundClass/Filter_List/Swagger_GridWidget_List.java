@@ -4,7 +4,7 @@ import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.grid.GridWidget;
-import utilities.swagger.outboundClass.Swagger_GridWidget_Light;
+import utilities.swagger.outboundClass.Swagger_GridWidget_Filter_Detail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Swagger_GridWidget_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_GridWidget_Light> content = new ArrayList<>();
+    public List<Swagger_GridWidget_Filter_Detail> content = new ArrayList<>();
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@ public class Swagger_GridWidget_List {
 
         for(GridWidget gridWidget : grid_widgets){
 
-            Swagger_GridWidget_Light help = new Swagger_GridWidget_Light();
+            Swagger_GridWidget_Filter_Detail help = new Swagger_GridWidget_Filter_Detail();
 
             help.grid_widget_id = gridWidget.id;
             help.grid_widget_name = gridWidget.name;

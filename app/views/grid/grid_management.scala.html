@@ -35,6 +35,7 @@
             <input id="newTypeOfWidgetDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
         </form>
+        <div id="newTypeOfWidgetModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
@@ -64,6 +65,7 @@
           </div>
           <input id="newGridWidgetTypeOfWidgetId" style="display: none;" type="text" name="type_of_widget_id">
         </form>
+        <div id="newGridWidgetModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
@@ -96,6 +98,7 @@
             <label style="color: #2e6da4">Logic JSON:</label>
             <textarea name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
             </form>
+          <div id="newGridWidgetVersionModalMessage" style="display: none"><p style="color: red;"></p></div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
@@ -125,6 +128,7 @@
             <input placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
         </form>
+        <div id="editTypeOfWidgetModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
@@ -161,6 +165,7 @@
           }
           </select>
         </form>
+        <div id="editGridWidgetModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
@@ -189,6 +194,7 @@
             <input type="text" id="edit_grid_version_description" name="version_description" style="display: block; width: 70%;">
           </div>
         </form>
+        <div id="editGridWidgetVersionModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
@@ -213,6 +219,7 @@
           <label style="color: #2e6da4">Logic JSON:</label>
           <textarea id="version_scheme_logic" name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
         </form>
+        <div id="editVersionSchemeModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
@@ -237,6 +244,7 @@
           <label style="color: #2e6da4">Logic JSON:</label>
           <textarea id="new_version_scheme_logic" name="logic_json" style="display: block; width: 100%; height: auto;" rows="6"></textarea>
         </form>
+        <div id="newVersionSchemeModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
@@ -376,9 +384,12 @@
               $("#newTypeOfWidget input[type=text]").val("");
               $("#newTypeOfWidgetModal").modal('hide');
               $('#typeOfWidgetTableWrapper').html("").load(document.URL +  ' #allTypesOfWidgets');
+              $("#newTypeOfWidgetModalMessage").css("display", "none");
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#newTypeOfWidgetModalMessage").css("display", "block");
+              $("#newTypeOfWidgetModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newTypeOfWidgetModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -397,10 +408,13 @@
             success:function(e){
               $("#newGridWidget input[type=text]").val("");
               $("#newGridWidgetModal").modal('hide');
+              $("#newGridWidgetModalMessage").css("display", "none");
               openTypeOfWidget(document.getElementById('type_info_id').textContent)
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#newGridWidgetModalMessage").css("display", "block");
+              $("#newGridWidgetModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newGridWidgetModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -420,10 +434,13 @@
               $("#newGridWidgetVersion input[type=text]").val("");
               $("#newGridWidgetVersion textarea").text("");
               $("#newGridWidgetVersionModal").modal('hide');
+              $("#newGridWidgetVersionModalMessage").css("display", "none");
               openGridWidget(document.getElementById('widget_info_id').textContent);
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#newGridWidgetVersionModalMessage").css("display", "block");
+              $("#newGridWidgetVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newGridWidgetVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -443,6 +460,7 @@
             success:function(json){
               $("#editTypeOfWidget input[type=text]").val("");
               $("#editTypeOfWidgetModal").modal('hide');
+              $("#editTypeOfWidgetModalMessage").css("display", "none");
               $('#typeOfWidgetTableWrapper').load(document.URL +  ' #allTypesOfWidgets');
               $('#type_of_widget').text(json.name);
               $('#type_info_id').text(json.id);
@@ -462,7 +480,9 @@
               });
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#editTypeOfWidgetModalMessage").css("display", "block");
+              $("#editTypeOfWidgetModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editTypeOfWidgetModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -482,11 +502,14 @@
             success:function(json){
               $("#editGridWidget input[type=text]").val("");
               $("#editGridWidgetModal").modal('hide');
+              $("#editGridWidgetModalMessage").css("display", "none");
               openTypeOfWidget(json.type_of_widget_id);
               openGridWidget(json.id);
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#editGridWidgetModalMessage").css("display", "block");
+              $("#editGridWidgetModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editGridWidgetModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -506,10 +529,13 @@
             success:function(e){
               $("#editGridWidgetVersion input[type=text]").val("");
               $("#editGridWidgetVersionModal").modal('hide');
+              $("#editGridWidgetVersionModalMessage").css("display", "none");
               openGridWidgetVersion(document.getElementById('version_info_id').textContent);
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#editGridWidgetVersionModalMessage").css("display", "block");
+              $("#editGridWidgetVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editGridWidgetVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -709,9 +735,12 @@
             success:function(e){
               $("#editVersionScheme input[type=text]").val("");
               $("#editVersionSchemeModal").modal('hide');
+              $("#editVersionSchemeModalMessage").css("display", "none");
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#editVersionSchemeModalMessage").css("display", "block");
+              $("#editVersionSchemeModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editVersionSchemeModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 
@@ -730,11 +759,14 @@
             success:function(json){
               $("#newVersionScheme input[type=text]").val("");
               $("#newVersionSchemeModal").modal('hide');
+              $("#newVersionSchemeModalMessage").css("display", "none");
               $("#schemeButton").text("Version scheme");
               $("#schemeButton").attr("onclick","showVersionScheme()");
             },
             error:function(e) {
-              alert(e.responseText);
+              $("#newVersionSchemeModalMessage").css("display", "block");
+              $("#newVersionSchemeModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newVersionSchemeModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })}
 </script>
