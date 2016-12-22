@@ -1,7 +1,7 @@
 package utilities.permission;
 
-        import controllers.SecurityController;
-        import models.person.PersonPermission;
+        import controllers.Controller_Security;
+        import models.person.Model_Permission;
 
 public class Permission {
 
@@ -9,8 +9,8 @@ public class Permission {
         //Zde porovnávám zda uživatel má oprávnění na přímo
         // nebo je ve skupině, která dané oprávnění vlastní
 
-        return   PersonPermission.find.where().eq("value", permission).eq("roles.persons.id", SecurityController.getPerson().id).findRowCount() +
-                 PersonPermission.find.where().eq("value", permission).eq("persons.id", SecurityController.getPerson().id).findRowCount() > 0;
+        return   Model_Permission.find.where().eq("value", permission).eq("roles.persons.id", Controller_Security.getPerson().id).findRowCount() +
+                 Model_Permission.find.where().eq("value", permission).eq("persons.id", Controller_Security.getPerson().id).findRowCount() > 0;
     }
 
 

@@ -4,9 +4,9 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.SecurityController;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
-import models.person.Person;
+import models.person.Model_Person;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -35,11 +35,11 @@ public class Post extends Model {
                                                                                      @JsonIgnore @ManyToOne     public Post postParentComment;
                                                                                      @JsonIgnore @ManyToOne     public Post postParentAnswer;
                                                                                      @JsonIgnore @ManyToOne     public TypeOfPost type;
-    @ApiModelProperty(required = true)                                                           @ManyToOne     public Person author;
+    @ApiModelProperty(required = true)                                                           @ManyToOne     public Model_Person author;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "hashTagsTable")      public List<HashTag>            hashTagsList = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "typePostsTable")     public List<PropertyOfPost>     propertyOfPostList = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "postLiker")  @JoinTable(name = "postLikerTable")     public List<Person>             listOfLikers = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "postLiker")  @JoinTable(name = "postLikerTable")     public List<Model_Person>             listOfLikers = new ArrayList<>();
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "posts")      @JoinTable(name = "postConfirmsTable")  public List<TypeOfConfirms>     typeOfConfirms = new ArrayList<>();
 
 
@@ -75,11 +75,11 @@ public class Post extends Model {
 
     @JsonIgnore   @Transient                                    public boolean create_permission(){  return true;    }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true;    }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return SecurityController.getPerson() != null && ( author.id.equals( SecurityController.getPerson().id )  || SecurityController.getPerson().has_permission("Post_edit") ); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.getPerson() != null && ( author.id.equals( Controller_Security.getPerson().id )  || Controller_Security.getPerson().has_permission("Post_edit") ); }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean answer_permission(){  return ( this.postParentComment == null && this.postParentAnswer  == null );}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean comment_permission(){ return ( name != null || postParentAnswer != null );}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_confirms_permission() { return SecurityController.getPerson() != null && SecurityController.getPerson().has_permission("Post_edit"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return SecurityController.getPerson() != null && ( ( author.id.equals( SecurityController.getPerson().id ) ) || SecurityController.getPerson().has_permission("Post_delete") ); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_confirms_permission() { return Controller_Security.getPerson() != null && Controller_Security.getPerson().has_permission("Post_edit"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.getPerson() != null && ( ( author.id.equals( Controller_Security.getPerson().id ) ) || Controller_Security.getPerson().has_permission("Post_delete") ); }
 
     public enum permissions{ Post_edit, Post_delete}
 

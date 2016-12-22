@@ -1,12 +1,12 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.routes;
 import junit.framework.TestCase;
-import models.grid.GridWidget;
-import models.grid.GridWidgetVersion;
-import models.grid.TypeOfWidget;
-import models.person.Person;
-import models.project.global.Product;
-import models.project.global.Project;
+import models.grid.Model_GridWidget;
+import models.grid.Model_GridWidgetVersion;
+import models.grid.Model_TypeOfWidget;
+import models.person.Model_Person;
+import models.project.global.Model_Product;
+import models.project.global.Model_Project;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -32,21 +32,21 @@ public class GridTest extends TestHelper{
 
     public static FakeApplication app;
 
-    public static Product product;
-    public static Project project;
+    public static Model_Product product;
+    public static Model_Project project;
 
-    public static TypeOfWidget type_of_widget;
-    public static GridWidget grid_widget;
-    public static GridWidgetVersion grid_widget_version;
+    public static Model_TypeOfWidget type_of_widget;
+    public static Model_GridWidget grid_widget;
+    public static Model_GridWidgetVersion grid_widget_version;
 
     public static String adminToken;
 
-    public static Person person;
+    public static Model_Person person;
     public static String userToken;
 
-    public static Person secondPerson;
+    public static Model_Person secondPerson;
 
-    public static Person randomPerson;
+    public static Model_Person randomPerson;
     public static String randomUserToken;
 
     @BeforeClass
@@ -55,7 +55,7 @@ public class GridTest extends TestHelper{
         app = Helpers.fakeApplication();
         Helpers.start(app);
 
-        adminToken = person_login(Person.find.byId("1"));
+        adminToken = person_login(Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique());
 
         person = person_create();
         person_authenticate(person);
@@ -117,7 +117,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.GridController.typeOfWidget_create().toString())
+                .uri(routes.Controller_Grid.typeOfWidget_create().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -131,7 +131,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.GridController.typeOfWidget_get(type_of_widget.id).toString())
+                .uri(routes.Controller_Grid.typeOfWidget_get(type_of_widget.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -144,7 +144,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.GridController.typeOfWidget_getAll().toString())
+                .uri(routes.Controller_Grid.typeOfWidget_getAll().toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -162,7 +162,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.GridController.typeOfWidget_getByFilter(1).toString())
+                .uri(routes.Controller_Grid.typeOfWidget_getByFilter(1).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -181,7 +181,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.GridController.typeOfWidget_update(type_of_widget.id).toString())
+                .uri(routes.Controller_Grid.typeOfWidget_update(type_of_widget.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -193,11 +193,11 @@ public class GridTest extends TestHelper{
     @Test
     public void delete_type_of_widget() {
 
-        TypeOfWidget t = type_of_widget_create(project);
+        Model_TypeOfWidget t = type_of_widget_create(project);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.GridController.typeOfWidget_delete(t.id).toString())
+                .uri(routes.Controller_Grid.typeOfWidget_delete(t.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -216,7 +216,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.GridController.gridWidget_create().toString())
+                .uri(routes.Controller_Grid.gridWidget_create().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -230,7 +230,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.GridController.gridWidget_get(grid_widget.id).toString())
+                .uri(routes.Controller_Grid.gridWidget_get(grid_widget.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -247,7 +247,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.GridController.gridWidget_getByFilter(1).toString())
+                .uri(routes.Controller_Grid.gridWidget_getByFilter(1).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -267,7 +267,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.GridController.gridWidget_update(grid_widget.id).toString())
+                .uri(routes.Controller_Grid.gridWidget_update(grid_widget.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -279,11 +279,11 @@ public class GridTest extends TestHelper{
     @Test
     public void delete_grid_widget() {
 
-        GridWidget b = grid_widget_create(type_of_widget);
+        Model_GridWidget b = grid_widget_create(type_of_widget);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.GridController.gridWidget_delete(b.id).toString())
+                .uri(routes.Controller_Grid.gridWidget_delete(b.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -303,7 +303,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.GridController.gridWidgetVersion_create(grid_widget.id).toString())
+                .uri(routes.Controller_Grid.gridWidgetVersion_create(grid_widget.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -317,7 +317,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.GridController.gridWidgetVersion_get(grid_widget_version.id).toString())
+                .uri(routes.Controller_Grid.gridWidgetVersion_get(grid_widget_version.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -330,7 +330,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.GridController.gridWidgetVersion_getAll(grid_widget.id).toString())
+                .uri(routes.Controller_Grid.gridWidgetVersion_getAll(grid_widget.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -341,11 +341,11 @@ public class GridTest extends TestHelper{
     @Test
     public void make_public_grid_widget_version() {
 
-        GridWidgetVersion b = grid_widget_version_create(grid_widget);
+        Model_GridWidgetVersion b = grid_widget_version_create(grid_widget);
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.GridController.gridWidgetVersion_makePublic(b.id).toString())
+                .uri(routes.Controller_Grid.gridWidgetVersion_makePublic(b.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -363,7 +363,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.GridController.gridWidgetVersion_update(grid_widget_version.id).toString())
+                .uri(routes.Controller_Grid.gridWidgetVersion_update(grid_widget_version.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -375,11 +375,11 @@ public class GridTest extends TestHelper{
     @Test
     public void delete_grid_widget_version() {
 
-        GridWidgetVersion b = grid_widget_version_create(grid_widget);
+        Model_GridWidgetVersion b = grid_widget_version_create(grid_widget);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.GridController.gridWidgetVersion_delete(b.id).toString())
+                .uri(routes.Controller_Grid.gridWidgetVersion_delete(b.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);

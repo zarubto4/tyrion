@@ -2,10 +2,10 @@ package utilities.swagger.outboundClass.Filter_List;
 
 
 import com.avaje.ebean.Query;
-import controllers.SecurityController;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.notification.Notification;
+import models.notification.Model_Notification;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Swagger_Notification_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Notification> content;
+    public List<Model_Notification> content;
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
@@ -35,11 +35,11 @@ public class Swagger_Notification_List {
 
 
     @ApiModelProperty(required = true, readOnly = true, value = "Total unread subjects")
-    public int unread_total = Notification.find.where().eq("was_read", false).eq("person.id", SecurityController.getPerson().id).findRowCount();
+    public int unread_total = Model_Notification.find.where().eq("was_read", false).eq("person.id", Controller_Security.getPerson().id).findRowCount();
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_Notification_List(Query<Notification> query , int page_number){
+    public Swagger_Notification_List(Query<Model_Notification> query , int page_number){
 
         if(page_number < 1) page_number = 1;
         this.content =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();

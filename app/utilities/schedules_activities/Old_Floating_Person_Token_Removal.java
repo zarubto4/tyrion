@@ -1,7 +1,7 @@
 package utilities.schedules_activities;
 
 
-import models.person.FloatingPersonToken;
+import models.person.Model_FloatingPersonToken;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -32,7 +32,7 @@ public class Old_Floating_Person_Token_Removal implements Job {
 
             while (true){
 
-                List<FloatingPersonToken> tokens_to_remove = FloatingPersonToken.find.where().lt("created", created).setMaxRows(100).findList();
+                List<Model_FloatingPersonToken> tokens_to_remove = Model_FloatingPersonToken.find.where().lt("created", created).setMaxRows(100).findList();
                 if (tokens_to_remove.isEmpty()) {
                     logger.info("Old_Floating_Person_Token_Removal has no tokens to remove");
                     break;
@@ -40,7 +40,7 @@ public class Old_Floating_Person_Token_Removal implements Job {
 
                 logger.info("CRON Task is removing old tokens (100 per cycle)");
 
-                for (FloatingPersonToken token : tokens_to_remove){
+                for (Model_FloatingPersonToken token : tokens_to_remove){
                     token.delete();
                 }
             }

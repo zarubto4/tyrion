@@ -1,13 +1,11 @@
 
-@import models.person.PersonPermission
-@import models.person.SecurityRole
-@import models.person.Person
+@import models.person.{Model_Person, Model_Permission, Model_SecurityRole}
 @import utilities.Server
 
 <section class="content-header">
     <h1> Permission Summary </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Server Management </li>
         <li class="active"><i class="fa fa-wrench"></i> Permission Summary </li>
     </ol>
@@ -44,7 +42,7 @@
         function newRole(){
             model_data = $("#newRole").serializeObject();
             $.ajax({
-                url: '@routes.PermissionController.new_Role()',
+                url: '@routes.Controller_Permission.new_Role()',
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {
@@ -121,13 +119,13 @@
                             <th width="30px">Delete</th>
                         </tr>
 
-                        @for(security_role <- SecurityRole.find.all()) {
+                        @for(security_role <- Model_SecurityRole.find.all()) {
                         <tr>
                             <td>@security_role.id</td>
                             <td>@security_role.name</td>
                             <td>@security_role.description</td>
                             <td>
-                                <a  href='@routes.DashboardController.role(security_role.id)' >
+                                <a  href='@routes.Controller_Dashboard.role(security_role.id)' >
                                     <button class="btn btn-block btn-info" type="button">Members</button>
                                 </a>
                             </td>
@@ -245,7 +243,7 @@
                         
                         </tr>
 
-                        @for(permission <- PersonPermission.find.all()) {
+                        @for(permission <- Model_Permission.find.all()) {
                             <tr>
                                 <td>@permission.value</td>
                                 <td>@permission.description</td>

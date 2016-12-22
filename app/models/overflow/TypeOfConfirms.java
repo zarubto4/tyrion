@@ -3,7 +3,7 @@ package models.overflow;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.SecurityController;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
@@ -25,10 +25,10 @@ public class TypeOfConfirms extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_create"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return  Controller_Security.getPerson().has_permission("TypeOfConfirms_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return  true;                                                                   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("TypeOfConfirms_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  SecurityController.getPerson().has_permission("TypeOfConfirms_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  Controller_Security.getPerson().has_permission("TypeOfConfirms_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  Controller_Security.getPerson().has_permission("TypeOfConfirms_delete"); }
 
     public enum permissions{  PropertyOfPost_create, PropertyOfPost_read,  PropertyOfPost_edit, PropertyOfPost_delete; }
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

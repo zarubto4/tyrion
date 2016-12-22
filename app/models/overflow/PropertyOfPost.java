@@ -2,7 +2,7 @@ package models.overflow;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers.SecurityController;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
@@ -25,10 +25,10 @@ public class PropertyOfPost extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_create");}
+    @JsonIgnore @Transient public boolean create_permission(){  return  Controller_Security.getPerson().has_permission("PropertyOfPost_create");}
     @JsonIgnore @Transient public boolean read_permission()  {  return  true; }
-    @JsonIgnore @Transient public boolean edit_permission()  {  return  SecurityController.getPerson().has_permission("PropertyOfPost_edit");  }
-    @JsonIgnore @Transient public boolean delete_permission(){  return  SecurityController.getPerson().has_permission("PropertyOfPost_delete");}
+    @JsonIgnore @Transient public boolean edit_permission()  {  return  Controller_Security.getPerson().has_permission("PropertyOfPost_edit");  }
+    @JsonIgnore @Transient public boolean delete_permission(){  return  Controller_Security.getPerson().has_permission("PropertyOfPost_delete");}
 
     public enum permissions{  PropertyOfPost_create, PropertyOfPost_edit,  PropertyOfPost_delete;}
 

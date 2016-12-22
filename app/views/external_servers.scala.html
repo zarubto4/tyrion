@@ -1,12 +1,12 @@
 
-@import models.project.b_program.servers.Cloud_Homer_Server
-@import models.compiler.Cloud_Compilation_Server
+@@@@@import models.compiler.Model_CompilationServer
+@import models.project.b_program.servers.Model_HomerServer
 @import utilities.Server
 
 <section class="content-header">
     <h1> External Servers </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Server Management </li>
         <li class="active"><i class="fa fa-wrench"></i> External Servers </li>
     </ol>
@@ -87,7 +87,7 @@
                             <th>DELETE</th>
                         </tr>
 
-                        @for(compilation_server <- Cloud_Compilation_Server.find.all()) {
+                        @for(compilation_server <- Model_CompilationServer.find.all()) {
                             <tr>
                                 <td>@compilation_server.id</td>
                                 <td>@compilation_server.server_name</td>
@@ -241,7 +241,7 @@
                             <th>DELETE</th>
                         </tr>
 
-                        @for(homer_server <- Cloud_Homer_Server.find.all()) {
+                        @for(homer_server <- Model_HomerServer.find.all()) {
                             <tr>
                                 <td>@homer_server.id</td>
                                 <td>@homer_server.server_name</td>
@@ -274,7 +274,7 @@
 function newCompilationServer(){
     model_data = $("#newCompilationServer").serializeObject();
     $.ajax({
-        url: '@routes.CompilationLibrariesController.create_Compilation_Server()',
+        url: '@routes.Controller_CompilationLibraries.create_Compilation_Server()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -307,7 +307,7 @@ function editCompilationServer(id){
     model_data = $("#editCompilationServer").serializeObject();
 
     $.ajax({
-        url: '@routes.CompilationLibrariesController.edit_Compilation_Server("")' + id,
+        url: '@routes.Controller_CompilationLibraries.edit_Compilation_Server("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -339,7 +339,7 @@ function editCompilationServer(id){
 function deleteCompilationServer(id){
 
     $.ajax({
-        url: '@routes.CompilationLibrariesController.delete_Compilation_Server("")' + id,
+        url: '@routes.Controller_CompilationLibraries.delete_Compilation_Server("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),
@@ -384,7 +384,7 @@ function showCreateFormCompilationServer(){
 function newHomerServer(){
     model_data = $("#newHomerServer").serializeObject();
     $.ajax({
-        url: '@routes.ProgramingPackageController.create_Blocko_Server()',
+        url: '@routes.Controller_ProgramingPackage.create_Blocko_Server()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -417,7 +417,7 @@ function editHomerServer(id){
     model_data = $("#editHomerServer").serializeObject();
 
     $.ajax({
-        url: '@routes.ProgramingPackageController.edit_Blocko_Server("")' + id,
+        url: '@routes.Controller_ProgramingPackage.edit_Blocko_Server("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -449,7 +449,7 @@ function editHomerServer(id){
 function deleteHomerServer(id){
 
     $.ajax({
-        url: '@routes.ProgramingPackageController.delete_Blocko_Server("")' + id,
+        url: '@routes.Controller_ProgramingPackage.delete_Blocko_Server("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),

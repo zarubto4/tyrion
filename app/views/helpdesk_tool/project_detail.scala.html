@@ -1,13 +1,12 @@
-@import models.project.global.Project
-
+@import models.project.global.Model_Project
 @import utilities.Server
 
-@(project: Project)
+@(project: Model_Project)
 
 <section class="content-header">
     <h1> @project.name </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-wrench"></i> Helpdesk Tool </li>
         <li class="active"><i class="fa fa-wrench"></i> @project.name </li>
     </ol>
@@ -16,27 +15,278 @@
 <section class="content">
 <div class="row">
     <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">@project.product_individual_name()</h3>
-            </div>
-            <div class="box-body">
-                <button class="btn btn-primary d-inline-block" type="button" >B Programs</button>
-                <button class="btn btn-primary d-inline-block" type="button" >C Programs</button>
-                <button class="btn btn-primary d-inline-block" type="button" >M Projects</button>
-                <button class="btn btn-primary d-inline-block" type="button" >Types of Block</button>
-                <button class="btn btn-primary d-inline-block" type="button" >Types of Widget</button>
-                <button class="btn btn-primary d-inline-block" type="button" >Boards</button>
-                <button class="btn btn-primary d-inline-block" type="button" >Invitations</button>
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#b_programs" data-toggle="tab">B Programs</a></li>
+                <li><a href="#c_programs" data-toggle="tab">C Programs</a></li>
+                <li><a href="#m_projects" data-toggle="tab">M Projects</a></li>
+                <li><a href="#type_of_blocks" data-toggle="tab">Types of Block</a></li>
+                <li><a href="#type_of_widgets" data-toggle="tab">Types of Widgets</a></li>
+                <li><a href="#boards" data-toggle="tab">Boards</a></li>
+                <li><a href="#invitations" data-toggle="tab">Invitations</a></li>
+                <li><a href="#participants" data-toggle="tab">Participants</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane active" id="b_programs">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">B Programs</h3>
+                        </div>
+                            <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Homer instance</th>
+                                        <th>Versions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for(b_program <- project.b_programs){
+                                    <tr>
+                                        <td>@b_program.id</td>
+                                        <td>@b_program.name</td>
+                                        <td>@b_program.description</td>
+                                        <td><button class="btn btn-default" type="button">Open instance</button></td>
+                                        <td><button class="btn btn-default" type="button">Open program</button></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="c_programs">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">C Programs</h3>
+                        </div>
+                            <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Type of Board</th>
+                                        <th>Versions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for(c_program <- project.c_programs){
+                                    <tr>
+                                        <td>@c_program.id</td>
+                                        <td>@c_program.name</td>
+                                        <td>@c_program.description</td>
+                                        <td>@c_program.type_of_board_name()</td>
+                                        <td><button class="btn btn-default" type="button">Open program</button></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="m_projects">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">M Projects</h3>
+                        </div>
+                            <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for(m_project <- project.m_projects){
+                                    <tr>
+                                        <td>@m_project.id</td>
+                                        <td>@m_project.name</td>
+                                        <td>@m_project.description</td>
+                                        <td><button class="btn btn-default" type="button">Details</button></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="type_of_blocks">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">Types of Block</h3>
+                        </div>
+                            <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for(type_of_block <- project.type_of_blocks){
+                                    <tr>
+                                        <td>@type_of_block.id</td>
+                                        <td>@type_of_block.name</td>
+                                        <td>@type_of_block.description</td>
+                                        <td><button class="btn btn-default" type="button">Details</button></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="type_of_widgets">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">Types of Widget</h3>
+                        </div>
+                            <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for(type_of_widget <- project.type_of_widgets){
+                                    <tr>
+                                        <td>@type_of_widget.id</td>
+                                        <td>@type_of_widget.name</td>
+                                        <td>@type_of_widget.description</td>
+                                        <td><button class="btn btn-default" type="button">Details</button></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="boards">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">Boards</h3>
+                        </div>
+                            <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Type of Board</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for(board <- project.boards){
+                                    <tr>
+                                        <td>@board.id</td>
+                                        <td>@board.mac_address</td>
+                                        <td>@board.personal_description</td>
+                                        <td>@board.type_of_board_name()</td>
+                                        <td><button class="btn btn-default" type="button">Details</button></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="invitations">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">Invitations</h3>
+                        </div>
+                            <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Mail</th>
+                                        <th>Date</th>
+                                        <th>Homer instance</th>
+                                        <th>Versions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for(invitation <- project.invitations){
+                                    <tr>
+                                        <td>@invitation.id</td>
+                                        <td>@invitation.mail</td>
+                                        <td>@invitation.date_of_creation</td>
+                                        <td><button class="btn btn-default" type="button">Open instance</button></td>
+                                        <td><button class="btn btn-default" type="button">Open program</button></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="participants">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">Participants</h3>
+                        </div>
+                            <!-- /.box-header -->
+                        <div class="box-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Mail</th>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Detail</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @for(participant <- project.participants){
+                                    <tr>
+                                        <td>@participant.id</td>
+                                        <td>@participant.user_email()</td>
+                                        <td>@participant.full_name()</td>
+                                        <td>@participant.state.name()</td>
+                                        <td><button class="btn btn-default" type="button">Open</button></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </div>             <!-- /.tab-content -->
 </div>
 </section>
 
 
 <div id="editCompilationServerModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCompilationServerModalTitle">
-    <div style="margin-top: 15%;" class="modal-dialog">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 id="editCompilationServerModalTitle" class="modal-title">Edit Type of Board</h4>
@@ -208,7 +458,7 @@
                 model_data = $("#newProject").serializeObject();
 
                 $.ajax({
-                    url: '@routes.ProgramingPackageController.project_create()' ,
+                    url: '@routes.Controller_ProgramingPackage.project_create()' ,
                     type: 'POST',
                     contentType: 'application/json',
                     headers: {
@@ -232,7 +482,7 @@
             function deleteProject(id){
 
                 $.ajax({
-                    url: '@routes.ProgramingPackageController.project_delete("")' + id  ,
+                    url: '@routes.Controller_ProgramingPackage.project_delete("")' + id  ,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")

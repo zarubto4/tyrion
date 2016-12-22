@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.blocko.BlockoBlock;
+import models.blocko.Model_BlockoBlock;
 import utilities.swagger.outboundClass.Swagger_Blocko_Block_Filter_Detail;
 
 import java.util.ArrayList;
@@ -35,12 +35,12 @@ public class Swagger_Blocko_Block_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_Blocko_Block_List(Query<BlockoBlock> query, int page_number){
+    public Swagger_Blocko_Block_List(Query<Model_BlockoBlock> query, int page_number){
 
         if(page_number < 1) page_number = 1;
-        List<BlockoBlock> blocko_blocks =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        List<Model_BlockoBlock> blocko_blocks =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
-        for(BlockoBlock blockoBlock : blocko_blocks){
+        for(Model_BlockoBlock blockoBlock : blocko_blocks){
 
             Swagger_Blocko_Block_Filter_Detail help = new Swagger_Blocko_Block_Filter_Detail();
 

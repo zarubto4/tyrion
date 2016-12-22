@@ -1,9 +1,10 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.routes;
 import junit.framework.TestCase;
-import models.person.ChangePropertyToken;
-import models.person.FloatingPersonToken;
-import models.person.PasswordRecoveryToken;
-import models.person.Person;
+import models.person.Model_ChangePropertyToken;
+import models.person.Model_FloatingPersonToken;
+import models.person.Model_PasswordRecoveryToken;
+import models.person.Model_Person;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
@@ -16,7 +17,6 @@ import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
 import play.test.FakeApplication;
 import play.test.Helpers;
-import controllers.routes;
 
 import static org.junit.Assert.*;
 import static play.test.Helpers.*;
@@ -27,13 +27,13 @@ public class PersonSpecialTest extends TestHelper {
     public static FakeApplication app;
     public static String adminToken;
     public static String userToken;
-    public static Person person;
+    public static Model_Person person;
 
     @BeforeClass
     public static void startApp() throws Exception {
         app = Helpers.fakeApplication();
         Helpers.start(app);
-        adminToken = person_login(Person.find.byId("1"));
+        adminToken = person_login(Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique());
         person = person_create();
         person_authenticate(person);
         userToken = person_login(person);
@@ -73,7 +73,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.SecurityController.login().toString())
+                .uri(routes.Controller_Security.login().toString())
                 .bodyJson(body)
                 .header(USER_AGENT, "foo");
 
@@ -90,7 +90,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.PersonController.get_Person_Connections().toString())
+                .uri(routes.Controller_Person.person_getAllConnections().toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -102,8 +102,8 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.PersonController.remove_Person_Connection(FloatingPersonToken.find.where().eq("person.mail", person.mail).findList().get(1).connection_id).toString())
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", person.mail).findList().get(1).authToken);
+                .uri(routes.Controller_Person.remove_Person_Connection(Model_FloatingPersonToken.find.where().eq("person.mail", person.mail).findList().get(1).connection_id).toString())
+                .header("X-AUTH-TOKEN", Model_FloatingPersonToken.find.where().eq("person.mail", person.mail).findList().get(1).authToken);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -114,8 +114,8 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.SecurityController.logout().toString())
-                .header("X-AUTH-TOKEN", FloatingPersonToken.find.where().eq("person.mail", person.mail).findList().get(1).connection_id);
+                .uri(routes.Controller_Security.logout().toString())
+                .header("X-AUTH-TOKEN", Model_FloatingPersonToken.find.where().eq("person.mail", person.mail).findList().get(1).connection_id);
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -126,7 +126,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.PersonController.delete_all_tokens(person.id).toString())
+                .uri(routes.Controller_Person.person_removeAllConnections(person.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -139,7 +139,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.PersonController.deactivatePerson(person.id).toString())
+                .uri(routes.Controller_Person.person_deactivate(person.id).toString())
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -151,7 +151,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.PersonController.activatePerson(person.id).toString())
+                .uri(routes.Controller_Person.person_activate(person.id).toString())
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -164,7 +164,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.PersonController.deactivatePerson(person.id).toString())
+                .uri(routes.Controller_Person.person_deactivate(person.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -176,7 +176,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.PersonController.activatePerson(person.id).toString())
+                .uri(routes.Controller_Person.person_activate(person.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -194,7 +194,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.PersonController.changePersonLoginProperty().toString())
+                .uri(routes.Controller_Person.person_changeLoginProperty().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -207,7 +207,7 @@ public class PersonSpecialTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.PersonController.authorizePropertyChange(ChangePropertyToken.find.where().eq("person.id", person.id).findList().get(0).change_property_token).toString());
+                .uri(routes.Controller_Person.person_authorizePropertyChange(Model_ChangePropertyToken.find.where().eq("person.id", person.id).findList().get(0).change_property_token).toString());
 
         Result result = route(request);
         assertEquals(SEE_OTHER, result.status());
@@ -223,7 +223,7 @@ public class PersonSpecialTest extends TestHelper {
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
                 .bodyJson(body)
-                .uri(routes.PersonController.sendPasswordRecoveryEmail().toString());
+                .uri(routes.Controller_Person.person_passwordRecoverySendEmail().toString());
 
         Result result = route(request);
         assertEquals(OK, result.status());
@@ -236,12 +236,12 @@ public class PersonSpecialTest extends TestHelper {
 
         body.put("mail", person.mail);
         body.put("password", "password123");
-        body.put("password_recovery_token", PasswordRecoveryToken.find.where().eq("person.id", person.id).findUnique().password_recovery_token);
+        body.put("password_recovery_token", Model_PasswordRecoveryToken.find.where().eq("person.id", person.id).findUnique().password_recovery_token);
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
                 .bodyJson(body)
-                .uri(routes.PersonController.personPasswordRecovery().toString());
+                .uri(routes.Controller_Person.person_passwordRecovery().toString());
 
         Result result = route(request);
         assertEquals(OK, result.status());

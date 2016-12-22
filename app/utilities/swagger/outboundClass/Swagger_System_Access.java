@@ -2,8 +2,8 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.person.PersonPermission;
-import models.person.SecurityRole;
+import models.person.Model_Permission;
+import models.person.Model_SecurityRole;
 
 import java.util.List;
 
@@ -12,8 +12,8 @@ import java.util.List;
 public class Swagger_System_Access {
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<SecurityRole> roles;
+    public List<Model_SecurityRole> roles;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<PersonPermission> permissions;
+    public List<Model_Permission> permissions;
 }

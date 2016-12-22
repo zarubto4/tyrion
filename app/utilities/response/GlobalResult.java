@@ -171,7 +171,7 @@ public class GlobalResult extends Controller {
 
         Result_NotValidated result_notValidated = new Result_NotValidated();
 
-        return Controller.forbidden(Json.toJson(result_notValidated));
+        return Controller.status(705, Json.toJson(result_notValidated));
     }
 
     // Používá se výhradně pro odmítnutí uživatele při přihlášení, pokud nemá validovaný účet

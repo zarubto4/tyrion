@@ -1,6 +1,4 @@
-@import models.compiler.TypeOfBoard
-@import models.compiler.Processor
-@import models.compiler.Producer
+@import models.compiler.{Model_Processor, Model_Producer, Model_TypeOfBoard}
 @import utilities.Server
 
 
@@ -8,7 +6,7 @@
 <section class="content-header">
   <h1> Basic object settings </h1>
   <ol class="breadcrumb">
-    <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+    <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
     <li class="active"><i class="fa fa-share"></i> Server Management </li>
     <li class="active"><i class="fa fa-wrench"></i> Embedded HW management </li>
   </ol>
@@ -97,7 +95,7 @@
               <th>EDIT</th>
               <th>DELETE</th>
             </tr>
-              @for(typeOfBoard <- TypeOfBoard.find.all()) {
+              @for(typeOfBoard <- Model_TypeOfBoard.find.all()) {
                 <tr>
                   <td>@typeOfBoard.id</td>
                   <td>@typeOfBoard.name</td>
@@ -124,7 +122,7 @@
                   <td>@typeOfBoard.producer_id()</td>
                   <td>@typeOfBoard.processor_id()</td>
                   <td>@typeOfBoard.connectible_to_internet</td>
-                  <td><a href='@routes.DashboardController.bootloader_management(typeOfBoard.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
+                  <td><a href='@routes.Controller_Dashboard.bootloader_management(typeOfBoard.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
                   <td><button class="btn btn-block btn-info"   type="button" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.compiler_target_name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor_id()', '@typeOfBoard.connectible_to_internet')">Edit</button></td>
                   <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBoard(@typeOfBoard.id)">Delete</button></td>
                 </tr>
@@ -214,7 +212,7 @@
               <th>EDIT</th>
               <th>DELETE</th>
             </tr>
-            @for(processor <- Processor.find.all()) {
+            @for(processor <- Model_Processor.find.all()) {
               <tr>
                 <td>@processor.id</td>
                 <td>@processor.processor_name</td>
@@ -294,7 +292,7 @@
               <th>EDIT</th>
               <th>DELETE</th>
             </tr>
-            @for(producer <- Producer.find.all()) {
+            @for(producer <- Model_Producer.find.all()) {
               <tr>
                 <td>@producer.id</td>
                 <td>@producer.name</td>
@@ -334,7 +332,7 @@
         function newTypeOfBoard(){
           model_data = $("#newTypeOfBoardForm").serializeObject();
           $.ajax({
-            url: '@routes.CompilationLibrariesController.typeOfBoard_create()',
+            url: '@routes.Controller_CompilationLibraries.typeOfBoard_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -357,7 +355,7 @@
           model_data = $("#editTypeOfBoard").serializeObject();
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.typeOfBoard_update("")' + id ,
+            url: '@routes.Controller_CompilationLibraries.typeOfBoard_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -379,7 +377,7 @@
         function deleteTypeOfBoard(id){
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.typeOfBoard_delete("")' + id ,
+            url: '@routes.Controller_CompilationLibraries.typeOfBoard_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -415,7 +413,7 @@
           model_data = $("#newProcessorForm").serializeObject();
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.processor_create()',
+            url: '@routes.Controller_CompilationLibraries.processor_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -450,7 +448,7 @@
           model_data = $("#editProcessor").serializeObject();
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.processor_update("")' + id ,
+            url: '@routes.Controller_CompilationLibraries.processor_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -472,7 +470,7 @@
         function deleteProcessor(id){
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.processor_delete("")' + id ,
+            url: '@routes.Controller_CompilationLibraries.processor_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -501,7 +499,7 @@
         function newProducer(){
           model_data = $("#newProducer").serializeObject();
           $.ajax({
-            url: '@routes.CompilationLibrariesController.new_Producer()',
+            url: '@routes.Controller_CompilationLibraries.new_Producer()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -523,7 +521,7 @@
           model_data = $("#editProducer").serializeObject();
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.edit_Producer("")' + id ,
+            url: '@routes.Controller_CompilationLibraries.edit_Producer("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -545,7 +543,7 @@
         function deleteProducer(id){
 
           $.ajax({
-            url: '@routes.CompilationLibrariesController.delete_Producer("")' + id ,
+            url: '@routes.Controller_CompilationLibraries.delete_Producer("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),

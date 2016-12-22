@@ -24,5 +24,6 @@ public class Swagger_Person_Update {
     @ApiModelProperty(required = false, value = "Where does the user come from.")
     public String country;
 
-
+    @ApiModelProperty(required = false, value = "Gender of the user.", allowableValues = "male, female")
+    public String gender;
 }

@@ -1,10 +1,10 @@
 package utilities.hardware_generator;
 
 import io.swagger.annotations.*;
-import models.compiler.Board;
-import models.compiler.FileRecord;
-import models.compiler.TypeOfBoard;
-import models.project.b_program.servers.Cloud_Homer_Server;
+import models.compiler.Model_Board;
+import models.compiler.Model_FileRecord;
+import models.compiler.Model_TypeOfBoard;
+import models.project.b_program.servers.Model_HomerServer;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -34,7 +34,7 @@ public class HardwareGeneratorController extends Controller {
     public static Long get_new_MacAddress(){
         try {
 
-            String mac_address = Board.find.where().orderBy().desc("mac_address").setMaxRows(1).findUnique().mac_address;
+            String mac_address = Model_Board.find.where().orderBy().desc("mac_address").setMaxRows(1).findUnique().mac_address;
             Long highest_mac = Long.parseLong(mac_address.replace(":", ""), 16);
 
             long mac = highest_mac + 1;
@@ -100,7 +100,7 @@ public class HardwareGeneratorController extends Controller {
 
 
             // Ověřím full_id
-            if( Board.find.where().eq("id", help.full_id).findUnique() != null){
+            if( Model_Board.find.where().eq("id", help.full_id).findUnique() != null){
                 return GlobalResult.result_BadRequest("Full_Id is used!");
             }
 
@@ -110,7 +110,7 @@ public class HardwareGeneratorController extends Controller {
 
 
             // Ověřím Typ desky!!!
-            TypeOfBoard typeOfBoard = TypeOfBoard.find.where().eq("compiler_target_name", help.compiler_target_name).findUnique();
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("compiler_target_name", help.compiler_target_name).findUnique();
             if(typeOfBoard == null) return GlobalResult.notFoundObject("Type Of Board - compiler_target_name not found");
 
 
@@ -118,24 +118,24 @@ public class HardwareGeneratorController extends Controller {
             if(typeOfBoard.connectible_to_internet) {
 
                 // Najdu backup_server
-                Cloud_Homer_Server backup_server = Cloud_Homer_Server.find.where().eq("server_type", CLoud_Homer_Server_Type.backup_server).findUnique();
+                Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.backup_server).findUnique();
                 if (backup_server == null) return GlobalResult.notFoundObject("Backup server not found!!!");
 
                 // Najdu Main_server
-                Cloud_Homer_Server main_server = Cloud_Homer_Server.find.where().eq("server_type", CLoud_Homer_Server_Type.main_server).findUnique();
+                Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.main_server).findUnique();
                 if (main_server == null) return GlobalResult.notFoundObject("Main server not found!!!");
 
                 // Najdu Firmware
-                FileRecord firmware = FileRecord.find.where().eq("c_compilations_binary_file.version_object.default_version_program.default_program_type_of_board.id", typeOfBoard.id).eq("file_name", "compilation.bin").findUnique();
+                Model_FileRecord firmware = Model_FileRecord.find.where().eq("c_compilations_binary_file.version_object.default_version_program.default_program_type_of_board.id", typeOfBoard.id).eq("file_name", "compilation.bin").findUnique();
                 if (firmware == null) return GlobalResult.notFoundObject("firmware not found - Set Main Firmware in Tyrion first!!!");
 
                 // Najdu Bootloader
-                FileRecord bootloader = FileRecord.find.where().eq("boot_loader.main_type_of_board.id", typeOfBoard.id).eq("file_name", "bootloader.bin").findUnique();
+                Model_FileRecord bootloader = Model_FileRecord.find.where().eq("boot_loader.main_type_of_board.id", typeOfBoard.id).eq("file_name", "bootloader.bin").findUnique();
                 if (bootloader == null) return GlobalResult.notFoundObject("bootloader not found - Set bootloader in Tyrion first!!!!");
 
 
                 // Vytvořím Hardware!
-                Board board = new Board();
+                Model_Board board = new Model_Board();
                 board.id = help.full_id;
                 board.type_of_board = typeOfBoard;
                 board.actual_boot_loader = typeOfBoard.main_boot_loader;
@@ -222,7 +222,7 @@ public class HardwareGeneratorController extends Controller {
             Swagger_Hardware_New_Hardware_Result help = form.get();
 
 
-            Board board = Board.find.where().eq("mac_address",help.mac_address).findUnique();
+            Model_Board board = Model_Board.find.where().eq("mac_address",help.mac_address).findUnique();
             if(board == null) return GlobalResult.notFoundObject("Board with mac_address not found");
 
 

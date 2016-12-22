@@ -1,10 +1,10 @@
 package utilities.notifications;
 
 
-import controllers.WebSocketController;
-import models.notification.Notification;
-import models.person.Invitation;
-import models.person.Person;
+import controllers.Controller_WebSocket;
+import models.notification.Model_Notification;
+import models.person.Model_Invitation;
+import models.person.Model_Person;
 import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.webSocket.WS_Becki_Website;
@@ -19,14 +19,14 @@ public class Notification_Handler {
     // Logger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    public static List<Notification> notifications = new ArrayList<>();
+    public static List<Model_Notification> notifications = new ArrayList<>();
 
     public static void start_notification_thread(){
         logger.debug("Notification Handler will be started");
         if(!send_notification_thread.isAlive()) send_notification_thread.start();
     }
 
-    public static void add_to_queue(Notification notification){
+    public static void add_to_queue(Model_Notification notification){
 
         logger.debug("Notification - new incoming procedure");
 
@@ -53,7 +53,7 @@ public class Notification_Handler {
 
                         logger.debug("Notification Handler Thread is running. Tasks to solve: " + notifications.size() );
 
-                        Notification notification = notifications.get(0);
+                        Model_Notification notification = notifications.get(0);
 
                         new Notification_Handler().send_notification( notification , notification.receivers );
                         notifications.remove( notification );
@@ -76,9 +76,9 @@ public class Notification_Handler {
         }
     };
 
-    public void send_notification(Notification notification, List<Person> receivers){
+    public void send_notification(Model_Notification notification, List<Model_Person> receivers){
 
-        for (Person person : receivers) {
+        for (Model_Person person : receivers) {
 
             // Pokud je notification_importance vyšší než "low" notifikaci uložím
             if ((notification.notification_importance != Notification_importance.low)&&(notification.id == null)) {
@@ -89,7 +89,7 @@ public class Notification_Handler {
                 try {
                     if((!notification.buttons().isEmpty())&&(notification.buttons().get(0).action == Notification_action.accept_project_invitation)){
 
-                        Invitation invitation = Invitation.find.byId(notification.buttons().get(0).payload);
+                        Model_Invitation invitation = Model_Invitation.find.byId(notification.buttons().get(0).payload);
                         invitation.notification_id = notification.id;
                         invitation.update();
                     }
@@ -99,8 +99,8 @@ public class Notification_Handler {
             }
 
             // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
-            if (WebSocketController.becki_website.containsKey(person.id)) {
-                WebSocketController.becki_sendNotification((WS_Becki_Website) WebSocketController.becki_website.get(person.id), notification);
+            if (Controller_WebSocket.becki_website.containsKey(person.id)) {
+                Controller_WebSocket.becki_sendNotification((WS_Becki_Website) Controller_WebSocket.becki_website.get(person.id), notification);
             }
 
             notification.id = null;

@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.c_program.C_Program;
+import models.project.c_program.Model_CProgram;
 import utilities.swagger.outboundClass.Swagger_C_program_Short_Detail;
 
 import java.util.ArrayList;
@@ -34,12 +34,12 @@ public class Swagger_C_Program_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_C_Program_List(Query<C_Program> query , int page_number){
+    public Swagger_C_Program_List(Query<Model_CProgram> query , int page_number){
 
         if(page_number < 1) page_number = 1;
-        List<C_Program> list =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        List<Model_CProgram> list =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
-        for(C_Program c_program : list){
+        for(Model_CProgram c_program : list){
             this.content.add(c_program.get_c_program_short_detail());
         }
 

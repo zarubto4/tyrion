@@ -1,7 +1,7 @@
 package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
-import models.project.global.Project;
+import models.project.global.Model_Project;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
         value = "Project_List_DashBoard")
 public class Swagger_Project_List_DashBoard {
 
-    public List<Project> projects = new ArrayList<>();
+    public List<Model_Project> projects = new ArrayList<>();
     public List<String> widget = new ArrayList<>();
 
 }

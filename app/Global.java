@@ -1,4 +1,4 @@
-import controllers.WebSocketController;
+import controllers.Controller_WebSocket;
 import org.quartz.SchedulerException;
 import play.Application;
 import play.GlobalSettings;
@@ -57,18 +57,18 @@ public class Global extends GlobalSettings {
 
         logger.warn("Restarting Server - Time: " + new Date());
 
-        logger.warn("Disconnection all Blocko Servers");
-        WebSocketController.disconnect_all_Blocko_Servers();
+        logger.warn("Disconnecting all Blocko Servers");
+        Controller_WebSocket.disconnect_all_Blocko_Servers();
 
         logger.warn("Disconnecting all Compilation Servers");
-        WebSocketController.disconnect_all_Compilation_Servers();
+        Controller_WebSocket.disconnect_all_Compilation_Servers();
 
 
 
         if(Server.server_mode){
             try {
 
-                logger.warn("You have developer version - System remove CRON task from your RAM");
+                logger.warn("You have developer version - System removes CRON task from your RAM");
                 Server.scheduler.clear();
 
             } catch (SchedulerException e) {

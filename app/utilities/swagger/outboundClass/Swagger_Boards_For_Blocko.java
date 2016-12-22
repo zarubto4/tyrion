@@ -2,11 +2,11 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.TypeOfBoard;
-import models.compiler.Version_Object;
-import models.project.c_program.C_Program;
-import models.project.m_program.M_Program;
-import models.project.m_program.M_Project;
+import models.compiler.Model_TypeOfBoard;
+import models.compiler.Model_VersionObject;
+import models.project.c_program.Model_CProgram;
+import models.project.m_program.Model_MProgram;
+import models.project.m_program.Model_MProject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class Swagger_Boards_For_Blocko {
     public List<Swagger_C_Program_Short_Detail_For_Blocko> c_programs = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<TypeOfBoard> type_of_boards = new ArrayList<>();
+    public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_Board_Short_Detail> boards = new ArrayList<>();
@@ -33,9 +33,9 @@ public class Swagger_Boards_For_Blocko {
 
 // C_Programs ----------------------------------------------------------------------------------------------------------
 
-    public void add_C_Programs(List<C_Program> real_c_programs){
+    public void add_C_Programs(List<Model_CProgram> real_c_programs){
 
-        for(C_Program c_program : real_c_programs){
+        for(Model_CProgram c_program : real_c_programs){
 
             Swagger_C_Program_Short_Detail_For_Blocko c_program_short_detail_for_blocko = new Swagger_C_Program_Short_Detail_For_Blocko();
             c_program_short_detail_for_blocko.id = c_program.id;
@@ -43,7 +43,7 @@ public class Swagger_Boards_For_Blocko {
             c_program_short_detail_for_blocko.description = c_program.description;
             c_program_short_detail_for_blocko.type_of_board_id = c_program.type_of_board_id();
 
-            for(Version_Object version_object : c_program.version_objects){
+            for(Model_VersionObject version_object : c_program.version_objects){
 
                 Swagger_C_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_C_Program_Versions_Short_Detail_For_Blocko();
                 versions_short_detail_for_blocko.id = version_object.id;
@@ -96,23 +96,23 @@ public class Swagger_Boards_For_Blocko {
 
 // M_Projects ----------------------------------------------------------------------------------------------------------
 
-    public void add_M_Projects(List<M_Project> real_m_projects){
+    public void add_M_Projects(List<Model_MProject> real_m_projects){
 
-        for(M_Project project: real_m_projects){
+        for(Model_MProject project: real_m_projects){
 
             Swagger_M_Project_Short_Detail_For_Blocko m_project_short_detail_for_blocko = new Swagger_M_Project_Short_Detail_For_Blocko();
             m_project_short_detail_for_blocko.id = project.id;
             m_project_short_detail_for_blocko.name = project.name;
             m_project_short_detail_for_blocko.description = project.description;
 
-            for(M_Program program : project.m_programs){
+            for(Model_MProgram program : project.m_programs){
 
                 Swagger_M_Program_Short_Detail_For_Blocko m_program_short_detail_for_blocko = new Swagger_M_Program_Short_Detail_For_Blocko();
                 m_program_short_detail_for_blocko.id = program.id;
                 m_program_short_detail_for_blocko.name =program.name;
                 m_program_short_detail_for_blocko.description = program.description;
 
-                for(Version_Object version_object :program.getVersion_objects()){
+                for(Model_VersionObject version_object :program.getVersion_objects()){
 
                     Swagger_M_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_M_Program_Versions_Short_Detail_For_Blocko();
                     versions_short_detail_for_blocko.id = version_object.id;

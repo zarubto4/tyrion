@@ -3,8 +3,8 @@ package utilities.webSocket;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController;
-import models.compiler.Cloud_Compilation_Server;
+import controllers.Controller_WebSocket;
+import models.compiler.Model_CompilationServer;
 import play.libs.Json;
 
 import java.util.HashMap;
@@ -15,10 +15,10 @@ public class WS_CompilerServer extends WebSCType{
     public String server_address;
     public Map<String, ObjectNode> compilation_results = new HashMap<>();
     public Map<String, ObjectNode> compilation_request = new HashMap<>();
-    Cloud_Compilation_Server server;
+    Model_CompilationServer server;
 
 
-    public WS_CompilerServer(Cloud_Compilation_Server server, Map<String, WebSCType> compiler_cloud_servers) {
+    public WS_CompilerServer(Model_CompilationServer server, Map<String, WebSCType> compiler_cloud_servers) {
         super();
         this.server_address = server.destination_address;
         super.identifikator = server.server_name;
@@ -30,7 +30,7 @@ public class WS_CompilerServer extends WebSCType{
     @Override
     public void onClose() {
         this.close();
-        WebSocketController.compiler_cloud_servers.remove(this.identifikator);
+        Controller_WebSocket.compiler_cloud_servers.remove(this.identifikator);
         server.compiler_server_is_disconnect();
     }
 
@@ -83,7 +83,7 @@ public class WS_CompilerServer extends WebSCType{
     public void onMessage(ObjectNode json) {
 
         logger.debug("Incoming not requested message: " + json.toString());
-        WebSocketController.compilation_server_incoming_message(this, json);
+        Controller_WebSocket.compilation_server_incoming_message(this, json);
 
     }
 

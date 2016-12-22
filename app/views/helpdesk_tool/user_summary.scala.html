@@ -1,18 +1,15 @@
-
-@import models.compiler.Board
-@import models.person.Person
-@import models.project.global.Product
-@import models.project.global.Project
-@import models.project.global.financial.Invoice
-@import models.project.global.financial.Invoice_item
+@import models.compiler.Model_Board
+@import models.person.Model_Person
+@import models.project.global.{Model_Product, Model_Project}
+@import models.project.global.financial.{Model_Invoice, Model_InvoiceItem}
 @import utilities.Server
 
-@(person: Person)
+@(person: Model_Person)
 
 <section class="content-header">
     <h1> User Summary </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-wrench"></i> Helpdesk Tool </li>
     </ol>
 </section>
@@ -49,7 +46,7 @@
                 <div class="box box-primary">
                         <div id="person_detail" class="box-body box-profile">
 
-                            @for( edit_person <- Person.find.where().eq("id", person.id).findList ){
+                            @for( edit_person <- Model_Person.find.where().eq("id", person.id).findList ){
 
                                 <h3 class="profile-username text-center">@edit_person.full_name</h3>
 
@@ -96,7 +93,7 @@
                     <ul class="nav nav-tabs">
                         <li class="products"><a href="#products" data-toggle="tab">Products</a></li>
                         <li><a href="#projects" data-toggle="tab">Projects</a></li>
-                        <li><a href="#permissions" data-toggle="tab">Permissions</a></li>
+                        <li><a href="#person_permissions" data-toggle="tab">Permissions</a></li>
                     </ul>
 
                     <div class="tab-content">
@@ -114,7 +111,7 @@
                                            <ul class="nav nav-tabs">
 
 
-                                               @for( product <- Product.find.where().eq("payment_details.person.id", person.id).findList() ){
+                                               @for( product <- Model_Product.find.where().eq("payment_details.person.id", person.id).findList() ){
 
                                                     <li><a href="#product_@product.id" data-toggle="tab">@product.product_individual_name</a></li>
 
@@ -126,7 +123,7 @@
 
 
                                             <div class="tab-content">
-                                                @for( product <- Product.find.where().eq("payment_details.person.id", person.id).findList() ) {
+                                                @for( product <- Model_Product.find.where().eq("payment_details.person.id", person.id).findList() ) {
 
                                                     <div class="tab-pane" id="product_@product.id">
                                                         <div class="tab-pane" id="product_pane">
@@ -467,7 +464,7 @@
                             </div>
                         </div>
 
-                        <div class="tab-pane" id="permissions">
+                        <div class="tab-pane" id="person_permissions">
 
                             <div class="box">
                                 <div class="box-header with-border">
@@ -595,7 +592,7 @@
                 </thead>
                <tbody>
 
-                   @for( board <- Board.find.where().eq("project.participants.person.id", person.id ).findList() ) {
+                   @for( board <- Model_Board.find.where().eq("project.participants.person.id", person.id ).findList() ) {
 
                        <tr>
                            <td>@board.id</td>
@@ -711,7 +708,7 @@
                     <label>Product</label>
                     <select style="display: block;" name="product_id">
                         <option selected disabled>Select Product</option>
-                        @for(product <- Product.find.where().eq("payment_details.person.id", person.id).findList()) {
+                        @for(product <- Model_Product.find.where().eq("payment_details.person.id", person.id).findList()) {
                             <option value="@product.id">@product.product_individual_name</option>
                         }
                     </select>
@@ -847,7 +844,7 @@
                 model_data = $("#newProject").serializeObject();
 
                 $.ajax({
-                    url: '@routes.ProgramingPackageController.project_create()' ,
+                    url: '@routes.Controller_ProgramingPackage.project_create()' ,
                     type: 'POST',
                     contentType: 'application/json',
                     headers: {
@@ -871,7 +868,7 @@
             function deleteProject(id){
 
                 $.ajax({
-                    url: '@routes.ProgramingPackageController.project_delete("")' + id  ,
+                    url: '@routes.Controller_ProgramingPackage.project_delete("")' + id  ,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")

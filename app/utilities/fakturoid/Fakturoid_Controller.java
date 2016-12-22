@@ -3,8 +3,8 @@ package utilities.fakturoid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.project.global.Product;
-import models.project.global.financial.Invoice;
+import models.project.global.Model_Product;
+import models.project.global.financial.Model_Invoice;
 import play.api.Play;
 import play.libs.F;
 import play.libs.Json;
@@ -48,7 +48,7 @@ public class Fakturoid_Controller extends Controller {
 
 // PRIVATE EXECUTIVE METHODS ###########################################################################################
 
-    public static Invoice create_proforma(Product product, Invoice invoice){
+    public static Model_Invoice create_proforma(Model_Product product, Model_Invoice invoice){
 
         Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
         fakturoid_invoice.custom_id         = product.id;
@@ -128,7 +128,7 @@ public class Fakturoid_Controller extends Controller {
         throw new NullPointerException();
     }
 
-    public static Invoice create_paid_invoice(Product product, Invoice invoice){
+    public static Model_Invoice create_paid_invoice(Model_Product product, Model_Invoice invoice){
 
         Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
         fakturoid_invoice.custom_id         = product.id;
@@ -154,7 +154,7 @@ public class Fakturoid_Controller extends Controller {
         return invoice;
     }
 
-    public static void send_Invoice_to_Email(Invoice invoice){
+    public static void send_Invoice_to_Email(Model_Invoice invoice){
         try {
 
             logger.debug("Trying send PDF Invoice to User Email");
@@ -196,7 +196,7 @@ public class Fakturoid_Controller extends Controller {
         }
     }
 
-    public static  void send_UnPaidInvoice_to_Email(Invoice invoice){
+    public static  void send_UnPaidInvoice_to_Email(Model_Invoice invoice){
 
         try{
 
@@ -239,7 +239,7 @@ public class Fakturoid_Controller extends Controller {
         }
     }
 
-    public static String create_subject_in_fakturoid(Product product){
+    public static String create_subject_in_fakturoid(Model_Product product){
         ObjectNode request = Json.newObject();
 
         product.refresh();
@@ -270,7 +270,7 @@ public class Fakturoid_Controller extends Controller {
     }
 
 
-    public static void edit_subject(Product product){
+    public static void edit_subject(Model_Product product){
         // TODO http://docs.fakturoid.apiary.io/#reference/subjects/subject/uprava-kontaktu
     }
 
@@ -384,7 +384,7 @@ public class Fakturoid_Controller extends Controller {
         return  (status < 205);
     }
 
-    public static byte[] download_PDF_invoice(Invoice invoice){
+    public static byte[] download_PDF_invoice(Model_Invoice invoice){
 
             // Tuto metodu volám když ve fakturoidu pomocí API vytvořím fakturu.
             // U nich může dojít k latenci serveru a zpoždění vytvoření faktury - proto je zde while - který usíná na 2,5s a dává tomu 3x šanci než se rozhodne to zahodit úplně.

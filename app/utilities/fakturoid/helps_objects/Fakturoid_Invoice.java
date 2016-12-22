@@ -1,7 +1,7 @@
 package utilities.fakturoid.helps_objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import models.project.global.financial.Invoice_item;
+import models.project.global.financial.Model_InvoiceItem;
 import utilities.enums.Currency;
 
 import java.util.List;
@@ -16,6 +16,6 @@ public class Fakturoid_Invoice {
 
     public boolean proforma;
     public boolean  partial_proforma;
-    public List<Invoice_item> lines;
+    public List<Model_InvoiceItem> lines;
 
 }

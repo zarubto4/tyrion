@@ -2,10 +2,10 @@ package utilities.goPay;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.Api;
-import models.project.global.Product;
-import models.project.global.financial.Invoice;
-import models.project.global.financial.Invoice_item;
-import models.project.global.financial.Payment_Details;
+import models.project.global.Model_Product;
+import models.project.global.financial.Model_Invoice;
+import models.project.global.financial.Model_InvoiceItem;
+import models.project.global.financial.Model_PaymentDetails;
 import play.api.Play;
 import play.libs.F;
 import play.libs.Json;
@@ -34,7 +34,7 @@ public class GoPay_Controller  extends Controller {
 
 // PRIVATE METHOTD #####################################################################################################
 
-    public static JsonNode provide_payment(String payment_description ,Product product,  Invoice invoice){
+    public static JsonNode provide_payment(String payment_description , Model_Product product, Model_Invoice invoice){
 
             //Rozhodnutí jestli jendnorázové nebo měsíční!
 
@@ -95,7 +95,7 @@ public class GoPay_Controller  extends Controller {
             payer.default_payment_instrument = GoPay_Payer.PaymentInstrument.PAYMENT_CARD;
 
 
-            Payment_Details details = product.payment_details;
+            Model_PaymentDetails details = product.payment_details;
 
             GoPay_Contact payerContact = new GoPay_Contact();
                 payerContact.first_name = details.person.full_name;
@@ -146,7 +146,7 @@ public class GoPay_Controller  extends Controller {
         logger.debug("Starting with procedure ON_DEMAND - taking money from Credit-Card");
 
         Calendar cal = Calendar.getInstance();
-        List<Product> products_with_on_Demands = Product.find.where().eq("on_demand_active", true).where().eq("monthly_day_period", (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7)  ).findList();
+        List<Model_Product> products_with_on_Demands = Model_Product.find.where().eq("on_demand_active", true).where().eq("monthly_day_period", (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7)  ).findList();
 
         logger.debug("Founded " + products_with_on_Demands.size() + " procedures with 4 days to end of Account");
 
@@ -155,18 +155,18 @@ public class GoPay_Controller  extends Controller {
         String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
 
-        for(Product product : products_with_on_Demands){
+        for(Model_Product product : products_with_on_Demands){
 
             logger.debug("Updating procedure on user product " + product.product_individual_name + " id " + product.id);
 
             logger.debug("Creating Invoice");
 
             // Vytovřím fakturu
-            Invoice invoice = new Invoice();
+            Model_Invoice invoice = new Model_Invoice();
 
 
             logger.debug("Creating Invoice in Database");
-            Invoice_item invoice_item_1 = new Invoice_item();
+            Model_InvoiceItem invoice_item_1 = new Model_InvoiceItem();
 
             invoice_item_1.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
             invoice_item_1.unit_price = product.get_price_general_fee();
@@ -293,7 +293,7 @@ public class GoPay_Controller  extends Controller {
 
             logger.debug("Return URL from GoPay on " + gopay_id +" gopay_id");
 
-            Invoice invoice = Invoice.find.where().eq("gopay_id", gopay_id).findUnique();
+            Model_Invoice invoice = Model_Invoice.find.where().eq("gopay_id", gopay_id).findUnique();
 
             if(invoice == null){
                 logger.error("Invoice not exist after payment - redirect to fail page");
@@ -305,7 +305,7 @@ public class GoPay_Controller  extends Controller {
                 return redirect("localhost:8890/paid/success/" + gopay_id);
             }
 
-             Product product = Product.find.where().eq("invoices.id", invoice.id).findUnique();
+             Model_Product product = Model_Product.find.where().eq("invoices.id", invoice.id).findUnique();
 
             // Smazat proformu
             logger.debug("Removing proforma from Fakturoid");

@@ -1,12 +1,13 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.routes;
 import junit.framework.TestCase;
-import models.blocko.BlockoBlock;
-import models.blocko.BlockoBlockVersion;
-import models.blocko.TypeOfBlock;
-import models.person.Invitation;
-import models.person.Person;
-import models.project.global.Product;
-import models.project.global.Project;
+import models.blocko.Model_BlockoBlock;
+import models.blocko.Model_BlockoBlockVersion;
+import models.blocko.Model_TypeOfBlock;
+import models.person.Model_Invitation;
+import models.person.Model_Person;
+import models.project.global.Model_Product;
+import models.project.global.Model_Project;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -20,7 +21,6 @@ import play.mvc.Http.RequestBuilder;
 import org.junit.Test;
 import play.mvc.Result;
 import play.test.*;
-import controllers.routes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,22 +33,22 @@ public class ProgramingPackageTest extends TestHelper{
 
     public static FakeApplication app;
 
-    public static Product product;
-    public static Project project;
+    public static Model_Product product;
+    public static Model_Project project;
     //public static Private_Homer_Server homer;
 
-    public static TypeOfBlock type_of_block;
-    public static BlockoBlock blocko_block;
-    public static BlockoBlockVersion blocko_block_version;
+    public static Model_TypeOfBlock type_of_block;
+    public static Model_BlockoBlock blocko_block;
+    public static Model_BlockoBlockVersion blocko_block_version;
 
     public static String adminToken;
 
-    public static Person person;
+    public static Model_Person person;
     public static String userToken;
 
-    public static Person secondPerson;
+    public static Model_Person secondPerson;
 
-    public static Person randomPerson;
+    public static Model_Person randomPerson;
     public static String randomUserToken;
 
     @BeforeClass
@@ -57,7 +57,7 @@ public class ProgramingPackageTest extends TestHelper{
         app = Helpers.fakeApplication();
         Helpers.start(app);
 
-        adminToken = person_login(Person.find.byId("1"));
+        adminToken = person_login(Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique());
 
         person = person_create();
         person_authenticate(person);
@@ -120,7 +120,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.ProgramingPackageController.project_create().toString())
+                .uri(routes.Controller_ProgramingPackage.project_create().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -134,7 +134,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.project_getByUser().toString())
+                .uri(routes.Controller_ProgramingPackage.project_getByUser().toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -146,7 +146,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.project_get(project.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_get(project.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -158,7 +158,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.project_get(project.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_get(project.id).toString())
                 .header("X-AUTH-TOKEN", randomUserToken);
 
         Result result = route(request);
@@ -168,11 +168,11 @@ public class ProgramingPackageTest extends TestHelper{
     @Test
     public void user_delete_project() {
 
-        Project p = project_create(product);
+        Model_Project p = project_create(product);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.project_delete(p.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_delete(p.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -182,11 +182,11 @@ public class ProgramingPackageTest extends TestHelper{
     @Test
     public void random_user_delete_project() {
 
-        Project p = project_create(product);
+        Model_Project p = project_create(product);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.project_delete(p.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_delete(p.id).toString())
                 .header("X-AUTH-TOKEN", randomUserToken);
 
         Result result = route(request);
@@ -203,7 +203,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.project_update(project.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_update(project.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -222,7 +222,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.project_update(project.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_update(project.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", randomUserToken);
 
@@ -244,7 +244,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.project_invite(project.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_invite(project.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -256,11 +256,11 @@ public class ProgramingPackageTest extends TestHelper{
     @Test
     public void add_participant() {
 
-        Invitation i = project_share(project, person, randomPerson);
+        Model_Invitation i = project_share(project, person, randomPerson);
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.project_addParticipant(i.id, false).toString())
+                .uri(routes.Controller_ProgramingPackage.project_addParticipant(i.id, false).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -282,7 +282,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.project_removeParticipant(project.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_removeParticipant(project.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -294,11 +294,11 @@ public class ProgramingPackageTest extends TestHelper{
     @Test
     public void delete_invitation() {
 
-        Invitation i = project_share(project, person, randomPerson);
+        Model_Invitation i = project_share(project, person, randomPerson);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.project_deleteInvitation(i.id).toString())
+                .uri(routes.Controller_ProgramingPackage.project_deleteInvitation(i.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -317,7 +317,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.ProgramingPackageController.typeOfBlock_create().toString())
+                .uri(routes.Controller_ProgramingPackage.typeOfBlock_create().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -331,7 +331,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.typeOfBlock_get(type_of_block.id).toString())
+                .uri(routes.Controller_ProgramingPackage.typeOfBlock_get(type_of_block.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -344,7 +344,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.typeOfBlock_getAll().toString())
+                .uri(routes.Controller_ProgramingPackage.typeOfBlock_getAll().toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -362,7 +362,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.typeOfBlock_getByFilter(1).toString())
+                .uri(routes.Controller_ProgramingPackage.typeOfBlock_getByFilter(1).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -381,7 +381,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.typeOfBlock_update(type_of_block.id).toString())
+                .uri(routes.Controller_ProgramingPackage.typeOfBlock_update(type_of_block.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -393,11 +393,11 @@ public class ProgramingPackageTest extends TestHelper{
     @Test
     public void delete_type_of_block() {
 
-        TypeOfBlock t = type_of_block_create(project);
+        Model_TypeOfBlock t = type_of_block_create(project);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.typeOfBlock_delete(t.id).toString())
+                .uri(routes.Controller_ProgramingPackage.typeOfBlock_delete(t.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -416,7 +416,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.ProgramingPackageController.blockoBlock_create().toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlock_create().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -430,7 +430,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.blockoBlock_get(blocko_block.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlock_get(blocko_block.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -447,7 +447,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.blockoBlock_getByFilter(1).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlock_getByFilter(1).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -467,7 +467,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.blockoBlock_update(blocko_block.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlock_update(blocko_block.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -479,11 +479,11 @@ public class ProgramingPackageTest extends TestHelper{
     @Test
     public void delete_blocko_block() {
 
-        BlockoBlock b = blocko_block_create(type_of_block);
+        Model_BlockoBlock b = blocko_block_create(type_of_block);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.blockoBlock_delete(b.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlock_delete(b.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -503,7 +503,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.ProgramingPackageController.blockoBlockVersion_create(blocko_block.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlockVersion_create(blocko_block.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -517,7 +517,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.blockoBlockVersion_get(blocko_block_version.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlockVersion_get(blocko_block_version.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -530,7 +530,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.blockoBlockVersion_getAll(blocko_block.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlockVersion_getAll(blocko_block.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -541,11 +541,11 @@ public class ProgramingPackageTest extends TestHelper{
     @Test
     public void make_public_blocko_block_version() {
 
-        BlockoBlockVersion b = blocko_block_version_create(blocko_block);
+        Model_BlockoBlockVersion b = blocko_block_version_create(blocko_block);
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.blockoBlockVersion_makePublic(b.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlockVersion_makePublic(b.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -563,7 +563,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.ProgramingPackageController.blockoBlockVersion_update(blocko_block_version.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlockVersion_update(blocko_block_version.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -575,11 +575,11 @@ public class ProgramingPackageTest extends TestHelper{
     @Test
     public void delete_blocko_block_version() {
 
-        BlockoBlockVersion b = blocko_block_version_create(blocko_block);
+        Model_BlockoBlockVersion b = blocko_block_version_create(blocko_block);
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.blockoBlockVersion_delete(b.id).toString())
+                .uri(routes.Controller_ProgramingPackage.blockoBlockVersion_delete(b.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -598,7 +598,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.ProgramingPackageController.newHomer().toString())
+                .uri(routes.routes.Controller_ProgramingPackage.newHomer().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -617,7 +617,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.ProgramingPackageController.newHomer().toString())
+                .uri(routes.routes.Controller_ProgramingPackage.newHomer().toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -631,7 +631,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.getHomer(homer.id).toString())
+                .uri(routes.routes.Controller_ProgramingPackage.getHomer(homer.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -644,7 +644,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.ProgramingPackageController.getHomer(homer.id).toString())
+                .uri(routes.routes.Controller_ProgramingPackage.getHomer(homer.id).toString())
                 .header("X-AUTH-TOKEN", randomUserToken);
 
         Result result = route(request);
@@ -659,7 +659,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.removeHomer(h.id).toString())
+                .uri(routes.routes.Controller_ProgramingPackage.removeHomer(h.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -674,7 +674,7 @@ public class ProgramingPackageTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.ProgramingPackageController.removeHomer(h.id).toString())
+                .uri(routes.routes.Controller_ProgramingPackage.removeHomer(h.id).toString())
                 .header("X-AUTH-TOKEN", randomUserToken);
 
         Result result = route(request);

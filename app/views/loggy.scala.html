@@ -1,14 +1,14 @@
 @import java.util
 
-@import models.loggy.LoggyError
-@(logs: util.List[LoggyError])
+@import models.loggy.Model_LoggyError
+@(logs: util.List[Model_LoggyError])
 
 
 
 <section class="content-header">
     <h1> Bug Reporter <small> system errors </small> </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><<i class="fa fa-bug"></i> Loggy </li>
     </ol>
 </section>

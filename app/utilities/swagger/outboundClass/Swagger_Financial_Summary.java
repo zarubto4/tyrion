@@ -2,7 +2,7 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.global.Product;
+import models.project.global.Model_Product;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
 public class Swagger_Financial_Summary {
 
    @ApiModelProperty(required = true, readOnly = true)
-   public List<Product> products = new ArrayList<>();
+   public List<Model_Product> products = new ArrayList<>();
 
 
 }

@@ -1,0 +1,236 @@
+@import models.project.b_program.Model_BProgram
+@import utilities.Server
+
+@(program: Model_BProgram)
+
+<section class="content-header">
+    <h1> @program.name </h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-wrench"></i> Helpdesk Tool </li>
+        <li class="active"><i class="fa fa-wrench"></i> @program.project.name </li>
+        <li class="active"><i class="fa fa-wrench"></i> @program.name </li>
+    </ol>
+</section>
+
+<section class="content">
+<div class="row">
+    <div class="col-md-12">
+
+    </div>
+</div>
+</section>
+
+
+<div id="editCompilationServerModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCompilationServerModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="editCompilationServerModalTitle" class="modal-title">Edit Type of Board</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editCompilationServer">
+
+                    <label id="typeOfBoardId" style="display: block">ID</label>
+                    <label>Server name</label> <input style="display: block" type="text" name="name" >
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button id="editCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="editCompilationServer(this.value)">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newProjectModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newProjectModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newProjectModalTitle" class="modal-title">New Project</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newProject">
+
+                    <div style="float: left; width: 30%;">
+                        <label>Name</label>
+                        <input placeholder="Name" style="display: block" id="new_project_name" type="text" name="project_name" >
+                    </div>
+                    <div style="width: 100%;">
+                        <label>Description</label>
+                        <input placeholder="Description" style="display: block; width: 70%;" id="new_project_description" type="text" name="project_description" >
+                    </div>
+                    <label>Product</label>
+
+
+                </form>
+                <div id="newProjectModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newProject()">New project</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+            function editPerson(id){
+                model_data = $("#editPerson").serializeObject();
+
+                $.ajax({
+                    url: "@Server.tyrion_serverAddress" + "/coreClient/person/person/" + id ,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: JSON.stringify(model_data),
+                    dataType: 'json',
+                    success:function(e){
+                        $("#editPerson input[type=text]").val("");
+                        $("#editPersonModal").modal('hide');
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function deletePerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/remove/" + id ,
+                    type: 'DELETE',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken")
+                    },
+                    success:function(e){
+                        $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function deactivatePerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/deactivate/" + id ,
+                    type: 'PUT',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken")
+                    },
+                    success:function(e){
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function activatePerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/activate/" + id ,
+                    type: 'PUT',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken")
+                    },
+                    success:function(e){
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+
+            function validPerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/valid_email/" + id ,
+                    type: 'PUT',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken")
+                    },
+                    success:function(e){
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function removeAllTokensPerson(id){
+
+                $.ajax({
+                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/clean_all_tokens/" + id ,
+                    type: 'DELETE',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken")
+                    },
+                    success:function(e){
+                        $('#person_detail').load(document.URL +  ' #person_detail');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful.");
+                    }
+                })}
+
+            function showEditFormPerson(id, full_name, nick_name, mail){
+                $("#editPersonModal").modal('show');
+                $('#editPersonButton').val(id);
+                $('#person_id').text("ID = " + id);
+                $("#editPerson input[name=full_name]").val(full_name);
+                $("#editPerson input[name=nick_name]").val(nick_name);
+                $("#editPerson input[name=mail]").val(mail);
+            }
+
+            function newProject(){
+                model_data = $("#newProject").serializeObject();
+
+                $.ajax({
+                    url: '@routes.Controller_ProgramingPackage.project_create()' ,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: JSON.stringify(model_data),
+                    dataType: 'json',
+                    success:function(e){
+                        $('#projects').load(document.URL +  ' #projectsInner');
+                        $("#newProjectModalMessage").css("display", "none");
+                        $("#newProjectModal").modal('hide');
+                    },
+                    error:function(e) {
+                        $("#newProjectModalMessage").css("display", "block");
+                        $("#newProjectModalMessage p").text(JSON.parse(e.responseText).message);
+                        $("#newProjectModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+                    }
+                })}
+
+            function deleteProject(id){
+
+                $.ajax({
+                    url: '@routes.Controller_ProgramingPackage.project_delete("")' + id  ,
+                    type: 'DELETE',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken")
+                    },
+                    dataType: 'json',
+                    success:function(e){
+                        $('#projects').load(document.URL +  ' #projectsInner');
+                    },
+                    error:function(e) {
+                        alert("Unsuccessful");
+                    }
+                })}
+
+</script>

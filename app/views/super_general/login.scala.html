@@ -64,7 +64,7 @@
     function login(){
       model_data = $("#login_form").serializeObject();
       $.ajax({
-        url: '@routes.SecurityController.login()',
+        url: '@routes.Controller_Security.login()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -74,7 +74,7 @@
         dataType: 'json',
         success:function(data){
           document.cookie = "authToken=" + data.authToken + ";path=/";
-          window.location.replace('@routes.DashboardController.index()');
+          window.location.replace('@routes.Controller_Dashboard.index()');
         },
         error:function(e) {
           $("#messageText").css("display","block");

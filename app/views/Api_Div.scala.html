@@ -12,7 +12,7 @@
 <section class="content-header">
   <h1> Read Me <small> current version </small> </h1>
   <ol class="breadcrumb">
-    <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+    <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
     <li class="active"><i class="fa fa-circle-o"></i> External API </li>
     <li class="active"><i class="fa fa-circle-o"></i> Diff Tools </li>
   </ol>
@@ -26,7 +26,7 @@
         <div class="box-body no-padding">
           <div class="mailbox-read-message">
               <div>
-                  <form method="GET" action="@routes.DashboardController.show_diff_on_Api()">
+                  <form method="GET" action="@routes.Controller_Dashboard.show_diff_on_Api()">
                     <div class="form-group">
                         <label>Old Version</label>
                         <select name="old_api" class="form-control">

@@ -1,19 +1,17 @@
-
-@import models.person.Person
-@import utilities.webSocket.{WS_BlockoServer, WS_CompilerServer, WS_Becki_Website}
-@import models.project.b_program.servers.Cloud_Homer_Server
-@import models.compiler.Cloud_Compilation_Server
-
+@import models.compiler.Model_CompilationServer
+@import models.person.Model_Person
+@import models.project.b_program.servers.Model_HomerServer
+@import utilities.webSocket.{WS_Becki_Website, WS_BlockoServer, WS_CompilerServer}
 @(becki_Terminal: List[WS_Becki_Website])
 
 <section class="content-header">
     <h1> Websocket <small> connections </small> </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-heart"></i> Websocket connections </li>
     </ol>
 </section>
-<script type="text/javascript" src="@routes.DashboardController.javascriptRoutes"></script>
+<script type="text/javascript" src="@routes.Controller_Dashboard.javascriptRoutes"></script>
 
 <section class="content">
     <div class="row">
@@ -46,7 +44,7 @@
                         @for( x <- becki_Terminal){
 
                                 <tr>
-                                    <th rowspan="@(x.all_person_Connections.size()+2)"> @(Person.find.byId( x.identifikator ).mail )</th>
+                                    <th rowspan="@(x.all_person_Connections.size()+2)"> @(Model_Person.find.byId( x.identifikator ).mail )</th>
                                     <th>instances</th>
                                     <th></th>
 
@@ -76,7 +74,7 @@
                                                 <option value="2">YES & NO buttons</option>
                                                 <option value="3">YES, NO, CLOSE</option>
                                             </select>
-                                            <input style="margin-top: 10px;" type="button" onclick="test_notification('@(Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send">
+                                            <input style="margin-top: 10px;" type="button" onclick="test_notification('@(Model_Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send">
                                         </form>
                                     </th>
                                 </tr>
@@ -134,7 +132,7 @@
 
                         </tr>
 
-                        @for( x <- Cloud_Homer_Server.find.all() ){
+                        @for( x <- Model_HomerServer.find.all() ){
                             <tr>
                                 <td> @x.server_name </td>
                                 <td>
@@ -154,7 +152,7 @@
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.DashboardController.show_websocket_server_detail(  x.server_name )' >
+                                    <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  x.server_name )' >
                                         <button class="btn btn-block btn-info btn-xs">All Instancies</button>
                                     </a>
                                 </td>
@@ -198,7 +196,7 @@
 
                         </tr>
 
-                        @for( x <- Cloud_Compilation_Server.find.all() ){
+                        @for( x <- Model_CompilationServer.find.all() ){
                             <tr>
                                 <td> @x.server_name </td>
 
@@ -280,7 +278,7 @@
         function test_notification(mail){
             model_data = $("#testNotification").serializeObject();
             $.ajax({
-                url: '@routes.NotificationController.test_notifications("")' + mail,
+                url: '@routes.Controller_Notification.test_notifications("")' + mail,
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(model_data),
@@ -308,7 +306,7 @@
         function ping_Blocko_Server(id){
             $.ajax({
 
-                url: '@routes.DashboardController.ping_homer_server("")' + id,
+                url: '@routes.Controller_Dashboard.ping_homer_server("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -346,7 +344,7 @@
 
         function disconnect_Blocko_Server(id){
             $.ajax({
-                url: '@routes.DashboardController.disconnect_blocko_server("")' + id,
+                url: '@routes.Controller_Dashboard.disconnect_blocko_server("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -384,7 +382,7 @@
 
         function ping_Compilation_Server(id){
             $.ajax({
-                url: '@routes.DashboardController.ping_compilation_server("")' + id,
+                url: '@routes.Controller_Dashboard.ping_compilation_server("")' + id,
                 type: 'GET',
 
                 headers: {
@@ -423,7 +421,7 @@
 
         function disconnect_Compilation_Server(id){
             $.ajax({
-                url: '@routes.DashboardController.disconnect_compilation_server("")' + id,
+                url: '@routes.Controller_Dashboard.disconnect_compilation_server("")' + id,
                 type: 'GET',
 
                 headers: {

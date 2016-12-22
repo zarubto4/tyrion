@@ -1,15 +1,13 @@
-@import models.person.PersonPermission
-@import models.person.SecurityRole
-@import models.person.Person
+@import models.person.{Model_Person, Model_Permission, Model_SecurityRole}
 @import utilities.Server
 
-@(role: SecurityRole)
+@(role: Model_SecurityRole)
 
 <section class="content-header">
 
     <div class="pull-left">
         <div class="btn-group">
-            <a  href='@routes.DashboardController.permissions_summary()' >
+            <a  href='@routes.Controller_Dashboard.permissions_summary()' >
                 <button class="btn btn-block btn-danger" type="button"> Back </button>
             </a>
         </div><!-- /.btn-group -->
@@ -17,7 +15,7 @@
     <div></div>
     <h1> &nbsp;&nbsp;&nbsp; Permission Summary - @role.name </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Server Management </li>
         <li class="active"><i class="fa fa-wrench"></i> Roles </li>
     </ol>
@@ -32,7 +30,7 @@
             function addPerson(){
                 var mail = document.getElementById("addPersonForm").elements.namedItem("mail").value;
                 $.ajax({
-                    url: '@routes.PermissionController.add_Role_Person("", "")' + mail +"/"+ @role.id,
+                    url: '@routes.Controller_Permission.add_Role_Person("", "")' + mail +"/"+ @role.id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -72,7 +70,7 @@
             function removePerson(id){
 
                 $.ajax({
-                    url: '@routes.PermissionController.remove_Role_Person("", "")' + id +"/"+ @role.id,
+                    url: '@routes.Controller_Permission.remove_Role_Person("", "")' + id +"/"+ @role.id,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -137,7 +135,7 @@
     <script>
             function addPermission(id){
                 $.ajax({
-                    url: '@routes.PermissionController.add_Permission_to_Role("", "")' + id +"/"+ @role.id,
+                    url: '@routes.Controller_Permission.add_Permission_to_Role("", "")' + id +"/"+ @role.id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -154,7 +152,7 @@
     <script>
             function removePermission(id){
                 $.ajax({
-                    url: '@routes.PermissionController.remove_Permission_from_Role("", "")' + id +"/"+ @role.id,
+                    url: '@routes.Controller_Permission.remove_Permission_from_Role("", "")' + id +"/"+ @role.id,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -182,12 +180,12 @@
                             <th width="20px">Operation</th>
                         </tr>
 
-                        @for(permission <- PersonPermission.find.all()) {
+                        @for(permission <- Model_Permission.find.all()) {
                             <tr>
                                 <td>@permission.value</td>
                                 <td>@permission.description</td>
 
-                                @if( SecurityRole.find.where().eq("person_permissions.value", permission.value).eq("id", role.id).findUnique() == null) {
+                                @if( Model_SecurityRole.find.where().eq("person_permissions.value", permission.value).eq("id", role.id).findUnique() == null) {
                                     <td>
                                         <button class="btn btn-block btn-info" type="button" onclick="addPermission('@permission.value')">Add</button>
                                     </td>

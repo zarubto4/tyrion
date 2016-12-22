@@ -1,12 +1,11 @@
+@import models.project.global.financial.Model_GeneralTariffExtensions
 
-@import models.project.global.financial.GeneralTariff_Extensions
-
-@(extension: GeneralTariff_Extensions)
+@(extension: Model_GeneralTariffExtensions)
 
 <section class="content-header">
     <h1> Extension - @extension.name </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Special Extension </li>
         <li class="active"><i class="fa fa-wrench"></i> @extension.name </li>
     </ol>
@@ -219,7 +218,7 @@
             function updateGeneralTariffExtension(){
                 model_data = $("#extension_main_form").serializeObject();
                 $.ajax({
-                    url: '@routes.Finance_Controller.tariff_general_extension_edit()',
+                    url: '@routes.Controller_Finance.tariff_general_extension_edit()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -278,7 +277,7 @@
             function newGeneralTariffExtensionLabel(){
                 model_data = $("#newGeneralTariffExtensionLabelForm").serializeObject();
                 $.ajax({
-                    url: '@routes.Finance_Controller.tariff_general_label_extension_create()',
+                    url: '@routes.Controller_Finance.tariff_general_label_extension_create()',
                     type: 'POST',
                     contentType: 'application/json',
                     headers: {
@@ -303,7 +302,7 @@
                 model_data = $("#editGeneralTariffLabelForm").serializeObject();
 
                 $.ajax({
-                    url: '@routes.Finance_Controller.tariff_general_label_edit()',
+                    url: '@routes.Controller_Finance.tariff_general_label_edit()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -325,7 +324,7 @@
 
             function removeGeneralTariffExtensionLabel(id){
                 $.ajax({
-                    url: '@routes.Finance_Controller.tariff_general_label_remove("")' + id,
+                    url: '@routes.Controller_Finance.tariff_general_label_remove("")' + id,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
@@ -341,7 +340,7 @@
 
             function upGeneralTariffExtensionLabel(id){
                 $.ajax({
-                    url: '@routes.Finance_Controller.tariff_general_label_edit_up("")' + id,
+                    url: '@routes.Controller_Finance.tariff_general_label_edit_up("")' + id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
@@ -357,7 +356,7 @@
 
             function downGeneralTariffExtensionLabel(id){
                 $.ajax({
-                    url: '@routes.Finance_Controller.tariff_general_label_edit_down("")' + id,
+                    url: '@routes.Controller_Finance.tariff_general_label_edit_down("")' + id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")

@@ -1,17 +1,15 @@
-
-@import models.project.b_program.instnace.Homer_Instance
 @import utilities.enums.{Firmware_type, Type_of_command}
-@import models.compiler.Board
-@import models.compiler.BootLoader
+@import models.compiler.{Model_Board, Model_BootLoader}
+@import models.project.b_program.instnace.Model_HomerInstance
 
-@(instance: Homer_Instance)
+@(instance: Model_HomerInstance)
 
 
 
 <section class="content-header">
     <h1> Instance <small> detail: @instance.blocko_instance_name</small> </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-heart"></i> Websocket connections </li>
     </ol>
 </section>
@@ -109,8 +107,8 @@
                                         <div class="pull-right">
                                             <div class="btn-group">
 
-                                                @if(BootLoader.find.where().eq("main_type_of_board.boards.id", x.main_board_pair.id  ).findUnique() != null){
-                                                    @if(Board.find.byId( x.main_board_pair.id ).update_boot_loader_required()) {
+                                                @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.main_board_pair.id  ).findUnique() != null){
+                                                    @if(Model_Board.find.byId( x.main_board_pair.id ).update_boot_loader_required()) {
                                                         <a  onclick="updateBootLoader('@x.main_board_pair.id')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
                                                     }else {
                                                         <p class="lead text-green">(Actual)</p>
@@ -122,7 +120,7 @@
 
                                             <a onclick="executeCommand('@x.main_board_pair.id ','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
 
-                                                @if(Board.find.byId(x.main_board_pair.id) == null) {
+                                                @if(Model_Board.find.byId(x.main_board_pair.id) == null) {
                                                     <a onclick="showCommandDeviceModal('@x.main_board_pair.id ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
                                                 }else{
                                                     <a onclick="showCommandDeviceModal('@x.main_board_pair.id ', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
@@ -161,7 +159,7 @@
                                                 </td>
 
                                                 <td>
-                                                @if(BootLoader.find.where().eq("main_type_of_board.id", b_pair.board.id ).findUnique() != null){
+                                                @if(Model_BootLoader.find.where().eq("main_type_of_board.id", b_pair.board.id ).findUnique() != null){
                                                     @if(b_pair.board.update_boot_loader_required()) {
                                                         <button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="updateBootLoader('@b_pair.board.id ')">Update Firmware</button>
                                                     }else {
@@ -196,8 +194,8 @@
                                 <div class="pull-right">
                                     <div class="btn-group">
 
-                                        @if(BootLoader.find.where().eq("main_type_of_board.boards.id", x.id  ).findUnique() != null){
-                                            @if(Board.find.byId( x.id ).update_boot_loader_required()) {
+                                        @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.id  ).findUnique() != null){
+                                            @if(Model_Board.find.byId( x.id ).update_boot_loader_required()) {
                                                 <a  onclick="updateBootLoader('@x.id')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
                                             }else {
                                                 <p class="lead text-green">(Actual)</p>
@@ -209,7 +207,7 @@
 
                                     <a onclick="executeCommand('@x.id ','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
 
-                                        @if(Board.find.byId(x.id) == null) {
+                                        @if(Model_Board.find.byId(x.id) == null) {
                                             <a onclick="showCommandDeviceModal('@x.id ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
                                         }else{
                                             <a onclick="showCommandDeviceModal('@x.id ', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
@@ -816,7 +814,7 @@
 
 
                 $.ajax({
-                    url: '@routes.CompilationLibrariesController.boot_loader_update_instance(instance.blocko_instance_name)',
+                    url: '@routes.Controller_CompilationLibraries.boot_loader_update_instance(instance.blocko_instance_name)',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -1084,7 +1082,7 @@
               var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
 
               $.ajax({
-                  url: '@routes.ProgramingPackageController.instance_add_yoda( instance.blocko_instance_name, "")' + master_device_id,
+                  url: '@routes.Controller_ProgramingPackage.instance_add_yoda( instance.blocko_instance_name, "")' + master_device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken")
@@ -1114,7 +1112,7 @@
           function removeMasterDevice(id){
 
               $.ajax({
-                  url: '@routes.ProgramingPackageController.instance_remove_yoda( instance.blocko_instance_name, "" )' + id,
+                  url: '@routes.Controller_ProgramingPackage.instance_remove_yoda( instance.blocko_instance_name, "" )' + id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken")
@@ -1151,7 +1149,7 @@
 
 
               $.ajax({
-                  url: '@routes.ProgramingPackageController.update_blocko_code_in_instance_with_code("")' + instanceId,
+                  url: '@routes.Controller_ProgramingPackage.update_blocko_code_in_instance_with_code("")' + instanceId,
                   type: 'PUT',
                   contentType: 'application/json',
                   headers: {

@@ -1,23 +1,19 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController;
-import models.person.Person;
-import play.libs.Json;
+import controllers.Controller_WebSocket;
+import models.person.Model_Person;
 import play.mvc.WebSocket;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 public class WS_Becki_Website extends  WebSCType {
 
     public Map<String, WebSCType> all_person_Connections = new HashMap<>();
-    public Person person;
+    public Model_Person person;
 
-    public WS_Becki_Website(Person person) {
+    public WS_Becki_Website(Model_Person person) {
         super();
         this.person = person;
         super.identifikator = person.id;
@@ -49,7 +45,7 @@ public class WS_Becki_Website extends  WebSCType {
 
     @Override
     public void onMessage(ObjectNode json) {
-         WebSocketController.becki_incoming_message(this, json);
+         Controller_WebSocket.becki_incoming_message(this, json);
     }
 }
 

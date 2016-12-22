@@ -44,7 +44,7 @@
 
 
 
-        <script type="text/javascript" src='@routes.DashboardController.javascriptRoutes()'></script>
+        <script type="text/javascript" src='@routes.Controller_Dashboard.javascriptRoutes()'></script>
 
         <script>
 
@@ -83,13 +83,13 @@
 
         function logout(){
             $.ajax({
-                url: '@routes.SecurityController.logout()',
+                url: '@routes.Controller_Security.logout()',
                 type: 'POST',
                 headers: {
                     "X-AUTH-TOKEN":getCookie("authToken")
                 },
                 success:function(e){
-                    location.href = '@routes.DashboardController.login()';
+                    location.href = '@routes.Controller_Dashboard.login()';
                 },
                 error:function(e) {
                     alert(e.responseText);

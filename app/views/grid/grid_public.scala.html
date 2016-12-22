@@ -1,11 +1,10 @@
-@import models.grid.TypeOfWidget
-@import models.grid.GridWidgetVersion
+@import models.grid.{Model_GridWidgetVersion, Model_TypeOfWidget}
 @import utilities.enums.Approval_state
 
 <section class="content-header">
   <h1> Grid object approving </h1>
   <ol class="breadcrumb">
-      <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+      <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
       <li class="active"><i class="fa fa-share"></i> Server Management </li>
       <li class="active"><i class="fa fa-wrench"></i> Grid Management </li>
       <li class="active"><i class="fa fa-wrench"></i> Public Object Approval </li>
@@ -33,7 +32,7 @@
             <label style="color: #2e6da4">Type of Widget:</label>
             <select style="display: block" name="grid_widget_type_of_widget_id" id="grid_widget_type_of_widget_id">
               <option selected disabled >Please choose type of block</option>
-              @for(typeOfWidget <- TypeOfWidget.find.where().isNull("project").findList()) {
+              @for(typeOfWidget <- Model_TypeOfWidget.find.where().isNull("project").findList()) {
                 <option value="@typeOfWidget.id">@typeOfWidget.name</option>
               }
             </select>
@@ -122,7 +121,7 @@
                     <label style="color: #2e6da4">Type of Widget:</label>
                     <select style="display: block" id="approve_grid_widget_type_of_widget_id">
                         <option selected disabled >Please choose type of block</option>
-                        @for(typeOfWidget <- TypeOfWidget.find.where().isNull("project").findList()) {
+                        @for(typeOfWidget <- Model_TypeOfWidget.find.where().isNull("project").findList()) {
                             <option value="@typeOfWidget.id">@typeOfWidget.name</option>
                         }
                     </select>
@@ -177,7 +176,7 @@
                             <th>Edit</th>
                             <th>Decision</th>
                         </tr>
-                        @for(gridWidgetVersion <- GridWidgetVersion.find.where().eq("approval_state",Approval_state.pending).findList()) {
+                        @for(gridWidgetVersion <- Model_GridWidgetVersion.find.where().eq("approval_state",Approval_state.pending).findList()) {
                             <tr>
                                 <td>@gridWidgetVersion.grid_widget.name</td>
                                 <td>@gridWidgetVersion.grid_widget.description</td>
@@ -213,7 +212,7 @@
           model_data = {"object_id": id,
                         "reason": reason};
           $.ajax({
-            url: '@routes.GridController.gridDisapprove()',
+            url: '@routes.Controller_Grid.gridDisapprove()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -260,7 +259,7 @@
                 };
             }
           $.ajax({
-            url: '@routes.GridController.gridApproval()' ,
+            url: '@routes.Controller_Grid.gridApproval()' ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {

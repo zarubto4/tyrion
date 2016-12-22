@@ -1,13 +1,12 @@
 @import utilities.enums.Approval_state
-@import models.compiler.Version_Object
-@import models.compiler.TypeOfBoard
-@import models.project.c_program.C_Program
+@import models.compiler.{Model_TypeOfBoard, Model_VersionObject}
+@import models.project.c_program.Model_CProgram
 @import utilities.Server
 
 <section class="content-header">
     <h1> Public code </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Server Management </li>
         <li class="active"><i class="fa fa-wrench"></i> Public Code </li>
     </ol>
@@ -134,7 +133,7 @@
                             <th>Code</th>
                             <th>Edit</th>
                         </tr>
-                        @for(version <- Version_Object.find.where().isNotNull("c_program").eq("approval_state", Approval_state.pending ).findList()) {
+                        @for(version <- Model_VersionObject.find.where().isNotNull("c_program").eq("approval_state", Approval_state.pending ).findList()) {
                             <tr>
                                 <td>@version.id</td>
                                 <td>@version.version_name</td>
@@ -176,7 +175,7 @@
                 "reason" :              document.getElementById('edit_code_reason').value
             };
             $.ajax({
-                url: '@routes.CompilationLibrariesController.approve_decision()' ,
+                url: '@routes.Controller_CompilationLibraries.approve_decision()' ,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -214,7 +213,7 @@
                 "reason" :              document.getElementById('edit_code_reason').value
             };
             $.ajax({
-                url: '@routes.CompilationLibrariesController.approve_decision()' ,
+                url: '@routes.Controller_CompilationLibraries.approve_decision()' ,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -234,7 +233,7 @@
 
         function showEditForm(id){
             $.ajax({
-                url: '@routes.CompilationLibrariesController.get_version_for_decision("")' + id,
+                url: '@routes.Controller_CompilationLibraries.get_version_for_decision("")' + id,
                 type: 'GET',
                 headers: {
                     "X-AUTH-TOKEN":getCookie("authToken")

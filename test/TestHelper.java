@@ -1,24 +1,24 @@
 import junit.framework.TestCase;
-import models.blocko.BlockoBlock;
-import models.blocko.BlockoBlockVersion;
-import models.blocko.TypeOfBlock;
-import models.compiler.Processor;
-import models.compiler.Producer;
-import models.compiler.TypeOfBoard;
-import models.compiler.Version_Object;
-import models.grid.GridWidget;
-import models.grid.GridWidgetVersion;
-import models.grid.TypeOfWidget;
-import models.person.FloatingPersonToken;
-import models.person.Invitation;
-import models.person.Person;
-import models.person.ValidationToken;
-import models.project.c_program.C_Program;
-import models.project.global.Product;
-import models.project.global.Project;
-import models.project.global.Project_participant;
-import models.project.global.financial.GeneralTariff;
-import models.project.global.financial.Payment_Details;
+import models.blocko.Model_BlockoBlock;
+import models.blocko.Model_BlockoBlockVersion;
+import models.blocko.Model_TypeOfBlock;
+import models.compiler.Model_Processor;
+import models.compiler.Model_Producer;
+import models.compiler.Model_TypeOfBoard;
+import models.compiler.Model_VersionObject;
+import models.grid.Model_GridWidget;
+import models.grid.Model_GridWidgetVersion;
+import models.grid.Model_TypeOfWidget;
+import models.person.Model_FloatingPersonToken;
+import models.person.Model_Invitation;
+import models.person.Model_Person;
+import models.person.Model_ValidationToken;
+import models.project.c_program.Model_CProgram;
+import models.project.global.Model_Product;
+import models.project.global.Model_Project;
+import models.project.global.Model_ProjectParticipant;
+import models.project.global.financial.Model_GeneralTariff;
+import models.project.global.financial.Model_PaymentDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Controller;
@@ -36,11 +36,11 @@ public class TestHelper extends Controller{
 
     // PERSON ##########################################################################################################
 
-    public static Person person_create(){
+    public static Model_Person person_create(){
 
         try{
 
-            Person person = new Person();
+            Model_Person person = new Model_Person();
 
             person.nick_name = UUID.randomUUID().toString();
             person.mail = UUID.randomUUID().toString() + "@mail.com";
@@ -51,7 +51,7 @@ public class TestHelper extends Controller{
             person.save();
             person.refresh();
 
-            new ValidationToken().setValidation(person.mail);
+            new Model_ValidationToken().setValidation(person.mail);
 
             return person;
         }catch (Exception e){
@@ -60,7 +60,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void person_authenticate(Person person) {
+    public static void person_authenticate(Model_Person person) {
 
         try {
 
@@ -72,11 +72,11 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static String person_login(Person person) {
+    public static String person_login(Model_Person person) {
 
         try {
 
-            FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
+            Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
             floatingPersonToken.set_basic_values();
             floatingPersonToken.person = person;
             floatingPersonToken.user_agent = "Unknown browser";
@@ -89,7 +89,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void person_delete(Person person){
+    public static void person_delete(Model_Person person){
         try {
 
             person.delete();
@@ -102,7 +102,7 @@ public class TestHelper extends Controller{
     public static void person_token_delete(String token){
         try {
 
-            FloatingPersonToken.find.where().eq("authToken", token).findUnique().delete();
+            Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique().delete();
 
         }catch (Exception e){
             logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
@@ -111,11 +111,11 @@ public class TestHelper extends Controller{
 
     // PRODUCT #########################################################################################################
 
-    public static Product product_create(Person person){
+    public static Model_Product product_create(Model_Person person){
         try {
 
-            Product product = new Product();
-            product.general_tariff = GeneralTariff.find.byId("2");
+            Model_Product product = new Model_Product();
+            product.general_tariff = Model_GeneralTariff.find.where().eq("identificator", "geek").findUnique();
             product.product_individual_name = UUID.randomUUID().toString();
             product.active = true;
             product.mode = Payment_mode.free;
@@ -125,7 +125,7 @@ public class TestHelper extends Controller{
             product.save();
             product.refresh();
 
-            Payment_Details payment_details = new Payment_Details();
+            Model_PaymentDetails payment_details = new Model_PaymentDetails();
             payment_details.person = person;
             payment_details.company_account = false;
 
@@ -150,7 +150,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void product_delete(Product product){
+    public static void product_delete(Model_Product product){
         try {
 
             product.delete();
@@ -162,10 +162,10 @@ public class TestHelper extends Controller{
 
     // PROJECT #########################################################################################################
 
-    public static Project project_create(Product product){
+    public static Model_Project project_create(Model_Product product){
         try {
 
-            Project project  = new Project();
+            Model_Project project  = new Model_Project();
             project.name = UUID.randomUUID().toString();
             project.description = UUID.randomUUID().toString();
             project.product = product;
@@ -173,7 +173,7 @@ public class TestHelper extends Controller{
             project.save();
             project.refresh();
 
-            Project_participant participant = new Project_participant();
+            Model_ProjectParticipant participant = new Model_ProjectParticipant();
             participant.person = product.payment_details.person;
             participant.project = project;
             participant.state = Participant_status.owner;
@@ -190,7 +190,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void project_delete(Project project){
+    public static void project_delete(Model_Project project){
         try {
 
             project.delete();
@@ -200,12 +200,12 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static Invitation project_share(Project project, Person owner, Person invited_person){
+    public static Model_Invitation project_share(Model_Project project, Model_Person owner, Model_Person invited_person){
         try {
 
-            Invitation invitation = Invitation.find.where().eq("mail", invited_person.mail).findUnique();
+            Model_Invitation invitation = Model_Invitation.find.where().eq("mail", invited_person.mail).findUnique();
             if(invitation == null) {
-                invitation = new Invitation();
+                invitation = new Model_Invitation();
                 invitation.mail = invited_person.mail;
                 invitation.date_of_creation = new Date();
                 invitation.owner = owner;
@@ -225,10 +225,10 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void project_add_participant(Project project, Person person){
+    public static void project_add_participant(Model_Project project, Model_Person person){
         try {
 
-            Project_participant participant = new Project_participant();
+            Model_ProjectParticipant participant = new Model_ProjectParticipant();
             participant.person = person;
             participant.project = project;
             participant.state = Participant_status.member;
@@ -274,10 +274,10 @@ public class TestHelper extends Controller{
 */
     // PRODUCER ########################################################################################################
 
-    public static Producer producer_create(){
+    public static Model_Producer producer_create(){
         try {
 
-            Producer producer = new Producer();
+            Model_Producer producer = new Model_Producer();
             producer.name = UUID.randomUUID().toString();
             producer.description = UUID.randomUUID().toString();
 
@@ -292,7 +292,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void producer_delete(Producer producer){
+    public static void producer_delete(Model_Producer producer){
         try {
 
             producer.delete();
@@ -304,10 +304,10 @@ public class TestHelper extends Controller{
 
     // PROCESSOR #######################################################################################################
 
-    public static Processor processor_create(){
+    public static Model_Processor processor_create(){
         try {
 
-            Processor processor = new Processor();
+            Model_Processor processor = new Model_Processor();
             processor.description    = UUID.randomUUID().toString();
             processor.processor_code = UUID.randomUUID().toString();
             processor.processor_name = UUID.randomUUID().toString();
@@ -324,7 +324,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void processor_delete(Processor processor){
+    public static void processor_delete(Model_Processor processor){
         try {
 
             processor.delete();
@@ -336,10 +336,10 @@ public class TestHelper extends Controller{
 
     // TYPE_OF_BOARD ###################################################################################################
 
-    public static TypeOfBoard type_of_board_create(Producer producer, Processor processor){
+    public static Model_TypeOfBoard type_of_board_create(Model_Producer producer, Model_Processor processor){
         try {
 
-            TypeOfBoard typeOfBoard = new TypeOfBoard();
+            Model_TypeOfBoard typeOfBoard = new Model_TypeOfBoard();
             typeOfBoard.name = UUID.randomUUID().toString();
             typeOfBoard.description = UUID.randomUUID().toString();
             typeOfBoard.compiler_target_name = UUID.randomUUID().toString();
@@ -350,7 +350,7 @@ public class TestHelper extends Controller{
             typeOfBoard.save();
             typeOfBoard.refresh();
 
-            C_Program default_program = new C_Program();
+            Model_CProgram default_program = new Model_CProgram();
             default_program.name = UUID.randomUUID().toString();
             default_program.description = UUID.randomUUID().toString();
             default_program.default_program_type_of_board = typeOfBoard;
@@ -358,7 +358,7 @@ public class TestHelper extends Controller{
             default_program.save();
             default_program.refresh();
 
-            Version_Object default_version = new Version_Object();
+            Model_VersionObject default_version = new Model_VersionObject();
             default_version.version_name = UUID.randomUUID().toString();
             default_version.version_description = UUID.randomUUID().toString();
             default_version.default_version_program = default_program;
@@ -375,7 +375,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void type_of_board_delete(TypeOfBoard typeOfBoard){
+    public static void type_of_board_delete(Model_TypeOfBoard typeOfBoard){
         try {
 
             typeOfBoard.delete();
@@ -389,10 +389,10 @@ public class TestHelper extends Controller{
 
     // C_PROGRAM #######################################################################################################
 
-    public static C_Program private_c_program_create(TypeOfBoard typeOfBoard, Project project){
+    public static Model_CProgram private_c_program_create(Model_TypeOfBoard typeOfBoard, Model_Project project){
         try {
 
-            C_Program c_program             = new C_Program();
+            Model_CProgram c_program             = new Model_CProgram();
             c_program.name                  = UUID.randomUUID().toString();
             c_program.description           = UUID.randomUUID().toString();
             c_program.date_of_create        = new Date();
@@ -410,7 +410,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void c_program_delete(C_Program c_program){
+    public static void c_program_delete(Model_CProgram c_program){
         try {
 
             c_program.delete();
@@ -420,10 +420,10 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static Version_Object c_program_version_create(C_Program c_program){
+    public static Model_VersionObject c_program_version_create(Model_CProgram c_program){
         try {
 
-            Version_Object version_object      = new Version_Object();
+            Model_VersionObject version_object      = new Model_VersionObject();
             version_object.version_name        = UUID.randomUUID().toString();
             version_object.version_description = UUID.randomUUID().toString();
             version_object.author              = c_program.project.product.payment_details.person;
@@ -442,7 +442,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void c_program_version_delete(Version_Object version_object){
+    public static void c_program_version_delete(Model_VersionObject version_object){
         try {
 
             version_object.delete();
@@ -454,10 +454,10 @@ public class TestHelper extends Controller{
 
     // BLOCKO ##########################################################################################################
 
-    public static TypeOfBlock type_of_block_create(Project project){
+    public static Model_TypeOfBlock type_of_block_create(Model_Project project){
         try {
 
-            TypeOfBlock typeOfBlock = new TypeOfBlock();
+            Model_TypeOfBlock typeOfBlock = new Model_TypeOfBlock();
             typeOfBlock.name = UUID.randomUUID().toString();
             typeOfBlock.description = UUID.randomUUID().toString();
             typeOfBlock.project = project;
@@ -473,7 +473,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void type_of_block_delete(TypeOfBlock typeOfBlock){
+    public static void type_of_block_delete(Model_TypeOfBlock typeOfBlock){
         try {
 
             typeOfBlock.delete();
@@ -483,10 +483,10 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static BlockoBlock blocko_block_create(TypeOfBlock typeOfBlock){
+    public static Model_BlockoBlock blocko_block_create(Model_TypeOfBlock typeOfBlock){
         try {
 
-            BlockoBlock blockoBlock = new BlockoBlock();
+            Model_BlockoBlock blockoBlock = new Model_BlockoBlock();
             blockoBlock.name = UUID.randomUUID().toString();
             blockoBlock.description = UUID.randomUUID().toString();
             blockoBlock.type_of_block = typeOfBlock;
@@ -502,7 +502,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void blocko_block_delete(BlockoBlock blockoBlock){
+    public static void blocko_block_delete(Model_BlockoBlock blockoBlock){
         try {
 
             blockoBlock.delete();
@@ -512,10 +512,10 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static BlockoBlockVersion blocko_block_version_create(BlockoBlock blockoBlock){
+    public static Model_BlockoBlockVersion blocko_block_version_create(Model_BlockoBlock blockoBlock){
         try {
 
-            BlockoBlockVersion blockoBlockVersion = new BlockoBlockVersion();
+            Model_BlockoBlockVersion blockoBlockVersion = new Model_BlockoBlockVersion();
             blockoBlockVersion.version_name = UUID.randomUUID().toString();
             blockoBlockVersion.version_description = UUID.randomUUID().toString();
             blockoBlockVersion.design_json = UUID.randomUUID().toString();
@@ -532,7 +532,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void blocko_block_version_delete(BlockoBlockVersion blockoBlockVersion){
+    public static void blocko_block_version_delete(Model_BlockoBlockVersion blockoBlockVersion){
         try {
 
             blockoBlockVersion.delete();
@@ -544,10 +544,10 @@ public class TestHelper extends Controller{
 
     // GRID ############################################################################################################
 
-    public static TypeOfWidget type_of_widget_create(Project project){
+    public static Model_TypeOfWidget type_of_widget_create(Model_Project project){
         try {
 
-            TypeOfWidget typeOfWidget = new TypeOfWidget();
+            Model_TypeOfWidget typeOfWidget = new Model_TypeOfWidget();
             typeOfWidget.name = UUID.randomUUID().toString();
             typeOfWidget.description = UUID.randomUUID().toString();
             typeOfWidget.project = project;
@@ -563,7 +563,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void type_of_widget_delete(TypeOfWidget typeOfWidget){
+    public static void type_of_widget_delete(Model_TypeOfWidget typeOfWidget){
         try {
 
             typeOfWidget.delete();
@@ -573,10 +573,10 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static GridWidget grid_widget_create(TypeOfWidget typeOfWidget){
+    public static Model_GridWidget grid_widget_create(Model_TypeOfWidget typeOfWidget){
         try {
 
-            GridWidget gridWidget = new GridWidget();
+            Model_GridWidget gridWidget = new Model_GridWidget();
             gridWidget.name = UUID.randomUUID().toString();
             gridWidget.description = UUID.randomUUID().toString();
             gridWidget.type_of_widget = typeOfWidget;
@@ -592,7 +592,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void grid_widget_delete(GridWidget gridWidget){
+    public static void grid_widget_delete(Model_GridWidget gridWidget){
         try {
 
             gridWidget.delete();
@@ -602,10 +602,10 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static GridWidgetVersion grid_widget_version_create(GridWidget gridWidget){
+    public static Model_GridWidgetVersion grid_widget_version_create(Model_GridWidget gridWidget){
         try {
 
-            GridWidgetVersion gridWidgetVersion = new GridWidgetVersion();
+            Model_GridWidgetVersion gridWidgetVersion = new Model_GridWidgetVersion();
             gridWidgetVersion.version_name = UUID.randomUUID().toString();
             gridWidgetVersion.version_description = UUID.randomUUID().toString();
             gridWidgetVersion.design_json = UUID.randomUUID().toString();
@@ -622,7 +622,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void grid_widget_version_delete(GridWidgetVersion gridWidgetVersion){
+    public static void grid_widget_version_delete(Model_GridWidgetVersion gridWidgetVersion){
         try {
 
             gridWidgetVersion.delete();

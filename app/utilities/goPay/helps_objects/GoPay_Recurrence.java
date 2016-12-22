@@ -1,6 +1,6 @@
 package utilities.goPay.helps_objects;
 
-import models.project.global.financial.Invoice_item;
+import models.project.global.financial.Model_InvoiceItem;
 import utilities.enums.Currency;
 
 import java.util.ArrayList;
@@ -19,9 +19,9 @@ public class GoPay_Recurrence {
 
     // Pomocné Třídy a metody
 
-    public void setItems(List<Invoice_item> invoice_items){
+    public void setItems(List<Model_InvoiceItem> invoice_items){
 
-        for(Invoice_item item :invoice_items){
+        for(Model_InvoiceItem item :invoice_items){
             amount += Math.round(item.unit_price*100);
 
             GoPay_Items go_item = new GoPay_Items();

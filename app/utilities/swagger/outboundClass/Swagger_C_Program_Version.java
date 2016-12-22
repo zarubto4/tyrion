@@ -2,8 +2,8 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Version_Object;
-import models.project.c_program.C_Compilation;
+import models.compiler.Model_VersionObject;
+import models.project.c_program.Model_CCompilation;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 
@@ -15,7 +15,7 @@ public class Swagger_C_Program_Version {
 
 
     @ApiModelProperty(required = true, readOnly = true)
-    public Version_Object version_object;
+    public Model_VersionObject version_object;
 
 
     @ApiModelProperty(required = true, readOnly = true)
@@ -31,7 +31,7 @@ public class Swagger_C_Program_Version {
     public List<Swagger_C_Program_Version_New.External_Libraries> external_libraries;
 
 
-    @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + C_Compilation.virtual_input_output_docu)
+    @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + Model_CCompilation.virtual_input_output_docu)
     public String virtual_input_output;
 
     @ApiModelProperty(required = true, readOnly = true)

@@ -2,8 +2,8 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.b_program.B_Program_Hw_Group;
-import models.project.m_program.M_Project_Program_SnapShot;
+import models.project.b_program.Model_BProgramHwGroup;
+import models.project.m_program.Model_MProjectProgramSnapShot;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,10 +34,10 @@ public class Swagger_B_Program_Instance {
     @ApiModelProperty(required = true, readOnly = true)   public String server_id;
 
     @ApiModelProperty(required = true, readOnly = true, value = "can be empty")
-    public List<B_Program_Hw_Group> hardware_group = new ArrayList<>();
+    public List<Model_BProgramHwGroup> hardware_group = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true, value = "can be empty")
-    public List<M_Project_Program_SnapShot> m_project_program_snapshots = new ArrayList<>();
+    public List<Model_MProjectProgramSnapShot> m_project_program_snapshots = new ArrayList<>();
 
 
     @ApiModelProperty(required = false, readOnly = true)  public String instance_remote_url;

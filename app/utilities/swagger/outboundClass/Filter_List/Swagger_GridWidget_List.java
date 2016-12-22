@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.grid.GridWidget;
+import models.grid.Model_GridWidget;
 import utilities.swagger.outboundClass.Swagger_GridWidget_Filter_Detail;
 
 import java.util.ArrayList;
@@ -35,12 +35,12 @@ public class Swagger_GridWidget_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_GridWidget_List(Query<GridWidget> query, int page_number){
+    public Swagger_GridWidget_List(Query<Model_GridWidget> query, int page_number){
 
         if(page_number < 1) page_number = 1;
-        List<GridWidget> grid_widgets =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        List<Model_GridWidget> grid_widgets =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
-        for(GridWidget gridWidget : grid_widgets){
+        for(Model_GridWidget gridWidget : grid_widgets){
 
             Swagger_GridWidget_Filter_Detail help = new Swagger_GridWidget_Filter_Detail();
 

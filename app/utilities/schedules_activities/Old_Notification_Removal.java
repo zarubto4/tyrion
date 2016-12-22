@@ -1,7 +1,7 @@
 package utilities.schedules_activities;
 
 
-import models.notification.Notification;
+import models.notification.Model_Notification;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -33,7 +33,7 @@ public class Old_Notification_Removal implements Job {
 
             while (true){
 
-                List<Notification> notifications = Notification.find.where().lt("created", created).setMaxRows(100).findList();
+                List<Model_Notification> notifications = Model_Notification.find.where().lt("created", created).setMaxRows(100).findList();
                 if (notifications.isEmpty()) {
                     logger.info("Old_Notification_Removal has no notifications to remove");
                     break;
@@ -41,7 +41,7 @@ public class Old_Notification_Removal implements Job {
 
                 logger.info("CRON Task is removing old notifications (100 per cycle)");
 
-                for (Notification notification : notifications){
+                for (Model_Notification notification : notifications){
                     notification.delete();
                 }
             }

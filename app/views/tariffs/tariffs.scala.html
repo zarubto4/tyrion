@@ -1,13 +1,13 @@
 
-@import models.project.b_program.servers.Cloud_Homer_Server
-@import models.compiler.Cloud_Compilation_Server
-@import models.project.global.financial.GeneralTariff
+@@@@@import models.compiler.Model_CompilationServer
+@import models.project.b_program.servers.Model_HomerServer
+@import models.project.global.financial.Model_GeneralTariff
 @import utilities.Server
 
 <section class="content-header">
     <h1> General Tariffs</h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> General Tariffs for users </li>
         <li class="active"><i class="fa fa-wrench"></i> List of tariffs </li>
     </ol>
@@ -39,13 +39,13 @@
                             <th>DEACTIVATE</th>
                         </tr>
 
-                        @for(tariff <- GeneralTariff.find.orderBy("id").findList()){
+                        @for(tariff <- Model_GeneralTariff.find.orderBy("id").findList()){
                             <tr>
                                 <td>@tariff.id</td>
                                 <td>@tariff.tariff_name</td>
                                 <td>@tariff.identificator</td>
                                 <td>@tariff.tariff_description</td>
-                                <td><a href='@routes.DashboardController.general_tariff_edit(tariff.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
+                                <td><a href='@routes.Controller_Dashboard.general_tariff_edit(tariff.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
                                 <td>
                                     @if(!tariff.active) {
                                         <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariff(@tariff.id)">Deactivated</button>
@@ -256,7 +256,7 @@
     function newGeneralTariff(){
         model_data = $("#newGeneralTariffForm").serializeObject();
         $.ajax({
-            url: '@routes.Finance_Controller.tariff_general_create()',
+            url: '@routes.Controller_Finance.tariff_general_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -279,7 +279,7 @@
     function deactivateGeneralTariff(id){
 
         $.ajax({
-            url: '@routes.Finance_Controller.tariff_general_deactivate("")' + id,
+            url: '@routes.Controller_Finance.tariff_general_deactivate("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
@@ -295,7 +295,7 @@
     function activateGeneralTariff(id){
 
         $.ajax({
-            url: '@routes.Finance_Controller.tariff_general_activate("")' + id,
+            url: '@routes.Controller_Finance.tariff_general_activate("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")

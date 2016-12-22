@@ -1,8 +1,8 @@
 package utilities.schedules_activities;
 
 
-import models.person.Person;
-import models.person.ValidationToken;
+import models.person.Model_Person;
+import models.person.Model_ValidationToken;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -34,7 +34,7 @@ public class Unauthenticated_Person_Removal implements Job {
 
             while (true){
 
-                List<ValidationToken> tokens = ValidationToken.find.where().lt("created", created).setMaxRows(100).findList();
+                List<Model_ValidationToken> tokens = Model_ValidationToken.find.where().lt("created", created).setMaxRows(100).findList();
                 if (tokens.isEmpty()) {
                     logger.info("Unauthenticated_Person_Removal has no persons to remove");
                     break;
@@ -42,8 +42,8 @@ public class Unauthenticated_Person_Removal implements Job {
 
                 logger.info("CRON Task is removing unauthenticated persons (100 per cycle)");
 
-                for (ValidationToken token : tokens){
-                    Person person = Person.find.where().eq("mail", token.personEmail).findUnique();
+                for (Model_ValidationToken token : tokens){
+                    Model_Person person = Model_Person.find.where().eq("mail", token.personEmail).findUnique();
                     if (person != null && !person.mailValidated) person.delete();
                     token.delete();
                 }

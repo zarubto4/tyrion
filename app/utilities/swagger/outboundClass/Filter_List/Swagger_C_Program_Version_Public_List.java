@@ -4,7 +4,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Version_Object;
+import models.compiler.Model_VersionObject;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
 
 import java.util.ArrayList;
@@ -37,12 +37,12 @@ public class Swagger_C_Program_Version_Public_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_C_Program_Version_Public_List(Query<Version_Object> query, int page_number){
+    public Swagger_C_Program_Version_Public_List(Query<Model_VersionObject> query, int page_number){
 
         if(page_number < 1) page_number = 1;
-        List<Version_Object> versions =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        List<Model_VersionObject> versions =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
-        for(Version_Object version : versions){
+        for(Model_VersionObject version : versions){
             this.content.add(version.get_short_c_program_version());
         }
 

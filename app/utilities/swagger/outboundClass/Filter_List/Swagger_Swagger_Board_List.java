@@ -4,7 +4,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.TypeOfBoard;
+import models.compiler.Model_TypeOfBoard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ public class Swagger_Swagger_Board_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<TypeOfBoard> content;
+    public List<Model_TypeOfBoard> content;
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
@@ -34,7 +34,7 @@ public class Swagger_Swagger_Board_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_Swagger_Board_List(Query<TypeOfBoard> query , int page_number){
+    public Swagger_Swagger_Board_List(Query<Model_TypeOfBoard> query , int page_number){
 
         if(page_number < 1) page_number = 1;
         this.content =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();

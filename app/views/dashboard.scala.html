@@ -1,18 +1,7 @@
-
-@import utilities.webSocket.WS_BlockoServer
-@import utilities.webSocket.WS_CompilerServer
-@import java.util.List
-@import models.person.Person
-@import models.project.global.Project
-@import models.compiler.Board
-@import java.util.Map
-@import scala.collection.JavaConversions.mapAsScalaMap
-@import models.project.b_program.servers.Cloud_Homer_Server
-@import models.compiler.Cloud_Compilation_Server
-@import utilities.webSocket.WS_CompilerServer
-@import utilities.webSocket.WS_BlockoServer
-@import models.project.b_program.servers.Cloud_Homer_Server
-@import models.compiler.Cloud_Compilation_Server
+@import models.compiler.{Model_Board, Model_CompilationServer}
+@import models.person.Model_Person
+@import models.project.b_program.servers.Model_HomerServer
+@import models.project.global.Model_Project
 
 
 
@@ -28,19 +17,19 @@
           <div class="row">
 
             <div class="col-lg-3 col-xs-6"><div class="small-box bg-aqua"><div class="inner">
-                  <h3>@Person.find.findRowCount()</h3>
+                  <h3>@Model_Person.find.findRowCount()</h3>
                   <p>Registered Person</p>
                   </div><div class="icon"><i class="ion ion-person"></i></div> </div>
             </div>
 
             <div class="col-lg-3 col-xs-6"><div class="small-box bg-aqua"><div class="inner">
-                  <h3>@Project.find.findRowCount()</h3>
+                  <h3>@Model_Project.find.findRowCount()</h3>
                   <p>Project created</p>
                   </div><div class="icon"><i class="ion ion-person"></i></div> </div>
             </div>
 
             <div class="col-lg-3 col-xs-6"><div class="small-box bg-aqua"><div class="inner">
-                  <h3>@Board.find.findRowCount()</h3>
+                  <h3>@Model_Board.find.findRowCount()</h3>
                   <p>Board Registred</p>
                   </div><div class="icon"><i class="ion ion-person"></i></div> </div>
             </div>
@@ -54,7 +43,7 @@
 <section class="content" style="min-height: 150px;">
     <div class="row">
 
-    @for( x <- Cloud_Homer_Server.find.all()) {
+    @for( x <- Model_HomerServer.find.all()) {
 
         <div class="col-lg-4 col-xs-6"><div
                 @if(x.server_is_online()) {
@@ -81,7 +70,7 @@
 <section class="content" style="min-height: 150px;">
     <div class="row">
 
-    @for( x <- Cloud_Compilation_Server.find.all()) {
+    @for( x <- Model_CompilationServer.find.all()) {
         <div class="col-lg-4 col-xs-6"><div
             @if(x.server_is_online()) {
                 class="small-box bg-green-gradient"

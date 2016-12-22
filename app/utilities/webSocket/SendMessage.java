@@ -1,7 +1,7 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.NotificationController;
+import controllers.Controller_Notification;
 import utilities.enums.Notification_level;
 
 import java.util.List;
@@ -69,7 +69,7 @@ public class SendMessage{
 
                             for (WebSCType ws :notification_subscribers){
                                 WS_Becki_Website subscriber = (WS_Becki_Website) ws;
-                                NotificationController.upload_firmware_progress( subscriber.person, result.get("message").asText());
+                                Controller_Notification.upload_firmware_progress( subscriber.person, result.get("message").asText());
                             }
                         }
                         return;
@@ -84,7 +84,7 @@ public class SendMessage{
                         if(notification_subscribers != null && !notification_subscribers.isEmpty()) {
                             for (WebSCType ws :notification_subscribers){
                                 WS_Becki_Website subscriber = (WS_Becki_Website) ws;
-                                NotificationController.upload_firmware_progress(subscriber.person, result.get("message").asText());
+                                Controller_Notification.upload_firmware_progress(subscriber.person, result.get("message").asText());
                             }
                         }
                         return;

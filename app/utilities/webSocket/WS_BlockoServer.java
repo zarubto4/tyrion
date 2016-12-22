@@ -2,9 +2,9 @@ package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.WebSocketController;
-import models.project.b_program.instnace.Homer_Instance;
-import models.project.b_program.servers.Cloud_Homer_Server;
+import controllers.Controller_WebSocket;
+import models.project.b_program.instnace.Model_HomerInstance;
+import models.project.b_program.servers.Model_HomerServer;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.loginEntities.TokenCache;
 
@@ -15,13 +15,13 @@ import java.util.Map;
 public class WS_BlockoServer extends WebSCType{
 
     public Map<String, WebSCType> virtual_homers = new HashMap<>();  // Zde si udržuju referenci na tímto serverem vytvořené virtuální homery, které jsem dal do globální mapy (incomingConnections_homers) - určeno pro vývojáře
-    public Cloud_Homer_Server server;
+    public Model_HomerServer server;
 
     public TokenCache token_grid_Cache    = new TokenCache( (long) 15, (long) 500, 5000);
     public TokenCache token_webview_Cache = new TokenCache( (long) 15, (long) 500, 5000);
 
 
-    public WS_BlockoServer(Cloud_Homer_Server server, Map<String, WebSCType> blocko_servers) {
+    public WS_BlockoServer(Model_HomerServer server, Map<String, WebSCType> blocko_servers) {
         super();
         super.identifikator = server.server_name;
         super.maps = blocko_servers;
@@ -43,7 +43,7 @@ public class WS_BlockoServer extends WebSCType{
         }
 
         this.update_thread.stop();
-        WebSocketController.blocko_servers.remove(super.identifikator);
+        Controller_WebSocket.blocko_servers.remove(super.identifikator);
         server.is_disconnect();
     }
 
@@ -58,13 +58,13 @@ public class WS_BlockoServer extends WebSCType{
 
 
                     case "homer-server" : { // Komunikace mezi Tyrion server a Homer Server
-                        Cloud_Homer_Server.Messages(json);
+                        Model_HomerServer.Messages(json);
                         return;
                     }
 
 
                     case "tyrion": {    // Komunikace mezi Tyrion server a Homer Instance
-                        Homer_Instance.Messages(json);
+                        Model_HomerInstance.Messages(json);
                         return;
                     }
 

@@ -1,17 +1,15 @@
-@import models.compiler.TypeOfBoard
-@import models.compiler.BootLoader
-@import models.compiler.Version_Object
+@import models.compiler.{Model_BootLoader, Model_TypeOfBoard, Model_VersionObject}
 @import com.avaje.ebean.Expr
 @import utilities.Server
 @import utilities.enums.Compile_Status
 
-@(typeOfBoard: TypeOfBoard)
+@(typeOfBoard: Model_TypeOfBoard)
 
 
 <section class="content-header">
     <div class="pull-left">
         <div class="btn-group">
-            <a  href='@routes.DashboardController.basic_board_management()' >
+            <a  href='@routes.Controller_Dashboard.basic_board_management()' >
                 <button class="btn btn-block btn-danger" type="button"> Back </button>
             </a>
         </div><!-- /.btn-group -->
@@ -19,9 +17,9 @@
     <div></div>
     <h1> &nbsp;&nbsp;&nbsp; Type Of Board: @typeOfBoard.name </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Server Management </li>
-        <li><a href="@routes.DashboardController.basic_board_management()"><i class="fa fa-wrench"></i> Embedded HW management </a></li>
+        <li><a href="@routes.Controller_Dashboard.basic_board_management()"><i class="fa fa-wrench"></i> Embedded HW management </a></li>
         <li class="active"><i class="fa fa-wrench"></i> Board Settings </li>
     </ol>
 </section>
@@ -51,7 +49,7 @@
                         <th>Set as Main</th>
                     </tr>
 
-                    @for(boot_loader <- BootLoader.find.where().disjunction()
+                    @for(boot_loader <- Model_BootLoader.find.where().disjunction()
                                 .add(Expr.eq("type_of_board.id", typeOfBoard.id))
                                 .add(Expr.eq("main_type_of_board.id", typeOfBoard.id))
                                 .findList() ){
@@ -141,7 +139,7 @@
                         <th>State</th>
                     </tr>
 
-                    @for(version <- Version_Object.find.where().eq("c_program.default_program_type_of_board.id", typeOfBoard.id).findList()){
+                    @for(version <- Model_VersionObject.find.where().eq("c_program.default_program_type_of_board.id", typeOfBoard.id).findList()){
                         <tr>
                             <td>@version.id</td>
                             <td>@version.date_of_create</td>
@@ -404,7 +402,7 @@
     function setBootLoaderAsMain(boot_loader_id) {
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.boot_loader_mark_as_main("")' + boot_loader_id,
+            url: '@routes.Controller_CompilationLibraries.boot_loader_mark_as_main("")' + boot_loader_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),
@@ -433,7 +431,7 @@
     function setVersionAsMain(version_id) {
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.typeOfBoard_mark_C_program_Version_as_main(typeOfBoard.id,"")' + version_id,
+            url: '@routes.Controller_CompilationLibraries.typeOfBoard_mark_C_program_Version_as_main(typeOfBoard.id,"")' + version_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),
@@ -464,7 +462,7 @@
         model_data = $("#newBootLoaderForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.boot_loader_create(typeOfBoard.id)',
+            url: '@routes.Controller_CompilationLibraries.boot_loader_create(typeOfBoard.id)',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -503,7 +501,7 @@
         model_data = $("#newCProgramForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.c_program_create()',
+            url: '@routes.Controller_CompilationLibraries.c_program_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -542,7 +540,7 @@
         model_data = $("#editCProgramForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.c_program_update("")' + c_program_id,
+            url: '@routes.Controller_CompilationLibraries.c_program_update("")' + c_program_id,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -581,7 +579,7 @@
         model_data = $("#newCProgramVersionForm").serializeObject();
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.c_programVersion_create("")' + c_program_id ,
+            url: '@routes.Controller_CompilationLibraries.c_programVersion_create("")' + c_program_id ,
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -624,7 +622,7 @@
         formData.append('file', file);
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.boot_loader_upload_file("")' + boot_loader_id ,
+            url: '@routes.Controller_CompilationLibraries.boot_loader_upload_file("")' + boot_loader_id ,
             type: 'PUT',
             processData: false, // tell jQuery not to process the data
             contentType: false, // tell jQuery not to set contentType
@@ -684,7 +682,7 @@
         var model_data = new FormData($("#pictureForm")[0]);
 
         $.ajax({
-            url: '@routes.CompilationLibrariesController.typeOfBoard_uploadPicture(typeOfBoard.id)',
+            url: '@routes.Controller_CompilationLibraries.typeOfBoard_uploadPicture(typeOfBoard.id)',
             type: 'PUT',
             contentType: false,
             processData: false,
@@ -719,7 +717,7 @@
 
     function removePicture() {
         $.ajax({
-            url: '@routes.CompilationLibrariesController.typeOfBoard_removePicture(typeOfBoard.id)',
+            url: '@routes.Controller_CompilationLibraries.typeOfBoard_removePicture(typeOfBoard.id)',
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken")

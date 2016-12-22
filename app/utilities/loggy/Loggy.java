@@ -3,8 +3,8 @@ package utilities.loggy;
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
-import controllers.SecurityController;
-import models.loggy.LoggyError;
+import controllers.Controller_Security;
+import models.loggy.Model_LoggyError;
 import play.Configuration;
 import play.Play;
 import play.libs.F;
@@ -39,7 +39,12 @@ public class Loggy{
 
         exception.printStackTrace();
 
-        String id = UUID.randomUUID().toString();
+        String id;
+
+        while (true) { // I need Unique Value
+            id = UUID.randomUUID().toString();
+            if (Model_LoggyError.find.byId(id) == null) break;
+        }
 
         StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
         StringBuilder descriptionBuilder = new StringBuilder();     // stavění obsahu
@@ -68,7 +73,7 @@ public class Loggy{
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Server MAC address: " + getMac());
         descriptionBuilder.append("\n");
-        descriptionBuilder.append("    User: " + (SecurityController.getPerson() != null ? SecurityController.getPerson().mail : "null"));
+        descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
         descriptionBuilder.append("\n");
 
         descriptionBuilder.append("    Stack trace: \n");
@@ -87,7 +92,13 @@ public class Loggy{
     }
 
     public static Result result_internalServerError(String problem, Http.Request request) {
-        String id = UUID.randomUUID().toString();
+
+        String id;
+
+        while (true) { // I need Unique Value
+            id = UUID.randomUUID().toString();
+            if (Model_LoggyError.find.byId(id) == null) break;
+        }
 
         StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
         StringBuilder descriptionBuilder = new StringBuilder();     // stavění obsahu
@@ -114,7 +125,7 @@ public class Loggy{
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Server MAC address: " + getMac());
         descriptionBuilder.append("\n");
-        descriptionBuilder.append("    User: " + (SecurityController.getPerson() != null ? SecurityController.getPerson().mail : "null"));
+        descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
         descriptionBuilder.append("\n");
 
         descriptionBuilder.append("    Stack trace: \n");
@@ -134,7 +145,12 @@ public class Loggy{
 
     public static void error(String problem, Exception exception){
 
-        String id = UUID.randomUUID().toString();
+        String id;
+
+        while (true) { // I need Unique Value
+            id = UUID.randomUUID().toString();
+            if (Model_LoggyError.find.byId(id) == null) break;
+        }
 
         StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
         StringBuilder descriptionBuilder = new StringBuilder();     // stavění obsahu
@@ -156,7 +172,7 @@ public class Loggy{
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Server MAC address: " + getMac());
         descriptionBuilder.append("\n");
-        descriptionBuilder.append("    User: " + (SecurityController.getPerson() != null ? SecurityController.getPerson().mail : "null"));
+        descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
         descriptionBuilder.append("\n");
 
         descriptionBuilder.append("    Stack trace: \n");
@@ -174,28 +190,33 @@ public class Loggy{
     }
 
     public static void error(String summary, String description) {
-        error(UUID.randomUUID().toString(), summary, description);
+        String id;
+        while (true) { // I need Unique Value
+            id = UUID.randomUUID().toString();
+            if (Model_LoggyError.find.byId(id) == null) break;
+        }
+        error(id, summary, description);
     }
 
     private static void error(String id, String summary, String description) {
         logger.error(summary+"\n"+description); // zapíšu do souboru
-        LoggyError error = new LoggyError(id, summary, description); // zapíšu do databáze
+        Model_LoggyError error = new Model_LoggyError(id, summary, description); // zapíšu do databáze
         error.save();
     }
 
     // Vracím počet zaznamenaných bugů v souboru
     public static Integer number_of_reported_errors(){
-        return LoggyError.find.findRowCount();
+        return Model_LoggyError.find.findRowCount();
     }
 
     // Vymažu bug z databáze
     public static void remove_error(String id){
-        LoggyError.find.byId(id).delete();
+        Model_LoggyError.find.byId(id).delete();
     }
 
     // Vymažu všechny bugy z databáze
     public static void remove_all_errors(){
-        Ebean.delete(LoggyError.find.all());
+        Ebean.delete(Model_LoggyError.find.all());
     }
 
     // Vymažu všechny bugy ze souboru
@@ -211,7 +232,7 @@ public class Loggy{
         if (System.currentTimeMillis() > tokenExpire-10000) { // pokud nemám platný token, získám ho a metodu spustím znovu
             return youtrack_login().flatMap((result) -> upload_to_youtrack(id));
         }
-        LoggyError e = getError(id);
+        Model_LoggyError e = getError(id);
         if (e == null) {
             return F.Promise.promise(Results::badRequest);
         }
@@ -225,16 +246,16 @@ public class Loggy{
         return promise.map(response -> youtrack_checkUploadResponse(response, e)); // zpracuje odpověď a zapíše url do erroru
     }
 
-    public static List<LoggyError> getErrors(Integer a){
-        return LoggyError.find.setMaxRows(a).findList();
+    public static List<Model_LoggyError> getErrors(Integer a){
+        return Model_LoggyError.find.setMaxRows(a).findList();
     }
 
-    public static List<LoggyError> getErrors(){
-        return LoggyError.find.all();
+    public static List<Model_LoggyError> getErrors(){
+        return Model_LoggyError.find.all();
     }
 
-    public static LoggyError getError(String id) {
-        return LoggyError.find.byId(id);
+    public static Model_LoggyError getError(String id) {
+        return Model_LoggyError.find.byId(id);
     }
 
     private static String getMac() {
@@ -283,11 +304,11 @@ public class Loggy{
         return Results.status(response.getStatus(), response.getBody());
     }
 
-    private static Result youtrack_checkUploadResponse(WSResponse response, LoggyError error) {
+    private static Result youtrack_checkUploadResponse(WSResponse response, Model_LoggyError error) {
         if (response.getStatus() == 201) {
             error.setYoutrack_url(response.getHeader("Location").replace("/rest", "")); // uložím url z odpovědi
             error.save();
-            logger.debug(error.youtrack_url+"---"+LoggyError.find.byId(error.id).youtrack_url);
+            logger.debug(error.youtrack_url+"---"+ Model_LoggyError.find.byId(error.id).youtrack_url);
             return GlobalResult.result_ok("upload successful");
         }
 

@@ -1,12 +1,12 @@
 package utilities.hardware_updater;
 
 import com.avaje.ebean.Expr;
-import controllers.WebSocketController;
-import models.compiler.Board;
-import models.compiler.FileRecord;
-import models.project.b_program.instnace.Homer_Instance;
-import models.project.c_program.actualization.Actualization_procedure;
-import models.project.c_program.actualization.C_Program_Update_Plan;
+import controllers.Controller_WebSocket;
+import models.compiler.Model_Board;
+import models.compiler.Model_FileRecord;
+import models.project.b_program.instnace.Model_HomerInstance;
+import models.project.c_program.actualization.Model_ActualizationProcedure;
+import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
@@ -37,7 +37,7 @@ public class Master_Updater{
     }
 
 
-    public static void add_new_Procedure(Actualization_procedure procedure){
+    public static void add_new_Procedure(Model_ActualizationProcedure procedure){
 
         logger.debug("Master Updater - new incoming procedure");
 
@@ -103,15 +103,15 @@ public class Master_Updater{
     }
 
     class Instance{
-        public Homer_Instance instance;
+        public Model_HomerInstance instance;
         public HashMap<String, Program> programs = new HashMap<>();
     }
 
     class Program{
         public String program_identificator;
         public Firmware_type firmware_type;
-        public FileRecord file_record;
-        public List<Board> boards = new ArrayList<>();
+        public Model_FileRecord file_record;
+        public List<Model_Board> boards = new ArrayList<>();
     }
 
 
@@ -122,9 +122,9 @@ public class Master_Updater{
         Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
         ActualizationStructure structure = new ActualizationStructure();
 
-        List<C_Program_Update_Plan> plans = C_Program_Update_Plan.find.where().eq("actualization_procedure.id", procedure_id).findList();
+        List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where().eq("actualization_procedure.id", procedure_id).findList();
 
-           for (C_Program_Update_Plan plan : plans) {
+           for (Model_CProgramUpdatePlan plan : plans) {
                try {
 
                    System.err.println("Json: " + Json.toJson(plan));
@@ -132,12 +132,12 @@ public class Master_Updater{
                    logger.debug("Zkoumaná plan id: " + plan.id);
 
 
-                   Board board  = plan.board;
+                   Model_Board board  = plan.board;
 
                    logger.debug("Zkoumaná Boar id: "+ board.id);
 
                    // Najdu instanci - pod kterou deska běží
-                   Homer_Instance homer_instance = Homer_Instance.find.where()
+                   Model_HomerInstance homer_instance = Model_HomerInstance.find.where()
                            .disjunction()
                               .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
                               .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
@@ -160,7 +160,7 @@ public class Master_Updater{
                    logger.debug("Server: "+ homer_instance.cloud_homer_server.server_name) ;
 
 
-                   if(! WebSocketController.blocko_servers.containsKey( homer_instance.cloud_homer_server.server_name )){
+                   if(! Controller_WebSocket.blocko_servers.containsKey( homer_instance.cloud_homer_server.server_name )){
                       logger.warn("Server is offline. Putting off the task for later ");
                       plan.state = C_ProgramUpdater_State.homer_server_is_offline;
                       plan.update();
@@ -185,7 +185,7 @@ public class Master_Updater{
                   }
 
                   String program_identificator = null;
-                  FileRecord file_record = null;
+                  Model_FileRecord file_record = null;
 
 
                   if(plan.c_program_version_for_update != null) {

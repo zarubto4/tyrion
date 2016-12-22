@@ -5,25 +5,25 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
-import models.blocko.BlockoBlock;
-import models.blocko.BlockoBlockVersion;
-import models.blocko.TypeOfBlock;
+import models.blocko.Model_BlockoBlock;
+import models.blocko.Model_BlockoBlockVersion;
+import models.blocko.Model_TypeOfBlock;
 import models.compiler.*;
-import models.grid.GridWidget;
-import models.grid.GridWidgetVersion;
-import models.grid.TypeOfWidget;
+import models.grid.Model_GridWidget;
+import models.grid.Model_GridWidgetVersion;
+import models.grid.Model_TypeOfWidget;
 import models.overflow.*;
-import models.person.FloatingPersonToken;
-import models.person.Person;
-import models.person.PersonPermission;
-import models.person.SecurityRole;
-import models.project.b_program.B_Program;
-import models.project.b_program.servers.Cloud_Homer_Server;
-import models.project.c_program.C_Program;
-import models.project.global.Product;
-import models.project.global.Project;
-import models.project.m_program.M_Program;
-import models.project.m_program.M_Project;
+import models.person.Model_FloatingPersonToken;
+import models.person.Model_Person;
+import models.person.Model_Permission;
+import models.person.Model_SecurityRole;
+import models.project.b_program.Model_BProgram;
+import models.project.b_program.servers.Model_HomerServer;
+import models.project.c_program.Model_CProgram;
+import models.project.global.Model_Product;
+import models.project.global.Model_Project;
+import models.project.m_program.Model_MProgram;
+import models.project.m_program.Model_MProject;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.LoggerFactory;
@@ -241,27 +241,27 @@ public class Server {
     public static void set_Developer_objects(){
 
         // For Developing
-        if(SecurityRole.findByName("SuperAdmin") == null){
-            SecurityRole role = new SecurityRole();
-            role.person_permissions.addAll(PersonPermission.find.all());
+        if(Model_SecurityRole.findByName("SuperAdmin") == null){
+            Model_SecurityRole role = new Model_SecurityRole();
+            role.person_permissions.addAll(Model_Permission.find.all());
             role.name = "SuperAdmin";
             role.save();
         }
 
-        if (Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null)
+        if (Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null)
         {
             System.err.println("Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
-            Person person = new Person();
+            Model_Person person = new Model_Person();
             person.full_name = "Admin Byzance";
             person.mailValidated = true;
             person.nick_name = "Syndibád";
             person.mail = "admin@byzance.cz";
             person.setSha("123456789");
-            person.roles.add(SecurityRole.findByName("SuperAdmin"));
+            person.roles.add(Model_SecurityRole.findByName("SuperAdmin"));
 
             person.save();
 
-            FloatingPersonToken floatingPersonToken = new FloatingPersonToken();
+            Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
             floatingPersonToken.authToken = "token2";
             floatingPersonToken.person = person;
             floatingPersonToken.user_agent = "Unknown browser";
@@ -269,10 +269,10 @@ public class Server {
 
         }else{
             // updatuji oprávnění
-            Person person = Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
-            List<PersonPermission> personPermissions = PersonPermission.find.all();
+            Model_Person person = Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
+            List<Model_Permission> personPermissions = Model_Permission.find.all();
 
-            for(PersonPermission personPermission :  personPermissions) if(!person.person_permissions.contains(personPermission)) person.person_permissions.add(personPermission);
+            for(Model_Permission personPermission :  personPermissions) if(!person.person_permissions.contains(personPermission)) person.person_permissions.add(personPermission);
             person.update();
         }
 
@@ -313,54 +313,54 @@ public class Server {
 
         // Models
             // Blocko
-                for(Enum en : BlockoBlock.permissions.values())             permissions.add(en.name());
-                for(Enum en : BlockoBlockVersion.permissions.values())      permissions.add(en.name());
-                for(Enum en : Cloud_Homer_Server.permissions.values())      permissions.add(en.name());
-                for(Enum en : TypeOfBlock.permissions.values())             permissions.add(en.name());
+                for(Enum en : Model_BlockoBlock.permissions.values())             permissions.add(en.name());
+                for(Enum en : Model_BlockoBlockVersion.permissions.values())      permissions.add(en.name());
+                for(Enum en : Model_HomerServer.permissions.values())             permissions.add(en.name());
+                for(Enum en : Model_TypeOfBlock.permissions.values())             permissions.add(en.name());
 
             // compiler
-                for(Enum en : Board.permissions.values())                   permissions.add(en.name());
-                for(Enum en : Cloud_Compilation_Server.permissions.values())permissions.add(en.name());
-                for(Enum en : LibraryGroup.permissions.values())            permissions.add(en.name());
-                for(Enum en : Processor.permissions.values())               permissions.add(en.name());
-                for(Enum en : Producer.permissions.values())                permissions.add(en.name());
-                for(Enum en : SingleLibrary.permissions.values())           permissions.add(en.name());
-                for(Enum en : TypeOfBoard.permissions.values())             permissions.add(en.name());
-                for(Enum en : BootLoader.permissions.values())              permissions.add(en.name());
+                for(Enum en : Model_Board.permissions.values())                   permissions.add(en.name());
+                for(Enum en : Model_CompilationServer.permissions.values())       permissions.add(en.name());
+                for(Enum en : Model_LibraryGroup.permissions.values())            permissions.add(en.name());
+                for(Enum en : Model_Processor.permissions.values())               permissions.add(en.name());
+                for(Enum en : Model_Producer.permissions.values())                permissions.add(en.name());
+                for(Enum en : Model_SingleLibrary.permissions.values())           permissions.add(en.name());
+                for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());
+                for(Enum en : Model_BootLoader.permissions.values())              permissions.add(en.name());
 
             // overflow
-                for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());
-                for(Enum en : LinkedPost.permissions.values())              permissions.add(en.name());
-                for(Enum en : Post.permissions.values())                    permissions.add(en.name());
-                for(Enum en : PropertyOfPost.permissions.values())          permissions.add(en.name());
-                for(Enum en : TypeOfConfirms.permissions.values())          permissions.add(en.name());
-                for(Enum en : TypeOfPost.permissions.values())              permissions.add(en.name());
+                for(Enum en : Model_FloatingPersonToken.permissions.values())     permissions.add(en.name());
+                for(Enum en : LinkedPost.permissions.values())                    permissions.add(en.name());
+                for(Enum en : Post.permissions.values())                          permissions.add(en.name());
+                for(Enum en : PropertyOfPost.permissions.values())                permissions.add(en.name());
+                for(Enum en : TypeOfConfirms.permissions.values())                permissions.add(en.name());
+                for(Enum en : TypeOfPost.permissions.values())                    permissions.add(en.name());
             // person
-                for(Enum en : FloatingPersonToken.permissions.values())     permissions.add(en.name());
-                for(Enum en : Person.permissions.values())                  permissions.add(en.name());
-                for(Enum en : SecurityRole.permissions.values())            permissions.add(en.name());
-                for(Enum en : PersonPermission.permissions.values())        permissions.add(en.name());
+                for(Enum en : Model_FloatingPersonToken.permissions.values())     permissions.add(en.name());
+                for(Enum en : Model_Person.permissions.values())                  permissions.add(en.name());
+                for(Enum en : Model_SecurityRole.permissions.values())            permissions.add(en.name());
+                for(Enum en : Model_Permission.permissions.values())              permissions.add(en.name());
             //grid
-                for(Enum en : GridWidget.permissions.values())              permissions.add(en.name());
-                for(Enum en : GridWidgetVersion.permissions.values())       permissions.add(en.name());
-                for(Enum en : TypeOfWidget.permissions.values())            permissions.add(en.name());
+                for(Enum en : Model_GridWidget.permissions.values())              permissions.add(en.name());
+                for(Enum en : Model_GridWidgetVersion.permissions.values())       permissions.add(en.name());
+                for(Enum en : Model_TypeOfWidget.permissions.values())            permissions.add(en.name());
 
             // project
                 // b_program
-                    for(Enum en : B_Program.permissions.values())           permissions.add(en.name());
+                    for(Enum en : Model_BProgram.permissions.values())            permissions.add(en.name());
                 // c_program
-                    for(Enum en : C_Program.permissions.values())           permissions.add(en.name());
+                    for(Enum en : Model_CProgram.permissions.values())            permissions.add(en.name());
                 // global
-                    for(Enum en : Project.permissions.values())             permissions.add(en.name());
-                    for(Enum en : Product.permissions.values())             permissions.add(en.name());
+                    for(Enum en : Model_Project.permissions.values())             permissions.add(en.name());
+                    for(Enum en : Model_Product.permissions.values())             permissions.add(en.name());
                 // m_project
-                    for(Enum en : M_Project.permissions.values())           permissions.add(en.name());
-                    for(Enum en : M_Program.permissions.values())           permissions.add(en.name());
+                    for(Enum en : Model_MProject.permissions.values())            permissions.add(en.name());
+                    for(Enum en : Model_MProgram.permissions.values())            permissions.add(en.name());
 
 
         logger.info("Number of Static Permissions " + permissions.size() );
 
-        for(String permission : permissions) new PersonPermission(permission, "description");
+        for(String permission : permissions) new Model_Permission(permission, "description");
 
     }
 

@@ -1,6 +1,6 @@
 package utilities.loginEntities;
 
-import models.person.Person;
+import models.person.Model_Person;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -16,7 +16,7 @@ public class Secured_Admin extends Security.Authenticator {
         try{
 
 
-            Person person = null;
+            Model_Person person = null;
 
             String token = null;
 
@@ -28,7 +28,7 @@ public class Secured_Admin extends Security.Authenticator {
                 token = request().headers().get("X-AUTH-TOKEN")[0];
             }
 
-            person = Person.findByAuthToken(token); // TODO do Cache!!!
+            person = Model_Person.findByAuthToken(token); // TODO do Cache!!!
 
             if (person != null) {
 

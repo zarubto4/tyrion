@@ -1,13 +1,10 @@
-@import utilities.enums.Approval_state
-@import models.compiler.Version_Object
-@import models.compiler.TypeOfBoard
-@import models.project.c_program.C_Program
-@import utilities.Server
+@import models.compiler.{Model_TypeOfBoard, Model_VersionObject}
+@import models.project.c_program.Model_CProgram
 
 <section class="content-header">
     <h1> Public code </h1>
     <ol class="breadcrumb">
-        <li><a href="@routes.DashboardController.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Server Management </li>
         <li class="active"><i class="fa fa-wrench"></i> Public Code </li>
     </ol>
@@ -28,7 +25,7 @@
                 <div class="nav-tabs-custom">
                     <ul class="nav nav-tabs">
 
-                    @for( type_of_board <- TypeOfBoard.find.findList()){
+                    @for( type_of_board <- Model_TypeOfBoard.find.findList()){
                         <li><a href="#type_of_board_tab_@type_of_board.id" data-toggle="tab">@type_of_board.name</a></li>
                     }
 
@@ -37,18 +34,18 @@
                 <p></p>
                 <p></p>
                 <div class="tab-content" id="all_c_programs">
-                @for( type_of_board <- TypeOfBoard.find.findList() ) {
+                @for( type_of_board <- Model_TypeOfBoard.find.findList() ) {
 
                     <div class="tab-pane" id="type_of_board_tab_@type_of_board.id">
                         <div class="box-body">
 
                             <p></p>
 
-                            @for(c_program <- C_Program.find.where().isNull("project").eq("type_of_board.id", type_of_board.id).findList()){
+                            @for(c_program <- Model_CProgram.find.where().isNull("project").eq("type_of_board.id", type_of_board.id).findList()){
 
                                 <label style=""><h4 class="text-warning"> @c_program.name <small class="text-warning">@c_program.type_of_board_name() </small>
 
-                                    @if(Version_Object.find.where().eq("public_version", true).eq("removed_by_user", false).eq("c_program.id", c_program.id).findUnique() != null){
+                                    @if(Model_VersionObject.find.where().eq("public_version", true).eq("removed_by_user", false).eq("c_program.id", c_program.id).findUnique() != null){
                                         <small class="text-success">(Visible)</small>
                                     }else{
                                         <small class="text-danger">(Not Visible)</small>
@@ -178,7 +175,7 @@
                         <div class="form-group">
                             <label style="">Type Of Board</label>
                             <select class="form-control" id="type_of_board_id" name="type_of_board_id">
-                            @for(x <- TypeOfBoard.find.all()){
+                            @for(x <- Model_TypeOfBoard.find.all()){
                                 <option  value="@x.id" name="type_of_board_id" >@x.name</option>
                             }
                             </select>
@@ -286,7 +283,7 @@
             model_data = $("#createProgramForm").serializeObject();
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.c_program_create()',
+                url: '@routes.Controller_CompilationLibraries.c_program_create()',
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {
@@ -319,7 +316,7 @@
         function removeProgram(id){
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.c_program_delete("")' + id,
+                url: '@routes.Controller_CompilationLibraries.c_program_delete("")' + id,
                 type: 'DELETE',
                 contentType: 'application/json',
                 headers: {
@@ -349,7 +346,7 @@
         function removeVersion(id){
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.c_programVersion_delete("")' + id,
+                url: '@routes.Controller_CompilationLibraries.c_programVersion_delete("")' + id,
                 type: 'DELETE',
                 contentType: 'application/json',
                 headers: {
@@ -381,7 +378,7 @@
             model_data = $("#editCProgramVersionForm").serializeObject();
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.c_programVersion_update("")' + id,
+                url: '@routes.Controller_CompilationLibraries.c_programVersion_update("")' + id,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -416,7 +413,7 @@
             model_data = $("#newCProgramVersionForm").serializeObject();
 
             $.ajax({
-                url: '@routes.CompilationLibrariesController.c_programVersion_create("")' + c_program_id ,
+                url: '@routes.Controller_CompilationLibraries.c_programVersion_create("")' + c_program_id ,
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {

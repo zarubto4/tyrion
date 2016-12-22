@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.grid.TypeOfWidget;
+import models.grid.Model_TypeOfWidget;
 import utilities.swagger.outboundClass.Swagger_TypeOfWidget_Short_Detail;
 
 import java.util.ArrayList;
@@ -36,12 +36,12 @@ public class Swagger_Type_Of_Widget_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_Type_Of_Widget_List(Query<TypeOfWidget> query , int page_number){
+    public Swagger_Type_Of_Widget_List(Query<Model_TypeOfWidget> query , int page_number){
 
         if(page_number < 1) page_number = 1;
-        List<TypeOfWidget> typeOfWidgets =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+        List<Model_TypeOfWidget> typeOfWidgets =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
-        for(TypeOfWidget typeOfWidget : typeOfWidgets){
+        for(Model_TypeOfWidget typeOfWidget : typeOfWidgets){
 
             this.content.add(typeOfWidget.get_typeOfWidget_short_detail());
         }
