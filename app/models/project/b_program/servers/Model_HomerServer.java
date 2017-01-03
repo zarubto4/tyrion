@@ -217,7 +217,6 @@ public class Model_HomerServer extends Model{
 
     }
 
-
     @JsonIgnore @Transient  public  JsonNode remove_instance(String instance_name) {
         try {
 
@@ -278,6 +277,126 @@ public class Model_HomerServer extends Model{
             logger.error("Server is offline");
         }
     }
+
+
+    // Procedura po připojení serveru
+    @JsonIgnore @Transient  public void check_after_connection( WS_BlockoServer ws_blockoServer){
+
+        logger.debug("Connection lost with compilation cloud_blocko_server!: " + server_name);
+
+        Model_HomerServer homer_server = this;
+
+        class Control_Blocko_Server_Thread extends Thread{
+
+            @Override
+            public void run() {
+                Long interrupter = (long) 6000;
+                try {
+
+                    while (interrupter > 0) {
+
+                        sleep(1000);
+                        interrupter -= 500;
+
+                        if (ws_blockoServer.isReady()){
+
+                            logger.trace("Homer Server:: Connection::  Tyrion send to Homer Server request for listInstances");
+
+                            JsonNode result = homer_server.get_homer_server_listOfInstance();
+                            if (!result.get("status").asText().equals("success")) {interrupt();}
+
+                            // Vylistuji si seznam instnancí, které běží na serveru
+                            List<String> instances_on_server = new ArrayList<>();
+                            final JsonNode arrNode = result.get("instances");
+                            for (final JsonNode objNode : arrNode) instances_on_server.add(objNode.asText());
+                            logger.trace("Homer Server:: Connection:: Number of instances on cloud_blocko_server: " + instances_on_server.size());
+
+
+                            // Vylistuji si seznam instnancí, které by měli běžet na serveru
+
+                            List<Model_HomerInstance> instances_in_database_for_uploud = new ArrayList<>();
+
+                            // Přidám všechny reálné instance, které mají běžet.
+                            instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", false).isNotNull("actual_instance").select("blocko_instance_name").findList());
+
+                            // Přidám všechny virtuální instance, kde je ještě alespoň jeden Yoda
+                            instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", true).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList());
+
+
+                            List<String> instances_for_removing = new ArrayList<>();
+
+                            // Vytvořím kopii seznamu instancí, které by měli běžet na Homer Serveru
+                            for(String  identificator : instances_on_server){
+
+                                // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
+                                Integer size = Model_HomerInstance.find.where().eq("blocko_instance_name", identificator)
+                                        .disjunction()
+                                        .conjunction()
+                                        .eq("virtual_instance", false)
+                                        .isNotNull("actual_instance")
+                                        .endJunction()
+                                        .conjunction()
+                                        .eq("virtual_instance", true)
+                                        .isNotNull("boards_in_virtual_instance")
+                                        .endJunction()
+                                        .endJunction().findRowCount();
+
+                                if(size < 1){
+                                    logger.warn("Blocko Server: removing instnace:: ", identificator);
+                                    instances_for_removing.add(identificator);
+                                }
+                            }
+
+                            logger.debug("Blocko Server: The number of instances for removing from homer server: ");
+
+
+                            if (!instances_for_removing.isEmpty()) {
+                                for (String identificator : instances_for_removing) {
+                                    JsonNode remove_result = homer_server.remove_instance(identificator);
+                                    if(!remove_result.has("status") || !remove_result.get("status").asText().equals("success"))   logger.error("Blocko Server: Removing instance Error: ", remove_result.toString());
+                                }
+                            }
+
+
+                            // Nahraji tam ty co tam patří
+                            logger.trace("Homer Server:: Connection::Starting to uploud new instances to cloud_blocko_server");
+                            for (Model_HomerInstance instance : instances_in_database_for_uploud) {
+
+                                if(instances_on_server.contains(instance.blocko_instance_name)){
+                                    logger.debug("Homer Server:: Connection:: ", instance.blocko_instance_name , " is on server already");
+                                }else {
+                                    JsonNode add_instance = instance.add_instance_to_server();
+                                    logger.debug("add_instance: " + add_instance.toString());
+
+                                    if (add_instance.get("status").asText().equals("success")) {
+                                        logger.trace("Blocko Server: Uploud instance was successful");
+                                        instance.check_hardware_c_program_state();
+                                    }
+                                    else if (add_instance.get("status").asText().equals("error")) {
+                                        logger.warn("Blocko Server: Fail when Tyrion try to add instance from Blocko cloud_blocko_server:: ", add_instance.toString());
+                                    }
+
+                                    sleep(50); // Abych Homer server tolik nevytížil
+                                }
+                            }
+
+
+                            logger.debug("Blocko Server: Successfully finished connection procedure");
+                            interrupter = (long) 0;
+
+                        }
+                    }
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        logger.debug("Blocko Server: Starting connection control procedure");
+        new Control_Blocko_Server_Thread().start();
+
+    }
+
 
     // Pomocné objekty - Defaultní zprávy
     @JsonIgnore @Transient  public static JsonNode RESULT_server_is_offline(){

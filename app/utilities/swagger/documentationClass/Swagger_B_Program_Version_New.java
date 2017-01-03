@@ -8,8 +8,8 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Json Model for new Version of B_Program")
-      //   value = "B_Program_Version_New")
+@ApiModel(description = "Json Model for new Version of B_Program",
+             value = "B_Program_Version_New")
 public class Swagger_B_Program_Version_New {
 
     @Constraints.Required

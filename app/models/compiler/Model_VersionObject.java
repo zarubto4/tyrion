@@ -219,6 +219,7 @@ public class Model_VersionObject extends Model {
         if(this.c_compilation == null) {
 
             Model_CCompilation cCompilation = new Model_CCompilation();
+            cCompilation.version_object = this;
             cCompilation.save();
 
             this.c_compilation = cCompilation;

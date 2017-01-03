@@ -7,17 +7,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import models.compiler.Model_CompilationServer;
-import models.compiler.Model_VersionObject;
 import models.notification.Model_Notification;
 import models.person.Model_Person;
-import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
-import utilities.enums.Compile_Status;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.TokenCache;
@@ -27,7 +24,9 @@ import utilities.swagger.outboundClass.Swagger_Websocket_Token;
 import utilities.webSocket.*;
 import utilities.webSocket.messageObjects.WS_Token;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -126,117 +125,12 @@ public class Controller_WebSocket extends Controller {
             // Procedury kontroly - informovat třeba všechny klienty o tom, že se cloud_blocko_server připojil. Kontzrola co tam běží a další píčoviny
             logger.debug("Homer Server:: Connection:: Tyrion have to control what is on the cloud_blocko_server side ");
 
+
             // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
             // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
+            homer_server.check_after_connection(server);
 
-            class Control_Blocko_Server_Thread extends Thread{
-
-                @Override
-                public void run() {
-                   Long interrupter = (long) 6000;
-                    try {
-
-                        while (interrupter > 0) {
-
-                            sleep(1000);
-                            interrupter -= 500;
-
-                            if (server.isReady()) {
-
-                                logger.trace("Homer Server:: Connection::  Tyrion send to Blocko Server request for listInstances");
-
-                                JsonNode result = homer_server.get_homer_server_listOfInstance();
-                                if (!result.get("status").asText().equals("success")) {interrupt();}
-
-                                // Vylistuji si seznam instnancí, které běží na serveru
-                                List<String> instances_on_server = new ArrayList<>();
-                                final JsonNode arrNode = result.get("instances");
-                                for (final JsonNode objNode : arrNode) instances_on_server.add(objNode.asText());
-                                logger.trace("Homer Server:: Connection:: Number of instances on cloud_blocko_server: " + instances_on_server.size());
-
-
-                                // Vylistuji si seznam instnancí, které by měli běžet na serveru
-
-                                List<Model_HomerInstance> instances_in_database_for_uploud = new ArrayList<>();
-
-                                // Přidám všechny reálné instance, které mají běžet.
-                                instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", false).isNotNull("actual_instance").select("blocko_instance_name").findList());
-
-                                // Přidám všechny virtuální instance, kde je ještě alespoň jeden Yoda
-                                instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", true).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList());
-
-
-                                List<String> instances_for_removing = new ArrayList<>();
-
-                                // Vytvořím kopii seznamu instancí, které by měli běžet na Homer Serveru
-                                for(String  identificator : instances_on_server){
-
-                                    // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
-                                    Integer size = Model_HomerInstance.find.where().eq("blocko_instance_name", identificator)
-                                            .disjunction()
-                                                .conjunction()
-                                                    .eq("virtual_instance", false)
-                                                    .isNotNull("actual_instance")
-                                                .endJunction()
-                                                .conjunction()
-                                                    .eq("virtual_instance", true)
-                                                    .isNotNull("boards_in_virtual_instance")
-                                                .endJunction()
-                                            .endJunction().findRowCount();
-
-                                    if(size < 1){
-                                        logger.warn("Blocko Server: removing instnace:: ", identificator);
-                                        instances_for_removing.add(identificator);
-                                    }
-                                }
-
-                                logger.debug("Blocko Server: The number of instances for removing from homer server: ");
-
-
-                                if (!instances_for_removing.isEmpty()) {
-                                    for (String identificator : instances_for_removing) {
-                                        JsonNode remove_result = homer_server.remove_instance(identificator);
-                                        if(!remove_result.has("status") || !remove_result.get("status").asText().equals("success"))   logger.error("Blocko Server: Removing instance Error: ", remove_result.toString());
-                                    }
-                                }
-
-
-                                // Nahraji tam ty co tam patří
-                                logger.trace("Homer Server:: Connection::Starting to uploud new instances to cloud_blocko_server");
-                                for (Model_HomerInstance instance : instances_in_database_for_uploud) {
-
-                                    if(instances_on_server.contains(instance.blocko_instance_name)){
-                                        logger.debug("Homer Server:: Connection:: ", instance.blocko_instance_name , " is on server already");
-                                    }else {
-                                        JsonNode add_instance = instance.add_instance_to_server();
-                                        logger.debug("add_instance: " + add_instance.toString());
-
-                                        if (add_instance.get("status").asText().equals("success")) {
-                                            logger.trace("Blocko Server: Uploud instance was successful");
-                                            instance.check_hardware_c_program_state();
-                                        }
-                                        else if (add_instance.get("status").asText().equals("error")) {
-                                            logger.warn("Blocko Server: Fail when Tyrion try to add instance from Blocko cloud_blocko_server:: ", add_instance.toString());
-                                        }
-
-                                        sleep(50); // Abych Homer server tolik nevytížil
-                                    }
-                                }
-
-
-                                logger.debug("Blocko Server: Successfully finished connection procedure");
-                                interrupter = (long) 0;
-
-                            }
-                        }
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            logger.debug("Blocko Server: Starting connection control procedure");
-            new Control_Blocko_Server_Thread().start();
+            this.compiler_cloud_servers.put(homer_server.server_name, server);
 
             logger.debug("Blocko Server: Successfully connected");
             return webSocket;
@@ -266,33 +160,7 @@ public class Controller_WebSocket extends Controller {
             // Inicializuji Websocket pro Homera
             WS_CompilerServer server = new WS_CompilerServer(cloud_compilation_server, compiler_cloud_servers );
 
-            // Vlákno které hledá záznamy nezkompilovaných programů a dodělá je se zpožděním.
-            // Vyhledá vždy jedno! aby když se připojí více kompilačních serverů aby nekompilovaly tentýž program
-            class Compilation_Thread extends Thread{
-
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-
-                            sleep(400);
-                            Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", "server_was_offline").order().desc("date_of_create").setMaxRows(1).findUnique();
-                            if(version_object == null) break;
-
-                            version_object.c_compilation.status = Compile_Status.compilation_in_progress;
-                            version_object.c_compilation.update();
-
-                           JsonNode jsonNode = version_object.compile_program_procedure();
-                        }
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            logger.debug("Blocko Server: Starting connection control procedure");
-            new Compilation_Thread().start();
-
+            cloud_compilation_server.check_after_connection();
 
             // Připojím se
             logger.debug("Compiling cloud_blocko_server connect");
@@ -321,12 +189,6 @@ public class Controller_WebSocket extends Controller {
 
             String person_id = token.person_id;
             tokenCache.remove(security_token);
-
-
-
-
-
-
 
 
             logger.debug("Becki: Controlling of incoming token " + security_token);
@@ -359,10 +221,6 @@ public class Controller_WebSocket extends Controller {
         }
 
     }
-
-
-
-
 
 
 // PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------

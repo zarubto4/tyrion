@@ -11,10 +11,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.servers.Model_HomerServer;
 import play.libs.Json;
+import utilities.enums.Compile_Status;
+import utilities.independent_threads.Compilation_After_BlackOut;
 import utilities.webSocket.SendMessage;
 import utilities.webSocket.WS_CompilerServer;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -90,14 +95,14 @@ public class Model_CompilationServer extends Model {
 
             if(!compilation_request.get("status").asText().equals("success")) {
 
-                logger.debug("Incoming message has not contains state = success");
+                logger.debug("Model_CompilationServer:: make_Compilation:: Incoming message has not contains state = success");
 
                 ObjectNode error_result = Json.newObject();
                 error_result.put("error", "Something was wrong");
                 return  error_result;
             }
 
-            logger.debug("Start of compilation was successful - waiting for result");
+            logger.debug("Model_CompilationServer:: make_Compilation:: Start of compilation was successful - waiting for result");
 
             SendMessage get_compilation = new SendMessage(null, null, null, "compilation_message", 1000 * 35, 0, 1);
             server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
@@ -127,11 +132,30 @@ public class Model_CompilationServer extends Model {
     }
 
     @JsonIgnore @Transient public void compiler_server_is_disconnect(){
-        logger.debug("Connection lost with compilation cloud_blocko_server!: " + server_name);
+        logger.debug("Model_CompilationServer:: compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + server_name);
         // Nějaké upozornění???
     }
 
+    @JsonIgnore @Transient public  void check_after_connection(){
+        // Po připojení compilačního serveru s nastartuje procedura zpětné kompilace všeho.
+        // Předpoklad je že se připojí více serverů (třeba po pádu nebo udpatu) a tím by došlo k průseru kdy by si
+        // servery kompilovali verze navzájem.
+        // Proto byl vytvořen singleton který to má řešit.
+
+        // a) ověřím zda existuje vůbec něco, co by mělo smysl kompilovat
+
+        Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Compile_Status.server_was_offline.name()).order().desc("date_of_create").setMaxRows(1).findUnique();
+        if(version_object == null){
+            logger.debug("Model_CompilationServer:: check_after_connection:: 0 c_program versions for compilations");
+            return;
+        }
+
+        // b) pokud ano pošlu to do Compilation_After_BlackOut
+        Compilation_After_BlackOut.getInstance().start(this);
+    }
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -155,3 +179,4 @@ public class Model_CompilationServer extends Model {
 
 
 }
+

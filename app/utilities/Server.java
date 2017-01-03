@@ -14,8 +14,8 @@ import models.grid.Model_GridWidgetVersion;
 import models.grid.Model_TypeOfWidget;
 import models.overflow.*;
 import models.person.Model_FloatingPersonToken;
-import models.person.Model_Person;
 import models.person.Model_Permission;
+import models.person.Model_Person;
 import models.person.Model_SecurityRole;
 import models.project.b_program.Model_BProgram;
 import models.project.b_program.servers.Model_HomerServer;
@@ -24,7 +24,10 @@ import models.project.global.Model_Product;
 import models.project.global.Model_Project;
 import models.project.m_program.Model_MProgram;
 import models.project.m_program.Model_MProject;
-import org.quartz.*;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
@@ -37,10 +40,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
-import static org.quartz.DateBuilder.tomorrowAt;
 import static org.quartz.JobBuilder.newJob;
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class Server {
@@ -100,6 +102,7 @@ public class Server {
     public static Scheduler scheduler;
 
     public static String  link_api_swagger;
+
 
     static play.Logger.ALogger logger = play.Logger.of("Start-Procedures");
 
@@ -389,20 +392,35 @@ public class Server {
             // Nastavení schedulleru (Aktivity, která se pravidelně v časových úsecích vykonává)
             scheduler = StdSchedulerFactory.getDefaultScheduler();
 
-
+            //-------------------------
 
             // Klíč / identifikátor Trrigru definující, kdy se konkrétní job zapne.
-            TriggerKey every_day_key1 = TriggerKey.triggerKey("every_day_03:00");
-            TriggerKey every_day_key2 = TriggerKey.triggerKey("every_day_03:10");
-            TriggerKey every_day_key3 = TriggerKey.triggerKey("every_day_03:20");
-            TriggerKey every_day_key4 = TriggerKey.triggerKey("every_day_03:30");
-            TriggerKey every_second_day_key = TriggerKey.triggerKey("every_second_day_4:00");
+            // Jednodenní Klíče
+            TriggerKey every_day_key1       = TriggerKey.triggerKey("every_day_03:00"); // 1)
+            TriggerKey every_day_key2       = TriggerKey.triggerKey("every_day_03:10"); // 2)
+            TriggerKey every_day_key3       = TriggerKey.triggerKey("every_day_03:20"); // 3)
+            TriggerKey every_day_key4       = TriggerKey.triggerKey("every_day_03:30"); // 4)
+            TriggerKey every_day_key5       = TriggerKey.triggerKey("every_day_03:40"); // 5)
+
+
+            // 2 a více-denní klíče
+            TriggerKey every_second_day_key = TriggerKey.triggerKey("every_second_day_4:00"); //
+
+            // Minutové - hodinové klíče
+            TriggerKey every_10_min_key7 = TriggerKey.triggerKey("every_ten_minutes"); // 7)
+
 
             //-------------------------
 
             // Mažu scheduler v operační paměti po předchozí instanci - není doporučeno mít aktivní
             // slr pomáhá v případě problémů s operační pamětí - v režimu developer  je v metodě která ukončuje server třeba při buildu procedura, která vyčistí RAM
             // scheduler.clear();
+
+            /** NÁVOD NA PSANÍ ČASOVÝCH TARGETŮ
+             * !!!!
+             * http://www.quartz-scheduler.org/documentation/quartz-2.x/tutorials/tutorial-lesson-06.html
+             * !!!!
+             */
 
             // Definované Trigry
             if(!scheduler.checkExists(every_day_key1)){
@@ -421,6 +439,17 @@ public class Server {
 
                 Trigger every_day_4 = newTrigger().withIdentity(every_day_key4).startNow()
                         .withSchedule(dailyAtHourAndMinute(3,30))// Spuštění každý den v 03:30 AM
+                        .build();
+
+                // TODO 5
+                Trigger every_day_5 = newTrigger().withIdentity(every_day_key5).startNow()
+                        .withSchedule(dailyAtHourAndMinute(3,40))// Spuštění každý den v 03:20 AM
+                        .build();
+
+                // TODO 6
+
+                Trigger every_10_minutes_7 = newTrigger().withIdentity(every_10_min_key7).startNow()
+                        .withSchedule(cronSchedule("17 0/10 * * * ?"))// Spuštění každých 10 minut a to v 17 vteřině každé minuty
                         .build();
 
                 /**
@@ -448,32 +477,21 @@ public class Server {
                 scheduler.scheduleJob( newJob(Unauthenticated_Person_Removal.class).withIdentity( JobKey.jobKey("unauthenticated_person_removal") ).build(), every_day_4);
 
                 // 5) Kontrola a fakturace klientů na měsíční bázi
-                // logger.info("Scheduling new Job - Sending_Invoices");
-                //scheduler.scheduleJob( newJob(Sending_Invoices.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_4); // nemůže být Job se stejným triggrem
+                logger.info("Scheduling new Job - Sending_Invoices");
+                scheduler.scheduleJob( newJob(Sending_Invoices.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_5);
 
                 // 6) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
+                // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-433
 
+                // 7) Kontrola zaseknutých kompilací - těch co jsou in progress déle než 5 minut.
+                logger.info("Scheduling new Job - Checking stuck compilations");
+                scheduler.scheduleJob( newJob(Compilation_Checker.class).withIdentity( JobKey.jobKey("stuck_compilation_check") ).build(), every_10_minutes_7);
 
 
             }else {
                 logger.warn("CRON (Every-Day) is in RAM yet. Be careful with that!");
             }
 
-
-            if(!scheduler.checkExists(every_second_day_key)) {
-
-                Trigger every_second_day = newTrigger()
-                        .withIdentity(every_second_day_key)
-                        .startAt(tomorrowAt(4, 0, 0)) // První spuštění další den v 04:0
-                        .withSchedule(simpleSchedule().withIntervalInHours(2 * 24).repeatForever()) // A opakovávání každé 2 dny || .withIntervalInDays(2)
-                        .build();
-
-
-                // Přidávání úkolů do Schedulleru
-
-            }else {
-                logger.warn("CRON (Every-SecondDay) is in RAM yet. Be careful with that!");
-            }
 
             // Nastartování scheduleru
             scheduler.start();
