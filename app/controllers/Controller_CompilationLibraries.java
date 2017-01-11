@@ -1,7 +1,6 @@
 package controllers;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +21,7 @@ import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.enums.Compile_Status;
 import utilities.enums.Firmware_type;
+import utilities.enums.Library_state;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.Secured_Admin;
@@ -448,13 +448,13 @@ public class Controller_CompilationLibraries extends Controller {
             if(!c_program.update_permission()) return GlobalResult.forbidden_Permission();
 
             // První nová Verze
-            Model_VersionObject version_object      = new Model_VersionObject();
+            Model_VersionObject version_object = new Model_VersionObject();
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
             version_object.author              = Controller_Security.getPerson();
-            version_object.date_of_create = new Date();
-            version_object.c_program = c_program;
-            version_object.public_version = false;
+            version_object.date_of_create      = new Date();
+            version_object.c_program           = c_program;
+            version_object.public_version      = false;
 
             // Zkontroluji oprávnění
             if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
@@ -465,7 +465,7 @@ public class Controller_CompilationLibraries extends Controller {
             ObjectNode  content = Json.newObject();
                         content.put("main", help.main );
                         content.set("user_files", Json.toJson( help.user_files) );
-                        content.set("external_libraries", Json.toJson( help.external_libraries) );
+                        content.set("library_files", Json.toJson(help.library_files) );
 
             // Content se nahraje na Azure
 
@@ -723,10 +723,6 @@ public class Controller_CompilationLibraries extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-
-
-
 
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
@@ -1068,9 +1064,7 @@ public class Controller_CompilationLibraries extends Controller {
 
             // Zpracování Json
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
+            if (form.hasErrors()) return GlobalResult.formExcepting(form.errorsAsJson());
             Swagger_C_Program_Version_Update help = form.get();
 
             // Ověření objektu
@@ -1086,7 +1080,60 @@ public class Controller_CompilationLibraries extends Controller {
             result.put("target", typeOfBoard.compiler_target_name);
             result.put("libVersion", "v0");
             result.put("code", help.main);
-            result.set("includes", help.includes() == null ? Json.newObject() : help.includes());
+
+            List<Swagger_C_Program_Version_New.Library_File> library_files = new ArrayList<>();
+
+            for (String lib_id : help.library_files) {
+
+                Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
+                if (lib_version == null || lib_version.library == null){
+
+                    ObjectNode error = Json.newObject();
+                    error.put("status", "error");
+                    error.put("error", "Error getting libraries");
+                    error.put("error_code", 400);
+                    return GlobalResult.result_BadRequest(error);
+                }
+
+                if (!lib_version.files.isEmpty()){
+                    for (Model_FileRecord f : lib_version.files) {
+
+                        JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
+
+                        Form<Swagger_C_Program_Version_New.Library_File> lib_form = Form.form(Swagger_C_Program_Version_New.Library_File.class).bind(j);
+                        if (lib_form.hasErrors()){
+
+                            ObjectNode error = Json.newObject();
+                            error.put("status", "error");
+                            error.put("error", "Error importing libraries");
+                            error.put("error_code", 400);
+                            return GlobalResult.result_BadRequest(error);
+                        }
+
+                        Swagger_C_Program_Version_New.Library_File lib_file = lib_form.get();
+
+                        for (Swagger_C_Program_Version_Update.User_File user_file : help.user_files){
+
+                            if (lib_file.file_name.equals(user_file.file_name))break;
+                            if (!library_files.contains(lib_file)) library_files.add(lib_file);
+
+                        }
+                    }
+                }
+            }
+
+            ObjectNode includes = Json.newObject();
+
+            for(Swagger_C_Program_Version_New.Library_File file_lib : library_files){
+                includes.put(file_lib.file_name , file_lib.content);
+            }
+
+            if(help.user_files != null)
+                for(Swagger_C_Program_Version_Update.User_File user_file : help.user_files){
+                    includes.put(user_file.file_name , user_file.code);
+                }
+
+            result.set("includes", includes);
 
 
             if (Controller_WebSocket.compiler_cloud_servers.isEmpty()) {
@@ -1109,7 +1156,7 @@ public class Controller_CompilationLibraries extends Controller {
                 return GlobalResult.result_buildErrors(Json.toJson(compilation_result.get("buildErrors")));
             }
 
-            // Nebylo úspěšné ani odeslání reqestu - Chyba v konfiguraci a tak vracím defaulní chybz
+            // Nebylo úspěšné ani odeslání requestu - Chyba v konfiguraci a tak vracím defaulní chybz
             if (compilation_result.has("error")) {
 
                 ObjectNode result_json = Json.newObject();
@@ -1793,485 +1840,6 @@ public class Controller_CompilationLibraries extends Controller {
 
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "Create new LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "If you want create new LibraryGroup. Send required json values and server respond with new object",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "LibraryGroup_create" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_LibraryGroup_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Model_LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result new_LibraryGroup() {
-        try {
-
-            // Zpracování Json
-            Form<Swagger_LibraryGroup_New> form = Form.form(Swagger_LibraryGroup_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_LibraryGroup_New help = form.get();
-
-            // Vytvářím objekt
-            Model_LibraryGroup library_Group = new Model_LibraryGroup();
-            library_Group.description = help.description;
-            library_Group.group_name = help.group_name;
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! library_Group.create_permission())  return GlobalResult.forbidden_Permission();
-
-            // Ukládám objekt
-            library_Group.save();
-
-            // Vracím Objekt
-            return GlobalResult.created(Json.toJson(library_Group));
-
-        }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Create new Version in LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "If you want create new versinon in LibraryGroup query = libraryGroup_id. Send required json values and server respond with new object",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "LibraryGroup_update" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_LibraryGroup_Version",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_VersionObject.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result new_LibraryGroup_Version(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id){
-        try {
-
-            // Zpracování Json
-            Form<Swagger_LibraryGroup_Version> form = Form.form(Swagger_LibraryGroup_Version.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_LibraryGroup_Version help = form.get();
-
-            // Kontrola Validity
-            Model_LibraryGroup library_group = Model_LibraryGroup.find.byId(libraryGroup_id);
-            if(library_group == null) return GlobalResult.notFoundObject("LibraryGroup library_group_id not found");
-
-            // Kontrola oprávnění
-            if(! library_group.update_permission())  return GlobalResult.forbidden_Permission();
-
-            // Tvorba Verze
-            Model_VersionObject version_object      = new Model_VersionObject();
-            version_object.date_of_create      = new Date();
-            version_object.version_name        = help.version_name;
-            version_object.version_description = help.version_description;
-            version_object.library_group = library_group;
-
-            // Uložení verze
-            version_object.save();
-
-            // Vložení verze do objektu
-            library_group.version_objects.add(version_object);
-
-            // Uložení objektu
-            library_group.update();
-
-            // Vracím Objekt
-            return GlobalResult.created(Json.toJson(version_object));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "upload files to Version in LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "Its not possible now describe uploud file in Swagger. But file name must be longer than 5 chars." +
-                    "in body of html content is \"files\"",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "Processor_delete" ),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result"),
-            @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result upload_Library_To_LibraryGroup(@ApiParam(required = true)  String version_id) {
-        try {
-
-            // Přijmu soubor
-            Http.MultipartFormData body = request().body().asMultipartFormData();
-            List<Http.MultipartFormData.FilePart> files = body.getFiles();
-
-            // Kontrola validity
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
-
-            // Kontrola validity
-            if (version_object.library_group == null) return GlobalResult.result_BadRequest("Version object is not version of Library Group");
-            Model_LibraryGroup library_group = version_object.library_group;
-
-            // Kontrola oprávnění
-            if(! library_group.update_permission())  return GlobalResult.forbidden_Permission();
-
-            for( Http.MultipartFormData.FilePart file :  files ) {
-
-                // Control lenght of name
-                String fileName = file.getFilename();
-                if (fileName.length() < 5) return  GlobalResult.result_BadRequest("Too short file name");
-
-                // Ještě kontrola souboru zda už tam není - > Version_Object a knihovny
-                Model_FileRecord fileRecord = Model_FileRecord.find.where().in("version_object.id", version_object.id).ieq("file_name", fileName).findUnique();
-                if (fileRecord != null) return GlobalResult.result_BadRequest("File exist in this version -> " + fileName + " please, create new version!");
-
-                // Mám soubor
-                File libraryFile = file.getFile();
-
-
-                Model_FileRecord.uploadAzure_Version(libraryFile, "library.txt", library_group.get_path(), version_object);
-
-            }
-
-            // Vracím Objekt
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "If you want get LibraryGroup by query = libraryGroup_id",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",                 response = Model_LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true)  String libraryGroup_id) {
-        try {
-
-            // Vyhledání knihovny
-            Model_LibraryGroup libraryGroup = Model_LibraryGroup.find.byId(libraryGroup_id);
-            if(libraryGroup == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
-
-            // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(libraryGroup));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "delete LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "If you want delete LibraryGroup by query = libraryGroup_id",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "LibraryGroup_delete" ),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Result_ok.class),
-            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result delete_LibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true) String libraryGroup_id) {
-        try {
-
-            // Kontrola validity
-            Model_LibraryGroup library_group = Model_LibraryGroup.find.byId(libraryGroup_id);
-            if(library_group == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
-
-            // Kontrola oprávnění
-            if(! library_group.delete_permission())  return GlobalResult.forbidden_Permission();
-
-            // Smazání objektu z DB
-            library_group.delete();
-
-            // Vracím Odpověď
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "edit LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "If you want edit LibraryGroup by query libraryGroup_id. Send required json values and server respond with new object",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "LibraryGroup_edit" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_LibraryGroup_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful created",      response = Model_LibraryGroup.class),
-            @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result editLibraryGroup(@ApiParam(value = "libraryGroup_id String query", required = true)  String libraryGroup_id) {
-        try {
-
-            // Zpracování Json
-            final Form<Swagger_LibraryGroup_New> form = Form.form(Swagger_LibraryGroup_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_LibraryGroup_New help = form.get();
-
-            // Kontrola validity
-            Model_LibraryGroup library_group = Model_LibraryGroup.find.byId(libraryGroup_id);
-            if(library_group == null) return GlobalResult.notFoundObject("LibraryGroup libraryGroup_id not found");
-
-            // Kontrola oprávnění
-            if(! library_group.edit_permission())  return GlobalResult.forbidden_Permission();
-
-            // Úprava objektu
-            library_group.description = help.description;
-            library_group.group_name = help.group_name;
-
-            // Uložení objektu
-            library_group.save();
-
-            // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(library_group));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get Libraries from LibraryGroup Version",
-            tags = {"LibraryGroup"},
-            notes = "If you want get Libraries from LibraryGroup.Version by query = version_id",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",                 response = Model_VersionObject.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_LibraryGroup_Version_Libraries(@ApiParam(required = true)  String version_id){
-        try {
-
-            // Kontrola validity
-            Model_VersionObject versionObject = Model_VersionObject.find.byId(version_id);
-            if(versionObject == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
-
-            // Kontrola zda se jendá o Lib
-            if(versionObject.library_group == null ) return GlobalResult.notFoundObject(("Version is not version of Library Group"));
-
-            // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(versionObject));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get LibraryGroup with Filters parameters",
-            tags = {"LibraryGroup"},
-            notes = "If you want get all or only some LibraryGroups you can use filter parameters in Json. But EveryTime server will return maximal 25 objects \n\n" +
-                    "so, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... in Json we help you with pages list \n ",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_LibraryGroup_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_LibraryGroup_List.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result get_LibraryGroup_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1 (first page of list) ",required = true) int page_number)  {
-        try {
-
-            // Zpracování Json
-            Form<Swagger_LibraryGroup_Filter> form = Form.form(Swagger_LibraryGroup_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_LibraryGroup_Filter help = form.get();
-
-            //Vytvářím Query parametr (definuji ORM objekt)
-            Query<Model_LibraryGroup> query = Ebean.find(Model_LibraryGroup.class);
-
-            // If contains confirms
-            if (help.processors_id != null) {
-                query.where().in("processors.id", help.processors_id);
-            }
-
-            if (help.group_name != null) {
-                query.where().ieq("group_name", help.group_name);
-            }
-            if (help.order != null) {
-
-                String order = help.order;
-                String value = help.value;
-
-                OrderBy<Model_LibraryGroup> orderBy = new OrderBy<>();
-
-                if (order.equals("asc")) orderBy.asc(value);
-                else if (order.equals("desc")) orderBy.desc(value);
-
-                query.setOrder(orderBy);
-            }
-
-            // Vytvářím Objekt filtru
-            Swagger_LibraryGroup_List result = new Swagger_LibraryGroup_List(query, page_number);
-
-            // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get version from LibraryGroup",
-            tags = {"LibraryGroup"},
-            notes = "get version from LibraryGroup",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",      response = Model_VersionObject.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_LibraryGroup_Version(@ApiParam(value = "version_id String query", required = true) String version_id){
-        try {
-
-            // Kontroluji validitu
-            Model_VersionObject version = Model_VersionObject.find.byId(version_id);
-            if(version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
-
-            // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(version));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-///###################################################################################################################*/
-
     @ApiOperation(value = "get FileRecord",
             tags = {"File"},
             notes = "if you want create new SingleLibrary for C_program compilation",
@@ -2306,419 +1874,6 @@ public class Controller_CompilationLibraries extends Controller {
     }
 
 ///###################################################################################################################*/
-
-
-    @ApiOperation(value = "create new SingleLibrary",
-            tags = {"SingleLibrary"},
-            notes = "if you want create new SingleLibrary for C_program compilation",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_create" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_SingleLibrary_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Model_SingleLibrary.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result new_SingleLibrary() {
-        try {
-
-            // Zpracování Json
-            final Form<Swagger_SingleLibrary_New> form = Form.form(Swagger_SingleLibrary_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_SingleLibrary_New help = form.get();
-
-            // Vytvářím objekt
-            Model_SingleLibrary singleLibrary = new Model_SingleLibrary();
-            singleLibrary.library_name = help.library_name;
-            singleLibrary.description = help.description;
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! singleLibrary.create_permission())  return GlobalResult.forbidden_Permission();
-
-            // Ukládám objekt
-            singleLibrary.save();
-
-            // Vracím objekt
-            return GlobalResult.created(Json.toJson(singleLibrary));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "create new SingleLibrary",
-            tags = {"SingleLibrary"},
-            notes = "if you want create new SingleLibrary for C_program compilation",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.update_permission", value =  "true" ),
-                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_update" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_SingleLibrary_Version",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-
-            @ApiResponse(code = 201, message = "Successfully created",    response = Model_VersionObject.class),
-            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result new_SingleLibrary_Version(@ApiParam(value = "library_id String query", required = true)  String library_id){
-        try {
-
-            // Zpracování Json
-            final Form<Swagger_SingleLibrary_Version> form = Form.form(Swagger_SingleLibrary_Version.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_SingleLibrary_Version help = form.get();
-
-            // Vyhledám Objekt
-            Model_SingleLibrary singleLibrary = Model_SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null)  return GlobalResult.notFoundObject("SingleLibrary library_id not found");
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! singleLibrary.update_permission())  return GlobalResult.forbidden_Permission();
-
-            // Vytvářím novou verzi
-            Model_VersionObject version_object = new Model_VersionObject();
-            version_object.date_of_create = new Date();
-            version_object.version_name = help.version_name;
-            version_object.version_description = help.version_description;
-            version_object.single_library = singleLibrary;
-
-            // Ukládám objekt
-            version_object.save();
-
-            // vracím objekt
-            return GlobalResult.created(Json.toJson(version_object));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-
-    @ApiOperation(value = "Upload file to SingleLibrary",
-            tags = {"SingleLibrary"},
-            notes = "Upload file to SingleLibrary in file format",
-            produces = "application/json",
-            consumes = "multipart/form-data",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.update_permission", value =  "true" ),
-                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_update" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            required = true,
-                            paramType = "body",
-                            value = "File in file.txt format"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-
-            @ApiResponse(code = 200, message = "Successfully uploaded",   response = Result_ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.MultipartFormData.class)
-    public Result upload_SingleLibrary_Version( @ApiParam(required = true)  String version_id){
-        try{
-
-            Http.MultipartFormData body = request().body().asMultipartFormData();
-            Http.MultipartFormData.FilePart file = body.getFile("file");
-
-
-            // If fileRecord group is not null
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if(version_object == null ) return GlobalResult.result_BadRequest("Version_Object with version_id not exist");
-
-            // Kontrola zda je verze verzí single library
-            if(version_object.single_library == null ) return GlobalResult.result_BadRequest("Version is not version of SingleLibrary");
-
-            // ZDa už neobsahuje soubor
-            if (version_object.files.size() > 0) return GlobalResult.result_BadRequest("Version_Object has file already.. Create new Version_Object ");
-            version_object.date_of_create = new Date();
-            version_object.update();
-
-            // Kontrola jména
-            String fileName = file.getFilename();
-            if(fileName.length()< 5 )return GlobalResult.result_BadRequest("Too short FileName -> " + fileName);
-
-            // Tvorba souboru
-            File libraryFile = file.getFile();
-
-            // Nahraji soubor na Azure
-
-            Model_FileRecord.uploadAzure_Version(libraryFile, "library.txt",  version_object.single_library.get_path() ,version_object);
-
-            // Vrácení verze
-            return GlobalResult.result_ok(Json.toJson(version_object));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get SingleLibrary",
-            tags = {"SingleLibrary"},
-            notes = "if you want get SingleLibrary by query = library_id",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",                response = Model_SingleLibrary.class),
-            @ApiResponse(code = 404, message = "Object not found",         response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",     response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
-        try {
-
-            // Kontrola objektu
-            Model_SingleLibrary singleLibrary = Model_SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
-
-            // Kontrola oprávnění
-            if(!singleLibrary.read_permission()) return GlobalResult.forbidden_Permission();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(singleLibrary));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get Library with Filters parameters",
-            tags = {"SingleLibrary"},
-            notes = "If you want get all or only some SingleLibraries you can use filter parameters in Json. But EveryTime i will return maximal 25 objects \n\n" +
-                    "so, you have to used that limit for frontend pagination -> first round (0,25), second round (26, 50) etc... I will give you also" +
-                    "information how many results you can show \n ",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_SingleLibrary_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Swagger_Single_Library_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result get_SingleLibrary_Filter( @ApiParam(value = "page_number is Integer. 1,2,3...n For first call, use 1",required = true) int page_number) {
-        try {
-
-            // Zpracování Json
-            final Form<Swagger_SingleLibrary_Filter> form = Form.form(Swagger_SingleLibrary_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_SingleLibrary_Filter help = form.get();
-
-            Query<Model_SingleLibrary> query = Ebean.find(Model_SingleLibrary.class);
-
-            if (help.processors_id != null) {
-                query.where().in("processors.id", help.processors_id);
-            }
-
-            if (help.library_name != null) {
-                query.where().ieq("library_name", help.library_name);
-            }
-
-            if (help.order != null) {
-
-                String order = help.order;
-                String value = help.value;
-
-                OrderBy<Model_SingleLibrary> orderBy = new OrderBy<>();
-
-                if (order.equals("asc")) orderBy.asc(value);
-                else if (order.equals("desc")) orderBy.desc(value);
-
-                query.setOrder(orderBy);
-            }
-
-            // Skládám Filt seznam
-            Swagger_Single_Library_List result = new Swagger_Single_Library_List(query, page_number);
-
-            return GlobalResult.result_ok(Json.toJson(result));
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "edit SingleLibrary",
-            tags = {"SingleLibrary"},
-            notes = "if you want edit name or description of SingleLibrary by query = library_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.edit_permission", value =  "true" ),
-                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_edit" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_SingleLibrary_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Model_SingleLibrary.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
-        try {
-
-            // Zpracování Json
-            final Form<Swagger_SingleLibrary_New> form = Form.form(Swagger_SingleLibrary_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_SingleLibrary_New help = form.get();
-
-            // Vyhledám Objekt
-            Model_SingleLibrary singleLibrary = Model_SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
-
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! singleLibrary.edit_permission())  return GlobalResult.forbidden_Permission();
-
-            // Uprava objektu
-            singleLibrary.library_name = help.library_name;
-            singleLibrary.description = help.description;
-
-            // uložení objektu
-            singleLibrary.update();
-
-            // vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(singleLibrary));
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "delete SingleLibrary",
-            tags = {"SingleLibrary"},
-            notes = "If you want delete SingleLibrary by query = library_id",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SingleLibrary.delete_permission", value =  "true" ),
-                            @ExtensionProperty(name = "Static Permission key", value =  "SingleLibrary_delete" ),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result delete_SingleLibrary(@ApiParam(value = "library_id String query", required = true)  String library_id) {
-        try {
-
-            // Vyhledám Objekt
-            Model_SingleLibrary singleLibrary = Model_SingleLibrary.find.byId(library_id);
-            if(singleLibrary == null) return GlobalResult.notFoundObject("SingleLibrary library_id not found" );
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! singleLibrary.delete_permission())  return GlobalResult.forbidden_Permission();
-
-
-            // Smažu z databáze
-            singleLibrary.delete();
-
-            // Vracím potvrzení
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
 ///###################################################################################################################*/
 
@@ -3959,6 +3114,739 @@ public class Controller_CompilationLibraries extends Controller {
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(boards_for_blocko));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    // LIBRARIES #######################################################################################################
+
+    @ApiOperation(value = "create new ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "TODO",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "ImportLibrary_create" ),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ImportLibrary_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",    response = Model_ImportLibrary.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibrary_create() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_ImportLibrary_New> form = Form.form(Swagger_ImportLibrary_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ImportLibrary_New help = form.get();
+
+            // Vytvářím objekt
+            Model_ImportLibrary library = new Model_ImportLibrary();
+            library.name = help.name;
+            library.description = help.description;
+            library.long_description = help.long_description;
+            library.tag = help.tag;
+            library.state = Library_state.NEW;
+
+            // Kontorluji oprávnění těsně před uložením
+            if(!library.create_permission()) return GlobalResult.forbidden_Permission();
+
+            // Ukládám objekt
+            library.save();
+
+            // Vracím objekt
+            return GlobalResult.created(Json.toJson(library));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get ImportLibrary",
+            tags = {"ImportLibrary"},
+            notes = "if you want to get ImportLibrary.",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
+                    }),
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_ImportLibrary.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result importLibrary_get(@ApiParam(value = "library_id String query", required = true)  String library_id) {
+        try {
+
+            // Kontrola objektu
+            Model_ImportLibrary library = Model_ImportLibrary.find.byId(library_id);
+            if(library == null ) return GlobalResult.notFoundObject("ImportLibrary not found");
+
+            // Vrácneí objektu
+            return GlobalResult.result_ok(Json.toJson(library));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get all ImportLibraries",
+            tags = {"ImportLibrary"},
+            notes = "if you want to get all ImportLibraries.",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
+                    }),
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_ImportLibrary.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result importLibrary_getAll() {
+        try {
+
+            // Získání objektů
+            List<Swagger_ImportLibrary_Short_Detail> libraries = new ArrayList<>();
+
+            for (Model_ImportLibrary library : Model_ImportLibrary.find.where().eq("removed", false).findList()){
+                libraries.add(library.get_short_import_library());
+            }
+
+            // Vrácneí objektu
+            return GlobalResult.result_ok(Json.toJson(libraries));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get ImportLibraries by filter",
+            tags = {"ImportLibrary"},
+            notes = "if you want to get ImportLibraries filtered by specific tag.",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
+                    }),
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_ImportLibrary.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result importLibrary_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  int page_number) {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_ImportLibrary_Filter> form = Form.form(Swagger_ImportLibrary_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ImportLibrary_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<Model_ImportLibrary> query = Ebean.find(Model_ImportLibrary.class);
+            query.where().eq("removed", false);
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.tag != null){
+
+                query.where().eq("tag", help.tag);
+            }
+
+            // Vyvoření odchozího JSON
+            Swagger_ImportLibrary_List result = new Swagger_ImportLibrary_List(query,page_number);
+
+            // Vrácneí objektu
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "update ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "TODO",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "ImportLibrary_edit" ),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ImportLibrary_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully updated",    response = Model_ImportLibrary.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibrary_update(@ApiParam(value = "library_id String query", required = true)  String library_id) {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_ImportLibrary_New> form = Form.form(Swagger_ImportLibrary_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ImportLibrary_New help = form.get();
+
+            // Vyhledání objektu
+            Model_ImportLibrary library = Model_ImportLibrary.find.byId(library_id);
+            if (library == null) return GlobalResult.notFoundObject("Library not found");
+
+            // Kontrola oprávnění
+            if(!library.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            library.name = help.name;
+            library.description = help.description;
+            library.long_description = help.long_description;
+            library.tag = help.tag;
+            library.state = help.state;
+
+            // Uložení změn
+            library.update();
+
+            // Vrácení objektu
+            return GlobalResult.created(Json.toJson(library));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "delete ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "if you want delete ImportLibrary.",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "ImportLibrary_delete"),
+                    }),
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibrary_delete(@ApiParam(value = "library_id String query", required = true)  String library_id) {
+        try {
+
+            // Kontrola objektu
+            Model_ImportLibrary library = Model_ImportLibrary.find.byId(library_id);
+            if(library == null ) return GlobalResult.notFoundObject("ImportLibrary not found");
+
+            // Kontrola oprávnění
+            if (!library.delete_permission()) return GlobalResult.forbidden_Permission();
+
+            // Smazání objektu
+            library.removed = true;
+            library.update();
+
+            // Vrácneí potvrzení
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "new Version of ImportLibrary",
+            tags = {"ImportLibrary"},
+            notes = "If you want add new code to ImportLibrary",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_update"),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_ImportLibrary_Version_Short_Detail.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibraryVersion_create(@ApiParam(value = "library_id String query", required = true)  String library_id){
+        try{
+
+            // Zpracování Json
+            Form<Swagger_ImportLibrary_Version_New> form = Form.form(Swagger_ImportLibrary_Version_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ImportLibrary_Version_New help = form.get();
+
+            // Ověření objektu
+            Model_ImportLibrary library = Model_ImportLibrary.find.byId(library_id);
+            if(library == null) return GlobalResult.notFoundObject("ImportLibrary library_id not found");
+
+            // Zkontroluji oprávnění
+            if(!library.update_permission()) return GlobalResult.forbidden_Permission();
+
+            // První nová Verze
+            Model_VersionObject version_object = new Model_VersionObject();
+            version_object.version_name        = help.version_name;
+            version_object.version_description = help.version_description;
+            version_object.author              = Controller_Security.getPerson();
+            version_object.date_of_create      = new Date();
+            version_object.library             = library;
+            version_object.public_version      = true;
+
+            version_object.save();
+
+            // Nahraje do Azure a připojí do verze soubor
+            ObjectNode  content = Json.newObject();
+            content.set("library_files", Json.toJson(help.library_files) );
+
+            // Content se nahraje na Azure
+
+            Model_FileRecord.uploadAzure_Version(content.toString(), "library.json" , library.get_path() ,  version_object);
+            version_object.update();
+
+            // Vracím vytvořený objekt
+            return GlobalResult.created(Json.toJson(version_object.get_short_import_library_version()));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get ImportLibrary Version",
+            tags = {"ImportLibrary"},
+            notes = "get Version of ImportLibrary by query = version_id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_description", properties = {
+                            @ExtensionProperty(name = "ImportLibrary.Version.read_permission", value = Model_VersionObject.read_permission_docs),
+                    }),
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_read"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_ImportLibrary_Version_Short_Detail.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result importLibraryVersion_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
+        try {
+
+            // Vyhledám Objekt
+            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
+
+            //Zkontroluji validitu Verze zda sedí k C_Programu
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+
+            // Zkontroluji oprávnění
+            if(! version_object.library.read_permission())  return GlobalResult.forbidden_Permission();
+
+            // Vracím Objekt
+            return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "update basic information in Version of ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "For update basic (name and description) information in Version of ImportLibrary. If you want update code. You have to create new version. " +
+                    "And after that you can delete previous version",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_edit"),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_Edit",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_ImportLibrary_Version_Short_Detail.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibraryVersion_update(@ApiParam(value = "version_id String query",   required = true)  String version_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_C_Program_Version_Edit> form = Form.form(Swagger_C_Program_Version_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_Edit help = form.get();
+
+            // Ověření objektu
+            Model_VersionObject version_object= Model_VersionObject.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
+
+            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+
+            // Kontrola oprávnění
+            if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            //Uprava objektu
+            version_object.version_name = help.version_name;
+            version_object.version_description = help.version_description;
+
+            // Uložení změn
+            version_object.update();
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "delete Version in ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "delete ImportLibrary by query = version_id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_delete"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response =  Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibraryVersion_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id){
+        try{
+
+            // Ověření objektu
+            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
+
+            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+
+            // Kontrola oprávnění
+            if(!version_object.library.delete_permission()) return GlobalResult.forbidden_Permission();
+
+            version_object.removed_by_user = true;
+
+            // Smažu zástupný objekt
+            version_object.update();
+
+            // Vracím potvrzení o smazání
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "upload file to Version of ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "For update Library files in Version of ImportLibrary.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_edit"),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Library_File_Load",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_ImportLibrary_Version_Short_Detail.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibraryVersion_uploadFile(@ApiParam(value = "version_id String query",   required = true)  String version_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Library_File_Load help = form.get();
+
+            // Ověření objektu
+            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
+
+            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+
+            // Kontrola oprávnění
+            if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            if(version_object.files.size() > 0) {
+
+                Model_FileRecord file = version_object.files.get(0);
+                //Uprava objektu
+                JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+
+                Form<Swagger_Library_File_Load> load_form = Form.form(Swagger_Library_File_Load.class).bind(json);
+                if (load_form.hasErrors()) {return GlobalResult.formExcepting(load_form.errorsAsJson());}
+                Swagger_Library_File_Load lib_help = load_form.get();
+
+                for (Swagger_ImportLibrary_Version_New.Library_File new_lib_file : help.library_files) {
+
+                    for (Swagger_ImportLibrary_Version_New.Library_File old_lib_file : lib_help.library_files) {
+
+                        if(old_lib_file.file_name.equals(new_lib_file.file_name))
+                            lib_help.library_files.remove(old_lib_file);
+                    }
+
+                    lib_help.library_files.add(new_lib_file);
+                }
+
+                file.delete();
+
+                // Nahraje do Azure a připojí do verze soubor
+                ObjectNode  content = Json.newObject();
+                content.set("library_files", Json.toJson(lib_help.library_files) );
+
+                // Content se nahraje na Azure
+                Model_FileRecord.uploadAzure_Version(content.toString(), "library.json" , version_object.library.get_path() ,  version_object);
+            }else if(version_object.files.size() == 0){
+
+                // Nahraje do Azure a připojí do verze soubor
+                ObjectNode  content = Json.newObject();
+                content.set("library_files", Json.toJson(help.library_files) );
+
+                // Content se nahraje na Azure
+                Model_FileRecord.uploadAzure_Version(content.toString(), "library.json" , version_object.library.get_path() ,  version_object);
+            }
+
+            // Uložení změn
+            version_object.update();
+            version_object.refresh();
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "remove file to Version of ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "For removing Library files in Version of ImportLibrary.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_edit"),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Library_File_Load",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_ImportLibrary_Version_Short_Detail.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibraryVersion_removeFile(@ApiParam(value = "version_id String query",   required = true)  String version_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Library_File_Load help = form.get();
+
+            // Ověření objektu
+            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
+
+            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+
+            // Kontrola oprávnění
+            if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            if(version_object.files.size() > 0) {
+
+                Model_FileRecord file = version_object.files.get(0);
+                //Uprava objektu
+                JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+
+                Form<Swagger_Library_File_Load> load_form = Form.form(Swagger_Library_File_Load.class).bind(json);
+                if (form.hasErrors()) {return GlobalResult.formExcepting(load_form.errorsAsJson());}
+                Swagger_Library_File_Load lib_help = load_form.get();
+
+                List<Swagger_ImportLibrary_Version_New.Library_File> to_remove = new ArrayList<>();
+
+                for (Swagger_ImportLibrary_Version_New.Library_File removed_file : help.library_files) {
+
+                    for (Swagger_ImportLibrary_Version_New.Library_File lib_file : lib_help.library_files) {
+
+                        if(lib_file.file_name.equals(removed_file.file_name))
+                            to_remove.add(lib_file);
+                    }
+                }
+                lib_help.library_files.removeAll(to_remove);
+
+                file.delete();
+
+                // Nahraje do Azure a připojí do verze soubor
+                ObjectNode  content = Json.newObject();
+                content.set("library_files", Json.toJson(lib_help.library_files) );
+
+                // Content se nahraje na Azure
+                Model_FileRecord.uploadAzure_Version(content.toString(), "library.json" , version_object.library.get_path() ,  version_object);
+            }else if(version_object.files.size() == 0){
+                return GlobalResult.result_BadRequest("Library has no files!");
+            }
+
+            // Uložení změn
+            version_object.update();
+            version_object.refresh();
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

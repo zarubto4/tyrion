@@ -28,57 +28,24 @@ public class Swagger_C_Program_Version_Update {
     public String main;
 
     @Valid
-    public List<User_Files> user_files = new ArrayList<>();
+    public List<User_File> user_files = new ArrayList<>();
 
     @Valid
-    public List<External_Libraries> external_libraries = new ArrayList<>();
+    public List<String> library_files = new ArrayList<>();
 
 
-    public static class User_Files {
-        public User_Files() {}
+    public static class User_File {
+        public User_File() {}
 
         public String file_name;
         public String code;
     }
 
-    public static class External_Libraries {
-        public External_Libraries() {
+    public static class Library_File {
+        public Library_File() {}
+
+        public String file_name;
+        public String content;
         }
 
-        public String library_name;
-        @Valid
-        public List<File_Lib> files;
-
-        public static class File_Lib {
-            public File_Lib() {
-            }
-
-            public String file_name;
-            public String content;
-        }
-    }
-
-
-// Pomocné metody na separování obsahu *********************************************************************************    
-
-    public ObjectNode includes(){
-
-        ObjectNode includes = Json.newObject();
-
-        if(external_libraries != null)
-        for(External_Libraries external_library : external_libraries){
-            for(External_Libraries.File_Lib file_lib : external_library.files){
-                includes.put(file_lib.file_name , file_lib.content);
-            }
-        }
-
-        if(user_files != null)
-        for(User_Files user_file : user_files){
-             includes.put(user_file.file_name , user_file.code);
-        }
-        
-        return  includes;
-    }
-
-    
 }

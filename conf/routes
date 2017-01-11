@@ -275,39 +275,55 @@ GET             /actualization_procedure/:actualization_procedure_id            
 ################################################################################################################################################################################
 
 #C_Program
-POST            /c_program                                                                  @controllers.Controller_CompilationLibraries.c_program_create()
-GET             /c_program/:c_program_id                                                    @controllers.Controller_CompilationLibraries.c_program_get(c_program_id)
-PUT             /c_program/list/:page_number                                                @controllers.Controller_CompilationLibraries.c_program_getByFilter(page_number: Int)
+POST            /c_program                                                      @controllers.Controller_CompilationLibraries.c_program_create()
+GET             /c_program/:c_program_id                                        @controllers.Controller_CompilationLibraries.c_program_get(c_program_id)
+PUT             /c_program/list/:page_number                                    @controllers.Controller_CompilationLibraries.c_program_getByFilter(page_number: Int)
 
-PUT             /c_program/:c_program_id                                                    @controllers.Controller_CompilationLibraries.c_program_update(c_program_id)
-DELETE          /c_program/:c_program_id                                                    @controllers.Controller_CompilationLibraries.c_program_delete(c_program_id)
+PUT             /c_program/:c_program_id                                        @controllers.Controller_CompilationLibraries.c_program_update(c_program_id)
+DELETE          /c_program/:c_program_id                                        @controllers.Controller_CompilationLibraries.c_program_delete(c_program_id)
 
-POST            /c_program/version/create/:c_program_id                                     @controllers.Controller_CompilationLibraries.c_programVersion_create(c_program_id)
-PUT             /c_program/version/edit/:version_id                                         @controllers.Controller_CompilationLibraries.c_programVersion_update(version_id)
+POST            /c_program/version/create/:c_program_id                         @controllers.Controller_CompilationLibraries.c_programVersion_create(c_program_id)
+PUT             /c_program/version/edit/:version_id                             @controllers.Controller_CompilationLibraries.c_programVersion_update(version_id)
 
-DELETE          /c_program/version/:version_id                                              @controllers.Controller_CompilationLibraries.c_programVersion_delete(version_id)
-GET             /c_program/version/:version_id                                              @controllers.Controller_CompilationLibraries.c_programVersion_get(version_id)
-POST            /c_program/version/compile                                                  @controllers.Controller_CompilationLibraries.compile_C_Program_code()
-PUT             /c_program/version/compile/:version_id                                      @controllers.Controller_CompilationLibraries.compile_C_Program_version(version_id)
+DELETE          /c_program/version/:version_id                                  @controllers.Controller_CompilationLibraries.c_programVersion_delete(version_id)
+GET             /c_program/version/:version_id                                  @controllers.Controller_CompilationLibraries.c_programVersion_get(version_id)
+POST            /c_program/version/compile                                      @controllers.Controller_CompilationLibraries.compile_C_Program_code()
+PUT             /c_program/version/compile/:version_id                          @controllers.Controller_CompilationLibraries.compile_C_Program_version(version_id)
 
 
-GET             /c_program/version/public/list/:page_number                                 @controllers.Controller_CompilationLibraries.c_program_getPublicList(page_number: Int)
+GET             /c_program/version/public/list/:page_number                     @controllers.Controller_CompilationLibraries.c_program_getPublicList(page_number: Int)
 
 #C_Program/Public
-GET             /c_program/version_for_decision/:version_id                                 @controllers.Controller_CompilationLibraries.get_version_for_decision(version_id)
-PUT             /c_program/version_for_aprove/approve_decision                              @controllers.Controller_CompilationLibraries.approve_decision()
-PUT             /c_program/version/make_public/:version_id                                  @controllers.Controller_CompilationLibraries.c_programVersion_makePublic(version_id)
+GET             /c_program/version_for_decision/:version_id                     @controllers.Controller_CompilationLibraries.get_version_for_decision(version_id)
+PUT             /c_program/version_for_aprove/approve_decision                  @controllers.Controller_CompilationLibraries.approve_decision()
+PUT             /c_program/version/make_public/:version_id                      @controllers.Controller_CompilationLibraries.c_programVersion_makePublic(version_id)
+
+#Libraries
+POST            /library                                                        @controllers.Controller_CompilationLibraries.importLibrary_create()
+GET             /library                                                        @controllers.Controller_CompilationLibraries.importLibrary_getAll()
+GET             /library/:library_id                                            @controllers.Controller_CompilationLibraries.importLibrary_get(library_id)
+PUT             /library/:library_id                                            @controllers.Controller_CompilationLibraries.importLibrary_update(library_id)
+PUT             /library/list/:page_number                                      @controllers.Controller_CompilationLibraries.importLibrary_getByFilter(page_number: Int)
+DELETE          /library/:library_id                                            @controllers.Controller_CompilationLibraries.importLibrary_delete(library_id)
+
+POST            /library/version/:library_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_create(library_id)
+GET             /library/version/:version_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_get(version_id)
+PUT             /library/version/:version_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_update(version_id)
+DELETE          /library/version/:version_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_delete(version_id)
+
+PUT             /library/version/upload_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadFile(version_id)
+PUT             /library/version/remove_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadFile(version_id)
 
 #Actualization
-PUT             /c_program/version/upload/:version_id                                       @controllers.Controller_CompilationLibraries.uploadCompilationToBoard(version_id)
-POST            /admin_binary/:instance_id/:board_id/:build_id/:command                     @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
+PUT             /c_program/version/upload/:version_id                           @controllers.Controller_CompilationLibraries.uploadCompilationToBoard(version_id)
+POST            /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
 #Processor
-POST            /processor                                                                  @controllers.Controller_CompilationLibraries.processor_create()
-GET             /processor/:processor_id                                                    @controllers.Controller_CompilationLibraries.processor_get(processor_id)
-GET             /processor                                                                  @controllers.Controller_CompilationLibraries.processor_getAll()
-PUT             /processor/:processor_id                                                    @controllers.Controller_CompilationLibraries.processor_update(processor_id)
-DELETE          /processor/:processor_id                                                    @controllers.Controller_CompilationLibraries.processor_delete(processor_id)
+POST            /processor                                                      @controllers.Controller_CompilationLibraries.processor_create()
+GET             /processor/:processor_id                                        @controllers.Controller_CompilationLibraries.processor_get(processor_id)
+GET             /processor                                                      @controllers.Controller_CompilationLibraries.processor_getAll()
+PUT             /processor/:processor_id                                        @controllers.Controller_CompilationLibraries.processor_update(processor_id)
+DELETE          /processor/:processor_id                                        @controllers.Controller_CompilationLibraries.processor_delete(processor_id)
 
 #Board
 POST            /board                                                          @controllers.Controller_CompilationLibraries.board_create()
@@ -338,46 +354,22 @@ GET             /typeOfBoard/:type_of_board_id                                  
 PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.Controller_CompilationLibraries.typeOfBoard_mark_C_program_Version_as_main(type_of_board_id,version_id)
 
 #Bootloader
-POST            /bootloader/:type_of_board_id                                               @controllers.Controller_CompilationLibraries.boot_loader_create(type_of_board_id)
-PUT             /bootloader/file/:boot_loader_id                                            @controllers.Controller_CompilationLibraries.boot_loader_upload_file(boot_loader_id)
-PUT             /bootloader/mark/bootloader/:boot_loader_id                                 @controllers.Controller_CompilationLibraries.boot_loader_mark_as_main(boot_loader_id)
+POST            /bootloader/:type_of_board_id                                   @controllers.Controller_CompilationLibraries.boot_loader_create(type_of_board_id)
+PUT             /bootloader/file/:boot_loader_id                                @controllers.Controller_CompilationLibraries.boot_loader_upload_file(boot_loader_id)
+PUT             /bootloader/mark/bootloader/:boot_loader_id                     @controllers.Controller_CompilationLibraries.boot_loader_mark_as_main(boot_loader_id)
 
 
-PUT             /bootloader/update_device_list/:instance_id                                @controllers.Controller_CompilationLibraries.boot_loader_update_instance(instance_id)
-
-#LibraryGroups
-POST            /compilation/libraryGroup                                                   @controllers.Controller_CompilationLibraries.new_LibraryGroup()
-PUT             /compilation/libraryGroup/filter/:page_number                               @controllers.Controller_CompilationLibraries.get_LibraryGroup_Filter(page_number:Int )
-
-POST            /compilation/libraryGroup/upload/:version_id                                @controllers.Controller_CompilationLibraries.upload_Library_To_LibraryGroup(version_id)
-
-POST            /compilation/libraryGroup/version/:libraryGroup_id                          @controllers.Controller_CompilationLibraries.new_LibraryGroup_Version(libraryGroup_id)
-GET             /compilation/libraryGroup/version/:version_id                               @controllers.Controller_CompilationLibraries.get_LibraryGroup_Version(version_id)
-
-GET             /compilation/libraryGroup/:libraryGroup_id                                  @controllers.Controller_CompilationLibraries.get_LibraryGroup(libraryGroup_id)
-DELETE          /compilation/libraryGroup/:libraryGroup_id                                  @controllers.Controller_CompilationLibraries.delete_LibraryGroup(libraryGroup_id)
-PUT             /compilation/libraryGroup/:libraryGroup_id                                  @controllers.Controller_CompilationLibraries.editLibraryGroup(libraryGroup_id)
-
-GET             /file/listOfFiles/:version_id                                               @controllers.Controller_CompilationLibraries.get_LibraryGroup_Version_Libraries(version_id)
-#Single Library
-POST            /compilation/library                                                        @controllers.Controller_CompilationLibraries.new_SingleLibrary()
-PUT             /compilation/library/filter/:page_number                                    @controllers.Controller_CompilationLibraries.get_SingleLibrary_Filter(page_number:Int  )
-POST            /compilation/library/version/:library_id                                    @controllers.Controller_CompilationLibraries.new_SingleLibrary_Version(library_id)
-
-GET             /compilation/library/:library_id                                            @controllers.Controller_CompilationLibraries.get_SingleLibrary(library_id)
-PUT             /compilation/library/:library_id                                            @controllers.Controller_CompilationLibraries.edit_SingleLibrary(library_id)
-DELETE          /compilation/library/:library_id                                            @controllers.Controller_CompilationLibraries.delete_SingleLibrary(library_id)
-POST            /compilation/library/upload/:version_id                                     @controllers.Controller_CompilationLibraries.upload_SingleLibrary_Version(version_id)
+PUT             /bootloader/update_device_list/:instance_id                     @controllers.Controller_CompilationLibraries.boot_loader_update_instance(instance_id)
 
 #File // Skryto ve swaggeru
-GET             /file/fileRecord/:file_record_id                                            @controllers.Controller_CompilationLibraries.fileRecord(file_record_id)
+GET             /file/fileRecord/:file_record_id                                @controllers.Controller_CompilationLibraries.fileRecord(file_record_id)
 
 
 #Compilation Server
-POST            /compilation_server                                                         @controllers.Controller_CompilationLibraries.create_Compilation_Server()
-PUT             /compilation_server/:server_id                                              @controllers.Controller_CompilationLibraries.edit_Compilation_Server(server_id)
-GET             /compilation_server                                                         @controllers.Controller_CompilationLibraries.get_All_Compilation_Server()
-DELETE          /compilation_server/:server_id                                              @controllers.Controller_CompilationLibraries.delete_Compilation_Server(server_id)
+POST            /compilation_server                                             @controllers.Controller_CompilationLibraries.create_Compilation_Server()
+PUT             /compilation_server/:server_id                                  @controllers.Controller_CompilationLibraries.edit_Compilation_Server(server_id)
+GET             /compilation_server                                             @controllers.Controller_CompilationLibraries.get_All_Compilation_Server()
+DELETE          /compilation_server/:server_id                                  @controllers.Controller_CompilationLibraries.delete_Compilation_Server(server_id)
 
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
@@ -486,6 +478,7 @@ GET             /admin/blocko_management                        @controllers.Con
 GET             /admin/grid_public                              @controllers.Controller_Dashboard.grid_public()
 GET             /admin/grid_management                          @controllers.Controller_Dashboard.grid_management()
 GET             /admin/public_code                              @controllers.Controller_Dashboard.public_code()
+GET             /admin/libraries                                @controllers.Controller_Dashboard.libraries()
 GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_aprove_procedure()
 GET             /admin/general_tariffs                          @controllers.Controller_Dashboard.general_tariffs_list()
 GET             /admin/general_tariffs/:general_tariff_id       @controllers.Controller_Dashboard.general_tariff_edit(general_tariff_id)

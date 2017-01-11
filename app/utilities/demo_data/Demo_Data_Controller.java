@@ -100,7 +100,7 @@ public class Demo_Data_Controller extends Controller {
         result =   this.extendension_servers();     if(result.status() != 200 ) return result;
         result =   this.basic_tariffs();            if(result.status() != 200 ) return result;
         result =   this.blocko_demo_data();         if(result.status() != 200 ) return result;
-        result =   this.grid_demo_data();         if(result.status() != 200 ) return result;
+        result =   this.grid_demo_data();           if(result.status() != 200 ) return result;
         result =   this.c_program_configuration();  if(result.status() != 200 ) return result;
 
         result =  this.person_test_user();            if(result.status() != 200 ) return result;

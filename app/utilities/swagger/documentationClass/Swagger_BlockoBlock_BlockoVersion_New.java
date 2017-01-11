@@ -15,7 +15,6 @@ public class Swagger_BlockoBlock_BlockoVersion_New {
     @ApiModelProperty(required = true, value = "Length must be between 2 and 60 characters.")
     public String version_name;
 
-    @Constraints.Required
     @Constraints.MinLength(value = 0)
     @Constraints.MaxLength(value = 255)
     @ApiModelProperty(required = false)

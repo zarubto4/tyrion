@@ -32,6 +32,7 @@ import views.html.*;
 import views.html.helpdesk_tool.project_detail;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
+import views.html.publiccprograms.libraries;
 import views.html.super_general.login;
 import views.html.super_general.main;
 import views.html.boards.bootloader_settings;
@@ -556,6 +557,17 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
+    @Security.Authenticated(Secured_Admin.class)
+    public Result libraries(){
+        try {
+
+            Html libraries_content = libraries.render();
+            return return_page(libraries_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
 
     @Security.Authenticated(Secured_Admin.class)
     public Result grid_public(){

@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -30,34 +31,25 @@ public class Swagger_C_Program_Version_New {
     public String main;
 
     @ApiModelProperty(required = false)
-    @Valid public List<User_Files> user_files;
+    @Valid public List<User_File> user_files = new ArrayList<>();
 
     @ApiModelProperty(required = false)
-    @Valid public List<External_Libraries>  external_libraries;
+    @Valid public List<String>  library_files = new ArrayList<>();
 
 
 
-    public static class User_Files {
-        public User_Files(){}
+    public static class User_File {
+        public User_File(){}
 
         public String file_name;
         public String code;
 
     }
 
-    public static class External_Libraries {
-        public External_Libraries(){}
+    public static class Library_File {
+        public Library_File(){}
 
-        public String library_name;
-        @Valid public List<File_Lib> files;
-
-        public static class File_Lib {
-            public File_Lib(){}
-
-            public String file_name;
-            public String content;
-        }
+        public String file_name;
+        public String content;
     }
-
-
 }

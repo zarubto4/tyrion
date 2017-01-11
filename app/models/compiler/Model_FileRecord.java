@@ -108,7 +108,7 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_Version(String file_content, String file_name, String file_path, Model_VersionObject version_object) throws Exception{
 
-        logger.debug("Azure load: "+ file_path + version_object.get_path() + "/" + file_name );
+        logger.debug("Azure upload: "+ file_path + version_object.get_path() + "/" + file_name );
 
 
         int slash = file_path.indexOf("/");

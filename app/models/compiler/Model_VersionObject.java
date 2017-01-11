@@ -29,7 +29,10 @@ import utilities.enums.Approval_state;
 import utilities.enums.Compile_Status;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
+import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
+import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
+import utilities.swagger.documentationClass.Swagger_Library_File_Load;
 import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
@@ -48,35 +51,37 @@ public class Model_VersionObject extends Model {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-                                                         @Id @ApiModelProperty(required = true)  public String id;
-                                                            @ApiModelProperty(required = true)  public String version_name;
-                     @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String version_description;
+                                                                @Id @ApiModelProperty(required = true) public String id;
+                                                                    @ApiModelProperty(required = true) public String version_name;
+                             @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true) public String version_description;
 
-    @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = false, value = "can be empty!")  public Model_Person author;
+    @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = false, value = "can be empty!")    public Model_Person author;
 
 
-                                                                                        @JsonIgnore  public boolean public_version;  // Pižívá se u Gridu, u C_programů atd..
+                                                                                           @JsonIgnore public boolean public_version;  // Pižívá se u Gridu, u C_programů atd..
 
-    // OBJEKT V KOŠI!! - SLOUŽÍ K ODSTRANĚNÍ Z POHLEDU UŽIVATELE - ALE NIKOLIV Z DATABÁZE!
-    @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
+                                                                                           // OBJEKT V KOŠI!! - SLOUŽÍ K ODSTRANĚNÍ Z POHLEDU UŽIVATELE - ALE NIKOLIV Z DATABÁZE!
+                                                                                           @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
-    @ApiModelProperty(required = true,
-            dataType = "integer", readOnly = true,
-            value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
-            example = "1466163478925")                                                          public Date date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
+            value = "UNIX time in ms", example = "1466163478925")                                      public Date date_of_create;
 
 
 
-    @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch = FetchType.EAGER ) public List<Model_FileRecord> files = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch=FetchType.EAGER ) public List<Model_FileRecord> files = new ArrayList<>();
 
-                                     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)     public Model_LibraryGroup library_group;
-                                     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)     public Model_SingleLibrary single_library;
+    // Libraries ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    @JsonIgnore @ManyToOne                                  public Model_ImportLibrary library;
+    @JsonIgnore @ManyToMany(mappedBy = "library_versions")  public List<Model_VersionObject> c_program_versions = new ArrayList<>();
 
     // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @JsonIgnore @ManyToOne()                                                                                    public Model_CProgram c_program;
     @JsonIgnore @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)                                 public Model_CCompilation c_compilation;
 
+    @JsonIgnore @ManyToMany @JoinTable(name = "model_c_program_library_version",
+            joinColumns = @JoinColumn(name = "library_version_id"),
+            inverseJoinColumns = @JoinColumn(name = "c_program_version_id"))                                    public List<Model_VersionObject> library_versions = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
@@ -106,9 +111,9 @@ public class Model_VersionObject extends Model {
 
     // M_Project --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)    public Model_MProgram m_program;
-    @JsonIgnore  @Column(columnDefinition = "TEXT") public String m_program_virtual_input_output;
-    @JsonIgnore  public String qr_token;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_MProgram m_program;
+                                    @JsonIgnore @Column(columnDefinition = "TEXT") public String m_program_virtual_input_output;
+                                                                       @JsonIgnore public String qr_token;
 
 
 
@@ -116,6 +121,29 @@ public class Model_VersionObject extends Model {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_ImportLibrary_Version_Short_Detail get_short_import_library_version(){
+        Swagger_ImportLibrary_Version_Short_Detail help = new Swagger_ImportLibrary_Version_Short_Detail();
+
+        help.version_id = id;
+        help.version_name = version_name;
+        help.version_description = version_description;
+
+        for (Model_FileRecord file : this.files){
+
+            JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+
+            Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bind(json);
+            if(form.hasErrors()) return null;
+
+            Swagger_Library_File_Load lib_form = form.get();
+
+            for (Swagger_ImportLibrary_Version_New.Library_File library_file : lib_form.library_files)
+            help.library_files.add(library_file);
+        }
+
+        return help;
+    }
 
     @Transient @JsonIgnore public Swagger_C_Program_Version_Short_Detail get_short_c_program_version(){
         Swagger_C_Program_Version_Short_Detail help = new Swagger_C_Program_Version_Short_Detail();
@@ -249,8 +277,6 @@ public class Model_VersionObject extends Model {
         Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
         if(form.hasErrors()){
 
-
-
             logger.error("Version Object:: compile_program_procedure:: File found but json is not parsable!!! - Version!");
             c_compilation.status = Compile_Status.json_code_is_broken;
             c_compilation.update();
@@ -268,10 +294,71 @@ public class Model_VersionObject extends Model {
         ObjectNode request = Json.newObject();
         request.put("messageType", "build");
         request.put("target", typeOfBoard.compiler_target_name);
-        request.put("libVersion", "v0");
+        request.put("libVersion", "v0"); // TODO longetrm podle verzí komplační knohovny
         request.put("versionId", this.id);
         request.put("code", code_file.main);
-        request.set("includes", code_file.includes() == null ? Json.newObject() : code_file.includes() );
+
+        List<Swagger_C_Program_Version_New.Library_File> library_files = new ArrayList<>();
+
+        for (String lib_id : code_file.library_files) {
+
+            Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
+            if (lib_version == null){
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "error");
+                result.put("error", "Error getting libraries - library version not found");
+                result.put("error_code", 400);
+                return result;
+            }
+            if (lib_version.library == null){
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "error");
+                result.put("error", "Error getting libraries - some file is not a library");
+                result.put("error_code", 400);
+                return result;
+            }
+
+            if (!lib_version.files.isEmpty()){
+                for (Model_FileRecord f : lib_version.files) {
+
+                    JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
+
+                    Form<Swagger_C_Program_Version_New.Library_File> lib_form = Form.form(Swagger_C_Program_Version_New.Library_File.class).bind(j);
+                    if (lib_form.hasErrors()){
+
+                        ObjectNode result = Json.newObject();
+                        result.put("status", "error");
+                        result.put("error", "Error importing libraries");
+                        result.put("error_code", 400);
+                        return result;
+                    }
+
+                    Swagger_C_Program_Version_New.Library_File lib_file = lib_form.get();
+
+                    for (Swagger_C_Program_Version_Update.User_File user_file : code_file.user_files){
+
+                        if (lib_file.file_name.equals(user_file.file_name))break;
+                        if (!library_files.contains(lib_file)) library_files.add(lib_file);
+
+                    }
+                }
+            }
+        }
+
+        ObjectNode includes = Json.newObject();
+
+        for(Swagger_C_Program_Version_New.Library_File file_lib : library_files){
+            includes.put(file_lib.file_name , file_lib.content);
+        }
+
+        if(code_file.user_files != null)
+            for(Swagger_C_Program_Version_Update.User_File user_file : code_file.user_files){
+                includes.put(user_file.file_name , user_file.code);
+            }
+
+        request.set("includes", includes);
 
 
         // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený

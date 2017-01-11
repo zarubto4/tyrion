@@ -20,7 +20,7 @@ public class Model_CCompilation extends Model {
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-public String bla;
+
                                                                          @Id public String id;
                                                                  @JsonIgnore public Date date_of_create;
 

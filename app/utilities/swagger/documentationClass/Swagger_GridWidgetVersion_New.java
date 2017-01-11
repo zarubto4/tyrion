@@ -15,10 +15,9 @@ public class Swagger_GridWidgetVersion_New {
     @ApiModelProperty(required = true, value = "Length must be between 2 and 60 characters.")
     public String version_name;
 
-    @Constraints.Required
     @Constraints.MinLength(value = 0)
     @Constraints.MaxLength(value = 255)
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = false)
     public String version_description;
 
     @Constraints.Required
