@@ -33,6 +33,7 @@ import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -348,11 +349,11 @@ public class Model_VersionObject extends Model {
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
                 F.Promise<WSResponse> responsePromise = ws.url(json_compilation_result.get("buildUrl").asText())
                         .setContentType("undefined")
-                        .setRequestTimeout(2500)
+                        .setRequestTimeout(7500)
                         .get();
 
 
-                byte[] body = responsePromise.get(2500).asByteArray();
+                byte[] body = responsePromise.get(7500).asByteArray();
 
                 if (body == null || body.length == 0){
                     throw new FileExistsException();
@@ -371,6 +372,18 @@ public class Model_VersionObject extends Model {
                 c_compilation.update();
 
                 return (ObjectNode) Json.toJson(new Swagger_Compilation_Ok());
+
+            }catch (ConnectException e){
+
+                logger.error("Compilation Server is probably offline on URL:: " + json_compilation_result.get("buildUrl").asText() );
+                c_compilation.status = Compile_Status.successfully_compiled_not_restored;
+                c_compilation.update();
+
+                ObjectNode result = Json.newObject();
+                result.put("status", "error");
+                result.put("error", "Server side Error");
+                result.put("error_code", 400);
+                return result;
 
 
             }catch (FileExistsException e){

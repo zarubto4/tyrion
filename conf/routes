@@ -21,8 +21,8 @@ GET              /websocket/access_token                       @controllers.Cont
 ###################################################################################f##################################################################################
 
 #Login page
-POST            /login                                      @controllers.Controller_Security.login()
-POST            /logout                                     @controllers.Controller_Security.logout()
+POST            /login          @controllers.Controller_Security.login()
+POST            /logout         @controllers.Controller_Security.logout()
 
 GET             /login/facebook                             @controllers.Controller_Security.Facebook(return_link)
 GET             /login/twitter                              @controllers.Controller_Security.Twitter(return_link)
@@ -464,7 +464,6 @@ PUT             /admin/embedded_hardware/result                       @utilities
 ###################################################################################f#############################################################################################
 
 # Basic Page Requests
-
 GET             /                                               @controllers.Controller_Dashboard.index()
 GET             /admin/login                                    @controllers.Controller_Dashboard.login()
 GET             /admin/bugs                                     @controllers.Controller_Dashboard.show_all_logs()
@@ -473,20 +472,32 @@ GET             /admin/websocket/server_detail/:server_name     @controllers.Con
 GET             /admin/websocket/instance_detail/:instance_id   @controllers.Controller_Dashboard.show_instance_detail(instance_id)
 GET             /admin/show_readme                              @controllers.Controller_Dashboard.show_readme()
 GET             /admin/show_diff_on_Api/                        @controllers.Controller_Dashboard.show_diff_on_Api(old_api: String?="",new_api: String?="")
+
+# Admin - Hardware
 GET             /admin/board_settings                           @controllers.Controller_Dashboard.basic_board_management()
+GET             /admin/mac_adress_generator                     @controllers.Controller_Dashboard.mac_adress_generator()
 GET             /admin/bootloader_settings/:type_of_board_id    @controllers.Controller_Dashboard.bootloader_management(type_of_board_id)
+
+# Admin - External Servers
 GET             /admin/external_servers                         @controllers.Controller_Dashboard.external_servers()
+
+# Admin - Help Desk
 GET             /admin/user_summary/                            @controllers.Controller_Dashboard.user_summary(email: String?="")
 GET             /admin/user_summary/:mail                       @controllers.Controller_Dashboard.user_summary(mail)
 GET             /admin/helpdesk_tool/project/:id                @controllers.Controller_Dashboard.project_detail(id)
+
+# Admin - Permission
 GET             /admin/permission/permission_summary            @controllers.Controller_Dashboard.permissions_summary()
 GET             /admin/permission/role/:role_id                 @controllers.Controller_Dashboard.role(role_id)
+
 GET             /admin/blocko_objects                           @controllers.Controller_Dashboard.blocko_objects()
 GET             /admin/blocko_management                        @controllers.Controller_Dashboard.blocko_management()
 GET             /admin/grid_public                              @controllers.Controller_Dashboard.grid_public()
 GET             /admin/grid_management                          @controllers.Controller_Dashboard.grid_management()
 GET             /admin/public_code                              @controllers.Controller_Dashboard.public_code()
 GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_aprove_procedure()
+
+# Admin - Tariff Management
 GET             /admin/general_tariffs                          @controllers.Controller_Dashboard.general_tariffs_list()
 GET             /admin/general_tariffs/:general_tariff_id       @controllers.Controller_Dashboard.general_tariff_edit(general_tariff_id)
 GET             /admin/general_tariff_extension/:extension_id   @controllers.Controller_Dashboard.general_tariff_extension_edit(extension_id)
@@ -526,7 +537,6 @@ PUT             /admin/tariff                                   @controllers.Con
 PUT             /admin/tariff/deactive/:general_tariff_id       @controllers.Controller_Finance.tariff_general_deactivate(general_tariff_id)
 PUT             /admin/tariff/active/:general_tariff_id         @controllers.Controller_Finance.tariff_general_activate(general_tariff_id)
 
-
 POST            /admin/label/tariff                             @controllers.Controller_Finance.tariff_general_label_tariff_create()
 POST            /admin/label/extension                          @controllers.Controller_Finance.tariff_general_label_extension_create()
 PUT             /admin/label                                    @controllers.Controller_Finance.tariff_general_label_edit()
@@ -542,11 +552,9 @@ PUT             /admin/extension/deactive/:extension_id         @controllers.Con
 PUT             /admin/extension/active/:extension_id           @controllers.Controller_Finance.tariff_general_extension_activate(extension_id)
 DELETE          /admin/extension/:extension_id                  @controllers.Controller_Finance.tariff_general_extension_delete(extension_id)
 
-
 GET             /javascriptRoutes                               @controllers.Controller_Dashboard.javascriptRoutes()
 
 # BUGS SERVISE PAGE
-
 GET             /admin/bugs/deleteAll                      @controllers.Controller_Dashboard.loggy_remove_all_bugs()
 GET             /admin/bug/remove/:id                      @controllers.Controller_Dashboard.loggy_remove_bug(id: String)
 GET             /admin/bug/report/:id                      @controllers.Controller_Dashboard.loggy_report_bug_to_youtrack(id: String)

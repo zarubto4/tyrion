@@ -64,6 +64,7 @@ public class Model_ActualizationProcedure extends Model {
             this.id = UUID.randomUUID().toString();
             if (Model_ActualizationProcedure.find.byId(this.id) == null) break;
         }
+
         super.save();
     }
 

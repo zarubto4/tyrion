@@ -1,10 +1,12 @@
 package utilities.enums;
 
+import com.avaje.ebean.annotation.EnumValue;
+
 public enum Firmware_type {
 
-    FIRMWARE("FIRMWARE"),
-    BOOTLOADER("BOOTLOADER"),
-    BACKUP("BACKUP");
+    @EnumValue("FIRMWARE")   FIRMWARE("FIRMWARE"),
+    @EnumValue("BOOTLOADER") BOOTLOADER("BOOTLOADER"),
+    @EnumValue("BACKUP")     BACKUP("BACKUP");
 
     private String firmwareType;
 

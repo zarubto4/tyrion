@@ -87,10 +87,7 @@ public class Model_HomerInstanceRecord extends Model {
             // Projedu seznam HW - podle skupin instancí jak jsou poskládané podle Yody
             for(Model_BProgramHwGroup group : version_object.b_program_hw_groups) {
 
-                Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
-                procedure.date_of_create = new Date();
-                procedure.state = Actual_procedure_State.not_start_yet;
-                procedure.homer_instance_record = this;
+                List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
 
                 // ID C_programu aktuálního != požadovanému -> zařadím do aktualizační procedury!
                 if(group.main_board_pair.board.actual_c_program_version == null || !group.main_board_pair.c_program_version_id().equals(group.main_board_pair.board.actual_c_program_version.id)){
@@ -102,7 +99,7 @@ public class Model_HomerInstanceRecord extends Model {
                     plan_master_board.firmware_type = Firmware_type.FIRMWARE;
                     plan_master_board.state = C_ProgramUpdater_State.not_start_yet;
                     plan_master_board.c_program_version_for_update = group.main_board_pair.c_program_version;
-                    procedure.updates.add(plan_master_board);
+                    updates.add(plan_master_board);
                 }
 
 
@@ -143,17 +140,27 @@ public class Model_HomerInstanceRecord extends Model {
                         plan.firmware_type = Firmware_type.FIRMWARE;
                         plan.state = C_ProgramUpdater_State.not_start_yet;
                         plan.c_program_version_for_update = pair.c_program_version;
-                        plan.actualization_procedure = procedure;
-                        procedure.updates.add(plan);
+                        updates.add(plan);
 
                         logger.debug("Crating update procedure done");
                     }
                 }
 
                 // Mohu nahrávat instanci která nemusí mít vůbec žádný update hardwaru a tak je zbytečné vytvářet objekt
-                if(procedure.updates.size() > 0){
-                    this.procedures.add(procedure);
+                if(updates.size() > 0){
+
+                    Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+                    procedure.date_of_create = new Date();
+                    procedure.state = Actual_procedure_State.not_start_yet;
+                    procedure.homer_instance_record = this;
                     procedure.save();
+
+
+                    procedure.updates.addAll(updates);
+                    procedure.update();
+
+                    this.procedures.add(procedure);
+                    this.update();
 
                     logger.debug("Sending new Actualization procedure to Master Updater");
                     Master_Updater.add_new_Procedure(procedure);

@@ -1,6 +1,7 @@
 package utilities.schedules_activities;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import controllers.Controller_WebSocket;
 import models.compiler.Model_VersionObject;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -8,6 +9,7 @@ import org.quartz.JobExecutionException;
 import utilities.enums.Compile_Status;
 
 import java.util.Date;
+import java.util.List;
 
 public class Compilation_Checker implements Job {
 
@@ -17,27 +19,45 @@ public class Compilation_Checker implements Job {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
+
+        if(thread == null){
+            logger.warn("Compilation_Checker:: execute:: Thread is null!!!");
+        }
+
         if(!thread.isAlive()) thread.start();
     }
 
-    static Thread thread = new Thread() {
+    Thread thread = new Thread() {
 
         @Override
         public void run() {
             try {
-            logger.info("Independent Thread in Compilation_Checker now working");
+            logger.info("Compilation_Checker:: run Independent Thread in Compilation_Checker now working");
 
             Long before_5_minutes = new Date().getTime() - (5 * 60 * 1000);
             Date created = new Date(before_5_minutes);
 
 
-                while (true) {
+                // Zarážka pro
+                if(Controller_WebSocket.compiler_cloud_servers.isEmpty()) return;
 
-                    Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Compile_Status.server_was_offline.name()).lt("date_of_create", created).order().desc("date_of_create").setMaxRows(1).findUnique();
-                    if(version_object == null){
-                        break;
+                // Vyhledání všech, které je nutné projit
+                List<Model_VersionObject> version_objects = Model_VersionObject.find.where()
+                        .disjunction()
+                        .eq("c_compilation.status", Compile_Status.server_was_offline.name())
+                        .eq("c_compilation.status", Compile_Status.compilation_server_error.name())
+                        .endJunction()
+                        .lt("date_of_create", created).order().desc("date_of_create").findList();
+
+
+                // Postupná procházení a kompilování
+                for(Model_VersionObject version_object : version_objects) {
+
+                    // Pokud neobsahuje verzi - je to špatně, ale zde neřešitelné - proto se to přeskočí.
+                    if (version_object == null) {
+                        continue;
                     }
-                    logger.debug("Compilation_Checker:: Checking stuck compilation -  starting compilation");
+                    logger.debug("Compilation_Checker:: run::  Checking stuck compilation -  starting compilation");
                     version_object.c_compilation.status = Compile_Status.compilation_in_progress;
                     version_object.c_compilation.update();
 
@@ -49,7 +69,7 @@ public class Compilation_Checker implements Job {
                 e.printStackTrace();
             }
 
-            logger.info("Independent Thread in Old_Floating_Person_Token_Removal stopped!");
+            logger.info("Independent Thread in Compilation_Checker stopped!");
         }
     };
 }

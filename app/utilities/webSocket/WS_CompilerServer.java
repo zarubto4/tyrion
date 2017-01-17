@@ -29,8 +29,16 @@ public class WS_CompilerServer extends WebSCType{
 
     @Override
     public void onClose() {
+
+        logger.debug("WS_CompilerServer:: onClose ");
         this.close();
+
+        logger.debug("WS_CompilerServer:: close thread");
+
+        logger.debug("WS_CompilerServer:: removing object");
         Controller_WebSocket.compiler_cloud_servers.remove(this.identifikator);
+
+        logger.debug("WS_CompilerServer:: removing on object");
         server.compiler_server_is_disconnect();
     }
 

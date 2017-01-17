@@ -59,6 +59,7 @@ public class Demo_Data_Controller extends Controller {
 
             Model_BootLoader boot_loader = new Model_BootLoader();
             boot_loader.name = "BootLoader Test";
+            boot_loader.version_identificator = "1.0.2";
             boot_loader.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
             boot_loader.date_of_create = new Date();
             boot_loader.save();
@@ -178,6 +179,7 @@ public class Demo_Data_Controller extends Controller {
 
             Model_BootLoader boot_loader_1 = new Model_BootLoader();
             boot_loader_1.name = "BootLoader Test Yoda G2";
+            boot_loader_1.version_identificator = "1.2.41";
             boot_loader_1.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
             boot_loader_1.date_of_create = new Date();
             boot_loader_1.type_of_board = typeOfBoard_1;
@@ -207,6 +209,7 @@ public class Demo_Data_Controller extends Controller {
 
             Model_BootLoader boot_loader_2 = new Model_BootLoader();
             boot_loader_2.name = "BootLoader Test Wireless G2";
+            boot_loader_2.version_identificator = "1.0.12";
             boot_loader_2.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
             boot_loader_2.date_of_create = new Date();
             boot_loader_2.type_of_board = typeOfBoard_2;
@@ -233,6 +236,7 @@ public class Demo_Data_Controller extends Controller {
 
             Model_BootLoader boot_loader_3 = new Model_BootLoader();
             boot_loader_3.name = "BootLoader Test Wireless G2";
+            boot_loader_3.version_identificator = "9.10.1";
             boot_loader_3.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
             boot_loader_3.date_of_create = new Date();
             boot_loader_3.type_of_board = typeOfBoard_3;
@@ -260,6 +264,7 @@ public class Demo_Data_Controller extends Controller {
 
             Model_BootLoader boot_loader_4 = new Model_BootLoader();
             boot_loader_4.name = "BootLoader Test Wireless G2";
+            boot_loader_4.version_identificator = "8.0.1";
             boot_loader_4.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
             boot_loader_4.date_of_create = new Date();
             boot_loader_4.type_of_board = typeOfBoard_4;

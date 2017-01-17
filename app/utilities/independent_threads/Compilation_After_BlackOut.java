@@ -1,6 +1,7 @@
 package utilities.independent_threads;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import controllers.Controller_WebSocket;
 import models.compiler.Model_CompilationServer;
 import models.compiler.Model_VersionObject;
 import utilities.enums.Compile_Status;
@@ -61,6 +62,8 @@ public class Compilation_After_BlackOut {
             public void run() {
                 try {
                     while (true) {
+
+                        if(Controller_WebSocket.compiler_cloud_servers.isEmpty()) break;
 
                         Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Compile_Status.server_was_offline.name()).order().desc("date_of_create").setMaxRows(1).findUnique();
                         if(version_object == null){

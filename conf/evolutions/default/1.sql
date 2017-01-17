@@ -112,7 +112,6 @@ create table model_boot_loader (
 
 create table model_ccompilation (
   id                        varchar(255) not null,
-  bla                       varchar(255),
   date_of_create            timestamp,
   c_compilation_version     varchar(255),
   status                    varchar(34),
@@ -155,7 +154,7 @@ create table model_cprogram_update_plan (
   bootloader_id             varchar(255),
   binary_file_id            varchar(255),
   state                     varchar(23),
-  constraint ck_model_cprogram_update_plan_firmware_type check (firmware_type in ('FIRMWARE','BOOTLOADER','BACKUP')),
+  constraint ck_model_cprogram_update_plan_firmware_type check (firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER')),
   constraint ck_model_cprogram_update_plan_state check (state in ('canceled','in_progress','waiting_for_device','overwritten','bin_file_not_found','homer_server_is_offline','complete','instance_inaccessible','critical_error','not_start_yet')),
   constraint pk_model_cprogram_update_plan primary key (id))
 ;
@@ -417,6 +416,19 @@ create table model_mproject_program_snap_shot (
   id                        varchar(255) not null,
   m_project_id              varchar(255),
   constraint pk_model_mproject_program_snap_s primary key (id))
+;
+
+create table model_mac_address_register_record (
+  uuid_request_number       varchar(255) not null,
+  mac_address               varchar(255),
+  date_of_create            timestamp,
+  type_of_board             varchar(255),
+  full_id                   varchar(255),
+  bootloader_id             varchar(255),
+  firmware_version_id       varchar(255),
+  state                     varchar(13),
+  constraint ck_model_mac_address_register_record_state check (state in ('unknown_error','in_progress','complete','broken_device')),
+  constraint pk_model_mac_address_register_re primary key (uuid_request_number))
 ;
 
 create table model_notification (
@@ -1059,6 +1071,8 @@ drop table if exists model_mproject_program_snap_shot cascade;
 drop table if exists b_program_version_snapshots cascade;
 
 drop table if exists m_project_program_snapshots cascade;
+
+drop table if exists model_mac_address_register_record cascade;
 
 drop table if exists model_notification cascade;
 

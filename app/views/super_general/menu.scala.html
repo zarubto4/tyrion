@@ -128,10 +128,26 @@
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
+
                         <li>
-                             <a href='@routes.Controller_Dashboard.basic_board_management()'>
-                                <i class="fa fa-wrench"></i> <span>Embedded HW Management</span>
-                            </a>
+                            <a href="#"><i class="fa fa-wrench"></i>HW Management<i class="fa fa-angle-left pull-right"></i></a>
+                            <ul class="treeview-menu">
+                                <li>
+                                    <a href='@routes.Controller_Dashboard.basic_board_management()' >
+                                        <i class="fa fa-wrench"></i> <span>Boards Type Management</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href='' >
+                                        <i class="fa fa-wrench"></i> <span>(TODO) Boards summary</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href='@routes.Controller_Dashboard.mac_adress_generator()' >
+                                        <i class="fa fa-wrench"></i> <span>Mac Adress Generator</span>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
 
@@ -244,19 +260,6 @@
 
 <!-------------------------------------------------------------------------- ------------------------>
 
-                <li class="treeview">
-                    <a href="#">
-                        <i class="fa fa-share"></i> <span>Hardware Generator</span>
-                        <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li>
-                            <a href=''>
-                                <i class="fa fa-wrench"></i> <span>Financial Reports</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
 <!-------------------------------------------------------------------------- ------------------------>
 
                 <li>

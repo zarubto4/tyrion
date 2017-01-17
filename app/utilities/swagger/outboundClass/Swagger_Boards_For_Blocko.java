@@ -48,8 +48,8 @@ public class Swagger_Boards_For_Blocko {
                 Swagger_C_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_C_Program_Versions_Short_Detail_For_Blocko();
                 versions_short_detail_for_blocko.id = version_object.id;
                 versions_short_detail_for_blocko.version_name = version_object.version_name;
-                versions_short_detail_for_blocko.version_description= version_object.version_description;
-                versions_short_detail_for_blocko.virtual_input_output = version_object.c_compilation.virtual_input_output;
+                versions_short_detail_for_blocko.version_description = version_object.version_description == null ? null : version_object.version_description;
+                versions_short_detail_for_blocko.virtual_input_output = version_object.c_compilation.virtual_input_output == null ? null : version_object.c_compilation.virtual_input_output ;
 
                 c_program_short_detail_for_blocko.versions.add(versions_short_detail_for_blocko);
 

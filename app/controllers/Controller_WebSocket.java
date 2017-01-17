@@ -105,7 +105,9 @@ public class Controller_WebSocket extends Controller {
                 JsonNode result = homer_server.ping();
                 if(!result.get("status").asText().equals("success")){
                     logger.warn("Homer Server:: Connection:: Ping Failed - Tyrion remove previous connection");
-                    blocko_servers.get(server_name).onClose();
+                    if(blocko_servers.containsKey(server_name)){
+                        blocko_servers.get(server_name).onClose();
+                    }
                     return null;
                 }
 
@@ -130,7 +132,7 @@ public class Controller_WebSocket extends Controller {
             // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
             homer_server.check_after_connection(server);
 
-            this.compiler_cloud_servers.put(homer_server.server_name, server);
+            this.blocko_servers.put(homer_server.server_name, server);
 
             logger.debug("Blocko Server: Successfully connected");
             return webSocket;
@@ -146,14 +148,14 @@ public class Controller_WebSocket extends Controller {
     @ApiOperation(value = "Compilation Server Connection", tags = {"WebSocket"})
     public  WebSocket<String>  compilator_server_connection (String server_name){
         try{
-            logger.debug("Compilation cloud_blocko_server is connecting. Server: " + server_name);
+            logger.debug("Controller_WebSocket:: compilator_server_connection:: Server is connecting. Server: " + server_name);
 
             logger.debug("Control Server and its unique names!"); // TODO - přidat ověření ještě pomocí HASHe co už je v objektu definován
             Model_CompilationServer cloud_compilation_server = Model_CompilationServer.find.where().eq("server_name", server_name).findUnique();
             if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
             if(compiler_cloud_servers.containsKey(server_name)) {
-                logger.debug("At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
+                logger.debug("Controller_WebSocket:: compilator_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
                 return WebSocket.reject(forbidden("Server side error - already connected"));
             }
 
@@ -163,11 +165,11 @@ public class Controller_WebSocket extends Controller {
             cloud_compilation_server.check_after_connection();
 
             // Připojím se
-            logger.debug("Compiling cloud_blocko_server connect");
+            logger.debug("Controller_WebSocket:: compilator_server_connection:: Sever connect");
             return server.connection();
 
         }catch (Exception e){
-            logger.error("Cloud Compiler Server Web Socket connection", e);
+            logger.error("Controller_WebSocket:: compilator_server_connection:: Web Socket connection", e);
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
@@ -177,13 +179,13 @@ public class Controller_WebSocket extends Controller {
     public  WebSocket<String>  becki_website_connection (String security_token){
         try{
 
-            logger.debug("Becki: Incoming connection: " + security_token);
+            logger.debug("Controller_WebSocket:: becki_website_connection:: Incoming connection: " + security_token);
 
 
             WS_Token token = tokenCache.get(security_token);
 
             if(token == null ) {
-              logger.warn("Becki: Incoming token " + security_token + " is invalid! Probably too late for access");
+              logger.warn("Controller_WebSocket:: becki_website_connection: Incoming token " + security_token + " is invalid! Probably too late for access");
               return WebSocket.reject(forbidden());
             }
 
@@ -191,10 +193,10 @@ public class Controller_WebSocket extends Controller {
             tokenCache.remove(security_token);
 
 
-            logger.debug("Becki: Controlling of incoming token " + security_token);
+            logger.debug("Controller_WebSocket:: becki_website_connection: Controlling of incoming token " + security_token);
             Model_Person person = Model_Person.find.byId(person_id);
             if(person == null){
-                logger.warn("Person with this id not exist!");
+                logger.warn("Controller_WebSocket:: becki_website_connection: Person with this id not exist!");
                 return WebSocket.reject(forbidden());
             }
 

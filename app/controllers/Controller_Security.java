@@ -8,8 +8,8 @@ import com.github.scribejava.core.oauth.OAuthService;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.person.Model_FloatingPersonToken;
-import models.person.Model_Person;
 import models.person.Model_Permission;
+import models.person.Model_Person;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -31,6 +31,7 @@ import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
+import utilities.webSocket.WS_Becki_Website;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,9 @@ public class Controller_Security extends Controller {
 
     // Rest Api call client
     @Inject WSClient ws;
+
+    // Logger
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 //######################################################################################################################
 
@@ -175,13 +179,30 @@ public class Controller_Security extends Controller {
     })
     public Result logout() {
         try {
-
             try {
+
+                // Pokus o smazání Tokenu
                 String token = request().getHeader("X-AUTH-TOKEN");
-                Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique().deleteAuthToken();
+                Model_FloatingPersonToken token_model = Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique();
+
+                //Pokud token existuje jednak ho smažu - ale pořeší i odpojení websocketu
+                if(token != null){
+
+                    // Úklid přihlášených websocketů
+                    WS_Becki_Website becki_website = (WS_Becki_Website) Controller_WebSocket.becki_website.get(token_model.person.id);
+
+                    for(String key : becki_website.all_person_Connections.keySet() ){
+                        becki_website.all_person_Connections.get(key).onClose();
+                    }
+
+                    token_model .deleteAuthToken();
+                }
+
+
 
             }catch (Exception e){
-                //e.printStackTrace();
+                logger.error("Controller_Security:: logout:: Error:: ", e);
+                e.printStackTrace();
             }
 
             // JE nutné garantovat vždy odpověď ok za všech situací kromě kritického selhální

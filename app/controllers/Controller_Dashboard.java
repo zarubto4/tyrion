@@ -45,7 +45,7 @@ import views.html.demo_data.demo_data_main;
 import views.html.publiccprograms.approvalprocedurecprogram;
 import views.html.publiccprograms.publiccode;
 import views.html.reports.*;
-import views.html.hardware_generator.*;
+import views.html.hardware_generator.generator_main;
 import views.html.helpdesk_tool.user_summary;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
@@ -124,11 +124,13 @@ public class Controller_Dashboard extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result index() {
 
-        Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
 
-        Map<String, WebSCType> map_blocko =  Controller_WebSocket.blocko_servers;
+        // Blocko
+        Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
+        Map<String, WebSCType> map_blocko            =  Controller_WebSocket.blocko_servers;
         for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_BlockoServer) entry.getValue());
 
+        // Compilation
         Map<String, WS_CompilerServer> compilerServerMap = new HashMap<>();
         Map<String, WebSCType> map_compile =  Controller_WebSocket.compiler_cloud_servers;
         for (Map.Entry<String, WebSCType> entry : map_compile.entrySet()) compilerServerMap.put(entry.getKey(), (WS_CompilerServer) entry.getValue());
@@ -563,6 +565,18 @@ public class Controller_Dashboard extends Controller {
 
             Html grid_public_content = grid_public.render();
             return return_page(grid_public_content);
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result mac_adress_generator(){
+        try {
+
+            Html mac_adress_content = generator_main.render();
+            return return_page(mac_adress_content);
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

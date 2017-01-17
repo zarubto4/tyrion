@@ -1,0 +1,173 @@
+@import utilities.hardware_generator.HardwareGeneratorController
+
+<section class="content-header">
+    <h1>Mac Adress Generator API</h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-share"></i> Server Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> Grid Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> Public Object Approval </li>
+    </ol>
+</section>
+
+<section class="content">
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Basic Information</h3>
+                </div>
+                <div class="box-body">
+
+                    <label style="">Garfiled Burner Connected:
+                        @if(true){
+                            <b class="lead text-green">TRUE</b>
+                        }else{
+                            <b class="lead text-red">False</b>
+                        }
+                    </label>
+
+
+                    <div class="form-group">
+                        <label style="">
+                                        Koupený rozsah Address: <b class="lead text-green">@HardwareGeneratorController.get_Range_From()</b> to <b class="lead text-red">@HardwareGeneratorController.get_Range_To()</b>
+                                    </label>
+                    </div>
+
+                    <table id="pendingGridWidgetVersion" class="table table-bordered">
+                        <tr>
+                            <th>Type of Board</th>
+                            <th>Začátek Mac Address</th>
+                            <th>Poslední přidělená</th>
+                        </tr>
+
+                        @for(type_of_board <- Model_TypeOfBoard.find.where().eq("connectible_to_internet", true).findList()){
+                            <tr>
+                                <td> @type_of_board.name</td>
+                                <td> @HardwareGeneratorController.get_macAddress_type_of_board_from(type_of_board.target_name())</td>
+                                <td></td>
+                            </tr>
+                        }
+                    </table>
+
+
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Ready State for Hardware "Burning"</h3>
+                </div>
+                <div class="box-body">
+
+                    <table id="all_type_of_boards" class="table table-bordered">
+                        <tr>
+                            <th>Type of Board</th>
+                            <th>Boot. set</th>
+                            <th>Boot. ver</th>
+                            <th>Firm. set</th>
+                            <th>Firm. ver</th>
+                        </tr>
+
+                        @for(type_of_board <- Model_TypeOfBoard.find.all()){
+                            <tr>
+                                <td>@type_of_board.name</td>
+                                <td>@if(type_of_board.main_boot_loader != null){
+                                    @if(type_of_board.main_boot_loader.file != null) {
+                                        <p class="lead text-green">True</p>
+                                    }else{
+                                        <p class="lead text-red">Not Compiled yet!</p>
+                                    }
+                                }else{
+                                    <p class="lead text-red">False</p>
+                                }</td>
+                                <td>@if(type_of_board.main_boot_loader != null){
+                                    @type_of_board.main_boot_loader.version_identificator
+                                }
+                                </td>
+
+
+                                <td>@if(type_of_board.default_program != null){
+                                        @if(type_of_board.default_program.default_main_version.c_compilation != null) {
+                                            <p class="lead text-green">True</p>
+                                        }else{
+                                            <p class="lead text-red">Not Compiled yet!</p>
+                                        }
+                                }else{
+                                    <p class="lead text-red">False</p>
+                                }</td>
+                                <td>@if(type_of_board.default_program != null){
+                                    @if(type_of_board.default_program.default_main_version == null){
+                                        C_Program has not set Version!
+                                    }else{
+                                        @type_of_board.default_program.default_main_version.version_name
+                                    }
+                                }</td>
+
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title"> Latest Activity </h3>
+                </div>
+                <div class="box-body">
+                    <table id="pendingGridWidgetVersion" class="table table-bordered">
+                        <tr>
+                            <th>Type of Board</th>
+                            <th>Mac Address</th>
+                            <th>Processor No</th>
+                            <th>Boot. set</th>
+                            <th>Boot. ver</th>
+                            <th>Firm. set</th>
+                            <th>Firm. ver</th>
+                            <th>State</th>
+                        </tr>
+
+                        @for(register_record <- Model_MacAddressRegisterRecord.find.all()){
+                            <tr>
+                                <td>@register_record.type_of_board</td>
+                                <td>@register_record.mac_address</td>
+                                <td>@register_record.full_id</td>
+                                <td>@if(register_record.bootloader_id != null){
+                                    <p class="lead text-green">True</p>
+                                }else{
+                                    <p class="lead text-red">False</p>
+                                }</td>
+                                <td>@register_record.bootloader_id</td>
+                                <td>@if(register_record.firmware_version_id != null){
+                                    <p class="lead text-green">True</p>
+                                }else{
+                                    <p class="lead text-red">False</p>
+                                }</td>
+                                <td>@register_record.firmware_version_id</td>
+                                <td>@register_record.state</td>
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</section>
+@import models.compiler.{Model_MacAddressRegisterRecord, Model_TypeOfBoard}
