@@ -4,7 +4,7 @@ import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.grid.Model_GridWidget;
-import utilities.swagger.outboundClass.Swagger_GridWidget_Filter_Detail;
+import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Swagger_GridWidget_List {
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_GridWidget_Filter_Detail> content = new ArrayList<>();
+    public List<Swagger_GridWidget_Short_Detail> content = new ArrayList<>();
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
@@ -42,17 +42,14 @@ public class Swagger_GridWidget_List {
 
         for(Model_GridWidget gridWidget : grid_widgets){
 
-            Swagger_GridWidget_Filter_Detail help = new Swagger_GridWidget_Filter_Detail();
+            Swagger_GridWidget_Short_Detail help = new Swagger_GridWidget_Short_Detail();
 
-            help.grid_widget_id = gridWidget.id;
-            help.grid_widget_name = gridWidget.name;
-            help.grid_widget_description = gridWidget.description;
-            help.grid_widget_version_id = gridWidget.grid_widget_versions.get(0).id;
-            help.grid_widget_version_name = gridWidget.grid_widget_versions.get(0).version_name;
-            help.grid_widget_version_description = gridWidget.grid_widget_versions.get(0).version_description;
-            help.grid_widget_type_of_widget_id = gridWidget.type_of_widget.id;
-            help.grid_widget_type_of_widget_name = gridWidget.type_of_widget.name;
-            help.grid_widget_type_of_widget_description = gridWidget.type_of_widget.description;
+            help.id                 = gridWidget.id;
+            help.name               = gridWidget.name;
+            help.description        = gridWidget.description;
+            help.delete_permission  = gridWidget.delete_permission();
+            help.edit_permission    = gridWidget.edit_permission();
+            help.update_permission  = gridWidget.update_permission();
 
             this.content.add(help);
         }
