@@ -492,8 +492,10 @@ GET             /admin/permission/role/:role_id                 @controllers.Con
 
 GET             /admin/blocko_objects                           @controllers.Controller_Dashboard.blocko_objects()
 GET             /admin/blocko_management                        @controllers.Controller_Dashboard.blocko_management()
+GET             /admin/blocko_block_content                     @controllers.Controller_Dashboard.blocko_first_block_content()
 GET             /admin/grid_public                              @controllers.Controller_Dashboard.grid_public()
 GET             /admin/grid_management                          @controllers.Controller_Dashboard.grid_management()
+GET             /admin/grid_widget_content                      @controllers.Controller_Dashboard.grid_first_widget_content()
 GET             /admin/public_code                              @controllers.Controller_Dashboard.public_code()
 GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_aprove_procedure()
 

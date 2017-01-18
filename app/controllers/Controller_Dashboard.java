@@ -38,6 +38,7 @@ import views.html.boards.bootloader_settings;
 import views.html.boards.board_settings;
 import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
+import views.html.blocko.blocko_block_content;
 import views.html.tariffs.tariffs;
 import views.html.tariffs.tariff_edit;
 import views.html.tariffs.extension_edit;
@@ -52,6 +53,7 @@ import views.html.websocket.websocket;
 import views.html.websocket.websocket_homer_server_detail;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
+import views.html.grid.grid_widget_content;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -589,6 +591,30 @@ public class Controller_Dashboard extends Controller {
 
             Html grid_management_content = grid_management.render();
             return return_page(grid_management_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result grid_first_widget_content(){
+        try {
+
+            Html widget_content = grid_widget_content.render();
+            return return_page(widget_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result blocko_first_block_content(){
+        try {
+
+            Html block_content = blocko_block_content.render();
+            return return_page(block_content);
 
         }catch (Exception e){
             return ok();

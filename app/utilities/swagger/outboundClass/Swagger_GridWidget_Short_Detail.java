@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "GridWidget Light (only few properties)",
-        value = "GridWidget_Light")
+        value = "GridWidget_Short_Detail")
 public class Swagger_GridWidget_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
