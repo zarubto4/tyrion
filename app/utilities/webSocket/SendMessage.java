@@ -1,10 +1,7 @@
 package utilities.webSocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.Controller_Notification;
-import utilities.enums.Notification_level;
 
-import java.util.List;
 import java.util.concurrent.*;
 
 public class SendMessage{
@@ -17,7 +14,6 @@ public class SendMessage{
     private Integer time,  delay = 0;                                       // V milisekundách
     private Integer number_of_retries;                                      // počet opakování
     private WebSCType sender_object;                                        // Soket
-    private List<WebSCType> notification_subscribers = null;                // Becki - přihlášený uživatel - odběratel notifikací
     private Integer awaiting_time = 0;                                      // Čas o který dodatečné vlákno počká
     private String messageId = null;
 
@@ -31,9 +27,8 @@ public class SendMessage{
     private Future<ObjectNode> future = pool.submit(callable);
 
 
-    public SendMessage(WebSCType sender_object, List<WebSCType> notification_subscribers, ObjectNode json, String messageId, Integer time, Integer delay, Integer number_of_retries){
+    public SendMessage(WebSCType sender_object, ObjectNode json, String messageId, Integer time, Integer delay, Integer number_of_retries){
         this.sender_object = sender_object;                         // Socet k odeslání
-        this.notification_subscribers = notification_subscribers;   // Odběratelé notifikacé - pokud nějaké jsou
         this.json = json;                                           // Json k odeslání
         this.time = time;                                           // Doba odesílání - pokud nepřijde odpověď - vyvolá se vyjímka
         this.delay = delay;                                         // Doba pro kterou se odloží odeslání dotazu
@@ -46,78 +41,21 @@ public class SendMessage{
 
         logger.trace("Sending message: " , messageId , " insert result " , result.toString());
 
-        // Pokud zpráva obsahuje subMessage - znamená to - že přišla Zpráva neukončující zprávu - ale s detailem - například o prodloužení
-        if(result.has("messageType") && result.get("messageType").asText().equals("subMessage")){
-
-            logger.trace("Incoming Result contains Sub-Message:" , result.toString());
-
-            try {
-                switch ( result.get("typeOfSubMessage").asText() ){
-
-                    case "await" : {
-                        logger.trace("typeOfSubMessage: Await");
-                        awaiting_time = result.get("time").asInt();
-                        return;
-                    }
-
-                    case "device_update_progress" : {
-
-                        Notification_level level = Notification_level.fromString(result.get("notificationLevel").asText());
-                        if(level == null) return;
-
-                        if(notification_subscribers != null && !notification_subscribers.isEmpty()) {
-
-                            for (WebSCType ws :notification_subscribers){
-                                WS_Becki_Website subscriber = (WS_Becki_Website) ws;
-                                Controller_Notification.upload_firmware_progress( subscriber.person, result.get("message").asText());
-                            }
-                        }
-                        return;
-
-                    }
-
-                    case "notification" : {
-                        logger.trace("typeOfSubMessage:  notification");
-                        Notification_level level = Notification_level.fromString(result.get("notificationLevel").asText());
-                        if(level == null) return;
-
-                        if(notification_subscribers != null && !notification_subscribers.isEmpty()) {
-                            for (WebSCType ws :notification_subscribers){
-                                WS_Becki_Website subscriber = (WS_Becki_Website) ws;
-                                Controller_Notification.upload_firmware_progress(subscriber.person, result.get("message").asText());
-                            }
-                        }
-                        return;
-                    }
+        logger.trace("Sending message: " , messageId , " not contains Sub-Message - its regular message");
 
 
-
-                    default: {
-                        logger.error("typeOfSubMessage není shodný s žádným očekávaným výsledkem");
-                    }
-
-                }
-
-            }catch (Exception e){e.printStackTrace();}
-        }else {
-
-            logger.trace("Sending message: " , messageId , " not contains Sub-Message - its regular message");
+        // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
+        try {
+            sender_object.sendMessageMap.remove(json.get("messageId").asText());
+        }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
 
 
-            // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
-            try {
-                sender_object.sendMessageMap.remove(json.get("messageId").asText());
-            }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
+        logger.trace("Sending message: " , messageId , " saving result to variable ");
+        this.result = result;
 
+        logger.trace("Terminating message thread");
+        future.cancel(true); // Terminuji zprávu k odeslání
 
-            logger.trace("Sending message: " , messageId , " saving result to variable ");
-            this.result = result;
-
-            logger.trace("Terminating message thread");
-            future.cancel(true); // Terminuji zprávu k odeslání
-
-
-        }
     }
 
 

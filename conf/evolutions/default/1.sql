@@ -169,16 +169,14 @@ create table model_change_property_token (
   constraint pk_model_change_property_token primary key (change_property_token))
 ;
 
-create table model_compilation_server (
-  id                        varchar(255) not null,
-  server_name               varchar(255),
-  unique_identificator      varchar(255),
+create table CompilationServer (
+  unique_identificator      varchar(255) not null,
+  personal_server_name      varchar(255),
   hash_certificate          varchar(255),
-  destination_address       varchar(255),
-  constraint uq_model_compilation_server_serv unique (server_name),
-  constraint uq_model_compilation_server_uniq unique (unique_identificator),
-  constraint uq_model_compilation_server_dest unique (destination_address),
-  constraint pk_model_compilation_server primary key (id))
+  server_url                varchar(255),
+  constraint uq_CompilationServer_personal_se unique (personal_server_name),
+  constraint uq_CompilationServer_server_url unique (server_url),
+  constraint pk_CompilationServer primary key (unique_identificator))
 ;
 
 create table model_example_model_name (
@@ -201,6 +199,7 @@ create table model_floating_person_token (
   auth_token                varchar(255),
   person_id                 varchar(255),
   created                   timestamp,
+  where_logged              varchar(255),
   access_age                timestamp,
   user_agent                varchar(255),
   provider_user_id          varchar(255),
@@ -299,7 +298,7 @@ create table model_grid_widget_version (
 
 create table model_homer_instance (
   blocko_instance_name      varchar(255) not null,
-  cloud_homer_server_id     varchar(255),
+  cloud_homer_server_unique_identificator varchar(255),
   virtual_instance          boolean,
   constraint pk_model_homer_instance primary key (blocko_instance_name))
 ;
@@ -318,11 +317,9 @@ create table model_homer_instance_record (
 ;
 
 create table model_homer_server (
-  id                        varchar(255) not null,
-  unique_identificator      varchar(255),
+  unique_identificator      varchar(255) not null,
   hash_certificate          varchar(255),
-  server_name               varchar(255),
-  destination_address       varchar(255),
+  personal_server_name      varchar(255),
   mqtt_port                 varchar(255),
   mqtt_username             varchar(255),
   mqtt_password             varchar(255),
@@ -331,9 +328,8 @@ create table model_homer_server (
   server_url                varchar(255),
   server_type               varchar(14),
   constraint ck_model_homer_server_server_type check (server_type in ('main_server','test_server','private_server','backup_server','public_server')),
-  constraint uq_model_homer_server_server_nam unique (server_name),
   constraint uq_model_homer_server_server_url unique (server_url),
-  constraint pk_model_homer_server primary key (id))
+  constraint pk_model_homer_server primary key (unique_identificator))
 ;
 
 create table model_invitation (
@@ -855,8 +851,8 @@ alter table model_grid_widget add constraint fk_model_grid_widget_type_of__42 fo
 create index ix_model_grid_widget_type_of__42 on model_grid_widget (type_of_widget_id);
 alter table model_grid_widget_version add constraint fk_model_grid_widget_version__43 foreign key (grid_widget_id) references model_grid_widget (id);
 create index ix_model_grid_widget_version__43 on model_grid_widget_version (grid_widget_id);
-alter table model_homer_instance add constraint fk_model_homer_instance_cloud_44 foreign key (cloud_homer_server_id) references model_homer_server (id);
-create index ix_model_homer_instance_cloud_44 on model_homer_instance (cloud_homer_server_id);
+alter table model_homer_instance add constraint fk_model_homer_instance_cloud_44 foreign key (cloud_homer_server_unique_identificator) references model_homer_server (unique_identificator);
+create index ix_model_homer_instance_cloud_44 on model_homer_instance (cloud_homer_server_unique_identificator);
 alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_45 foreign key (main_instance_history_blocko_instance_name) references model_homer_instance (blocko_instance_name);
 create index ix_model_homer_instance_recor_45 on model_homer_instance_record (main_instance_history_blocko_instance_name);
 alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_46 foreign key (version_object_id) references model_version_object (id);
@@ -1022,7 +1018,7 @@ drop table if exists model_cprogram_update_plan cascade;
 
 drop table if exists model_change_property_token cascade;
 
-drop table if exists model_compilation_server cascade;
+drop table if exists CompilationServer cascade;
 
 drop table if exists model_example_model_name cascade;
 

@@ -5,25 +5,31 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
+import play.data.Form;
+import play.libs.Json;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.loginEntities.TokenCache;
+import utilities.webSocket.messageObjects.WS_CheckHomerServerPermission;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
-public class WS_BlockoServer extends WebSCType{
+public class WS_HomerServer extends WebSCType{
 
     public Map<String, WebSCType> virtual_homers = new HashMap<>();  // Zde si udržuju referenci na tímto serverem vytvořené virtuální homery, které jsem dal do globální mapy (incomingConnections_homers) - určeno pro vývojáře
     public Model_HomerServer server;
+    public boolean security_token_confirm;
 
     public TokenCache token_grid_Cache    = new TokenCache( (long) 15, (long) 500, 5000);
     public TokenCache token_webview_Cache = new TokenCache( (long) 15, (long) 500, 5000);
 
 
-    public WS_BlockoServer(Model_HomerServer server, Map<String, WebSCType> blocko_servers) {
+    public WS_HomerServer(Model_HomerServer server, Map<String, WebSCType> blocko_servers) {
         super();
-        super.identifikator = server.server_name;
+        super.identifikator = server.unique_identificator;
         super.maps = blocko_servers;
         super.webSCtype = this;
         this.server = server;
@@ -50,7 +56,13 @@ public class WS_BlockoServer extends WebSCType{
     @Override
     public void onMessage(ObjectNode json) {
 
-            logger.debug("BlockoServer: "+ super.identifikator + " Incoming message: " + json.toString());
+        logger.debug("BlockoServer: "+ super.identifikator + " Incoming message: " + json.toString());
+
+            // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj
+        if(!security_token_confirm){
+            logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
+            security_token_confirm_procedure();
+        }
 
             if(json.has("messageChannel")){
 
@@ -100,6 +112,93 @@ public class WS_BlockoServer extends WebSCType{
 
     }
 
+    public void security_token_confirm_procedure(){
+
+        try {
+            logger.warn("WS_HomerServer:: security_token_confirm_procedure:: Trying to Confirm WebSocket");
+
+
+            // Požádáme o token
+            ObjectNode request = Json.newObject();
+            request.put("messageType", "getVerificationToken");
+            request.put("messageChannel", Model_HomerServer.CHANNEL);
+            ObjectNode ask_for_token = super.write_with_confirmation(request, 1000 * 5, 0, 2);
+
+
+            final Form<WS_CheckHomerServerPermission> form = Form.form(WS_CheckHomerServerPermission.class).bind(ask_for_token);
+            if (form.hasErrors()) {
+                logger.error("WS_HomerServer:: Security_token_confirm_procedure: Error:: Some value missing:: " + form.errorsAsJson().toString());
+                // Ukončim ověřování - ale nechám websocket připojený
+                return;
+            }
+
+            // Vytovření objektu
+            WS_CheckHomerServerPermission help = form.get();
+
+            // Vyhledání DB reference
+            Model_HomerServer check_server = Model_HomerServer.find.where().eq("hash_certificate", help.hashToken).findUnique();
+
+            // Kontrola
+            if(!check_server.unique_identificator.equals(server.unique_identificator)) return;
+
+
+            // Potvrzení Homer serveru, že je vše v pořádku
+            ObjectNode request_2 = Json.newObject();
+            request_2.put("messageType", "verificationTokenApprove");
+            request_2.put("messageChannel", Model_HomerServer.CHANNEL);
+            ObjectNode approve_result = super.write_with_confirmation(request_2, 1000 * 5, 0, 2);
+
+            // Změna FlagRegistru
+            this.security_token_confirm = true;
+
+            // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
+            // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
+            server.check_after_connection(this);
+
+        }catch (Exception e){
+            logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error" + e.getMessage());
+        }
+    }
+
+
+
+
+// Přepsané oprávnění - jen kontrola zda se WebSocketu může něco posílat
+
+    @Override
+    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries)  throws TimeoutException, ExecutionException, InterruptedException{
+
+        if(!security_token_confirm){
+            logger.warn("WS_HomerServer:: write_with_confirmation:: This Websocket is not confirm");
+            security_token_confirm_procedure();
+            throw new InterruptedException();
+        }
+
+        return super.write_with_confirmation(json,time,delay, number_of_retries);
+
+    }
+
+    @Override
+    public void write_without_confirmation(ObjectNode json){
+
+        if(!security_token_confirm){
+            logger.warn("WS_HomerServer:: write_without_confirmation:: This Websocket is not confirm");
+            security_token_confirm_procedure();
+        }
+
+        super.write_without_confirmation(json);
+    }
+
+    @Override
+    public void write_without_confirmation(String messageId, ObjectNode json){
+
+        if(!security_token_confirm){
+            logger.warn("WS_HomerServer:: write_without_confirmation:: This Websocket is not confirm");
+            security_token_confirm_procedure();
+        }
+
+        super.write_without_confirmation(messageId,json);
+    }
 
 // Aktualizační procedury ---------------------------------------------------------------------------------------------
 

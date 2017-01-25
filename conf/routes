@@ -11,7 +11,7 @@ OPTIONS        /*all                                        @controllers.Control
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
 
-GET              /websocket/blocko_server/:identificator       @controllers.Controller_WebSocket.homer_cloud_server_connection(identificator)
+GET              /websocket/homer_server/:identificator        @controllers.Controller_WebSocket.homer_cloud_server_connection(identificator)
 GET              /websocket/compilation_server/:identificator  @controllers.Controller_WebSocket.compilator_server_connection(identificator)
 GET              /websocket/becki/:secure_token                @controllers.Controller_WebSocket.becki_website_connection(secure_token)
 GET              /websocket/access_token                       @controllers.Controller_WebSocket.get_Websocket_token()
@@ -248,10 +248,10 @@ DELETE         /typeOfBlock/:type_of_block_id                                   
 
 
 #BLocko Server
-POST            /blocko_server                                                      @controllers.Controller_ProgramingPackage.create_Blocko_Server()
-PUT             /blocko_server/:server_id                                           @controllers.Controller_ProgramingPackage.edit_Blocko_Server(server_id)
-GET             /blocko_server                                                      @controllers.Controller_ProgramingPackage.get_All_Blocko_Server()
-DELETE          /blocko_server/:server_id                                           @controllers.Controller_ProgramingPackage.delete_Blocko_Server(server_id)
+POST            /blocko_server                                                      @controllers.Controller_ProgramingPackage.create_Homer_Server()
+PUT             /blocko_server/:server_id                                           @controllers.Controller_ProgramingPackage.edit_Homer_Server(server_id)
+GET             /blocko_server                                                      @controllers.Controller_ProgramingPackage.get_All_Homer_Server()
+DELETE          /blocko_server/:server_id                                           @controllers.Controller_ProgramingPackage.delete_Homer_Server(server_id)
 
 #Blocko General
 PUT             /blocko/disapprove                                                  @controllers.Controller_ProgramingPackage.blockoDisapprove()

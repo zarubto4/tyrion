@@ -101,6 +101,7 @@ public class Controller_Security extends Controller {
             Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
             floatingPersonToken.set_basic_values();
             floatingPersonToken.person = person;
+            floatingPersonToken.where_logged  = "Byzance Portal";
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";

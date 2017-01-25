@@ -20,8 +20,8 @@ public class WS_CompilerServer extends WebSCType{
 
     public WS_CompilerServer(Model_CompilationServer server, Map<String, WebSCType> compiler_cloud_servers) {
         super();
-        this.server_address = server.destination_address;
-        super.identifikator = server.server_name;
+        this.server_address = server.server_url;
+        super.identifikator = server.unique_identificator;
         super.maps = compiler_cloud_servers;
         super.webSCtype = this;
     }

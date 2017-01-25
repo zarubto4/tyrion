@@ -31,6 +31,8 @@ public class Model_FloatingPersonToken extends Model {
     value = "UNIX time in ms",
     example = "1466163478925")                              public Date   created;
 
+    @ApiModelProperty(required = true, value = "Record, where user make login")  public String where_logged; // Záznam, kde došlo k přihlášení (Becki, Tyrion, Homer, Compilator
+
     @ApiModelProperty(required = true,
     dataType = "integer", readOnly = true,
     value = "UNIX time in ms",

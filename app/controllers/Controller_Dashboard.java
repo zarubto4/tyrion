@@ -128,9 +128,9 @@ public class Controller_Dashboard extends Controller {
 
 
         // Blocko
-        Map<String, WS_BlockoServer> blockoServerMap = new HashMap<>();
+        Map<String, WS_HomerServer> blockoServerMap = new HashMap<>();
         Map<String, WebSCType> map_blocko            =  Controller_WebSocket.blocko_servers;
-        for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_BlockoServer) entry.getValue());
+        for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_HomerServer) entry.getValue());
 
         // Compilation
         Map<String, WS_CompilerServer> compilerServerMap = new HashMap<>();
@@ -311,7 +311,7 @@ public class Controller_Dashboard extends Controller {
     public Result ping_homer_server(String identificator) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.find.where().eq("server_name", identificator).findUnique();
+            Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", identificator).findUnique();
             JsonNode result = server.ping();
             return GlobalResult.result_ok(result);
         }catch (Exception e){
@@ -335,7 +335,7 @@ public class Controller_Dashboard extends Controller {
     public Result ping_compilation_server(String identificator) {
         try {
 
-            Model_CompilationServer server = Model_CompilationServer.find.where().eq("server_name", identificator).findUnique();
+            Model_CompilationServer server = Model_CompilationServer.find.where().eq("unique_identificator", identificator).findUnique();
             JsonNode result = server.ping();
 
 

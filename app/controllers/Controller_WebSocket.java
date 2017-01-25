@@ -90,23 +90,23 @@ public class Controller_WebSocket extends Controller {
     }
 
     @ApiOperation(value = "Homer Server Connection", tags = {"WebSocket"})
-    public  WebSocket<String>  homer_cloud_server_connection(String server_name){
+    public  WebSocket<String>  homer_cloud_server_connection(String unique_identificator){
         try{
 
-            logger.debug("Homer Server:: Connection:: Incoming connection: Server:  " + server_name);
+            logger.debug("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator);
 
-            Model_HomerServer homer_server = Model_HomerServer.find.where().eq("server_name", server_name).findUnique();
+            Model_HomerServer homer_server = Model_HomerServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
             if(homer_server== null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
-            if(blocko_servers.containsKey(server_name)) {
+            if(blocko_servers.containsKey(unique_identificator)) {
                 logger.warn("Homer Server:: Connection:: Server is connected -> Tyrion try to send ping");
 
-                WS_BlockoServer ws_blockoServer = (WS_BlockoServer) blocko_servers.get(server_name);
+                WS_HomerServer ws_blockoServer = (WS_HomerServer) blocko_servers.get(unique_identificator);
                 JsonNode result = homer_server.ping();
                 if(!result.get("status").asText().equals("success")){
                     logger.warn("Homer Server:: Connection:: Ping Failed - Tyrion remove previous connection");
-                    if(blocko_servers.containsKey(server_name)){
-                        blocko_servers.get(server_name).onClose();
+                    if(blocko_servers.containsKey(unique_identificator)){
+                        blocko_servers.get(unique_identificator).onClose();
                     }
                     return null;
                 }
@@ -117,8 +117,8 @@ public class Controller_WebSocket extends Controller {
 
 
             logger.debug("Homer Server:: Connection:: Tyrion initialize connection for Homer Server");
-            WS_BlockoServer server = new WS_BlockoServer(homer_server, blocko_servers);
-            blocko_servers.put(server_name, server);
+            WS_HomerServer server = new WS_HomerServer(homer_server, blocko_servers);
+            blocko_servers.put(unique_identificator, server);
 
             // Připojím se
             logger.debug("Homer Server:: Connection:: Connection is successful");
@@ -128,11 +128,11 @@ public class Controller_WebSocket extends Controller {
             logger.debug("Homer Server:: Connection:: Tyrion have to control what is on the cloud_blocko_server side ");
 
 
-            // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
-            // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
-            homer_server.check_after_connection(server);
+            // Provedu ověření identity serveru na jeho long_hash
+            server.security_token_confirm_procedure();
 
-            this.blocko_servers.put(homer_server.server_name, server);
+
+            blocko_servers.put(homer_server.unique_identificator, server);
 
             logger.debug("Blocko Server: Successfully connected");
             return webSocket;
@@ -144,17 +144,16 @@ public class Controller_WebSocket extends Controller {
         }
     }
 
-
     @ApiOperation(value = "Compilation Server Connection", tags = {"WebSocket"})
-    public  WebSocket<String>  compilator_server_connection (String server_name){
+    public  WebSocket<String>  compilator_server_connection (String unique_identificator){
         try{
-            logger.debug("Controller_WebSocket:: compilator_server_connection:: Server is connecting. Server: " + server_name);
+            logger.debug("Controller_WebSocket:: compilator_server_connection:: Server is connecting. Server: " + unique_identificator);
 
             logger.debug("Control Server and its unique names!"); // TODO - přidat ověření ještě pomocí HASHe co už je v objektu definován
-            Model_CompilationServer cloud_compilation_server = Model_CompilationServer.find.where().eq("server_name", server_name).findUnique();
+            Model_CompilationServer cloud_compilation_server = Model_CompilationServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
             if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
-            if(compiler_cloud_servers.containsKey(server_name)) {
+            if(compiler_cloud_servers.containsKey(unique_identificator)) {
                 logger.debug("Controller_WebSocket:: compilator_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
                 return WebSocket.reject(forbidden("Server side error - already connected"));
             }
@@ -265,9 +264,9 @@ public class Controller_WebSocket extends Controller {
 
                 default: {
                     // Přepošlu to na všehcny odběratele Becki
-                    if (becki.subscribers_becki != null && !becki.subscribers_becki.isEmpty()) {
-                        for (WebSCType ws : becki.subscribers_becki) {
-                            ws.write_without_confirmation(json);
+                    if (becki.all_person_Connections != null && !becki.all_person_Connections.isEmpty()) {
+                        for (String key : becki.all_person_Connections.keySet()) {
+                            becki.all_person_Connections.get(key).write_without_confirmation(json);
                         }
                     }
                 }

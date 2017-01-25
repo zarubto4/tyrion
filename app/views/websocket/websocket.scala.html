@@ -1,7 +1,7 @@
 @import models.compiler.Model_CompilationServer
 @import models.person.Model_Person
 @import models.project.b_program.servers.Model_HomerServer
-@import utilities.webSocket.{WS_Becki_Website, WS_BlockoServer, WS_CompilerServer}
+@import utilities.webSocket.{WS_Becki_Website, WS_HomerServer, WS_CompilerServer}
 @(becki_Terminal: List[WS_Becki_Website])
 
 <section class="content-header">
@@ -123,6 +123,7 @@
 
                         <tr>
                             <th align="center">Server</th>
+                            <th align="center">Unique Code</th>
                             <th align="center">Online</th>
                             <th align="center">Working instances</th>
 
@@ -134,7 +135,8 @@
 
                         @for( x <- Model_HomerServer.find.all() ){
                             <tr>
-                                <td> @x.server_name </td>
+                                <td> @x.personal_server_name </td>
+                                <td> @x.unique_identificator </td>
                                 <td>
                                     @if(!x.server_is_online()){
                                         <p class="small text-red"> Offline </p>
@@ -152,18 +154,18 @@
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  x.server_name )' >
+                                    <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  x.personal_server_name )' >
                                         <button class="btn btn-block btn-info btn-xs">All Instancies</button>
                                     </a>
                                 </td>
 
 
                                 <td align="center">
-                                    <button onclick="ping_Blocko_Server('@x.server_name')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                    <button onclick="ping_Blocko_Server('@x.unique_identificator')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="disconnect_Blocko_Server('@x.server_name')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    <button onclick="disconnect_Blocko_Server('@x.unique_identificator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
                             </tr>
                         }
@@ -198,7 +200,7 @@
 
                         @for( x <- Model_CompilationServer.find.all() ){
                             <tr>
-                                <td> @x.server_name </td>
+                                <td> @x.personal_server_name </td>
 
                                 <td>
                                 @if(!x.server_is_online()){
@@ -210,11 +212,11 @@
 
 
                                 <td align="center">
-                                    <button onclick="ping_Compilation_Server('@x.server_name')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                    <button onclick="ping_Compilation_Server('@x.unique_identificator')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="disconnect_Compilation_Server('@x.server_name')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    <button onclick="disconnect_Compilation_Server('@x.unique_identificator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
                             </tr>
                         }

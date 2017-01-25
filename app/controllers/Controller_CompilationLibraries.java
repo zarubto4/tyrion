@@ -17,7 +17,6 @@ import play.data.Form;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.*;
-import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.enums.Compile_Status;
@@ -1407,9 +1406,7 @@ public class Controller_CompilationLibraries extends Controller {
 
             // Vytvářím objekt
             Model_CompilationServer server = new Model_CompilationServer();
-            server.server_name = help.server_name;
-            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + server.server_name;
-            server.set_hash_certificate();
+            server.personal_server_name = help.personal_server_name;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
             if(! server.create_permission())  return GlobalResult.forbidden_Permission();
@@ -1473,7 +1470,7 @@ public class Controller_CompilationLibraries extends Controller {
             if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Upravím objekt
-            server.server_name = help.server_name;
+            server.personal_server_name = help.personal_server_name;
 
             // Uložím objekt
             server.update();

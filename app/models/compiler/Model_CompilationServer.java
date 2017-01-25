@@ -16,16 +16,14 @@ import utilities.independent_threads.Compilation_After_BlackOut;
 import utilities.webSocket.SendMessage;
 import utilities.webSocket.WS_CompilerServer;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
 @Entity
+@Table(name="CompilationServer")
 @ApiModel(description = "Model of CompilationServer",
         value = "CompilationServer")
 public class Model_CompilationServer extends Model {
@@ -36,23 +34,21 @@ public class Model_CompilationServer extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                         @Id @ApiModelProperty(required = true)     public String id;
-                                        @Column(unique=true) @ApiModelProperty(required = true)     public String server_name;
-                                        @Column(unique=true) @JsonIgnore                            public String unique_identificator;
-                                                             @JsonIgnore                            public String hash_certificate;
-                                        @Column(unique=true) @ApiModelProperty(required = true)     public String destination_address;
+                      @Id @ApiModelProperty(required = true)     public String unique_identificator;
+     @Column(unique=true) @ApiModelProperty(required = true)     public String personal_server_name;
+                          @JsonIgnore                            public String hash_certificate;
 
-
+    @ApiModelProperty(required = true, readOnly = true) @Column(unique=true)    public String server_url; // TODO - Tohle změnit na server_url  // Může být i IP adresa
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online(){
-        return Controller_WebSocket.compiler_cloud_servers.containsKey(this.server_name);
+        return Controller_WebSocket.compiler_cloud_servers.containsKey(this.unique_identificator);
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public void set_hash_certificate(){
+    public void save(){
 
         while(true){ // I need Unique Value
             hash_certificate = UUID.randomUUID().toString();
@@ -63,15 +59,7 @@ public class Model_CompilationServer extends Model {
             unique_identificator = UUID. randomUUID().toString().substring(0,6);
             if (Model_CompilationServer.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;
         }
-    }
 
-    @JsonIgnore @Override
-    public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_CompilationServer.find.byId(this.id) == null) break;
-        }
         super.save();
     }
 
@@ -104,7 +92,7 @@ public class Model_CompilationServer extends Model {
 
             logger.debug("Model_CompilationServer:: make_Compilation:: Start of compilation was successful - waiting for result");
 
-            SendMessage get_compilation = new SendMessage(null, null, null, "compilation_message", 1000 * 35, 0, 1);
+            SendMessage get_compilation = new SendMessage(null, null, "compilation_message", 1000 * 35, 0, 1);
             server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
 
             ObjectNode result = get_compilation.send_with_response();
@@ -124,7 +112,7 @@ public class Model_CompilationServer extends Model {
             request.put("messageType", "ping");
             request.put("messageChannel", CHANNEL);
 
-            return  Controller_WebSocket.compiler_cloud_servers.get(this.server_name).write_with_confirmation(request, 1000 * 3, 0, 3);
+            return  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(request, 1000 * 3, 0, 3);
 
         }catch (Exception e){
             return Model_HomerServer.RESULT_server_is_offline();
@@ -132,7 +120,7 @@ public class Model_CompilationServer extends Model {
     }
 
     @JsonIgnore @Transient public void compiler_server_is_disconnect(){
-        logger.debug("Model_CompilationServer:: compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + server_name);
+        logger.debug("Model_CompilationServer:: compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + unique_identificator + " name " + personal_server_name);
         // Nějaké upozornění???
     }
 

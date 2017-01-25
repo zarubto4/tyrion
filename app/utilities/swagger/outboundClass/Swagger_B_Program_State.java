@@ -47,6 +47,11 @@ public class Swagger_B_Program_State {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String server_id;
 
+
+    @ApiModelProperty(required = false, readOnly = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String unique_identificator;
+
 }
 
 

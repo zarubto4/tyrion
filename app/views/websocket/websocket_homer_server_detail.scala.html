@@ -5,7 +5,7 @@
 @(homer_server: Model_HomerServer)
 
 <section class="content-header">
-    <h1> Homer Server @homer_server.server_name  <small> service </small> </h1>
+    <h1> Homer Server @homer_server.personal_server_name  <small> service </small> </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-heart"></i> Websocket connections </li>
@@ -43,7 +43,7 @@
                         </tr>
 
 
-                        @for( x <- Model_HomerInstance.find.where().eq("cloud_homer_server.server_name", homer_server.server_name).findList()){
+                        @for( x <- Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", homer_server.unique_identificator).findList()){
                             <tr>
 
                                 <td>
@@ -133,7 +133,7 @@
                     <label>Instnace ID: (Min 5 znaků) </label>
                     <input style="display: block" type="text" id="instance_name" name="instance_name" >
 
-                    <input style="display: block" type="text" id="instance_name" name="server_name" value="@homer_server.server_name" >
+                    <input style="display: block" type="text" id="instance_name" name="unique_identificator" value="@homer_server.unique_identificator" >
 
                 </form>
             </div>

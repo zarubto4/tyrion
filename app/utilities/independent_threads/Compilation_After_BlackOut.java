@@ -37,8 +37,8 @@ public class Compilation_After_BlackOut {
     public void start(Model_CompilationServer server){
 
         logger.debug("Compilation_After_BlackOut creating new 2 threads for compilations");
-        Compilation_Thread thread_1 = new Compilation_Thread(server.server_name + "_1");
-        Compilation_Thread thread_2 = new Compilation_Thread(server.server_name + "_2");
+        Compilation_Thread thread_1 = new Compilation_Thread(server.unique_identificator + "_1");
+        Compilation_Thread thread_2 = new Compilation_Thread(server.unique_identificator + "_2");
 
         threads.add(thread_1);
         threads.add(thread_2);

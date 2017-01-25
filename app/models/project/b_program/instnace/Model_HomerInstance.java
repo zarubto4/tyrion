@@ -35,7 +35,7 @@ import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import utilities.webSocket.WS_BlockoServer;
+import utilities.webSocket.WS_HomerServer;
 import utilities.webSocket.WebSCType;
 import utilities.webSocket.messageObjects.WS_BoardStats_AbstractClass;
 
@@ -77,8 +77,8 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return this.getB_program().name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return this.getB_program().description;}
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.server_name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.personal_server_name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.unique_identificator;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public boolean instance_online()          {  return this.online_state();}
     @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer - can be null") public Swagger_B_Program_Instance actual_summary() {
         try {
@@ -106,8 +106,8 @@ public class Model_HomerInstance extends Model {
             }
 
             instance.server_is_online = cloud_homer_server.server_is_online();
-            instance.server_name = cloud_homer_server.server_name;
-            instance.server_id = cloud_homer_server.id;
+            instance.server_name = cloud_homer_server.unique_identificator;
+            instance.server_id = cloud_homer_server.unique_identificator;
 
             return instance;
 
@@ -129,8 +129,8 @@ public class Model_HomerInstance extends Model {
         help.b_program_name = getB_program().name;
         help.b_program_description = this.getB_program().description;
 
-        help.server_name = cloud_homer_server.server_name;
-        help.server_id = cloud_homer_server.id;
+        help.server_name = cloud_homer_server.unique_identificator;
+        help.server_id = cloud_homer_server.unique_identificator;
         help.instance_is_online = online_state();
         return help;
     }
@@ -288,7 +288,7 @@ public class Model_HomerInstance extends Model {
 
 
 
-    @JsonIgnore @Transient public WebSCType sendToInstance(){ return Controller_WebSocket.blocko_servers.get(this.cloud_homer_server.server_name);}
+    @JsonIgnore @Transient public WebSCType sendToInstance(){ return Controller_WebSocket.blocko_servers.get(this.cloud_homer_server.unique_identificator);}
 
     @JsonIgnore @Transient public  JsonNode getState(){
         try{
@@ -619,7 +619,7 @@ public class Model_HomerInstance extends Model {
         try {
 
             logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
-            WS_BlockoServer server = (WS_BlockoServer) Controller_WebSocket.blocko_servers.get(server_name());
+            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(server_name());
 
             Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", node.get("token").asText()).findUnique();
 
@@ -673,14 +673,12 @@ public class Model_HomerInstance extends Model {
         try {
 
             logger.debug("Homer_Instance:: cloud_verification_token:: WebView  Checking Token");
-            WS_BlockoServer server = (WS_BlockoServer) Controller_WebSocket.blocko_servers.get(server_name());
+            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(server_name());
 
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("authToken", node.get("token").asText()).findUnique();
 
             // Ještě instanci ke které se to chce přihlásit
-
-
             ObjectNode request = Json.newObject();
             request.put("messageType", "result");
             request.put("messageChannel", node.get("messageChannel").asText());

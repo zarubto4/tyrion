@@ -1,5 +1,5 @@
 
-@@@@@import models.compiler.Model_CompilationServer
+@import models.compiler.Model_CompilationServer
 @import models.project.b_program.servers.Model_HomerServer
 @import utilities.Server
 
@@ -49,7 +49,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="newCompilationServer">
-                        <label>Server name</label>            <input type="text" name="server_name" >
+                        <label>Server name</label>            <input type="text" name="personal_server_name" >
                     </form>
                 </div>
 
@@ -77,11 +77,10 @@
                 <div class="box-body">
                     <table id="allCompilationServers" class="table table-bordered">
                         <tr>
-                            <th>ID</th>
                             <th>Name</th>
                             <th>Unique identificator</th>
                             <th>Hash Certificate</th>
-                            <th>Destination address</th>
+                            <th>Server address</th>
                             <th>Online</th>
                             <th>EDIT</th>
                             <th>DELETE</th>
@@ -89,14 +88,13 @@
 
                         @for(compilation_server <- Model_CompilationServer.find.all()) {
                             <tr>
-                                <td>@compilation_server.id</td>
-                                <td>@compilation_server.server_name</td>
+                                <td>@compilation_server.personal_server_name</td>
                                 <td>@compilation_server.unique_identificator</td>
                                 <td>@compilation_server.hash_certificate</td>
-                                <td>@compilation_server.destination_address</td>
+                                <td>@compilation_server.server_url</td>
                                 <td>@compilation_server.server_is_online()</td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormCompilationServer('@compilation_server.id', '@compilation_server.server_name')">Edit</button></td>
-                                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteCompilationServer(@compilation_server.id)">Delete</button></td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormCompilationServer('@compilation_server.unique_identificator', '@compilation_server.personal_server_name')">Edit</button></td>
+                                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteCompilationServer(@compilation_server.unique_identificator)">Delete</button></td>
                             </tr>
                         }
 
@@ -154,7 +152,7 @@
 
 
                         <label style="">Server Url:</label>
-                        <input type="text" class="form-control" id="server_url"  name="server_url">
+                        <input type="text" class="form-control" id="url"  name="url">
 
 
                     </form>
@@ -178,30 +176,8 @@
                     <form id="newHomerServer">
 
                         <label>Server name</label>
-                        <input type="text" class="form-control" name="server_name" >
+                        <input type="text" class="form-control" name="personal_server_name" >
 
-                        <div class="form-group">
-                            <label style="">MQTT Port:</label>
-                            <input type="text" class="form-control" id="mqtt_port"  name="mqtt_port">
-
-                            <label style="">MQTT UserName:</label>
-                            <input type="text" class="form-control" id="mqtt_username"  name="mqtt_username">
-
-                            <label style="">MQTT Password:</label>
-                            <input type="text" class="form-control" id="mqtt_username"  name="mqtt_password">
-                        </div>
-
-
-                        <label style="">Grid Port:</label>
-                        <input type="text" class="form-control" id="grid_port"  name="grid_port">
-
-                        <label style="">Becki - WebView and Remote control Port:</label>
-                        <input type="text" class="form-control" id="webView_port"  name="webView_port">
-
-
-
-                        <label style="">Server Url:</label>
-                        <input type="text" class="form-control" id="server_url"  name="server_url">
 
 
                     </form>
@@ -231,11 +207,10 @@
                 <div class="box-body">
                     <table id="allHomerServers" class="table table-bordered">
                         <tr>
-                            <th>ID</th>
                             <th>Name</th>
                             <th>Unique identificator</th>
                             <th>Hash Certificate</th>
-                            <th>Destination address</th>
+                            <th>Server address</th>
                             <th>Online</th>
                             <th>EDIT</th>
                             <th>DELETE</th>
@@ -243,16 +218,16 @@
 
                         @for(homer_server <- Model_HomerServer.find.all()) {
                             <tr>
-                                <td>@homer_server.id</td>
-                                <td>@homer_server.server_name</td>
+                                <td>@homer_server.personal_server_name</td>
                                 <td>@homer_server.unique_identificator</td>
                                 <td>@homer_server.hash_certificate</td>
-                                <td>@homer_server.destination_address</td>
+                                <td>@homer_server.server_url</td>
                                 <td>@homer_server.server_is_online()</td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.id', '@homer_server.server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
-                                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteHomerServer(@homer_server.id)">Delete</button></td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
+                                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteHomerServer(@homer_server.unique_identificator)">Delete</button></td>
                             </tr>
                         }
+
 
                     </table>
                 </div>
@@ -384,7 +359,7 @@ function showCreateFormCompilationServer(){
 function newHomerServer(){
     model_data = $("#newHomerServer").serializeObject();
     $.ajax({
-        url: '@routes.Controller_ProgramingPackage.create_Blocko_Server()',
+        url: '@routes.Controller_ProgramingPackage.create_Homer_Server()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -417,7 +392,7 @@ function editHomerServer(id){
     model_data = $("#editHomerServer").serializeObject();
 
     $.ajax({
-        url: '@routes.Controller_ProgramingPackage.edit_Blocko_Server("")' + id,
+        url: '@routes.Controller_ProgramingPackage.edit_Homer_Server("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -449,7 +424,7 @@ function editHomerServer(id){
 function deleteHomerServer(id){
 
     $.ajax({
-        url: '@routes.Controller_ProgramingPackage.delete_Blocko_Server("")' + id,
+        url: '@routes.Controller_ProgramingPackage.delete_Homer_Server("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),
@@ -472,10 +447,10 @@ function deleteHomerServer(id){
         }
     })}
 
-function showEditFormHomerServer(id, server_name, mqtt_port, mqtt_username, mqtt_password, webView_port, grid_port, server_url){
+function showEditFormHomerServer(server_identificator, server_name, mqtt_port, mqtt_username, mqtt_password, webView_port, grid_port, url){
     $("#editHomerServerModal").css("display","block");
-    $('#editHomerServerButton').val(id);
-    $('#compilationServerId').text("ID = " + id);
+    $('#editHomerServerButton').val(server_identificator);
+    $('#compilationServerId').text("ID = " + server_identificator);
 
     $("#editHomerServer input[name=server_name]").val(server_name);
     $("#editHomerServer input[name=mqtt_port]").val(mqtt_port);
@@ -483,7 +458,7 @@ function showEditFormHomerServer(id, server_name, mqtt_port, mqtt_username, mqtt
     $("#editHomerServer input[name=mqtt_password]").val(mqtt_password);
     $("#editHomerServer input[name=webView_port]").val(webView_port);
     $("#editHomerServer input[name=grid_port]").val(grid_port);
-    $("#editHomerServer input[name=server_url]").val(server_url);
+    $("#editHomerServer input[name=url]").val(url);
 
 }
 

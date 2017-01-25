@@ -17,8 +17,6 @@ public abstract class WebSCType {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public Map<String, WebSCType> maps;
-    public List<WebSCType> subscribers_grid  = new ArrayList<>();
-    public List<WebSCType> subscribers_becki = new ArrayList<>();
 
     public WebSCType webSCtype;
     public WebSocket.Out<String> out;
@@ -83,6 +81,7 @@ public abstract class WebSCType {
         };
     }
 
+
     /**
      * Odesílání zpráv: Zprávy lze odesílat s vyžadovanou odpovědí, nebo bez ní. Pokud vyžaduji odpověď (jako potvrzení
      * že se akce povedla, nebo co se událo v reakci na zprávu), spustí se vlákno v metodě write_with_confirmation. Odeslaná
@@ -96,13 +95,12 @@ public abstract class WebSCType {
     public Map<String,SendMessage> sendMessageMap = new HashMap<>(); // MessageId, Message
 
 
-
     public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ExecutionException, InterruptedException {
 
         String messageId = UUID.randomUUID().toString();
         json.put("messageId", messageId );
 
-        SendMessage send_message = new SendMessage(this, subscribers_becki, json, messageId, time, delay, number_of_retries);
+        SendMessage send_message = new SendMessage(this, json, messageId, time, delay, number_of_retries);
         sendMessageMap.put(messageId, send_message);
 
         // Vytvořeno jen pro redukci délky vypisovaného kodu (zvláště při přeposílání dlouhých programů - bylo to nečitelné

@@ -85,8 +85,8 @@ public class Model_BProgram extends Model {
         state.instance_id = instance.blocko_instance_name;
 
         // Informace o Serveru
-        state.server_id = instance.cloud_homer_server.id;
-        state.server_name = instance.cloud_homer_server.server_name;
+        state.server_id = instance.cloud_homer_server.unique_identificator;
+        state.server_name = instance.cloud_homer_server.personal_server_name;
         state.server_online = instance.cloud_homer_server.server_is_online();
 
         return state;
@@ -151,7 +151,7 @@ public class Model_BProgram extends Model {
 
 
         if(instance == null){
-            Model_HomerServer destination_server = Model_HomerServer.find.where().eq("server_name", "Alfa").findUnique();
+            Model_HomerServer destination_server = Model_HomerServer.find.where().eq("personal_server_name", "Alfa").findUnique();
 
             Model_HomerInstance instance = new Model_HomerInstance();
             instance.cloud_homer_server = destination_server;

@@ -31,7 +31,6 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.Server;
 import utilities.enums.*;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_Admin;
@@ -101,7 +100,7 @@ public class Demo_Data_Controller extends Controller {
         result =   this.extendension_servers();     if(result.status() != 200 ) return result;
         result =   this.basic_tariffs();            if(result.status() != 200 ) return result;
         result =   this.blocko_demo_data();         if(result.status() != 200 ) return result;
-        result =   this.grid_demo_data();         if(result.status() != 200 ) return result;
+        result =   this.grid_demo_data();           if(result.status() != 200 ) return result;
         result =   this.c_program_configuration();  if(result.status() != 200 ) return result;
 
         result =  this.person_test_user();            if(result.status() != 200 ) return result;
@@ -459,12 +458,11 @@ public class Demo_Data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if(Model_HomerServer.find.where().eq("server_name", "Alfa").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
+            if(Model_HomerServer.find.where().eq("personal_server_name", "Alfa").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
 
             // Nasstavím Homer servery
             Model_HomerServer cloud_server_1 = new Model_HomerServer();
-            cloud_server_1.server_name  = "Alfa";
-            cloud_server_1.destination_address = Server.tyrion_webSocketAddress + "/websocket/homer_server/" + cloud_server_1.server_name;
+            cloud_server_1.personal_server_name  = "Alfa";
             cloud_server_1.server_url   = "localhost";
             cloud_server_1.grid_port    = ":8500";
             cloud_server_1.mqtt_port    = ":1883";
@@ -473,27 +471,22 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_1.webView_port = ":8501";
             cloud_server_1.server_type  = CLoud_Homer_Server_Type.main_server;
 
-            cloud_server_1.set_hash_certificate();
             cloud_server_1.save();
 
             Model_HomerServer cloud_server_2 = new Model_HomerServer();
-            cloud_server_2.server_name  = "Taurus";
-            cloud_server_2.destination_address = Server.tyrion_webSocketAddress + "/websocket/homer_server/" + cloud_server_2.server_name;
+            cloud_server_2.personal_server_name  = "Taurus";
             cloud_server_2.server_url   = "localhost2";
             cloud_server_2.grid_port    = ":8500";
             cloud_server_2.mqtt_port    = ":1883";
             cloud_server_2.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
             cloud_server_2.webView_port = ":8501";
-            cloud_server_2.server_type  = CLoud_Homer_Server_Type.backup_server;
 
-            cloud_server_2.set_hash_certificate();
             cloud_server_2.save();
 
 
             Model_HomerServer cloud_server_3 = new Model_HomerServer();
-            cloud_server_3.server_name  = "Andromeda";
-            cloud_server_3.destination_address = Server.tyrion_webSocketAddress + "/websocket/homer_server/" + cloud_server_2.server_name;
+            cloud_server_3.personal_server_name  = "Andromeda";
             cloud_server_3.server_url   = "localhost3";
             cloud_server_3.grid_port    = ":8500";
             cloud_server_3.mqtt_port    = ":1883";
@@ -502,21 +495,16 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_3.webView_port = ":8501";
             cloud_server_3.server_type  = CLoud_Homer_Server_Type.public_server;
 
-            cloud_server_3.set_hash_certificate();
             cloud_server_3.save();
 
 
             // Nastavím kompilační servery
             Model_CompilationServer compilation_server_1 = new Model_CompilationServer();
-            compilation_server_1.server_name = "Alfa";
-            compilation_server_1.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + compilation_server_1.server_name;
-            compilation_server_1.set_hash_certificate();
+            compilation_server_1.personal_server_name = "Alfa";
             compilation_server_1.save();
 
             Model_CompilationServer compilation_server_2 = new Model_CompilationServer();
-            compilation_server_2.server_name = "Orion";
-            compilation_server_2.destination_address = Server.tyrion_webSocketAddress + "/websocket/compilation_server/" + compilation_server_2.server_name;
-            compilation_server_2.set_hash_certificate();
+            compilation_server_2.personal_server_name = "Orion";
             compilation_server_2.save();
 
 

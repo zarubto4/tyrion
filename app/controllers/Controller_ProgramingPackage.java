@@ -953,7 +953,7 @@ public class Controller_ProgramingPackage extends Controller {
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
             // První nová Verze
-            Model_VersionObject version_object          = new Model_VersionObject();
+            Model_VersionObject version_object     = new Model_VersionObject();
             version_object.version_name            = help.version_name;
             version_object.version_description     = help.version_description;
             version_object.date_of_create          = new Date();
@@ -984,7 +984,9 @@ public class Controller_ProgramingPackage extends Controller {
                 version_object.b_program_version_snapshots.add(snap);
             }
 
-
+            for(Model_MProjectProgramSnapShot snap : version_object.b_program_version_snapshots){
+                snap.save();
+            }
 
 
             // Definování main Board
@@ -1043,6 +1045,9 @@ public class Controller_ProgramingPackage extends Controller {
             }
 
 
+            for(Model_BProgramHwGroup b_program_hw_group : version_object.b_program_hw_groups){
+                b_program_hw_group.save();
+            }
 
             // Uložení objektu
             version_object.save();
@@ -1345,7 +1350,7 @@ public class Controller_ProgramingPackage extends Controller {
                     try {
 
                         // Ověřím připojený server
-                        if (!Controller_WebSocket.blocko_servers.containsKey(b_program.instance.cloud_homer_server.server_name)) {
+                        if (!Controller_WebSocket.blocko_servers.containsKey(b_program.instance.cloud_homer_server.unique_identificator)) {
                             b_program.instance.notification_instance_unsuccessful_upload("Server is offline now. It will be uploaded as soon as possible");
                             logger.warn("Server je offline!! Nenahraju instanci!!");
                             return;
@@ -1497,7 +1502,7 @@ public class Controller_ProgramingPackage extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Instance_Temporary help = form.get();
 
-            Model_HomerServer server = Model_HomerServer.find.where().eq("server_name", help.server_name).findUnique();
+            Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", help.unique_identificator).findUnique();
             if(server == null) return GlobalResult.notFoundObject("Server not found");
 
             JsonNode result = server.add_temporary_instance(help.instance_name);
@@ -1722,7 +1727,7 @@ public class Controller_ProgramingPackage extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result create_Blocko_Server(){
+    public Result create_Homer_Server(){
         try{
 
             // Zpracování Json
@@ -1732,20 +1737,7 @@ public class Controller_ProgramingPackage extends Controller {
 
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
-            server.server_name = help.server_name;
-            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
-
-            server.mqtt_port = help.mqtt_port;
-            server.mqtt_password = help.mqtt_password;
-            server.mqtt_username = help.mqtt_username;
-
-            server.grid_port = help.grid_port;
-
-            server.webView_port = help.webView_port;
-
-            server.server_url = help.server_url;
-
-            server.set_hash_certificate();
+            server.personal_server_name = help.personal_server_name;
 
             // Kontrola oprávnění
             if(!server.create_permission()) return GlobalResult.forbidden_Permission();
@@ -1793,7 +1785,7 @@ public class Controller_ProgramingPackage extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Blocko_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
+    public Result edit_Homer_Server(@ApiParam(value = "server_id ", required = true) String server_id ){
         try{
 
             // Zpracování Json
@@ -1809,8 +1801,7 @@ public class Controller_ProgramingPackage extends Controller {
             if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            server.server_name = help.server_name;
-            server.destination_address = Server.tyrion_webSocketAddress + "/websocket/blocko_server/" + server.server_name;
+            server.personal_server_name = help.personal_server_name;
 
             server.mqtt_port = help.mqtt_port;
             server.mqtt_password = help.mqtt_password;
@@ -1855,7 +1846,7 @@ public class Controller_ProgramingPackage extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_All_Blocko_Server(){
+    public Result get_All_Homer_Server(){
         try{
 
             // Získání seznamu
@@ -1888,7 +1879,7 @@ public class Controller_ProgramingPackage extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Blocko_Server( @ApiParam(value = "server_id ", required = true)  String server_id ){
+    public Result delete_Homer_Server(@ApiParam(value = "server_id ", required = true)  String server_id ){
         try{
 
             // Kontrola objektu

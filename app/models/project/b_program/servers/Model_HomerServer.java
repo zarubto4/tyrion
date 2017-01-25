@@ -9,11 +9,15 @@ import controllers.Controller_Security;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.person.Model_FloatingPersonToken;
+import models.person.Model_Person;
 import models.project.b_program.instnace.Model_HomerInstance;
+import play.data.Form;
 import play.libs.Json;
 import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.hardware_updater.Actualization_Task;
-import utilities.webSocket.WS_BlockoServer;
+import utilities.webSocket.WS_HomerServer;
+import utilities.webSocket.messageObjects.WS_CheckPersonPermission_OnHomerServer;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -27,13 +31,10 @@ public class Model_HomerServer extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, readOnly = true) @Id     public String id;
-
-                                       @JsonIgnore              public String unique_identificator;
+                                      @JsonIgnore @Id           public String unique_identificator;
                                        @JsonIgnore              public String hash_certificate;
 
-    @JsonIgnore                        @Column(unique=true)     public String server_name;
-    @JsonIgnore                                                 public String destination_address;
+    @JsonIgnore                                                 public String personal_server_name;
 
     @ApiModelProperty(required = true, readOnly = true)         public String mqtt_port;              // Přidává se destination_address + "/" mqtt_port
     @ApiModelProperty(required = true, readOnly = true)         public String mqtt_username;
@@ -42,7 +43,8 @@ public class Model_HomerServer extends Model{
 
     @ApiModelProperty(required = true, readOnly = true)         public String grid_port;              // Přidává se destination_address + "/" grid_ulr
     @ApiModelProperty(required = true, readOnly = true)         public String webView_port;           // Přidává se destination_address + "/" webView_port
-    @ApiModelProperty(required = true, readOnly = true) @Column(unique=true)         public String server_url;             // Může být i IP adresa
+
+    @ApiModelProperty(required = true, readOnly = true) @Column(unique=true)    public String server_url;  // Může být i IP adresa
 
                                         @JsonIgnore             public CLoud_Homer_Server_Type server_type;  // Určující typ serveru
 
@@ -52,44 +54,42 @@ public class Model_HomerServer extends Model{
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
+
     @ApiModelProperty(required = true, readOnly = true)
     @JsonProperty @Transient  public boolean server_is_online(){
-        return Controller_WebSocket.blocko_servers.containsKey(this.server_name);
+        return Controller_WebSocket.blocko_servers.containsKey(this.unique_identificator);
     }
 
-    @JsonIgnore @Transient public WS_BlockoServer get_websocketServer(){
-        return (WS_BlockoServer) Controller_WebSocket.blocko_servers.get(this.server_name);
+    @JsonIgnore @Transient public WS_HomerServer get_websocketServer(){
+        return (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
     }
+
+
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_HomerServer.find.byId(this.id) == null) break;
-        }
-        super.save();
-    }
-
-    @JsonIgnore @Transient
-    public void set_hash_certificate(){
-
         while(true){ // I need Unique Value
-            hash_certificate = UUID.randomUUID().toString();
+            hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
             if (Model_HomerServer.find.where().eq("hash_certificate",hash_certificate).findUnique() == null) break;
         }
 
         while(true){ // I need Unique Value
-            unique_identificator = UUID. randomUUID().toString().substring(0,6);
+            unique_identificator = UUID. randomUUID().toString().substring(0,10);
             if (Model_HomerServer.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;
         }
+
+        super.save();
     }
 
+
+
     @JsonIgnore @Transient
-    public WS_BlockoServer get_server_webSocket_connection(){
-        return (WS_BlockoServer) Controller_WebSocket.blocko_servers.get(this.server_name);
+    public WS_HomerServer get_server_webSocket_connection(){
+        return (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
     }
 
 
@@ -110,6 +110,15 @@ public class Model_HomerServer extends Model{
                     return;
                 }
 
+                case "checkUserPermission" : {
+                    logger.debug("Cloud_Homer_Server:: Incoming message:: Chanel checkUserPermission:: ");
+
+                    final Form<WS_CheckPersonPermission_OnHomerServer> form = Form.form(WS_CheckPersonPermission_OnHomerServer.class).bind(json);
+                    if(form.hasErrors()) { logger.error("Model_HomerServer:: Messages:: (Parser) Incomming message has Error: " + form.errorsAsJson().toString()); }
+                    WS_CheckPersonPermission_OnHomerServer help = form.get();
+
+                    check_person_permission_for_homer_server(help);
+                }
 
                 default: {
                     logger.error("Cloud_Homer_Server:: Incoming message:: Chanel homer-server:: not recognize messageType ->" + json.get("messageType").asText());
@@ -121,16 +130,75 @@ public class Model_HomerServer extends Model{
         }
     }
 
+    @JsonIgnore @Transient  public static void check_person_permission_for_homer_server(WS_CheckPersonPermission_OnHomerServer message){
+        try{
+
+            // Slouží pro nahrávání testovacích instnací samotnými vývojáři z Byzance
+            Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", message.unique_homer_server_identification).findUnique();
+
+
+            Model_Person person = Model_Person.findByEmailAddressAndPassword(message.email, message.password);
+            if (person == null) {
+                ObjectNode request = Json.newObject();
+                request.put("messageType", "checkUserPermission");
+                request.put("messageChannel", CHANNEL);
+                request.put("unique_homer_server_identification", message.unique_homer_server_identification);
+                request.put("status", "error");
+                request.put("message", "Email or Password is wrong");
+                Controller_WebSocket.blocko_servers.get(server.unique_identificator).write_without_confirmation(request);
+            }
+
+
+            if(server.read_permission()){
+
+                Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
+                floatingPersonToken.set_basic_values();
+                floatingPersonToken.person = person;
+                floatingPersonToken.user_agent = message.user_agent;
+                floatingPersonToken.where_logged  = "Homer Server (" + server.personal_server_name + ")";
+                floatingPersonToken.save();
+
+                ObjectNode request = Json.newObject();
+                request.put("messageType", "createInstance");
+                request.put("messageChannel", CHANNEL);
+                request.put("status", "success");
+                request.put("unique_homer_server_identification", message.unique_homer_server_identification);
+                request.put("read_permission", server.read_permission());
+                request.put("edit_permission", server.edit_permission());
+                request.put("delete_permission", server.delete_permission());
+                request.put("create_permission", server.create_permission());
+                request.put("authToken", floatingPersonToken.authToken);
+
+               Controller_WebSocket.blocko_servers.get(server.unique_identificator).write_without_confirmation(request);
+            }else {
+
+                ObjectNode request = Json.newObject();
+                request.put("messageType", "checkUserPermission");
+                request.put("messageChannel", CHANNEL);
+                request.put("unique_homer_server_identification", message.unique_homer_server_identification);
+                request.put("status", "error");
+                request.put("message", "Permission Required");
+
+                Controller_WebSocket.blocko_servers.get(server.unique_identificator).write_without_confirmation(request);
+            }
+
+
+
+        }catch (Exception e){
+            logger.error("Cloud_Homer_Server:: check_person_permission_for_homer_server :: Error" + e.getMessage());
+        }
+    }
+
     @JsonIgnore @Transient  public JsonNode get_homer_server_listOfInstance(){
         try {
 
-            logger.debug("Tyrion: Server want know instances on: " + server_name);
+            logger.debug("Tyrion: Server want know instances on: " + unique_identificator);
 
             ObjectNode request = Json.newObject();
             request.put("messageType", "listInstances");
             request.put("messageChannel", CHANNEL);
 
-            return Controller_WebSocket.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 4, 0, 3);
+            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
@@ -140,13 +208,13 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public JsonNode get_homer_server_numberOfInstance(){
         try {
 
-            logger.debug("Tyrion: Server want know instances on: " + server_name);
+            logger.debug("Tyrion: Server want know instances on: " + personal_server_name + " " + unique_identificator);
 
             ObjectNode request = Json.newObject();
             request.put("messageType", "numberOfInstances");
             request.put("messageChannel", CHANNEL);
 
-            return Controller_WebSocket.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 4, 0, 3);
+            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
@@ -161,7 +229,8 @@ public class Model_HomerServer extends Model{
             request.put("messageChannel", CHANNEL);
             request.put("instanceId", instance_name);
 
-            JsonNode result = Controller_WebSocket.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 4, 0, 3);
+            JsonNode result = Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
+
             if(result.get("status").asText().equals("success") && result.get("exist").asText().equals("true")){
                 return true;
             }
@@ -176,7 +245,7 @@ public class Model_HomerServer extends Model{
 
             // Slouží pro nahrávání testovacích instnací samotnými vývojáři z Byzance
 
-            if (isInstanceExist(instance_name)) return this.RESULT_instance_already_exist();
+            if (isInstanceExist(instance_name)) return RESULT_instance_already_exist();
 
             ObjectNode request = Json.newObject();
             request.put("messageType", "createInstance");
@@ -186,10 +255,10 @@ public class Model_HomerServer extends Model{
             request.put("grid_websocket_token", "ws_" + instance_name);
 
             logger.debug("Sending to cloud_blocko_server request for new instance ");
-            return  Controller_WebSocket.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 5, 0, 3);
+            return  Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
 
         }catch (Exception e){
-            return this.RESULT_server_is_offline();
+            return RESULT_server_is_offline();
         }
     }
 
@@ -207,11 +276,11 @@ public class Model_HomerServer extends Model{
            // request.put("grid_websocket_token", instance.virtual_instance ? (UUID.randomUUID().toString() + UUID.randomUUID().toString()) : instance.actual_instance.websocket_grid_token);
 
             logger.debug("Sending to cloud_blocko_server request for new instance ");
-            logger.debug("Server Name: " + server_name);
-            return  Controller_WebSocket.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 5, 0, 3);
+            logger.debug("Server Name: "+ personal_server_name + " " + unique_identificator);
+            return  Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
 
         }catch (Exception e){
-            logger.warn("Cloud Homer server", server_name, " is offline!");
+            logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
             return RESULT_server_is_offline();
         }
 
@@ -226,12 +295,23 @@ public class Model_HomerServer extends Model{
             request.put("instanceId", instance_name);
 
 
-            return Controller_WebSocket.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 5, 0, 3);
+            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
         }
 
+    }
+
+    @JsonIgnore @Transient  public  void ask_for_verificationToken(){
+        try {
+
+         WS_HomerServer homer_server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(unique_identificator);
+         homer_server.security_token_confirm_procedure();
+            
+        }catch (Exception e){
+            logger.error("Model-HomerServer:: Server::" + unique_identificator + " is offline");
+        }
     }
 
     @JsonIgnore @Transient  public  JsonNode ping(){
@@ -241,7 +321,7 @@ public class Model_HomerServer extends Model{
             request.put("messageType", "pingServer");
             request.put("messageChannel", CHANNEL);
 
-            return Controller_WebSocket.blocko_servers.get(server_name).write_with_confirmation(request, 1000 * 2, 0, 2);
+            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 2, 0, 2);
         }catch (Exception e){
             return RESULT_server_is_offline();
         }
@@ -255,7 +335,7 @@ public class Model_HomerServer extends Model{
             request.put("messageChannel", CHANNEL);
             request.put("macAddress", macAddress);
 
-            return Controller_WebSocket.blocko_servers.get(server_name).write_with_confirmation(request, 1000*5, 0, 3);
+            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000*5, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
@@ -263,26 +343,26 @@ public class Model_HomerServer extends Model{
     }
 
     @JsonIgnore @Transient  public  void is_disconnect(){
-        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " +  Controller_WebSocket.blocko_servers.get(server_name));
+        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " +  Controller_WebSocket.blocko_servers.get(unique_identificator));
         // TODO nějaký Alarm když se to stane??
     }
 
     @JsonIgnore @Transient public  void add_task(Actualization_Task task){
         try {
 
-           WS_BlockoServer server = (WS_BlockoServer) Controller_WebSocket.blocko_servers.get(this.server_name);
+           WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
            server.add_task(task);
 
         } catch (Exception e){
-            logger.error("Server is offline");
+            logger.error("Model-HomerServer:: Server::" + unique_identificator + " is offline");
         }
     }
 
 
     // Procedura po připojení serveru
-    @JsonIgnore @Transient  public void check_after_connection( WS_BlockoServer ws_blockoServer){
+    @JsonIgnore @Transient  public void check_after_connection( WS_HomerServer ws_blockoServer){
 
-        logger.debug("Connection lost with compilation cloud_blocko_server!: " + server_name);
+        logger.debug("Connection lost with compilation cloud_blocko_server!: " + personal_server_name + " " + unique_identificator);
 
         Model_HomerServer homer_server = this;
 
@@ -317,10 +397,10 @@ public class Model_HomerServer extends Model{
                             List<Model_HomerInstance> instances_in_database_for_uploud = new ArrayList<>();
 
                             // Přidám všechny reálné instance, které mají běžet.
-                            instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", false).isNotNull("actual_instance").select("blocko_instance_name").findList());
+                            instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", homer_server.unique_identificator).eq("virtual_instance", false).isNotNull("actual_instance").select("blocko_instance_name").findList());
 
                             // Přidám všechny virtuální instance, kde je ještě alespoň jeden Yoda
-                            instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.id", homer_server.id).eq("virtual_instance", true).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList());
+                            instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", homer_server.unique_identificator).eq("virtual_instance", true).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList());
 
 
                             List<String> instances_for_removing = new ArrayList<>();
@@ -404,7 +484,7 @@ public class Model_HomerServer extends Model{
         ObjectNode result = Json.newObject();
         result.put("status", "error");
         result.put("code",   800);
-        result.put("error", "Server is offline");
+        result.put("error", "Model-HomerServer:: Server:: is offline");
         return result;
     }
 

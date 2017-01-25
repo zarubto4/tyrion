@@ -23,7 +23,7 @@ import utilities.enums.Notification_level;
 import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
-import utilities.webSocket.WS_BlockoServer;
+import utilities.webSocket.WS_HomerServer;
 import utilities.webSocket.messageObjects.WS_DeviceConnected;
 import utilities.webSocket.messageObjects.WS_YodaConnected;
 
@@ -219,7 +219,7 @@ public class Model_Board extends Model {
             return homer_instance;
     }
 
-    @JsonIgnore @Transient  public static void master_device_Connected(WS_BlockoServer server, ObjectNode json){
+    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, ObjectNode json){
         try {
 
             // Zpracování Json
@@ -253,7 +253,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Connected(WS_BlockoServer server, ObjectNode json){
+    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, ObjectNode json){
         try {
 
             // Zpracování Json

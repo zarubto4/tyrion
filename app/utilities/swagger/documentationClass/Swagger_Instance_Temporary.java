@@ -12,5 +12,5 @@ public class Swagger_Instance_Temporary {
     public String instance_name;
 
     @Constraints.Required
-    public String server_name;
+    public String unique_identificator;
 }

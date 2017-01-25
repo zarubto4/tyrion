@@ -181,12 +181,12 @@ public class HardwareGeneratorController extends Controller {
 
                 Swagger_Hardware_New_Settings_Result result = new Swagger_Hardware_New_Settings_Result();
                 result.full_id                              = record.full_id;
-                result.normal_mqtt_hostname                 = main_server.destination_address;
+                result.normal_mqtt_hostname                 = main_server.server_url;
                 result.normal_mqtt_port                     = main_server.mqtt_port;
                 result.normal_mqtt_username                 = main_server.mqtt_username;
                 result.normal_mqtt_password                 = main_server.mqtt_password;
 
-                result.backup_mqtt_hostname                 = backup_server.destination_address;
+                result.backup_mqtt_hostname                 = backup_server.server_url;
                 result.backup_mqtt_port                     = backup_server.mqtt_port;
                 result.backup_mqtt_username                 = backup_server.mqtt_username;
                 result.backup_mqtt_password                 = backup_server.mqtt_password;
