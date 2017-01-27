@@ -100,7 +100,7 @@ public abstract class WebSCType {
         String messageId = UUID.randomUUID().toString();
         json.put("messageId", messageId );
 
-        SendMessage send_message = new SendMessage(this, json, messageId, time, delay, number_of_retries);
+        SendMessage send_message = new SendMessage(webSCtype, json, messageId, time, delay, number_of_retries);
         sendMessageMap.put(messageId, send_message);
 
         // Vytvořeno jen pro redukci délky vypisovaného kodu (zvláště při přeposílání dlouhých programů - bylo to nečitelné

@@ -12,12 +12,13 @@ import io.swagger.annotations.ApiModelProperty;
 import models.person.Model_FloatingPersonToken;
 import models.person.Model_Person;
 import models.project.b_program.instnace.Model_HomerInstance;
-import play.data.Form;
 import play.libs.Json;
 import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.webSocket.WS_HomerServer;
 import utilities.webSocket.messageObjects.WS_CheckPersonPermission_OnHomerServer;
+import utilities.webSocket.messageObjects.WS_InvalidPersonToken_OnHomerServer;
+import utilities.webSocket.messageObjects.WS_ValidPersonToken_OnHomerServer;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ public class Model_HomerServer extends Model{
     public static String CHANNEL = "homer-server";
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    @JsonIgnore @Transient public static void Messages(ObjectNode json){
+    @JsonIgnore @Transient public static void Messages(WS_HomerServer homer, ObjectNode json){
         try {
             switch (json.get("messageType").asText()) {
 
@@ -111,14 +112,27 @@ public class Model_HomerServer extends Model{
                 }
 
                 case "checkUserPermission" : {
-                    logger.debug("Cloud_Homer_Server:: Incoming message:: Chanel checkUserPermission:: ");
 
-                    final Form<WS_CheckPersonPermission_OnHomerServer> form = Form.form(WS_CheckPersonPermission_OnHomerServer.class).bind(json);
-                    if(form.hasErrors()) { logger.error("Model_HomerServer:: Messages:: (Parser) Incomming message has Error: " + form.errorsAsJson().toString()); }
-                    WS_CheckPersonPermission_OnHomerServer help = form.get();
-
-                    check_person_permission_for_homer_server(help);
+                    WS_CheckPersonPermission_OnHomerServer message_help = WS_CheckPersonPermission_OnHomerServer.getObject(json);
+                    check_person_permission_for_homer_server(homer, message_help);
+                    return;
                 }
+
+                case "checkPersonToken" : {
+
+                    WS_ValidPersonToken_OnHomerServer message_help = WS_ValidPersonToken_OnHomerServer.getObject(json);
+                    check_person_token_for_homer_server(homer, message_help);
+
+                    return;
+                }
+
+                case "removePersonLoginToken" : {
+
+                    WS_InvalidPersonToken_OnHomerServer message_help = WS_InvalidPersonToken_OnHomerServer.getObject(json);
+                    invalid_person_token_for_homer_server(homer, message_help);
+                    return;
+                }
+
 
                 default: {
                     logger.error("Cloud_Homer_Server:: Incoming message:: Chanel homer-server:: not recognize messageType ->" + json.get("messageType").asText());
@@ -126,66 +140,163 @@ public class Model_HomerServer extends Model{
                 }
             }
         }catch (Exception e){
-            logger.error("Cloud_Homer_Server:: Incoming message:: Error", e.getMessage());
+            logger.error("Cloud_Homer_Server:: Incoming message:: Error", e);
         }
     }
 
-    @JsonIgnore @Transient  public static void check_person_permission_for_homer_server(WS_CheckPersonPermission_OnHomerServer message){
+    @JsonIgnore @Transient  public static void check_person_permission_for_homer_server(WS_HomerServer homer, WS_CheckPersonPermission_OnHomerServer message){
         try{
-
-            // Slouží pro nahrávání testovacích instnací samotnými vývojáři z Byzance
-            Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", message.unique_homer_server_identification).findUnique();
 
 
             Model_Person person = Model_Person.findByEmailAddressAndPassword(message.email, message.password);
+
             if (person == null) {
+
+                logger.warn("Cloud_Homer_Server:: check_person_permission_for_homer_server:: Person not found! Email:: " + message.email);
                 ObjectNode request = Json.newObject();
                 request.put("messageType", "checkUserPermission");
                 request.put("messageChannel", CHANNEL);
-                request.put("unique_homer_server_identification", message.unique_homer_server_identification);
+                request.put("messageId", message.messageId);
                 request.put("status", "error");
                 request.put("message", "Email or Password is wrong");
-                Controller_WebSocket.blocko_servers.get(server.unique_identificator).write_without_confirmation(request);
+                homer.write_without_confirmation(request);
+                return;
             }
 
 
-            if(server.read_permission()){
+            if(homer.server.read_permission(person)){
+
+                logger.debug("Cloud_Homer_Server:: check_person_permission_for_homer_server:: Person found with Email:: " + message.email + " with right permissions");
 
                 Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
                 floatingPersonToken.set_basic_values();
                 floatingPersonToken.person = person;
                 floatingPersonToken.user_agent = message.user_agent;
-                floatingPersonToken.where_logged  = "Homer Server (" + server.personal_server_name + ")";
+                floatingPersonToken.where_logged  = "Homer Server (" + homer.server.personal_server_name + ")";
                 floatingPersonToken.save();
 
                 ObjectNode request = Json.newObject();
-                request.put("messageType", "createInstance");
+                request.put("messageType", "checkUserPermission");
                 request.put("messageChannel", CHANNEL);
                 request.put("status", "success");
-                request.put("unique_homer_server_identification", message.unique_homer_server_identification);
-                request.put("read_permission", server.read_permission());
-                request.put("edit_permission", server.edit_permission());
-                request.put("delete_permission", server.delete_permission());
-                request.put("create_permission", server.create_permission());
+                request.put("messageId", message.messageId);
+                request.put("read_permission", homer.server.read_permission(person));
+                request.put("edit_permission", homer.server.edit_permission(person));
+                request.put("delete_permission", homer.server.delete_permission(person));
+                request.put("create_permission", homer.server.create_permission(person));
                 request.put("authToken", floatingPersonToken.authToken);
 
-               Controller_WebSocket.blocko_servers.get(server.unique_identificator).write_without_confirmation(request);
+                homer.write_without_confirmation(request);
+                return;
             }else {
 
                 ObjectNode request = Json.newObject();
                 request.put("messageType", "checkUserPermission");
                 request.put("messageChannel", CHANNEL);
-                request.put("unique_homer_server_identification", message.unique_homer_server_identification);
+                request.put("messageId", message.messageId);
                 request.put("status", "error");
                 request.put("message", "Permission Required");
 
-                Controller_WebSocket.blocko_servers.get(server.unique_identificator).write_without_confirmation(request);
+                homer.write_without_confirmation(request);
+                return;
             }
 
 
 
         }catch (Exception e){
-            logger.error("Cloud_Homer_Server:: check_person_permission_for_homer_server :: Error" + e.getMessage());
+            logger.error("Cloud_Homer_Server:: check_person_permission_for_homer_server :: Error:: ", e);
+        }
+    }
+
+
+    @JsonIgnore @Transient  public static void check_person_token_for_homer_server(WS_HomerServer homer, WS_ValidPersonToken_OnHomerServer message){
+        try{
+
+            Model_Person person =  Model_Person.findByAuthToken(message.token);
+
+            if (person == null) {
+
+                logger.warn("Cloud_Homer_Server:: check_person_token_for_homer_server:: Person not found!");
+                ObjectNode request = Json.newObject();
+                request.put("messageType", "checkPersonToken");
+                request.put("messageChannel", CHANNEL);
+                request.put("messageId", message.messageId);
+                request.put("status", "error");
+                request.put("message", "Token is not valid");
+                homer.write_without_confirmation(request);
+                return;
+            }
+
+
+            if(homer.server.read_permission(person)){
+
+                logger.debug("Cloud_Homer_Server:: check_person_permission_for_homer_server:: Person found with Email:: " + person.mail + " with right permissions");
+
+                ObjectNode request = Json.newObject();
+                request.put("messageType", "checkPersonToken");
+                request.put("messageChannel", CHANNEL);
+                request.put("status", "success");
+                request.put("messageId", message.messageId);
+                request.put("read_permission",   homer.server.read_permission(person));
+                request.put("edit_permission",   homer.server.edit_permission(person));
+                request.put("delete_permission", homer.server.delete_permission(person));
+                request.put("create_permission", homer.server.create_permission(person));
+
+                homer.write_without_confirmation(request);
+                return;
+
+            }else {
+
+                ObjectNode request = Json.newObject();
+                request.put("messageType", "checkPersonToken");
+                request.put("messageChannel", CHANNEL);
+                request.put("messageId", message.messageId);
+                request.put("status", "error");
+                request.put("message", "Permission Required");
+
+                homer.write_without_confirmation(request);
+                return;
+            }
+
+
+
+        }catch (Exception e){
+            logger.error("Cloud_Homer_Server:: check_person_permission_for_homer_server :: Error:: ", e);
+        }
+    }
+
+
+    @JsonIgnore @Transient  public static void invalid_person_token_for_homer_server(WS_HomerServer homer, WS_InvalidPersonToken_OnHomerServer message){
+        try{
+
+            Model_FloatingPersonToken token =  Model_FloatingPersonToken.find.byId(message.token);
+
+            if (token == null) {
+
+                logger.warn("Cloud_Homer_Server:: invalid_person_token_for_homer_server:: Token not found!");
+                ObjectNode request = Json.newObject();
+                request.put("messageType", "checkPersonToken");
+                request.put("messageChannel", CHANNEL);
+                request.put("messageId", message.messageId);
+                request.put("status", "error");
+                request.put("message", "Token is not valid");
+                homer.write_without_confirmation(request);
+                return;
+            }
+
+            token.delete(); logger.debug("Cloud_Homer_Server:: invalid_person_token_for_homer_server:: Token found and remove");
+
+            ObjectNode request = Json.newObject();
+            request.put("messageType", "removePersonLoginToken");
+            request.put("messageChannel", CHANNEL);
+            request.put("status", "success");
+            request.put("messageId", message.messageId);
+
+            homer.write_without_confirmation(request);
+
+
+        }catch (Exception e){
+            logger.error("Cloud_Homer_Server:: check_person_permission_for_homer_server :: Error:: ", e);
         }
     }
 
@@ -503,10 +614,19 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: User (Admin with privileges) can read public servers, User (Customer) can read own private servers";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User (Admin with privileges) can create public cloud cloud_blocko_server where the system uniformly creating Blocko instantiates or (Customer) can create private cloud_blocko_server for own projects";
 
+                                                                                                                     // TODO oprávnění bude komplikovanější až se budou podporovat lokální servery
     @JsonIgnore                                                       @Transient public boolean create_permission()  {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_create");  }
     @JsonIgnore                                                       @Transient public boolean read_permission()    {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_read");    }
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean edit_permission()    {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_edit");    }
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean delete_permission()  {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_delete");  }
+
+    // Speciální řízení oprávnění z důvodů ověřování identit na homer serveru
+    // Tyrion v contextu nemá Http.Context.current().args.get("person"); podle kterého se běžně všude ověřuje identita!!!
+    @JsonIgnore public boolean create_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_create");  }
+    @JsonIgnore public boolean read_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_read");    }
+    @JsonIgnore public boolean edit_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_edit");    }
+    @JsonIgnore public boolean delete_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_delete");  }
+
 
     public enum permissions{Cloud_Homer_Server_create, Cloud_Homer_Server_read, Cloud_Homer_Server_edit, Cloud_Homer_Server_delete}
 

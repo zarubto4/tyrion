@@ -238,7 +238,7 @@ public class Model_HomerInstance extends Model {
 
 
     // Messenger
-    @JsonIgnore @Transient public static void Messages(ObjectNode json){
+    @JsonIgnore @Transient public static void Messages(WS_HomerServer homer, ObjectNode json){
 
         try {
             switch (json.get("messageType").asText()) {

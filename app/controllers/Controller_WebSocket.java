@@ -128,8 +128,26 @@ public class Controller_WebSocket extends Controller {
             logger.debug("Homer Server:: Connection:: Tyrion have to control what is on the cloud_blocko_server side ");
 
 
-            // Provedu ověření identity serveru na jeho long_hash
-            server.security_token_confirm_procedure();
+            // Ověřím IDentitiu serveru na jeho long_hash---------
+            // Separatní vlákno je z důvodů nutnosti nejdříve vrátit (return webSocket) a nezávisle poté spustit ověření
+            Thread check = new Thread() {
+
+                @Override
+                public void run() {
+                    try {
+
+                        sleep(500);
+                        server.security_token_confirm_procedure();
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
+            check.start();
+
+
 
 
             blocko_servers.put(homer_server.unique_identificator, server);

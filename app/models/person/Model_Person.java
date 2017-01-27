@@ -20,7 +20,6 @@ import models.project.m_program.Model_GridTerminal;
 import org.hibernate.validator.constraints.Email;
 import play.data.validation.Constraints;
 import utilities.Server;
-import utilities.permission.Permission;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
@@ -118,7 +117,9 @@ public class Model_Person extends Model {
 
     @JsonIgnore @Transient
     public boolean has_permission(String permission){
-        return Permission.check_permission(permission);
+
+            return  Model_Permission.find.where().eq("value", permission).eq("roles.persons.id", this.id).findRowCount() +
+                    Model_Permission.find.where().eq("value", permission).eq("persons.id", this.id).findRowCount() > 0;
     }
 
     @JsonIgnore @Transient

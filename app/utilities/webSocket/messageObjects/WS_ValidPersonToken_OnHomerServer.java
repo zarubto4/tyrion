@@ -7,20 +7,14 @@ import play.data.validation.Constraints;
 
 import java.io.IOException;
 
-public class WS_CheckPersonPermission_OnHomerServer {
+public class WS_ValidPersonToken_OnHomerServer {
 
-
-    public static WS_CheckPersonPermission_OnHomerServer getObject(ObjectNode json) throws IOException {
+    public static WS_ValidPersonToken_OnHomerServer getObject(ObjectNode json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json.toString(), WS_CheckPersonPermission_OnHomerServer.class);
+        return mapper.readValue(json.toString(), WS_ValidPersonToken_OnHomerServer.class);
     }
 
-
-
-
-    @ApiModelProperty(required = true) @Constraints.Required  public String email;
-    @ApiModelProperty(required = true) @Constraints.Required  public String password;
-    @ApiModelProperty(required = true) @Constraints.Required  public String user_agent;
+    @ApiModelProperty(required = true) @Constraints.Required  public String token;
 
     @ApiModelProperty(required = true) @Constraints.Required  public String messageType;
     @ApiModelProperty(required = true) @Constraints.Required  public String messageId;

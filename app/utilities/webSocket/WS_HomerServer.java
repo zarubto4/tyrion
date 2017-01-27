@@ -70,13 +70,13 @@ public class WS_HomerServer extends WebSCType{
 
 
                     case "homer-server" : { // Komunikace mezi Tyrion server a Homer Server
-                        Model_HomerServer.Messages(json);
+                        Model_HomerServer.Messages(this, json);
                         return;
                     }
 
 
                     case "tyrion": {    // Komunikace mezi Tyrion server a Homer Instance
-                        Model_HomerInstance.Messages(json);
+                        Model_HomerInstance.Messages(this, json);
                         return;
                     }
 
@@ -156,7 +156,7 @@ public class WS_HomerServer extends WebSCType{
             server.check_after_connection(this);
 
         }catch (Exception e){
-            logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error" + e.getMessage());
+            logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error", e);
         }
     }
 

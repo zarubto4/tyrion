@@ -976,7 +976,7 @@ public class Controller_ProgramingPackage extends Controller {
 
                 for(Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots){
                     Model_VersionObject m_program_version = Model_VersionObject.find.where().eq("id", help_m_program_snap.version_object_id ).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findUnique();
-                    if(m_program_version == null) return GlobalResult.notFoundObject("M_Program Verison id not found");
+                    if(m_program_version == null) return GlobalResult.notFoundObject("M_Program Version id not found");
                     snap.version_objects_program.add(m_program_version);
                 }
 
