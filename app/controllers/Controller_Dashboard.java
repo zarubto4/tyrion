@@ -54,6 +54,7 @@ import views.html.websocket.websocket_homer_server_detail;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
 import views.html.grid.grid_widget_content;
+import views.html.external_servers.external_servers;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -407,9 +408,9 @@ public class Controller_Dashboard extends Controller {
 
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result  show_websocket_server_detail(String server_name) {
+    public Result  show_websocket_server_detail(String server_identificator) {
 
-        Model_HomerServer server = Model_HomerServer.find.where().eq("server_name",server_name).findUnique();
+        Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator",server_identificator).findUnique();
         if(server == null) return show_web_socket_stats();
 
 

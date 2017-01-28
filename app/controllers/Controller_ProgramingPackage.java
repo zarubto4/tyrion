@@ -95,14 +95,16 @@ public class Controller_ProgramingPackage extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_create() {
         try{
+            JsonNode json = request().body().asJson();
 
             // Zpracování Json
             final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Project_New help = form.get();
 
+
             Model_Product product = Model_Product.find.byId(help.product_id);
-            if(product == null)return GlobalResult.notFoundObject("Product not found");
+            if(product == null){return GlobalResult.notFoundObject("Product not found");}
             if(!product.create_new_project()) return GlobalResult.result_BadRequest(product.create_new_project_if_not());
 
             // Vytvoření objektu
@@ -113,6 +115,7 @@ public class Controller_ProgramingPackage extends Controller {
 
             // Kontrola oprávnění těsně před uložením
             if (!project.create_permission())  return GlobalResult.forbidden_Permission();
+
 
             // Uložení objektu
             project.save();
@@ -133,6 +136,7 @@ public class Controller_ProgramingPackage extends Controller {
 
 
         } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

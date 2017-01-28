@@ -3,6 +3,7 @@ package utilities;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+import com.google.inject.Inject;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.blocko.Model_BlockoBlock;
@@ -32,6 +33,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
+import play.cache.CacheApi;
 import utilities.hardware_updater.Master_Updater;
 import utilities.notifications.Notification_Handler;
 import utilities.schedules_activities.*;
@@ -46,6 +48,9 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class Server {
+
+
+    @Inject static CacheApi cache;
 
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;

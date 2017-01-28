@@ -37,7 +37,6 @@ public class Compilation_Checker implements Job {
             Long before_5_minutes = new Date().getTime() - (5 * 60 * 1000);
             Date created = new Date(before_5_minutes);
 
-
                 // Zarážka pro
                 if(Controller_WebSocket.compiler_cloud_servers.isEmpty()) return;
 
@@ -64,6 +63,8 @@ public class Compilation_Checker implements Job {
                     // Výsledek se kterým se dále nic neděje
                     JsonNode jsonNode = version_object.compile_program_procedure();
                 }
+
+                logger.info("Independent Thread in Compilation_Checker finish!");
 
             }catch(Exception e){
                 e.printStackTrace();

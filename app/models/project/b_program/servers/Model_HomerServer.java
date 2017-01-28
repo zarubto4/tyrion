@@ -50,7 +50,7 @@ public class Model_HomerServer extends Model{
                                         @JsonIgnore             public CLoud_Homer_Server_Type server_type;  // Určující typ serveru
 
 
-    @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -61,17 +61,14 @@ public class Model_HomerServer extends Model{
         return Controller_WebSocket.blocko_servers.containsKey(this.unique_identificator);
     }
 
-    @JsonIgnore @Transient public WS_HomerServer get_websocketServer(){
-        return (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
-    }
+
 
 
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
+    @JsonIgnore @Override public void save() {
 
         while(true){ // I need Unique Value
             hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
@@ -86,14 +83,16 @@ public class Model_HomerServer extends Model{
         super.save();
     }
 
+    @JsonIgnore @Transient public WS_HomerServer get_server_webSocket_connection(){
+        return (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
+    }
 
-
-    @JsonIgnore @Transient
-    public WS_HomerServer get_server_webSocket_connection(){
+    @JsonIgnore @Transient public WS_HomerServer get_websocketServer(){
         return (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
     }
 
 
+/* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER---------------------------------------------------------------------------------*/
 
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER---------------------------------------------------------------------------------*/
@@ -208,7 +207,6 @@ public class Model_HomerServer extends Model{
         }
     }
 
-
     @JsonIgnore @Transient  public static void check_person_token_for_homer_server(WS_HomerServer homer, WS_ValidPersonToken_OnHomerServer message){
         try{
 
@@ -264,7 +262,6 @@ public class Model_HomerServer extends Model{
             logger.error("Cloud_Homer_Server:: check_person_permission_for_homer_server :: Error:: ", e);
         }
     }
-
 
     @JsonIgnore @Transient  public static void invalid_person_token_for_homer_server(WS_HomerServer homer, WS_InvalidPersonToken_OnHomerServer message){
         try{
@@ -469,7 +466,6 @@ public class Model_HomerServer extends Model{
         }
     }
 
-
     // Procedura po připojení serveru
     @JsonIgnore @Transient  public void check_after_connection( WS_HomerServer ws_blockoServer){
 
@@ -587,7 +583,6 @@ public class Model_HomerServer extends Model{
         new Control_Blocko_Server_Thread().start();
 
     }
-
 
     // Pomocné objekty - Defaultní zprávy
     @JsonIgnore @Transient  public static JsonNode RESULT_server_is_offline(){

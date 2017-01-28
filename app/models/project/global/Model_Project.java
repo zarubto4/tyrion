@@ -18,10 +18,7 @@ import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import models.project.c_program.Model_CProgram;
 import models.project.m_program.Model_MProject;
-import utilities.enums.Notification_action;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
-import utilities.enums.Participant_status;
+import utilities.enums.*;
 import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
@@ -168,6 +165,7 @@ public class Model_Project extends Model {
 
     @JsonIgnore private String blob_project_link;
 
+
     @JsonIgnore @Override public void save() {
 
         while(true){ // I need Unique Value
@@ -177,11 +175,50 @@ public class Model_Project extends Model {
         }
 
         Model_HomerInstance instance = new Model_HomerInstance();
-        instance.cloud_homer_server = Model_HomerServer.find.where().eq("personal_server_name", "Alfa").findUnique();
         instance.virtual_instance = true;
-        instance.save();
-        this.private_instance = instance;
 
+        // Máme Privátní server pod projektem
+        if(12 > 19){
+
+            // TODO - Doplnit možnost registrace přímo na privátní server
+
+        }else {
+
+
+            String wining_server_id = null;
+            Integer count = null;
+
+            for (Object server_id :  Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.public_server).findIds()) {
+
+                System.out.println();
+
+
+                Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", server_id).findRowCount();
+
+                if(actual_Server_count == 0){
+                    wining_server_id = server_id.toString();
+                    break;
+                }
+                else if(wining_server_id == null) {
+
+                    wining_server_id = server_id.toString();
+                    count = actual_Server_count;
+
+                }else if(actual_Server_count < count ){
+                    wining_server_id  = server_id.toString();
+                    count = actual_Server_count;
+
+                }
+
+            }
+
+
+            instance.cloud_homer_server = Model_HomerServer.find.byId(wining_server_id);;
+            instance.save();
+
+        }
+
+        this.private_instance = instance;
         super.save();
     }
 

@@ -37,7 +37,7 @@ public class Loggy{
 
     public static Result result_internalServerError(Exception exception, Http.Request request) {
 
-        exception.printStackTrace();
+        logger.error("Error:: ", exception);
 
         String id;
 

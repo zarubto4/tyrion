@@ -140,20 +140,17 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore             public Model_BProgram getB_program()   { return b_program;}
     @JsonIgnore @Transient  public List<Model_Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
 
-    @JsonIgnore @Transient
-    private void setUnique_blocko_instance_name() {
-            while(true){ // I need Unique Value
-                this.blocko_instance_name = UUID.randomUUID().toString();
-                if (Model_HomerInstance.find.where().eq("blocko_instance_name", blocko_instance_name ).findUnique() == null) break;
-            }
-    }
-
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
     @Override
     public void save(){
-        this.setUnique_blocko_instance_name();
+
+        while(true){ // I need Unique Value
+            this.blocko_instance_name = UUID.randomUUID().toString();
+            if (Model_HomerInstance.find.where().eq("blocko_instance_name", blocko_instance_name ).findUnique() == null) break;
+        }
+
         super.save();
     }
 
