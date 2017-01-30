@@ -43,6 +43,8 @@ public class Model_TypeOfBoard extends Model {
                 @OneToOne (mappedBy="main_type_of_board")                                       public Model_BootLoader main_boot_loader;
     @JsonIgnore @OneToOne(mappedBy="default_program_type_of_board")                             public Model_CProgram default_program;
 
+    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_ImportLibrary> libraries = new ArrayList<>();
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String processor_name    (){ return processor == null ? null : processor.processor_name;}

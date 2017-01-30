@@ -21,6 +21,6 @@ public class Swagger_C_Program_Version_Short_Detail {
     public String version_description;
 
 
-    @JsonProperty @Transient public boolean update_permission;
-    @JsonProperty @Transient public boolean delete_permission;
+    @ApiModelProperty(required = true, readOnly = true) public boolean update_permission;
+    @ApiModelProperty(required = true, readOnly = true) public boolean delete_permission;
 }

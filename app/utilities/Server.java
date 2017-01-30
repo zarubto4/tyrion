@@ -45,6 +45,8 @@ import java.util.List;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class Server {
@@ -329,10 +331,9 @@ public class Server {
             // compiler
                 for(Enum en : Model_Board.permissions.values())                   permissions.add(en.name());
                 for(Enum en : Model_CompilationServer.permissions.values())       permissions.add(en.name());
-                for(Enum en : Model_LibraryGroup.permissions.values())            permissions.add(en.name());
+                for(Enum en : Model_ImportLibrary.permissions.values())           permissions.add(en.name());
                 for(Enum en : Model_Processor.permissions.values())               permissions.add(en.name());
                 for(Enum en : Model_Producer.permissions.values())                permissions.add(en.name());
-                for(Enum en : Model_SingleLibrary.permissions.values())           permissions.add(en.name());
                 for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());
                 for(Enum en : Model_BootLoader.permissions.values())              permissions.add(en.name());
 
@@ -413,7 +414,7 @@ public class Server {
 
             // Minutové - hodinové klíče
             TriggerKey every_10_min_key7 = TriggerKey.triggerKey("every_ten_minutes"); // 7)
-
+            TriggerKey every_minute_key = TriggerKey.triggerKey("every_minute");
 
             //-------------------------
 
@@ -457,6 +458,10 @@ public class Server {
                         .withSchedule(cronSchedule("17 0/10 * * * ?"))// Spuštění každých 10 minut a to v 17 vteřině každé minuty
                         .build();
 
+                Trigger every_minute = newTrigger().withIdentity(every_minute_key).startNow()
+                        .withSchedule(repeatMinutelyForever())// Spuštění každou minutu
+                        .build();
+
                 /**
                  *  !!!
                  *  Každý Job musí mít Trigger, který má unikátní TriggerKey
@@ -491,6 +496,10 @@ public class Server {
                 // 7) Kontrola zaseknutých kompilací - těch co jsou in progress déle než 5 minut.
                 logger.info("Scheduling new Job - Checking stuck compilations");
                 scheduler.scheduleJob( newJob(Compilation_Checker.class).withIdentity( JobKey.jobKey("stuck_compilation_check") ).build(), every_10_minutes_7);
+
+                // 8) Refresh spojení s databází, aby se neuspalo
+                logger.info("Scheduling new Job - Database_Connection_Refresh");
+                scheduler.scheduleJob( newJob(Database_Connection_Refresh.class).withIdentity( JobKey.jobKey("database_connection_refresh") ).build(), every_minute);
 
 
             }else {

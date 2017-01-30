@@ -8,9 +8,11 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.compiler.Model_FileRecord;
+import models.compiler.Model_ImportLibrary;
 import models.compiler.Model_TypeOfBoard;
 import models.compiler.Model_VersionObject;
 import models.project.global.Model_Project;
+import play.data.Form;
 import play.libs.Json;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
@@ -47,7 +49,9 @@ public class Model_CProgram extends Model {
                                                       @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)   public Model_VersionObject first_default_version_object;
 
     @JsonIgnore @OneToOne()                                   public Model_TypeOfBoard default_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)
-    @JsonIgnore @OneToOne(mappedBy="default_version_program") public Model_VersionObject default_main_version;        // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
+    @JsonIgnore @OneToOne(mappedBy="default_version_program") public Model_VersionObject default_main_version;          // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
+
+    @JsonIgnore @ManyToOne                                    public Model_ImportLibrary example_library;               // Program je příklad pro použití knihovny
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -122,8 +126,30 @@ public class Model_CProgram extends Model {
 
                 c_program_versions.main = version_new.main;
                 c_program_versions.user_files = version_new.user_files;
-                c_program_versions.external_libraries = version_new.external_libraries;
 
+                for (String lib_id : version_new.library_files) {
+
+                    Model_VersionObject v = Model_VersionObject.find.byId(lib_id);
+                    if (v == null || v.library == null) break;
+                    if (!v.files.isEmpty()) {
+                        for (Model_FileRecord f : v.files) {
+
+                            JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
+
+                            Form<Swagger_C_Program_Version_New.Library_File> lib_form = Form.form(Swagger_C_Program_Version_New.Library_File.class).bind(j);
+                            if (lib_form.hasErrors()) break;
+
+                            Swagger_C_Program_Version_New.Library_File lib_file = lib_form.get();
+
+                            for (Swagger_C_Program_Version_New.User_File user_file : c_program_versions.user_files) {
+
+                                if (lib_file.file_name.equals(user_file.file_name)) break;
+                                if (!c_program_versions.library_files.contains(lib_file)) c_program_versions.library_files.add(lib_file);
+
+                            }
+                        }
+                    }
+                }
             }
 
             if (version_object.c_compilation != null) {

@@ -48,6 +48,6 @@ public class Model_ExampleModelName extends Model{
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_ExampleModelName> find = new Finder<>(Model_ExampleModelName.class);
+    public static Model.Finder<String,Model_ExampleModelName> find = new Model.Finder<>(Model_ExampleModelName.class);
 
 }

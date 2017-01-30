@@ -10,8 +10,6 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Model_LibraryGroup;
-import models.compiler.Model_SingleLibrary;
 import models.project.global.financial.Model_GeneralTariff;
 import models.project.global.financial.Model_GeneralTariffExtensions;
 import models.project.global.financial.Model_Invoice;
@@ -64,9 +62,6 @@ public class Model_Product extends Model {
 
    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Project> projects = new ArrayList<>();
    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Invoice> invoices = new ArrayList<>();
-
-   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_SingleLibrary> single_libraries  = new ArrayList<>();
-   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_LibraryGroup> library_groups  = new ArrayList<>();
 
 
                @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)                           public Model_PaymentDetails payment_details;
