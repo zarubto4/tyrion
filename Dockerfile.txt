@@ -1,0 +1,18 @@
+FROM ubuntu
+FROM openjdk:8
+ENV PROJECT_HOME /usr/src
+RUN mkdir -p $PROJECT_HOME/activator $PROJECT_HOME/app
+WORKDIR $PROJECT_HOME/activator
+RUN wget http://downloads.typesafe.com/typesafe-activator/1.3.10/typesafe-activator-1.3.10.zip && \
+    unzip typesafe-activator-1.3.10.zip
+ENV PATH $PROJECT_HOME/activator/activator-dist-1.3.10/bin:$PATH
+COPY . $PROJECT_HOME/app
+WORKDIR $PROJECT_HOME/app
+RUN activator clean
+RUN activator dist
+WORKDIR $PROJECT_HOME/app/target/universal
+RUN unzip tyrion-1.0-SNAPSHOT.zip
+WORKDIR $PROJECT_HOME
+RUN rm -rf activator
+WORKDIR $PROJECT_HOME/app
+EXPOSE 80
