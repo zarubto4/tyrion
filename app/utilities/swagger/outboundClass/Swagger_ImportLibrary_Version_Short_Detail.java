@@ -24,4 +24,6 @@ public class Swagger_ImportLibrary_Version_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_ImportLibrary_Version_New.Library_File> library_files = new ArrayList<>();
 
+    @ApiModelProperty(required = true, readOnly = true)
+    public String library_id;
 }

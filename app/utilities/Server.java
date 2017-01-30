@@ -40,6 +40,7 @@ import java.util.List;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.DateBuilder.tomorrowAt;
 import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
@@ -396,6 +397,7 @@ public class Server {
             TriggerKey every_day_key3 = TriggerKey.triggerKey("every_day_03:20");
             TriggerKey every_day_key4 = TriggerKey.triggerKey("every_day_03:30");
             TriggerKey every_second_day_key = TriggerKey.triggerKey("every_second_day_4:00");
+            TriggerKey every_minute_key = TriggerKey.triggerKey("every_minute");
 
             //-------------------------
 
@@ -422,6 +424,10 @@ public class Server {
                         .withSchedule(dailyAtHourAndMinute(3,30))// Spuštění každý den v 03:30 AM
                         .build();
 
+                Trigger every_minute = newTrigger().withIdentity(every_minute_key).startNow()
+                        .withSchedule(repeatMinutelyForever())// Spuštění každou minutu
+                        .build();
+
                 /**
                  *  !!!
                  *  Každý Job musí mít Trigger, který má unikátní TriggerKey
@@ -446,11 +452,15 @@ public class Server {
                 logger.info("Scheduling new Job - Unauthenticated_Person_Removal");
                 scheduler.scheduleJob( newJob(Unauthenticated_Person_Removal.class).withIdentity( JobKey.jobKey("unauthenticated_person_removal") ).build(), every_day_4);
 
-                // 5) Kontrola a fakturace klientů na měsíční bázi
+                // 5) Refresh spojení s databází, aby se neuspalo
+                logger.info("Scheduling new Job - Database_Connection_Refresh");
+                scheduler.scheduleJob( newJob(Database_Connection_Refresh.class).withIdentity( JobKey.jobKey("database_connection_refresh") ).build(), every_minute);
+
+                // 7) Kontrola a fakturace klientů na měsíční bázi
                 // logger.info("Scheduling new Job - Sending_Invoices");
                 //scheduler.scheduleJob( newJob(Sending_Invoices.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_4); // nemůže být Job se stejným triggrem
 
-                // 6) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
+                // 8) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
 
 
 

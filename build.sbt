@@ -12,7 +12,6 @@ crossScalaVersions := Seq("2.11.6", "2.11.7")
 libraryDependencies ++= Seq(
 
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc4",
-  "com.microsoft.azure" % "adal4j" % "1.1.2",
   "com.microsoft.azure" % "azure-core" % "0.9.1",
   "com.microsoft.azure" % "azure-storage" % "4.0.0",
   "com.microsoft.azure" % "azure-svc-mgmt" % "0.9.1",

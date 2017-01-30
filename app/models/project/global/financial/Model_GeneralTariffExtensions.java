@@ -56,7 +56,7 @@ public class Model_GeneralTariffExtensions extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
+    @Override
     public void save(){
 
         while (true) { // I need Unique Value

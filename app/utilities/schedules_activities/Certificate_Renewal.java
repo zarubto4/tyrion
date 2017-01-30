@@ -1,51 +1,50 @@
 package utilities.schedules_activities;
 
 
-import models.project.b_program.servers.Model_HomerServer;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import java.sql.SQLTimeoutException;
+public class Certificate_Renewal implements Job {
 
-public class Database_Connection_Refresh implements Job {
-
-    public Database_Connection_Refresh(){ /** do nothing */ }
+    public Certificate_Renewal(){ /** do nothing */ }
 
     // Logger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        if(refresh_connection_thread.getState() == Thread.State.NEW) {
+        if(renew_certificate_thread.getState() == Thread.State.NEW) {
 
-            refresh_connection_thread.start();
+            renew_certificate_thread.start();
         } else {
 
-            refresh_connection_thread.interrupt();
+            renew_certificate_thread.interrupt();
         }
     }
 
-    static Thread refresh_connection_thread = new Thread() {
+    static Thread renew_certificate_thread = new Thread() {
 
         @Override
         public void run() {
 
             while (true) {
                 try {
+                    logger.info("Independent Thread in Certificate_Renewal now working");
 
-                    int count = Model_HomerServer.find.findRowCount();
+                    Runtime rt = Runtime.getRuntime();
+                    Process pr = rt.exec("certificate_renewal.sh");
 
-                    logger.info("Database connection refreshed");
+                    int exitVal = pr.waitFor();
 
-                    sleep(70000);
+                    logger.warn("Certificate renewal exited with code " + exitVal);
+
+                    sleep(90000000);
 
                 } catch (InterruptedException i) {
                     // Do nothing
                 } catch (Exception e) {
-                    logger.error("Database connection lost! Immediately restart Tyrion Server! Or bad things will happen.");
-                    break;
-                    // TODO když ztratím spojení s databází
+                    logger.error("Certificate renewal failed");
                 }
             }
 

@@ -837,8 +837,7 @@ public class Controller_Person extends Controller {
 
                     try {
 
-                        F.Promise<WSResponse> responsePromise = ws.url("http://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
-                                .setContentType("undefined")
+                        F.Promise<WSResponse> responsePromise = ws.url("https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
                                 .setHeader("Accept", "application/json")
                                 .setRequestTimeout(10000)
                                 .get();
@@ -856,7 +855,7 @@ public class Controller_Person extends Controller {
                             return GlobalResult.result_ok(Json.toJson(validation));
                         }
                     }catch (Exception e){
-
+                        e.printStackTrace();
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";
                     }

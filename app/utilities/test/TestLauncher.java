@@ -73,7 +73,7 @@ public class TestLauncher extends Controller{
                 System.out.println("Running test on Linux");
 
             } else {
-                return GlobalResult.badRequest("This OS is not supported.");
+                return GlobalResult.result_BadRequest("This OS is not supported.");
             }
 
 
@@ -87,7 +87,7 @@ public class TestLauncher extends Controller{
             outputGobbler.start();
 
             int exitVal = pr.waitFor();
-            System.out.println("Exited with error code " + exitVal);
+            System.out.println("Exited with code " + exitVal);
 
             return GlobalResult.result_ok("Test was successfully run. See the test log for errors.");
 
