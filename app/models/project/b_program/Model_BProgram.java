@@ -151,10 +151,9 @@ public class Model_BProgram extends Model {
 
 
         if(instance == null){
-            Model_HomerServer destination_server = Model_HomerServer.find.where().eq("personal_server_name", "Alfa").findUnique();
 
             Model_HomerInstance instance = new Model_HomerInstance();
-            instance.cloud_homer_server = destination_server;
+            instance.cloud_homer_server = Model_HomerServer.getDestinationServer();
             instance.save();
             this.instance = instance;
 

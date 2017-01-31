@@ -13,6 +13,7 @@ import models.person.Model_FloatingPersonToken;
 import models.person.Model_Person;
 import models.project.b_program.instnace.Model_HomerInstance;
 import play.libs.Json;
+import utilities.Server;
 import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.webSocket.WS_HomerServer;
@@ -93,6 +94,47 @@ public class Model_HomerServer extends Model{
         return (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
     }
 
+
+
+
+    @JsonIgnore @Transient public static Model_HomerServer getDestinationServer(){
+
+
+        if(Server.server_mode) {
+
+            return Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.test_server).setMaxRows(1).findUnique();
+
+        }else {
+
+            String wining_server_id = null;
+            Integer count = null;
+
+            for (Object server_id :  Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.public_server).findIds()) {
+
+                System.out.println();
+
+
+                Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", server_id).findRowCount();
+
+                if(actual_Server_count == 0){
+                    wining_server_id = server_id.toString();
+                    break;
+                }
+                else if(wining_server_id == null) {
+
+                    wining_server_id = server_id.toString();
+                    count = actual_Server_count;
+
+                }else if(actual_Server_count < count ){
+                    wining_server_id  = server_id.toString();
+                    count = actual_Server_count;
+
+                }
+            }
+
+            return  Model_HomerServer.find.byId(wining_server_id);
+        }
+    }
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER---------------------------------------------------------------------------------*/
 

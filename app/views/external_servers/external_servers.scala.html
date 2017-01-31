@@ -262,9 +262,10 @@
                 </div>
 
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab_public" data-toggle="tab">Public Byzance Servers</a></li>
-                    <li><a href="#tab_private" data-toggle="tab">Private Customers Servers</a></li>
-                    <li><a href="#tab_test" data-toggle="tab">Test & Develop Servers</a></li>
+                    <li class="active">     <a href="#tab_public"   data-toggle="tab">Public Byzance Servers</a></li>
+                    <li>                    <a href="#tab_private"  data-toggle="tab">Private Customers Servers</a></li>
+                    <li>                    <a href="#tab_test"     data-toggle="tab">Test & Develop Servers</a></li>
+
                     <li class="pull-right"><a href="#" class="text-muted"><i class="fa fa-gear"></i></a></li>
                 </ul>
 
@@ -273,7 +274,7 @@
                         <div class="tab-pane active" id="tab_public">
                             <div class="box-body">
 
-                            <table id="allHomerServers" class="table table-bordered">
+                            <table id="public_homer_servers" class="table table-bordered">
 
                                 <tr>
                                     <th>Name</th>
@@ -284,7 +285,7 @@
                                     <th>EDIT</th>
                                 </tr>
 
-                                @for(homer_server <- Model_HomerServer.find.where().ne("server_type",CLoud_Homer_Server_Type.backup_server).ne("server_type",CLoud_Homer_Server_Type.main_server).findList()) {
+                                @for(homer_server <- Model_HomerServer.find.where().eq("server_type",CLoud_Homer_Server_Type.public_server).findList()) {
                                     <tr>
                                         <td>@homer_server.personal_server_name</td>
                                         <td>@homer_server.unique_identificator</td>
@@ -298,16 +299,15 @@
                                         <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
                                     </tr>
                                 }
-
-
                             </table>
+
                             </div>
                         </div>
 
                         <div class="tab-pane" id="tab_private">
                             <div class="box-body">
 
-                                <table id="allHomerServers" class="table table-bordered">
+                                <table id="private_homer_servers" class="table table-bordered">
 
                                     <tr>
                                         <th>Name</th>
@@ -341,7 +341,7 @@
                         <div class="tab-pane" id="tab_test">
                             <div class="box-body">
 
-                                <table id="allHomerServers" class="table table-bordered">
+                                <table id="test_homer_servers" class="table table-bordered">
 
                                     <tr>
                                         <th>Name</th>

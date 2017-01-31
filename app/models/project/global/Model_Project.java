@@ -18,7 +18,10 @@ import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import models.project.c_program.Model_CProgram;
 import models.project.m_program.Model_MProject;
-import utilities.enums.*;
+import utilities.enums.Notification_action;
+import utilities.enums.Notification_importance;
+import utilities.enums.Notification_level;
+import utilities.enums.Participant_status;
 import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
@@ -177,47 +180,18 @@ public class Model_Project extends Model {
         Model_HomerInstance instance = new Model_HomerInstance();
         instance.virtual_instance = true;
 
-        // Máme Privátní server pod projektem
+        // Máme Privátní server pod projektem  // TODO - Doplnit možnost registrace přímo na privátní server
         if(12 > 19){
 
-            // TODO - Doplnit možnost registrace přímo na privátní server
 
-        }else {
+            // TODO
 
-
-            String wining_server_id = null;
-            Integer count = null;
-
-            for (Object server_id :  Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.public_server).findIds()) {
-
-                System.out.println();
-
-
-                Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", server_id).findRowCount();
-
-                if(actual_Server_count == 0){
-                    wining_server_id = server_id.toString();
-                    break;
-                }
-                else if(wining_server_id == null) {
-
-                    wining_server_id = server_id.toString();
-                    count = actual_Server_count;
-
-                }else if(actual_Server_count < count ){
-                    wining_server_id  = server_id.toString();
-                    count = actual_Server_count;
-
-                }
-
-            }
-
-
-            instance.cloud_homer_server = Model_HomerServer.find.byId(wining_server_id);
-            instance.save();
-
+        // Server je v Developer Modu
+        }else{
+            instance.cloud_homer_server = Model_HomerServer.getDestinationServer();
         }
 
+        instance.save();
         this.private_instance = instance;
         super.save();
     }

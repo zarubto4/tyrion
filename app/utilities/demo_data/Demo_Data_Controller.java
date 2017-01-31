@@ -470,7 +470,6 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_1.mqtt_username = "user";
             cloud_server_1.webView_port = ":8501";
             cloud_server_1.server_type  = CLoud_Homer_Server_Type.main_server;
-
             cloud_server_1.save();
 
             Model_HomerServer cloud_server_2 = new Model_HomerServer();
@@ -481,7 +480,7 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_2.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
             cloud_server_2.webView_port = ":8501";
-            cloud_server_1.server_type  = CLoud_Homer_Server_Type.backup_server;
+            cloud_server_2.server_type  = CLoud_Homer_Server_Type.backup_server;
             cloud_server_2.save();
 
 
@@ -490,7 +489,7 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_3.server_url   = "localhost3";
             cloud_server_3.grid_port    = ":8500";
             cloud_server_3.mqtt_port    = ":1881";
-            cloud_server_2.mqtt_password = "pass";
+            cloud_server_3.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
             cloud_server_3.webView_port = ":8501";
             cloud_server_3.server_type  = CLoud_Homer_Server_Type.public_server;
