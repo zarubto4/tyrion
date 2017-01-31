@@ -499,6 +499,7 @@ public class Controller_Finance extends Controller {
         try{
 
             logger.debug("Financial_Controller:: product_create:: Creating new product:: ");
+
             // Zpracování Json
             final Form<Swagger_Tariff_User_Register> form = Form.form(Swagger_Tariff_User_Register.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
@@ -539,7 +540,7 @@ public class Controller_Finance extends Controller {
                     payment_details.city = help.city;
                     payment_details.zip_code = help.zip_code;
                     payment_details.country = help.country;
-                    payment_details.product = product;
+
 
                     if(tariff.company_details_required){
 
@@ -567,7 +568,8 @@ public class Controller_Finance extends Controller {
                         payment_details.company_invoice_email    = help.company_invoice_email;
                     }
 
-                    product.payment_details = payment_details;
+
+
 
                 logger.debug("Financial_Controller:: product_create:: Payment details done");
 
@@ -611,6 +613,14 @@ public class Controller_Finance extends Controller {
                     return GlobalResult.created(Json.toJson(product));
                 }
 
+                payment_details.save();
+                product.save();
+
+                payment_details.product = product;
+                payment_details.update();
+
+                product.payment_details = payment_details;
+                product.update();
 
                 logger.debug("Financial_Controller:: product_create:: Creating invoice");
 
@@ -737,7 +747,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result product_deactivate(Long product_id){
+    public Result product_deactivate(String product_id){
         try{
 
             // Kontrola objektu
@@ -773,7 +783,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result product_activate(Long product_id){
+    public Result product_activate(String product_id){
         try{
 
             // Kontrola objektu
@@ -798,7 +808,7 @@ public class Controller_Finance extends Controller {
     @ApiOperation(value = "delete Product Tariff",
            hidden = true
     )
-    public Result product_delete(Long product_id){
+    public Result product_delete(String product_id){
         try{
 
             // URČENO POUZE PRO ADMINISTRÁTORY S OPRÁVNĚNÍM MAZAT!
@@ -835,7 +845,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })  /**  Uživatel může zaplatit neúspěšně zaplacenou fakturu (službu) */
-    public Result pay_send_invoice(Long invoice_id) {
+    public Result pay_send_invoice(String invoice_id) {
         try {
 
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
@@ -910,7 +920,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result edit_general_product_details(Long product_id){
+    public Result edit_general_product_details(String product_id){
         try{
 
             // Vytvoření pomocného Objektu
@@ -1097,7 +1107,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result temrinate_On_Demance_Payment(Long product_id){
+    public Result temrinate_On_Demance_Payment(String product_id){
         try{
 
             // Kontrola objektu
@@ -1136,7 +1146,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result invoice_get(Long invoice_id){
+    public Result invoice_get(String invoice_id){
         try{
 
             // Kontrola objektu
@@ -1155,40 +1165,10 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Invoice PDF file",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "get PDF invoice file",
-            produces = "multipartFormData",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Invoice_FullDetails.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result invoice_get_pdf(Long invoice_id){
-
-        try {
-
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
-
-            byte[] pdf_in_array = Fakturoid_Controller.download_PDF_invoice(invoice);
-
-            return GlobalResult.result_pdf_file(pdf_in_array, invoice.invoice_number + ".pdf");
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
 
 
     // TODO
-    public Result send_remainder_to_custumer(Long invoice_id){
+    public Result send_remainder_to_custumer(String invoice_id){
         try{
 
             // Kontrola objektu
@@ -1206,7 +1186,7 @@ public class Controller_Finance extends Controller {
     }
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    public Result invoice_remove(Long invoice_id){
+    public Result invoice_remove(String invoice_id){
         try{
 
             // Kontrola objektu
@@ -1234,12 +1214,12 @@ public class Controller_Finance extends Controller {
     }
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    public Result synchonize_invoice_with_fakutoid(Long invoice_id){
+    public Result synchonize_invoice_with_fakutoid(String invoice_id){
         return TODO;
     }
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    public Result invoice_set_as_paid(Long invoice_id){
+    public Result invoice_set_as_paid(String invoice_id){
         try{
 
             //TODO

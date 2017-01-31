@@ -70,11 +70,13 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Override public void save() {
 
+        if(hash_certificate == null)  // Určeno pro možnost vytvořit testovací server - manuální doplnění hash_certificate
         while(true){ // I need Unique Value
             hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
             if (Model_HomerServer.find.where().eq("hash_certificate",hash_certificate).findUnique() == null) break;
         }
 
+        if(unique_identificator == null)    // Určeno pro možnost vytvořit testovací server - manuální doplnění unique_identificator
         while(true){ // I need Unique Value
             unique_identificator = UUID. randomUUID().toString().substring(0,10);
             if (Model_HomerServer.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;

@@ -15,6 +15,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Invoice",
@@ -25,7 +26,7 @@ public class Model_Invoice extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id    @GeneratedValue(strategy = GenerationType.SEQUENCE)  public Long id;                           // 5
+                                                           @Id  public String id;                         // 5
 
                                                    @JsonIgnore  public Long   facturoid_invoice_id;       // Id určené ze strany Fakturid
                                                    @JsonIgnore  public String facturoid_pdf_url;          // Adresa ke stáhnutí faktury
@@ -104,6 +105,16 @@ public class Model_Invoice extends Model {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override public void save() {
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (Model_Product.find.byId(this.id) == null) break;
+        }
+
+        super.save();
+    }
+
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
@@ -116,6 +127,6 @@ public class Model_Invoice extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<Long,Model_Invoice> find = new Finder<>(Model_Invoice.class);
+    public static Model.Finder<String,Model_Invoice> find = new Finder<>(Model_Invoice.class);
 
 }

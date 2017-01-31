@@ -66,7 +66,7 @@ public class Model_Project extends Model {
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Long   product_id() { return product.id;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String   product_id() { return product.id;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}
 
@@ -213,7 +213,7 @@ public class Model_Project extends Model {
             }
 
 
-            instance.cloud_homer_server = Model_HomerServer.find.byId(wining_server_id);;
+            instance.cloud_homer_server = Model_HomerServer.find.byId(wining_server_id);
             instance.save();
 
         }

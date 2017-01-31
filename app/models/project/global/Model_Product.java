@@ -36,8 +36,7 @@ public class Model_Product extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
-                                             @ApiModelProperty(required = true) public Long id;
+                                         @Id @ApiModelProperty(required = true) public String id;
                                              @ApiModelProperty(required = true) public String product_individual_name;
 
     @JsonIgnore                              @ManyToOne(fetch = FetchType.LAZY) public Model_GeneralTariff general_tariff;
@@ -140,6 +139,11 @@ public class Model_Product extends Model {
             if (Model_Product.find.where().eq("subscription_id", subscription_id ).findUnique() == null) break;
         }
 
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (Model_Product.find.byId(this.id) == null) break;
+        }
+
         super.save();
     }
 
@@ -220,7 +224,7 @@ public class Model_Product extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<Long,Model_Product> find = new Finder<>(Model_Product.class);
+    public static Model.Finder<String,Model_Product> find = new Finder<>(Model_Product.class);
 
 }
 

@@ -157,14 +157,14 @@ GET            /tarifs/for_registration                                         
 #CRUD Tarrifs
 POST           /product                                                                     @controllers.Controller_Finance.product_create()
 GET            /product/all                                                                 @controllers.Controller_Finance.product_get_all()
-PUT            /product/deactivate/:product_id                                              @controllers.Controller_Finance.product_deactivate(product_id: Long)
-PUT            /product/activate/:product_id                                                @controllers.Controller_Finance.product_activate(product_id: Long)
-DELETE         /product/:product_id                                                         @controllers.Controller_Finance.product_delete(product_id: Long)
+PUT            /product/deactivate/:product_id                                              @controllers.Controller_Finance.product_deactivate(product_id)
+PUT            /product/activate/:product_id                                                @controllers.Controller_Finance.product_activate(product_id)
+DELETE         /product/:product_id                                                         @controllers.Controller_Finance.product_delete(product_id)
 
 GET            /product/user_applicable                                                     @controllers.Controller_Finance.get_applicable_products_for_creating_new_project()
 
 PUT            /product/details/:payment_details_id                                         @controllers.Controller_Finance.edit_payment_details(payment_details_id: Long)
-PUT            /product/general/:product_id                                                 @controllers.Controller_Finance.edit_general_product_details(product_id: Long)
+PUT            /product/general/:product_id                                                 @controllers.Controller_Finance.edit_general_product_details(product_id)
 
 
 #GoPay
@@ -173,13 +173,14 @@ GET            /go_pay/return_url                                               
 
 
 #Fakturoid
-GET             /invoice/get/:invoice_id                                                    @controllers.Controller_Finance.invoice_get(invoice_id: Long)
-GET             /invoice/pdf/:invoice_id                                                    @controllers.Controller_Finance.invoice_get_pdf(invoice_id: Long)
+GET             /invoice/get/:invoice_id                                                    @controllers.Controller_Finance.invoice_get(invoice_id)
+GET             /invoice/pdf/:invoice_id                                                    @utilities.fakturoid.Fakturoid_Controller.invoice_get_pdf(invoice_id)
+POST            /invoice/reimbursement/:invoice_id                                          @controllers.Controller_Finance.pay_send_invoice(invoice_id)
 
 # Obsluha pouze pro Byzance zaměstnance
-PUT             /invoice/set_pay/:invoice_id                                                @controllers.Controller_Finance.invoice_set_as_paid(invoice_id: Long)
-PUT             /invoice/send_remainder/:invoice_id                                         @controllers.Controller_Finance.send_remainder_to_custumer(invoice_id: Long)
-DELETE          /invoice/:invoice_id                                                        @controllers.Controller_Finance.invoice_remove(invoice_id: Long)
+PUT             /invoice/set_pay/:invoice_id                                                @controllers.Controller_Finance.invoice_set_as_paid(invoice_id)
+PUT             /invoice/send_remainder/:invoice_id                                         @controllers.Controller_Finance.send_remainder_to_custumer(invoice_id)
+DELETE          /invoice/:invoice_id                                                        @controllers.Controller_Finance.invoice_remove(invoice_id)
 
 #Project
 POST           /project                                                                     @controllers.Controller_ProgramingPackage.project_create()
@@ -480,7 +481,9 @@ GET             /admin/external_servers                         @controllers.Con
 # Admin - Help Desk
 GET             /admin/user_summary/                            @controllers.Controller_Dashboard.user_summary(email: String?="")
 GET             /admin/user_summary/:mail                       @controllers.Controller_Dashboard.user_summary(mail)
-GET             /admin/helpdesk_tool/project/:id                @controllers.Controller_Dashboard.project_detail(id)
+GET             /admin/helpdesk_tool/product/:product_id        @controllers.Controller_Dashboard.product_detail(product_id)
+GET             /admin/helpdesk_tool/project/:project_id        @controllers.Controller_Dashboard.project_detail(project_id)
+
 
 # Admin - Permission
 GET             /admin/permission/permission_summary            @controllers.Controller_Dashboard.permissions_summary()

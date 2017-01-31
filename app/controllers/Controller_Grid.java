@@ -782,7 +782,7 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful created",      response = Swagger_M_Program_Version.class),
+            @ApiResponse(code = 200, message = "Successful created",      response = Swagger_Mobile_Connection_Summary.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),

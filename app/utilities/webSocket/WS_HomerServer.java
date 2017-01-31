@@ -58,11 +58,18 @@ public class WS_HomerServer extends WebSCType{
 
         logger.debug("BlockoServer: "+ super.identifikator + " Incoming message: " + json.toString());
 
-            // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj
+        // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj
         if(!security_token_confirm){
             logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
             security_token_confirm_procedure();
+            ObjectNode response = Json.newObject();
+            response.put("messageType", "verificationFirstRequired");
+            response.put("messageChannel", Model_HomerServer.CHANNEL);
+            response.put("message", " Yor server is not verified yet");
+            super.write_without_confirmation(response);
+            return;
         }
+
 
             if(json.has("messageChannel")){
 

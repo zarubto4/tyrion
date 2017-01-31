@@ -9,6 +9,7 @@ import models.person.Model_Person;
 import models.person.Model_SecurityRole;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
+import models.project.global.Model_Product;
 import models.project.global.Model_Project;
 import models.project.global.financial.Model_GeneralTariff;
 import models.project.global.financial.Model_GeneralTariffExtensions;
@@ -16,7 +17,6 @@ import org.pegdown.PegDownProcessor;
 import play.Application;
 import play.Routes;
 import play.libs.F;
-
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -29,33 +29,33 @@ import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
-import views.html.helpdesk_tool.project_detail;
-import views.html.permission.permissions_summary;
-import views.html.permission.role;
-import views.html.publiccprograms.libraries;
-import views.html.super_general.login;
-import views.html.super_general.main;
-import views.html.boards.bootloader_settings;
-import views.html.boards.board_settings;
+import views.html.blocko.blocko_block_content;
 import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
-import views.html.blocko.blocko_block_content;
-import views.html.tariffs.tariffs;
-import views.html.tariffs.tariff_edit;
-import views.html.tariffs.extension_edit;
+import views.html.boards.board_settings;
+import views.html.boards.bootloader_settings;
 import views.html.demo_data.demo_data_main;
-import views.html.publiccprograms.approvalprocedurecprogram;
-import views.html.publiccprograms.publiccode;
-import views.html.reports.*;
-import views.html.hardware_generator.generator_main;
-import views.html.helpdesk_tool.user_summary;
-import views.html.websocket.instance_detail;
-import views.html.websocket.websocket;
-import views.html.websocket.websocket_homer_server_detail;
+import views.html.external_servers.external_servers;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
 import views.html.grid.grid_widget_content;
-import views.html.external_servers.external_servers;
+import views.html.hardware_generator.generator_main;
+import views.html.helpdesk_tool.project_detail;
+import views.html.helpdesk_tool.user_summary;
+import views.html.helpdesk_tool.product_detail;
+import views.html.permission.permissions_summary;
+import views.html.permission.role;
+import views.html.publiccprograms.approvalprocedurecprogram;
+import views.html.publiccprograms.libraries;
+import views.html.publiccprograms.publiccode;
+import views.html.super_general.login;
+import views.html.super_general.main;
+import views.html.tariffs.extension_edit;
+import views.html.tariffs.tariff_edit;
+import views.html.tariffs.tariffs;
+import views.html.websocket.instance_detail;
+import views.html.websocket.websocket;
+import views.html.websocket.websocket_homer_server_detail;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -643,6 +643,21 @@ public class Controller_Dashboard extends Controller {
 
             Html project_detail_content = project_detail.render(project);
             return return_page(project_detail_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result product_detail(String id){
+        try {
+
+            Model_Product product = Model_Product.find.byId(id);
+            if (product == null) return GlobalResult.notFoundObject("Project not found");
+
+            Html product_detail_content = product_detail.render(product);
+            return return_page(product_detail_content);
 
         }catch (Exception e){
             return ok();
