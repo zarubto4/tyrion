@@ -756,6 +756,8 @@ public class Controller_Dashboard extends Controller {
 
             Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(extension_id);
 
+            if(extensions == null) return not_found();
+
             Html extension_page = extension_edit.render(extensions);
             return return_page(extension_page);
 
@@ -765,7 +767,18 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
+    @Security.Authenticated(Secured_Admin.class)
+    public Result not_found(){
+        try {
 
+            //TODO
+            return index();
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ok();
+        }
+    }
 
 
 

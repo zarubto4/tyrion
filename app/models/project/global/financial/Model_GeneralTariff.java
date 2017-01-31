@@ -32,13 +32,16 @@ public class Model_GeneralTariff extends Model {
     @JsonIgnore             public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
 
 
+    @JsonIgnore  public Integer order_position;
+
     public boolean company_details_required;
     public boolean required_payment_mode;
     public boolean required_payment_method;
 
     @JsonIgnore  public boolean required_paid_that; // Říká, zda se po zaregistrování okamžitě vytvoří faktura a další procedury pro zaplacení
-    @JsonIgnore  public Integer number_of_free_months;
 
+    @JsonIgnore  public Double credit_for_beginning;    // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
+                                                        // Je to V USD!!! - Nutné přepočítávat!!!
 
     @JsonIgnore  public Double usd;
     @JsonIgnore  public Double eur;
@@ -55,9 +58,10 @@ public class Model_GeneralTariff extends Model {
     @JsonIgnore public boolean free_tariff;
 
 
-                @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<Model_GeneralTariffLabel> labels = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_GeneralTariffExtensions> extensions = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                 public List<Model_Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
+                @OneToMany(mappedBy="general_tariff",          cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<Model_GeneralTariffLabel> labels = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="general_tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_GeneralTariffExtensions> extensions_included = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="general_tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_GeneralTariffExtensions> extensions_optional = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="general_tariff",           cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                public List<Model_Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -104,18 +108,24 @@ public class Model_GeneralTariff extends Model {
 
     }
 
-    @JsonProperty public List<Model_GeneralTariffExtensions> extensions(){
-        return  Model_GeneralTariffExtensions.find.where().eq("general_tariff.id", id).eq("active", true).orderBy("order_position").findList();
+    @JsonProperty public List<Model_GeneralTariffExtensions> extensions_included(){
+        return  Model_GeneralTariffExtensions.find.where().eq("general_tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
     }
 
+
+    @JsonProperty public List<Model_GeneralTariffExtensions> extensions_optional(){
+        return  Model_GeneralTariffExtensions.find.where().eq("general_tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
 
+        order_position = Model_GeneralTariff.find.findRowCount() + 1;
+
         while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
+            this.id = UUID.randomUUID().toString().substring(0, 8);
             if (Model_GeneralTariff.find.byId(this.id) == null) break;
         }
         super.save();
@@ -124,6 +134,43 @@ public class Model_GeneralTariff extends Model {
     @JsonIgnore @Override
     public void delete(){
         throw new IllegalAccessError("Delete is not supported under General Tariff");
+    }
+
+    @JsonIgnore @Transient
+    public void up(){
+
+        Model_GeneralTariff up = Model_GeneralTariff.find.where().eq("order_position", (order_position-1) ).findUnique();
+        if(up == null)return;
+
+        up.order_position += 1;
+        up.update();
+
+        this.order_position -= 1;
+        this.update();
+    }
+
+    @JsonIgnore @Transient
+    public void down(){
+
+        Model_GeneralTariff down = Model_GeneralTariff.find.where().eq("order_position", (order_position+1) ).findUnique();
+        if(down == null)return;
+
+        down.order_position -= 1;
+        down.update();
+
+        this.order_position += 1;
+        this.update();
+
+    }
+
+
+    public double total_per_month(){
+        double total_price = 0.0;
+        for(Model_GeneralTariffExtensions extension : this.extensions_included){
+            if(extension.usd != null)
+            total_price += extension.usd;
+        }
+        return  total_price*30;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

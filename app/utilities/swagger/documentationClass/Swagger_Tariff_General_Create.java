@@ -28,7 +28,7 @@ public class Swagger_Tariff_General_Create {
 
     @Constraints.Required public boolean required_paid_that;
 
-    @Constraints.Required public Integer  number_of_free_months;
+    @Constraints.Required public Double  credit_for_beginning;
 
 
     @Constraints.Required public Double usd;

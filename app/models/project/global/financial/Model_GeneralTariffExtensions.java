@@ -15,6 +15,7 @@ import java.util.UUID;
 @Entity
 @ApiModel(description = "Model of GeneralTariff_Extensions",
         value = "GeneralTariff_Extensions")
+@Table(name="GeneralTariffExt")
 public class Model_GeneralTariffExtensions extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -31,23 +32,25 @@ public class Model_GeneralTariffExtensions extends Model {
 
                  public String color;
 
-    @JsonIgnore  public Double usd;
-    @JsonIgnore  public Double eur;
-    @JsonIgnore  public Double czk;
+    @JsonIgnore  public Double usd;             // Cena je za jeden den!!
+    @JsonIgnore  public Double eur;             // Cena je za jeden den!!
+    @JsonIgnore  public Double czk;             // Cena je za jeden den!!
 
     @OneToMany(mappedBy="extensions", cascade = CascadeType.ALL) @OrderBy("order_position ASC")  public List<Model_GeneralTariffLabel> labels = new ArrayList<>();
 
 
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_GeneralTariff general_tariff;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public Model_GeneralTariff general_tariff_included;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public Model_GeneralTariff general_tariff_optional;
+
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Product> products = new ArrayList<>();
 
 
     @JsonProperty public Price price(){
 
         Price price = new Price();
-        price.CZK = czk;
-        price.EUR = eur;
-        price.USD = usd;
+        price.CZK = czk * 30.0;       // Kvuli "průměrné měsíční ceně
+        price.EUR = eur * 30.0;       // Kvuli "průměrné měsíční ceně
+        price.USD = usd * 30.0;       // Kvuli "průměrné měsíční ceně
         return price;
 
     }
@@ -60,20 +63,28 @@ public class Model_GeneralTariffExtensions extends Model {
     public void save(){
 
         while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
+            this.id = UUID.randomUUID().toString().substring(0,8);
             if (Model_GeneralTariffExtensions.find.byId(this.id) == null) break;
         }
-        order_position = Model_GeneralTariffExtensions.find.where().eq("general_tariff.id", general_tariff.id).findRowCount() + 1;
+        if(general_tariff_included != null) {
+            order_position = Model_GeneralTariffExtensions.find.where().eq("general_tariff_included.id", general_tariff_included.id).findRowCount() + 1;
+        }else {
+            order_position = Model_GeneralTariffExtensions.find.where().eq("general_tariff_optional.id",  general_tariff_optional.id).findRowCount() + 1;
+        }
         super.save();
     }
-
-    // TODO DELETE?? Dovolím smazat?
 
     @JsonIgnore @Transient
     public void up(){
 
-        general_tariff.extensions.get(order_position-2).order_position = this.order_position ;
-        general_tariff.extensions.get(order_position-2).update();
+        if(general_tariff_included != null) {
+            general_tariff_included.extensions_included.get(order_position - 2).order_position = this.order_position;
+            general_tariff_included.extensions_included.get(order_position - 2).update();
+        }else {
+
+            general_tariff_optional.extensions_optional.get(order_position - 2).order_position = this.order_position;
+            general_tariff_optional.extensions_optional.get(order_position - 2).update();
+        }
 
         this.order_position -= 1;
         this.update();
@@ -82,8 +93,16 @@ public class Model_GeneralTariffExtensions extends Model {
     @JsonIgnore @Transient
     public void down(){
 
-        general_tariff.extensions.get(order_position).order_position =  general_tariff.labels.get(order_position).order_position-1;
-        general_tariff.extensions.get(order_position).update();
+        if(general_tariff_included != null){
+
+            general_tariff_included.extensions_included.get(order_position).order_position = general_tariff_included.labels.get(order_position).order_position - 1;
+            general_tariff_included.extensions_included.get(order_position).update();
+
+        }else{
+
+            general_tariff_optional.extensions_optional.get(order_position).order_position = general_tariff_optional.labels.get(order_position).order_position - 1;
+            general_tariff_optional.extensions_optional.get(order_position).update();
+        }
 
         this.order_position += 1;
         this.update();
@@ -93,13 +112,13 @@ public class Model_GeneralTariffExtensions extends Model {
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     public class Price {
-        @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK")
+        @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK - Average price per month")
         public Double CZK;
 
-        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show €")
+        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show € - Average price per month")
         public Double EUR;
 
-        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $")
+        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $ - Average price per month")
         public Double USD;
     }
 

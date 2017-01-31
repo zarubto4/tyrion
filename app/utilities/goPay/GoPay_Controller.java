@@ -302,20 +302,18 @@ public class GoPay_Controller  extends Controller {
 
             if(!invoice.proforma){
                 logger.warn("Invoice is already complete");
-                return redirect("localhost:8890/paid/success/" + gopay_id);
+                return redirect(Server.becki_mainUrl + "/financial/"+ invoice.getProduct().id + "/paid/success/" + invoice.id);
             }
 
-             Model_Product product = Model_Product.find.where().eq("invoices.id", invoice.id).findUnique();
+            Model_Product product = Model_Product.find.where().eq("invoices.id", invoice.id).findUnique();
 
             // Smazat proformu
             logger.debug("Removing proforma from Fakturoid");
             if( !Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  logger.error("Error Removing proforma from Fakturoid");
 
-
             // Vytvořit fakturu
             logger.debug("Creating invoice from proforma in Fakturoid");
             Fakturoid_Controller.create_paid_invoice(product,invoice);
-
 
             // Uhradit Fakturu
             logger.debug("Changing state on Invoice to paid");
@@ -323,9 +321,9 @@ public class GoPay_Controller  extends Controller {
             invoice.proforma = false;
             invoice.update();
 
-
             // úspěšně zaplacený? Není ověřeno!!!
             product.active = true;
+            product.remaining_credit += invoice.total_price();
             product.update();
 
             return redirect("localhost:8890/paid/success/" + gopay_id);

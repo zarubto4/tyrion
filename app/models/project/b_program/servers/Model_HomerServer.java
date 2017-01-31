@@ -419,7 +419,7 @@ public class Model_HomerServer extends Model{
 
             if (isInstanceExist(instance.blocko_instance_name)) return RESULT_instance_already_exist();
 
-            System.err.println("Instance neexistuje a tak jí nahraji na Server");
+            logger.debug("Instance neexistuje a tak jí nahraji na Server");
 
             ObjectNode request = Json.newObject();
             request.put("messageType", "createInstance");

@@ -60,7 +60,7 @@ public class Controller_Finance extends Controller {
             general_tariff.color                    = help.color;
 
             general_tariff.required_paid_that       = help.required_paid_that;
-            general_tariff.number_of_free_months    = help.number_of_free_months;
+            general_tariff.credit_for_beginning    = help.credit_for_beginning;
 
             general_tariff.company_details_required = help.company_details_required;
             general_tariff.required_payment_mode    = help.required_payment_mode;
@@ -158,6 +158,38 @@ public class Controller_Finance extends Controller {
             tariff.update();
 
             return GlobalResult.result_ok(Json.toJson(tariff));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    public Result tariff_general_up(String label_id){
+        try{
+
+            Model_GeneralTariff tariff =  Model_GeneralTariff.find.byId(label_id);
+            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            tariff.up();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    public Result tariff_general_down(String label_id){
+        try{
+
+            Model_GeneralTariff tariff =  Model_GeneralTariff.find.byId(label_id);
+            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            tariff.down();
+
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -304,7 +336,13 @@ public class Controller_Finance extends Controller {
             if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
 
             Model_GeneralTariffExtensions extensions = new Model_GeneralTariffExtensions();
-            extensions.general_tariff = tariff;
+
+            if(help.included){
+                extensions.general_tariff_included = tariff;
+            }else {
+                extensions.general_tariff_optional= tariff;
+            }
+
             extensions.description = help.description;
             extensions.name = help.name;
             extensions.color = help.color;
@@ -454,7 +492,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Vytvořím seznam tarifu
-            List<Model_GeneralTariff> general_tariffs = Model_GeneralTariff.find.where().eq("active", true).findList();
+            List<Model_GeneralTariff> general_tariffs = Model_GeneralTariff.find.where().eq("active", true).order().asc("order_position").findList();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(general_tariffs));
@@ -602,16 +640,18 @@ public class Controller_Finance extends Controller {
 
                 }
 
-                if(help.extensions_ids.size() > 0){
-                    List<Model_GeneralTariffExtensions> list = Model_GeneralTariffExtensions.find.where().in("id", help.extensions_ids ).eq("general_tariff.id",tariff.id).findList();
-                    product.extensions = list;
+                // Přidám ty, co vybral uživatel
+                if(help.extensions_ids.size() > 0) {
+                    List<Model_GeneralTariffExtensions> list = Model_GeneralTariffExtensions.find.where().in("id", help.extensions_ids).eq("general_tariff.id", tariff.id).findList();
+                    product.extensions.addAll(list);
                 }
 
-                if(!tariff.required_paid_that) {
-                    logger.debug("Financial_Controller:: product_create:: Its not required pay that!");
-                    product.save();
-                    return GlobalResult.created(Json.toJson(product));
+            // Přidám všechny, které má Tarrif už v sobě - Ale jen ty aktivní
+                for ( Model_GeneralTariffExtensions extension : tariff.extensions_included){
+                    if(extension.active) product.extensions.add(extension);
                 }
+
+
 
                 payment_details.save();
                 product.save();
@@ -620,8 +660,15 @@ public class Controller_Finance extends Controller {
                 payment_details.update();
 
                 product.payment_details = payment_details;
+                product.remaining_credit += tariff.credit_for_beginning;
                 product.update();
 
+                if(!tariff.required_paid_that) {
+                    logger.debug("Financial_Controller:: product_create:: Its not required pay that!");
+                    return GlobalResult.created(Json.toJson(product));
+                }
+
+            
                 logger.debug("Financial_Controller:: product_create:: Creating invoice");
 
                 Model_Invoice invoice = new Model_Invoice();

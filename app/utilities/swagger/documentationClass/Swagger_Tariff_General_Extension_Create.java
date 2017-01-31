@@ -12,6 +12,7 @@ public class Swagger_Tariff_General_Extension_Create {
 
     @Constraints.Required public String color;
 
+    @Constraints.Required public boolean included;
 
     @Constraints.Required public Double usd;
     @Constraints.Required public Double eur;

@@ -79,10 +79,9 @@ public class Model_Product extends Model {
         return invoices;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty @ApiModelProperty(required = false, value = "Only if Payment Mode is CREDIT ")
-    public Integer remaining_credit(){
-        if(this.mode.name().equals( Payment_mode.per_credit.name())) return null;
-        return 0;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty @ApiModelProperty(required = true)
+    public Double remaining_credit(){
+       return this.remaining_credit;
     }
 
 
@@ -120,6 +119,13 @@ public class Model_Product extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+    @ApiModel(description = "Model for Proforma Details for next invoice",
+            value = "Next_Invoice_Product")
+    public class Next_Invoice_Product{
+        @ApiModelProperty(required = true, readOnly = true) public String id;
+
+    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

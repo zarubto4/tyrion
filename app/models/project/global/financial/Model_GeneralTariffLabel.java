@@ -34,7 +34,7 @@ public class Model_GeneralTariffLabel extends Model {
     public void save(){
 
         while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
+            this.id = UUID.randomUUID().toString().substring(0,8);
             if (Model_GeneralTariffLabel.find.byId(this.id) == null) break;
         }
         if(general_tariff != null) {

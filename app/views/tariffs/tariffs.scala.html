@@ -32,20 +32,24 @@
                     <table id="allGeneralsTariffs" class="table table-bordered">
                         <tr>
                             <th>ID</th>
+                            <th>Order</th>
                             <th>Name</th>
-                            <th>Unique identificator</th>
-                            <th>Description (Po najetí myškou)</th>
+                            <th>Description</th>
                             <th>EDIT</th>
+                            <th>UP</th>
+                            <th>DOWN</th>
                             <th>DEACTIVATE</th>
                         </tr>
 
-                        @for(tariff <- Model_GeneralTariff.find.orderBy("id").findList()){
+                        @for(tariff <- Model_GeneralTariff.find.orderBy("order_position").findList()){
                             <tr>
                                 <td>@tariff.id</td>
-                                <td>@tariff.tariff_name</td>
+                                <td>@tariff.order_position</td>
                                 <td>@tariff.identificator</td>
                                 <td>@tariff.tariff_description</td>
                                 <td><a href='@routes.Controller_Dashboard.general_tariff_edit(tariff.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
+                                <td>@if(tariff.order_position > 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariff('@tariff.id')">Up</button>}</td>
+                                <td>@if(tariff.order_position < (Model_GeneralTariff.find.findRowCount()) ) {<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariff('@tariff.id')">Down</button>}</td>
                                 <td>
                                     @if(!tariff.active) {
                                         <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariff(@tariff.id)">Deactivated</button>
@@ -58,9 +62,7 @@
                     </table>
                 </div>
                 <div class="box-footer">
-        </div>
-
-
+                </div>
             </div>
         </div>
     </div>
@@ -178,7 +180,7 @@
                     <div class="form-group">
                         <div class="col-sm-offset-3 col-sm-9">
                             <div class="checkbox"><label> <input type="checkbox" name="mode_annually">
-                                Měsíčně (Automatické strhávání)
+                                Monthly (estimated costs)
                             </label>
                             </div>
                         </div>
@@ -314,6 +316,38 @@
         $('#compilationServerId').text("ID = " + id);
         $("#editCompilationServer input[name=name]").val(server_name);
         $("#editCompilationServer input[name=destination_address]").val(destination_address);
+    }
+
+    function upGeneralTariff(id){
+        $.ajax({
+            url: '@routes.Controller_Finance.tariff_general_up("")' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+                $('#allGeneralsTariffs').load(document.URL +  ' #allGeneralsTariffs');
+            },
+            error:function(e) {
+                alert("Unsuccessful.");
+            }
+        })
+    }
+
+    function downGeneralTariff(id){
+        $.ajax({
+            url: '@routes.Controller_Finance.tariff_general_down("")' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+                $('#allGeneralsTariffs').load(document.URL +  ' #allGeneralsTariffs');
+            },
+            error:function(e) {
+                alert("Unsuccessful.");
+            }
+        })
     }
 
 </script>

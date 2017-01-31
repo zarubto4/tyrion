@@ -91,6 +91,16 @@ public class Model_Invoice extends Model {
     }
 
 
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public double total_price() {
+        double total_price = 0.0;
+        for(Model_InvoiceItem  item : invoice_items){
+            total_price += item.unit_price;
+        }
+        return total_price;
+    }
+
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

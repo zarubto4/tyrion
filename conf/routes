@@ -539,6 +539,8 @@ POST            /admin/tariff                                   @controllers.Con
 PUT             /admin/tariff                                   @controllers.Controller_Finance.tariff_general_edit()
 PUT             /admin/tariff/deactive/:general_tariff_id       @controllers.Controller_Finance.tariff_general_deactivate(general_tariff_id)
 PUT             /admin/tariff/active/:general_tariff_id         @controllers.Controller_Finance.tariff_general_activate(general_tariff_id)
+PUT             /admin/tariff/up/:general_tariff_id             @controllers.Controller_Finance.tariff_general_up(general_tariff_id)
+PUT             /admin/tariff/down/:general_tariff_id           @controllers.Controller_Finance.tariff_general_down(general_tariff_id)
 
 POST            /admin/label/tariff                             @controllers.Controller_Finance.tariff_general_label_tariff_create()
 POST            /admin/label/extension                          @controllers.Controller_Finance.tariff_general_label_extension_create()
