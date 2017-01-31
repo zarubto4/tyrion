@@ -16,7 +16,7 @@ public class Sending_Invoices implements Job {
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.warn("Starting with CRON procedure");
+        logger.warn("Starting with CRON procedure Sending_Invoices");
         logger.warn("Time" + new Date().toString() );
 
         logger.warn("GoPay_Controller - do_on_Demand_payment");

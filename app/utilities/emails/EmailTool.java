@@ -72,7 +72,7 @@ public class EmailTool {
         String html = utilities.emails.templates.html.EmailScheme.render(emailContent).body();
 
                  email  .setSubject(subject)
-                        .setFrom("Byzance IoT Platform <cloud_blocko_server@byzance.cz>")
+                        .setFrom("Byzance IoT Platform <server@byzance.cz>")
                         .addTo("<"+ userMail +">")
                         .setBodyHtml(html);
 

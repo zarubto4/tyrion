@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Fakturoid_Invoice {
 
-    @JsonIgnore  public Long custom_id;
+    @JsonIgnore  public String custom_id;
     public String client_name;
     public String subject_id;
     public Currency currency;

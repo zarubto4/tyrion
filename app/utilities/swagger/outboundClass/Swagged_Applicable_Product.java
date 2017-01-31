@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class Swagged_Applicable_Product {
 
     @ApiModelProperty(required = true, readOnly = true)
-    public Long product_id;
+    public String product_id;
 
     @ApiModelProperty(required = true, readOnly = true)
     public String product_individual_name;

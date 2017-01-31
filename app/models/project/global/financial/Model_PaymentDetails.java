@@ -49,7 +49,6 @@ public class Model_PaymentDetails extends Model {
 
             // Jestli je přítomné VAT number - musí dojít ke kontrole validity Vat number!
             switch (vat_number.substring(0,2)){
-
                 case "BE" : {return true;}
                 case "BG" : {return true;}
                 case "CZ" : {return true;}

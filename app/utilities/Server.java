@@ -46,7 +46,6 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class Server {
@@ -260,7 +259,7 @@ public class Server {
 
         if (Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null)
         {
-            System.err.println("Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
+            logger.warn("Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
             Model_Person person = new Model_Person();
             person.full_name = "Admin Byzance";
             person.mailValidated = true;
@@ -497,10 +496,12 @@ public class Server {
                 logger.info("Scheduling new Job - Checking stuck compilations");
                 scheduler.scheduleJob( newJob(Compilation_Checker.class).withIdentity( JobKey.jobKey("stuck_compilation_check") ).build(), every_10_minutes_7);
 
-                // 8) Refresh spojení s databází, aby se neuspalo
-                logger.info("Scheduling new Job - Database_Connection_Refresh");
-                scheduler.scheduleJob( newJob(Database_Connection_Refresh.class).withIdentity( JobKey.jobKey("database_connection_refresh") ).build(), every_minute);
-
+                // Pokud máme vývojářský režim tak Databázi nehlídáme
+                if(!Server.server_mode) {   // Developer mode = true
+                    // 8) Refresh spojení s databází, aby se neuspalo
+                    logger.info("Scheduling new Job - Database_Connection_Refresh");
+                    scheduler.scheduleJob(newJob(Database_Connection_Refresh.class).withIdentity(JobKey.jobKey("database_connection_refresh")).build(), every_minute);
+                }
 
             }else {
                 logger.warn("CRON (Every-Day) is in RAM yet. Be careful with that!");

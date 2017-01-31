@@ -58,7 +58,7 @@ public class Swagger_diff_Controller extends Controller {
     public static List<String> json_docu_files(){
 
         List<String> fileNames = new ArrayList<>();
-        File[] files = new File(  play.api.Play.current().injector().instanceOf(Application.class).path() + "/conf/swagger_history").listFiles();
+        File[] files = new File(play.api.Play.current().injector().instanceOf(Application.class).path() + "/conf/swagger_history").listFiles();
 
         for (File file : files) { fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))).replace("_", "."));}
 

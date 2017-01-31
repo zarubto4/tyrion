@@ -358,7 +358,7 @@ create table model_invitation (
 ;
 
 create table model_invoice (
-  id                        bigint not null,
+  id                        varchar(255) not null,
   facturoid_invoice_id      bigint,
   facturoid_pdf_url         varchar(255),
   invoice_number            varchar(255),
@@ -366,7 +366,7 @@ create table model_invoice (
   gopay_order_number        varchar(255),
   proforma                  boolean,
   date_of_create            timestamp,
-  product_id                bigint,
+  product_id                varchar(255),
   status                    varchar(14),
   method                    varchar(13),
   constraint ck_model_invoice_status check (status in ('paid','cancelled','created_waited','sent')),
@@ -376,7 +376,7 @@ create table model_invoice (
 
 create table model_invoice_item (
   id                        bigint not null,
-  invoice_id                bigint,
+  invoice_id                varchar(255),
   name                      varchar(255),
   quantity                  bigint,
   unit_name                 varchar(255),
@@ -461,7 +461,7 @@ create table model_password_recovery_token (
 create table model_payment_details (
   id                        bigint not null,
   person_id                 varchar(255),
-  productidpaymentdetails   bigint,
+  productidpaymentdetails   varchar(255),
   company_account           boolean,
   company_name              varchar(255),
   company_authorized_email  varchar(255),
@@ -520,7 +520,7 @@ create table model_producer (
 ;
 
 create table model_product (
-  id                        bigint not null,
+  id                        varchar(255) not null,
   product_individual_name   varchar(255),
   general_tariff_id         varchar(255),
   mode                      varchar(10),
@@ -547,7 +547,7 @@ create table model_project (
   name                      varchar(255),
   description               varchar(255),
   private_instance_blocko_instance_name varchar(255),
-  product_id                bigint,
+  product_id                varchar(255),
   blob_project_link         varchar(255),
   constraint uq_model_project_private_instanc unique (private_instance_blocko_instance_name),
   constraint pk_model_project primary key (id))
@@ -674,7 +674,7 @@ create table hash_tag_post (
 
 create table model_general_tariff_extensions_ (
   model_general_tariff_extensions_id varchar(255) not null,
-  model_product_id               bigint not null,
+  model_product_id               varchar(255) not null,
   constraint pk_model_general_tariff_extensions_ primary key (model_general_tariff_extensions_id, model_product_id))
 ;
 
@@ -747,13 +747,9 @@ create sequence linked_post_seq;
 
 create sequence model_bprogram_hw_group_seq;
 
-create sequence model_invoice_seq;
-
 create sequence model_invoice_item_seq;
 
 create sequence model_payment_details_seq;
-
-create sequence model_product_seq;
 
 create sequence post_seq;
 
@@ -1120,13 +1116,9 @@ drop sequence if exists linked_post_seq;
 
 drop sequence if exists model_bprogram_hw_group_seq;
 
-drop sequence if exists model_invoice_seq;
-
 drop sequence if exists model_invoice_item_seq;
 
 drop sequence if exists model_payment_details_seq;
-
-drop sequence if exists model_product_seq;
 
 drop sequence if exists post_seq;
 

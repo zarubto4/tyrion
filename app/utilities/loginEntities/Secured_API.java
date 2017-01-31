@@ -6,6 +6,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.response.GlobalResult;
 
+import static play.mvc.Controller.request;
+
 
 public class Secured_API extends Security.Authenticator {
 
@@ -15,12 +17,20 @@ public class Secured_API extends Security.Authenticator {
 
         Model_Person person = null;
 
-        String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
+        String token = null;
+
+        if(ctx.request().cookies().get("authToken") != null ){
+
+            token =  request().cookies().get("authToken").value();
+
+        }else if(ctx.request().headers().get("X-AUTH-TOKEN") != null) {
+            token = request().headers().get("X-AUTH-TOKEN")[0];
+        }
 
         //TODO Přepsat do Try and Catche - aby se odstranili podmínkya v případě null poitnexception se vracel null
-        if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
+        if ((token != null)) {
 
-            person = Model_Person.findByAuthToken(authTokenHeaderValues[0]); // TODO do Cache!!!
+            person = Model_Person.findByAuthToken(token); // TODO do Cache!!!
 
             if (person != null) {
                 ctx.args.put("person", person);
