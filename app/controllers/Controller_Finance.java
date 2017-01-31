@@ -53,25 +53,25 @@ public class Controller_Finance extends Controller {
 
             Model_GeneralTariff general_tariff = new Model_GeneralTariff();
 
-            general_tariff.tariff_name      = help.tariff_name;
-            general_tariff.identificator    = help.identificator;
-            general_tariff.tariff_description = help.tariff_description;
+            general_tariff.tariff_name              = help.tariff_name;
+            general_tariff.identificator            = help.identificator;
+            general_tariff.tariff_description       = help.tariff_description;
 
-            general_tariff.color            = help.color;
+            general_tariff.color                    = help.color;
 
-            general_tariff.required_paid_that = help.required_paid_that;
+            general_tariff.required_paid_that       = help.required_paid_that;
             general_tariff.number_of_free_months    = help.number_of_free_months;
 
-            general_tariff.company_details_required  = help.company_details_required;
-            general_tariff.required_payment_mode     = help.required_payment_mode;
-            general_tariff.required_payment_method   = help.required_payment_method;
+            general_tariff.company_details_required = help.company_details_required;
+            general_tariff.required_payment_mode    = help.required_payment_mode;
+            general_tariff.required_payment_method  = help.required_payment_method;
 
             general_tariff.credit_card_support      = help.credit_card_support;
             general_tariff.bank_transfer_support    = help.bank_transfer_support;
 
-            general_tariff.mode_annually    = help.mode_annually;
-            general_tariff.mode_credit      = help.mode_credit;
-            general_tariff.free_tariff      = help.free_tariff;
+            general_tariff.mode_annually            = help.mode_annually;
+            general_tariff.mode_credit              = help.mode_credit;
+            general_tariff.free_tariff              = help.free_tariff;
 
             general_tariff.usd = help.usd;
             general_tariff.eur = help.eur;
@@ -289,7 +289,7 @@ public class Controller_Finance extends Controller {
     }
 
 
-    // USER GENERAL_TARIFF EXSTENSION PACKAGES #########################################################################
+    // USER GENERAL_TARIFF EXTENSION PACKAGES #########################################################################
 
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)

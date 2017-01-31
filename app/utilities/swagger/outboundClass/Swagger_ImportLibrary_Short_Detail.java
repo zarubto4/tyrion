@@ -26,8 +26,5 @@ public class Swagger_ImportLibrary_Short_Detail {
     public Swagger_ImportLibrary_Version_Short_Detail last_version;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_C_program_Short_Detail> examples = new ArrayList<>();
-
-    @ApiModelProperty(required = true, readOnly = true)
     public Library_tag tag;
 }

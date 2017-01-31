@@ -17,7 +17,13 @@ public class Old_Notification_Removal implements Job {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        if(!remove_notification_thread.isAlive()) remove_notification_thread.start();
+        if(remove_notification_thread.getState() == Thread.State.NEW) {
+
+            remove_notification_thread.start();
+        } else {
+
+            remove_notification_thread.interrupt();
+        }
     }
 
     static Thread remove_notification_thread = new Thread() {
@@ -25,28 +31,39 @@ public class Old_Notification_Removal implements Job {
         @Override
         public void run() {
 
-            logger.info("Independent Thread in Old_Notification_Removal now working");
+            while (true) {
+                try {
 
-            Long month = new Long("2592000000");
-            Long before_month = new Date().getTime() - month;
-            Date created = new Date(before_month);
+                    logger.info("Independent Thread in Old_Notification_Removal now working");
 
-            while (true){
+                    Long month = new Long("2592000000");
+                    Long before_month = new Date().getTime() - month;
+                    Date created = new Date(before_month);
 
-                List<Model_Notification> notifications = Model_Notification.find.where().lt("created", created).setMaxRows(100).findList();
-                if (notifications.isEmpty()) {
-                    logger.info("Old_Notification_Removal has no notifications to remove");
-                    break;
-                }
+                    while (true) {
 
-                logger.info("CRON Task is removing old notifications (100 per cycle)");
+                        List<Model_Notification> notifications = Model_Notification.find.where().lt("created", created).setMaxRows(100).findList();
+                        if (notifications.isEmpty()) {
+                            logger.info("Old_Notification_Removal has no notifications to remove");
+                            break;
+                        }
 
-                for (Model_Notification notification : notifications){
-                    notification.delete();
+                        logger.info("CRON Task is removing old notifications (100 per cycle)");
+
+                        for (Model_Notification notification : notifications) {
+                            notification.delete();
+                        }
+                    }
+
+                    logger.info("Independent Thread in Old_Notification_Removal stopped!");
+
+                    sleep(90000000);
+                } catch (InterruptedException i) {
+                    // Do nothing
+                } catch (Exception e) {
+                    logger.error("Error in Thread - Old_Notification_Removal");
                 }
             }
-
-            logger.info("Independent Thread in Old_Notification_Removal stopped!");
         }
     };
 }

@@ -51,7 +51,7 @@ public class Model_CProgram extends Model {
     @JsonIgnore @OneToOne()                                   public Model_TypeOfBoard default_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)
     @JsonIgnore @OneToOne(mappedBy="default_version_program") public Model_VersionObject default_main_version;          // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
 
-    @JsonIgnore @ManyToOne                                    public Model_ImportLibrary example_library;               // Program je příklad pro použití knihovny
+    @JsonIgnore @ManyToOne                                    public Model_VersionObject example_library;               // Program je příklad pro použití knihovny
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 

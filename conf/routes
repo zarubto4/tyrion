@@ -316,6 +316,8 @@ DELETE          /library/version/:version_id                                    
 PUT             /library/version/upload_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadFile(version_id)
 PUT             /library/version/remove_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadFile(version_id)
 
+POST            /library/version/upload_example/:version_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadExample(version_id)
+
 #Actualization
 PUT             /c_program/version/upload/:version_id                           @controllers.Controller_CompilationLibraries.uploadCompilationToBoard(version_id)
 POST            /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)

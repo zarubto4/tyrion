@@ -41,24 +41,12 @@ public class Model_ImportLibrary extends Model{
     @Enumerated(EnumType.STRING)
     @ApiModelProperty(required = true)     public Library_tag tag; // K čemu knihovna slouží (matematická, audio, atd...)
 
-    @JsonIgnore @OneToMany(mappedBy = "example_library", cascade = CascadeType.ALL)                         public List<Model_CProgram>      examples        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_VersionObject> versions        = new ArrayList<>();
 
                                                                                                 @ManyToMany public List<Model_TypeOfBoard>   type_of_boards  = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
-
-    @JsonProperty
-    public List<Swagger_C_program_Short_Detail> examples(){
-
-        List<Swagger_C_program_Short_Detail> programs = new ArrayList<>();
-        for (Model_CProgram cProgram : examples){
-            programs.add(cProgram.get_c_program_short_detail());
-        }
-
-        return programs;
-    }
 
     @JsonProperty
     public List<Swagger_ImportLibrary_Version_Short_Detail> versions(){
@@ -92,7 +80,6 @@ public class Model_ImportLibrary extends Model{
         help.name = this.name;
         help.description = this.description;
 
-        for (Model_CProgram cProgram : this.examples) help.examples.add(cProgram.get_c_program_short_detail());
         help.last_version = this.last_version();
         help.tag = this.tag;
 

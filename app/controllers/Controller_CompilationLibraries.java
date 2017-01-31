@@ -37,7 +37,7 @@ import java.util.*;
 
 /**
  * Controller se zabívá správou knihoven, procesorů, desek (hardware), typů desek a jejich výrobcem.
- * Dále obsluhe kompilaci C++ kodu (propojení s kontrolerem Websocket)
+ * Dále obsluhuje kompilaci C++ kodu (propojení s kontrolerem Websocket)
  *
  */
 
@@ -3841,6 +3841,93 @@ public class Controller_CompilationLibraries extends Controller {
             // Uložení změn
             version_object.update();
             version_object.refresh();
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "upload example to Version of ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "For linking examples to Version of ImportLibrary.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_edit"),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_ImportLibrary_Version_Short_Detail.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibraryVersion_uploadExample(@ApiParam(value = "version_id String query",   required = true)  String version_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_C_Program_Version_New> form = Form.form(Swagger_C_Program_Version_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_C_Program_Version_New help = form.get();
+
+            // Ověření objektu
+            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            if (version_object == null) return GlobalResult.notFoundObject("ImportLibrary Version version_id not found");
+
+            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+
+            // Kontrola oprávnění
+            if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            Model_CProgram cProgram = new Model_CProgram();
+            cProgram.name = help.version_name;
+            cProgram.description = help.version_description;
+            cProgram.example_library = version_object;
+
+            cProgram.save();
+            cProgram.refresh();
+
+            Model_VersionObject example = new Model_VersionObject();
+            example.version_name = help.version_name;
+            example.version_description = help.version_description;
+            example.c_program = cProgram;
+            example.public_version = true;
+            example.date_of_create = new Date();
+
+            example.save();
+
+            // Nahraje do Azure a připojí do verze soubor
+            ObjectNode  content = Json.newObject();
+            content.put("main", help.main );
+            content.set("user_files", Json.toJson( help.user_files) );
+            content.set("library_files", Json.toJson(help.library_files) );
+
+            // Content se nahraje na Azure
+
+            Model_FileRecord.uploadAzure_Version(content.toString(), "code.json" , cProgram.get_path() ,  example);
+            example.update();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));

@@ -59,7 +59,7 @@ public class Model_VersionObject extends Model {
     @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = false, value = "can be empty!")    public Model_Person author;
 
 
-                                                                                           @JsonIgnore public boolean public_version;  // Pižívá se u Gridu, u C_programů atd..
+                                                                                           @JsonIgnore public boolean public_version;  // Používá se u Gridu, u C_programů atd..
 
                                                                                            // OBJEKT V KOŠI!! - SLOUŽÍ K ODSTRANĚNÍ Z POHLEDU UŽIVATELE - ALE NIKOLIV Z DATABÁZE!
                                                                                            @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
@@ -75,6 +75,9 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore @ManyToOne                                  public Model_ImportLibrary library;
     @JsonIgnore @ManyToMany(mappedBy = "library_versions")  public List<Model_VersionObject> c_program_versions = new ArrayList<>();
+
+    @JsonIgnore @OneToMany(mappedBy = "example_library",
+            cascade = CascadeType.ALL)                      public List<Model_CProgram> examples = new ArrayList<>();
 
     // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @JsonIgnore @ManyToOne()                                                                                    public Model_CProgram c_program;
@@ -130,6 +133,10 @@ public class Model_VersionObject extends Model {
         help.library_id = library.id;
         help.version_name = version_name;
         help.version_description = version_description;
+
+        for (Model_CProgram cProgram : examples){
+            help.examples.add(cProgram.get_c_program_short_detail());
+        }
 
         for (Model_FileRecord file : this.files){
 

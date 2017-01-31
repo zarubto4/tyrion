@@ -17,8 +17,7 @@ public class Secured_API extends Security.Authenticator {
 
         String[] authTokenHeaderValues = ctx.request().headers().get("X-AUTH-TOKEN");
 
-        //TODO Přepsat do Try and Catche - aby se odstranili podmínkya v případě null poitnexception se vracel null
-        if ((authTokenHeaderValues != null) && (authTokenHeaderValues.length == 1) && (authTokenHeaderValues[0] != null)) {
+        try {
 
             person = Model_Person.findByAuthToken(authTokenHeaderValues[0]); // TODO do Cache!!!
 
@@ -26,9 +25,12 @@ public class Secured_API extends Security.Authenticator {
                 ctx.args.put("person", person);
                 return person.id;
             }
-        }
 
-        return null;
+            return null;
+
+        }catch (NullPointerException e){
+            return null;
+        }
     }
 
     @Override

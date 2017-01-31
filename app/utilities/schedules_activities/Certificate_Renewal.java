@@ -31,14 +31,14 @@ public class Certificate_Renewal implements Job {
             while (true) {
                 try {
                     logger.info("Independent Thread in Certificate_Renewal now working");
-
+                    /*
                     Runtime rt = Runtime.getRuntime();
                     Process pr = rt.exec("certificate_renewal.sh");
 
                     int exitVal = pr.waitFor();
 
                     logger.warn("Certificate renewal exited with code " + exitVal);
-
+                    */
                     sleep(90000000);
 
                 } catch (InterruptedException i) {

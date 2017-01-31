@@ -162,7 +162,7 @@ public class Model_Person extends Model {
     public static Model_Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
 
     public static Model_Person findByAuthToken(String authToken) {
-        if (authToken == null) { return null; }
+        if (authToken == null) return null;
         try  {
             return find.where().eq("floatingPersonTokens.authToken", authToken).findUnique(); }
         catch (Exception e) {

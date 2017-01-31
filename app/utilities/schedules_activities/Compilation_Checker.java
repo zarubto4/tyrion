@@ -32,7 +32,7 @@ public class Compilation_Checker implements Job {
         @Override
         public void run() {
             try {
-            logger.info("Compilation_Checker:: run Independent Thread in Compilation_Checker now working");
+            logger.info("Compilation_Checker:: run:: Independent Thread in Compilation_Checker now working");
 
             Long before_5_minutes = new Date().getTime() - (5 * 60 * 1000);
             Date created = new Date(before_5_minutes);

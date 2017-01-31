@@ -815,7 +815,7 @@ alter table model_cprogram add constraint fk_model_cprogram_first_defau_26 forei
 create index ix_model_cprogram_first_defau_26 on model_cprogram (first_default_version_object_id);
 alter table model_cprogram add constraint fk_model_cprogram_default_pro_27 foreign key (default_program_type_of_board_id) references model_type_of_board (id);
 create index ix_model_cprogram_default_pro_27 on model_cprogram (default_program_type_of_board_id);
-alter table model_cprogram add constraint fk_model_cprogram_example_lib_28 foreign key (example_library_id) references model_import_library (id);
+alter table model_cprogram add constraint fk_model_cprogram_example_lib_28 foreign key (example_library_id) references model_version_object (id);
 create index ix_model_cprogram_example_lib_28 on model_cprogram (example_library_id);
 alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_29 foreign key (actualization_procedure_id) references model_actualization_procedure (id);
 create index ix_model_cprogram_update_plan_29 on model_cprogram_update_plan (actualization_procedure_id);

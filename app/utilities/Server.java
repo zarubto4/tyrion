@@ -407,6 +407,7 @@ public class Server {
             TriggerKey every_day_key3       = TriggerKey.triggerKey("every_day_03:20"); // 3)
             TriggerKey every_day_key4       = TriggerKey.triggerKey("every_day_03:30"); // 4)
             TriggerKey every_day_key5       = TriggerKey.triggerKey("every_day_03:40"); // 5)
+            TriggerKey every_day_key6       = TriggerKey.triggerKey("every_day_03:50"); // 6)
 
 
             // 2 a více-denní klíče
@@ -452,6 +453,10 @@ public class Server {
                         .withSchedule(dailyAtHourAndMinute(3,40))// Spuštění každý den v 03:20 AM
                         .build();
 
+                Trigger every_day_6 = newTrigger().withIdentity(every_day_key6).startNow()
+                        .withSchedule(dailyAtHourAndMinute(3,50))// Spuštění každý den v 03:20 AM
+                        .build();
+
                 // TODO 6
 
                 Trigger every_10_minutes_7 = newTrigger().withIdentity(every_10_min_key7).startNow()
@@ -490,7 +495,11 @@ public class Server {
                 logger.info("Scheduling new Job - Sending_Invoices");
                 scheduler.scheduleJob( newJob(Sending_Invoices.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_5);
 
-                // 6) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
+                // 6) Obnovení certifikátu od Lets Encrypt
+                logger.info("Scheduling new Job - Certificate_Renewal");
+                scheduler.scheduleJob( newJob(Certificate_Renewal.class).withIdentity( JobKey.jobKey("certificate_renewal") ).build(), every_day_6);
+
+                // 9) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
                 // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-433
 
                 // 7) Kontrola zaseknutých kompilací - těch co jsou in progress déle než 5 minut.
