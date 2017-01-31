@@ -60,6 +60,7 @@
                     </ul>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
+                @if(Server.server_mode){
                 <li class="treeview">
                     <a href="#">
                         <i class="fa fa-bug"></i> <span>For Tyrion Developers</span>
@@ -113,6 +114,14 @@
 
                     </ul>
                 </li>
+                }else{
+                    <li>
+                        <a href='@routes.Controller_Dashboard.show_web_socket_stats()' >
+                            <i class="fa fa-heart"></i> <span>Websocket connections</span>
+                            <small class="label pull-right bg-yellow">  @( Controller_WebSocket.becki_website.size()  + Controller_WebSocket.compiler_cloud_servers.size() + Controller_WebSocket.blocko_servers.size()) </small>
+                        </a>
+                    </li>
+                }
 <!-------------------------------------------------------------------------- ------------------------>
 
                 <li>

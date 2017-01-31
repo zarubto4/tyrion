@@ -507,7 +507,6 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_4.server_type  = CLoud_Homer_Server_Type.public_server;
             cloud_server_4.save();
 
-
             // Testovací server
             Model_HomerServer cloud_server_5 = new Model_HomerServer();
             cloud_server_5.unique_identificator = "aaaaaaaaaaaaaaa";
@@ -521,7 +520,6 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_5.webView_port = ":8501";
             cloud_server_5.server_type  = CLoud_Homer_Server_Type.test_server;
             cloud_server_5.save();
-
 
             // Nastavím kompilační servery
             Model_CompilationServer compilation_server_1 = new Model_CompilationServer();
@@ -1712,6 +1710,13 @@ public class Demo_Data_Controller extends Controller {
             payment_details.product = product;
             product.payment_details = payment_details;
             product.save();
+
+            Model_GeneralTariffExtensions e = Model_GeneralTariff.find.where().eq("identificator","alpha").findUnique().extensions.get(0);
+            e.products.add(product);
+            e.update();
+
+            product.extensions.add(e);
+            product.update();
 
 
             Model_Invoice invoice = new Model_Invoice();
