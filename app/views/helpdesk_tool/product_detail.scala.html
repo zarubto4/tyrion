@@ -277,7 +277,7 @@
                                                             @if(invoice.facturoid_pdf_url != null) {
                                                                 <li class="divider"></li>
                                                                 <li>
-                                                                    <a href="@routes.Controller_Finance.invoice_get_pdf(invoice.id)" target="_blank">Download Invoice</a>
+                                                                    <a href="/invoice/pdf/@invoice.id" target="_blank">Download Invoice</a>
                                                                 </li>
                                                             }
                                                         </ul>
