@@ -3,6 +3,9 @@ package utilities.fakturoid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import models.project.global.Model_Product;
 import models.project.global.financial.Model_Invoice;
 import play.api.Play;
@@ -11,10 +14,17 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
+import play.mvc.Result;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.enums.Payment_status;
 import utilities.fakturoid.helps_objects.Fakturoid_Invoice;
+import utilities.loggy.Loggy;
+import utilities.response.GlobalResult;
+import utilities.response.response_objects.Result_BadRequest;
+import utilities.response.response_objects.Result_PermissionRequired;
+import utilities.response.response_objects.Result_Unauthorized;
+import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
 
 import java.util.Calendar;
 
@@ -24,6 +34,38 @@ public class Fakturoid_Controller extends Controller {
     // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
+
+
+    @ApiOperation(value = "get Invoice PDF file",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "get PDF invoice file",
+            produces = "multipartFormData",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Invoice_FullDetails.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result invoice_get_pdf(String invoice_id){
+
+        try {
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+
+            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
+
+            byte[] pdf_in_array = Fakturoid_Controller.download_PDF_invoice(invoice);
+
+            return GlobalResult.result_pdf_file(pdf_in_array, invoice.invoice_number + ".pdf");
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################

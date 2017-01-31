@@ -174,7 +174,7 @@ GET            /go_pay/return_url                                               
 
 #Fakturoid
 GET             /invoice/get/:invoice_id                                                    @controllers.Controller_Finance.invoice_get(invoice_id)
-GET             /invoice/pdf/:invoice_id                                                    @controllers.Controller_Finance.invoice_get_pdf(invoice_id)
+GET             /invoice/pdf/:invoice_id                                                    @utilities.fakturoid.Fakturoid_Controller.invoice_get_pdf(invoice_id)
 POST            /invoice/reimbursement/:invoice_id                                          @controllers.Controller_Finance.pay_send_invoice(invoice_id)
 
 # Obsluha pouze pro Byzance zaměstnance
