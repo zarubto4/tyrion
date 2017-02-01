@@ -95,13 +95,13 @@ public class Controller_ProgramingPackage extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_create() {
         try{
-            JsonNode json = request().body().asJson();
 
             // Zpracování Json
             final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Project_New help = form.get();
 
+            System.out.println("product_id: " + help.product_id);
 
             Model_Product product = Model_Product.find.byId(help.product_id);
             if(product == null){return GlobalResult.notFoundObject("Product not found");}

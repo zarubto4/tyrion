@@ -8,7 +8,7 @@ import utilities.response.response_objects.*;
 
 public class GlobalResult extends Controller {
 
-
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 //**********************************************************************************************************************
 
     // Vracím objekty
@@ -131,8 +131,6 @@ public class GlobalResult extends Controller {
 
         Result_NotFound result = new Result_NotFound();
         result.message = message;
-
-        System.out.println("Not found object");
 
         return Controller.badRequest(Json.toJson(result));
     }
