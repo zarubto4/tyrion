@@ -643,7 +643,7 @@ public class Model_HomerInstance extends Model {
                 logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
                 size = Model_HomerInstance.find.where().eq("blocko_instance_name", node.get("instanceId").asText())
                             .disjunction()
-                                .eq("b_program.project.ownersOfProject.id", terminal.person.id)    // Uživatel může být přihlášený a přihlašovat se k free programu
+                                .eq("b_program.project.participants.person.id", terminal.person.id)
                                 .eq("actual_instance.version_object.public_version", true)
                             .findRowCount();
             }
