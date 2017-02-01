@@ -30,8 +30,8 @@ create table model_bpair (
   id                        varchar(255) not null,
   c_program_version_id      varchar(255),
   board_id                  varchar(255),
-  device_board_pair_id      bigint,
-  main_board_pair_id        bigint,
+  device_board_pair_id      varchar(255),
+  main_board_pair_id        varchar(255),
   constraint uq_model_bpair_main_board_pair_i unique (main_board_pair_id),
   constraint pk_model_bpair primary key (id))
 ;
@@ -50,7 +50,7 @@ create table model_bprogram (
 ;
 
 create table model_bprogram_hw_group (
-  id                        bigint not null,
+  id                        varchar(255) not null,
   constraint pk_model_bprogram_hw_group primary key (id))
 ;
 
@@ -724,7 +724,7 @@ create table model_c_program_library_version (
 
 create table model_version_object_model_bprog (
   model_version_object_id        varchar(255) not null,
-  model_bprogram_hw_group_id     bigint not null,
+  model_bprogram_hw_group_id     varchar(255) not null,
   constraint pk_model_version_object_model_bprog primary key (model_version_object_id, model_bprogram_hw_group_id))
 ;
 

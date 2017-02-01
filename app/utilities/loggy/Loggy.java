@@ -37,7 +37,7 @@ public class Loggy{
 
     public static Result result_internalServerError(Exception exception, Http.Request request) {
 
-        logger.error("Error:: ", exception);
+        // logger.error("Error:: ", exception);
 
         String id;
 
@@ -199,7 +199,7 @@ public class Loggy{
     }
 
     private static void error(String id, String summary, String description) {
-        logger.error(summary+"\n"+description); // zapíšu do souboru
+        // logger.error(summary+"\n"+description); // zapíšu do souboru
         Model_LoggyError error = new Model_LoggyError(id, summary, description); // zapíšu do databáze
         error.save();
     }

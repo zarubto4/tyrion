@@ -605,12 +605,12 @@ public class Demo_Data_Controller extends Controller {
 
 
             Model_GeneralTariffExtensions extensions_1 = new Model_GeneralTariffExtensions();
-            extensions_1.name = "Super tunning";
+            extensions_1.name = "P5ístup do fora - Zdarma";
             extensions_1.active = true;
             extensions_1.color = "blue-madison";
             extensions_1.description = "testovací extension";
             extensions_1.price_in_usd = 1.15;
-            extensions_1.general_tariff_optional = tariff_1;
+            extensions_1.general_tariff_included = tariff_1;
             extensions_1.save();
 
 
@@ -701,7 +701,7 @@ public class Demo_Data_Controller extends Controller {
 
 
 
-
+            
             // Placená
 
             Model_GeneralTariff business_tariff = new Model_GeneralTariff();

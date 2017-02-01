@@ -594,7 +594,7 @@ public class Model_VersionObject extends Model {
             if(this.author == null)
             this.author = Controller_Security.getPerson();
         }catch (Exception e){
-            this.author = null;
+            // this.author = null;
         }
 
         super.save();

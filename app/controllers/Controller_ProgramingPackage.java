@@ -988,6 +988,8 @@ public class Controller_ProgramingPackage extends Controller {
                 version_object.b_program_version_snapshots.add(snap);
             }
 
+
+            logger.debug("Controller_ProgramingPackage:: update_b_program_new_version:: Saving Snap");
             for(Model_MProjectProgramSnapShot snap : version_object.b_program_version_snapshots){
                 snap.save();
             }
@@ -1048,17 +1050,27 @@ public class Controller_ProgramingPackage extends Controller {
                 version_object.b_program_hw_groups.add(b_program_hw_group);
             }
 
-
+            logger.debug("Controller_ProgramingPackage:: update_b_program_new_version:: Saving b_program_hw_group");
             for(Model_BProgramHwGroup b_program_hw_group : version_object.b_program_hw_groups){
+
+                b_program_hw_group.main_board_pair.save();
+
+                for(Model_BPair b_pair : b_program_hw_group.device_board_pairs){
+                    b_pair.save();
+                }
+
                 b_program_hw_group.save();
             }
 
+            logger.debug("Controller_ProgramingPackage:: update_b_program_new_version:: Saving version");
             // Uložení objektu
             version_object.save();
+
 
             // Úprava objektu
             b_program.getVersion_objects().add(version_object);
 
+            logger.debug("Controller_ProgramingPackage:: update_b_program_new_version:: Updating b_program");
             // Uložení objektu
             b_program.update();
 
@@ -1072,7 +1084,6 @@ public class Controller_ProgramingPackage extends Controller {
             return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }
