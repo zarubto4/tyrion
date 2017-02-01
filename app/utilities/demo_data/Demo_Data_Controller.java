@@ -701,7 +701,7 @@ public class Demo_Data_Controller extends Controller {
 
 
 
-            
+
             // Placená
 
             Model_GeneralTariff business_tariff = new Model_GeneralTariff();

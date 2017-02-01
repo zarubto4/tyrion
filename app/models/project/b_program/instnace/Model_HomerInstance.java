@@ -616,7 +616,7 @@ public class Model_HomerInstance extends Model {
         try {
 
             logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
-            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(server_name());
+            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(server_id());
 
             Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", node.get("token").asText()).findUnique();
 
@@ -630,7 +630,7 @@ public class Model_HomerInstance extends Model {
             if(terminal == null){
                 logger.warn("Homer_Instance:: cloud_verification_token:: Grid_Terminal object not found!");
                 request.put("token_approve", false);
-                Controller_WebSocket.blocko_servers.get(server_name()).write_without_confirmation(node.get("messageId").asText(), request);
+                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(node.get("messageId").asText(), request);
                 return;
             }
 
@@ -651,18 +651,18 @@ public class Model_HomerInstance extends Model {
             if(size == 0){
                 logger.warn("Homer_Instance:: cloud_verification_token:: Token found but this user has not permission!");
                 request.put("token_approve", false);
-                Controller_WebSocket.blocko_servers.get(server_name()).write_without_confirmation(node.get("messageId").asText(), request);
+                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(node.get("messageId").asText(), request);
                 return;
             }
 
             logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
             request.put("token_approve", true);
-            Controller_WebSocket.blocko_servers.get(server_name()).write_without_confirmation( node.get("messageId").asText(), request);
+            Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation( node.get("messageId").asText(), request);
             return;
 
         }catch (Exception e){
             e.printStackTrace();
-            logger.warn("Cloud Homer server", server_name(), " is offline!");
+            logger.warn("Cloud Homer server", server_id(), " is offline!");
         }
 
     }
@@ -670,7 +670,7 @@ public class Model_HomerInstance extends Model {
         try {
 
             logger.debug("Homer_Instance:: cloud_verification_token:: WebView  Checking Token");
-            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(server_name());
+            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(server_id());
 
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("authToken", node.get("token").asText()).findUnique();
@@ -685,18 +685,18 @@ public class Model_HomerInstance extends Model {
             if(floatingPersonToken == null){
                 logger.warn("Homer_Instance:: cloud_verification_token:: FloatingPersonToken not found!");
                 request.put("token_approve", false);
-                Controller_WebSocket.blocko_servers.get(server_name()).write_without_confirmation(node.get("messageId").asText(), request);
+                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(node.get("messageId").asText(), request);
                 return;
             }
 
             logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
             request.put("token_approve", true);
-            Controller_WebSocket.blocko_servers.get(server_name()).write_without_confirmation( node.get("messageId").asText(), request);
+            Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation( node.get("messageId").asText(), request);
             return;
 
         }catch (Exception e){
             e.printStackTrace();
-            logger.warn("Cloud Homer server", server_name(), " is offline!");
+            logger.warn("Cloud Homer server", server_id(), " is offline!");
         }
 
     }
