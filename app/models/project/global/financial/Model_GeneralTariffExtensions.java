@@ -32,9 +32,7 @@ public class Model_GeneralTariffExtensions extends Model {
 
                  public String color;
 
-    @JsonIgnore  public Double usd;             // Cena je za jeden den!!
-    @JsonIgnore  public Double eur;             // Cena je za jeden den!!
-    @JsonIgnore  public Double czk;             // Cena je za jeden den!!
+    @JsonIgnore  public Double price_in_usd;             // Cena je za jeden den!!
 
     @OneToMany(mappedBy="extensions", cascade = CascadeType.ALL) @OrderBy("order_position ASC")  public List<Model_GeneralTariffLabel> labels = new ArrayList<>();
 
@@ -46,13 +44,9 @@ public class Model_GeneralTariffExtensions extends Model {
 
 
     @JsonProperty public Price price(){
-
         Price price = new Price();
-        price.CZK = czk * 30.0;       // Kvuli "průměrné měsíční ceně
-        price.EUR = eur * 30.0;       // Kvuli "průměrné měsíční ceně
-        price.USD = usd * 30.0;       // Kvuli "průměrné měsíční ceně
+        price.USD = price_in_usd * 30.0;       // Kvuli "průměrné měsíční ceně
         return price;
-
     }
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -113,13 +107,13 @@ public class Model_GeneralTariffExtensions extends Model {
 
     public class Price {
         @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK - Average price per month")
-        public Double CZK;
+        public Double CZK = 0.0;
 
         @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show € - Average price per month")
-        public Double EUR;
+        public Double EUR = 0.0;
 
         @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $ - Average price per month")
-        public Double USD;
+        public Double USD = 0.0;
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

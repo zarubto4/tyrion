@@ -73,9 +73,8 @@ public class Controller_Finance extends Controller {
             general_tariff.mode_credit              = help.mode_credit;
             general_tariff.free_tariff              = help.free_tariff;
 
-            general_tariff.usd = help.usd;
-            general_tariff.eur = help.eur;
-            general_tariff.czk = help.czk;
+            general_tariff.price_in_usd = help.price_in_usd;
+
 
             general_tariff.save();
 
@@ -115,9 +114,8 @@ public class Controller_Finance extends Controller {
             general_tariff.mode_credit      = help.mode_credit;
             general_tariff.free_tariff      = help.free_tariff;
 
-            general_tariff.usd = help.usd;
-            general_tariff.eur = help.eur;
-            general_tariff.czk = help.czk;
+            general_tariff.price_in_usd = help.price_in_usd;
+
 
             general_tariff.update();
 
@@ -347,10 +345,7 @@ public class Controller_Finance extends Controller {
             extensions.name = help.name;
             extensions.color = help.color;
 
-            extensions.czk = help.czk;
-            extensions.eur = help.eur;
-            extensions.usd = help.usd;
-
+            extensions.price_in_usd = help.price_in_usd;
 
             extensions.save();
 
@@ -376,9 +371,7 @@ public class Controller_Finance extends Controller {
             extensions.name = help.name;
             extensions.color = help.color;
 
-            extensions.czk = help.czk;
-            extensions.eur = help.eur;
-            extensions.usd = help.usd;
+            extensions.price_in_usd = help.price_in_usd;
 
             extensions.update();
 
@@ -554,10 +547,6 @@ public class Controller_Finance extends Controller {
 
             Model_Product product = new Model_Product();
 
-                if(help.currency_type.equals( Currency.EUR.name())) product.currency = Currency.EUR;
-                else if(help.currency_type.equals( Currency.CZK.name())) product.currency = Currency.CZK;
-                else if(help.currency_type.equals( Currency.USD.name())) product.currency = Currency.USD;
-                else { return GlobalResult.result_BadRequest("currency is invalid. Use only (EUR, USD, CZK)");}
 
                 product.general_tariff =  tariff;
                 product.product_individual_name = help.product_individual_name;
@@ -668,7 +657,7 @@ public class Controller_Finance extends Controller {
                     return GlobalResult.created(Json.toJson(product));
                 }
 
-            
+
                 logger.debug("Financial_Controller:: product_create:: Creating invoice");
 
                 Model_Invoice invoice = new Model_Invoice();
@@ -684,10 +673,10 @@ public class Controller_Finance extends Controller {
 
                 Model_InvoiceItem invoice_item_1 = new Model_InvoiceItem();
                 invoice_item_1.name = product.general_tariff.tariff_name + " in Mode(" + product.mode.name() + ")";
-                invoice_item_1.unit_price = product.get_price_general_fee();
+                invoice_item_1.unit_price = product.general_tariff.price_in_usd;
                 invoice_item_1.quantity = (long) 1;
-                invoice_item_1.unit_name = "Service";
-                invoice_item_1.currency = product.currency;
+                invoice_item_1.unit_name = "Monthly fee";
+                invoice_item_1.currency = Currency.USD;
 
                 invoice.invoice_items.add(invoice_item_1);
                 invoice.method = product.method;
@@ -984,10 +973,6 @@ public class Controller_Finance extends Controller {
 
             // úpravy objektu
             product.product_individual_name  = help.product_individual_name;
-
-                 if(help.currency_type.equals( Currency.EUR.name()))    product.currency = Currency.EUR;
-            else if(help.currency_type.equals( Currency.CZK.name()))    product.currency = Currency.CZK;
-            else                                                        return GlobalResult.result_BadRequest("currency is invalid. Use only (EUR, CZK)");
 
             // Updatování do databáze
             product.update();

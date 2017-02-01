@@ -492,7 +492,7 @@ public class Server {
 
                 // 5) Kontrola a fakturace klientů na měsíční bázi
                 logger.info("Scheduling new Job - Sending_Invoices");
-                scheduler.scheduleJob( newJob(Sending_Invoices.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_5);
+                scheduler.scheduleJob( newJob(Spending_Credit_Every_Day.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_5);
 
                 // 6) Obnovení certifikátu od Lets Encrypt
                 logger.info("Scheduling new Job - Certificate_Renewal");

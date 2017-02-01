@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.Api;
 import models.project.global.Model_Product;
 import models.project.global.financial.Model_Invoice;
-import models.project.global.financial.Model_InvoiceItem;
 import models.project.global.financial.Model_PaymentDetails;
 import play.api.Play;
 import play.libs.F;
@@ -14,11 +13,14 @@ import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
+import utilities.enums.Currency;
 import utilities.enums.Payment_mode;
-import utilities.enums.Payment_status;
 import utilities.enums.Recurrence_cycle;
 import utilities.fakturoid.Fakturoid_Controller;
-import utilities.goPay.helps_objects.*;
+import utilities.goPay.helps_objects.GoPay_Contact;
+import utilities.goPay.helps_objects.GoPay_Payer;
+import utilities.goPay.helps_objects.GoPay_Payment;
+import utilities.goPay.helps_objects.Recurrence;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,7 +45,7 @@ public class GoPay_Controller  extends Controller {
 
             payment.setItems(invoice.invoice_items);
             payment.order_number = invoice.invoice_number;
-            payment.currency = product.currency;
+            payment.currency = Currency.USD;
             payment.order_description = payment_description;
 
             GoPay_Payer payer = new GoPay_Payer();
@@ -139,145 +141,6 @@ public class GoPay_Controller  extends Controller {
             return response;
         }
 
-// AUTOMATICKY KAŽDÉ RÁNO VYVOLANÉ PLATBY v režimu ON_DEMAND
-
-    public static void do_on_Demand_payment(){
-
-        logger.debug("Starting with procedure ON_DEMAND - taking money from Credit-Card");
-
-        Calendar cal = Calendar.getInstance();
-        List<Model_Product> products_with_on_Demands = Model_Product.find.where().eq("on_demand_active", true).where().eq("monthly_day_period", (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7)  ).findList();
-
-        logger.debug("Founded " + products_with_on_Demands.size() + " procedures with 4 days to end of Account");
-
-
-       // String[] monthNames_cz = {"Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"};
-        String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-
-
-        for(Model_Product product : products_with_on_Demands){
-
-            logger.debug("Updating procedure on user product " + product.product_individual_name + " id " + product.id);
-
-            logger.debug("Creating Invoice");
-
-            // Vytovřím fakturu
-            Model_Invoice invoice = new Model_Invoice();
-
-
-            logger.debug("Creating Invoice in Database");
-            Model_InvoiceItem invoice_item_1 = new Model_InvoiceItem();
-
-            invoice_item_1.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
-            invoice_item_1.unit_price = product.get_price_general_fee();
-            invoice_item_1.quantity = (long) 1;
-            invoice_item_1.unit_name = "Service";
-            invoice_item_1.currency = product.currency;
-
-            invoice.invoice_items.add(invoice_item_1);
-            invoice.proforma = true;
-            invoice.status = Payment_status.sent;
-            invoice.date_of_create = new Date();
-            invoice.method = product.method;
-
-            product.invoices.add(invoice);
-            product.update();
-
-
-            logger.debug("Creating Invoice on Fakturoid");
-            Fakturoid_Controller.create_proforma(product, invoice);
-
-
-            logger.debug("Creating GoPay_Recurrence");
-            GoPay_Recurrence recurrence = new GoPay_Recurrence();
-                recurrence.amount = Math.round(product.get_all_monthly_fees()*100);
-                recurrence.currency = product.currency;
-                recurrence.setItems(invoice.invoice_items);
-                recurrence.order_number  = invoice.invoice_number;
-                recurrence.order_description =  "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
-
-            // Token
-            logger.debug("Taking Token");
-            String local_token = getToken();
-
-            if(local_token == null) {
-                logger.error("Local Token is null!!!");
-                break;
-            }
-
-
-            // Odeslánížádosti o stržení platby
-            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-            F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url +  "/payments/payment/" + product.gopay_id + "/create-recurrence")
-                    .setContentType("application/json")
-                    .setHeader("Accept", "application/json")
-                    .setHeader("Authorization" , "Bearer " + local_token)
-                    .setRequestTimeout(2500)
-                    .post(Json.toJson(recurrence));
-
-            logger.debug("Sending request for new payment!");
-            WSResponse response = responsePromise.get(1000);
-
-            /**
-            350	Stržení platby selhalo
-            351	Stržení platby provedeno
-            352	Zrušení přeautorizace selhalo
-            353	Zrušení předautorizace provedeno
-            340	Provedení opakované platby selhalo
-            341	Provedení opakované platby není podporováno
-            342	Opakování platby zastaveno
-            343	Překročen časový limit počtu provedení opakované platby
-            330	Platbu nelze vrátit
-            331	Platbu nelze vrátit
-            332	Chybná částka
-            333	Nedostatek peněz na účtu
-            301	Platbu nelze vytvořit
-            302	Platbu nelze provést
-            303	Platba v chybném stavu
-            304	Platba nebyla nalezena
-            */
-
-            // Platba byla úspěšná
-            if(response.getStatus() ==  500 ) {
-
-                JsonNode json_response =  response.asJson();
-                logger.debug("Request was successful");
-
-                invoice.gopay_id = json_response.get("parent_id").asLong();
-                invoice.gopay_order_number = json_response.get("order_number").asText();
-
-                logger.debug("Removing proforma from Fakturoid");
-                if( !Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  logger.error("Error Removing proforma from Fakturoid");
-
-                // Vytvořit fakturu
-                logger.debug("Creating invoice from proforma in Fakturoid");
-                Fakturoid_Controller.create_paid_invoice(product,invoice);
-
-                // Uhradit Fakturu
-                logger.debug("Changing state on Invoice to paid");
-                if(! Fakturoid_Controller.fakturoid_post("/invoices/"+  invoice.facturoid_invoice_id +  "/fire.json?event=pay")) logger.error("Faktura nebyla změněna na uhrazenou dojde tedy k inkonzistenntímu stavu");
-                invoice.proforma = false;
-                invoice.update();
-
-                Fakturoid_Controller.send_Invoice_to_Email(invoice);
-
-            }
-            else if(response.getStatus() == 200) {
-
-                logger.warn("Not enough money on Account");
-                logger.warn("Set a time limit protection for account");
-                logger.warn("Sending email with Proforma and with request for MONEY!!!! MONEY!!! ");
-
-                Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
-            }
-            else{
-                logger.error("Unknown Error");
-                logger.error("Request status: " + response.getStatus() );
-                logger.error("Request Body: "   + response.getBody() );
-            }
-
-        }
-    }
 
 // PUBLIC controllers METHOTD #####################################################################################################
 

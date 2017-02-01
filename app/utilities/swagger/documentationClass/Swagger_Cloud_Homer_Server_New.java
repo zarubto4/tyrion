@@ -14,10 +14,7 @@ public class Swagger_Cloud_Homer_Server_New {
     @ApiModelProperty(value = "Personal name For Homer cloud_homer_server. Length must be between 6 and 60 characters", required = true)
     public String personal_server_name;
 
-
-    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
-    @Constraints.MaxLength(value = 5, message = "The name must not have more than 5 characters")
-    public String mqtt_port;
+    public int mqtt_port;
 
 
     @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
@@ -29,11 +26,8 @@ public class Swagger_Cloud_Homer_Server_New {
     @Constraints.MaxLength(value = 40, message = "The name must not have more than 5 characters")
     public String mqtt_password;
 
-    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
-    @Constraints.MaxLength(value = 5, message = "The name must not have more than 5 characters")
-    public String grid_port;
-
-    public String webView_port;
+    public int grid_port;
+    public int webView_port;
 
     @Constraints.MinLength(value = 6, message = "The name must have at least 4 characters")
     @Constraints.MaxLength(value = 60, message = "The name must have at least 60 characters")

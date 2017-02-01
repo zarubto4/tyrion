@@ -38,15 +38,15 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore                                                 public String personal_server_name;
 
-    @ApiModelProperty(required = true, readOnly = true)         public String mqtt_port;              // Přidává se destination_address + "/" mqtt_port
+    @ApiModelProperty(required = true, readOnly = true)         public Integer mqtt_port;              // Přidává se destination_address + "/" mqtt_port
     @ApiModelProperty(required = true, readOnly = true)         public String mqtt_username;
     @ApiModelProperty(required = true, readOnly = true)         public String mqtt_password;
 
 
-    @ApiModelProperty(required = true, readOnly = true)         public String grid_port;              // Přidává se destination_address + "/" grid_ulr
-    @ApiModelProperty(required = true, readOnly = true)         public String webView_port;           // Přidává se destination_address + "/" webView_port
+    @ApiModelProperty(required = true, readOnly = true)         public Integer grid_port;              // Přidává se destination_address + "/" grid_ulr
+    @ApiModelProperty(required = true, readOnly = true)         public Integer webView_port;           // Přidává se destination_address + "/" webView_port
 
-    @ApiModelProperty(required = true, readOnly = true) @Column(unique=true)    public String server_url;  // Může být i IP adresa
+    @ApiModelProperty(required = true, readOnly = true)         public String server_url;  // Může být i IP adresa
 
                                         @JsonIgnore             public CLoud_Homer_Server_Type server_type;  // Určující typ serveru
 

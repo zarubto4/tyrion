@@ -83,27 +83,12 @@
                             </div>
                         </div><br><br>
 
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Price in CZK</label>
-
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.czk"  name="czk">
-                            </div>
-                        </div><br>
-
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Price in EUR</label>
-
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.eur"  name="eur">
-                            </div>
-                        </div><br>
 
                         <div class="form-group">
                             <label for="tariff_main_form" class="col-sm-2 control-label">Price in USD</label>
 
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.usd"  name="usd">
+                                <input type="text" class="form-control" id="tariff_name" value="@tariff.price_in_usd"  name="price_in_usd">
                             </div>
                         </div><br><br>
 
@@ -281,7 +266,7 @@
                                 <td>@extension.order_position</td>
                                 <td>@extension.name</td>
 
-                                <td>$@extension.usd | €@extension.usd | CZK@extension.usd |</td>
+                                <td>$@extension.price_in_usd</td>
 
                                 <td>@extension.color</td>
                                 <td>@extension.description</td>
@@ -334,7 +319,7 @@
                                 <td>@extension.id</td>
                                 <td>@extension.order_position</td>
                                 <td>@extension.name</td>
-                                <td>$@extension.usd | €@extension.usd | CZK@extension.usd |</td>
+                                <td>$@extension.price_in_usd</td>
 
                                 <td>@extension.color</td>
                                 <td>@extension.description</td>
@@ -448,16 +433,8 @@
                         <label class="control-label">Color:</label>
                         <input type="text" class="form-control" id="createtGeneralTariffExtensionModal_color"  name="color">
 
-
-
-                        <label class="control-label">Price in CZK:</label>
-                        <input type="text" class="form-control" id="czk"  name="czk">
-
-                        <label class="control-label">Price in EUR:</label>
-                        <input type="text" class="form-control" id="eur"  name="eur">
-
                         <label class="control-label">Price in USD:</label>
-                        <input type="text" class="form-control" id="usd"  name="usd">
+                        <input type="text" class="form-control" id="price_in_usd"  name="price_in_usd">
 
 
                     </form>

@@ -22,7 +22,6 @@ import models.project.global.financial.Model_PaymentDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Controller;
-import utilities.enums.Currency;
 import utilities.enums.Participant_status;
 import utilities.enums.Payment_mode;
 
@@ -120,7 +119,6 @@ public class TestHelper extends Controller{
             product.active = true;
             product.mode = Payment_mode.free;
             product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
-            product.currency = Currency.CZK;
 
             product.save();
             product.refresh();

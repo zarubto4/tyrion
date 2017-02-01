@@ -6,7 +6,7 @@ public enum Currency {
 
     @EnumValue("czk") CZK(203),
     @EnumValue("eur") EUR(978),
-    @EnumValue("usd") USD(911);
+    @EnumValue("price_in_usd") USD(911);
 
     public static final String CODE_CZK = String.valueOf(CZK);
     public static final String CODE_EUR = String.valueOf(EUR);

@@ -131,7 +131,7 @@
                     <form id="editHomerServer">
 
                         <label>Server Name</label>
-                        <input type="text" class="form-control" id="name"  name="server_name" readonly>
+                        <input type="text" class="form-control" id="personal_server_name"  name="personal_server_name" readonly>
                         <div class="form-group">
                         </div>
                         <div class="form-group">
@@ -157,7 +157,7 @@
 
 
                         <label style="">Server Url:</label>
-                        <input type="text" class="form-control" id="url"  name="url">
+                        <input type="text" class="form-control" id="server_url"  name="server_url">
 
 
                     </form>
@@ -182,8 +182,6 @@
 
                         <label>Server name</label>
                         <input type="text" class="form-control" name="personal_server_name" >
-
-
 
                     </form>
                 </div>
@@ -274,7 +272,7 @@
                         <div class="tab-pane active" id="tab_public">
                             <div class="box-body">
 
-                            <table id="public_homer_servers" class="table table-bordered">
+                            <table id="allHomerServers" class="table table-bordered">
 
                                 <tr>
                                     <th>Name</th>
@@ -307,7 +305,7 @@
                         <div class="tab-pane" id="tab_private">
                             <div class="box-body">
 
-                                <table id="private_homer_servers" class="table table-bordered">
+                                <table id="allHomerServers" class="table table-bordered">
 
                                     <tr>
                                         <th>Name</th>
@@ -341,7 +339,7 @@
                         <div class="tab-pane" id="tab_test">
                             <div class="box-body">
 
-                                <table id="test_homer_servers" class="table table-bordered">
+                                <table id="allHomerServers" class="table table-bordered">
 
                                     <tr>
                                         <th>Name</th>
@@ -513,7 +511,7 @@ function newHomerServer(){
         success:function(e){
             $("#newHomerServer input[type=text]").val("");
             $("#createHomerServerModal").css("display","none");
-            $('#allHomerServers').load(document.URL +  ' #allHomerServers');
+            location.reload();
         },
         error:function(e) {
             BootstrapDialog.show({
@@ -546,7 +544,7 @@ function editHomerServer(id){
         success:function(e){
             $("#editHomerServer input[type=text]").val("");
             $("#editHomerServerModal").css("display","none");
-            $('#allHomerServers').load(document.URL +  ' #allHomerServers');
+            location.reload();
         },
         error:function(e) {
             BootstrapDialog.show({
@@ -589,18 +587,18 @@ function deleteHomerServer(id){
         }
     })}
 
-function showEditFormHomerServer(server_identificator, server_name, mqtt_port, mqtt_username, mqtt_password, webView_port, grid_port, url){
+function showEditFormHomerServer(server_identificator, personal_server_name, mqtt_port, mqtt_username, mqtt_password, webView_port, grid_port, server_url){
     $("#editHomerServerModal").css("display","block");
     $('#editHomerServerButton').val(server_identificator);
     $('#compilationServerId').text("ID = " + server_identificator);
 
-    $("#editHomerServer input[name=server_name]").val(server_name);
+    $("#editHomerServer input[name=personal_server_name]").val(personal_server_name);
     $("#editHomerServer input[name=mqtt_port]").val(mqtt_port);
     $("#editHomerServer input[name=mqtt_username]").val(mqtt_username);
     $("#editHomerServer input[name=mqtt_password]").val(mqtt_password);
     $("#editHomerServer input[name=webView_port]").val(webView_port);
     $("#editHomerServer input[name=grid_port]").val(grid_port);
-    $("#editHomerServer input[name=url]").val(url);
+    $("#editHomerServer input[name=server_url]").val(server_url);
 
 }
 

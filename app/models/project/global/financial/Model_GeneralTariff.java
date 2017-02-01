@@ -43,9 +43,8 @@ public class Model_GeneralTariff extends Model {
     @JsonIgnore  public Double credit_for_beginning;    // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
                                                         // Je to V USD!!! - Nutné přepočítávat!!!
 
-    @JsonIgnore  public Double usd;
-    @JsonIgnore  public Double eur;
-    @JsonIgnore  public Double czk;
+    @JsonIgnore  public Double price_in_usd;
+
 
     public String color;
 
@@ -101,9 +100,7 @@ public class Model_GeneralTariff extends Model {
     @JsonProperty public Price price(){
 
         Price price = new Price();
-        price.CZK = czk;
-        price.EUR = eur;
-        price.USD = usd;
+        price.USD = price_in_usd;
         return price;
 
     }
@@ -167,8 +164,8 @@ public class Model_GeneralTariff extends Model {
     public double total_per_month(){
         double total_price = 0.0;
         for(Model_GeneralTariffExtensions extension : this.extensions_included){
-            if(extension.usd != null)
-            total_price += extension.usd;
+            if(extension.price_in_usd != null)
+            total_price += extension.price_in_usd;
         }
         return  total_price*30;
     }
@@ -177,13 +174,13 @@ public class Model_GeneralTariff extends Model {
 
     public class Price {
         @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK")
-        public Double CZK;
+        public Double CZK = 0.0;
 
         @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show €")
-        public Double EUR;
+        public Double EUR  = 0.0;
 
         @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $")
-        public Double USD;
+        public Double USD = 0.0;
     }
 
     public class Pair {

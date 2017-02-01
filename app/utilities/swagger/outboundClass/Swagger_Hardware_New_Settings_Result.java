@@ -10,9 +10,9 @@ public class Swagger_Hardware_New_Settings_Result {
 
 
     @ApiModelProperty(required = true, readOnly = true)  public String   normal_mqtt_hostname;
-    @ApiModelProperty(required = true, readOnly = true)  public String   normal_mqtt_port;
+    @ApiModelProperty(required = true, readOnly = true)  public int      normal_mqtt_port;
     @ApiModelProperty(required = true, readOnly = true)  public String   backup_mqtt_hostname;
-    @ApiModelProperty(required = true, readOnly = true)  public String   backup_mqtt_port;
+    @ApiModelProperty(required = true, readOnly = true)  public int      backup_mqtt_port;
     @ApiModelProperty(required = true, readOnly = true)  public String   normal_mqtt_username;
     @ApiModelProperty(required = true, readOnly = true)  public String   normal_mqtt_password;
     @ApiModelProperty(required = true, readOnly = true)  public String   backup_mqtt_username;

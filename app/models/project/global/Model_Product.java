@@ -17,7 +17,6 @@ import models.project.global.financial.Model_PaymentDetails;
 import play.Configuration;
 import play.libs.Json;
 import utilities.Server;
-import utilities.enums.Currency;
 import utilities.enums.Payment_method;
 import utilities.enums.Payment_mode;
 
@@ -52,11 +51,11 @@ public class Model_Product extends Model {
                                                                     @JsonIgnore public Integer monthly_day_period;  // Den v měsíci, kdy bude obnovována platba // Nejvyšší možné číslo je 28!!!
                                                                     @JsonIgnore public Integer monthly_year_period; // Měsíc v roce, kdy bude obnovována platba // Nejvyšší možné číslo je 12!!!
 
-                                             @ApiModelProperty(required = true) public Date paid_until_the_day;     // Termín do kdy je služba předplacena (Pokud zaplatím na měsíc teď tak je to čas teď + 1 měsíc.
+                                            @ApiModelProperty(required = true) public Date date_of_create;
+                                            @ApiModelProperty(required = true) public Date paid_until_the_day;     // Termín do kdy je služba předplacena (Pokud zaplatím na měsíc teď tak je to čas teď + 1 měsíc.
                                                                     @JsonIgnore public boolean on_demand_active;    // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 
                                              @ApiModelProperty(required = true) public double remaining_credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
-   @Enumerated(EnumType.STRING)   @ApiModelProperty(required = true)            public Currency currency;
 
 
    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Project> projects = new ArrayList<>();
@@ -75,7 +74,7 @@ public class Model_Product extends Model {
     @ApiModelProperty(required = true)
     @JsonProperty public List<Model_Invoice> invoices(){
 
-        List<Model_Invoice> invoices = Model_Invoice.find.where().eq("product.id", this.id).findList();
+        if(this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.where().eq("product.id", this.id).order().desc("date_of_create").findList();
         return invoices;
     }
 
@@ -134,6 +133,8 @@ public class Model_Product extends Model {
     @JsonIgnore private String azure_product_link;
 
     @JsonIgnore @Override public void save() {
+
+        date_of_create = new Date();
 
         while(true){ // I need Unique Value
             this.azure_product_link = get_Container().getName() + "/" + UUID.randomUUID().toString();
@@ -208,25 +209,6 @@ public class Model_Product extends Model {
 
 
     public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
-
-
-/* Price_List ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient public Double get_all_monthly_fees(){
-        return  get_price_general_fee();
-    }
-
-    @JsonIgnore @Transient public Long get_days_to_blocation(){ return Math.round(  (paid_until_the_day.getTime() - new Date().getTime() ) / (double) 86400000); }
-
-    @JsonIgnore @Transient public Double get_price_general_fee()  {
-        switch (currency) {
-            case EUR:     {return  general_tariff.eur;  }
-            case USD:     {return  general_tariff.usd;  }
-            case CZK:     {return  general_tariff.czk;  }
-            default: return null;
-        }
-
-    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

@@ -811,8 +811,15 @@ public class Controller_Grid extends Controller {
             Model_VersionObject version_object = Model_VersionObject.find.where().eq("id", help.version_object_id).isNotNull("m_program").findUnique();
             if(version_object == null) return GlobalResult.notFoundObject("Version M_program_Version not found");
 
+
+            logger.debug("Controller_Grid:: get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance);
+            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server identificator::"             + record.actual_running_instance.cloud_homer_server.unique_identificator);
+            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server Grid Port::"                 + record.actual_running_instance.cloud_homer_server.grid_port);
+            logger.debug("Controller_Grid:: get_conection_url:: main instance history blocko_instance_name::"   + record.main_instance_history.blocko_instance_name);
+
+
             Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.main_instance_history.blocko_instance_name + "/";
+            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + ":" +record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.main_instance_history.blocko_instance_name + "/";
             summary.m_program = Model_MProgram.get_m_code(version_object);
 
             return GlobalResult.created(Json.toJson(summary));

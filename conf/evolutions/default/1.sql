@@ -224,9 +224,7 @@ create table model_general_tariff (
   required_payment_method   boolean,
   required_paid_that        boolean,
   credit_for_beginning      float,
-  usd                       float,
-  eur                       float,
-  czk                       float,
+  price_in_usd              float,
   color                     varchar(255),
   bank_transfer_support     boolean,
   credit_card_support       boolean,
@@ -244,9 +242,7 @@ create table GeneralTariffExt (
   order_position            integer,
   active                    boolean,
   color                     varchar(255),
-  usd                       float,
-  eur                       float,
-  czk                       float,
+  price_in_usd              float,
   general_tariff_included_id varchar(255),
   general_tariff_optional_id varchar(255),
   constraint pk_GeneralTariffExt primary key (id))
@@ -323,15 +319,14 @@ create table model_homer_server (
   unique_identificator      varchar(255) not null,
   hash_certificate          varchar(255),
   personal_server_name      varchar(255),
-  mqtt_port                 varchar(255),
+  mqtt_port                 integer,
   mqtt_username             varchar(255),
   mqtt_password             varchar(255),
-  grid_port                 varchar(255),
-  web_view_port             varchar(255),
+  grid_port                 integer,
+  web_view_port             integer,
   server_url                varchar(255),
   server_type               varchar(14),
   constraint ck_model_homer_server_server_type check (server_type in ('main_server','test_server','private_server','backup_server','public_server')),
-  constraint uq_model_homer_server_server_url unique (server_url),
   constraint pk_model_homer_server primary key (unique_identificator))
 ;
 
@@ -383,8 +378,8 @@ create table model_invoice_item (
   quantity                  bigint,
   unit_name                 varchar(255),
   unit_price                float,
-  currency                  varchar(3),
-  constraint ck_model_invoice_item_currency check (currency in ('eur','czk','usd')),
+  currency                  varchar(12),
+  constraint ck_model_invoice_item_currency check (currency in ('eur','czk','price_in_usd')),
   constraint pk_model_invoice_item primary key (id))
 ;
 
@@ -533,14 +528,13 @@ create table model_product (
   active                    boolean,
   monthly_day_period        integer,
   monthly_year_period       integer,
+  date_of_create            timestamp,
   paid_until_the_day        timestamp,
   on_demand_active          boolean,
   remaining_credit          float,
-  currency                  varchar(3),
   azure_product_link        varchar(255),
   constraint ck_model_product_mode check (mode in ('per_credit','monthly','annual','free')),
   constraint ck_model_product_method check (method in ('credit_card','bank_transfer','free')),
-  constraint ck_model_product_currency check (currency in ('eur','czk','usd')),
   constraint pk_model_product primary key (id))
 ;
 

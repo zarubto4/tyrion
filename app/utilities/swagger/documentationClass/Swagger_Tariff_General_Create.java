@@ -31,8 +31,5 @@ public class Swagger_Tariff_General_Create {
     @Constraints.Required public Double  credit_for_beginning;
 
 
-    @Constraints.Required public Double usd;
-    @Constraints.Required public Double eur;
-    @Constraints.Required public Double czk;
-
+    @Constraints.Required public Double price_in_usd;
 }

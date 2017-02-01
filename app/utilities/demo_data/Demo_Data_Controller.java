@@ -463,23 +463,23 @@ public class Demo_Data_Controller extends Controller {
             // Nasstavím Homer servery
             Model_HomerServer cloud_server_1 = new Model_HomerServer();
             cloud_server_1.personal_server_name  = "Alfa";
-            cloud_server_1.server_url   = "localhost";
-            cloud_server_1.grid_port    = ":8500";
-            cloud_server_1.mqtt_port    = ":1883";
+            cloud_server_1.server_url   = "localhost3";
+            cloud_server_1.grid_port    = 8500;
+            cloud_server_1.mqtt_port    = 1881;
             cloud_server_1.mqtt_password = "pass";
             cloud_server_1.mqtt_username = "user";
-            cloud_server_1.webView_port = ":8501";
+            cloud_server_1.webView_port = 8501;
             cloud_server_1.server_type  = CLoud_Homer_Server_Type.main_server;
             cloud_server_1.save();
 
             Model_HomerServer cloud_server_2 = new Model_HomerServer();
             cloud_server_2.personal_server_name  = "Hydra";
-            cloud_server_2.server_url   = "localhost2";
-            cloud_server_2.grid_port    = ":8500";
-            cloud_server_2.mqtt_port    = ":1881";
+            cloud_server_2.server_url   = "localhost3";
+            cloud_server_2.grid_port    = 8500;
+            cloud_server_2.mqtt_port    = 1881;
             cloud_server_2.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
-            cloud_server_2.webView_port = ":8501";
+            cloud_server_2.webView_port = 8501;
             cloud_server_2.server_type  = CLoud_Homer_Server_Type.backup_server;
             cloud_server_2.save();
 
@@ -487,22 +487,22 @@ public class Demo_Data_Controller extends Controller {
             Model_HomerServer cloud_server_3 = new Model_HomerServer();
             cloud_server_3.personal_server_name  = "Andromeda";
             cloud_server_3.server_url   = "localhost3";
-            cloud_server_3.grid_port    = ":8500";
-            cloud_server_3.mqtt_port    = ":1881";
+            cloud_server_3.grid_port    = 8500;
+            cloud_server_3.mqtt_port    = 1881;
             cloud_server_3.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
-            cloud_server_3.webView_port = ":8501";
+            cloud_server_3.webView_port = 8501;
             cloud_server_3.server_type  = CLoud_Homer_Server_Type.public_server;
             cloud_server_3.save();
 
             Model_HomerServer cloud_server_4 = new Model_HomerServer();
             cloud_server_4.personal_server_name  = "Gemini";
             cloud_server_4.server_url   = "localhost4";
-            cloud_server_4.grid_port    = ":8500";
-            cloud_server_4.mqtt_port    = ":1881";
+            cloud_server_4.grid_port    = 8500;
+            cloud_server_4.mqtt_port    = 1881;
             cloud_server_4.mqtt_password = "pass";
             cloud_server_4.mqtt_username = "user";
-            cloud_server_4.webView_port = ":8501";
+            cloud_server_4.webView_port =  8501;
             cloud_server_4.server_type  = CLoud_Homer_Server_Type.public_server;
             cloud_server_4.save();
 
@@ -511,12 +511,12 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_5.unique_identificator = "aaaaaaaaaaaaaaa";
             cloud_server_5.hash_certificate = "bbbbbbbbbbbbbbb";
             cloud_server_5.personal_server_name  = "Developer-Demo";
-            cloud_server_5.server_url   = "localhost5";
-            cloud_server_5.grid_port    = ":8500";
-            cloud_server_5.mqtt_port    = ":1881";
+            cloud_server_5.server_url   = "localhost";
+            cloud_server_5.grid_port    = 8500;
+            cloud_server_5.mqtt_port    = 1881;
             cloud_server_5.mqtt_password = "pass";
             cloud_server_5.mqtt_username = "User";
-            cloud_server_5.webView_port = ":8501";
+            cloud_server_5.webView_port = 8501;
             cloud_server_5.server_type  = CLoud_Homer_Server_Type.test_server;
             cloud_server_5.save();
 
@@ -568,9 +568,7 @@ public class Demo_Data_Controller extends Controller {
             tariff_1.mode_credit      = false;
             tariff_1.free_tariff      = true;
 
-            tariff_1.usd = 0.0;
-            tariff_1.eur = 0.0;
-            tariff_1.czk = 0.0;
+            tariff_1.price_in_usd = 0.0;
 
             tariff_1.save();
             tariff_1.refresh();
@@ -611,9 +609,7 @@ public class Demo_Data_Controller extends Controller {
             extensions_1.active = true;
             extensions_1.color = "blue-madison";
             extensions_1.description = "testovací extension";
-            extensions_1.eur = 1.0;
-            extensions_1.czk = 27.0;
-            extensions_1.usd = 1.15;
+            extensions_1.price_in_usd = 1.15;
             extensions_1.general_tariff_optional = tariff_1;
             extensions_1.save();
 
@@ -631,9 +627,7 @@ public class Demo_Data_Controller extends Controller {
             extensions_2.active = true;
             extensions_2.color = "blue-chambray";
             extensions_2.description = "testovací extension";
-            extensions_2.eur = 2.0;
-            extensions_2.czk = 58.0;
-            extensions_2.usd = 2.15;
+            extensions_2.price_in_usd = 2.15;
             extensions_2.general_tariff_optional = tariff_1;
             extensions_2.save();
 
@@ -669,9 +663,7 @@ public class Demo_Data_Controller extends Controller {
             geek_tariff.mode_credit      = false;
             geek_tariff.free_tariff      = true;
 
-            geek_tariff.usd = 4.99;
-            geek_tariff.eur = 4.99;
-            geek_tariff.czk = 129.99;
+            geek_tariff.price_in_usd = 4.99;
 
             geek_tariff.save();
             geek_tariff.refresh();
@@ -735,9 +727,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff.mode_credit      = true;
             business_tariff.free_tariff      = false;
 
-            business_tariff.usd = 72.0;
-            business_tariff.eur = 90.0;
-            business_tariff.czk = 2250.0;
+            business_tariff.price_in_usd = 72.0;
 
             business_tariff.save();
             business_tariff.refresh();
@@ -798,9 +788,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff_extensions_5.active = true;
             business_tariff_extensions_5.color = "blue-chambray";
             business_tariff_extensions_5.description = "testovací extension";
-            business_tariff_extensions_5.eur = 1.0;
-            business_tariff_extensions_5.czk = 25.0;
-            business_tariff_extensions_5.usd = 0.8;
+            business_tariff_extensions_5.price_in_usd = 0.8;
             business_tariff_extensions_5.general_tariff_included = business_tariff;
             business_tariff_extensions_5.save();
 
@@ -816,9 +804,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff_extensions_4.active = true;
             business_tariff_extensions_4.color = "blue-chambray";
             business_tariff_extensions_4.description = "testovací extension";
-            business_tariff_extensions_4.eur = 1.0;
-            business_tariff_extensions_4.czk = 25.0;
-            business_tariff_extensions_4.usd = 0.8;
+            business_tariff_extensions_4.price_in_usd = 0.8;
             business_tariff_extensions_4.general_tariff_included = business_tariff;
             business_tariff_extensions_4.save();
 
@@ -834,10 +820,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff_extensions_3.name = "Included B1";
             business_tariff_extensions_3.active = true;
             business_tariff_extensions_3.color = "blue-chambray";
-            business_tariff_extensions_3.description = "testovací extension";
-            business_tariff_extensions_3.eur = 1.0;
-            business_tariff_extensions_3.czk = 25.0;
-            business_tariff_extensions_3.usd = 0.8;
+            business_tariff_extensions_3.price_in_usd = 0.8;
             business_tariff_extensions_3.general_tariff_included = business_tariff;
             business_tariff_extensions_3.save();
 
@@ -855,9 +838,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff_extensions_2.active = true;
             business_tariff_extensions_2.color = "blue-chambray";
             business_tariff_extensions_2.description = "testovací extension";
-            business_tariff_extensions_2.eur = 1.0;
-            business_tariff_extensions_2.czk = 25.0;
-            business_tariff_extensions_2.usd = 0.8;
+            business_tariff_extensions_2.price_in_usd = 0.8;
             business_tariff_extensions_2.general_tariff_optional = business_tariff;
             business_tariff_extensions_2.save();
 
@@ -882,9 +863,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff_extensions_1.active = true;
             business_tariff_extensions_1.color = "blue-chambray";
             business_tariff_extensions_1.description = "testovací extension";
-            business_tariff_extensions_1.eur = 1.0;
-            business_tariff_extensions_1.czk = 25.0;
-            business_tariff_extensions_1.usd = 0.8;
+            business_tariff_extensions_1.price_in_usd = 0.8;
             business_tariff_extensions_1.general_tariff_optional = business_tariff;
             business_tariff_extensions_1.save();
 
@@ -922,9 +901,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff_2.mode_credit      = true;
             business_tariff_2.free_tariff      = false;
 
-            business_tariff_2.usd = 1399.99;
-            business_tariff_2.eur = 1199.99;
-            business_tariff_2.czk = 29999.99;
+            business_tariff_2.price_in_usd = 1399.99;
 
             business_tariff_2.save();
             business_tariff_2.refresh();
@@ -965,9 +942,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff2_extensions_5.active = true;
             business_tariff2_extensions_5.color = "blue-chambray";
             business_tariff2_extensions_5.description = "testovací extension";
-            business_tariff2_extensions_5.eur = 10.0;
-            business_tariff2_extensions_5.czk = 250.0;
-            business_tariff2_extensions_5.usd = 8.0;
+            business_tariff2_extensions_5.price_in_usd = 8.0;
             business_tariff2_extensions_5.general_tariff_included = business_tariff_2;
             business_tariff2_extensions_5.save();
 
@@ -983,9 +958,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff2_extensions_4.active = true;
             business_tariff2_extensions_4.color = "blue-chambray";
             business_tariff2_extensions_4.description = "testovací extension";
-            business_tariff2_extensions_4.eur = 10.0;
-            business_tariff2_extensions_4.czk = 250.0;
-            business_tariff2_extensions_4.usd = 8.0;
+            business_tariff2_extensions_4.price_in_usd = 8.0;
             business_tariff2_extensions_4.general_tariff_included = business_tariff_2;
             business_tariff2_extensions_4.save();
 
@@ -1002,9 +975,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff2_extensions_3.active = true;
             business_tariff2_extensions_3.color = "blue-chambray";
             business_tariff2_extensions_3.description = "testovací extension";
-            business_tariff2_extensions_3.eur = 1.0;
-            business_tariff2_extensions_3.czk = 25.0;
-            business_tariff2_extensions_3.usd = 0.8;
+            business_tariff2_extensions_3.price_in_usd = 0.8;
             business_tariff2_extensions_3.general_tariff_optional = business_tariff_2;
             business_tariff2_extensions_3.save();
 
@@ -1022,9 +993,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff2_extensions_2.active = true;
             business_tariff2_extensions_2.color = "blue-chambray";
             business_tariff2_extensions_2.description = "testovací extension";
-            business_tariff2_extensions_2.eur = 1.0;
-            business_tariff2_extensions_2.czk = 25.0;
-            business_tariff2_extensions_2.usd = 0.8;
+            business_tariff2_extensions_2.price_in_usd = 0.8;
             business_tariff2_extensions_2.general_tariff_optional = business_tariff_2;
             business_tariff2_extensions_2.save();
 
@@ -1041,9 +1010,7 @@ public class Demo_Data_Controller extends Controller {
             business_tariff2_extensions_1.active = true;
             business_tariff2_extensions_1.color = "blue-chambray";
             business_tariff2_extensions_1.description = "testovací extension";
-            business_tariff2_extensions_1.eur = 1.0;
-            business_tariff2_extensions_1.czk = 25.0;
-            business_tariff2_extensions_1.usd = 0.8;
+            business_tariff2_extensions_1.price_in_usd = 0.8;
             business_tariff2_extensions_1.general_tariff_optional = business_tariff_2;
             business_tariff2_extensions_1.save();
 
@@ -1777,7 +1744,6 @@ public class Demo_Data_Controller extends Controller {
             product.method = Payment_method.free;
             product.mode = Payment_mode.free;
             product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
-            product.currency = Currency.CZK;
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
             payment_details.person = person;
             payment_details.company_account = false;
@@ -1806,7 +1772,7 @@ public class Demo_Data_Controller extends Controller {
             invoice.method = Payment_method.credit_card;
 
             Model_InvoiceItem item_1 = new Model_InvoiceItem();
-            item_1.currency = Currency.CZK;
+            item_1.currency = Currency.USD;
             item_1.name = "položka 1";
             item_1.quantity = 1L;
             item_1.unit_name = "service";
@@ -1814,7 +1780,7 @@ public class Demo_Data_Controller extends Controller {
             invoice.invoice_items.add(item_1);
 
             Model_InvoiceItem item_2 = new Model_InvoiceItem();
-            item_2.currency = Currency.CZK;
+            item_2.currency = Currency.USD;
             item_2.name = "Databáze";
             item_2.quantity = 5L;
             item_2.unit_name = "GB";
@@ -1832,7 +1798,7 @@ public class Demo_Data_Controller extends Controller {
             invoice_2.method = Payment_method.credit_card;
 
             Model_InvoiceItem item_3 = new Model_InvoiceItem();
-            item_3.currency = Currency.CZK;
+            item_3.currency = Currency.USD;
             item_3.name = "položka 1";
             item_3.quantity = 1L;
             item_3.unit_name = "service";
@@ -1840,7 +1806,7 @@ public class Demo_Data_Controller extends Controller {
             invoice_2.invoice_items.add(item_3);
 
             Model_InvoiceItem item_4 = new Model_InvoiceItem();
-            item_4.currency = Currency.CZK;
+            item_4.currency = Currency.USD;
             item_4.name = "Databáze";
             item_4.quantity = 5L;
             item_4.unit_name = "GB";
