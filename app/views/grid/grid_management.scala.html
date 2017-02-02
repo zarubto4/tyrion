@@ -1,4 +1,5 @@
-@import models.grid.{Model_GridWidgetVersion, Model_TypeOfWidget}
+@import models.grid.Model_GridWidgetVersion
+@import models.grid.Model_TypeOfWidget
 @import utilities.Server
 
 
@@ -759,8 +760,7 @@
               $("#newVersionScheme input[type=text]").val("");
               $("#newVersionSchemeModal").modal('hide');
               $("#newVersionSchemeModalMessage").css("display", "none");
-              $("#schemeButton").text("Version scheme");
-              $("#schemeButton").attr("onclick","showVersionScheme()");
+              $("#schemeButton").text("Version scheme").attr("onclick","showVersionScheme()").removeAttr("data-target").removeAttr("data-toggle");
             },
             error:function(e) {
               $("#newVersionSchemeModalMessage").css("display", "block");

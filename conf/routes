@@ -319,6 +319,7 @@ PUT             /library/version/upload_file/:version_id                        
 PUT             /library/version/remove_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadFile(version_id)
 
 POST            /library/version/upload_example/:version_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadExample(version_id)
+DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_removeExample(example_id)
 
 #Actualization
 PUT             /c_program/version/upload/:version_id                           @controllers.Controller_CompilationLibraries.uploadCompilationToBoard(version_id)
