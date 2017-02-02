@@ -539,11 +539,9 @@ public class Demo_Data_Controller extends Controller {
     public Result basic_tariffs(){
         try {
 
-
             // Ochranná zarážka proti znovu vytvoření
             if(Model_GeneralTariff.find.where().eq("tariff_name", "Alfa account").findUnique() != null) return GlobalResult.result_BadRequest("Its Already done!");
-
-
+            
             // Alfa
             Model_GeneralTariff tariff_1 = new Model_GeneralTariff();
             tariff_1.order_position = 1;

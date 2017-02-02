@@ -622,15 +622,16 @@ public class Model_HomerInstance extends Model {
 
 
             ObjectNode request = Json.newObject();
-            request.put("messageType", "result");
-            request.put("messageChannel", node.get("messageChannel").asText());
+            request.put("messageType", "token_grid_verification");
+            request.put("messageChannel", CHANNEL);
             request.put("status", "Success");
+            request.put("messageId", node.get("messageId").asText());
             request.put("instanceId", node.get("instanceId").asText());
 
             if(terminal == null){
                 logger.warn("Homer_Instance:: cloud_verification_token:: Grid_Terminal object not found!");
                 request.put("token_approve", false);
-                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(node.get("messageId").asText(), request);
+                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(request);
                 return;
             }
 
@@ -651,13 +652,13 @@ public class Model_HomerInstance extends Model {
             if(size == 0){
                 logger.warn("Homer_Instance:: cloud_verification_token:: Token found but this user has not permission!");
                 request.put("token_approve", false);
-                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(node.get("messageId").asText(), request);
+                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(request);
                 return;
             }
 
             logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
             request.put("token_approve", true);
-            Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation( node.get("messageId").asText(), request);
+            Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(request);
             return;
 
         }catch (Exception e){

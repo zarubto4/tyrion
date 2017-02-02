@@ -11,6 +11,7 @@ import models.grid.Model_GridWidget;
 import models.grid.Model_GridWidgetVersion;
 import models.grid.Model_TypeOfWidget;
 import models.project.b_program.instnace.Model_HomerInstanceRecord;
+import models.project.b_program.servers.Model_HomerServer;
 import models.project.global.Model_Project;
 import models.project.m_program.Model_GridTerminal;
 import models.project.m_program.Model_MProgram;
@@ -801,25 +802,31 @@ public class Controller_Grid extends Controller {
             Model_HomerInstanceRecord record = Model_HomerInstanceRecord.find.byId(help.instance_record_id);
             if(record == null) return GlobalResult.notFoundObject("Instance not found");
 
-            /*
-                // Uživatelům dovolíme se připojit na offline instanci - odpovědnost a vysvětlení přebírá Grid APP
-                if(!record.actual_running_instance.instance_online()){
-                    return GlobalResult.result_external_server_is_offline("Instance is offline");
-                }
-            */
+
+            // Uživatelům dovolíme se připojit na offline instanci - odpovědnost a vysvětlení přebírá Grid APP
+            if(!record.actual_running_instance.instance_online()){
+                return GlobalResult.result_external_server_is_offline("Instance is offline");
+            }
 
             Model_VersionObject version_object = Model_VersionObject.find.where().eq("id", help.version_object_id).isNotNull("m_program").findUnique();
             if(version_object == null) return GlobalResult.notFoundObject("Version M_program_Version not found");
 
+            if(version_object.m_program.read_permission()){
+                return GlobalResult.forbidden_Permission();
+            }
 
-            logger.debug("Controller_Grid:: get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance);
-            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server identificator::"             + record.actual_running_instance.cloud_homer_server.unique_identificator);
-            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server Grid Port::"                 + record.actual_running_instance.cloud_homer_server.grid_port);
-            logger.debug("Controller_Grid:: get_conection_url:: main instance history blocko_instance_name::"   + record.main_instance_history.blocko_instance_name);
+            Model_HomerServer server = Model_HomerServer.find.where().eq("cloud_instances.instance_history.id", help.instance_record_id).findUnique();
+            if(server == null){
+                return GlobalResult.notFoundObject("Server not found");
+            }
+
+            logger.debug("Controller_Grid:: get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance.blocko_instance_name);
+            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server identificator::"             + server.unique_identificator);
+            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server Grid Port::"                 + server.grid_port);
 
 
             Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + ":" +record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.main_instance_history.blocko_instance_name + "/";
+            summary.url = "ws://" + server.server_url + ":" +server.grid_port + "/" + record.actual_running_instance.blocko_instance_name + "/";
             summary.m_program = Model_MProgram.get_m_code(version_object);
 
             return GlobalResult.created(Json.toJson(summary));
