@@ -33,6 +33,7 @@ import views.html.blocko.blocko_block_content;
 import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
 import views.html.boards.board_settings;
+import views.html.boards.board_summary;
 import views.html.boards.bootloader_settings;
 import views.html.demo_data.demo_data_main;
 import views.html.external_servers.external_servers;
@@ -424,6 +425,18 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Html content = board_settings.render();
+            return return_page ( content );
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result board_summary(){
+        try {
+
+            Html content = board_summary.render();
             return return_page ( content );
 
         }catch (Exception e){

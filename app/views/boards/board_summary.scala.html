@@ -1,0 +1,144 @@
+@import models.compiler.Model_Processor
+@import models.compiler.Model_Producer
+@import models.compiler.Model_TypeOfBoard
+@import utilities.Server
+@import models.compiler.Model_BootLoader
+@import models.compiler.Model_Board
+@import models.compiler.Model_TypeOfBoard
+@import models.compiler.Model_VersionObject
+@import com.avaje.ebean.Expr
+@import utilities.enums.Compile_Status
+
+<section class="content-header">
+    <h1> Board Summary </h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-share"></i> Server Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> Board Summary </li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Bootlooder summary</h3>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <td><button class="btn btn-block btn-info" type="button" onclick="createNewBoard()">New Board</button></td>
+                        </div><!-- /.btn-group -->
+                    </div><!-- /.pull-right -->
+                </div>
+                <div class="box-body">
+
+                    <table id="allBootloaderVersions" class="table table-bordered">
+                        <tr>
+
+                            <th>Type of Board</th>
+                            <th>Page Size</th>
+
+                            <th>Registred under Project</th>
+                            <th>Active</th>
+
+                            <th>Is Active</th>
+
+                            <th>By Something</th>
+
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <div class="form-group">
+                                    <label>Select Multiple</label>
+                                    <select multiple class="form-control">
+                                        @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
+                                            <option name="@type_of_board.id"> @type_of_board.name </option>
+                                        }
+                                    </select>
+                                </div>
+                            </td>
+
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="box-footer">
+                    <button class="btn btn-block btn-warning" type="button" onclick="find()">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Bootlooder summary</h3>
+                </div>
+                <div class="box-body">
+
+                    <table id="allBootloaderVersions" class="table table-bordered">
+                        <tr>
+
+                            <th>Processor ID</th>
+                            <th>Hash for adding</th>
+
+                            <th>Personal Description</th>
+                            <th>Under Project</th>
+
+                            <th>Is Active</th>
+                            <th>Backup</th>
+
+                            <th>Date</th>
+
+                            <th>Ethernet Mac</th>
+                            <th>Wifi Mac</th>
+                            <th>Mac Adress</th>
+
+                        </tr>
+
+                        @for(board <- Model_Board.find.where().eq("type_of_board.name", "yoda_g2").order().desc("date_of_create").findList() ){
+                            <tr>
+
+                                <td>@board.id</td>
+                                <td>@board.hash_for_adding</td>
+
+                                <td>@board.personal_description</td>
+                                <td>
+                                    @if(board.project != null){
+                                        yes
+                                    }else{
+                                        no
+                                    }
+                                </td>
+
+                                <td>@board.is_active</td>
+                                <td>@board.backup_mode</td>
+
+                                <td>@board.date_of_create</td>
+
+                                <td>@board.ethernet_mac_address</td>
+                                <td>@board.wifi_mac_address</td>
+                                <td>@board.mac_address</td>
+
+                                <td>Edit</td>
+                            </tr>
+                        }
+                    </table>
+
+                </div>
+                <div class="box-footer">
+        </div>
+            </div>
+        </div>
+    </div>
+</section>

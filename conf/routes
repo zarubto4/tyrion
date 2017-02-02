@@ -473,6 +473,7 @@ GET             /admin/show_diff_on_Api/                        @controllers.Con
 
 # Admin - Hardware
 GET             /admin/board_settings                           @controllers.Controller_Dashboard.basic_board_management()
+GET             /admin/board_summary                            @controllers.Controller_Dashboard.board_summary()
 GET             /admin/mac_adress_generator                     @controllers.Controller_Dashboard.mac_adress_generator()
 GET             /admin/bootloader_settings/:type_of_board_id    @controllers.Controller_Dashboard.bootloader_management(type_of_board_id)
 

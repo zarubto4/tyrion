@@ -93,6 +93,7 @@ public class Model_Board extends Model {
         Swagger_Board_Status board_status = new Swagger_Board_Status();
 
 
+
         if(instance == null){
 
             board_status.where = "nowhere";
