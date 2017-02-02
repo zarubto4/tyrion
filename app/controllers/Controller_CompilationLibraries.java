@@ -3523,7 +3523,7 @@ public class Controller_CompilationLibraries extends Controller {
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of ImportLibrary");
 
             // Zkontroluji oprávnění
             if(! version_object.library.read_permission())  return GlobalResult.forbidden_Permission();
@@ -3583,7 +3583,7 @@ public class Controller_CompilationLibraries extends Controller {
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k ImportLibrary
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of ImportLibrary");
 
             // Kontrola oprávnění
             if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
@@ -3633,7 +3633,7 @@ public class Controller_CompilationLibraries extends Controller {
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k ImportLibrary
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of ImportLibrary");
 
             // Kontrola oprávnění
             if(!version_object.library.delete_permission()) return GlobalResult.forbidden_Permission();
@@ -3697,7 +3697,7 @@ public class Controller_CompilationLibraries extends Controller {
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k ImportLibrary
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of ImportLibrary");
 
             // Kontrola oprávnění
             if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
@@ -3799,7 +3799,7 @@ public class Controller_CompilationLibraries extends Controller {
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k ImportLibrary
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of ImportLibrary");
 
             // Kontrola oprávnění
             if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
@@ -3896,17 +3896,24 @@ public class Controller_CompilationLibraries extends Controller {
             if (version_object == null) return GlobalResult.notFoundObject("ImportLibrary Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k ImportLibrary
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object its not version of ImportLibrary");
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of ImportLibrary");
 
             // Kontrola oprávnění
             if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
 
-            Model_CProgram cProgram = new Model_CProgram();
-            cProgram.name = help.version_name;
-            cProgram.description = help.version_description;
-            cProgram.example_library = version_object;
+            Model_CProgram cProgram = Model_CProgram.find.where().eq("example_library.id", version_object.id).eq("name", help.version_name).findUnique();
+            if (cProgram != null){
+                if (cProgram.version_objects.size() > 0)
+                    cProgram.version_objects.get(0).delete();
+            }else {
+                cProgram = new Model_CProgram();
+                cProgram.name = help.version_name;
+                cProgram.description = help.version_description;
+                cProgram.example_library = version_object;
 
-            cProgram.save();
+                cProgram.save();
+            }
+
             cProgram.refresh();
 
             Model_VersionObject example = new Model_VersionObject();
@@ -3921,8 +3928,8 @@ public class Controller_CompilationLibraries extends Controller {
             // Nahraje do Azure a připojí do verze soubor
             ObjectNode  content = Json.newObject();
             content.put("main", help.main );
-            content.set("user_files", Json.toJson( help.user_files) );
-            content.set("library_files", Json.toJson(help.library_files) );
+            //content.set("user_files", Json.toJson( help.user_files) );
+            //content.set("library_files", Json.toJson(help.library_files) );
 
             // Content se nahraje na Azure
 
@@ -3931,6 +3938,57 @@ public class Controller_CompilationLibraries extends Controller {
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "remove example from Version of ImportLibrary",
+            hidden = true,
+            tags = {"ImportLibrary"},
+            notes = "For deleting examples from Version of ImportLibrary.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_edit"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Admin.class)
+    public Result importLibraryVersion_removeExample(@ApiParam(value = "example_id String query",   required = true)  String example_id){
+        try{
+
+            // Ověření objektu
+            Model_CProgram cProgram = Model_CProgram.find.byId(example_id);
+            if (cProgram == null) return GlobalResult.notFoundObject("Example example_id not found");
+
+            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            if(cProgram.example_library == null) return GlobalResult.result_BadRequest("Program is not example of ImportLibrary");
+
+            Model_VersionObject returnObject = cProgram.example_library;
+
+            // Kontrola oprávnění
+            if(!cProgram.example_library.library.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            if (cProgram.version_objects.size() > 0)
+                cProgram.version_objects.get(0).delete();
+
+            cProgram.delete();
+
+            returnObject.refresh();
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(returnObject.get_short_import_library_version()));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

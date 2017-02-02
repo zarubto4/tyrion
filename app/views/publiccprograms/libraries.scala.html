@@ -169,6 +169,33 @@
         <!-- /.modal-dialog -->
 </div>
 
+<div id="newExampleModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newExampleModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newExampleModalTitle" class="modal-title">New Example</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newExample">
+                    <div style="float: left; width: 30%;">
+                        <label>Name</label>
+                        <input id="newExampleName" placeholder="Name" style="display: block" type="text" name="version_name" >
+                    </div>
+                    <div style="width: 100%;">
+                        <label>Description</label>
+                        <input id="newExampleDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+                    </div>
+                </form>
+                <div id="newExampleModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newExample()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @*/*/*  Content ---------------------------------------------------------------------------------------------   */*/*@
 
 <section class="content">
@@ -212,7 +239,7 @@
                     <label>Description</label>
                     <input  style="width: 100%;" id="openedLibraryDescription" readonly type="text">
                     <label>Long Description(markdown)</label>
-                    <textarea style="width: 100%;" readonly id="openedLibraryLongDescription" rows="5"></textarea>
+                    <div style="width: 100%; height: 250px; border: solid black 1px; overflow: scroll; padding: 5px;" id="openedLibraryLongDescription"></div>
                 </div>
                 <div class="box-header with-border">
                     <select id="selectVersion" class="form-control select2" style="width: 100%;">
@@ -249,6 +276,18 @@
                 <div class="box-footer">
                 </div>
             </div>
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Examples</h3>
+                    <button id="newExampleButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newExampleModal" title="New Example"><i class="fa fa-plus"></i></button>
+                </div>
+                <div class="box-body">
+                    <div id="examples">
+                    </div>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
         </div>
         <div class="col-md-5">
             <div class="box">
@@ -264,6 +303,7 @@
                 <div class="box-footer">
                     <p class="pull-left" id="file_name"></p>
                     <button id="saveFileButton" disabled class="btn btn-success pull-right disabled" type="button" onclick="saveFile()">Save</button>
+                    <button id="saveExampleButton" disabled class="btn btn-success pull-right disabled" type="button" style="margin-right: 10px;" onclick="saveExample()">Save example</button>
                 </div>
             </div>
         </div>
@@ -276,9 +316,13 @@
         $.ajaxSetup({ cache: false });
 
         var fileContents = [];
+        var exampleContents = [];
         var openedLibrary = {};
         var openedVersion = {};
         var openedFile = {};
+        var openedExample = {};
+
+        var converter = new showdown.Converter();
 
         function makeId()
         {
@@ -419,8 +463,8 @@
 
             editor.setValue(content, 1);
 
-            $('#saveFileButton').prop('disabled', false);
-            $('#saveFileButton').removeClass('disabled');
+            $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+            $('#saveExampleButton').prop('disabled', true).addClass('disabled');
         }
 
         function disableButtonGroup(id, state) {
@@ -585,8 +629,8 @@
             $("#newFileModal").modal('hide');
             $('#newFileName').val("");
 
-            $('#saveFileButton').prop('disabled', false);
-            $('#saveFileButton').removeClass('disabled');
+            $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+            $('#saveExampleButton').prop('disabled', true).addClass('disabled');
         }
 
         function saveFile(){
@@ -646,14 +690,15 @@
             $("#openedLibraryTag").val(json.tag);
             $("#openedLibraryState").val(json.state);
             $("#openedLibraryDescription").val(json.description);
-            $("#openedLibraryLongDescription").val(json.long_description);
+            $("#openedLibraryLongDescription").html(converter.makeHtml(json.long_description));
 
             openedLibrary = json;
 
             $('#files').html("");
             $('#selectVersion').html("");
 
-            $('#newFileButton').prop('disabled', false).removeClass('disabled');
+            $('#newFileButton').prop('disabled', true).addClass('disabled');
+            $('#newExampleButton').prop('disabled', true).addClass('disabled');
 
             closeFile();
 
@@ -687,21 +732,54 @@
             $("#openedLibraryVersionDescription").val(openedVersion.version_description);
 
             disableButtonGroup("#library_version_btn_group", false);
+            $('#newFileButton').prop('disabled', false).removeClass('disabled');
+            $('#newExampleButton').prop('disabled', false).removeClass('disabled');
 
             closeFile();
 
             $('#files').html("");
+            $('#examples').html("");
 
             if (json.library_files.length > 0) {
 
-                $('#newFileButton').prop('disabled', false).removeClass('disabled');
+                fileContents = json.library_files;
 
-                var data = json.library_files;
-                fileContents = data;
-
-                $('#files').append(makeTree(makeJson(data)));
+                $('#files').append(makeTree(makeJson(fileContents)));
             }else{
-                $('#files').append("<p>No files here!</p>");
+                $('#files').append("<p>No files here! Hit the plus button to add o new one.</p>");
+            }
+
+            if (json.examples.length > 0) {
+
+                exampleContents = json.examples;
+
+
+
+                $.each(exampleContents, function (k, v) {
+
+                    var content = "";
+
+                    content += "<ul style='list-style-type: none; padding: 0;'><li style='margin: 0; padding: 0;'>" +
+                            "<div class='panel-group' style='margin: 5px 0;'>" +
+                            "<div class='panel panel-default'>" +
+                            "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                            "<h4 class='panel-title'>" +
+                            "<a onclick=\"" +
+                            "openExample(" + k + ");" +
+                            "\">";
+                    content += v.name;
+
+                    content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeExample(" + k + ")' title='Remove Example'><i class='fa fa-times'></i></button></h4></div>" +
+                            "<div class='panel-collapse collapse'>" +
+                            "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+                    content += "</div></div></div></div></li></ul>";
+
+                    $('#examples').append(content);
+                });
+
+
+            }else{
+                $('#examples').append("<p>No examples here! Hit the plus button to add o new one.</p>");
             }
         }
 
@@ -719,13 +797,79 @@
         }
 
         function closeFile() {
-            $('#saveFileButton').prop('disabled', true);
-            $('#saveFileButton').addClass('disabled');
+            $('#saveFileButton').prop('disabled', true).addClass('disabled');
+            $('#saveExampleButton').prop('disabled', true).addClass('disabled');
 
             $('#file_name').text("");
             editor.setValue("");
         }
 
+        function newExample(){
+            openedExample = {version_name: $('#newExampleName').val(), version_description: $('#newExampleDescription').val(), main: ''};
+            $('#file_name').text(openedFile.version_name);
+            editor.setValue("// your new example - " + openedExample.version_name,1);
+            $("#newExampleModal").modal('hide');
+            $('#newExampleName').val("");
+            $('#newExampleDescription').val("");
 
+            $('#saveFileButton').prop('disabled', true).addClass('disabled');
+            $('#saveExampleButton').prop('disabled', false).removeClass('disabled');
+        }
+
+        function openExample(order){
+
+            $('#file_name').text(exampleContents[order].name);
+
+            openedExample.version_name = exampleContents[order].name;
+            openedExample.version_description = exampleContents[order].description;
+
+            var content = exampleContents[order].main;
+
+            editor.setValue(content, 1);
+
+            $('#saveFileButton').prop('disabled', true).addClass('disabled');
+            $('#saveExampleButton').prop('disabled', false).removeClass('disabled');
+        }
+
+        function saveExample(){
+
+            openedExample.main = editor.getValue();
+
+            $.ajax({
+                url: '/library/version/upload_example/' + openedVersion.version_id,
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(openedExample),
+                dataType: 'json',
+                success:function(json){
+                    openVersion(json);
+                },
+                error:function(e) {
+                    alert(JSON.stringify(JSON.parse(e.responseText).message));
+                }
+            })
+        }
+
+        function removeExample(count){
+
+            $.ajax({
+                url: '/library/version/remove_example/' + exampleContents[count].id,
+                type: 'DELETE',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken")
+                },
+                dataType: 'json',
+                success:function(json){
+                    openVersion(json);
+                },
+                error:function(e) {
+                    alert(JSON.stringify(JSON.parse(e.responseText).message));
+                }
+            })
+        }
 </script>
 

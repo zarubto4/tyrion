@@ -135,7 +135,7 @@ public class Model_VersionObject extends Model {
         help.version_description = version_description;
 
         for (Model_CProgram cProgram : examples){
-            help.examples.add(cProgram.get_c_program_short_detail());
+            help.examples.add(cProgram.get_example_short_detail());
         }
 
         for (Model_FileRecord file : this.files){

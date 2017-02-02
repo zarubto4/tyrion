@@ -22,7 +22,7 @@ public class Swagger_ImportLibrary_Version_Short_Detail {
     public String version_description;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_C_program_Short_Detail> examples = new ArrayList<>();
+    public List<Swagger_Example_Short_Detail> examples = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_ImportLibrary_Version_New.Library_File> library_files = new ArrayList<>();
