@@ -758,8 +758,7 @@
               $("#newVersionSchemeModalMessage").css("display", "none");
               $("#newVersionScheme input[type=text]").val("");
               $("#newVersionSchemeModal").modal('hide');
-              $("#schemeButton").text("Version scheme");
-              $("#schemeButton").attr("onclick","showVersionScheme()");
+              $("#schemeButton").text("Version scheme").attr("onclick","showVersionScheme()").removeAttr("data-target").removeAttr("data-toggle");
             },
             error:function(e) {
               $("#newVersionSchemeModalMessage").css("display", "block");

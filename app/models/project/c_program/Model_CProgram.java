@@ -16,9 +16,11 @@ import play.data.Form;
 import play.libs.Json;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
+import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_C_program_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Example_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -85,6 +87,34 @@ public class Model_CProgram extends Model {
         help.description = description;
         help.type_of_board_id = type_of_board_id();
         help.type_of_board_name = type_of_board_name();
+
+        help.edit_permission = edit_permission();
+        help.delete_permission = delete_permission();
+        help.update_permission = update_permission();
+
+        return help;
+    }
+
+    @JsonIgnore public Swagger_Example_Short_Detail get_example_short_detail(){
+
+        Swagger_Example_Short_Detail help = new Swagger_Example_Short_Detail();
+
+        help.id = id;
+        help.name = name;
+        help.description = description;
+
+        if (this.version_objects.size() > 0){
+            for (Model_FileRecord file : this.version_objects.get(0).files){
+
+                JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+
+                Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
+                if(form.hasErrors()) return null;
+                Swagger_C_Program_Version_Update example_form = form.get();
+
+                help.main = example_form.main;
+            }
+        }
 
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();

@@ -14,50 +14,55 @@ public class EmailTool {
         email = new Email();
     }
 
-    private String emailContent = "";
+    private String emailContentHtml = "";
+    private String emailContentText = "";
 
     public EmailTool startParagraph(String textSize){
-        emailContent += ("<p style='font-size:" + textSize + "pt; color: #969696; padding: 10px;'>");
+        emailContentHtml += ("<p style='font-size:" + textSize + "pt; color: #969696; padding: 10px;'>");
         return this;
     }
 
     public EmailTool endParagraph(){
-        emailContent += ("</p>");
+        emailContentHtml += ("</p>");
         return this;
     }
 
     public EmailTool nextLine(){
-        emailContent += ("<br>");
+        emailContentHtml += ("<br>");
         return this;
     }
 
     public EmailTool addText(String text){
-        emailContent += (text);
+        emailContentHtml += (text);
+        emailContentText += (text);
         return this;
     }
 
     public EmailTool addBoldText(String text){
-        emailContent += ("<strong>" + text + "</strong>");
+        emailContentHtml += ("<strong>" + text + "</strong>");
+        emailContentText += (text);
         return this;
     }
 
     public EmailTool addLinkIntoText(String link, String linkName){
-        emailContent += ("<a href='" + link + "'>" + linkName + "</a>");
+        emailContentHtml += ("<a href='" + link + "'>" + linkName + "</a>");
+        emailContentText += (link);
         return this;
     }
 
     public EmailTool addEmptyLineSpace(){
-        emailContent += ("<div style='height: 20px; width: 100%; clear: both;'></div>");
+        emailContentHtml += ("<div style='height: 20px; width: 100%; clear: both;'></div>");
         return this;
     }
 
     public EmailTool addSeparatorLine(){
-        emailContent += ("<div style='clear: both; height: 0px; width: 100%; border-top: 1px solid #eee'></div>");
+        emailContentHtml += ("<div style='clear: both; height: 0px; width: 100%; border-top: 1px solid #eee'></div>");
         return this;
     }
 
     public EmailTool addLink(String link, String linkName, String textSize){
-        emailContent += ("<a href='" + link + "' style='padding: 10px; width: 100% !important; color: #00a0dd !important; text-decoration: none !important; text-align: center !important; float: left; font-size:" + textSize + "pt;'>" + linkName + "</a>");
+        emailContentHtml += ("<a href='" + link + "' style='padding: 10px; width: 100% !important; color: #00a0dd !important; text-decoration: none !important; text-align: center !important; float: left; font-size:" + textSize + "pt;'>" + linkName + "</a>");
+        emailContentText += (link);
         return this;
     }
 
@@ -69,12 +74,13 @@ public class EmailTool {
     public void sendEmail(String userMail, String subject){
 
 
-        String html = utilities.emails.templates.html.EmailScheme.render(emailContent).body();
+        String html = utilities.emails.templates.html.EmailScheme.render(emailContentHtml).body();
 
                  email  .setSubject(subject)
                         .setFrom("Byzance IoT Platform <server@byzance.cz>")
                         .addTo("<"+ userMail +">")
-                        .setBodyHtml(html);
+                        .setBodyHtml(html)
+                        .setBodyText(emailContentText);
 
         MailerClient mailerClient =  Play.current().injector().instanceOf(MailerClient.class);
         mailerClient.send(email);
