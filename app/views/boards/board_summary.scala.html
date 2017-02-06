@@ -26,50 +26,72 @@
                     <h3 class="box-title">Bootlooder summary</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <td><button class="btn btn-block btn-info" type="button" onclick="createNewBoard()">New Board</button></td>
+                            <td><button class="btn btn-block btn-info" type="button" onclick="showNewBoard()">New Board</button></td>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body">
+                    <form id="boardFilterForm">
 
-                    <table id="allBootloaderVersions" class="table table-bordered">
-                        <tr>
+                        <table id="filterTable" class="table table-bordered">
 
-                            <th>Type of Board</th>
-                            <th>Page Size</th>
+                            <tr>
+                                <th>Type of Board</th>
+                                <th>Dates</th>
+                                <th>Parameters</th>
+                                <th>By Something</th>
+                            </tr>
 
-                            <th>Registred under Project</th>
-                            <th>Active</th>
+                            <tr>
+                                <td>
+                                    <div class="form-group">
+                                        <label>Select Multiple values</label>
+                                        <select multiple name="type_of_board_ids[]" class="form-control">
+                                            @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
+                                                <option value="@type_of_board.id"> @type_of_board.name </option>
+                                            }
+                                        </select>
+                                    </div>
+                                </td>
 
-                            <th>Is Active</th>
+                                <td>
+                                    <div class="input-group">
+                                        <button type="button" class="btn btn-default pull-right" id="daterange-btn">
+                                            <span>
+                                                <i class="fa fa-calendar"></i>Date
+                                            </span>
+                                            <i class="fa fa-caret-down"></i>
+                                        </button>
+                                    </div>
+                                </td>
 
-                            <th>By Something</th>
+                                <td>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox"> TODO 1
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox"> TODO 2
+                                        </label>
+                                    </div>
 
-                        </tr>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox"> TODO 3
+                                        </label>
+                                    </div>
 
-                        <tr>
-                            <td>
-                                <div class="form-group">
-                                    <label>Select Multiple</label>
-                                    <select multiple class="form-control">
-                                        @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
-                                            <option name="@type_of_board.id"> @type_of_board.name </option>
-                                        }
-                                    </select>
-                                </div>
-                            </td>
+                                </td>
 
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </table>
-
+                                <td></td>
+                            </tr>
+                        </table>
+                    </form>
                 </div>
                 <div class="box-footer">
-                    <button class="btn btn-block btn-warning" type="button" onclick="find()">Filter</button>
+                    <button class="btn btn-block btn-warning" type="button" onclick="show_filterValues()">Filter</button>
                 </div>
             </div>
         </div>
@@ -86,53 +108,8 @@
                 </div>
                 <div class="box-body">
 
-                    <table id="allBootloaderVersions" class="table table-bordered">
-                        <tr>
+                    <table id="AllTable" class="table table-bordered">
 
-                            <th>Processor ID</th>
-                            <th>Hash for adding</th>
-
-                            <th>Personal Description</th>
-                            <th>Under Project</th>
-
-                            <th>Is Active</th>
-                            <th>Backup</th>
-
-                            <th>Date</th>
-
-                            <th>Ethernet Mac</th>
-                            <th>Wifi Mac</th>
-                            <th>Mac Adress</th>
-
-                        </tr>
-
-                        @for(board <- Model_Board.find.where().eq("type_of_board.name", "yoda_g2").order().desc("date_of_create").findList() ){
-                            <tr>
-
-                                <td>@board.id</td>
-                                <td>@board.hash_for_adding</td>
-
-                                <td>@board.personal_description</td>
-                                <td>
-                                    @if(board.project != null){
-                                        yes
-                                    }else{
-                                        no
-                                    }
-                                </td>
-
-                                <td>@board.is_active</td>
-                                <td>@board.backup_mode</td>
-
-                                <td>@board.date_of_create</td>
-
-                                <td>@board.ethernet_mac_address</td>
-                                <td>@board.wifi_mac_address</td>
-                                <td>@board.mac_address</td>
-
-                                <td>Edit</td>
-                            </tr>
-                        }
                     </table>
 
                 </div>
@@ -142,3 +119,251 @@
         </div>
     </div>
 </section>
+
+
+<div id="newBoardModal" style="display: none;" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Create new Board</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newBoardForm">
+
+                    <div class="form-group">
+                        <label>Processor ID</label>
+                        <input type="text" class="form-control" name="hardware_unique_id">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Type of Board</label>
+                        <div class="form-group">
+                            <select name="type_of_board_id" class="form-control">
+                            @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
+                                <option value="@type_of_board.id" name="type_of_board_id"> @type_of_board.name </option>
+                            }
+                            </select>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBoardModal').css('display','none')">Close</button>
+                <button id="newCProgramButton" value="" class="btn btn-primary" type="button" onclick="createNewBoard()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+     function showNewBoard(){
+         $("#newBoardModal").css("display","block");
+     }
+
+     function createNewBoard(){
+
+         model_data = $("#newBoardForm").serializeObject();
+
+         $.ajax({
+             url: '@routes.Controller_CompilationLibraries.board_create()',
+             type: 'POST',
+             contentType: 'application/json',
+             headers: {
+                 "X-AUTH-TOKEN":getCookie("authToken"),
+                 "Content-Type":"application/json"
+             },
+             data: JSON.stringify(model_data),
+             dataType: 'json',
+
+             success: function(data, status) {
+                 BootstrapDialog.show({
+                     message: syntaxHighlight(data),
+                     type: BootstrapDialog.TYPE_SUCCESS,
+                     buttons: [{
+                         label: 'Close',
+                         action: function(dialogItself) {
+                             dialogItself.close();
+                         }
+                     }]
+                 });
+             },
+
+             error: function(data) {
+                 BootstrapDialog.show({
+                     message: syntaxHighlight(data),
+                     type: BootstrapDialog.TYPE_DANGER,
+                     buttons: [{
+                         label: 'Close',
+                         action: function(dialogItself) {
+                             dialogItself.close();
+                         }
+                     }]
+
+                 });
+             }
+         })
+     }
+
+
+     function show_filterValues() {
+
+         model_data = $("#boardFilterForm").serializeObject();
+
+         $.ajax({
+
+             url: '@routes.Controller_CompilationLibraries.board_getByFilter()',
+             type: 'PUT',
+             contentType: 'application/json',
+             headers: {
+                 "X-AUTH-TOKEN":getCookie("authToken"),
+                 "Content-Type":"application/json"
+             },
+             data: JSON.stringify(model_data),
+             dataType: 'json',
+
+             success: function(json) {
+                 showBoards(json);
+             },
+
+             error: function(data) {
+                 BootstrapDialog.show({
+                     message: syntaxHighlight(data),
+                     type: BootstrapDialog.TYPE_DANGER,
+                     buttons: [{
+                         label: 'Close',
+                         action: function(dialogItself) {
+                             dialogItself.close();
+                         }
+                     }]
+
+                 });
+             }
+         })
+     }
+
+     function showBoards(json) {
+
+         boards = json;
+
+         var content = "";
+
+         $('#AllTable').html(""); // Vyprázdnění tabulky
+
+         content +="<tr>";
+         content +="<th>Processor ID</th>";
+         content +="<th>Hash for adding</th>";
+         content +="<th>Personal Description</th>";
+
+         content +="<th>Under Project</th>";
+         content +="<th>Activated?</th>";
+         content +="<th>Backup</th>";
+         content +="<th>Date</th>";
+         content +="<th>Wifi Mac</th>";
+         content +="<th>Mac Adress</th>";
+         content +="<th>Edit</th>";
+         content +="</tr>";
+
+
+
+         $.each(boards.content, function (k, v) {
+             content += "<tr>";
+             content += "<td>" + v.id +"</td>";
+             content += "<td>" + v.hash_for_adding +"</td>";
+             content += "<td>" + v.personal_description +"</td>";
+
+             if(v.project_id != null) {
+                 content += "<td><span class=\"label label-success\">True</span></td>";
+             }else{
+                 content += "<td><span class=\"label label-danger\">False</span></td>";
+             }
+
+             if(v.is_active == true) {
+                 content += "<td><span class=\"label label-success\">Online</span></td>";
+             }else{
+                 content += "<td><span class=\"label label-warning\">Not Yet</span></td>";
+             }
+
+             content += "<td>" + v.backup_mode +"</td>";
+             content += "<td>" + v.date_of_create +"</td>";
+
+             if(content.main_board == true){
+                 content += "<td>" + v.wifi_mac_address + "</td>";
+                 content += "<td>" + v.mac_address + "</td>";
+             }else{
+                 content += "<td>No Internet</td>";
+                 content += "<td>No Internet</td>";
+             }
+
+
+             content += "<td> Edit </td>";
+             content += "</tr>";
+
+         });
+
+         $('#AllTable').append(content);
+
+     }
+
+
+
+
+  $(function () {
+
+      //Date range picker
+      $('#reservation').daterangepicker();
+      //Date range picker with time picker
+      $('#reservationtime').daterangepicker({timePicker: true, timePickerIncrement: 30, format: 'MM/DD/YYYY h:mm A'});
+      //Date range as a button
+      $('#daterange-btn').daterangepicker(
+              {
+                  ranges: {
+                      'Today': [moment(), moment()],
+                      'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                      'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                      'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                      'This Month': [moment().startOf('month'), moment().endOf('month')],
+                      'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                  },
+                  startDate: moment().subtract(29, 'days'),
+                  endDate: moment()
+              },
+              function (start, end) {
+                  $('#daterange-btn span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+              }
+      );
+
+      //Date picker
+      $('#datepicker').datepicker({
+          autoclose: true
+      });
+
+      //iCheck for checkbox and radio inputs
+      $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+          checkboxClass: 'icheckbox_minimal-blue',
+          radioClass: 'iradio_minimal-blue'
+      });
+      //Red color scheme for iCheck
+      $('input[type="checkbox"].minimal-red, input[type="radio"].minimal-red').iCheck({
+          checkboxClass: 'icheckbox_minimal-red',
+          radioClass: 'iradio_minimal-red'
+      });
+      //Flat red color scheme for iCheck
+      $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
+          checkboxClass: 'icheckbox_flat-green',
+          radioClass: 'iradio_flat-green'
+      });
+
+      //Colorpicker
+      $(".my-colorpicker1").colorpicker();
+      //color picker with addon
+      $(".my-colorpicker2").colorpicker();
+
+      //Timepicker
+      $(".timepicker").timepicker({
+          showInputs: false
+      });
+  });
+</script>

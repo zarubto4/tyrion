@@ -2663,7 +2663,7 @@ public class Controller_CompilationLibraries extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Model_Board.class, responseContainer = "List"),
+            @ApiResponse(code = 201, message = "Successful created",      response = Model_Board.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -2686,23 +2686,9 @@ public class Controller_CompilationLibraries extends Controller {
             // Kontorluji oprávnění
             if(! typeOfBoard.register_new_device_permission()) return GlobalResult.forbidden_Permission();
 
-            // Odstraním duplikáty ze seznamu
-            Set<String> hs = new HashSet<>();
-            hs.addAll(help.hardware_unique_ids);
-            help.hardware_unique_ids.clear();
-            help.hardware_unique_ids.addAll(hs);
 
-            List<Model_Board> exist_boards = Model_Board.find.where().in( "id", help.hardware_unique_ids).findList();
-
-            for(Model_Board board : exist_boards)  help.hardware_unique_ids.remove( board.id );
-
-            // Seznam vytvořené
-            List<Model_Board> created_board = new ArrayList<>();
-
-            // Vytvoření desky
-            for(String hw_id : help.hardware_unique_ids) {
                 Model_Board board = new Model_Board();
-                board.id = hw_id;
+                board.id = help.hardware_unique_id;
                 board.is_active = false;
                 board.date_of_create = new Date();
                 board.type_of_board = typeOfBoard;
@@ -2710,12 +2696,8 @@ public class Controller_CompilationLibraries extends Controller {
                 // Uložení desky do DB
                 board.save();
 
-                // Přidáno do seznamu který budu vracet
-                created_board.add(board);
-            }
-
             // Vracím seznam zařízení k registraci
-            return GlobalResult.created(Json.toJson(created_board));
+            return GlobalResult.created(Json.toJson(board));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -2816,7 +2798,7 @@ public class Controller_CompilationLibraries extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  int page_number) {
+    public Result board_getByFilter() {
         try {
 
             // Zpracování Json
@@ -2824,12 +2806,16 @@ public class Controller_CompilationLibraries extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_Filter help = form.get();
 
+            System.out.println("Filter board");
+            System.out.println(Json.toJson(help));
+
             // Tvorba parametru dotazu
             Query<Model_Board> query = Ebean.find(Model_Board.class);
 
+
             // If Json contains TypeOfBoards list of id's
-            if(help.type_of_boards != null ){
-                query.where().in("type_of_board.id", help.type_of_boards);
+            if(help.type_of_board_ids != null ){
+                query.where().in("type_of_board.id", help.type_of_board_ids);
             }
 
             // If contains confirms
@@ -2852,7 +2838,7 @@ public class Controller_CompilationLibraries extends Controller {
             }
 
             // Vytvářím seznam podle stránky
-            Swagger_Board_List result = new Swagger_Board_List(query, page_number);
+            Swagger_Board_List result = new Swagger_Board_List(query, help.page_number);
 
             // Vracím seznam
             return GlobalResult.result_ok(Json.toJson(result));
@@ -2947,6 +2933,55 @@ public class Controller_CompilationLibraries extends Controller {
         }
     }
 
+    @ApiOperation(value = "check Board during registration",
+            tags = {"Board"},
+            notes = "Check Board state for new Registration. Types of responses in JSON state value" +
+                    "[CAN_REGISTER, NOT_EXIST, ALREADY_REGISTERED_YOUR_ACC, ALREADY_REGISTERED, PERMANENTLY_DISABLED, BROKEN_DEVICE]... \n " +
+                    "PERMANENTLY_DISABLED - device was removed by Byzance. \n" +
+                    "BROKEN_DEVICE - device exist - but its not possible to registered that. Damaged during manufacturing. ",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Board_read"),
+                    }),
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_Registration_Status.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result board_check(@ApiParam(required = true) String board_id) {
+        try {
+
+            // Kotrola objektu
+            Model_Board board = Model_Board.find.byId(board_id);
+
+
+            Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
+
+            if(board == null ){
+                status.status = "NOT_EXIST";
+            }else if(board.project_id() == null){
+                status.status = "CAN_REGISTER";
+            }else if(board.project_id() != null && board.read_permission()){
+                status.status = "ALREADY_REGISTERED_YOUR_ACC";
+            }else{
+                status.status = "ALREADY_REGISTERED";
+            }
+
+
+            return GlobalResult.result_ok(Json.toJson(status));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
     @ApiOperation(value = "connect Board with Project",
             tags = { "Board"},
             notes = "This Api is used by Users for connection of Board with their Project",

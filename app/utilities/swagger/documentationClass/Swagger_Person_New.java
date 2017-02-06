@@ -20,6 +20,11 @@ public class Swagger_Person_New {
     @ApiModelProperty(required = true, value = "Required valid mail ")
     public String mail;
 
+
+    @Constraints.MaxLength(value = 60, message = "The full_name must not have more than 60 characters")
+    @ApiModelProperty(required = true, value = "The full_name is not required. Max lenght is 60 characters.")
+    public String full_name;
+
     @ApiModelProperty(value = "The password length must be between 8 and 60 characters", required = true)
     @Constraints.MinLength(value = 8, message = "The password must have at least 8 characters")
     @Constraints.MaxLength(value = 60, message = "The password must not have more than 60 characters")

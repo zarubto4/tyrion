@@ -335,7 +335,8 @@ DELETE          /processor/:processor_id                                        
 POST            /board                                                          @controllers.Controller_CompilationLibraries.board_create()
 PUT             /board/userDescription/:type_of_board_id                        @controllers.Controller_CompilationLibraries.board_update(type_of_board_id)
 
-PUT             /board/filter/:page_number                                      @controllers.Controller_CompilationLibraries.board_getByFilter(page_number:Int )
+PUT             /board/filter                                                   @controllers.Controller_CompilationLibraries.board_getByFilter()
+GET             /board/check/:board_id                                          @controllers.Controller_CompilationLibraries.board_check(board_id)
 GET             /board/:board_id                                                @controllers.Controller_CompilationLibraries.board_get(board_id)
 DELETE          /board/deactivateBoard/:board_id                                @controllers.Controller_CompilationLibraries.board_deactivate(board_id)
 PUT             /board/:board_id/:project_id                                    @controllers.Controller_CompilationLibraries.board_connectProject(board_id, project_id)
@@ -493,10 +494,8 @@ GET             /admin/permission/role/:role_id                 @controllers.Con
 
 GET             /admin/blocko_objects                           @controllers.Controller_Dashboard.blocko_objects()
 GET             /admin/blocko_management                        @controllers.Controller_Dashboard.blocko_management()
-GET             /admin/blocko_block_content                     @controllers.Controller_Dashboard.blocko_first_block_content()
 GET             /admin/grid_public                              @controllers.Controller_Dashboard.grid_public()
 GET             /admin/grid_management                          @controllers.Controller_Dashboard.grid_management()
-GET             /admin/grid_widget_content                      @controllers.Controller_Dashboard.grid_first_widget_content()
 GET             /admin/public_code                              @controllers.Controller_Dashboard.public_code()
 GET             /admin/libraries                                @controllers.Controller_Dashboard.libraries()
 GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_aprove_procedure()

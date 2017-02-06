@@ -1773,7 +1773,7 @@ public class Demo_Data_Controller extends Controller {
             item_1.currency = Currency.USD;
             item_1.name = "položka 1";
             item_1.quantity = 1L;
-            item_1.unit_name = "service";
+            item_1.unit_name = "Currency";
             item_1.unit_price = 530.00;
             invoice.invoice_items.add(item_1);
 
@@ -1781,7 +1781,7 @@ public class Demo_Data_Controller extends Controller {
             item_2.currency = Currency.USD;
             item_2.name = "Databáze";
             item_2.quantity = 5L;
-            item_2.unit_name = "GB";
+            item_2.unit_name = "Currency";
             item_2.unit_price = 99.00;
             invoice.invoice_items.add(item_2);
 
@@ -1799,7 +1799,7 @@ public class Demo_Data_Controller extends Controller {
             item_3.currency = Currency.USD;
             item_3.name = "položka 1";
             item_3.quantity = 1L;
-            item_3.unit_name = "service";
+            item_3.unit_name = "Currency";
             item_3.unit_price = 530.00;
             invoice_2.invoice_items.add(item_3);
 
@@ -1807,7 +1807,7 @@ public class Demo_Data_Controller extends Controller {
             item_4.currency = Currency.USD;
             item_4.name = "Databáze";
             item_4.quantity = 5L;
-            item_4.unit_name = "GB";
+            item_4.unit_name = "Currency";
             item_4.unit_price = 99.00;
             invoice_2.invoice_items.add(item_4);
 

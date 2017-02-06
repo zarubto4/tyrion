@@ -328,7 +328,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -395,7 +395,7 @@ public class Controller_Overflow extends Controller {
        } catch (Exception e) {
            Logger.error("Error", e);
            Logger.error("Controller_Overflow - newPost ERROR");
-           return GlobalResult.internalServerError();
+           return GlobalResult.internalServerErrorJson();
        }
     }
 
@@ -461,7 +461,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -522,7 +522,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -561,7 +561,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -598,7 +598,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -664,7 +664,7 @@ public class Controller_Overflow extends Controller {
         }catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -687,7 +687,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -717,7 +717,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -782,7 +782,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -822,7 +822,7 @@ public class Controller_Overflow extends Controller {
         } catch (Exception e) {
             Logger.error("Error", e);
             Logger.error("Controller_Overflow - newPost ERROR");
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -879,7 +879,7 @@ public class Controller_Overflow extends Controller {
             return GlobalResult.created(Json.toJson( typeOfConfirms) );
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -938,7 +938,7 @@ public class Controller_Overflow extends Controller {
             return GlobalResult.result_ok(Json.toJson( typeOfConfirms) );
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -988,7 +988,7 @@ public class Controller_Overflow extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -1015,7 +1015,7 @@ public class Controller_Overflow extends Controller {
 
             return GlobalResult.result_ok(Json.toJson( typeOfConfirms) );
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -1037,7 +1037,7 @@ public class Controller_Overflow extends Controller {
         try{
             return GlobalResult.result_ok(Json.toJson( TypeOfConfirms.find.all() ));
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -1078,7 +1078,7 @@ public class Controller_Overflow extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(post));
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -1119,7 +1119,7 @@ public class Controller_Overflow extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(post));
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -1169,7 +1169,7 @@ public class Controller_Overflow extends Controller {
             return GlobalResult.result_ok(Json.toJson(post));
 
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
 
     }
@@ -1212,7 +1212,7 @@ public class Controller_Overflow extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(post));
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
 
     }
@@ -1244,7 +1244,7 @@ public class Controller_Overflow extends Controller {
 
             return GlobalResult.result_ok();
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 
@@ -1275,7 +1275,7 @@ public class Controller_Overflow extends Controller {
 
             return GlobalResult.result_ok();
         }catch (Exception e){
-            return GlobalResult.internalServerError();
+            return GlobalResult.internalServerErrorJson();
         }
     }
 

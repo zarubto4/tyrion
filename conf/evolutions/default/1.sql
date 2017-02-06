@@ -80,7 +80,6 @@ create table model_blocko_block_version (
 create table model_board (
   id                        varchar(255) not null,
   hash_for_adding           varchar(255),
-  ethernet_mac_address      varchar(255),
   wifi_mac_address          varchar(255),
   mac_address               varchar(255),
   personal_description      TEXT,

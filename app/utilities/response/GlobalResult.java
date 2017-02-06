@@ -219,9 +219,14 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-    public static StatusHeader internalServerError(){
+    public static Result internalServerErrorJson(){
         CoreResponse.cors();
-        return Controller.internalServerError();
+
+        Result_BadRequest result = new Result_BadRequest(); // TODO nahradit samostatným objektem a zadokumentovat do Swaggeru
+        result.state     = "Internal Server Error";
+
+        return Controller.status(500, Json.toJson(result));
+
     }
 
 }

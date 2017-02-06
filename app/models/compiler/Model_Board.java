@@ -48,7 +48,6 @@ public class Model_Board extends Model {
                                    @Id @ApiModelProperty(required = true)   public String id;                   // Full_Id procesoru přiřazené Garfieldem
                                        @ApiModelProperty(required = true)   public String hash_for_adding;      // Vygenerovaný Hash pro přidávání a párování s Platformou.
 
-                                       @ApiModelProperty(required = true)   public String ethernet_mac_address; // Mac Addressa Ethernet konektoru - pravděpodobně stejná jako defaultní MacAdressa!
                                        @ApiModelProperty(required = true)   public String wifi_mac_address;     // Mac addressa wifi čipu
                                        @ApiModelProperty(required = true)   public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
 
@@ -57,7 +56,7 @@ public class Model_Board extends Model {
                                        @JsonIgnore  @ManyToOne              public Model_TypeOfBoard type_of_board;
                                        @JsonIgnore                          public boolean is_active;
                                        @ApiModelProperty(required = true)   public boolean backup_mode;
-                                       @JsonIgnore                          public Date date_of_create;
+                                                                            public Date date_of_create;
 
                       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)   public Model_Project project;
 

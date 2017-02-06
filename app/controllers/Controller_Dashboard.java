@@ -39,7 +39,6 @@ import views.html.demo_data.demo_data_main;
 import views.html.external_servers.external_servers;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
-import views.html.grid.grid_widget_content;
 import views.html.hardware_generator.generator_main;
 import views.html.helpdesk_tool.project_detail;
 import views.html.helpdesk_tool.user_summary;
@@ -617,30 +616,6 @@ public class Controller_Dashboard extends Controller {
 
             Html grid_management_content = grid_management.render();
             return return_page(grid_management_content);
-
-        }catch (Exception e){
-            return ok();
-        }
-    }
-
-    @Security.Authenticated(Secured_Admin.class)
-    public Result grid_first_widget_content(){
-        try {
-
-            Html widget_content = grid_widget_content.render();
-            return return_page(widget_content);
-
-        }catch (Exception e){
-            return ok();
-        }
-    }
-
-    @Security.Authenticated(Secured_Admin.class)
-    public Result blocko_first_block_content(){
-        try {
-
-            Html block_content = blocko_block_content.render();
-            return return_page(block_content);
 
         }catch (Exception e){
             return ok();

@@ -80,6 +80,7 @@ public class Controller_Person extends Controller {
             Model_Person person = new Model_Person();
 
             person.nick_name =  help.nick_name;
+            person.full_name = help.full_name;
             person.mail = help.mail;
             person.mailValidated = false;
 
