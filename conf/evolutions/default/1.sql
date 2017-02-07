@@ -82,6 +82,7 @@ create table model_board (
   hash_for_adding           varchar(255),
   wifi_mac_address          varchar(255),
   mac_address               varchar(255),
+  generation_description    varchar(255),
   personal_description      TEXT,
   type_of_board_id          varchar(255),
   is_active                 boolean,

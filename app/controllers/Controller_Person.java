@@ -10,7 +10,10 @@ import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
-import play.mvc.*;
+import play.mvc.BodyParser;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
@@ -20,10 +23,7 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Entity_Validation_Out;
 
-import javax.imageio.ImageIO;
 import javax.inject.Inject;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -1064,8 +1064,8 @@ public class Controller_Person extends Controller {
 
     @ApiOperation(value = "upload Person picture",
             tags = {"Person"},
-            notes = "Uploads personal photo. Picture must be smaller than 500 KB and its dimensions must be between 50 and 400 pixels. If user already has a picture, it will be replaced by the new one. " +
-                    "API requires 'multipart/form-data' Content-Type, name of the property is 'file'.",
+            notes = "Uploads personal photo. Picture must be smaller than 800 KB and its dimensions must be between 50 and 400 pixels. If user already has a picture, it will be replaced by the new one. " +
+                    "API requires base64 Content-Type, name of the property is 'file'.",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1078,34 +1078,30 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    @BodyParser.Of(BodyParser.MultipartFormData.class)
     public Result person_uploadPicture(){
         try {
 
+            // Získání JSON
+            final Form<Swagger_BASE64_FILE> form = Form.form(Swagger_BASE64_FILE.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_BASE64_FILE help = form.get();
+
+            if( (help.file_in_base64.length() / 1024) > 1000) return GlobalResult.result_BadRequest("Picture is bigger than 800 KB");
+
             Model_Person person = Controller_Security.getPerson();
 
-            // Přijmu soubor
-            Http.MultipartFormData body = request().body().asMultipartFormData();
+            if(!person.edit_permission()) return GlobalResult.forbidden_Permission();
 
-            if (body == null) return GlobalResult.notFoundObject("Missing picture!");
-
-            Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
-
-            if (file_from_request == null) return GlobalResult.notFoundObject("Missing picture!");
-
-            File file = file_from_request.getFile();
-
-            int dot = file_from_request.getFilename().lastIndexOf(".");
-            String file_type = file_from_request.getFilename().substring(dot);
-
-            // Zkontroluji soubor - formát, velikost, rozměry
-            if((!file_type.equals(".jpg"))&&(!file_type.equals(".png"))) return GlobalResult.result_BadRequest("Wrong type of File - '.jpg' or '.png' required! ");
-            if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("Picture is bigger than 500 KB");
-            BufferedImage bimg = ImageIO.read(file);
-            if((bimg.getWidth() < 50)||(bimg.getWidth() > 400)||(bimg.getHeight() < 50)||(bimg.getHeight() > 400)) return GlobalResult.result_BadRequest("Picture height or width is not between 50 and 400 pixels.");
+            if(help.file_in_base64.equals("") || help.file_in_base64 == null ){
+                Model_FileRecord fileRecord = person.picture;
+                person.picture = null;
+                person.update();
+                fileRecord.delete();
+            }
 
             // Odebrání předchozího obrázku
-            if(!(person.picture == null)){
+            if(person.picture != null){
+                logger.debug("Controller_Person:: person_uploadPicture:: Removing previous picture");
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
                 person.update();
@@ -1115,7 +1111,7 @@ public class Controller_Person extends Controller {
             // Pokud link není, vygeneruje se nový, unikátní
             if(person.azure_picture_link == null){
                 while(true){ // I need Unique Value
-                    String azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + file_type;
+                    String azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString();
                     if (Model_Person.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
                         person.azure_picture_link = azure_picture_link;
                         person.update();
@@ -1124,16 +1120,18 @@ public class Controller_Person extends Controller {
                 }
             }
 
+
             String file_path = person.get_picture_path();
 
             String file_name = file_path.substring(file_path.indexOf("/") + 1);
 
-            person.picture = Model_FileRecord.uploadAzure_File(file, file_name, file_path);
+            person.picture = Model_FileRecord.uploadAzure_File( help.file_in_base64 , file_name, file_path);
             person.update();
 
 
             return GlobalResult.result_ok("Picture successfully uploaded");
         }catch (Exception e){
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

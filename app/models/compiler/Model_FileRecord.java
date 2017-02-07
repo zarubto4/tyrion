@@ -188,6 +188,27 @@ public class Model_FileRecord extends Model {
     }
 
     @JsonIgnore @Transient
+    public static Model_FileRecord uploadAzure_File(String file, String file_name, String file_path) throws Exception{
+
+        logger.debug("Azure load: "+ file_path);
+
+        String container_name = file_path.substring(0,file_path.indexOf("/"));
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+
+        CloudBlockBlob blob = container.getBlockBlobReference(file_name);
+
+        InputStream is = new ByteArrayInputStream(file.getBytes());
+        blob.upload(is, -1);
+
+        Model_FileRecord fileRecord = new Model_FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.file_path = file_path;
+        fileRecord.save();
+
+        return fileRecord;
+    }
+
+    @JsonIgnore @Transient
     public void remove_file_from_Azure(){
         try{
 
@@ -261,6 +282,13 @@ public class Model_FileRecord extends Model {
         fileInputStreamReader.read(bytes);
 
         return new String(Base64.getEncoder().encode(bytes));
+
+    }
+
+    @JsonIgnore @Transient
+    public static String get_encoded_binary_string_from_File(String binary_file) throws Exception {
+
+        return new String(Base64.getEncoder().encode(binary_file.getBytes()));
 
     }
 

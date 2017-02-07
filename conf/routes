@@ -516,16 +516,7 @@ PUT             /admin/demo_data/producers                      @utilities.demo_
 PUT             /admin/demo_data/type_of_board                  @utilities.demo_data.Demo_Data_Controller.type_of_board()
 PUT             /admin/demo_data/test_boards                    @utilities.demo_data.Demo_Data_Controller.test_boards()
 PUT             /admin/demo_data/c_program_configuration        @utilities.demo_data.Demo_Data_Controller.c_program_configuration()
-
-PUT             /admin/demo_data/blocko_demo_data               @utilities.demo_data.Demo_Data_Controller.blocko_demo_data()
-PUT             /admin/demo_data/grid_demo_data                 @utilities.demo_data.Demo_Data_Controller.grid_demo_data()
-
 PUT             /admin/demo_data/person                         @utilities.demo_data.Demo_Data_Controller.person_test_user()
-PUT             /admin/demo_data/person_project                 @utilities.demo_data.Demo_Data_Controller.person_project_and_programs()
-
-PUT             /admin/demo_data/person_instancies              @utilities.demo_data.Demo_Data_Controller.person_instancies()
-
-
 
 GET             /admin/test                                     @controllers.Controller_Dashboard.test()
 

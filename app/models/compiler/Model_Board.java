@@ -50,6 +50,7 @@ public class Model_Board extends Model {
 
                                        @ApiModelProperty(required = true)   public String wifi_mac_address;     // Mac addressa wifi čipu
                                        @ApiModelProperty(required = true)   public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
+                                       @ApiModelProperty(required = true)   public String generationDescription;  // Info  výrobní generaci
 
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
