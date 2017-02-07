@@ -160,7 +160,7 @@ public class Master_Updater{
                    logger.debug("Server: "+ homer_instance.cloud_homer_server.unique_identificator) ;
 
 
-                   if(! Controller_WebSocket.blocko_servers.containsKey( homer_instance.cloud_homer_server.unique_identificator )){
+                   if(! Controller_WebSocket.homer_servers.containsKey( homer_instance.cloud_homer_server.unique_identificator )){
                       logger.warn("Server is offline. Putting off the task for later ");
                       plan.state = C_ProgramUpdater_State.homer_server_is_offline;
                       plan.update();

@@ -17,10 +17,7 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.*;
 import utilities.emails.EmailTool;
-import utilities.enums.Approval_state;
-import utilities.enums.Compile_Status;
-import utilities.enums.Firmware_type;
-import utilities.enums.Library_state;
+import utilities.enums.*;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.Secured_Admin;
@@ -2949,7 +2946,7 @@ public class Controller_CompilationLibraries extends Controller {
     @ApiOperation(value = "check Board during registration",
             tags = {"Board"},
             notes = "Check Board state for new Registration. Types of responses in JSON state value" +
-                    "[CAN_REGISTER, NOT_EXIST, ALREADY_REGISTERED_YOUR_ACC, ALREADY_REGISTERED, PERMANENTLY_DISABLED, BROKEN_DEVICE]... \n " +
+                    "[CAN_REGISTER, NOT_EXIST, ALREADY_REGISTERED_IN_YOUR_ACCOUNT, ALREADY_REGISTERED, PERMANENTLY_DISABLED, BROKEN_DEVICE]... \n " +
                     "PERMANENTLY_DISABLED - device was removed by Byzance. \n" +
                     "BROKEN_DEVICE - device exist - but its not possible to registered that. Damaged during manufacturing. ",
             produces = "application/json",
@@ -2979,13 +2976,13 @@ public class Controller_CompilationLibraries extends Controller {
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
 
             if(board == null ){
-                status.status = "NOT_EXIST";
+                status.status = Registration_Board_status.NOT_EXIST;
             }else if(board.project_id() == null){
-                status.status = "CAN_REGISTER";
+                status.status = Registration_Board_status.CAN_REGISTER;
             }else if(board.project_id() != null && board.read_permission()){
-                status.status = "ALREADY_REGISTERED_YOUR_ACC";
+                status.status = Registration_Board_status.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
             }else{
-                status.status = "ALREADY_REGISTERED";
+                status.status = Registration_Board_status.ALREADY_REGISTERED;
             }
 
 

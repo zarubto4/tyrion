@@ -29,7 +29,6 @@ import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.webSocket.*;
 import views.html.*;
-import views.html.blocko.blocko_block_content;
 import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
 import views.html.boards.board_settings;
@@ -131,7 +130,7 @@ public class Controller_Dashboard extends Controller {
 
         // Blocko
         Map<String, WS_HomerServer> blockoServerMap = new HashMap<>();
-        Map<String, WebSCType> map_blocko            =  Controller_WebSocket.blocko_servers;
+        Map<String, WebSCType> map_blocko            =  Controller_WebSocket.homer_servers;
         for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_HomerServer) entry.getValue());
 
         // Compilation
@@ -230,8 +229,8 @@ public class Controller_Dashboard extends Controller {
     public Result disconnect_blocko_server(String identificator) {
         try {
 
-            if (Controller_WebSocket.blocko_servers.containsKey(identificator)) {
-                Controller_WebSocket.blocko_servers.get(identificator).onClose();
+            if (Controller_WebSocket.homer_servers.containsKey(identificator)) {
+                Controller_WebSocket.homer_servers.get(identificator).onClose();
 
                 ObjectNode result = Json.newObject();
                 result.put("status", "Blocko was disconnected successfully");

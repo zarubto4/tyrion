@@ -1365,7 +1365,7 @@ public class Controller_ProgramingPackage extends Controller {
                     try {
 
                         // Ověřím připojený server
-                        if (!Controller_WebSocket.blocko_servers.containsKey(b_program.instance.cloud_homer_server.unique_identificator)) {
+                        if (!Controller_WebSocket.homer_servers.containsKey(b_program.instance.cloud_homer_server.unique_identificator)) {
                             b_program.instance.notification_instance_unsuccessful_upload("Server is offline now. It will be uploaded as soon as possible");
                             logger.warn("Server je offline!! Nenahraju instanci!!");
                             return;

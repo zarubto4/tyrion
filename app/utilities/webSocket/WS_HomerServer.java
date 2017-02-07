@@ -29,7 +29,7 @@ public class WS_HomerServer extends WebSCType{
 
     public WS_HomerServer(Model_HomerServer server, Map<String, WebSCType> blocko_servers) {
         super();
-        super.identifikator = server.unique_identificator;
+        super.identifikator = server != null ? server.unique_identificator : null;
         super.maps = blocko_servers;
         super.webSCtype = this;
         this.server = server;
@@ -49,7 +49,7 @@ public class WS_HomerServer extends WebSCType{
         }
 
         this.update_thread.stop();
-        Controller_WebSocket.blocko_servers.remove(super.identifikator);
+        Controller_WebSocket.homer_servers.remove(super.identifikator);
         server.is_disconnect();
     }
 
@@ -206,6 +206,22 @@ public class WS_HomerServer extends WebSCType{
 
         super.write_without_confirmation(messageId,json);
     }
+
+
+    /**
+     * Odešle se serveru - který není akceptován - Unique name není známo
+     */
+    public void unique_connection_name_not_valid(){
+        // Potvrzení Homer serveru, že je vše v pořádku
+        ObjectNode request_2 = Json.newObject();
+        request_2.put("messageType", "server_validation");
+        request_2.put("messageChannel", Model_HomerServer.CHANNEL);
+        request_2.put("messageChannel", "Unique server identificator is not recognize!");
+        super.write_without_confirmation(request_2);
+    }
+
+
+
 
 // Aktualizační procedury ---------------------------------------------------------------------------------------------
 

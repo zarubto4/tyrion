@@ -736,6 +736,7 @@ public class Controller_Finance extends Controller {
                 }
 
         } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
 

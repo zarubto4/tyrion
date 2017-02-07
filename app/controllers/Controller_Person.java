@@ -1070,6 +1070,15 @@ public class Controller_Person extends Controller {
             protocols = "https",
             code = 200
     )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_BASE64_FILE",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
@@ -1086,13 +1095,13 @@ public class Controller_Person extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BASE64_FILE help = form.get();
 
-            if( (help.file_in_base64.length() / 1024) > 1000) return GlobalResult.result_BadRequest("Picture is bigger than 800 KB");
+            if( (help.file.length() / 1024) > 1000) return GlobalResult.result_BadRequest("Picture is bigger than 800 KB");
 
             Model_Person person = Controller_Security.getPerson();
 
             if(!person.edit_permission()) return GlobalResult.forbidden_Permission();
 
-            if(help.file_in_base64.equals("") || help.file_in_base64 == null ){
+            if(help.file.equals("") || help.file == null ){
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
                 person.update();
@@ -1125,7 +1134,7 @@ public class Controller_Person extends Controller {
 
             String file_name = file_path.substring(file_path.indexOf("/") + 1);
 
-            person.picture = Model_FileRecord.uploadAzure_File( help.file_in_base64 , file_name, file_path);
+            person.picture = Model_FileRecord.uploadAzure_File( help.file , file_name, file_path);
             person.update();
 
 

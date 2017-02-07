@@ -8,6 +8,6 @@ import io.swagger.annotations.ApiModelProperty;
 public class Swagger_BASE64_FILE {
 
     @ApiModelProperty(required = false, value = "The file is encoded in base64. If it is null - it is a command to delete a file")
-    public String file_in_base64;
+    public String file;
 
 }

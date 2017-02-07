@@ -59,7 +59,7 @@ public class Model_HomerServer extends Model{
 
     @ApiModelProperty(required = true, readOnly = true)
     @JsonProperty @Transient  public boolean server_is_online(){
-        return Controller_WebSocket.blocko_servers.containsKey(this.unique_identificator);
+        return Controller_WebSocket.homer_servers.containsKey(this.unique_identificator);
     }
 
 
@@ -87,11 +87,11 @@ public class Model_HomerServer extends Model{
     }
 
     @JsonIgnore @Transient public WS_HomerServer get_server_webSocket_connection(){
-        return (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
+        return (WS_HomerServer) Controller_WebSocket.homer_servers.get(this.unique_identificator);
     }
 
     @JsonIgnore @Transient public WS_HomerServer get_websocketServer(){
-        return (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
+        return (WS_HomerServer) Controller_WebSocket.homer_servers.get(this.unique_identificator);
     }
 
 
@@ -350,7 +350,7 @@ public class Model_HomerServer extends Model{
             request.put("messageType", "listInstances");
             request.put("messageChannel", CHANNEL);
 
-            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
+            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
@@ -366,7 +366,7 @@ public class Model_HomerServer extends Model{
             request.put("messageType", "numberOfInstances");
             request.put("messageChannel", CHANNEL);
 
-            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
+            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
@@ -381,7 +381,7 @@ public class Model_HomerServer extends Model{
             request.put("messageChannel", CHANNEL);
             request.put("instanceId", instance_name);
 
-            JsonNode result = Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
+            JsonNode result = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
 
             if(result.get("status").asText().equals("success") && result.get("exist").asText().equals("true")){
                 return true;
@@ -407,7 +407,7 @@ public class Model_HomerServer extends Model{
             request.put("grid_websocket_token", "ws_" + instance_name);
 
             logger.debug("Sending to cloud_blocko_server request for new instance ");
-            return  Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
+            return  Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
@@ -429,7 +429,7 @@ public class Model_HomerServer extends Model{
 
             logger.debug("Sending to cloud_blocko_server request for new instance ");
             logger.debug("Server Name: "+ personal_server_name + " " + unique_identificator);
-            return  Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
+            return  Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
 
         }catch (Exception e){
             logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
@@ -447,7 +447,7 @@ public class Model_HomerServer extends Model{
             request.put("instanceId", instance_name);
 
 
-            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
+            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
@@ -458,7 +458,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public  void ask_for_verificationToken(){
         try {
 
-         WS_HomerServer homer_server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(unique_identificator);
+         WS_HomerServer homer_server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(unique_identificator);
          homer_server.security_token_confirm_procedure();
             
         }catch (Exception e){
@@ -473,7 +473,7 @@ public class Model_HomerServer extends Model{
             request.put("messageType", "pingServer");
             request.put("messageChannel", CHANNEL);
 
-            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 2, 0, 2);
+            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 2, 0, 2);
         }catch (Exception e){
             return RESULT_server_is_offline();
         }
@@ -487,7 +487,7 @@ public class Model_HomerServer extends Model{
             request.put("messageChannel", CHANNEL);
             request.put("macAddress", macAddress);
 
-            return Controller_WebSocket.blocko_servers.get(unique_identificator).write_with_confirmation(request, 1000*5, 0, 3);
+            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000*5, 0, 3);
 
         }catch (Exception e){
             return RESULT_server_is_offline();
@@ -495,14 +495,14 @@ public class Model_HomerServer extends Model{
     }
 
     @JsonIgnore @Transient  public  void is_disconnect(){
-        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " +  Controller_WebSocket.blocko_servers.get(unique_identificator));
+        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " +  Controller_WebSocket.homer_servers.get(unique_identificator));
         // TODO nějaký Alarm když se to stane??
     }
 
     @JsonIgnore @Transient public  void add_task(Actualization_Task task){
         try {
 
-           WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(this.unique_identificator);
+           WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(this.unique_identificator);
            server.add_task(task);
 
         } catch (Exception e){

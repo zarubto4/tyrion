@@ -41,7 +41,7 @@ public class Controller_WebSocket extends Controller {
     // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jednoduché čisté spojení a
     // několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
     // je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
-    public static Map<String, WebSCType> blocko_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
+    public static Map<String, WebSCType> homer_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
 
     // Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
     public static Map<String, WebSCType> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
@@ -96,17 +96,50 @@ public class Controller_WebSocket extends Controller {
             logger.debug("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator);
 
             Model_HomerServer homer_server = Model_HomerServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
-            if(homer_server== null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
+            if(homer_server== null){
 
-            if(blocko_servers.containsKey(unique_identificator)) {
+                // Připojím se
+                logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " is not registred in database!!!!!");
+
+                WS_HomerServer server = new WS_HomerServer(null, homer_servers);
+                WebSocket<String> webSocket = server.connection();
+
+                Thread not_valid = new Thread() {
+
+                    @Override
+                    public void run() {
+                        try {
+
+                            sleep(2000);
+                            logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " Sending message about validation");
+                            server.unique_connection_name_not_valid();
+
+                            logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " Message sent");
+                            sleep(5000);
+
+
+                            logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " Closing connection");
+                            server.close();
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+
+                not_valid.start();
+                return webSocket;
+            }
+
+            if(homer_servers.containsKey(unique_identificator)) {
                 logger.warn("Homer Server:: Connection:: Server is connected -> Tyrion try to send ping");
 
-                WS_HomerServer ws_blockoServer = (WS_HomerServer) blocko_servers.get(unique_identificator);
+                WS_HomerServer ws_blockoServer = (WS_HomerServer) homer_servers.get(unique_identificator);
                 JsonNode result = homer_server.ping();
                 if(!result.get("status").asText().equals("success")){
                     logger.warn("Homer Server:: Connection:: Ping Failed - Tyrion remove previous connection");
-                    if(blocko_servers.containsKey(unique_identificator)){
-                        blocko_servers.get(unique_identificator).onClose();
+                    if(homer_servers.containsKey(unique_identificator)){
+                        homer_servers.get(unique_identificator).onClose();
                     }
                     return null;
                 }
@@ -117,8 +150,8 @@ public class Controller_WebSocket extends Controller {
 
 
             logger.debug("Homer Server:: Connection:: Tyrion initialize connection for Homer Server");
-            WS_HomerServer server = new WS_HomerServer(homer_server, blocko_servers);
-            blocko_servers.put(unique_identificator, server);
+            WS_HomerServer server = new WS_HomerServer(homer_server, homer_servers);
+            homer_servers.put(unique_identificator, server);
 
             // Připojím se
             logger.debug("Homer Server:: Connection:: Connection is successful");
@@ -150,7 +183,7 @@ public class Controller_WebSocket extends Controller {
 
 
 
-            blocko_servers.put(homer_server.unique_identificator, server);
+            homer_servers.put(homer_server.unique_identificator, server);
 
             logger.debug("Blocko Server: Successfully connected");
             return webSocket;
@@ -420,7 +453,7 @@ public class Controller_WebSocket extends Controller {
 
         logger.warn("Tyrion is shutting down: Trying to safely disconnect all Blocko Servers");
 
-        for (Map.Entry<String, WebSCType> entry :  Controller_WebSocket.blocko_servers.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  Controller_WebSocket.homer_servers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
