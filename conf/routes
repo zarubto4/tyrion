@@ -500,7 +500,7 @@ GET             /admin/grid_management                          @controllers.Con
 GET             /admin/grid_widget_content                      @controllers.Controller_Dashboard.grid_first_widget_content()
 GET             /admin/public_code                              @controllers.Controller_Dashboard.public_code()
 GET             /admin/libraries                                @controllers.Controller_Dashboard.libraries()
-GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_aprove_procedure()
+GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_approve_procedure()
 
 # Admin - Tariff Management
 GET             /admin/general_tariffs                          @controllers.Controller_Dashboard.general_tariffs_list()

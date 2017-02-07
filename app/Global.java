@@ -65,7 +65,7 @@ public class Global extends GlobalSettings {
 
 
 
-        if(Server.server_mode){
+        if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")){
             try {
 
                 logger.warn("You have developer version - System removes CRON task from your RAM");

@@ -806,7 +806,7 @@
 
         function newExample(){
             openedExample = {version_name: $('#newExampleName').val(), version_description: $('#newExampleDescription').val(), main: ''};
-            $('#file_name').text(openedFile.version_name);
+            $('#file_name').text(openedExample.version_name);
             editor.setValue("// your new example - " + openedExample.version_name,1);
             $("#newExampleModal").modal('hide');
             $('#newExampleName').val("");

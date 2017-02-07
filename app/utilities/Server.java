@@ -25,10 +25,7 @@ import models.project.global.Model_Product;
 import models.project.global.Model_Project;
 import models.project.m_program.Model_MProgram;
 import models.project.m_program.Model_MProject;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.Trigger;
-import org.quartz.TriggerKey;
+import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
@@ -85,7 +82,7 @@ public class Server {
 
     //-------------------------------------------------------------------
 
-    public static Boolean server_mode;
+    public static String server_mode;
     public static String server_version;
 
     //-------------------------------------------------------------------
@@ -127,11 +124,11 @@ public class Server {
          * Zatím se zdá vhodnější varianta přepínání v configuračním souboru. Tomáš Záruba 15.2.16
          */
 
-        server_mode = Configuration.root().getBoolean("Server.developerMode");
+        server_mode = Configuration.root().getString("Server.mode");
         server_version = Configuration.root().getString("api.version");
 
 
-        if(server_mode) {
+        if(server_mode.equals("developer")) {
 
             // Nastavení pro Tyrion Adresy
             tyrion_serverAddress = "http://" + Configuration.root().getString("Server.localhost");
@@ -179,11 +176,11 @@ public class Server {
             azureLink                            = Configuration.root().getString("Azure.developer.azureLink");
 
             link_api_swagger                     = "http://swagger.byzance.cz/?url="+ tyrion_serverAddress +"/api-docs";
-    }
-        else   {
+
+    } else if (server_mode.equals("production")) {
 
             // Nastavení pro Tyrion Adresy
-            tyrion_serverAddress = "http://" +  Configuration.root().getString("Server.production");
+            tyrion_serverAddress = "http://" + Configuration.root().getString("Server.production");
             tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.production");
 
             // Nastavení pro Becki Adresy
@@ -227,8 +224,57 @@ public class Server {
 
             azureLink                            = Configuration.root().getString("Azure.production.azureLink");
 
-            link_api_swagger                     = "http://swagger.byzance.cz/?url="+ tyrion_serverAddress +"/api-docs";
-        }
+            link_api_swagger                     = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
+
+        } else if (server_mode.equals("stage")) {
+
+                // Nastavení pro Tyrion Adresy
+                tyrion_serverAddress = "http://" +  Configuration.root().getString("Server.stage");
+                tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.stage");
+
+                // Nastavení pro Becki Adresy
+                becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.stage.mainUrl");
+                becki_redirectOk                    = "http://" + Configuration.root().getString("Becki.stage.redirectOk");
+                becki_redirectFail                  = "http://" + Configuration.root().getString("Becki.stage.redirectFail");
+                becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.stage.accountAuthorizedSuccessful");
+                becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.stage.accountAuthorizedFailed");
+                becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.stage.passwordReset ");
+                becki_invitationToCollaborate       = "http://" + Configuration.root().getString("Becki.stage.invitationToCollaborate");
+                becki_propertyChangeFailed          = "http://" + Configuration.root().getString("Becki.stage.propertyChangeFailed");
+
+                GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
+                GitHub_clientSecret                 = Configuration.root().getString("GitHub.localhost.clientSecret");
+                GitHub_url                          = Configuration.root().getString("GitHub.localhost.url");
+                GitHub_apiKey                       = Configuration.root().getString("GitHub.localhost.apiKey  ");
+
+                Facebook_callBack                   = tyrion_serverAddress + Configuration.root().getString("Facebook.localhost.callBack");
+                Facebook_clientSecret               = Configuration.root().getString("Facebook.localhost.clientSecret");
+                Facebook_url                        = Configuration.root().getString("Facebook.localhost.url");
+                Facebook_apiKey                     = Configuration.root().getString("Facebook.localhost.apiKey  ");
+
+                WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.localhost.callBack");
+                WordPress_clientSecret               = Configuration.root().getString("WordPress.localhost.clientSecret");
+                WordPress_url                        = Configuration.root().getString("WordPress.localhost.url");
+                WordPress_apiKey                     = Configuration.root().getString("WordPress.localhost.apiKey");
+
+                Fakturoid_apiKey                     = Configuration.root().getString("Fakturoid.apiKey");
+                Fakturoid_url                        = Configuration.root().getString("Fakturoid.url");
+                Fakturoid_user_agent                 = Configuration.root().getString("Fakturoid.userAgent");
+                Fakturoid_secret_combo               = Configuration.root().getString("Fakturoid.secret_combo");
+
+
+                GoPay_api_url                        = Configuration.root().getString("GOPay.localhost.api_url");
+                GoPay_client_id                      = Configuration.root().getString("GOPay.localhost.client_id");
+                GoPay_client_secret                  = Configuration.root().getString("GOPay.localhost.client_secret");
+                GoPay_go_id                          = Configuration.root().getLong("GOPay.localhost.go_id");
+
+                GoPay_return_url                     = Configuration.root().getString("GOPay.localhost.return_url");
+                GoPay_notification_url               = Configuration.root().getString("GOPay.localhost.notification_url");
+
+                azureLink                            = Configuration.root().getString("Azure.localhost.azureLink");
+
+                link_api_swagger                     = "http://swagger.byzance.cz/?url="+ tyrion_serverAddress +"/api-docs";
+            }
 
         /**
          * 2)
@@ -236,8 +282,8 @@ public class Server {
          * jelikož v době vývoje nebylo možné realizovat různá připojení, bylo nutné zajistit pouze jedno připojení v počátku
          */
         String azureConnection;
-        if( Configuration.root().getBoolean("Server.developerMode"))   azureConnection = Configuration.root().getString("Azure.developer.azureConnectionSecret");
-        else                                                           azureConnection = Configuration.root().getString("Azure.production.azureConnectionSecret");
+        if(server_mode.equals("developer")||server_mode.equals("stage")) azureConnection = Configuration.root().getString("Azure.developer.azureConnectionSecret");
+        else                                                             azureConnection = Configuration.root().getString("Azure.production.azureConnectionSecret");
 
         storageAccount = CloudStorageAccount.parse(azureConnection);
         blobClient = storageAccount.createCloudBlobClient();
@@ -298,7 +344,7 @@ public class Server {
             JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(context);
             context.reset();
-            if (Play.application().configuration().getBoolean("Server.developerMode")) {
+            if (!Configuration.root().getString("Server.mode").equals("production")) {
                 configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logback.developerSettings")));
             }
             else {
@@ -414,7 +460,7 @@ public class Server {
 
             // Minutové - hodinové klíče
             TriggerKey every_10_min_key7 = TriggerKey.triggerKey("every_ten_minutes"); // 7)
-            TriggerKey every_minute_key = TriggerKey.triggerKey("every_minute");
+            TriggerKey every_fifteen_minute_key = TriggerKey.triggerKey("every_fifteen_minutes");
 
             //-------------------------
 
@@ -462,8 +508,8 @@ public class Server {
                         .withSchedule(cronSchedule("17 0/10 * * * ?"))// Spuštění každých 10 minut a to v 17 vteřině každé minuty
                         .build();
 
-                Trigger every_minute = newTrigger().withIdentity(every_minute_key).startNow()
-                        .withSchedule(repeatMinutelyForever())// Spuštění každou minutu
+                Trigger every_fifteen_minute = newTrigger().withIdentity(every_fifteen_minute_key).startNow()
+                        .withSchedule(repeatMinutelyForever(15))// Spuštění každých 15 minut
                         .build();
 
                 /**
@@ -506,11 +552,11 @@ public class Server {
                 scheduler.scheduleJob( newJob(Compilation_Checker.class).withIdentity( JobKey.jobKey("stuck_compilation_check") ).build(), every_10_minutes_7);
 
                 // Pokud máme vývojářský režim tak Databázi nehlídáme
-                if(!Server.server_mode) {   // Developer mode = true
-                    // 8) Refresh spojení s databází, aby se neuspalo
-                    logger.info("Scheduling new Job - Database_Connection_Refresh");
-                    scheduler.scheduleJob(newJob(Database_Connection_Refresh.class).withIdentity(JobKey.jobKey("database_connection_refresh")).build(), every_minute);
-                }
+                //if(!server_mode.equals("developer")) {   // Developer mode = true
+                    // 8) Odstranění neaktivních spojení, které zůstávají v databázi
+                //    logger.info("Scheduling new Job - Idle_Connection_Removal");
+                //    scheduler.scheduleJob(newJob(Idle_Connection_Removal.class).withIdentity(JobKey.jobKey("idle_connection_removal")).build(), every_fifteen_minute);
+                //}
 
             }else {
                 logger.warn("CRON (Every-Day) is in RAM yet. Be careful with that!");

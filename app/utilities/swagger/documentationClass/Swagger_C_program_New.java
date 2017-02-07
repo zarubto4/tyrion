@@ -27,10 +27,6 @@ public class Swagger_C_program_New {
     @ApiModelProperty(required = true)
     public String type_of_board_id;
 
-
-    @ApiModelProperty(required = false, hidden = true)
-    public boolean c_program_type_of_board_default;         /// Určené Pro administraci tyriona na nastavení C_Programu defaultního pro typ desky - není vidět pro Becki
-
     @ApiModelProperty(required = false, hidden = true)
     public boolean c_program_public_admin_create;        /// Určené Pro administraci tyriona na nastavení C_Programu do public sekce  není vidět pro Becki
 

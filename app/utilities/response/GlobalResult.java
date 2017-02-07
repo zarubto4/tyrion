@@ -179,7 +179,7 @@ public class GlobalResult extends Controller {
         Result_NotValidated result_notValidated = new Result_NotValidated();
         result_notValidated.message = message;
 
-        return Controller.unauthorized(Json.toJson(result_notValidated));
+        return Controller.status(705, Json.toJson(result_notValidated));
     }
 
 //**********************************************************************************************************************
@@ -219,9 +219,17 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-    public static StatusHeader internalServerError(){
+    public static Result result_InternalServerError(){
         CoreResponse.cors();
-        return Controller.internalServerError();
+        Result_InternalServerError result_internalServerError = new Result_InternalServerError();
+        return Controller.internalServerError(Json.toJson(result_internalServerError));
+    }
+
+    public static Result result_InternalServerError(String message){
+        CoreResponse.cors();
+        Result_InternalServerError result_internalServerError = new Result_InternalServerError();
+        result_internalServerError.message = message;
+        return Controller.internalServerError(Json.toJson(result_internalServerError));
     }
 
 }

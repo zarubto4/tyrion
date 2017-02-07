@@ -48,12 +48,8 @@ public class Model_CProgram extends Model {
             example = "1466163478925")                                                                  public Date date_of_create;
 
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_VersionObject> version_objects = new ArrayList<>();
-                                                      @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)   public Model_VersionObject first_default_version_object;
 
-    @JsonIgnore @OneToOne()                                   public Model_TypeOfBoard default_program_type_of_board;   // Pro defaultní program na devicu a první verzi C_Programu při vytvoření  (Určeno výhradně pro Byzance)
-    @JsonIgnore @OneToOne(mappedBy="default_version_program") public Model_VersionObject default_main_version;          // Defaultní verze programu, konkrétního typu desky  (Určeno výhradně pro Byzance)
-
-    @JsonIgnore @ManyToOne                                    public Model_VersionObject example_library;               // Program je příklad pro použití knihovny
+                                                                                @JsonIgnore @ManyToOne  public Model_VersionObject example_library; // Program je příklad pro použití knihovny
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -238,26 +234,6 @@ public class Model_CProgram extends Model {
 
         return  azure_c_program_link;
     }
-
-
-
-/* Object Override ---------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override public void delete() {
-
-        // Slouží k odpojení defaultních prvních verzí programu pro divnostav
-        // Lexa
-
-        if (this.first_default_version_object != null) {
-            this.first_default_version_object.first_version_of_c_programs.remove(this);
-            this.first_default_version_object.update();
-        }
-
-        if (this.default_main_version != null) this.default_main_version.delete();
-
-        super.delete();
-    }
-
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

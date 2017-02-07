@@ -90,9 +90,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
 
-    @JsonIgnore @OneToOne                                                                                       public Model_CProgram default_version_program;    // Použito pro defaulntí program vázaný na TypeOfBoard hlavní verze určená k aktivitám - typu hardwaru a taktéž firmware, který se nahrává na devices
-    @JsonIgnore @OneToMany(mappedBy="first_default_version_object",fetch = FetchType.LAZY) @OrderBy("id DESC")  public List<Model_CProgram> first_version_of_c_programs = new ArrayList<>(); // Vazba na prnví verzi uživateli vytvořenými C_Programi - tak aby nebylo první verzi nutné kopírovat
-
+                                                                                          @JsonIgnore @OneToOne public Model_TypeOfBoard type_of_board;    // Použito pro defaulntí program vázaný na TypeOfBoard hlavní verze určená k aktivitám - typu hardwaru a taktéž firmware, který se nahrává na devices
 
                                                                                                    @JsonIgnore  public Approval_state approval_state; // Zda je program schválený veřejný program
 
@@ -160,13 +158,8 @@ public class Model_VersionObject extends Model {
         help.version_id = id;
         help.version_name = version_name;
         help.version_description = version_description;
-        if(this.default_version_program == null) {
-            help.delete_permission = c_program.delete_permission();
-            help.update_permission = c_program.update_permission();
-        }else{
-            help.delete_permission = false;
-            help.update_permission = false;
-        }
+        help.delete_permission = c_program.delete_permission();
+        help.update_permission = c_program.update_permission();
 
         return help;
     }
@@ -197,22 +190,6 @@ public class Model_VersionObject extends Model {
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override public void delete() {
-
-        for (Model_CProgram c_program : this.first_version_of_c_programs){
-
-            c_program.first_default_version_object = null;
-            c_program.update();
-        }
-
-        if (default_version_program != null) {
-            this.default_version_program.default_main_version = null;
-            this.default_version_program.update();
-        }
-
-        super.delete();
-    }
 
 
     @JsonIgnore @Transient  public void compile_program_thread() {
