@@ -1014,7 +1014,7 @@ public class Demo_Data_Controller extends Controller {
 
             c_program_1.description = "For first version of every program";
             c_program_1.date_of_create = new Date();
-            c_program_1.default_program_type_of_board = yoda;
+
             c_program_1.save();
 
             Model_VersionObject version_object_1 = new Model_VersionObject();
@@ -1036,9 +1036,6 @@ public class Demo_Data_Controller extends Controller {
             version_object_1.update();
             version_object_1.compile_program_thread();
 
-            yoda.default_program = c_program_1;
-            yoda.default_program.default_main_version = version_object_1;
-            version_object_1.default_version_program = yoda.default_program;
             version_object_1.update();
             yoda.update();
 
@@ -1052,7 +1049,6 @@ public class Demo_Data_Controller extends Controller {
 
             c_program_2.description = "For first version of every program";
             c_program_2.date_of_create = new Date();
-            c_program_2.default_program_type_of_board = wireless;
             c_program_2.save();
 
             Model_VersionObject version_object_2 = new Model_VersionObject();
@@ -1075,11 +1071,6 @@ public class Demo_Data_Controller extends Controller {
             version_object_2.update();
             version_object_2.compile_program_thread();
 
-            wireless.default_program = c_program_2;
-            wireless.default_program.default_main_version = version_object_2;
-
-            version_object_2.default_version_program = wireless.default_program;
-
             version_object_2.update();
             wireless.update();
 
@@ -1092,7 +1083,7 @@ public class Demo_Data_Controller extends Controller {
 
             c_program_3.description = "For first version of every program";
             c_program_3.date_of_create = new Date();
-            c_program_3.default_program_type_of_board = busKit;
+
             c_program_3.save();
 
             Model_VersionObject version_object_3 = new Model_VersionObject();
@@ -1114,9 +1105,6 @@ public class Demo_Data_Controller extends Controller {
             version_object_3.update();
             version_object_3.compile_program_thread();
 
-            busKit.default_program = c_program_3;
-            busKit.default_program.default_main_version = version_object_3;
-            version_object_3.default_version_program = busKit.default_program;
             version_object_3.update();
             busKit.update();
 
