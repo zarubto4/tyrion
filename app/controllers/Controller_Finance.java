@@ -631,7 +631,7 @@ public class Controller_Finance extends Controller {
 
                 // Přidám ty, co vybral uživatel
                 if(help.extensions_ids.size() > 0) {
-                    List<Model_GeneralTariffExtensions> list = Model_GeneralTariffExtensions.find.where().in("id", help.extensions_ids).eq("general_tariff.id", tariff.id).findList();
+                    List<Model_GeneralTariffExtensions> list = Model_GeneralTariffExtensions.find.where().in("id", help.extensions_ids).eq("general_tariff_optional.id", tariff.id).findList();
                     product.extensions.addAll(list);
                 }
 

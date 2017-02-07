@@ -1120,7 +1120,7 @@ public class Controller_Person extends Controller {
             // Pokud link není, vygeneruje se nový, unikátní
             if(person.azure_picture_link == null){
                 while(true){ // I need Unique Value
-                    String azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString();
+                    String azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
                     if (Model_Person.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
                         person.azure_picture_link = azure_picture_link;
                         person.update();
@@ -1129,12 +1129,10 @@ public class Controller_Person extends Controller {
                 }
             }
 
-
             String file_path = person.get_picture_path();
-
             String file_name = file_path.substring(file_path.indexOf("/") + 1);
 
-            person.picture = Model_FileRecord.uploadAzure_File( help.file , file_name, file_path);
+            person.picture = Model_FileRecord.uploadAzure_File( Model_FileRecord.get_encoded_binary_string_from_File(help.file) , file_name, file_path);
             person.update();
 
 
