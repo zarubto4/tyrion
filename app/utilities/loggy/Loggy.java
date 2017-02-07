@@ -140,7 +140,7 @@ public class Loggy{
         String description = descriptionBuilder.toString();
 
         error(id, summary, description);
-        return GlobalResult.result_InternalServerError();
+        return GlobalResult.result_InternalServerError(summary);
     }
 
     public static void error(String problem, Exception exception){

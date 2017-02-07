@@ -67,8 +67,6 @@ public class Model_VersionObject extends Model {
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
             value = "UNIX time in ms", example = "1466163478925")                                      public Date date_of_create;
 
-
-
     @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch=FetchType.EAGER ) public List<Model_FileRecord> files = new ArrayList<>();
 
     // Libraries ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -89,10 +87,8 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
-
-                                                                                          @JsonIgnore @OneToOne public Model_TypeOfBoard type_of_board;    // Použito pro defaulntí program vázaný na TypeOfBoard hlavní verze určená k aktivitám - typu hardwaru a taktéž firmware, který se nahrává na devices
-
                                                                                                    @JsonIgnore  public Approval_state approval_state; // Zda je program schválený veřejný program
+                                                                                         @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
     // B_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)                           public Model_BProgram b_program;

@@ -358,7 +358,7 @@ PUT             /typeOfBoard/:type_of_board_id                                  
 DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_delete(type_of_board_id)
 GET             /typeOfBoard/all                                                @controllers.Controller_CompilationLibraries.typeOfBoard_getAll()
 GET             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_get(type_of_board_id)
-PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.Controller_CompilationLibraries.typeOfBoard_mark_C_program_Version_as_main(type_of_board_id,version_id)
+PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.Controller_CompilationLibraries.typeOfBoard_versionScheme(type_of_board_id,version_id)
 
 #Bootloader
 POST            /bootloader/:type_of_board_id                                   @controllers.Controller_CompilationLibraries.boot_loader_create(type_of_board_id)

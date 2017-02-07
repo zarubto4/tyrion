@@ -60,7 +60,7 @@
                     </ul>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
-                @if(Server.server_mode){
+                @if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")){
                 <li class="treeview">
                     <a href="#">
                         <i class="fa fa-bug"></i> <span>For Tyrion Developers</span>
