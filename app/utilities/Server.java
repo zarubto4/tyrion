@@ -243,14 +243,14 @@ public class Server {
                 becki_propertyChangeFailed          = "http://" + Configuration.root().getString("Becki.stage.propertyChangeFailed");
 
                 GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
-                GitHub_clientSecret                 = Configuration.root().getString("GitHub.localhost.clientSecret");
-                GitHub_url                          = Configuration.root().getString("GitHub.localhost.url");
-                GitHub_apiKey                       = Configuration.root().getString("GitHub.localhost.apiKey  ");
+                GitHub_clientSecret                 = Configuration.root().getString("GitHub.stage.clientSecret");
+                GitHub_url                          = Configuration.root().getString("GitHub.stage.url");
+                GitHub_apiKey                       = Configuration.root().getString("GitHub.stage.apiKey  ");
 
                 Facebook_callBack                   = tyrion_serverAddress + Configuration.root().getString("Facebook.localhost.callBack");
-                Facebook_clientSecret               = Configuration.root().getString("Facebook.localhost.clientSecret");
-                Facebook_url                        = Configuration.root().getString("Facebook.localhost.url");
-                Facebook_apiKey                     = Configuration.root().getString("Facebook.localhost.apiKey  ");
+                Facebook_clientSecret               = Configuration.root().getString("Facebook.stage.clientSecret");
+                Facebook_url                        = Configuration.root().getString("Facebook.stage.url");
+                Facebook_apiKey                     = Configuration.root().getString("Facebook.stage.apiKey  ");
 
                 WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.localhost.callBack");
                 WordPress_clientSecret               = Configuration.root().getString("WordPress.localhost.clientSecret");
