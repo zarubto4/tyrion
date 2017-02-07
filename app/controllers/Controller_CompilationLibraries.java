@@ -96,10 +96,7 @@ public class Controller_CompilationLibraries extends Controller {
 
             // Zpracování Json
             final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.formExcepting(form.errorsAsJson());
-            }
-
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_C_program_New help = form.get();
 
             // Ověření Typu Desky
@@ -119,21 +116,6 @@ public class Controller_CompilationLibraries extends Controller {
                 Model_Project project = Model_Project.find.byId(help.project_id);
                 if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
                 c_program.project = project;
-
-                // Přiřadím první verzi!
-
-                if (typeOfBoard.default_program == null || typeOfBoard.default_program.default_main_version == null) return GlobalResult.result_BadRequest("Its not possible Create First program - TypeOf Board has not set default Firmware - This Error is for Byzance team!!");
-                c_program.first_default_version_object = typeOfBoard.default_program.default_main_version;
-
-            }
-            else if(help.c_program_type_of_board_default){      // Admin oprávnění vyždováno - kontrola až v create_permission
-
-                if( c_program.default_program_type_of_board != null) return GlobalResult.result_BadRequest("It is prohibited to set Two C_Programs on one TypeOfBoard");
-                c_program.default_program_type_of_board = typeOfBoard;
-
-            }
-            else if(!help.c_program_public_admin_create){
-                return GlobalResult.result_BadRequest("Its is not possible create C_Program where is not project or default c_program for type of board");
             }
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -141,7 +123,47 @@ public class Controller_CompilationLibraries extends Controller {
 
             // Uložení C++ Programu
             c_program.save();
+            c_program.refresh();
 
+            // Přiřadím první verzi!
+            if (typeOfBoard.version_scheme != null) {
+                Model_VersionObject version_object = new Model_VersionObject();
+                version_object.version_name = "First default version of C_Program.";
+                version_object.version_description = "This is default description.";
+                version_object.author = Controller_Security.getPerson();
+                version_object.date_of_create = new Date();
+                version_object.c_program = c_program;
+                version_object.public_version = false;
+
+                // Zkontroluji oprávnění
+                if (!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+
+                version_object.save();
+
+                for (Model_FileRecord file : typeOfBoard.version_scheme.files) {
+
+                    JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+
+                    Form<Swagger_C_Program_Version_Update> scheme_form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
+                    if (form.hasErrors()) {
+                        logger.error("CompilationLibraries:: c_program_create:: Error loading first default version of CProgram");
+                        break;
+                    }
+                    Swagger_C_Program_Version_Update scheme_load_form = scheme_form.get();
+
+
+                    // Nahraje do Azure a připojí do verze soubor
+                    ObjectNode content = Json.newObject();
+                    content.put("main", scheme_load_form.main);
+                    content.set("user_files", Json.toJson(scheme_load_form.user_files));
+                    content.set("library_files", Json.toJson(scheme_load_form.library_files));
+
+                    // Content se nahraje na Azure
+
+                    Model_FileRecord.uploadAzure_Version(content.toString(), "code.json", c_program.get_path(), version_object);
+                    version_object.update();
+                }
+            }
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (Exception e) {
@@ -220,7 +242,7 @@ public class Controller_CompilationLibraries extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result c_program_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
+    public Result c_program_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number){
 
         try {
 
@@ -705,7 +727,7 @@ public class Controller_CompilationLibraries extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result c_program_getPublicList(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true)  int page_number){
+    public Result c_program_getPublicList(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number){
         try {
 
             // Vytřídění objektů
@@ -2385,20 +2407,11 @@ public class Controller_CompilationLibraries extends Controller {
 
             if(!typeOfBoard.edit_permission()) return GlobalResult.forbidden_Permission();
 
-            if(!typeOfBoard.default_program.id.equals( version_object.c_program.id))  return GlobalResult.notFoundObject("You cannot combine diferent version that with Main Program");
-
-            // Zabiju Vazby
-            if( typeOfBoard.default_program.default_main_version != null) {
-                typeOfBoard.default_program.default_main_version.default_version_program = null;
-                typeOfBoard.default_program.default_main_version.update();
-            }
-
-            typeOfBoard.default_program.default_main_version = version_object;
-
-            version_object.default_version_program = typeOfBoard.default_program;
+            version_object.type_of_board = typeOfBoard;
             version_object.update();
 
-            typeOfBoard.default_program.update();
+            typeOfBoard.refresh();
+
 
             // Vracím Json
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
@@ -3747,13 +3760,19 @@ public class Controller_CompilationLibraries extends Controller {
                 if (load_form.hasErrors()) {return GlobalResult.formExcepting(load_form.errorsAsJson());}
                 Swagger_Library_File_Load lib_help = load_form.get();
 
+                Swagger_ImportLibrary_Version_New.Library_File to_remove;
+
                 for (Swagger_ImportLibrary_Version_New.Library_File new_lib_file : help.library_files) {
+
+                    to_remove = null;
 
                     for (Swagger_ImportLibrary_Version_New.Library_File old_lib_file : lib_help.library_files) {
 
                         if(old_lib_file.file_name.equals(new_lib_file.file_name))
-                            lib_help.library_files.remove(old_lib_file);
+                            to_remove = old_lib_file;
                     }
+
+                    if (to_remove != null) lib_help.library_files.remove(to_remove);
 
                     lib_help.library_files.add(new_lib_file);
                 }

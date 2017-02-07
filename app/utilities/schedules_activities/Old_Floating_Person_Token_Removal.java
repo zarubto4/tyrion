@@ -17,52 +17,41 @@ public class Old_Floating_Person_Token_Removal implements Job {
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        if(remove_floating_person_token_thread.getState() == Thread.State.NEW) {
-
-            remove_floating_person_token_thread.start();
-        } else {
-
-            remove_floating_person_token_thread.interrupt();
-        }
+        if(!remove_floating_person_token_thread.isAlive()) remove_floating_person_token_thread.start();
     }
 
-    static Thread remove_floating_person_token_thread = new Thread() {
+    Thread remove_floating_person_token_thread = new Thread() {
 
         @Override
         public void run() {
 
-            while (true) {
-                try {
+            try {
 
-                    logger.info("Independent Thread in Old_Floating_Person_Token_Removal now working");
+                logger.info("Independent Thread in Old_Floating_Person_Token_Removal now working");
 
-                    Long before_72_hours = new Date().getTime() - (72 * 3600000);
-                    Date created = new Date(before_72_hours);
+                Long before_72_hours = new Date().getTime() - (72 * 3600000);
+                Date created = new Date(before_72_hours);
 
-                    while (true) {
+                while (true) {
 
-                        List<Model_FloatingPersonToken> tokens_to_remove = Model_FloatingPersonToken.find.where().lt("created", created).setMaxRows(100).findList();
-                        if (tokens_to_remove.isEmpty()) {
-                            logger.info("Old_Floating_Person_Token_Removal has no tokens to remove");
-                            break;
-                        }
-
-                        logger.info("CRON Task is removing old tokens (100 per cycle)");
-
-                        for (Model_FloatingPersonToken token : tokens_to_remove) {
-                            token.delete();
-                        }
+                    List<Model_FloatingPersonToken> tokens_to_remove = Model_FloatingPersonToken.find.where().lt("created", created).setMaxRows(100).findList();
+                    if (tokens_to_remove.isEmpty()) {
+                        logger.info("Old_Floating_Person_Token_Removal has no tokens to remove");
+                        break;
                     }
 
-                    logger.info("Independent Thread in Old_Floating_Person_Token_Removal stopped!");
+                    logger.info("CRON Task is removing old tokens (100 per cycle)");
 
-                    sleep(90000000);
-                } catch (InterruptedException i) {
-                    // Do nothing
-                } catch (Exception e) {
-                    logger.error("Error in Thread - Old_Floating_Person_Token_Removal");
+                    for (Model_FloatingPersonToken token : tokens_to_remove) {
+                        token.delete();
+                    }
                 }
+
+            } catch (Exception e) {
+                logger.error("Error in Thread - Old_Floating_Person_Token_Removal");
             }
+
+            logger.info("Independent Thread in Old_Floating_Person_Token_Removal stopped!");
         }
     };
 }

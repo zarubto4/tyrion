@@ -563,7 +563,7 @@ public class Controller_Dashboard extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result public_code_aprove_procedure(){
+    public Result public_code_approve_procedure(){
         try {
 
             Html public_code_content = approvalprocedurecprogram.render();

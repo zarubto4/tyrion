@@ -92,8 +92,8 @@
                                 </td>
 
 
-                                <td>@if(type_of_board.default_program != null){
-                                        @if(type_of_board.default_program.default_main_version.c_compilation != null) {
+                                <td>@if(type_of_board.version_scheme != null){
+                                        @if(type_of_board.version_scheme.c_compilation != null) {
                                             <p class="lead text-green">True</p>
                                         }else{
                                             <p class="lead text-red">Not Compiled yet!</p>
@@ -101,13 +101,13 @@
                                 }else{
                                     <p class="lead text-red">False</p>
                                 }</td>
-                                <td>@if(type_of_board.default_program != null){
-                                    @if(type_of_board.default_program.default_main_version == null){
+                                <td>
+                                    @if(type_of_board.version_scheme == null){
                                         C_Program has not set Version!
                                     }else{
-                                        @type_of_board.default_program.default_main_version.version_name
+                                        @type_of_board.version_scheme.version_name
                                     }
-                                }</td>
+                                </td>
 
                             </tr>
                         }

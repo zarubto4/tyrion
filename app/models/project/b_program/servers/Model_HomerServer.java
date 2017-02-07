@@ -100,7 +100,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient public static Model_HomerServer getDestinationServer(){
 
 
-        if(Server.server_mode) {
+        if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")) {
 
             return Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.test_server).setMaxRows(1).findUnique();
 

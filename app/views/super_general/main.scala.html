@@ -129,10 +129,14 @@
     </head>
 
     <body
-       @if(Server.server_mode){
+       @if(Server.server_mode.equals("developer")){
             class="hold-transition skin-blue sidebar-mini"
-       }else{
+       }
+       @if(Server.server_mode.equals("production")){
             class="hold-transition skin-red sidebar-mini"
+       }
+       @if(Server.server_mode.equals("stage")){
+            class="hold-transition skin-purple sidebar-mini"
        }
     >
 
@@ -156,7 +160,13 @@
                         <div class="navbar-custom-menu">
                             <button style="margin: 5px 20px;" class="btn btn-default pull-left" type="button" onclick="logout()">Logout</button>
                             <ul class="nav navbar-nav">
-                                <h4 > <font color="white">  <b>Version:</b> @Server.server_version   &nbsp; &nbsp; &nbsp; <b>Production mode: </b> @if(!Server.server_mode){Production}else{Developer}   &nbsp; &nbsp; &nbsp;  </font> </h4>
+                                <h4 > <font color="white">  <b>Version:</b> @Server.server_version   &nbsp; &nbsp; &nbsp; <b>Server mode: </b>
+
+                                    @if(Server.server_mode.equals("developer")){Developer}
+                                    @if(Server.server_mode.equals("production")){Production}
+                                    @if(Server.server_mode.equals("stage")){Stage}
+
+                                    &nbsp; &nbsp; &nbsp;  </font> </h4>
 
                             </ul>
 

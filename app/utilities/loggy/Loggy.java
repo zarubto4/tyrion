@@ -88,7 +88,7 @@ public class Loggy{
         String description = descriptionBuilder.toString();
 
         error(id, summary, description);
-        return GlobalResult.internalServerErrorJson();
+        return GlobalResult.result_InternalServerError();
     }
 
     public static Result result_internalServerError(String problem, Http.Request request) {
@@ -140,7 +140,7 @@ public class Loggy{
         String description = descriptionBuilder.toString();
 
         error(id, summary, description);
-        return GlobalResult.internalServerErrorJson();
+        return GlobalResult.result_InternalServerError();
     }
 
     public static void error(String problem, Exception exception){
