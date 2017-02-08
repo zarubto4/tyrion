@@ -32,7 +32,6 @@ import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -553,7 +552,6 @@ public class Controller_Finance extends Controller {
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
 
                 product.mode = Payment_mode.free;
-                product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
 
                 Model_Person person = Controller_Security.getPerson();
 

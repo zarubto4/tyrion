@@ -533,7 +533,6 @@ create table model_product (
   monthly_day_period        integer,
   monthly_year_period       integer,
   date_of_create            timestamp,
-  paid_until_the_day        timestamp,
   on_demand_active          boolean,
   remaining_credit          float,
   azure_product_link        varchar(255),

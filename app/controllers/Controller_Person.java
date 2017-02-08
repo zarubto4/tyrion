@@ -1143,7 +1143,7 @@ public class Controller_Person extends Controller {
             logger.debug("Data Type:" + dataType[0] + ":::");
             logger.debug("Data: " + parts[1].substring(0, 10) + "......");
 
-            person.picture = Model_FileRecord.uploadAzure_File( Model_FileRecord.get_decoded_binary_string_from_Base64(parts[1]), dataType[0], file_name, file_path);
+            person.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, file_path);
             person.update();
 
 

@@ -7,9 +7,13 @@ import models.person.Model_FloatingPersonToken;
 import models.person.Model_Person;
 import models.project.b_program.servers.Model_HomerServer;
 import models.project.c_program.Model_CProgram;
+import models.project.global.Model_Product;
+import models.project.global.Model_Project;
+import models.project.global.Model_ProjectParticipant;
 import models.project.global.financial.Model_GeneralTariff;
 import models.project.global.financial.Model_GeneralTariffExtensions;
 import models.project.global.financial.Model_GeneralTariffLabel;
+import models.project.global.financial.Model_PaymentDetails;
 import org.apache.commons.io.IOUtils;
 import play.Application;
 import play.Play;
@@ -18,6 +22,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.CLoud_Homer_Server_Type;
+import utilities.enums.Participant_status;
+import utilities.enums.Payment_method;
+import utilities.enums.Payment_mode;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_Admin;
 import utilities.response.GlobalResult;
@@ -1136,12 +1143,73 @@ public class Demo_Data_Controller extends Controller {
             person.setSha("123456789");
             person.save();
 
-
             Model_FloatingPersonToken token = new Model_FloatingPersonToken();
             token.person = person;
             token.authToken = "token";
             token.setDate();
             token.save();
+
+            // Vytvoří tarif
+            Model_Product product = new Model_Product();
+            product.general_tariff = Model_GeneralTariff.find.where().eq("identificator","alpha").findUnique();
+            product.product_individual_name = "Pepkova velkolepá Alfa";
+            product.active  = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
+            product.method  = Payment_method.free;
+            product.mode    = Payment_mode.free;
+            Model_PaymentDetails payment_details = new Model_PaymentDetails();
+            payment_details.person = person;
+            payment_details.company_account = false;
+            payment_details.street = "Karlovo náměsí";
+            payment_details.street_number = "457";
+            payment_details.city = "Praha";
+            payment_details.zip_code = "12000";
+            payment_details.country = "Czech Republic";
+            payment_details.product = product;
+            product.payment_details = payment_details;
+            product.save();
+
+            for( Model_GeneralTariffExtensions e : Model_GeneralTariff.find.where().eq("identificator","alpha").findUnique().extensions_included ){
+                e.products.add(product);
+                e.update();
+                product.extensions.add(e);
+                product.update();
+            }
+
+
+            // Vytvořím Projekty
+            Model_Project project_1 = new Model_Project();
+            project_1.product = product;
+            project_1.name = "První velkolepý projekt";
+            project_1.description = "Toto je Pepkův velkolepý testovací projekt primárně určen pro testování Blocko Programu, kde už má zaregistrovaný testovací HW";
+            project_1.save();
+
+
+            Model_ProjectParticipant participant_1 = new Model_ProjectParticipant();
+            participant_1.person = person;
+            participant_1.project = project_1;
+            participant_1.state = Participant_status.owner;
+            participant_1.save();
+            System.err.println(Json.toJson(participant_1));
+
+            // Zaregistruji pod ně Yody
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","Yoda F").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[69]").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[67]").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[66]").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[65]").findUnique());
+
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","Yoda Q").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[73]").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[74]").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[75]").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[76]").findUnique());
+
+           for(Model_Board board :project_1.boards  ) {
+               board.project = project_1;
+               board.save();
+           }
+
+
 
             return GlobalResult.result_ok();
 

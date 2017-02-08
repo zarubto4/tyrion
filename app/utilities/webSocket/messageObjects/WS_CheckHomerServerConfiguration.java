@@ -25,7 +25,7 @@ public class WS_CheckHomerServerConfiguration {
     @Constraints.Required public int beckiPort;
     @Constraints.Required public int webPort;
 
-    @Constraints.Required public String tyrionUrl; // Adresa - na kterou se Homer připojuje 
+    @Constraints.Required public String tyrionUrl; // Adresa - na kterou se Homer připojuje
 
     @Constraints.Required public int daysInArchive;
     @Constraints.Required public Date timeStamp;

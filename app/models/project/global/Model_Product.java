@@ -52,7 +52,6 @@ public class Model_Product extends Model {
                                                                     @JsonIgnore public Integer monthly_year_period; // Měsíc v roce, kdy bude obnovována platba // Nejvyšší možné číslo je 12!!!
 
                                             @ApiModelProperty(required = true) public Date date_of_create;
-                                            @ApiModelProperty(required = true) public Date paid_until_the_day;     // Termín do kdy je služba předplacena (Pokud zaplatím na měsíc teď tak je to čas teď + 1 měsíc.
                                                                     @JsonIgnore public boolean on_demand_active;    // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 
                                              @ApiModelProperty(required = true) public double remaining_credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
