@@ -15,6 +15,7 @@ import models.project.b_program.instnace.Model_HomerInstance;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.CLoud_Homer_Server_Type;
+import utilities.enums.Log_Level;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.webSocket.WS_HomerServer;
 import utilities.webSocket.messageObjects.WS_CheckPersonPermission_OnHomerServer;
@@ -23,6 +24,7 @@ import utilities.webSocket.messageObjects.WS_ValidPersonToken_OnHomerServer;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,11 +47,17 @@ public class Model_HomerServer extends Model{
 
     @ApiModelProperty(required = true, readOnly = true)         public Integer grid_port;              // Přidává se destination_address + "/" grid_ulr
     @ApiModelProperty(required = true, readOnly = true)         public Integer webView_port;           // Přidává se destination_address + "/" webView_port
+    @ApiModelProperty(required = true, readOnly = true)         public Integer server_remote_port;     // Přidává se destination_address + "/" webView_port
 
     @ApiModelProperty(required = true, readOnly = true)         public String server_url;  // Může být i IP adresa
 
                                         @JsonIgnore             public CLoud_Homer_Server_Type server_type;  // Určující typ serveru
+                                                                public Date time_stamp_configuration;
 
+                                                                public Integer days_in_archive;
+                                                                public boolean logging;
+                                                                public boolean interactive;
+                                                                public Log_Level logLevel;
 
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();
 
@@ -71,6 +79,8 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Override public void save() {
 
+        this.time_stamp_configuration = new Date();
+
         if(hash_certificate == null)  // Určeno pro možnost vytvořit testovací server - manuální doplnění hash_certificate
         while(true){ // I need Unique Value
             hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
@@ -84,6 +94,11 @@ public class Model_HomerServer extends Model{
         }
 
         super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+        super.update();
+        this.set_new_configuration_on_homer();
     }
 
     @JsonIgnore @Transient public WS_HomerServer get_server_webSocket_connection(){
@@ -453,6 +468,36 @@ public class Model_HomerServer extends Model{
             return RESULT_server_is_offline();
         }
 
+    }
+
+    @JsonIgnore @Transient  public  JsonNode set_new_configuration_on_homer(){
+        try{
+
+            // Slouží pro nahrávání testovacích instnací samotnými vývojáři z Byzance
+
+            ObjectNode request_conf = Json.newObject();
+            request_conf.put("messageType",     "setServerConfiguration");
+            request_conf.put("messageChannel",  Model_HomerServer.CHANNEL);
+            request_conf.put("status", "success");
+            request_conf.put("serverName",      personal_server_name);
+            request_conf.put("mqttPort",        mqtt_port);
+            request_conf.put("mqttPassword",    mqtt_password);
+            request_conf.put("mqttUser",        mqtt_username);
+            request_conf.put("gridPort",        grid_port);
+            request_conf.put("webPort",         server_remote_port);
+            request_conf.put("beckiPort",       webView_port);
+            request_conf.put("timeStamp",       time_stamp_configuration.getTime());
+            request_conf.put("daysInArchive",   days_in_archive);
+            request_conf.put("logging",         logging);
+            request_conf.put("interactive",     interactive);
+            request_conf.put("logLevel",        logLevel.toString());
+
+            logger.debug("WS_HomerServer:: synchronize_configuration: Sending new Configuration");
+            return  Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request_conf, 1000 * 5, 0, 2);
+
+        }catch (Exception e){
+            return RESULT_server_is_offline();
+        }
     }
 
     @JsonIgnore @Transient  public  void ask_for_verificationToken(){

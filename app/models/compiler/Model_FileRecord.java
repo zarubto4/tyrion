@@ -17,6 +17,7 @@ import utilities.Server;
 
 import javax.persistence.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -188,16 +189,20 @@ public class Model_FileRecord extends Model {
     }
 
     @JsonIgnore @Transient
-    public static Model_FileRecord uploadAzure_File(String file, String file_name, String file_path) throws Exception{
+    public static Model_FileRecord uploadAzure_File(String file, String contentType, String file_name, String file_path) throws Exception{
 
-        logger.debug("Azure load: "+ file_path);
+        logger.debug("Azure file:"+ file.substring(0,50));
+        logger.debug("Azure load:"+ file_path);
+        logger.debug("Azure name:" + file_name);
+        logger.debug("Azure contentType:" + contentType);
 
         String container_name = file_path.substring(0,file_path.indexOf("/"));
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
 
         CloudBlockBlob blob = container.getBlockBlobReference(file_name);
 
-        InputStream is = new ByteArrayInputStream(file.getBytes());
+        InputStream is = new ByteArrayInputStream(file.getBytes(StandardCharsets.UTF_8));
+        blob.getProperties().setContentType(contentType);
         blob.upload(is, -1);
 
         Model_FileRecord fileRecord = new Model_FileRecord();
@@ -286,9 +291,9 @@ public class Model_FileRecord extends Model {
     }
 
     @JsonIgnore @Transient
-    public static String get_encoded_binary_string_from_File(String binary_file) throws Exception {
+    public static String get_decoded_binary_string_from_Base64(String binary_file) throws Exception {
 
-        return new String(Base64.getEncoder().encode(binary_file.getBytes()));
+        return new String(Base64.getDecoder().decode(binary_file.getBytes()));
 
     }
 

@@ -6,8 +6,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.libs.Json;
 import play.mvc.WebSocket;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.nio.channels.ClosedChannelException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 
 
@@ -95,7 +99,7 @@ public abstract class WebSCType {
     public Map<String,SendMessage> sendMessageMap = new HashMap<>(); // MessageId, Message
 
 
-    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ExecutionException, InterruptedException {
+    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException {
 
         String messageId = UUID.randomUUID().toString();
         json.put("messageId", messageId );

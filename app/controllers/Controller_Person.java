@@ -1095,30 +1095,33 @@ public class Controller_Person extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BASE64_FILE help = form.get();
 
-            if( (help.file.length() / 1024) > 1000) return GlobalResult.result_BadRequest("Picture is bigger than 800 KB");
-
             Model_Person person = Controller_Security.getPerson();
 
             if(!person.edit_permission()) return GlobalResult.forbidden_Permission();
 
+
+
             if(help.file.equals("") || help.file == null ){
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
+                person.azure_picture_link = "";
                 person.update();
                 fileRecord.delete();
             }
+
 
             // Odebrání předchozího obrázku
             if(person.picture != null){
                 logger.debug("Controller_Person:: person_uploadPicture:: Removing previous picture");
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
+                person.azure_picture_link = "";
                 person.update();
                 fileRecord.delete();
             }
 
             // Pokud link není, vygeneruje se nový, unikátní
-            if(person.azure_picture_link == null){
+            if(person.azure_picture_link == null || person.azure_picture_link.equals("")){
                 while(true){ // I need Unique Value
                     String azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
                     if (Model_Person.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
@@ -1132,7 +1135,15 @@ public class Controller_Person extends Controller {
             String file_path = person.get_picture_path();
             String file_name = file_path.substring(file_path.indexOf("/") + 1);
 
-            person.picture = Model_FileRecord.uploadAzure_File( Model_FileRecord.get_encoded_binary_string_from_File(help.file) , file_name, file_path);
+            //  data:image/png;base64,
+            String[] parts = help.file.split(",");
+            String[] type = parts[0].split(":");
+            String[] dataType = type[1].split(";");
+
+            logger.debug("Data Type:" + dataType[0] + ":::");
+            logger.debug("Data: " + parts[1].substring(0, 10) + "......");
+
+            person.picture = Model_FileRecord.uploadAzure_File( Model_FileRecord.get_decoded_binary_string_from_Base64(parts[1]), dataType[0], file_name, file_path);
             person.update();
 
 

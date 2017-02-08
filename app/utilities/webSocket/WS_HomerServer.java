@@ -7,10 +7,13 @@ import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import play.data.Form;
 import play.libs.Json;
+import utilities.enums.Log_Level;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.loginEntities.TokenCache;
+import utilities.webSocket.messageObjects.WS_CheckHomerServerConfiguration;
 import utilities.webSocket.messageObjects.WS_CheckHomerServerPermission;
 
+import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -158,10 +161,79 @@ public class WS_HomerServer extends WebSCType{
             // Změna FlagRegistru
             this.security_token_confirm = true;
 
+            // Sesynchronizuj Configuraci serveru s tím co ví a co zná Tyrion
+            synchronize_configuration();
+
             // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
             // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
             server.check_after_connection(this);
 
+        }catch(ClosedChannelException e){
+            logger.warn("WS_HomerServer:: security_token_confirm_procedure :: ClosedChannelException");
+        }catch (TimeoutException e){
+            logger.error("WS_HomerServer:: security_token_confirm_procedure :: TimeoutException");
+        }catch (Exception e){
+            logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error", e);
+        }
+    }
+
+    public void synchronize_configuration(){
+
+        try{
+        // Požádáme o token
+        ObjectNode request = Json.newObject();
+        request.put("messageType", "getServerConfiguration");
+        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        ObjectNode ask_for_configuration = super.write_with_confirmation(request, 1000 * 5, 0, 2);
+
+            // Vytovření objektu
+            WS_CheckHomerServerConfiguration help = WS_CheckHomerServerConfiguration.getObject(ask_for_configuration);
+
+            if(help.timeStamp.compareTo(server.time_stamp_configuration) == 0){
+                // Nedochází k žádným změnám
+                logger.debug("WS_HomerServer:: synchronize_configuration: configuration without changes");
+                return;
+
+            }else if(help.timeStamp.compareTo(server.time_stamp_configuration) > 0){
+                // Homer server má novější novou konfiguraci
+                logger.debug("WS_HomerServer:: synchronize_configuration: Homer server has new configuration");
+
+
+                server.personal_server_name = help.serverName;
+                server.mqtt_port = help.mqttPort;
+                server.mqtt_password = help.mqttPassword;
+                server.mqtt_username = help.mqttUser;
+                server.grid_port = help.gridPort;
+
+                server.webView_port = help.beckiPort;
+                server.server_remote_port = help.webPort;
+
+                server.mqtt_username = help.mqttUser;
+                server.grid_port = help.gridPort;
+                server.webView_port = help.beckiPort;
+                server.days_in_archive = help.daysInArchive;
+                server.time_stamp_configuration = help.timeStamp;
+
+                server.logging = help.logging;
+                server.interactive = help.interactive;
+                server.logLevel = Log_Level.fromString(help.logLevel);
+                server.update();
+
+                return;
+
+            }else {
+                // Tyrion server má novější konfiguraci
+                logger.debug("WS_HomerServer:: synchronize_configuration: Tyrion server has new configuration");
+                JsonNode response = server.set_new_configuration_on_homer();
+                logger.debug("WS_HomerServer:: synchronize_configuration: New Config state:: " + response.get("status"));
+
+                return;
+            }
+
+        }catch(ClosedChannelException e){
+            logger.warn("WS_HomerServer:: security_token_confirm_procedure :: ClosedChannelException");
+        }catch (TimeoutException e){
+            logger.error("WS_HomerServer:: security_token_confirm_procedure :: TimeoutException");
         }catch (Exception e){
             logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error", e);
         }
@@ -169,11 +241,10 @@ public class WS_HomerServer extends WebSCType{
 
 
 
-
 // Přepsané oprávnění - jen kontrola zda se WebSocketu může něco posílat
 
     @Override
-    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries)  throws TimeoutException, ExecutionException, InterruptedException{
+    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries)  throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{
 
         if(!security_token_confirm){
             logger.warn("WS_HomerServer:: write_with_confirmation:: This Websocket is not confirm");
@@ -216,7 +287,7 @@ public class WS_HomerServer extends WebSCType{
         ObjectNode request_2 = Json.newObject();
         request_2.put("messageType", "server_validation");
         request_2.put("messageChannel", Model_HomerServer.CHANNEL);
-        request_2.put("messageChannel", "Unique server identificator is not recognize!");
+        request_2.put("message", "Unique server identificator is not recognize!");
         super.write_without_confirmation(request_2);
     }
 

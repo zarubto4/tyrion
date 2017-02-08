@@ -27,8 +27,6 @@ import utilities.webSocket.messageObjects.WS_Token;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_WebSocket extends Controller {
@@ -115,8 +113,7 @@ public class Controller_WebSocket extends Controller {
                             server.unique_connection_name_not_valid();
 
                             logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " Message sent");
-                            sleep(5000);
-
+                            sleep(1000 * 60);
 
                             logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " Closing connection");
                             server.close();
@@ -407,7 +404,7 @@ public class Controller_WebSocket extends Controller {
             }
 
         // Ping
-        public static JsonNode becki_ping(WS_Becki_Single_Connection becki) throws TimeoutException, InterruptedException, ExecutionException {
+        public static JsonNode becki_ping(WS_Becki_Single_Connection becki){
 
             ObjectNode result = Json.newObject();
 
@@ -418,7 +415,7 @@ public class Controller_WebSocket extends Controller {
 
                 return becki.write_with_confirmation(result, 1000 * 3, 0, 3);
 
-            }catch (ExecutionException e){
+            }catch (Exception e){
 
                 result.put("messageType", "ping");
                 result.put("messageChannel", "becki");

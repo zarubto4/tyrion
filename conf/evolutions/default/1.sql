@@ -321,9 +321,16 @@ create table model_homer_server (
   mqtt_password             varchar(255),
   grid_port                 integer,
   web_view_port             integer,
+  server_remote_port        integer,
   server_url                varchar(255),
   server_type               varchar(14),
+  time_stamp_configuration  timestamp,
+  days_in_archive           integer,
+  logging                   boolean,
+  interactive               boolean,
+  log_level                 varchar(5),
   constraint ck_model_homer_server_server_type check (server_type in ('main_server','test_server','private_server','backup_server','public_server')),
+  constraint ck_model_homer_server_log_level check (log_level in ('warn','trace','debug','error','info')),
   constraint pk_model_homer_server primary key (unique_identificator))
 ;
 

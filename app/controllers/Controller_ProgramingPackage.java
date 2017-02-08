@@ -36,6 +36,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
+import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.enums.Participant_status;
 import utilities.enums.Type_of_command;
 import utilities.loggy.Loggy;
@@ -1753,6 +1754,7 @@ public class Controller_ProgramingPackage extends Controller {
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
             server.personal_server_name = help.personal_server_name;
+            server.server_type = CLoud_Homer_Server_Type.public_server;
 
             // Kontrola oprávnění
             if(!server.create_permission()) return GlobalResult.forbidden_Permission();
@@ -1830,6 +1832,7 @@ public class Controller_ProgramingPackage extends Controller {
 
             // Uložení objektu
             server.update();
+
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(server));
