@@ -5,13 +5,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
-import play.data.Form;
 import play.libs.Json;
-import utilities.enums.Log_Level;
 import utilities.hardware_updater.Actualization_Task;
+import utilities.independent_threads.Security_WS_token_confirm_procedure;
+import utilities.independent_threads.SynchronizeHomerServer;
 import utilities.loginEntities.TokenCache;
-import utilities.webSocket.messageObjects.WS_CheckHomerServerConfiguration;
-import utilities.webSocket.messageObjects.WS_CheckHomerServerPermission;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
@@ -122,126 +120,45 @@ public class WS_HomerServer extends WebSCType{
 
     }
 
+
+    // Independent Threads -----------------------------------------------------------------------------------------------
+
+    public Security_WS_token_confirm_procedure procedure; // Vlákno po úspěšném ověření samo sebe odstraní z Objektu a tím se nechá odmazat Garbarage Collectorem
     public void security_token_confirm_procedure(){
-
-        try {
-            logger.warn("WS_HomerServer:: security_token_confirm_procedure:: Trying to Confirm WebSocket");
-
-
-            // Požádáme o token
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "getVerificationToken");
-            request.put("messageChannel", Model_HomerServer.CHANNEL);
-            ObjectNode ask_for_token = super.write_with_confirmation(request, 1000 * 5, 0, 2);
-
-
-            final Form<WS_CheckHomerServerPermission> form = Form.form(WS_CheckHomerServerPermission.class).bind(ask_for_token);
-            if (form.hasErrors()) {
-                logger.error("WS_HomerServer:: Security_token_confirm_procedure: Error:: Some value missing:: " + form.errorsAsJson().toString());
-                // Ukončim ověřování - ale nechám websocket připojený
-                return;
-            }
-
-            // Vytovření objektu
-            WS_CheckHomerServerPermission help = form.get();
-
-            // Vyhledání DB reference
-            Model_HomerServer check_server = Model_HomerServer.find.where().eq("hash_certificate", help.hashToken).findUnique();
-
-            // Kontrola
-            if(!check_server.unique_identificator.equals(server.unique_identificator)) return;
-
-
-            // Potvrzení Homer serveru, že je vše v pořádku
-            ObjectNode request_2 = Json.newObject();
-            request_2.put("messageType", "verificationTokenApprove");
-            request_2.put("messageChannel", Model_HomerServer.CHANNEL);
-            ObjectNode approve_result = super.write_with_confirmation(request_2, 1000 * 5, 0, 2);
-
-            // Změna FlagRegistru
-            this.security_token_confirm = true;
-
-            // Sesynchronizuj Configuraci serveru s tím co ví a co zná Tyrion
-            synchronize_configuration();
-
-            // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
-            // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
-            server.check_after_connection(this);
-
-        }catch(ClosedChannelException e){
-            logger.warn("WS_HomerServer:: security_token_confirm_procedure :: ClosedChannelException");
-        }catch (TimeoutException e){
-            logger.error("WS_HomerServer:: security_token_confirm_procedure :: TimeoutException");
-        }catch (Exception e){
-            logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error", e);
+        if(procedure == null ){
+            procedure = new Security_WS_token_confirm_procedure(this);
+            logger.debug("WS_HomerServer:: security_token_confirm_procedure: Independent Thread for secure starting");
+            procedure.start();
+        }else {
+            logger.debug("WS_HomerServer:: security_token_confirm_procedure: Independent Thread for secure was started already");
         }
     }
 
+    //
+    public ObjectNode super_write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries)  throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException {
+        if(procedure == null) {
+            logger.error("WS_HomerServer:: Its prohybited send WS message to Homer server witch Super - its allowed only for Security_WS_token_confirm_procedure");
+        }
+        return super.write_with_confirmation(json,time,delay, number_of_retries);
+    }
+
+    public SynchronizeHomerServer synchronize;
     public void synchronize_configuration(){
-
-        try{
-        // Požádáme o token
-        ObjectNode request = Json.newObject();
-        request.put("messageType", "getServerConfiguration");
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
-        ObjectNode ask_for_configuration = super.write_with_confirmation(request, 1000 * 5, 0, 2);
-
-            // Vytovření objektu
-            WS_CheckHomerServerConfiguration help = WS_CheckHomerServerConfiguration.getObject(ask_for_configuration);
-
-            if(help.timeStamp.compareTo(server.time_stamp_configuration) == 0){
-                // Nedochází k žádným změnám
-                logger.debug("WS_HomerServer:: synchronize_configuration: configuration without changes");
-                return;
-
-            }else if(help.timeStamp.compareTo(server.time_stamp_configuration) > 0){
-                // Homer server má novější novou konfiguraci
-                logger.debug("WS_HomerServer:: synchronize_configuration: Homer server has new configuration");
-
-
-                server.personal_server_name = help.serverName;
-                server.mqtt_port = help.mqttPort;
-                server.mqtt_password = help.mqttPassword;
-                server.mqtt_username = help.mqttUser;
-                server.grid_port = help.gridPort;
-
-                server.webView_port = help.beckiPort;
-                server.server_remote_port = help.webPort;
-
-                server.mqtt_username = help.mqttUser;
-                server.grid_port = help.gridPort;
-                server.webView_port = help.beckiPort;
-                server.days_in_archive = help.daysInArchive;
-                server.time_stamp_configuration = help.timeStamp;
-
-                server.logging = help.logging;
-                server.interactive = help.interactive;
-                server.logLevel = Log_Level.fromString(help.logLevel);
-                server.update();
-
-                return;
-
-            }else {
-                // Tyrion server má novější konfiguraci
-                logger.debug("WS_HomerServer:: synchronize_configuration: Tyrion server has new configuration");
-                JsonNode response = server.set_new_configuration_on_homer();
-                logger.debug("WS_HomerServer:: synchronize_configuration: New Config state:: " + response.get("status"));
-
-                return;
-            }
-
-        }catch(ClosedChannelException e){
-            logger.warn("WS_HomerServer:: security_token_confirm_procedure :: ClosedChannelException");
-        }catch (TimeoutException e){
-            logger.error("WS_HomerServer:: security_token_confirm_procedure :: TimeoutException");
-        }catch (Exception e){
-            logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error", e);
+        if(synchronize == null ){
+            synchronize = new SynchronizeHomerServer(this);
+            logger.debug("WS_HomerServer:: synchronize_configuration: Independent Thread for secure starting");
+            synchronize.start();
+        }else {
+            logger.debug("WS_HomerServer:: synchronize_configuration: Independent Thread for secure was started already");
         }
     }
 
+    public WebSCType get_Super(){
+        return super.webSCtype;
+    }
 
 
-// Přepsané oprávnění - jen kontrola zda se WebSocketu může něco posílat
+    // IO -----------------------------------------------------------------------------------------------------------------
 
     @Override
     public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries)  throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{

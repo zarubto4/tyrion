@@ -1361,7 +1361,7 @@ public class Controller_CompilationLibraries extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result uploadCompilationToBoard( @ApiParam(value = "version_id ", required = true) String version_id) {
+    public Result uploadCompilationToBoard() {
         try {
 
             // Zpracování Json
@@ -1371,7 +1371,7 @@ public class Controller_CompilationLibraries extends Controller {
 
 
             // Ověření objektu
-            Model_VersionObject c_program_version = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject c_program_version = Model_VersionObject.find.byId(help.version_id);
             if(c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
             // Zkontroluji oprávnění
