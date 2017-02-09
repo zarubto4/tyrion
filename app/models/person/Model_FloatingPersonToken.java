@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.enums.Where_logged_tag;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -23,7 +24,7 @@ public class Model_FloatingPersonToken extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id @ApiModelProperty(required = true)                  public String connection_id;
-                                     @JsonIgnore            public String authToken;
+                              @JsonIgnore                   public String authToken;
        @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)  public Model_Person person;
 
     @ApiModelProperty(required = true,
@@ -31,7 +32,7 @@ public class Model_FloatingPersonToken extends Model {
     value = "UNIX time in ms",
     example = "1466163478925")                              public Date   created;
 
-    @ApiModelProperty(required = true, value = "Record, where user make login")  public String where_logged; // Záznam, kde došlo k přihlášení (Becki, Tyrion, Homer, Compilator
+    @ApiModelProperty(required = true, value = "Record, where user make login")  public Where_logged_tag where_logged; // Záznam, kde došlo k přihlášení (Becki, Tyrion, Homer, Compilator
 
     @ApiModelProperty(required = true,
     dataType = "integer", readOnly = true,
@@ -62,6 +63,9 @@ public class Model_FloatingPersonToken extends Model {
     @JsonIgnore @Override
     public void save() {
 
+        this.setToken( createToken() );
+        this.setDate();
+
         while (true) { // I need Unique Value
             this.connection_id = UUID.randomUUID().toString();
             if (Model_FloatingPersonToken.find.byId(this.connection_id) == null) break;
@@ -69,11 +73,6 @@ public class Model_FloatingPersonToken extends Model {
         super.save();
     }
 
-    @JsonIgnore
-    public void set_basic_values(){
-        this.setToken( createToken() );
-        this.setDate();
-    }
 
 
     @JsonIgnore
@@ -115,6 +114,7 @@ public class Model_FloatingPersonToken extends Model {
                 break;
             }
         }
+
 
         floatingPersonToken.type_of_connection = typeOfConnection;
         floatingPersonToken.created = new Date();

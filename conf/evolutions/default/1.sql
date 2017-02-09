@@ -197,7 +197,7 @@ create table model_floating_person_token (
   auth_token                varchar(255),
   person_id                 varchar(255),
   created                   timestamp,
-  where_logged              varchar(255),
+  where_logged              varchar(13),
   access_age                timestamp,
   user_agent                varchar(255),
   provider_user_id          varchar(255),
@@ -206,6 +206,7 @@ create table model_floating_person_token (
   return_url                varchar(255),
   social_token_verified     boolean,
   notification_subscriber   boolean,
+  constraint ck_model_floating_person_token_where_logged check (where_logged in ('E_STORE','HOMER_SERVER','BECKI_WEBSITE')),
   constraint pk_model_floating_person_token primary key (connection_id))
 ;
 

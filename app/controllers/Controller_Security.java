@@ -18,6 +18,7 @@ import play.libs.ws.WSRequest;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.enums.Where_logged_tag;
 import utilities.loggy.Loggy;
 import utilities.loginEntities.Secured_API;
 import utilities.loginEntities.Socials;
@@ -99,9 +100,8 @@ public class Controller_Security extends Controller {
 
 
             Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
-            floatingPersonToken.set_basic_values();
             floatingPersonToken.person = person;
-            floatingPersonToken.where_logged  = "Byzance Portal";
+            floatingPersonToken.where_logged  = Where_logged_tag.BECKI_WEBSITE;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
@@ -289,6 +289,8 @@ public class Controller_Security extends Controller {
 
             }
 
+            logger.debug("Controller_Security:: GET_github_oauth:: Return URL:: " + Server.becki_mainUrl + floatingPersonToken.return_url);
+
             return redirect(Server.becki_mainUrl + floatingPersonToken.return_url);
 
 
@@ -397,6 +399,7 @@ public class Controller_Security extends Controller {
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("GitHub");
 
             floatingPersonToken.return_url = return_link;
+            floatingPersonToken.where_logged = Where_logged_tag.BECKI_WEBSITE;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
@@ -410,9 +413,12 @@ public class Controller_Security extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;
 
+            System.out.println(Json.toJson(result));
+
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

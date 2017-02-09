@@ -16,6 +16,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.enums.Log_Level;
+import utilities.enums.Where_logged_tag;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.webSocket.WS_HomerServer;
 import utilities.webSocket.messageObjects.WS_CheckPersonPermission_OnHomerServer;
@@ -227,10 +228,9 @@ public class Model_HomerServer extends Model{
                 logger.debug("Cloud_Homer_Server:: check_person_permission_for_homer_server:: Person found with Email:: " + message.email + " with right permissions");
 
                 Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
-                floatingPersonToken.set_basic_values();
                 floatingPersonToken.person = person;
                 floatingPersonToken.user_agent = message.user_agent;
-                floatingPersonToken.where_logged  = "Homer Server (" + homer.server.personal_server_name + ")";
+                floatingPersonToken.where_logged = Where_logged_tag.HOMER_SERVER;
                 floatingPersonToken.save();
 
                 ObjectNode request = Json.newObject();

@@ -11,6 +11,8 @@ import static play.mvc.Controller.request;
 
 public class Secured_API extends Security.Authenticator {
 
+    // Logger
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     @Override
     public String getUsername(Context ctx) {
@@ -26,6 +28,8 @@ public class Secured_API extends Security.Authenticator {
         }else if(ctx.request().headers().get("X-AUTH-TOKEN") != null) {
             token = request().headers().get("X-AUTH-TOKEN")[0];
         }
+
+        logger.debug("Security Token:: " + token);
 
         //TODO Přepsat do Try and Catche - aby se odstranili podmínkya v případě null poitnexception se vracel null
         if ((token != null)) {
