@@ -17,19 +17,16 @@ import models.project.b_program.servers.Model_HomerServer;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
-import play.data.Form;
 import play.libs.Json;
-import utilities.enums.Board_Status;
-import utilities.enums.Board_Type_of_connection;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
-import utilities.enums.C_ProgramUpdater_State;
+import utilities.enums.*;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
 import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.homer_instance.WS_DeviceConnected;
 import utilities.web_socket.message_objects.WS_Unregistred_device_connected;
+import utilities.web_socket.message_objects.homer_instance.WS_DeviceConnected;
+import utilities.web_socket.message_objects.homer_instance.WS_DeviceDisconnected;
 import utilities.web_socket.message_objects.homer_instance.WS_YodaConnected;
+import utilities.web_socket.message_objects.homer_instance.WS_YodaDisconnected;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -273,14 +270,9 @@ public class Model_Board extends Model {
             return homer_instance;
     }
 
-    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, ObjectNode json){
+    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_YodaConnected help){
         try {
 
-            // Zpracování Json
-            final Form<WS_YodaConnected> form = Form.form(WS_YodaConnected.class).bind(json);
-            if(form.hasErrors()){logger.error("Incoming Json for Yoda has not right Form");return;}
-
-            WS_YodaConnected help = form.get();
             Model_Board master_device = Model_Board.find.byId(help.deviceId);
 
             if(master_device == null){
@@ -299,7 +291,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void master_device_Disconnected(ObjectNode json){
+    @JsonIgnore @Transient  public static void master_device_Disconnected(WS_YodaDisconnected help){
         try {
 
         }catch (Exception e){
@@ -307,14 +299,8 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, ObjectNode json){
+    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_DeviceConnected help){
         try {
-
-            // Zpracování Json
-            final Form<WS_DeviceConnected> form = Form.form(WS_DeviceConnected.class).bind(json);
-            if(form.hasErrors()){ logger.error("Incoming Json from Device has not right Form"); return; }
-
-            WS_DeviceConnected help = form.get();
 
             Model_Board device = Model_Board.find.byId(help.deviceId);
 
@@ -325,7 +311,6 @@ public class Model_Board extends Model {
                 logger.warn("WARN! WARN! WARN! WARN!");
                 return;
             }
-
 
             if(!device.is_active ){
                 device.is_active = true;
@@ -340,7 +325,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Disconnected(ObjectNode json){
+    @JsonIgnore @Transient  public static void device_Disconnected(WS_DeviceDisconnected help){
         try {
             //TODO
         }catch (Exception e){

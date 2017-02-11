@@ -23,13 +23,10 @@ import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
 import models.project.m_program.Model_GridTerminal;
+import play.data.Form;
 import play.libs.Json;
-import utilities.enums.Firmware_type;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
-import utilities.enums.Type_of_command;
+import utilities.enums.*;
 import utilities.hardware_updater.Master_Updater;
-import utilities.enums.C_ProgramUpdater_State;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
@@ -38,6 +35,7 @@ import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.WebSCType;
 import utilities.web_socket.message_objects.WS_BoardStats_AbstractClass;
+import utilities.web_socket.message_objects.homer_instance.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -240,32 +238,68 @@ public class Model_HomerInstance extends Model {
         try {
             switch (json.get("messageType").asText()) {
 
-
                 case "deviceConnected": {
-                    logger.debug("Homer_Instance:: Incoming message:: deviceConnected");
-                    Model_Board.device_Connected(homer, json);
+
+                    final Form<WS_DeviceConnected> form = Form.form(WS_DeviceConnected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form");return;}
+
+                    Model_Board.device_Connected(homer, form.get());
                     return;
                 }
                 case "yodaConnected": {
-                    logger.debug("Homer_Instance:: Incoming message:: yodaConnected");
-                    Model_Board.master_device_Connected(homer, json);
+
+                    // Zpracování Json
+                    final Form<WS_YodaConnected> form = Form.form(WS_YodaConnected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form");return;}
+
+                    Model_Board.master_device_Connected(homer, form.get());
+                    return;
+                }
+                case "yodaDisconnected": {
+
+                    final Form<WS_YodaDisconnected> form = Form.form(WS_YodaDisconnected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form");return;}
+
+                    Model_Board.master_device_Disconnected(form.get());
+                    return;
+                }
+                case "deviceDisconnected": {
+
+                    final Form<WS_DeviceDisconnected> form = Form.form(WS_DeviceDisconnected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form");return;}
+
+                    Model_Board.device_Disconnected(form.get());
                     return;
                 }
                 case "instanceSummary": {
                     logger.debug("Homer_Instance:: Incoming message:: instanceSummary");
 
+                    final Form<WS_InstanceSummary> form = Form.form(WS_InstanceSummary.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: instanceSummary:: Incoming Json for Yoda has not right Form");return;}
+
+
                     return;
                 }
 
                 case "token_grid_verification": {
-                    logger.debug("Homer_Instance:: Incoming message:: Token Grid Verification");
-                    Model_HomerInstance.find.byId(json.get("instanceId").asText()).cloud_verification_token_GRID(json);
+
+                    final Form<WS_Grid_token_verification> form = Form.form(WS_Grid_token_verification.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: token_grid_verification:: Incoming Json for Yoda has not right Form");return;}
+
+                    WS_Grid_token_verification help = form.get();
+                    help.get_instance().cloud_verification_token_GRID(help);
+
                     return;
                 }
 
                 case "token_webView_verification": {
-                    logger.debug("Homer_Instance:: Incoming message:: Token WebView Verification");
-                    Model_HomerInstance.find.byId(json.get("instanceId").asText()).cloud_verification_token_WEBVIEW(json);
+
+                    final Form<WS_WebView_token_verification> form = Form.form(WS_WebView_token_verification.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: token_webView_verification:: Incoming Json for Yoda has not right Form");return;}
+
+                    WS_WebView_token_verification help = form.get();
+                    help.get_instance().cloud_verification_token_WEBVIEW(help);
+
                     return;
                 }
 
@@ -611,21 +645,21 @@ public class Model_HomerInstance extends Model {
 
 
     // TOKEN verification
-    @JsonIgnore @Transient  public  void cloud_verification_token_GRID(JsonNode node){
+    @JsonIgnore @Transient  public  void cloud_verification_token_GRID(WS_Grid_token_verification help){
         try {
 
             logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
             WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(server_id());
 
-            Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", node.get("token").asText()).findUnique();
+            Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
 
 
             ObjectNode request = Json.newObject();
             request.put("messageType", "token_grid_verification");
             request.put("messageChannel", CHANNEL);
             request.put("status", "Success");
-            request.put("messageId", node.get("messageId").asText());
-            request.put("instanceId", node.get("instanceId").asText());
+            request.put("messageId", help.messageId);
+            request.put("instanceId",help.instanceId);
 
             if(terminal == null){
                 logger.warn("Homer_Instance:: cloud_verification_token:: Grid_Terminal object not found!");
@@ -638,10 +672,10 @@ public class Model_HomerInstance extends Model {
 
             if(terminal.person == null) {
                 logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
-                size = Model_HomerInstance.find.where().eq("blocko_instance_name", node.get("instanceId").asText()).eq("actual_instance.version_object.public_version", true).findRowCount();
+                size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId).eq("actual_instance.version_object.public_version", true).findRowCount();
             }else {
                 logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
-                size = Model_HomerInstance.find.where().eq("blocko_instance_name", node.get("instanceId").asText())
+                size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId)
                             .disjunction()
                                 .eq("b_program.project.participants.person.id", terminal.person.id)
                                 .eq("actual_instance.version_object.public_version", true)
@@ -666,32 +700,31 @@ public class Model_HomerInstance extends Model {
         }
 
     }
-    @JsonIgnore @Transient  public  void cloud_verification_token_WEBVIEW(JsonNode node){
+    @JsonIgnore @Transient  public  void cloud_verification_token_WEBVIEW(WS_WebView_token_verification help){
         try {
 
             logger.debug("Homer_Instance:: cloud_verification_token:: WebView  Checking Token");
-            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(server_id());
-
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("authToken", node.get("token").asText()).findUnique();
 
             // Ještě instanci ke které se to chce přihlásit
             ObjectNode request = Json.newObject();
             request.put("messageType", "result");
-            request.put("messageChannel", node.get("messageChannel").asText());
+            request.put("messageChannel",  help.messageChannel);
             request.put("status", "Success");
-            request.put("instanceId", node.get("instanceId").asText());
+            request.put("instanceId", help.instanceId);
+            request.put("messageId", help.messageId);
 
             if(floatingPersonToken == null){
                 logger.warn("Homer_Instance:: cloud_verification_token:: FloatingPersonToken not found!");
                 request.put("token_approve", false);
-                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(node.get("messageId").asText(), request);
+                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(request);
                 return;
             }
 
             logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
             request.put("token_approve", true);
-            Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation( node.get("messageId").asText(), request);
+            Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(request);
             return;
 
         }catch (Exception e){
@@ -706,7 +739,7 @@ public class Model_HomerInstance extends Model {
         logger.error("Tady chci kontrolovat hardware!!! Všechen!!!!!! Instance ID:: ", blocko_instance_name);
     }
 
-    @JsonIgnore @Transient public  void check_hardware(Model_Board board, WS_BoardStats_AbstractClass report){
+    @JsonIgnore @Transient public  void check_hardware(Model_Board board, WS_YodaConnected report){
 
         logger.error("Tady chci kontrolovat hardware!!! Všechen!!!!!! Instance ID:: ", blocko_instance_name, " hardware ID:: ", board.id);
 
