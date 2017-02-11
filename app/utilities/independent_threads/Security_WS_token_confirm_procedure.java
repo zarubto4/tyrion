@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.servers.Model_HomerServer;
 import play.data.Form;
 import play.libs.Json;
-import utilities.webSocket.WS_HomerServer;
-import utilities.webSocket.messageObjects.WS_CheckHomerServerPermission;
+import utilities.web_socket.WS_HomerServer;
+import utilities.web_socket.message_objects.WS_CheckHomerServerPermission;
 
 import java.nio.channels.ClosedChannelException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public class Security_WS_token_confirm_procedure extends Thread {
@@ -73,20 +74,22 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
                 // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
-                server.server.check_after_connection(server);
+                server.server.check_after_connection();
 
                 logger.debug("Security_WS_token_confirm_procedure:: Connection procedure done!");
                 break;
 
             }catch(ClosedChannelException e){
-                logger.warn("WS_HomerServer:: security_token_confirm_procedure :: ClosedChannelException");
-
+                logger.warn("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: ClosedChannelException");
+                break;
+            }catch(ExecutionException e){
+                logger.error("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: ExecutionException");
                 break;
             }catch(TimeoutException e){
-                logger.error("WS_HomerServer:: security_token_confirm_procedure :: TimeoutException");
+                logger.error("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: TimeoutException");
                 break;
             }catch(Exception e){
-                logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error", e);
+                logger.error("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: Error", e);
                 break;
             }
 

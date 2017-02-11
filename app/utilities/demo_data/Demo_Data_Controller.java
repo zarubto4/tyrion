@@ -26,7 +26,7 @@ import utilities.enums.Participant_status;
 import utilities.enums.Payment_method;
 import utilities.enums.Payment_mode;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_Admin;
+import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
@@ -1192,13 +1192,13 @@ public class Demo_Data_Controller extends Controller {
             System.err.println(Json.toJson(participant_1));
 
             // Zaregistruji pod ně Yody
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","Yoda F").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[F]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[69]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[67]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[66]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[65]").findUnique());
 
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","Yoda Q").findUnique());
+            project_1.boards.add( Model_Board.find.where().eq("personal_description","[G]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[73]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[74]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[75]").findUnique());

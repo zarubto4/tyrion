@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.servers.Model_HomerServer;
 import play.libs.Json;
 import utilities.enums.Log_Level;
-import utilities.webSocket.WS_HomerServer;
-import utilities.webSocket.messageObjects.WS_CheckHomerServerConfiguration;
+import utilities.web_socket.WS_HomerServer;
+import utilities.web_socket.message_objects.WS_CheckHomerServerConfiguration;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.TimeoutException;
@@ -78,11 +78,11 @@ public class SynchronizeHomerServer extends Thread {
             homer_server.synchronize = null;
 
         }catch(ClosedChannelException e){
-            logger.warn("WS_HomerServer:: security_token_confirm_procedure :: ClosedChannelException");
+            logger.warn("SynchronizeHomerServer:: synchronize_configuration :: ClosedChannelException");
         }catch (TimeoutException e){
-            logger.error("WS_HomerServer:: security_token_confirm_procedure :: TimeoutException");
+            logger.error("SynchronizeHomerServer:: synchronize_configuration :: TimeoutException");
         }catch (Exception e){
-            logger.error("WS_HomerServer:: security_token_confirm_procedure :: Error", e);
+            logger.error("SynchronizeHomerServer:: synchronize_configuration :: Error", e);
         }
 
     }

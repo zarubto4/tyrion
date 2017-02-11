@@ -16,13 +16,13 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
-import utilities.loginEntities.TokenCache;
+import utilities.login_entities.Secured_API;
+import utilities.login_entities.TokenCache;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
-import utilities.webSocket.*;
-import utilities.webSocket.messageObjects.WS_Token;
+import utilities.web_socket.*;
+import utilities.web_socket.message_objects.WS_Token;
 
 import java.util.HashMap;
 import java.util.Map;

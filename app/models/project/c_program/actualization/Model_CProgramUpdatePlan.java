@@ -11,7 +11,7 @@ import models.compiler.Model_BootLoader;
 import models.compiler.Model_FileRecord;
 import models.compiler.Model_VersionObject;
 import utilities.enums.Firmware_type;
-import utilities.hardware_updater.States.C_ProgramUpdater_State;
+import utilities.enums.C_ProgramUpdater_State;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -94,6 +94,9 @@ public class Model_CProgramUpdatePlan extends Model {
 
     @JsonIgnore @Override
     public void save() {
+
+        this.state = C_ProgramUpdater_State.not_start_yet;
+        this.date_of_create = new Date();
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();

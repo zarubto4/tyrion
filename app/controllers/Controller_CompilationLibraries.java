@@ -10,6 +10,8 @@ import io.swagger.annotations.*;
 import models.compiler.*;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.c_program.Model_CProgram;
+import models.project.c_program.actualization.Model_ActualizationProcedure;
+import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Product;
 import models.project.global.Model_Project;
 import play.data.Form;
@@ -18,9 +20,10 @@ import play.libs.ws.WSClient;
 import play.mvc.*;
 import utilities.emails.EmailTool;
 import utilities.enums.*;
+import utilities.hardware_updater.Master_Updater;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
-import utilities.loginEntities.Secured_Admin;
+import utilities.login_entities.Secured_API;
+import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -1092,6 +1095,8 @@ public class Controller_CompilationLibraries extends Controller {
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
 
+            if(!Model_CompilationServer.is_online()) return GlobalResult.result_external_server_is_offline("Compilation Server offilne");
+
             // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
             ObjectNode result = Json.newObject();
             result.put("messageType", "build");
@@ -1384,14 +1389,7 @@ public class Controller_CompilationLibraries extends Controller {
             if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
 
             // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-            if(   c_program_version.c_compilation.status == Compile_Status.compilation_in_progress
-               || c_program_version.c_compilation.status == Compile_Status.file_with_code_not_found
-               || c_program_version.c_compilation.status == Compile_Status.json_code_is_broken
-               || c_program_version.c_compilation.status == Compile_Status.compilation_server_error
-               || c_program_version.c_compilation.status == Compile_Status.compiled_with_code_errors
-               || c_program_version.c_compilation.status == Compile_Status.successfully_compiled_and_restored
-              ) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
-
+            if(c_program_version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
 
             //Zkontroluji zda byla verze už zkompilována
             if(!c_program_version.c_compilation.status.name().equals(Compile_Status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
@@ -1411,15 +1409,25 @@ public class Controller_CompilationLibraries extends Controller {
                     board_for_update.add(board);
             }
 
+            Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+            procedure.save();
 
+            for(Model_Board board : board_for_update)
+            {
+                Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
+                plan.board = board;
+                plan.firmware_type = Firmware_type.FIRMWARE;
+                plan.actualization_procedure = procedure;
+                plan.c_program_version_for_update = c_program_version;
+                plan.save();
+            }
 
-            // TODO
+            procedure.refresh();
 
-
-            //Controller_Actualization.add_new_actualization_request_with_user_file(c_program_version.c_program.project, board_for_update, c_program_version);
+            Master_Updater.add_new_Procedure(procedure);
 
             // Vracím odpověď
-            return GlobalResult.result_ok("Procedura byla spuštěna - uživatel bude informován!");
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -2939,6 +2947,7 @@ public class Controller_CompilationLibraries extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }
@@ -2966,11 +2975,11 @@ public class Controller_CompilationLibraries extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_check(@ApiParam(required = true) String board_id) {
+    public Result board_check(@ApiParam(required = true) String hash_for_adding) {
         try {
 
             // Kotrola objektu
-            Model_Board board = Model_Board.find.byId(board_id);
+            Model_Board board = Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique();
 
 
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
@@ -3017,12 +3026,12 @@ public class Controller_CompilationLibraries extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_connectProject(@ApiParam(required = true) String board_id, @ApiParam(required = true) String project_id){
+    public Result board_connectProject(@ApiParam(required = true) String hash_for_adding, @ApiParam(required = true) String project_id){
         try {
 
             logger.debug("CompilationControler:: Registrace nového zařízení ");
             // Kotrola objektu
-            Model_Board board = Model_Board.find.byId(board_id);
+            Model_Board board = Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique();
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kotrola objektu
@@ -3051,7 +3060,7 @@ public class Controller_CompilationLibraries extends Controller {
                 board.virtual_instance_under_project = instance;
                 instance.update();
                 board.update();
-                instance.add_Yoda_to_instance(board_id);
+                instance.add_Yoda_to_instance(board.id);
             }
 
 

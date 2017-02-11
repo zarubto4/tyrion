@@ -9,8 +9,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.project.b_program.instnace.Model_HomerInstanceRecord;
 import models.project.global.Model_Project;
-import utilities.hardware_updater.States.Actual_procedure_State;
-import utilities.hardware_updater.States.C_ProgramUpdater_State;
+import utilities.enums.Actual_procedure_State;
+import utilities.enums.C_ProgramUpdater_State;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -51,7 +51,6 @@ public class Model_ActualizationProcedure extends Model {
         return state;
     }
 
-
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public Integer state_percentage(){ return 41; }        // TODO - připraveno pro becki - nutno dodělat v Tyrionovi http://youtrack.byzance.cz/youtrack/issue/TYRION-346
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String  state_fraction(){ return "21/35"; }     // TODO - http://youtrack.byzance.cz/youtrack/issue/TYRION-347
 
@@ -59,6 +58,9 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Override
     public void save() {
+
+        date_of_create = new Date();
+        state = Actual_procedure_State.not_start_yet;
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();

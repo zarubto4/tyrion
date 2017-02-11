@@ -13,8 +13,8 @@ import models.project.b_program.servers.Model_HomerServer;
 import play.libs.Json;
 import utilities.enums.Compile_Status;
 import utilities.independent_threads.Compilation_After_BlackOut;
-import utilities.webSocket.SendMessage;
-import utilities.webSocket.WS_CompilerServer;
+import utilities.web_socket.SendMessage;
+import utilities.web_socket.WS_CompilerServer;
 
 import javax.persistence.*;
 import java.util.ArrayList;

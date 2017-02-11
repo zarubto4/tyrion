@@ -1,4 +1,4 @@
-package utilities.hardware_updater.States;
+package utilities.enums;
 
 import com.avaje.ebean.annotation.EnumValue;
 import io.swagger.annotations.ApiModelProperty;

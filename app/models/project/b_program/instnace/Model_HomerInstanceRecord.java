@@ -19,8 +19,8 @@ import models.project.m_program.Model_MProjectProgramSnapShot;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.Master_Updater;
-import utilities.hardware_updater.States.Actual_procedure_State;
-import utilities.hardware_updater.States.C_ProgramUpdater_State;
+import utilities.enums.Actual_procedure_State;
+import utilities.enums.C_ProgramUpdater_State;
 
 import javax.persistence.*;
 import java.util.ArrayList;

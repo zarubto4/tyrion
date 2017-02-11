@@ -1,4 +1,4 @@
-package utilities.webSocket;
+package utilities.web_socket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -9,7 +9,7 @@ import play.libs.Json;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.independent_threads.SynchronizeHomerServer;
-import utilities.loginEntities.TokenCache;
+import utilities.login_entities.TokenCache;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;

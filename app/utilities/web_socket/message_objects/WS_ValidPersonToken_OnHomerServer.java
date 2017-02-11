@@ -1,13 +1,14 @@
-package utilities.webSocket.messageObjects;
+package utilities.web_socket.message_objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.web_socket.message_objects.common.WS_AbstractMessage;
 
 import java.io.IOException;
 
-public class WS_ValidPersonToken_OnHomerServer {
+public class WS_ValidPersonToken_OnHomerServer extends WS_AbstractMessage {
 
     public static WS_ValidPersonToken_OnHomerServer getObject(ObjectNode json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
@@ -15,9 +16,5 @@ public class WS_ValidPersonToken_OnHomerServer {
     }
 
     @ApiModelProperty(required = true) @Constraints.Required  public String token;
-
-    @ApiModelProperty(required = true) @Constraints.Required  public String messageType;
-    @ApiModelProperty(required = true) @Constraints.Required  public String messageId;
-    @ApiModelProperty(required = true) @Constraints.Required  public String messageChannel;
 
 }

@@ -15,7 +15,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.UtilTools;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;

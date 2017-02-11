@@ -1,6 +1,7 @@
-package utilities.webSocket.messageObjects;
+package utilities.web_socket.message_objects.homer_instance;
 
 import io.swagger.annotations.ApiModelProperty;
+import utilities.web_socket.message_objects.WS_BoardStats_AbstractClass;
 
 import javax.validation.Valid;
 import java.util.ArrayList;

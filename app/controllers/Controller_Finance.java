@@ -18,7 +18,7 @@ import utilities.enums.Payment_status;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
+import utilities.login_entities.Secured_API;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_BadRequest;

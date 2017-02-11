@@ -17,7 +17,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -694,7 +694,7 @@ public class Controller_Person extends Controller {
             if (!person.edit_permission())  return GlobalResult.forbidden_Permission();
 
             person.nick_name    = help.nick_name;
-            person.full_name    = help.full_name;
+            person.full_name    = help.full_name != null ? help.full_name : null;
 
             if (help.country != null && (!help.country.equals("")))
                 person.country = help.country;

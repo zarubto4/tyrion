@@ -20,8 +20,8 @@ import utilities.Server;
 import utilities.UtilTools;
 import utilities.enums.Where_logged_tag;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
-import utilities.loginEntities.Socials;
+import utilities.login_entities.Secured_API;
+import utilities.login_entities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_JsonValueMissing;
@@ -32,7 +32,7 @@ import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
-import utilities.webSocket.WS_Becki_Website;
+import utilities.web_socket.WS_Becki_Website;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -262,26 +262,25 @@ public class Controller_Security extends Controller {
             List<Model_FloatingPersonToken> before_registred = Model_FloatingPersonToken.find.where().eq("provider_user_id", floatingPersonToken.provider_user_id).where().ne("connection_id", floatingPersonToken.connection_id).findList();
             if (!before_registred.isEmpty()) {
                 System.out.println("Tento uživatel se nepřihlašuje poprvné");
+
+                // Zreviduji stav z GitHubu
+                // TODO
+
                 floatingPersonToken.person = before_registred.get(0).person;
                 floatingPersonToken.update();
 
             } else {
+                System.out.println("Tento uživatel se přihlašuje poprvé");
+                System.out.println("Json::" + jsonNode.toString());
 
                 Model_Person person = new Model_Person();
 
-                if (jsonNode.has("mail")) person.mail = jsonNode.get("mail").asText();
-                if (jsonNode.has("login")) person.nick_name = jsonNode.get("login").asText();
-                // TODO  + další info co lze z JSONu dostat
 
+                if (jsonNode.has("mail"))   person.mail = jsonNode.get("mail").asText();
+                if (jsonNode.has("login"))  person.nick_name = jsonNode.get("login").asText();
+                if (jsonNode.has("name") && jsonNode.get("name") != null &&  !jsonNode.get("name").equals("") && !jsonNode.get("name").equals("null"))   person.full_name = jsonNode.get("name").asText();
+                if (jsonNode.has("avatar_url")) person.azure_picture_link = jsonNode.get("avatar_url").asText();
 
-                if (jsonNode.has("name")) {
-                    try {
-                        System.out.println("name: " + jsonNode.get("login").asText());
-                       person.full_name = jsonNode.get("name").asText();
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("Uživatel nemá vyplněné jméno a příjmení s mezerou .. nebo jiná TODO aktivita");
-                    }
-                }
 
                 person.save();
                 floatingPersonToken.person = person;

@@ -1,4 +1,4 @@
-package utilities.loginEntities;
+package utilities.login_entities;
 
 import com.github.scribejava.apis.FacebookApi;
 import com.github.scribejava.apis.GitHubApi;

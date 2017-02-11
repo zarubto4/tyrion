@@ -1,13 +1,14 @@
-package utilities.webSocket.messageObjects;
+package utilities.web_socket.message_objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.data.validation.Constraints;
+import utilities.web_socket.message_objects.common.WS_AbstractMessage;
 
 import java.io.IOException;
 import java.util.Date;
 
-public class WS_CheckHomerServerConfiguration {
+public class WS_CheckHomerServerConfiguration extends WS_AbstractMessage {
 
 
     public static WS_CheckHomerServerConfiguration getObject(ObjectNode json) throws IOException {
@@ -33,11 +34,5 @@ public class WS_CheckHomerServerConfiguration {
     @Constraints.Required public boolean logging;
     @Constraints.Required public boolean interactive;
     @Constraints.Required public String logLevel;
-
-    // Defualtní
-    public String messageId;
-    public String messageType;
-    public String messageChannel;
-    public String status;
 
 }

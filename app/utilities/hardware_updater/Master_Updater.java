@@ -9,7 +9,7 @@ import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
-import utilities.hardware_updater.States.C_ProgramUpdater_State;
+import utilities.enums.C_ProgramUpdater_State;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,7 +127,7 @@ public class Master_Updater{
            for (Model_CProgramUpdatePlan plan : plans) {
                try {
 
-                   System.err.println("Json: " + Json.toJson(plan));
+                   logger.debug("Json CProgramUpdatePlan: " + Json.toJson(plan));
 
                    logger.debug("Zkoumaná plan id: " + plan.id);
 

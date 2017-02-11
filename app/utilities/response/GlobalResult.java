@@ -103,6 +103,7 @@ public class GlobalResult extends Controller {
         CoreResponse.cors();
         Result_NotFound result = new Result_NotFound();
         result.message = message;
+        result.code = 477;
         return Controller.status(477, Json.toJson(result));
 
     }

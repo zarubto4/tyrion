@@ -29,15 +29,15 @@ import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.enums.Type_of_command;
 import utilities.hardware_updater.Master_Updater;
-import utilities.hardware_updater.States.C_ProgramUpdater_State;
+import utilities.enums.C_ProgramUpdater_State;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import utilities.webSocket.WS_HomerServer;
-import utilities.webSocket.WebSCType;
-import utilities.webSocket.messageObjects.WS_BoardStats_AbstractClass;
+import utilities.web_socket.WS_HomerServer;
+import utilities.web_socket.WebSCType;
+import utilities.web_socket.message_objects.WS_BoardStats_AbstractClass;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -243,13 +243,12 @@ public class Model_HomerInstance extends Model {
 
                 case "deviceConnected": {
                     logger.debug("Homer_Instance:: Incoming message:: deviceConnected");
-
-
+                    Model_Board.device_Connected(homer, json);
                     return;
                 }
                 case "yodaConnected": {
                     logger.debug("Homer_Instance:: Incoming message:: yodaConnected");
-
+                    Model_Board.master_device_Connected(homer, json);
                     return;
                 }
                 case "instanceSummary": {
@@ -595,11 +594,11 @@ public class Model_HomerInstance extends Model {
         return this.cloud_homer_server.isInstanceExist(this.blocko_instance_name);
     }
 
-    @JsonIgnore @Transient public  JsonNode get_device_list(){
+    @JsonIgnore @Transient public  JsonNode get_summary_information(){
         try {
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "getDeviceList");
+            result.put("messageType", "summaryInformation");
             result.put("messageChannel", CHANNEL);
             result.put("instanceId", this.blocko_instance_name);
 

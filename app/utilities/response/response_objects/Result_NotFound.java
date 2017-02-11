@@ -9,7 +9,7 @@ public class Result_NotFound {
     @ApiModelProperty(value = "state", required = true, readOnly = true)
     public String state = "Object not Found";
 
-    @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
+    @ApiModelProperty(value = "code", allowableValues = "400, 771, 773, 777.. etc", required = true, readOnly = true)
     public Integer code = 400;
 
     @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = true, readOnly = true)

@@ -17,7 +17,7 @@ import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.enums.Notification_state;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;

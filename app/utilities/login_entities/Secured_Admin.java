@@ -1,4 +1,4 @@
-package utilities.loginEntities;
+package utilities.login_entities;
 
 import models.person.Model_Person;
 import play.mvc.Http;

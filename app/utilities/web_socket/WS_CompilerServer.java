@@ -1,4 +1,4 @@
-package utilities.webSocket;
+package utilities.web_socket;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
