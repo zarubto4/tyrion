@@ -180,6 +180,7 @@ create table CompilationServer (
 
 create table model_example_model_name (
   id                        varchar(255) not null,
+  date_of_create            timestamp,
   constraint pk_model_example_model_name primary key (id))
 ;
 

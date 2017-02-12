@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static utilities.response.GlobalResult.result_ok;
+
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Security extends Controller {
 
@@ -112,7 +114,7 @@ public class Controller_Security extends Controller {
             swagger_login_token.authToken = floatingPersonToken.authToken;
 
 
-            return GlobalResult.result_ok( Json.toJson( swagger_login_token ) );
+            return result_ok( Json.toJson( swagger_login_token ) );
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -155,7 +157,7 @@ public class Controller_Security extends Controller {
 
             result.permissions = permissions;
 
-            return GlobalResult.result_ok( Json.toJson( result ) );
+            return result_ok( Json.toJson( result ) );
 
 
         } catch (Exception e) {
@@ -184,10 +186,12 @@ public class Controller_Security extends Controller {
 
                 // Pokus o smazání Tokenu
                 String token = request().getHeader("X-AUTH-TOKEN");
+                if(token == null) return GlobalResult.result_ok();
+
                 Model_FloatingPersonToken token_model = Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique();
 
                 //Pokud token existuje jednak ho smažu - ale pořeší i odpojení websocketu
-                if(token != null){
+                if(token_model != null){
 
                     // Úklid přihlášených websocketů
                     WS_Becki_Website becki_website = (WS_Becki_Website) Controller_WebSocket.becki_website.get(token_model.person.id);
@@ -414,7 +418,7 @@ public class Controller_Security extends Controller {
 
             System.out.println(Json.toJson(result));
 
-            return GlobalResult.result_ok(Json.toJson(result));
+            return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
             e.printStackTrace();
@@ -457,7 +461,7 @@ public class Controller_Security extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;
 
-            return GlobalResult.result_ok(Json.toJson(result));
+            return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -479,7 +483,7 @@ public class Controller_Security extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;
 
-            return GlobalResult.result_ok(Json.toJson(result));
+            return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -499,7 +503,7 @@ public class Controller_Security extends Controller {
             result.put("url", service.getAuthorizationUrl(null));
             result.put("authToken", floatingPersonToken.authToken);
 
-            return GlobalResult.result_ok(result);
+            return result_ok(result);
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -512,7 +516,7 @@ public class Controller_Security extends Controller {
     @ApiOperation( value = "option", hidden = true)
     public Result option(){
 
-        return GlobalResult.result_ok();
+        return result_ok();
     }
 
     @ApiOperation( value = "optionLink", hidden = true)

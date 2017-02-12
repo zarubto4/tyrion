@@ -3,7 +3,6 @@ package utilities.web_socket.message_objects.homer_tyrion;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.servers.Model_HomerServer;
-import play.data.validation.Constraints;
 import play.libs.Json;
 import utilities.web_socket.message_objects.common.WS_AbstractMessage;
 
@@ -16,7 +15,7 @@ public class WS_Get_instance_list  extends WS_AbstractMessage {
     @JsonIgnore
     public static final String messageType = "listInstances";
 
-    @Constraints.Required public List<String> instances = new ArrayList<>();
+    public List<String> instances = new ArrayList<>();
 
 
     @JsonIgnore

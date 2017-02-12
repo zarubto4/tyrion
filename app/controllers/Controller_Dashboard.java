@@ -28,6 +28,7 @@ import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.web_socket.*;
+import utilities.web_socket.message_objects.compilator_tyrion.WS_Ping_compilation_server;
 import utilities.web_socket.message_objects.homer_instance.WS_Ping_instance;
 import views.html.*;
 import views.html.blocko.blocko_management;
@@ -338,10 +339,9 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_CompilationServer server = Model_CompilationServer.find.where().eq("unique_identificator", identificator).findUnique();
-            JsonNode result = server.ping();
+            WS_Ping_compilation_server result = server.ping();
 
-
-            return GlobalResult.result_ok(result);
+            return GlobalResult.result_ok(Json.toJson(result));
 
 
         }catch (Exception e){

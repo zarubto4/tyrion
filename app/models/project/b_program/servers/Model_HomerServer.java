@@ -14,7 +14,8 @@ import models.person.Model_FloatingPersonToken;
 import models.person.Model_Person;
 import models.project.b_program.instnace.Model_HomerInstance;
 import play.data.Form;
-import play.libs.Json;
+import play.i18n.Lang;
+import play.mvc.Http;
 import utilities.Server;
 import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.enums.Log_Level;
@@ -24,9 +25,6 @@ import utilities.independent_threads.Check_Homer_instance_after_connection;
 import utilities.independent_threads.Check_Update_for_hw_on_homer;
 import utilities.independent_threads.SynchronizeHomerServer;
 import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Invalid_person_token_homer_server;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Unregistred_device_connected;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Valid_person_token_homer_server;
 import utilities.web_socket.message_objects.homer_instance.WS_Add_new_instance;
 import utilities.web_socket.message_objects.homer_instance.WS_Is_instance_exist;
 import utilities.web_socket.message_objects.homer_tyrion.*;
@@ -173,7 +171,7 @@ public class Model_HomerServer extends Model{
                 case WS_Unregistred_device_connected.messageType : {
 
                     final Form<WS_Unregistred_device_connected> form = Form.form(WS_Unregistred_device_connected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Unregistred_device_connected:: Incoming Json from Homer Server has not right Form");return;}
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Unregistred_device_connected:: Incoming Json from Homer Server has not right Form:: " + json.toString());return;}
 
                     Model_Board.unregistred_device_connected(homer, form.get());
                     return;
@@ -182,7 +180,7 @@ public class Model_HomerServer extends Model{
                 case WS_Check_homer_server_person_permission.messageType : {
 
                     final Form<WS_Check_homer_server_person_permission> form = Form.form(WS_Check_homer_server_person_permission.class).bind(json);
-                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Check_homer_server_person_permission:: Incoming Json from Homer Server  has not right Form");return;}
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Check_homer_server_person_permission:: Incoming Json from Homer Server  has not right Form:: " + json.toString());return;}
 
                     check_person_permission_for_homer_server(homer, form.get());
                     return;
@@ -191,7 +189,7 @@ public class Model_HomerServer extends Model{
                 case WS_Valid_person_token_homer_server.messageType : {
 
                     final Form<WS_Valid_person_token_homer_server> form = Form.form(WS_Valid_person_token_homer_server.class).bind(json);
-                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Valid_person_token_homer_server:: Incoming Json from Homer Server has not right Form");return;}
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Valid_person_token_homer_server:: Incoming Json from Homer Server has not right Form:: " + json.toString());return;}
 
                     check_person_token_for_homer_server(homer, form.get());
                     return;
@@ -200,7 +198,7 @@ public class Model_HomerServer extends Model{
                 case WS_Invalid_person_token_homer_server.messageType : {
 
                     final Form<WS_Invalid_person_token_homer_server> form = Form.form(WS_Invalid_person_token_homer_server.class).bind(json);
-                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Invalid_person_token_homer_server:: Incoming Json from Homer Server has not right Form");return;}
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Invalid_person_token_homer_server:: Incoming Json from Homer Server has not right Form:: " + json.toString());return;}
 
                     invalid_person_token_for_homer_server(homer, form.get());
                     return;
@@ -220,22 +218,12 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public static void check_person_permission_for_homer_server(WS_HomerServer homer, WS_Check_homer_server_person_permission message){
         try{
 
-
             Model_Person person = Model_Person.findByEmailAddressAndPassword(message.email, message.password);
 
             if (person == null) {
-
-                logger.warn("Cloud_Homer_Server:: check_person_permission_for_homer_server:: Person not found! Email:: " + message.email);
-                ObjectNode request = Json.newObject();
-                request.put("messageType", "checkUserPermission");
-                request.put("messageChannel", CHANNEL);
-                request.put("messageId", message.messageId);
-                request.put("status", "error");
-                request.put("message", "Email or Password is wrong");
-                homer.write_without_confirmation(request);
+                homer.write_without_confirmation(message.make_request_unsuccess());
                 return;
             }
-
 
             if(homer.server.read_permission(person)){
 
@@ -247,29 +235,11 @@ public class Model_HomerServer extends Model{
                 floatingPersonToken.where_logged = Where_logged_tag.HOMER_SERVER;
                 floatingPersonToken.save();
 
-                ObjectNode request = Json.newObject();
-                request.put("messageType", "checkUserPermission");
-                request.put("messageChannel", CHANNEL);
-                request.put("status", "success");
-                request.put("messageId", message.messageId);
-                request.put("read_permission", homer.server.read_permission(person));
-                request.put("edit_permission", homer.server.edit_permission(person));
-                request.put("delete_permission", homer.server.delete_permission(person));
-                request.put("create_permission", homer.server.create_permission(person));
-                request.put("authToken", floatingPersonToken.authToken);
-
-                homer.write_without_confirmation(request);
+                homer.write_without_confirmation( message.make_request_success(homer.server, person, floatingPersonToken) );
                 return;
             }else {
 
-                ObjectNode request = Json.newObject();
-                request.put("messageType", "checkUserPermission");
-                request.put("messageChannel", CHANNEL);
-                request.put("messageId", message.messageId);
-                request.put("status", "error");
-                request.put("message", "Permission Required");
-
-                homer.write_without_confirmation(request);
+                homer.write_without_confirmation(message.make_request_unsuccess());
                 return;
             }
 
@@ -331,9 +301,9 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Get_instance_list get_homer_server_listOfInstance(){
         try {
 
-            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(new WS_Get_instance_list().make_request(), 1000 * 4, 0, 3);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Get_instance_list().make_request(), 1000 * 4, 0, 3);
             final Form<WS_Get_instance_list> form = Form.form(WS_Get_instance_list.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Number_of_instancies_homer_server:: Incoming Json for Yoda has not right Form");return  new WS_Get_instance_list();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Get_instance_list:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return  new WS_Get_instance_list();}
             return form.get();
 
         }catch (Exception e){
@@ -345,9 +315,15 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Number_of_instances_homer_server get_homer_server_number_of_instance(){
         try {
 
-            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(new WS_Number_of_instances_homer_server().make_request(), 1000 * 4, 0, 3);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Number_of_instances_homer_server().make_request(), 1000 * 4, 0, 3);
             final Form<WS_Number_of_instances_homer_server> form = Form.form(WS_Number_of_instances_homer_server.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Number_of_instancies_homer_server:: Incoming Json for Yoda has not right Form");return new WS_Number_of_instances_homer_server();}
+            if(form.hasErrors()){
+
+                Lang leng = new Lang( new play.api.i18n.Lang("en-us", "US"));
+                Http.Context.current().setTransientLang(leng);
+
+                logger.error("Model_HomerServer:: WS_Number_of_instances_homer_server:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson().toString());return new WS_Number_of_instances_homer_server();
+            }
 
             return form.get();
         }catch (Exception e){
@@ -359,12 +335,13 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public boolean is_instance_exist(String instance_name){
         try {
 
-            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation( new WS_Is_instance_exist().make_request(instance_name), 1000 * 4, 0, 3);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Is_instance_exist().make_request(instance_name), 1000 * 5, 0, 2);
 
             final Form<WS_Is_instance_exist> form = Form.form(WS_Is_instance_exist.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Number_of_instancies_homer_server:: Incoming Json for Yoda has not right Form"); return false;}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Is_instance_exist:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return false;}
 
             WS_Is_instance_exist help = form.get();
+
 
             return (help.status.equals("success") && help.exist);
 
@@ -377,12 +354,12 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Add_new_instance add_instance(Model_HomerInstance instance){
         try {
 
-            if (is_instance_exist(instance.blocko_instance_name)) return new WS_Add_new_instance();
+            if ( is_instance_exist(instance.blocko_instance_name) ) return new WS_Add_new_instance();
 
-            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation( new WS_Add_new_instance().make_request(instance), 1000 * 5, 0, 3);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Add_new_instance().make_request(instance), 1000 * 5, 0, 3);
 
             final Form<WS_Add_new_instance> form = Form.form(WS_Add_new_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form"); return new WS_Add_new_instance();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Add_new_instance();}
 
             return form.get();
 
@@ -396,10 +373,10 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Destroy_instance remove_instance(String instance_name) {
         try {
 
-            JsonNode node =  Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation( new WS_Destroy_instance().make_request(instance_name), 1000 * 5, 0, 3);
+            JsonNode node =  get_server_webSocket_connection().write_with_confirmation( new WS_Destroy_instance().make_request(instance_name), 1000 * 5, 0, 3);
 
             final Form<WS_Destroy_instance> form = Form.form(WS_Destroy_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form"); return new WS_Destroy_instance();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Destroy_instance();}
 
             return form.get();
 
@@ -424,7 +401,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public  void ask_for_verificationToken(){
         try {
 
-         WS_HomerServer homer_server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(unique_identificator);
+         WS_HomerServer homer_server = (WS_HomerServer) get_server_webSocket_connection();
          homer_server.security_token_confirm_procedure();
             
         }catch (Exception e){
@@ -435,10 +412,10 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public  WS_Ping_server ping(){
         try {
 
-            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(new WS_Ping_server().make_request(), 1000 * 2, 0, 2);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Ping_server().make_request(), 1000 * 2, 0, 2);
 
             final Form<WS_Ping_server> form = Form.form(WS_Ping_server.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form"); return new WS_Ping_server();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Ping_server();}
 
            return form.get();
 
@@ -452,10 +429,10 @@ public class Model_HomerServer extends Model{
         try{
 
 
-            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation( new WS_Is_device_connected().make_request(device_id), 1000*10, 0, 2);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Is_device_connected().make_request(device_id), 1000*10, 0, 2);
 
             final Form<WS_Is_device_connected> form = Form.form(WS_Is_device_connected.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form"); return new WS_Is_device_connected();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Is_device_connected();}
 
             return form.get();
 

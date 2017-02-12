@@ -100,7 +100,8 @@ public class Notification_Handler {
 
             // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
             if (Controller_WebSocket.becki_website.containsKey(person.id)) {
-                Controller_WebSocket.becki_sendNotification((WS_Becki_Website) Controller_WebSocket.becki_website.get(person.id), notification);
+                WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person.id);
+                becki.becki_sendNotification(notification);
             }
 
             notification.id = null;

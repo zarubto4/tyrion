@@ -15,6 +15,7 @@ public class WS_Number_of_instances_homer_server extends WS_AbstractMessage {
 
     @Constraints.Required public int value;
 
+
     @JsonIgnore
     public ObjectNode make_request() {
 

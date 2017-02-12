@@ -18,6 +18,7 @@ import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.*;
 import utilities.hardware_updater.Master_Updater;
@@ -435,13 +436,10 @@ public class Model_Board extends Model {
 
             logger.debug("Homer: " + instance.send_to_instance().identifikator + ", will update Yodas or Devices");
 
-
-
             JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Update_device_firmware().make_request(instance, actualization_procedure_id, firmware_type, targetIds, record), 1000 * 30, 0, 3);
 
-
             final Form<WS_Update_device_firmware> form = Form.form(WS_Update_device_firmware.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_Board:: WS_Update_device_firmware:: Incoming Json for Yoda has not right Form");return new WS_Update_device_firmware();}
+            if(form.hasErrors()){logger.error("Model_Board:: WS_Update_device_firmware:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Update_device_firmware();}
 
             return form.get();
 
@@ -456,6 +454,7 @@ public class Model_Board extends Model {
         Model_Board board = Model_Board.find.byId(report.deviceId);
         if(board == null){
             logger.warn("Unknown device tries to connect:: " + report.deviceId);
+            return;
         }
 
         if(board.project == null){
@@ -469,6 +468,10 @@ public class Model_Board extends Model {
 
         if(board.project != null){
             // Kontrola zda virtuální instance Projektu má stejný server jako je deska teď - Kdyžtak desku přeregistruji jinam!
+            if(board.get_instance() != null){
+                logger.warn("Board without own instance! " + report.deviceId);
+                return;
+            }
             if(!board.get_instance().cloud_homer_server.unique_identificator.equals(homer_server.server.unique_identificator)){
                 board.device_change_server(board.get_instance().cloud_homer_server);
             }

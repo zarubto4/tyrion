@@ -43,7 +43,7 @@ public class Check_update_for_hw_under_homer_ws  {
         @Override
         public void run() {
 
-            logger.info("Independent Thread in Check_update_for_hw_under_homer_ws now working") ;
+            logger.info("Check_update_for_hw_under_homer_ws:: Independent Thread in Check_update_for_hw_under_homer_ws now working") ;
 
             while(true){
                 try{
@@ -54,14 +54,14 @@ public class Check_update_for_hw_under_homer_ws  {
                         list.remove(list.get(0));
 
                     } else{
-                        logger.debug("Check_update_for_hw_under_homer_ws Thread has not other tasks. Going to sleep!");
+                        logger.debug("Check_update_for_hw_under_homer_ws:: Thread has not other tasks. Going to sleep!");
                         sleep(500000000);
                     }
 
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    logger.error("Master Updater Error", e);
+                    logger.error("Check_update_for_hw_under_homer_ws:: Error", e);
                 }
             }
         }

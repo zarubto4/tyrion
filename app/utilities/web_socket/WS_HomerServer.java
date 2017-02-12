@@ -1,6 +1,5 @@
 package utilities.web_socket;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.compiler.Model_Board;
@@ -10,6 +9,7 @@ import utilities.hardware_updater.Actualization_Task;
 import utilities.independent_threads.Check_update_for_hw_under_homer_ws;
 import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.independent_threads.SynchronizeHomerServer;
+import utilities.web_socket.message_objects.homer_instance.WS_Update_device_firmware;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Rejection_homer_server;
 
 import java.nio.channels.ClosedChannelException;
@@ -245,7 +245,7 @@ public class WS_HomerServer extends WebSCType{
                         if(task.instance != null){
 
 
-                            JsonNode result = Model_Board.update_devices_firmware(task.instance.actual_instance, task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
+                            WS_Update_device_firmware result = Model_Board.update_devices_firmware(task.instance, task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
                             System.out.println("Odpověď na Aktualizaci:" + result.toString());
                             System.out.println("Ještě neřeším reakci");
                             task_list.remove(task);

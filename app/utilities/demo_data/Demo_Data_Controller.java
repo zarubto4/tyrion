@@ -48,27 +48,7 @@ public class Demo_Data_Controller extends Controller {
 
             System.out.println("Demo_Data_Controller :: test :: start");
 
-            byte[] bootloader_content = IOUtils.toByteArray(Play.application().resourceAsStream("/demo_data/demo_bootloader.bin"));
-
-            Model_BootLoader boot_loader = new Model_BootLoader();
-            boot_loader.name = "BootLoader Test";
-            boot_loader.version_identificator = "1.0.2";
-            boot_loader.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
-            boot_loader.date_of_create = new Date();
-            boot_loader.save();
-
-            Model_FileRecord filerecord = Model_FileRecord.create_Binary_file(boot_loader.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(bootloader_content), "bootloader.bin");
-            boot_loader.file = filerecord;
-            filerecord.boot_loader = boot_loader;
-            filerecord.update();
-            boot_loader.update();
-
-
-            System.out.println("Demo_Data_Controller :: test ::  Vše v pořádku:: ");
-
-
-            return GlobalResult.result_ok();
-
+            return  ok();
 
         } catch (Exception e) {
             System.out.println("Demo_Data_Controller :: test :: " + "Došlo k problémům!!!!");
@@ -90,15 +70,23 @@ public class Demo_Data_Controller extends Controller {
 
         Result result = this.producers();
         if (result.status() != 200) return result;
+
         result = this.type_of_board();
         if (result.status() != 200) return result;
+
         result = this.test_boards();
         if (result.status() != 200) return result;
+
         result = this.extendension_servers();
         if (result.status() != 200) return result;
+
         result = this.basic_tariffs();
         if (result.status() != 200) return result;
+
         result = this.c_program_configuration();
+        if (result.status() != 200) return result;
+
+        result = this.person_test_user();
         if (result.status() != 200) return result;
 
         return result;
@@ -158,7 +146,6 @@ public class Demo_Data_Controller extends Controller {
 
 
             byte[] bootloader_content = IOUtils.toByteArray(Play.application().resourceAsStream("/demo_data/demo_bootloader.bin"));
-
 
             // Nastavím Type of Boards - YODA
             Model_TypeOfBoard typeOfBoard_1 = new Model_TypeOfBoard();
@@ -299,7 +286,7 @@ public class Demo_Data_Controller extends Controller {
             Model_TypeOfBoard wireles_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
             Model_TypeOfBoard buskit_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
 
-            if (Model_Board.find.where().eq("id", "002600513533510B34353732").findUnique() != null)
+            if (Model_Board.find.where().eq("id", "005300393533510B34353732").findUnique() != null)
                 return GlobalResult.result_BadRequest("Its Already done!");
 
             // YODA!!!!!
@@ -1192,13 +1179,21 @@ public class Demo_Data_Controller extends Controller {
             System.err.println(Json.toJson(participant_1));
 
             // Zaregistruji pod ně Yody
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[F]").findUnique());
+            Model_Board yoda_F  = Model_Board.find.where().eq("personal_description","[F]").findUnique();
+            yoda_F.project = project_1;
+            yoda_F.virtual_instance_under_project = project_1.private_instance;
+            yoda_F.update();
+
+            Model_Board yoda_G  = Model_Board.find.where().eq("personal_description","[Q]").findUnique();
+            yoda_G.project = project_1;
+            yoda_G.virtual_instance_under_project = project_1.private_instance;
+            yoda_G.update();
+
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[69]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[67]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[66]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[65]").findUnique());
 
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[G]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[73]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[74]").findUnique());
             project_1.boards.add( Model_Board.find.where().eq("personal_description","[75]").findUnique());

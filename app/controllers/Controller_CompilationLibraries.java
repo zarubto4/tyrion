@@ -27,13 +27,19 @@ import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.*;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_Version_Public_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_ImportLibrary_List;
 import utilities.swagger.outboundClass.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Controller se zabívá správou knihoven, procesorů, desek (hardware), typů desek a jejich výrobcem.
@@ -1155,6 +1161,7 @@ public class Controller_CompilationLibraries extends Controller {
                 for(Swagger_C_Program_Version_Update.User_File user_file : help.user_files){
                     includes.put(user_file.file_name , user_file.code);
                 }
+
 
             result.set("includes", includes);
 

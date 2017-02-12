@@ -3,6 +3,7 @@ package utilities.independent_threads;
 import models.compiler.Model_Board;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
+import play.libs.Json;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
 import utilities.web_socket.message_objects.homer_instance.WS_Yoda_connected;
@@ -39,6 +40,12 @@ public class Check_Update_for_hw_on_homer extends Thread {
        * a nemuseli tak louskat všechny instance naráz.
        */
 
+        try {
+            sleep(1000 * 30);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         // Musím najít klasické instnace s Blockem a také virtuální instance
         Model_HomerInstance.find
                 .where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator)
@@ -48,7 +55,12 @@ public class Check_Update_for_hw_on_homer extends Thread {
                     // Zajímá mě stav HW
 
                     try {
+
+                        logger.warn("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
+
                         WS_Get_summary_information summary_information = instance.get_summary_information();
+
+                        logger.warn("Check_Update_for_hw_on_homer:: Run:: summary:: " + Json.toJson(summary_information) );
 
                         // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
                         if(!summary_information.status.equals("success")){
@@ -72,6 +84,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
     public static void check_Update(WS_HomerServer homer_server, WS_Get_summary_information summary_information){
 
+        logger.error("Check_Update_for_hw_on_homer:: check_Update:: ");
 
         for(WS_Yoda_connected yoda_connected : summary_information.masterDeviceList){
 
