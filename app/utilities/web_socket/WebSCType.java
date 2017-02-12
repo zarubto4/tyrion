@@ -107,22 +107,9 @@ public abstract class WebSCType {
         SendMessage send_message = new SendMessage(webSCtype, json, messageId, time, delay, number_of_retries);
         sendMessageMap.put(messageId, send_message);
 
-        // Vytvořeno jen pro redukci délky vypisovaného kodu (zvláště při přeposílání dlouhých programů - bylo to nečitelné
-        if(logger.isDebugEnabled()) {
-            if(json.has("program")){
-                ObjectNode copy_json = json.deepCopy();
-                copy_json.put("program", "loooong  Base64 String ");
-                logger.debug("Outcomming message: " + messageId + " " + copy_json.toString());
-            }else logger.debug("Outcomming message: " + messageId + " " + json.toString());
-        }
-
         // Může vyvolat i vyjímku o nedoručení
-        ObjectNode result = send_message.send_with_response();
+        return  send_message.send_with_response();
 
-        logger.debug("Message confirm: " + messageId);
-        logger.debug("Incoming message: " + result.toString());
-
-        return result;
     }
 
 

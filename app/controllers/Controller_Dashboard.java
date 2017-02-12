@@ -28,6 +28,7 @@ import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import utilities.web_socket.*;
+import utilities.web_socket.message_objects.homer_instance.WS_Ping_instance;
 import views.html.*;
 import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
@@ -284,9 +285,9 @@ public class Controller_Dashboard extends Controller {
 
                 if (ws.all_person_Connections.containsKey(token)){
 
-                    JsonNode result = Controller_WebSocket.becki_ping((WS_Becki_Single_Connection) ws.all_person_Connections.get(token));
-
-                    return GlobalResult.result_ok(result);
+                     // JsonNode result = Controller_WebSocket.becki_ping((WS_Becki_Single_Connection) ws.all_person_Connections.get(token));
+                    //return GlobalResult.result_ok(result);
+                    return GlobalResult.result_ok();
                 }else {
 
                     ObjectNode result = Json.newObject();
@@ -313,8 +314,8 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", identificator).findUnique();
-            JsonNode result = server.ping();
-            return GlobalResult.result_ok(result);
+
+            return GlobalResult.result_ok(Json.toJson(server.ping()));
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
@@ -325,8 +326,8 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_HomerInstance instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_id).findUnique();
-            JsonNode result = instance.ping();
-            return GlobalResult.result_ok(result);
+            WS_Ping_instance result = instance.ping();
+            return GlobalResult.result_ok(Json.toJson(result));
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }

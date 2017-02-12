@@ -1,14 +1,18 @@
 package utilities.web_socket;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.Controller_WebSocket;
+import models.notification.Model_Notification;
 import models.person.Model_Person;
+import play.libs.Json;
 import play.mvc.WebSocket;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class WS_Becki_Website extends  WebSCType {
+
+    public static final String CHANNEL = "becki";
 
     public Map<String, WebSCType> all_person_Connections = new HashMap<>();
     public Model_Person person;
@@ -45,8 +49,152 @@ public class WS_Becki_Website extends  WebSCType {
 
     @Override
     public void onMessage(ObjectNode json) {
-         Controller_WebSocket.becki_incoming_message(this, json);
+
+        logger.debug("Becki: " + identifikator + " Incoming message: " + json.toString() );
+
+        if(json.has("messageChannel")) {
+
+            switch (json.get("messageChannel").asText()) {
+
+                case "becki": {
+                    switch (json.get("messageType").asText()) {
+
+                        case "notification"             :   {  becki_notification_confirmation_from_becki(json); return;}    // Becki poslala odpověď, že dostala notifikaci
+                        case "subscribe_notification"   :   {  becki_subscribe_notification(json);               return;}    // Becki poslala odpověď, že ví že subscribe_notification
+                        case "unsubscribe_notification" :   {  becki_unsubscribe_notification( json);            return;}    // Becki poslala odpověď, že ví že už ne! subscribe_notification
+
+                        default: {
+
+                            logger.error("Becki: "+ identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!" + json.toString());
+
+                        }
+                    }
+                }
+                case "tyrion": {
+                    logger.warn("Homer: Incoming message: Tyrion: Server receive message: ");
+                    logger.warn("Homer: Incoming message: Tyrion: Server don't know what to do!");
+                    return;
+                }
+
+                default: {
+                    // Přepošlu to na všehcny odběratele Becki
+                    if (all_person_Connections != null && ! all_person_Connections.isEmpty()) {
+                        for (String key : all_person_Connections.keySet()) {
+                            all_person_Connections.get(key).write_without_confirmation(json);
+                        }
+                    }
+                }
+
+            }
+
+        }else {
+            logger.error("Becki: "+ identifikator + " Incoming message has not messageChannel!!!!" + json.toString());
+        }
     }
+
+
+    // Odebírání streamu notifikací z Tytiona
+    public void becki_subscribe_notification (ObjectNode json){
+        try {
+
+            WS_Becki_Single_Connection single_connection = (WS_Becki_Single_Connection) all_person_Connections.get(json.get("single_connection_token").asText());
+            single_connection.notification_subscriber = true;
+
+            becki_approve_subscription_notification_success(single_connection, json.get("messageId").asText());
+
+        }catch (Exception e){
+            logger.error("becki_subscribe_notification", e);
+        }
+
+    }
+
+    public void becki_unsubscribe_notification (ObjectNode json){
+        try{
+
+            WS_Becki_Single_Connection single_connection = (WS_Becki_Single_Connection) all_person_Connections.get( json.get("single_connection_token").asText());
+            single_connection.notification_subscriber = true;
+
+            becki_approve_unsubscription_notification_success(single_connection, json.get("messageId").asText() );
+
+        }catch (Exception e){
+            logger.error("becki_unsubscribe_notification", e);
+        }
+    }
+
+    // Json Messages
+    public void becki_approve_subscription_notification_success(WS_Becki_Single_Connection single_connection, String messageId){
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "subscribe_notification");
+        result.put("messageChannel", "becki");
+        result.put("status", "success");
+
+        single_connection.write_without_confirmation( messageId, result);
+    }
+
+    public void becki_approve_unsubscription_notification_success(WS_Becki_Single_Connection single_connection, String messageId){
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "unsubscribe_notification");
+        result.put("messageChannel", "becki");
+        result.put("status", "success");
+
+        single_connection.write_without_confirmation( messageId, result);
+    }
+
+    public void becki_sendNotification(Model_Notification notification){
+
+        ObjectNode result = Json.newObject();
+        result.put("messageType", "notification");
+        result.put("messageChannel", "becki");
+        result.put("id", notification.id);
+        result.put("notification_level",   notification.notification_level.name());
+        result.put("notification_importance", notification.notification_importance.name());
+        result.set("notification_body", Json.toJson(notification.notification_body()));
+        result.set("buttons", Json.toJson(notification.buttons()));
+        result.put("confirmation_required", notification.confirmation_required);
+        result.put("confirmed", notification.confirmed);
+        result.put("was_read", notification.was_read);
+        result.put("created", notification.created.getTime());
+        result.put("state", notification.state.name());
+
+        for(String person_connection_token : all_person_Connections.keySet()){
+            WS_Becki_Single_Connection single_connection =  (WS_Becki_Single_Connection) all_person_Connections.get(person_connection_token);
+            if(single_connection.notification_subscriber) single_connection.write_without_confirmation(result);
+        }
+
+    }
+
+    public void becki_notification_confirmation_from_becki( JsonNode json){
+        // TODO
+        // Tady dosátvám potvrzení, že becki dostala notifikaci
+    }
+
+    // Ping
+    public static JsonNode becki_ping(WS_Becki_Single_Connection becki){
+
+        ObjectNode result = Json.newObject();
+
+        try {
+
+            result.put("messageType", "ping");
+            result.put("messageChannel", "becki");
+
+            return becki.write_with_confirmation(result, 1000 * 3, 0, 3);
+
+        }catch (Exception e){
+
+            result.put("messageType", "ping");
+            result.put("messageChannel", "becki");
+            result.put("status", "unsuccessful");
+
+            return result;
+        }
+    }
+
+    // Reakce na odhlášení blocka
+    public static void becki_disconnect(WebSCType becki){
+        System.out.println("Becki se mi odpojilo");
+    }
+
 }
 
 

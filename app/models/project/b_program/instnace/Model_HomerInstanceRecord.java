@@ -4,23 +4,18 @@ import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Model_FileRecord;
 import models.compiler.Model_VersionObject;
 import models.project.b_program.Model_BPair;
 import models.project.b_program.Model_BProgramHwGroup;
-import models.project.b_program.servers.Model_HomerServer;
 import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.m_program.Model_MProjectProgramSnapShot;
-import play.libs.Json;
-import utilities.enums.Firmware_type;
-import utilities.hardware_updater.Master_Updater;
 import utilities.enums.Actual_procedure_State;
 import utilities.enums.C_ProgramUpdater_State;
+import utilities.enums.Firmware_type;
+import utilities.hardware_updater.Master_Updater;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -76,7 +71,7 @@ public class Model_HomerInstanceRecord extends Model {
         super.save();
     }
 
-/* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER---------------------------------------------------------------------------------*/
+/* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER-----------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void add_new_actualization_request() {
@@ -254,34 +249,6 @@ public class Model_HomerInstanceRecord extends Model {
         }
     }
 
-    @JsonIgnore @Transient public JsonNode update_devices_firmware(String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, Model_FileRecord record){
-
-        try {
-            logger.debug("Homer: " + actual_running_instance.sendToInstance().identifikator + ", will update Yodas or Devices");
-
-            ObjectNode result = Json.newObject();
-            result.put("messageChannel", Model_HomerInstance.CHANNEL);
-            result.put("instanceId", actual_running_instance.blocko_instance_name);
-            result.put("messageType", "updateDevice");
-            result.put("actualization_procedure_id", actualization_procedure_id);
-
-            result.put("firmware_type", firmware_type.get_firmwareType());
-            result.set("targetIds", Json.toJson(targetIds));
-
-            // Nahrávám Bootloader
-            if (record.boot_loader != null) result.put("build_id", record.boot_loader.version_identificator);
-
-                // Nahrávám klasický Firmware
-            else result.put("build_id", record.c_compilations_binary_file.firmware_build_id);
-
-            result.put("program", record.get_fileRecord_from_Azure_inString());
-
-            return actual_running_instance.sendToInstance().write_with_confirmation(result, 1000 * 30, 0, 3);
-
-        }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
-        }
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

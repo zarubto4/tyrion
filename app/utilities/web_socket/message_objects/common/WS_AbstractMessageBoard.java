@@ -1,17 +1,8 @@
-package utilities.web_socket.message_objects.homer_instance;
+package utilities.web_socket.message_objects.common;
 
 import play.data.validation.Constraints;
-import utilities.web_socket.message_objects.common.WS_AbstractMessageInstance;
 
-import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-
-
-public class WS_YodaConnected  extends WS_AbstractMessageInstance {
-
-    @Constraints.Required public String deviceId;
-    @Constraints.Required public boolean autobackup;
+public abstract class WS_AbstractMessageBoard extends WS_AbstractMessageInstance {
 
     @Constraints.Required public String firmware_version_core;
     @Constraints.Required public String firmware_version_mbed;     //
@@ -23,7 +14,4 @@ public class WS_YodaConnected  extends WS_AbstractMessageInstance {
     @Constraints.Required public String bootloader_version_mbed;
     @Constraints.Required public String bootloader_build_id;
     @Constraints.Required public String bootloader_build_datetime;
-
-    @Valid
-    public List<WS_DeviceConnected> devices_summary  = new ArrayList<>();
 }

@@ -3,13 +3,14 @@ package utilities.web_socket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
+import models.compiler.Model_Board;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
-import play.libs.Json;
 import utilities.hardware_updater.Actualization_Task;
+import utilities.independent_threads.Check_update_for_hw_under_homer_ws;
 import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.independent_threads.SynchronizeHomerServer;
-import utilities.login_entities.TokenCache;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Rejection_homer_server;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
@@ -24,9 +25,10 @@ public class WS_HomerServer extends WebSCType{
     public Model_HomerServer server;
     public boolean security_token_confirm;
 
-    public TokenCache token_grid_Cache    = new TokenCache( (long) 15, (long) 500, 5000);
-    public TokenCache token_webview_Cache = new TokenCache( (long) 15, (long) 500, 5000);
+    //public TokenCache token_grid_Cache    = new TokenCache( (long) 15, (long) 500, 5000);
+    //public TokenCache token_webview_Cache = new TokenCache( (long) 15, (long) 500, 5000);
 
+    public Check_update_for_hw_under_homer_ws check_update_for_hw_under_homer_ws = null;
 
     public WS_HomerServer(Model_HomerServer server, Map<String, WebSCType> blocko_servers) {
         super();
@@ -35,6 +37,7 @@ public class WS_HomerServer extends WebSCType{
         super.webSCtype = this;
         this.server = server;
         this.update_thread.start();
+        this.check_update_for_hw_under_homer_ws = new Check_update_for_hw_under_homer_ws(this);
     }
 
 
@@ -63,11 +66,8 @@ public class WS_HomerServer extends WebSCType{
         if(!security_token_confirm){
             logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
             security_token_confirm_procedure();
-            ObjectNode response = Json.newObject();
-            response.put("messageType", "verificationFirstRequired");
-            response.put("messageChannel", Model_HomerServer.CHANNEL);
-            response.put("message", " Yor server is not verified yet");
-            super.write_without_confirmation(response);
+
+            super.write_without_confirmation(new WS_Rejection_homer_server().make_request());
             return;
         }
 
@@ -77,22 +77,21 @@ public class WS_HomerServer extends WebSCType{
                 switch (json.get("messageChannel").asText()){
 
 
-                    case "homer-server" : { // Komunikace mezi Tyrion server a Homer Server
+                    case Model_HomerServer.CHANNEL : { // Komunikace mezi Tyrion server a Homer Server
                         Model_HomerServer.Messages(this, json);
                         return;
                     }
 
 
-                    case "tyrion": {    // Komunikace mezi Tyrion server a Homer Instance
+                    case Model_HomerInstance.CHANNEL: {    // Komunikace mezi Tyrion server a Homer Instance
                         Model_HomerInstance.Messages(this, json);
                         return;
                     }
 
-
-                    case "becki": {    // Komunikace mezi Becki a Homer Instance
+                    // TODO Becki
+                    case WS_Becki_Website.CHANNEL: {    // Komunikace mezi Becki a Homer Instance
 
                         switch (json.get("messageType").asText()){
-
 
                             case "notification" : {
 
@@ -200,12 +199,9 @@ public class WS_HomerServer extends WebSCType{
      * Odešle se serveru - který není akceptován - Unique name není známo
      */
     public void unique_connection_name_not_valid(){
+
         // Potvrzení Homer serveru, že je vše v pořádku
-        ObjectNode request_2 = Json.newObject();
-        request_2.put("messageType", "server_validation");
-        request_2.put("messageChannel", Model_HomerServer.CHANNEL);
-        request_2.put("message", "Unique server identificator is not recognize!");
-        super.write_without_confirmation(request_2);
+        super.write_without_confirmation(new WS_Rejection_homer_server().make_request());
     }
 
 
@@ -247,7 +243,9 @@ public class WS_HomerServer extends WebSCType{
                         System.out.println("Odesílám požadavek na aktualizaci!");
 
                         if(task.instance != null){
-                            JsonNode result = task.instance.actual_instance.update_devices_firmware(task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
+
+
+                            JsonNode result = Model_Board.update_devices_firmware(task.instance.actual_instance, task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
                             System.out.println("Odpověď na Aktualizaci:" + result.toString());
                             System.out.println("Ještě neřeším reakci");
                             task_list.remove(task);

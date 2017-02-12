@@ -1,9 +1,11 @@
 package utilities.independent_threads;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import utilities.web_socket.WS_HomerServer;
+import utilities.web_socket.message_objects.homer_instance.WS_Update_device_summary_collection;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Get_instance_list;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,14 +40,7 @@ public class Check_Homer_instance_after_connection extends Thread {
 
                     logger.trace("Homer Server:: Connection::  Tyrion send to Homer Server request for listInstances");
 
-                    JsonNode result = model_server.get_homer_server_listOfInstance();
-                    if (!result.get("status").asText().equals("success")) {interrupt();}
-
-                    // Vylistuji si seznam instnancí, které běží na serveru
-                    List<String> instances_on_server = new ArrayList<>();
-                    final JsonNode arrNode = result.get("instances");
-                    for (final JsonNode objNode : arrNode) instances_on_server.add(objNode.asText());
-                    logger.trace("Homer Server:: Connection:: Number of instances on cloud_blocko_server: " + instances_on_server.size());
+                    WS_Get_instance_list list_instances = model_server.get_homer_server_listOfInstance();
 
 
                     // Vylistuji si seznam instnancí, které by měli běžet na serveru
@@ -62,7 +57,7 @@ public class Check_Homer_instance_after_connection extends Thread {
                     List<String> instances_for_removing = new ArrayList<>();
 
                     // Vytvořím kopii seznamu instancí, které by měli běžet na Homer Serveru
-                    for(String  identificator : instances_on_server){
+                    for(String  identificator : list_instances.instances){
 
                         // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
                         Integer size = Model_HomerInstance.find.where().eq("blocko_instance_name", identificator)
@@ -88,8 +83,8 @@ public class Check_Homer_instance_after_connection extends Thread {
 
                     if (!instances_for_removing.isEmpty()) {
                         for (String identificator : instances_for_removing) {
-                            JsonNode remove_result = model_server.remove_instance(identificator);
-                            if(!remove_result.has("status") || !remove_result.get("status").asText().equals("success"))   logger.error("Blocko Server: Removing instance Error: ", remove_result.toString());
+                            WS_Destroy_instance remove_result = model_server.remove_instance(identificator);
+                            if(!remove_result.status.equals("success"))   logger.error("Blocko Server: Removing instance Error: ", remove_result.toString());
                         }
                     }
 
@@ -98,16 +93,17 @@ public class Check_Homer_instance_after_connection extends Thread {
                     logger.trace("Homer Server:: Connection::Starting to uploud new instances to cloud_blocko_server");
                     for (Model_HomerInstance instance : instances_in_database_for_uploud) {
 
-                        if(instances_on_server.contains(instance.blocko_instance_name)){
+                        if(list_instances.instances.contains(instance.blocko_instance_name)){
                             logger.debug("Homer Server:: Connection:: ", instance.blocko_instance_name , " is on server already");
                         }else {
-                            JsonNode add_instance = instance.add_instance_to_server();
-                            logger.debug("add_instance: " + add_instance.toString());
 
-                            if (add_instance.get("status").asText().equals("success")) {
-                                logger.trace("Blocko Server: Uploud instance was successful");
+
+                            WS_Update_device_summary_collection add_instance = instance.add_instance_to_server();
+
+                            if (add_instance.status.equals("success")) {
+                                logger.trace("Blocko Server: Upload instance was successful");
                             }
-                            else if (add_instance.get("status").asText().equals("error")) {
+                            else if (add_instance.status.equals("error")) {
                                 logger.warn("Blocko Server: Fail when Tyrion try to add instance from Blocko cloud_blocko_server:: ", add_instance.toString());
                             }
 

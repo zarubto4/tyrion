@@ -1,6 +1,0 @@
-package utilities.web_socket.message_objects.homer_instance;
-
-import utilities.web_socket.message_objects.common.WS_AbstractMessageInstance;
-
-public class WS_InstanceSummary extends WS_AbstractMessageInstance {
-}

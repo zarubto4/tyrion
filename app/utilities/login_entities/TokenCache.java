@@ -2,7 +2,7 @@ package utilities.login_entities;
 
 import org.apache.commons.collections.MapIterator;
 import org.apache.commons.collections.map.LRUMap;
-import utilities.web_socket.message_objects.WS_Token;
+import utilities.web_socket.message_objects.common.WS_Token;
 
 import java.util.ArrayList;
 

@@ -13,6 +13,7 @@ import models.compiler.Model_Board;
 import models.person.Model_FloatingPersonToken;
 import models.person.Model_Person;
 import models.project.b_program.instnace.Model_HomerInstance;
+import play.data.Form;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.CLoud_Homer_Server_Type;
@@ -23,10 +24,12 @@ import utilities.independent_threads.Check_Homer_instance_after_connection;
 import utilities.independent_threads.Check_Update_for_hw_on_homer;
 import utilities.independent_threads.SynchronizeHomerServer;
 import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.WS_CheckPersonPermission_OnHomerServer;
-import utilities.web_socket.message_objects.WS_InvalidPersonToken_OnHomerServer;
-import utilities.web_socket.message_objects.WS_Unregistred_device_connected;
-import utilities.web_socket.message_objects.WS_ValidPersonToken_OnHomerServer;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Invalid_person_token_homer_server;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Unregistred_device_connected;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Valid_person_token_homer_server;
+import utilities.web_socket.message_objects.homer_instance.WS_Add_new_instance;
+import utilities.web_socket.message_objects.homer_instance.WS_Is_instance_exist;
+import utilities.web_socket.message_objects.homer_tyrion.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -83,7 +86,7 @@ public class Model_HomerServer extends Model{
 
 
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON CRUD-------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save() {
 
@@ -109,18 +112,13 @@ public class Model_HomerServer extends Model{
         this.set_new_configuration_on_homer();
     }
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
     @JsonIgnore @Transient public WS_HomerServer get_server_webSocket_connection(){
         return (WS_HomerServer) Controller_WebSocket.homer_servers.get(this.unique_identificator);
     }
 
-    @JsonIgnore @Transient public WS_HomerServer get_websocketServer(){
-        return (WS_HomerServer) Controller_WebSocket.homer_servers.get(this.unique_identificator);
-    }
-
-
-
-
-    @JsonIgnore @Transient public static Model_HomerServer getDestinationServer(){
+    @JsonIgnore @Transient public static Model_HomerServer get_destination_server(){
 
 
         if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")) {
@@ -159,59 +157,67 @@ public class Model_HomerServer extends Model{
         }
     }
 
-/* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER---------------------------------------------------------------------------------*/
+
+
 
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER---------------------------------------------------------------------------------*/
     
-    public static String CHANNEL = "homer-server";
+    public static final String CHANNEL = "homer-server";
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     @JsonIgnore @Transient public static void Messages(WS_HomerServer homer, ObjectNode json){
         try {
             switch (json.get("messageType").asText()) {
 
-                case "yoda_unauthorized_logging": {
+                case WS_Unregistred_device_connected.messageType : {
 
-                    WS_Unregistred_device_connected message_help = WS_Unregistred_device_connected.getObject(json);
-                    Model_Board.unregistred_device_connected(homer, message_help);
+                    final Form<WS_Unregistred_device_connected> form = Form.form(WS_Unregistred_device_connected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Unregistred_device_connected:: Incoming Json from Homer Server has not right Form");return;}
+
+                    Model_Board.unregistred_device_connected(homer, form.get());
                     return;
                 }
 
-                case "checkUserPermission" : {
+                case WS_Check_homer_server_person_permission.messageType : {
 
-                    WS_CheckPersonPermission_OnHomerServer message_help = WS_CheckPersonPermission_OnHomerServer.getObject(json);
-                    check_person_permission_for_homer_server(homer, message_help);
+                    final Form<WS_Check_homer_server_person_permission> form = Form.form(WS_Check_homer_server_person_permission.class).bind(json);
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Check_homer_server_person_permission:: Incoming Json from Homer Server  has not right Form");return;}
+
+                    check_person_permission_for_homer_server(homer, form.get());
                     return;
                 }
 
-                case "checkPersonToken" : {
+                case WS_Valid_person_token_homer_server.messageType : {
 
-                    WS_ValidPersonToken_OnHomerServer message_help = WS_ValidPersonToken_OnHomerServer.getObject(json);
-                    check_person_token_for_homer_server(homer, message_help);
+                    final Form<WS_Valid_person_token_homer_server> form = Form.form(WS_Valid_person_token_homer_server.class).bind(json);
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Valid_person_token_homer_server:: Incoming Json from Homer Server has not right Form");return;}
 
+                    check_person_token_for_homer_server(homer, form.get());
                     return;
                 }
 
-                case "removePersonLoginToken" : {
+                case WS_Invalid_person_token_homer_server.messageType : {
 
-                    WS_InvalidPersonToken_OnHomerServer message_help = WS_InvalidPersonToken_OnHomerServer.getObject(json);
-                    invalid_person_token_for_homer_server(homer, message_help);
+                    final Form<WS_Invalid_person_token_homer_server> form = Form.form(WS_Invalid_person_token_homer_server.class).bind(json);
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Invalid_person_token_homer_server:: Incoming Json from Homer Server has not right Form");return;}
+
+                    invalid_person_token_for_homer_server(homer, form.get());
                     return;
                 }
 
 
                 default: {
-                    logger.error("Cloud_Homer_Server:: Incoming message:: Chanel homer-server:: not recognize messageType ->" + json.get("messageType").asText());
+                    logger.error("Model_HomerServer:: Incoming message:: Chanel homer-server:: not recognize messageType ->" + json.get("messageType").asText());
                     return;
                 }
             }
         }catch (Exception e){
-            logger.error("Cloud_Homer_Server:: Incoming message:: Error", e);
+            logger.error("Model_HomerServer:: Incoming message:: Error", e);
         }
     }
 
-    @JsonIgnore @Transient  public static void check_person_permission_for_homer_server(WS_HomerServer homer, WS_CheckPersonPermission_OnHomerServer message){
+    @JsonIgnore @Transient  public static void check_person_permission_for_homer_server(WS_HomerServer homer, WS_Check_homer_server_person_permission message){
         try{
 
 
@@ -274,63 +280,33 @@ public class Model_HomerServer extends Model{
         }
     }
 
-    @JsonIgnore @Transient  public static void check_person_token_for_homer_server(WS_HomerServer homer, WS_ValidPersonToken_OnHomerServer message){
+    @JsonIgnore @Transient  public static void check_person_token_for_homer_server(WS_HomerServer homer, WS_Valid_person_token_homer_server message){
         try{
 
             Model_Person person =  Model_Person.findByAuthToken(message.token);
 
             if (person == null) {
-
-                logger.warn("Cloud_Homer_Server:: check_person_token_for_homer_server:: Person not found!");
-                ObjectNode request = Json.newObject();
-                request.put("messageType", "checkPersonToken");
-                request.put("messageChannel", CHANNEL);
-                request.put("messageId", message.messageId);
-                request.put("status", "error");
-                request.put("message", "Token is not valid");
-                homer.write_without_confirmation(request);
+                homer.write_without_confirmation(message.make_request_unsuccess());
                 return;
             }
 
 
             if(homer.server.read_permission(person)){
 
-                logger.debug("Cloud_Homer_Server:: check_person_permission_for_homer_server:: Person found with Email:: " + person.mail + " with right permissions");
-
-                ObjectNode request = Json.newObject();
-                request.put("messageType", "checkPersonToken");
-                request.put("messageChannel", CHANNEL);
-                request.put("status", "success");
-                request.put("messageId", message.messageId);
-                request.put("read_permission",   homer.server.read_permission(person));
-                request.put("edit_permission",   homer.server.edit_permission(person));
-                request.put("delete_permission", homer.server.delete_permission(person));
-                request.put("create_permission", homer.server.create_permission(person));
-
-                homer.write_without_confirmation(request);
-                return;
+                homer.write_without_confirmation(message.make_request_success(homer.server, person));
 
             }else {
 
-                ObjectNode request = Json.newObject();
-                request.put("messageType", "checkPersonToken");
-                request.put("messageChannel", CHANNEL);
-                request.put("messageId", message.messageId);
-                request.put("status", "error");
-                request.put("message", "Permission Required");
+                homer.write_without_confirmation(message.make_request_permission_required());
 
-                homer.write_without_confirmation(request);
-                return;
             }
-
-
 
         }catch (Exception e){
             logger.error("Cloud_Homer_Server:: check_person_permission_for_homer_server :: Error:: ", e);
         }
     }
 
-    @JsonIgnore @Transient  public static void invalid_person_token_for_homer_server(WS_HomerServer homer, WS_InvalidPersonToken_OnHomerServer message){
+    @JsonIgnore @Transient  public static void invalid_person_token_for_homer_server(WS_HomerServer homer, WS_Invalid_person_token_homer_server message){
         try{
 
             Model_FloatingPersonToken token =  Model_FloatingPersonToken.find.byId(message.token);
@@ -338,183 +314,110 @@ public class Model_HomerServer extends Model{
             if (token == null) {
 
                 logger.warn("Cloud_Homer_Server:: invalid_person_token_for_homer_server:: Token not found!");
-                ObjectNode request = Json.newObject();
-                request.put("messageType", "checkPersonToken");
-                request.put("messageChannel", CHANNEL);
-                request.put("messageId", message.messageId);
-                request.put("status", "error");
-                request.put("message", "Token is not valid");
-                homer.write_without_confirmation(request);
+
+                homer.write_without_confirmation(message.make_request_unsuccess());
                 return;
             }
 
             token.delete(); logger.debug("Cloud_Homer_Server:: invalid_person_token_for_homer_server:: Token found and remove");
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "removePersonLoginToken");
-            request.put("messageChannel", CHANNEL);
-            request.put("status", "success");
-            request.put("messageId", message.messageId);
-
-            homer.write_without_confirmation(request);
-
+            homer.write_without_confirmation(message.make_request_success());
 
         }catch (Exception e){
             logger.error("Cloud_Homer_Server:: check_person_permission_for_homer_server :: Error:: ", e);
         }
     }
 
-    @JsonIgnore @Transient  public JsonNode get_homer_server_listOfInstance(){
+    @JsonIgnore @Transient  public WS_Get_instance_list get_homer_server_listOfInstance(){
         try {
 
-            logger.debug("Tyrion: Server want know instances on: " + unique_identificator);
-
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "listInstances");
-            request.put("messageChannel", CHANNEL);
-
-            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
+            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(new WS_Get_instance_list().make_request(), 1000 * 4, 0, 3);
+            final Form<WS_Get_instance_list> form = Form.form(WS_Get_instance_list.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Number_of_instancies_homer_server:: Incoming Json for Yoda has not right Form");return  new WS_Get_instance_list();}
+            return form.get();
 
         }catch (Exception e){
-            return RESULT_server_is_offline();
+            logger.error("Model_HomerServer:: get_homer_server_listOfInstance:: Error", e);
+            return new WS_Get_instance_list();
         }
     }
 
-    @JsonIgnore @Transient  public JsonNode get_homer_server_numberOfInstance(){
+    @JsonIgnore @Transient  public WS_Number_of_instances_homer_server get_homer_server_number_of_instance(){
         try {
 
-            logger.debug("Tyrion: Server want know instances on: " + personal_server_name + " " + unique_identificator);
+            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(new WS_Number_of_instances_homer_server().make_request(), 1000 * 4, 0, 3);
+            final Form<WS_Number_of_instances_homer_server> form = Form.form(WS_Number_of_instances_homer_server.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Number_of_instancies_homer_server:: Incoming Json for Yoda has not right Form");return new WS_Number_of_instances_homer_server();}
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "numberOfInstances");
-            request.put("messageChannel", CHANNEL);
-
-            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
-
+            return form.get();
         }catch (Exception e){
-            return RESULT_server_is_offline();
+            logger.error("Model_HomerServer:: set_new_configuration_on_homer:: Error", e);
+            return new WS_Number_of_instances_homer_server();
         }
     }
 
-    @JsonIgnore @Transient  public  boolean isInstanceExist(String instance_name){
+    @JsonIgnore @Transient  public boolean is_instance_exist(String instance_name){
         try {
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "instanceExist");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", instance_name);
+            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation( new WS_Is_instance_exist().make_request(instance_name), 1000 * 4, 0, 3);
 
-            JsonNode result = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 4, 0, 3);
+            final Form<WS_Is_instance_exist> form = Form.form(WS_Is_instance_exist.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Number_of_instancies_homer_server:: Incoming Json for Yoda has not right Form"); return false;}
 
-            if(result.get("status").asText().equals("success") && result.get("exist").asText().equals("true")){
-                return true;
-            }
-            return false;
+            WS_Is_instance_exist help = form.get();
+
+            return (help.status.equals("success") && help.exist);
+
         }catch (Exception e){
+            logger.error("Model_HomerServer:: is_instance_exist:: Error", e);
             return false;
         }
     }
 
-    @JsonIgnore @Transient  public  JsonNode add_temporary_instance(String instance_name){
-        try{
-
-            // Slouží pro nahrávání testovacích instnací samotnými vývojáři z Byzance
-
-            if (isInstanceExist(instance_name)) return RESULT_instance_already_exist();
-
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "createInstance");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", instance_name);
-            request.put("devices", "[]");
-            request.put("grid_websocket_token", "ws_" + instance_name);
-
-            logger.debug("Sending to cloud_blocko_server request for new instance ");
-            return  Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
-
-        }catch (Exception e){
-            return RESULT_server_is_offline();
-        }
-    }
-
-    @JsonIgnore @Transient  public  JsonNode add_instance(Model_HomerInstance instance){
+    @JsonIgnore @Transient  public WS_Add_new_instance add_instance(Model_HomerInstance instance){
         try {
 
-            if (isInstanceExist(instance.blocko_instance_name)) return RESULT_instance_already_exist();
+            if (is_instance_exist(instance.blocko_instance_name)) return new WS_Add_new_instance();
 
-            logger.debug("Instance neexistuje a tak jí nahraji na Server");
+            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation( new WS_Add_new_instance().make_request(instance), 1000 * 5, 0, 3);
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "createInstance");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", instance.blocko_instance_name);
-           // request.put("grid_websocket_token", instance.virtual_instance ? (UUID.randomUUID().toString() + UUID.randomUUID().toString()) : instance.actual_instance.websocket_grid_token);
+            final Form<WS_Add_new_instance> form = Form.form(WS_Add_new_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form"); return new WS_Add_new_instance();}
 
-            logger.debug("Sending to cloud_blocko_server request for new instance ");
-            logger.debug("Server Name: "+ personal_server_name + " " + unique_identificator);
-            return  Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
+            return form.get();
 
         }catch (Exception e){
             logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
-            return RESULT_server_is_offline();
+            return new WS_Add_new_instance();
         }
 
     }
 
-    @JsonIgnore @Transient  public  JsonNode remove_instance(String instance_name) {
+    @JsonIgnore @Transient  public WS_Destroy_instance remove_instance(String instance_name) {
         try {
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "destroyInstance");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", instance_name);
+            JsonNode node =  Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation( new WS_Destroy_instance().make_request(instance_name), 1000 * 5, 0, 3);
 
+            final Form<WS_Destroy_instance> form = Form.form(WS_Destroy_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form"); return new WS_Destroy_instance();}
 
-            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 5, 0, 3);
+            return form.get();
 
         }catch (Exception e){
-            return RESULT_server_is_offline();
+            logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
+            return new WS_Destroy_instance();
         }
 
     }
 
-
-    @JsonIgnore @Transient  public  void synchronize_homer_with_tyrion(){
-
-        logger.debug("Blocko Server: Starting synchronize_homer_with_tyrion procedure with homer server");
-
-        SynchronizeHomerServer check = new SynchronizeHomerServer(get_server_webSocket_connection());
-        check.start();
-
-    }
-
-    @JsonIgnore @Transient  public  JsonNode set_new_configuration_on_homer(){
+    @JsonIgnore @Transient  public void set_new_configuration_on_homer(){
         try{
 
-            // Slouží pro nahrávání testovacích instnací samotnými vývojáři z Byzance
+            SynchronizeHomerServer check = new SynchronizeHomerServer(get_server_webSocket_connection());
+            check.start();
 
-            ObjectNode request_conf = Json.newObject();
-            request_conf.put("messageType",     "setServerConfiguration");
-            request_conf.put("messageChannel",  Model_HomerServer.CHANNEL);
-            request_conf.put("status", "success");
-            request_conf.put("serverName",      personal_server_name);
-            request_conf.put("mqttPort",        mqtt_port);
-            request_conf.put("mqttPassword",    mqtt_password);
-            request_conf.put("mqttUser",        mqtt_username);
-            request_conf.put("gridPort",        grid_port);
-            request_conf.put("webPort",         server_remote_port);
-            request_conf.put("beckiPort",       webView_port);
-            request_conf.put("timeStamp",       time_stamp_configuration.getTime());
-            request_conf.put("daysInArchive",   days_in_archive);
-            request_conf.put("logging",         logging);
-            request_conf.put("interactive",     interactive);
-            request_conf.put("logLevel",        logLevel.toString());
-
-            logger.debug("WS_HomerServer:: synchronize_configuration: Sending new Configuration");
-            return  Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request_conf, 1000 * 5, 0, 2);
-
-        }catch (Exception e){
-            return RESULT_server_is_offline();
+        }catch (Exception e) {
+            logger.error("Model_HomerServer:: set_new_configuration_on_homer:: Error", e);
         }
     }
 
@@ -529,35 +432,40 @@ public class Model_HomerServer extends Model{
         }
     }
 
-    @JsonIgnore @Transient  public  JsonNode ping(){
+    @JsonIgnore @Transient  public  WS_Ping_server ping(){
         try {
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "pingServer");
-            request.put("messageChannel", CHANNEL);
+            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(new WS_Ping_server().make_request(), 1000 * 2, 0, 2);
 
-            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000 * 2, 0, 2);
+            final Form<WS_Ping_server> form = Form.form(WS_Ping_server.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form"); return new WS_Ping_server();}
+
+           return form.get();
+
         }catch (Exception e){
-            return RESULT_server_is_offline();
+            logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
+            return new WS_Ping_server();
         }
     }
 
-    @JsonIgnore @Transient  public  JsonNode is_device_connected(String device_id){
+    @JsonIgnore @Transient  public  WS_Is_device_connected is_device_connected(String device_id){
         try{
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "checkDeviceConnection");
-            request.put("messageChannel", CHANNEL);
-            request.put("deviceId", device_id);
 
-            return Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation(request, 1000*10, 0, 2);
+            JsonNode node = Controller_WebSocket.homer_servers.get(unique_identificator).write_with_confirmation( new WS_Is_device_connected().make_request(device_id), 1000*10, 0, 2);
+
+            final Form<WS_Is_device_connected> form = Form.form(WS_Is_device_connected.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_new_instance:: Incoming Json for Yoda has not right Form"); return new WS_Is_device_connected();}
+
+            return form.get();
 
         }catch (Exception e){
-            return RESULT_server_is_offline();
+            logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
+            return new WS_Is_device_connected();
         }
     }
 
-    @JsonIgnore @Transient  public  void is_disconnect(){
+    @JsonIgnore @Transient  public void is_disconnect(){
         logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " +  Controller_WebSocket.homer_servers.get(unique_identificator));
         // TODO nějaký Alarm když se to stane??
     }
@@ -573,7 +481,6 @@ public class Model_HomerServer extends Model{
         }
     }
 
-    // Procedura po připojení serveru
     @JsonIgnore @Transient  public void check_after_connection(){
 
         logger.debug("Blocko Server: Starting connection control procedure for instancies");
@@ -583,7 +490,6 @@ public class Model_HomerServer extends Model{
 
     }
 
-    // Procedura po připojení serveru
     @JsonIgnore @Transient  public void check_HW_updates_on_server(){
 
         logger.debug("Blocko Server: Starting connection control procedure for hardware updates");
@@ -593,25 +499,6 @@ public class Model_HomerServer extends Model{
 
     }
 
-    // Pomocné objekty - Defaultní zprávy
-    @JsonIgnore @Transient  public static JsonNode RESULT_server_is_offline(){
-
-        ObjectNode result = Json.newObject();
-        result.put("status", "error");
-        result.put("code",   800);
-        result.put("error", "Model-HomerServer:: Server:: is offline");
-        return result;
-    }
-
-    @JsonIgnore @Transient  public static JsonNode RESULT_instance_already_exist(){
-
-        ObjectNode result = Json.newObject();
-        result.put("status", "error");
-        result.put("code",   801);
-        result.put("error", "Instance alrady Exist");
-        return result;
-    }
-    
     
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

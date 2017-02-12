@@ -147,7 +147,7 @@
 
                                 <td>
                                     @if(x.server_is_online()){
-                                            @x.get_homer_server_numberOfInstance().get("value").asInt()
+                                            @x.get_homer_server_number_of_instance().value
                                     }else{
                                         <p class="small text-red"> Offline </p>
                                     }

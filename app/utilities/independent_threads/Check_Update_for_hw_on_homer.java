@@ -1,8 +1,11 @@
 package utilities.independent_threads;
 
+import models.compiler.Model_Board;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import utilities.web_socket.WS_HomerServer;
+import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
+import utilities.web_socket.message_objects.homer_instance.WS_Yoda_connected;
 
 public class Check_Update_for_hw_on_homer extends Thread {
 
@@ -44,16 +47,43 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
                     // Zajímá mě stav HW
 
-                    instance.get_summary_information();
+                    try {
+                        WS_Get_summary_information summary_information = instance.get_summary_information();
 
+                        // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
+                        if(!summary_information.status.equals("success")){
+                            if(!model_server.server_is_online()) {
+                                logger.warn("Check_Update_for_hw_on_homer:: Run:: Server is probably offline");
+                                return false;
+                            }
+                        }
 
-                    // Ten porovnám se stavem - který se tam aktuálně očekává
+                        // Ten porovnám se stavem - který se tam aktuálně očekává
 
-                    // Spustím Update proceduru nebo pokračuji dál
+                        Check_Update_for_hw_on_homer.check_Update(ws_homerServer, summary_information);
+
+                    }catch (Exception e){
+
+                    }
                     return true;
                 });
     }
 
 
+    public static void check_Update(WS_HomerServer homer_server, WS_Get_summary_information summary_information){
+
+
+        for(WS_Yoda_connected yoda_connected : summary_information.masterDeviceList){
+
+            Model_Board yoda = Model_Board.find.byId(yoda_connected.deviceId);
+            if(yoda == null){
+                logger.error("Check_Update_for_hw_on_homer:: unknow Device!!! ");
+            }
+
+            Model_Board.hardware_firmware_state_check(yoda, yoda_connected);
+
+        }
+
+    }
 
 }

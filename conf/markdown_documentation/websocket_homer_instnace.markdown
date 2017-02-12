@@ -5,6 +5,15 @@ Channel Code:: **tyrion**
 
 **List of Json Objects for Comunication between Tyrion and Homer Instance**
 
+Any incoming or outgoing message to Tyrion and from Tyrion contains
+
+        {
+            "messageType"    :  "nazev_zpravy"              
+            "messageId"      :  "some_uuid_string"
+            "messageChannel" :  "channel_name"  
+            "instanceId:     :  "instanceId"  
+        }
+
 
 
 ### Tyrion Incoming ###  
@@ -31,7 +40,7 @@ Channel Code:: **tyrion**
             
             "messageId"      :  "somer_uuid_string"
             "messageChannel" :  "channel_name"
-            "instanceId:   :  "instanceId"  
+            "instanceId:     :  "instanceId"  
         }
         
  - yodaConnected (Yoda is connected)

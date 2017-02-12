@@ -2,11 +2,11 @@ package utilities.independent_threads;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.project.b_program.servers.Model_HomerServer;
-import play.libs.Json;
+import play.data.Form;
 import utilities.enums.Log_Level;
 import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.WS_CheckHomerServerConfiguration;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Get_homer_server_configuration;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Set_homer_server_configuration;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.TimeoutException;
@@ -27,14 +27,12 @@ public class SynchronizeHomerServer extends Thread {
     public void run() {
 
         try{
-            // Požádáme o token
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "getServerConfiguration");
-            request.put("messageChannel", Model_HomerServer.CHANNEL);
-            ObjectNode ask_for_configuration = homer_server.write_with_confirmation(request, 1000 * 5, 0, 2);
 
-            // Vytovření objektu
-            WS_CheckHomerServerConfiguration help = WS_CheckHomerServerConfiguration.getObject(ask_for_configuration);
+            ObjectNode ask_for_configuration = homer_server.write_with_confirmation( new WS_Get_homer_server_configuration().make_request() , 1000 * 5, 0, 2);
+            final Form<WS_Get_homer_server_configuration> form_get = Form.form(WS_Get_homer_server_configuration.class).bind(ask_for_configuration);
+            if(form_get.hasErrors()){logger.error("SynchronizeHomerServer:: synchronize_configuration:: WS_Get_homer_server_configuration:: Incoming Json for Yoda has not right Form");return;}
+
+            WS_Get_homer_server_configuration help = form_get.get();
 
             if(help.timeStamp.compareTo(homer_server.server.time_stamp_configuration) == 0){
                 // Nedochází k žádným změnám
@@ -43,7 +41,6 @@ public class SynchronizeHomerServer extends Thread {
             }else if(help.timeStamp.compareTo(homer_server.server.time_stamp_configuration) > 0){
                 // Homer server má novější novou konfiguraci
                 logger.debug("SynchronizeHomerServer:: synchronize_configuration: Homer server has new configuration");
-
 
                 homer_server.server.personal_server_name = help.serverName;
                 homer_server.server.mqtt_port = help.mqttPort;
@@ -68,9 +65,20 @@ public class SynchronizeHomerServer extends Thread {
 
             }else {
                 // Tyrion server má novější konfiguraci
-                logger.debug("SynchronizeHomerServer:: synchronize_configuration: Tyrion server has new configuration");
-                JsonNode response = homer_server.server.set_new_configuration_on_homer();
-                logger.debug("SynchronizeHomerServer:: synchronize_configuration: New Config state:: " + response.get("status"));
+
+                logger.debug("synchronize_configuration:: synchronize_configuration: Sending new Configuration");
+                JsonNode result = homer_server.write_with_confirmation( new WS_Set_homer_server_configuration().make_request(homer_server.server) , 1000 * 5, 0, 2);
+
+                final Form<WS_Set_homer_server_configuration> form_set = Form.form(WS_Set_homer_server_configuration.class).bind(result);
+                if(form_set.hasErrors()){logger.error("SynchronizeHomerServer:: synchronize_configuration:: WS_Set_homer_server_configuration:: Incoming Json for Yoda has not right Form");return;}
+
+                WS_Set_homer_server_configuration help_conf = form_set.get();
+
+                if(help_conf.status.equals("success")){
+                    logger.debug("SynchronizeHomerServer:: synchronize_configuration: New Config state:: success! ");
+                }else {
+                    logger.error("SynchronizeHomerServer:: synchronize_configuration: New Config state:: unsuccess! ");
+                }
 
             }
 

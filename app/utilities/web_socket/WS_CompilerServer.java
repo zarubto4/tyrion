@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.compiler.Model_CompilationServer;
 import play.libs.Json;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Rejection_homer_server;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class WS_CompilerServer extends WebSCType{
     public Map<String, ObjectNode> compilation_results = new HashMap<>();
     public Map<String, ObjectNode> compilation_request = new HashMap<>();
     Model_CompilationServer server;
+    public boolean security_token_confirm = true;
 
 
     public WS_CompilerServer(Model_CompilationServer server, Map<String, WebSCType> compiler_cloud_servers) {
@@ -91,7 +93,28 @@ public class WS_CompilerServer extends WebSCType{
     public void onMessage(ObjectNode json) {
 
         logger.debug("Incoming not requested message: " + json.toString());
-        Controller_WebSocket.compilation_server_incoming_message(this, json);
+        logger.debug("BlockoServer: "+ super.identifikator + " Incoming message: " + json.toString());
+
+        // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj
+        if(!security_token_confirm){
+            logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
+
+            //security_token_confirm_procedure();
+            super.write_without_confirmation(new WS_Rejection_homer_server().make_request());
+            return;
+        }
+
+
+        if(json.has("messageChannel")){
+
+            switch (json.get("messageChannel").asText()){
+
+                default: logger.error("Homer Server Incoming message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
+            }
+
+        }else {
+            logger.error("Homer Server: "+ super.identifikator + " Incoming message has not messageChannel!!!!");
+        }
 
     }
 

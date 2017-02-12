@@ -17,16 +17,16 @@ import models.project.b_program.servers.Model_HomerServer;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
+import play.data.Form;
 import play.libs.Json;
 import utilities.enums.*;
+import utilities.hardware_updater.Master_Updater;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
 import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.WS_Unregistred_device_connected;
-import utilities.web_socket.message_objects.homer_instance.WS_DeviceConnected;
-import utilities.web_socket.message_objects.homer_instance.WS_DeviceDisconnected;
-import utilities.web_socket.message_objects.homer_instance.WS_YodaConnected;
-import utilities.web_socket.message_objects.homer_instance.WS_YodaDisconnected;
+import utilities.web_socket.message_objects.homer_instance.*;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Is_device_connected;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Unregistred_device_connected;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -210,7 +210,7 @@ public class Model_Board extends Model {
 
 /* BOARD WEBSOCKET CONTROLLING UNDER INSTANCE --------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean is_online(){ // Velmi opatrně s touto proměnou - je časově velmi náročná!!!!!!!!
+    @JsonIgnore @Transient  public boolean is_online(){ // Velmi opatrně s touto proměnou - je časově velmi náročná!!!!!!!!
         try {
 
             Model_HomerInstance homer_instance = get_instance();
@@ -220,23 +220,17 @@ public class Model_Board extends Model {
                 return false;
             }
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "device_online_state");
-            request.put("messageChannel", Model_HomerInstance.CHANNEL);
-            request.put("instanceId", homer_instance.blocko_instance_name);
-            request.put("devicesId", this.id);
-
-            JsonNode result = homer_instance.sendToInstance().write_with_confirmation(request, 1000 * 3, 0, 4);
-
-            System.out.println("Status: JSON:::::: " + result.toString());
+            List<String> list = new ArrayList<>();
+            list.add(this.id);
+            WS_Online_states_devices result = homer_instance.get_devices_online_state(list);
 
 
-            if( result.get("status").asText().equals("error")){
+            if( result.status.equals("error")){
                 return false;
             }
 
-            if( result.get("status").asText().equals("success") ){
-                return result.get("device_state").asBoolean();
+            if( result.status.equals("success") ){
+                return result.device_state;
             }
 
             return false;
@@ -249,8 +243,8 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient Model_HomerInstance homer_instance = null; // SLouží pouze k uchovávání get_instance()!
-    @JsonIgnore @Transient public Model_HomerInstance get_instance(){
+    @JsonIgnore @Transient  Model_HomerInstance homer_instance = null; // SLouží pouze k uchovávání get_instance()!
+    @JsonIgnore @Transient  public Model_HomerInstance get_instance(){
 
             // Buď zkoumám virutální instnaci
             if (virtual_instance_under_project != null) {
@@ -270,7 +264,9 @@ public class Model_Board extends Model {
             return homer_instance;
     }
 
-    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_YodaConnected help){
+
+    // Kontrola připojení
+    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_Yoda_connected help){
         try {
 
             Model_Board master_device = Model_Board.find.byId(help.deviceId);
@@ -284,14 +280,14 @@ public class Model_Board extends Model {
             logger.debug("Board:: master_device_Connected:: Board connected to Blocko cloud_blocko_server:: ", help.deviceId);
 
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
-            Model_Board.hardware_connected(master_device, help);
+            Model_Board.hardware_firmware_state_check(master_device, help);
 
         }catch (Exception e){
             logger.error("Board:: master_device_Connected:: ERROR::", e);
         }
     }
 
-    @JsonIgnore @Transient  public static void master_device_Disconnected(WS_YodaDisconnected help){
+    @JsonIgnore @Transient  public static void master_device_Disconnected(WS_Yoda_disconnected help){
         try {
 
         }catch (Exception e){
@@ -299,7 +295,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_DeviceConnected help){
+    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_Device_connected help){
         try {
 
             Model_Board device = Model_Board.find.byId(help.deviceId);
@@ -318,14 +314,14 @@ public class Model_Board extends Model {
             }
 
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
-            Model_Board.hardware_connected(device, help);
+           //  Model_Board.hardware_connected(device, help);
 
         }catch (Exception e){
             logger.error("Board:: device_Connected:: ERROR:: ", e);
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Disconnected(WS_DeviceDisconnected help){
+    @JsonIgnore @Transient  public static void device_Disconnected(WS_Device_disconnected help){
         try {
             //TODO
         }catch (Exception e){
@@ -333,76 +329,126 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static void hardware_connected(Model_Board board, WS_YodaConnected report){
 
-        logger.debug("Tyrion Checking summary information of connected master board: ", board.id);
+
+    // Kontrola up_to_date harwaru
+    @JsonIgnore @Transient  public static void hardware_firmware_state_check(Model_Board board, WS_Yoda_connected report) {
+
+        logger.debug("Model_Board:: hardware_firmware_state_check:: Summary information of connected master board: ", board.id);
+
+        System.out.println("Kontrola Yody:: ");
+        System.out.println("Kontrola Yody Id:: " + report.deviceId);
+        System.out.println("Aktuální firmware_id:: " + report.firmware_build_id + " očekávaný dle tyriona" + board.actual_c_program_version != null ? board.actual_c_program_version.c_compilation.firmware_build_id : " zatím žádné");
+        System.out.println("Aktuální bootlader_id:: " + report.bootloader_build_id + " očekávaný dle tyriona" + board.actual_boot_loader != null ? board.actual_boot_loader.version_identificator : " zatím žádné");
 
 
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
-        logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
+
         Integer plans = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).disjunction()
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.not_start_yet)              )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)                )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
+                .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
                 .endJunction().findRowCount();
 
-        if(plans > 0){
+
+        System.out.println("Kolik mám aktualizačních procedur nažhavených pro dané zařízení:: " + plans);
+
+        if (plans > 0) {
+
+            System.out.println("Mám jich více než 0 ");
+
+            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.where()
+                    .eq("board.id", board.id)
+                    .eq("actualization_procedure.homer_instance_record.id", board.get_instance().actual_instance.id)
+                    .disjunction()
+                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .endJunction().findUnique();
+
+            System.out.println("Bubu kontrolovat na co mám plán");
+
+            if (plan.firmware_type == Firmware_type.FIRMWARE) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if (plan.c_program_version_for_update.c_compilation.firmware_build_id.equals(report.firmware_build_id)) {
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                } else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+
+                }
+
+            } else if (plan.firmware_type == Firmware_type.BOOTLOADER) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if (plan.binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                } else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+                }
+
+            } else if (plan.firmware_type == Firmware_type.BACKUP) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
+
+                plan.state = C_ProgramUpdater_State.complete;
+                plan.update();
+            }
+
             board.get_instance().check_hardware(board, report);
-        }else {
+        } else {
             logger.debug("No actualization plan found for Master Device: " + board.id);
         }
 
-        board.notification_board_connect();
 
-        for(WS_DeviceConnected device_report : report.devices_summary){
-
-            Model_Board device = Model_Board.find.byId(device_report.deviceId);
-
-            if(device == null){ // Smazat device z instance a tím i z yody
-                logger.error("Unauthorized device connected to Yoda:: ", board.id, " unauthorized device id is:: ", device_report.deviceId);
-                //TODO
-
-            }else {
-                Model_Board.hardware_connected(device, device_report);
-            }
-
-        }
-
-    }
-
-    @JsonIgnore @Transient public static void hardware_connected(Model_Board board, WS_DeviceConnected report) {
-        logger.debug("Tyrion Checking summary information of connected padavan board: ", board.id);
-
-        // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
-        logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
-        Integer plans  = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id)
-                .disjunction()
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.not_start_yet)              )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)                )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)             )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
-                .endJunction()
-                .findRowCount();
-
-        if(plans > 0){
-            board.get_instance().check_hardware(board, report);
-        }else {
-            logger.debug("No actualization plan found for Device: " + board.id);
-        }
 
         board.notification_board_connect();
-
-        // TODO pokračovat s dalšíma píčovinama
-
-        // TODO log device is online!
 
 
     }
 
+    @JsonIgnore @Transient public static WS_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, Model_FileRecord record){
+
+        try {
+
+            logger.debug("Homer: " + instance.send_to_instance().identifikator + ", will update Yodas or Devices");
+
+
+
+            JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Update_device_firmware().make_request(instance, actualization_procedure_id, firmware_type, targetIds, record), 1000 * 30, 0, 3);
+
+
+            final Form<WS_Update_device_firmware> form = Form.form(WS_Update_device_firmware.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_Board:: WS_Update_device_firmware:: Incoming Json for Yoda has not right Form");return new WS_Update_device_firmware();}
+
+            return form.get();
+
+        }catch (Exception e){
+            return new WS_Update_device_firmware();
+        }
+    }
 
     @JsonIgnore @Transient public static void unregistred_device_connected(WS_HomerServer homer_server, WS_Unregistred_device_connected report) {
         logger.debug("Model_Board:: unregistred_device_connected:: " + report.deviceId);
@@ -489,7 +535,7 @@ public class Model_Board extends Model {
 
             if(!find_server.server_is_online()) continue;
 
-            JsonNode result = find_server.is_device_connected(this.id);
+            WS_Is_device_connected result = find_server.is_device_connected(this.id);
 
             // TODO...
 

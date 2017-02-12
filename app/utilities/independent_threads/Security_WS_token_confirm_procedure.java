@@ -3,9 +3,9 @@ package utilities.independent_threads;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.servers.Model_HomerServer;
 import play.data.Form;
-import play.libs.Json;
 import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.WS_CheckHomerServerPermission;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Approve_homer_server;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Check_homer_server_permission;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.ExecutionException;
@@ -32,22 +32,13 @@ public class Security_WS_token_confirm_procedure extends Thread {
             try {
                 logger.warn("WS_HomerServer:: security_token_confirm_procedure:: Trying to Confirm WebSocket");
 
-                // Požádáme o token
-                ObjectNode request = Json.newObject();
-                request.put("messageType", "getVerificationToken");
-                request.put("messageChannel", Model_HomerServer.CHANNEL);
-                ObjectNode ask_for_token = server.super_write_with_confirmation(request, 1000 * 5, 0, 2);
+                ObjectNode ask_for_token = server.super_write_with_confirmation(new WS_Check_homer_server_permission().make_request(), 1000 * 5, 0, 2);
 
-
-                final Form<WS_CheckHomerServerPermission> form = Form.form(WS_CheckHomerServerPermission.class).bind(ask_for_token);
-                if (form.hasErrors()) {
-                    logger.error("WS_HomerServer:: Security_token_confirm_procedure: Error:: Some value missing:: " + form.errorsAsJson().toString());
-                    // Ukončim ověřování - ale nechám websocket připojený
-                    return;
-                }
+                final Form<WS_Check_homer_server_permission> form = Form.form(WS_Check_homer_server_permission.class).bind(ask_for_token);
+                if (form.hasErrors()) {logger.error("WS_HomerServer:: WS_Check_homer_server_permission: Error:: Some value missing:: " + form.errorsAsJson().toString());return;}
 
                 // Vytovření objektu
-                WS_CheckHomerServerPermission help = form.get();
+                WS_Check_homer_server_permission help = form.get();
 
                 // Vyhledání DB reference
                 Model_HomerServer check_server = Model_HomerServer.find.where().eq("hash_certificate", help.hashToken).findUnique();
@@ -60,11 +51,16 @@ public class Security_WS_token_confirm_procedure extends Thread {
                     continue;
                 }
 
-                // Potvrzení Homer serveru, že je vše v pořádku
-                ObjectNode request_2 = Json.newObject();
-                request_2.put("messageType", "verificationTokenApprove");
-                request_2.put("messageChannel", Model_HomerServer.CHANNEL);
-                ObjectNode approve_result = server.super_write_with_confirmation(request_2, 1000 * 5, 0, 2);
+
+                ObjectNode approve_result = server.super_write_with_confirmation(new WS_Approve_homer_server().make_request(), 1000 * 5, 0, 2);
+                final Form<WS_Approve_homer_server> form_approve = Form.form(WS_Approve_homer_server.class).bind(ask_for_token);
+                if (form_approve.hasErrors()) {logger.error("WS_HomerServer:: WS_Apúrove_homer_server: Error:: Some value missing:: " + form.errorsAsJson().toString());return;}
+
+                // Vytovření objektu
+                WS_Approve_homer_server help_approve = form_approve.get();
+
+
+                // TODO tady nic nedělám s tím jestli se to povedlo nebo ne???
 
                 // Změna FlagRegistru
                 server.security_token_confirm = true;
