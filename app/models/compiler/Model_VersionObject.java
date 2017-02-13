@@ -156,6 +156,7 @@ public class Model_VersionObject extends Model {
         help.version_description = version_description;
         help.delete_permission = c_program.delete_permission();
         help.update_permission = c_program.update_permission();
+        help.author = this.author.get_short_person();
 
         return help;
     }
@@ -168,6 +169,7 @@ public class Model_VersionObject extends Model {
         help.version_description = version_description;
         help.delete_permission = b_program.delete_permission();
         help.update_permission = b_program.update_permission();
+        help.author = this.author.get_short_person();
 
         return help;
     }
@@ -180,6 +182,7 @@ public class Model_VersionObject extends Model {
         help.version_description = version_description;
         help.delete_permission = m_program.delete_permission();
         help.edit_permission = m_program.edit_permission();
+        help.author = this.author.get_short_person();
 
         return help;
     }
@@ -256,7 +259,7 @@ public class Model_VersionObject extends Model {
 
         // Zpracování Json
         JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
-        System.out.println("JSON:::::" + json.toString());
+
         Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
         if(form.hasErrors()){
 
@@ -277,7 +280,7 @@ public class Model_VersionObject extends Model {
         ObjectNode request = Json.newObject();
         request.put("messageType", "build");
         request.put("target", typeOfBoard.compiler_target_name);
-        request.put("libVersion", "v0"); // TODO longetrm podle verzí komplační knohovny
+        request.put("libVersion", "v0"); // TODO longterm podle verzí komplační knohovny
         request.put("versionId", this.id);
         request.put("code", code_file.main);
 

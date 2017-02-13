@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.person.Model_Person;
 import utilities.enums.Approval_state;
+import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -25,8 +27,9 @@ public class Model_BlockoBlockVersion extends Model {
                                                             @ApiModelProperty(required = true)    public String version_name;
                                                             @ApiModelProperty(required = true)    public String version_description;
     @Enumerated(EnumType.STRING)                            @ApiModelProperty(required = true)    public Approval_state approval_state;
-    @ApiModelProperty(required = true,
-            dataType = "integer", readOnly = true,
+
+                                                                        @JsonIgnore @ManyToOne    public Model_Person author;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
             value = "UNIX time in ms", example = "1466163478925")                                 public Date date_of_create;
 
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String design_json;
@@ -45,6 +48,20 @@ public class Model_BlockoBlockVersion extends Model {
             if (Model_BlockoBlockVersion.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore
+    public Swagger_BlockoBlock_Version_Short_Detail get_short_blockoblock_version(){
+
+        Swagger_BlockoBlock_Version_Short_Detail help = new Swagger_BlockoBlock_Version_Short_Detail();
+        help.id = this.id;
+        help.name = this.version_name;
+        help.description = this.version_description;
+        help.date_of_create = this.date_of_create;
+        help.design_json = this.design_json;
+        help.author = this.author.get_short_person();
+
+        return help;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

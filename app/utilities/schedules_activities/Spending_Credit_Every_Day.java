@@ -35,7 +35,7 @@ public class Spending_Credit_Every_Day implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         logger.info("Spending_Credit_Every_Day:: Starting with CRON procedure");
-        logger.info("Spending_Credit_Every_Day:: Time" + new Date().toString() );
+        logger.info("Spending_Credit_Every_Day:: Time:" + new Date().toString() );
 
         filter_do();
 
@@ -52,37 +52,41 @@ public class Spending_Credit_Every_Day implements Job {
 
         logger.info("Spending_Credit_Every_Day:: filter_do");
         Calendar now = Calendar.getInstance();
-        long time_16_hours_back = now.getTimeInMillis() - 16*60*1000;
+        Date time_16_hours_back = new Date(now.getTimeInMillis() - 16*60*60*1000);
 
-        logger.info("Time" + new Date().toString() );
+        logger.info("Time: " + new Date().toString() );
 
-
-
-        int page_actual = 0;
-        int all_page =  Model_Product.find.where().lt("date_of_create", time_16_hours_back)
+        int total =  Model_Product.find.where().lt("date_of_create", time_16_hours_back)
                             .disjunction()
                                 .isNotNull("extensions.price_in_usd")
                             .findRowCount();
 
-        while (true){
+        if (total != 0) {
 
-            logger.info("Spending_Credit_Every_Day:: procedure fo page " + page_actual + " from " + all_page);
+            int page_total = total / 25;
 
-           List<Model_Product> products = Model_Product.find.where()
-                                                .disjunction()
-                                                    .isNotNull("extensions.price_in_usd")
-                                                .endJunction()
-                                                .lt("date_of_create", time_16_hours_back)
-                                                .order("date_of_create")
-                                                .findPagedList(page_actual,25)
-                                                .getList();
+            if (total % 25 > 0) page_total++;
 
-            for(Model_Product product: products){
-                 this.spending_credit(product);
+            for (int page = 0; page <= page_total - 1; page++) {
+
+                logger.info("Spending_Credit_Every_Day:: procedure for page " + page + 1 + " from " + page_total + 1);
+
+                List<Model_Product> products = Model_Product.find.where()
+                        .disjunction()
+                        .isNotNull("extensions.price_in_usd")
+                        .endJunction()
+                        .lt("date_of_create", time_16_hours_back)
+                        .order("date_of_create")
+                        .findPagedList(page, 25)
+                        .getList();
+
+
+                for (Model_Product product : products) {
+                    this.spending_credit(product);
+                }
+
             }
-
         }
-        
     }
 
     /**
@@ -90,7 +94,7 @@ public class Spending_Credit_Every_Day implements Job {
      */
     public void spending_credit(Model_Product product){
 
-        logger.info("Spending_Credit_Every_Day:: Product ID: " +product.id );
+        logger.info("Spending_Credit_Every_Day:: Product ID: " + product.id );
         double total_spending = 0.0;
 
         for(Model_GeneralTariffExtensions extension : product.extensions){

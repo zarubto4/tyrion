@@ -88,7 +88,7 @@ public class Loggy{
         String description = descriptionBuilder.toString();
 
         error(id, summary, description);
-        return GlobalResult.result_InternalServerError();
+        return GlobalResult.result_InternalServerError(summary);
     }
 
     public static Result result_internalServerError(String problem, Http.Request request) {

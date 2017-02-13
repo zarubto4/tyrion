@@ -85,6 +85,8 @@ public class Model_TypeOfBoard extends Model {
         this.producer = null;
         this.update();
 
+        this.picture.delete();
+
         super.delete();
     }
 

@@ -10,11 +10,22 @@ import java.util.Date;
         value = "GridWidgetVersion_Short_Detail")
 public class Swagger_GridWidgetVersion_Short_Detail {
 
-    @ApiModelProperty(required = true, readOnly = true)    public String id;
-    @ApiModelProperty(required = true, readOnly = true)    public String name;
-    @ApiModelProperty(required = true, readOnly = true)    public String description;
-    @ApiModelProperty(required = true, readOnly = true)    public Date date_of_create;
+    @ApiModelProperty(required = true, readOnly = true)
+    public String id;
 
-    @ApiModelProperty(required = true, readOnly = true)     public String design_json;
+    @ApiModelProperty(required = true, readOnly = true)
+    public String name;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public String description;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public Date date_of_create;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public String design_json;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public Swagger_Person_Short_Detail author;
 
 }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.compiler.Model_Producer;
 import models.person.Model_Person;
 import utilities.enums.Approval_state;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
@@ -32,6 +33,7 @@ public class Model_GridWidget extends Model{
 
                                                                         @JsonIgnore @ManyToOne   public Model_Person author;
                                                                         @JsonIgnore @ManyToOne   public Model_TypeOfWidget type_of_widget;
+                                                                        @JsonIgnore @ManyToOne   public Model_Producer producer;
 
     @JsonIgnore @OneToMany(mappedBy="grid_widget", cascade = CascadeType.ALL) @OrderBy("date_of_create desc") public List<Model_GridWidgetVersion> grid_widget_versions = new ArrayList<>();
 
@@ -53,17 +55,11 @@ public class Model_GridWidget extends Model{
 
         List<Swagger_GridWidgetVersion_Short_Detail> list = new ArrayList<>();
 
-        for( Model_GridWidgetVersion m : grid_widget_versions){
-            if((m.approval_state == Approval_state.approved)||(m.approval_state == Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.getPerson().id)))) {
+        for( Model_GridWidgetVersion v : grid_widget_versions){
 
-                Swagger_GridWidgetVersion_Short_Detail short_version = new Swagger_GridWidgetVersion_Short_Detail();
-                short_version.id = m.id;
-                short_version.description = m.version_description;
-                short_version.name = m.version_name;
-                short_version.date_of_create = m.date_of_create;
-                short_version.design_json = m.design_json;
+            if((v.approval_state == Approval_state.approved)||(v.approval_state == Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.getPerson().id)))) {
 
-                list.add(short_version);
+                list.add(v.get_short_gridwidget_version());
             }
         }
 

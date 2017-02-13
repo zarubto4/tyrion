@@ -83,8 +83,8 @@ public class Model_FloatingPersonToken extends Model {
 
     @JsonIgnore
     public void setDate(){
-       this.created = new Date(); // oldDate == current time
-       this.access_age = new Date(created.getTime() + TimeUnit.DAYS.toMillis(72));
+       this.created = new Date();
+       this.access_age = new Date(created.getTime() + TimeUnit.HOURS.toMillis(72));
     }
 
     @JsonIgnore @Transient
@@ -122,6 +122,21 @@ public class Model_FloatingPersonToken extends Model {
         return floatingPersonToken;
     }
 
+    @JsonIgnore @Transient
+    public boolean isValid(){
+        try {
+            if(this.access_age.getTime() < new Date().getTime()){
+                this.delete();
+                return false;
+            }else {
+                this.access_age = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(72));
+                this.update();
+                return true;
+            }
+        } catch (Exception e){
+            return false;
+        }
+    }
 
     // If userDB/system make log out
     public void deleteAuthToken() {

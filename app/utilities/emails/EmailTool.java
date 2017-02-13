@@ -34,19 +34,19 @@ public class EmailTool {
 
     public EmailTool addText(String text){
         emailContentHtml += (text);
-        emailContentText += (text);
+        emailContentText += (text) + " ";
         return this;
     }
 
     public EmailTool addBoldText(String text){
         emailContentHtml += ("<strong>" + text + "</strong>");
-        emailContentText += (text);
+        emailContentText += (text + " ");
         return this;
     }
 
     public EmailTool addLinkIntoText(String link, String linkName){
         emailContentHtml += ("<a href='" + link + "'>" + linkName + "</a>");
-        emailContentText += (link);
+        emailContentText += (link + " ");
         return this;
     }
 
@@ -56,13 +56,13 @@ public class EmailTool {
     }
 
     public EmailTool addSeparatorLine(){
-        emailContentHtml += ("<div style='clear: both; height: 0px; width: 100%; border-top: 1px solid #eee'></div>");
+        emailContentHtml += ("<div style='clear: both; height: 1px; width: 100%; border-top: 1px solid #eee'></div>");
         return this;
     }
 
     public EmailTool addLink(String link, String linkName, String textSize){
         emailContentHtml += ("<a href='" + link + "' style='padding: 10px; width: 100% !important; color: #00a0dd !important; text-decoration: none !important; text-align: center !important; float: left; font-size:" + textSize + "pt;'>" + linkName + "</a>");
-        emailContentText += (link);
+        emailContentText += (link + " ");
         return this;
     }
 
@@ -74,7 +74,7 @@ public class EmailTool {
     public void sendEmail(String userMail, String subject){
 
 
-        String html = utilities.emails.templates.html.EmailScheme.render(emailContentHtml).body();
+        String html = utilities.emails.templates.html.EmailScheme.render(emailContentHtml, subject).body();
 
                  email  .setSubject(subject)
                         .setFrom("Byzance IoT Platform <server@byzance.cz>")

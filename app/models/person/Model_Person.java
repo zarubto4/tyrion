@@ -8,9 +8,11 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.blocko.Model_BlockoBlock;
+import models.blocko.Model_BlockoBlockVersion;
 import models.compiler.Model_FileRecord;
 import models.compiler.Model_VersionObject;
 import models.grid.Model_GridWidget;
+import models.grid.Model_GridWidgetVersion;
 import models.notification.Model_Notification;
 import models.overflow.LinkedPost;
 import models.overflow.Post;
@@ -20,6 +22,7 @@ import models.project.m_program.Model_GridTerminal;
 import org.hibernate.validator.constraints.Email;
 import play.data.validation.Constraints;
 import utilities.Server;
+import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
@@ -63,7 +66,9 @@ public class Model_Person extends Model {
 
 
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_BlockoBlock>          blocksAuthor         = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_BlockoBlockVersion>   blockVersionsAuthor  = new ArrayList<>(); // Propojení, které verze bločků uživatel vytvořil
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_GridWidget>           widgetsAuthor        = new ArrayList<>(); // Propojení, které widgety uživatel vytvořil
+    @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_GridWidgetVersion>    widgetVersionsAuthor = new ArrayList<>(); // Propojení, které verze widgetů uživatel vytvořil
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_VersionObject>        version_objects      = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Post>                       personPosts          = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore  @OneToMany(mappedBy="author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<LinkedPost>                 linkedPosts          = new ArrayList<>(); // Propojení, které uživatel nalinkoval
@@ -84,6 +89,17 @@ public class Model_Person extends Model {
 
 
 /* Security Tools @ JSON IGNORE -----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public Swagger_Person_Short_Detail get_short_person() {
+
+        Swagger_Person_Short_Detail help = new Swagger_Person_Short_Detail();
+        help.id = this.id;
+        help.nick_name = this.nick_name;
+        help.mail = this.mail;
+
+        return help;
+    }
 
     @JsonIgnore @Override
     public void save() {
@@ -163,9 +179,14 @@ public class Model_Person extends Model {
 
     public static Model_Person findByAuthToken(String authToken) {
         if (authToken == null) return null;
+
         try  {
-            return find.where().eq("floatingPersonTokens.authToken", authToken).findUnique(); }
-        catch (Exception e) {
+            Model_FloatingPersonToken token = Model_FloatingPersonToken.find.where().eq("authToken", authToken).findUnique();
+
+            if (token != null && token.isValid()) return find.where().eq("floatingPersonTokens.authToken", authToken).findUnique();
+
+            return null;
+        } catch (Exception e) {
            e.printStackTrace();
            return null;
         }

@@ -127,6 +127,7 @@ public class Controller_CompilationLibraries extends Controller {
 
             // Přiřadím první verzi!
             if (typeOfBoard.version_scheme != null && typeOfBoard.version_scheme.default_main_version != null) {
+
                 Model_VersionObject version_object = new Model_VersionObject();
                 version_object.version_name = "First default version of C_Program.";
                 version_object.version_description = "This is default description.";
@@ -164,6 +165,9 @@ public class Controller_CompilationLibraries extends Controller {
                     version_object.update();
                 }
             }
+
+            c_program.refresh();
+
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (Exception e) {
@@ -813,7 +817,7 @@ public class Controller_CompilationLibraries extends Controller {
                 if(!c_program.create_permission()) return GlobalResult.forbidden_Permission();
                 c_program.save();
 
-                Model_VersionObject version_object      = new Model_VersionObject();
+                Model_VersionObject version_object = new Model_VersionObject();
                 version_object.version_name        = help.version_name;
                 version_object.version_description = help.version_description;
                 version_object.date_of_create      = new Date();
@@ -1015,7 +1019,7 @@ public class Controller_CompilationLibraries extends Controller {
     public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
         try{
 
-            logger.debug("CompilationControler:: Starting compilation on version_id = " + version_id);
+            logger.debug("CompilationController:: Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);

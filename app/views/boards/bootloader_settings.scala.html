@@ -164,7 +164,7 @@
                                     <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('version.id')" > SET as Main </button>
                                 }
                                 @if(version.default_program == null && (version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) ){
-                                    <p class="text-red"> version.c_compilation.status</p>
+                                    <p class="text-red"> @version.c_compilation.status</p>
                                 }
                             </td>
 

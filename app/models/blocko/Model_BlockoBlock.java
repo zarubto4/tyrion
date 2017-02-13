@@ -33,7 +33,7 @@ public class Model_BlockoBlock extends Model {
 
                                     @JsonIgnore @ManyToOne                                       public Model_Person author;
                                     @JsonIgnore @ManyToOne                                       public Model_TypeOfBlock type_of_block;
-                                    @JsonIgnore @ManyToOne()                                     public Model_Producer producer;
+                                    @JsonIgnore @ManyToOne                                       public Model_Producer producer;
 
     @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL) @OrderBy("date_of_create desc") public List<Model_BlockoBlockVersion> blocko_versions = new ArrayList<>();
 
@@ -63,17 +63,11 @@ public class Model_BlockoBlock extends Model {
 
         List<Swagger_BlockoBlock_Version_Short_Detail> list = new ArrayList<>();
 
-        for( Model_BlockoBlockVersion m : blocko_versions){
-            if((m.approval_state == Approval_state.approved)||(m.approval_state == Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.getPerson().id)))) {
+        for( Model_BlockoBlockVersion v : blocko_versions){
 
-                Swagger_BlockoBlock_Version_Short_Detail short_version = new Swagger_BlockoBlock_Version_Short_Detail();
-                short_version.id = m.id;
-                short_version.description = m.version_description;
-                short_version.name = m.version_name;
-                short_version.date_of_create = m.date_of_create;
-                short_version.design_json = m.design_json;
+            if((v.approval_state == Approval_state.approved)||(v.approval_state == Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.getPerson().id)))) {
 
-                list.add(short_version);
+                list.add(v.get_short_blockoblock_version());
             }
         }
 
@@ -81,6 +75,7 @@ public class Model_BlockoBlock extends Model {
     }
 
     @Transient @JsonIgnore public Swagger_Blocko_Block_Short_Detail get_blocko_block_short_detail(){
+
         Swagger_Blocko_Block_Short_Detail help = new Swagger_Blocko_Block_Short_Detail();
         help.id = id;
         help.name = name;
@@ -89,6 +84,7 @@ public class Model_BlockoBlock extends Model {
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
+
         return help;
     }
 

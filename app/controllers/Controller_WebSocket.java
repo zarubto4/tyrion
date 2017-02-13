@@ -298,7 +298,7 @@ public class Controller_WebSocket extends Controller {
         }
     }
 
-    // Odebírání streamu notifikací z Tytiona
+    // Odebírání streamu notifikací z Tyriona
         public static void becki_subscribe_notification (WS_Becki_Website becki, ObjectNode json){
             try {
 
@@ -428,7 +428,7 @@ public class Controller_WebSocket extends Controller {
 
     public static void disconnect_all_Compilation_Servers() {
 
-        logger.warn("Tyrion is shutting down: Trying to safety disconnect all Compilation Servers");
+        logger.warn("Tyrion is shutting down: Trying to safely disconnect all Compilation Servers");
 
         for (Map.Entry<String, WebSCType> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet())
         {

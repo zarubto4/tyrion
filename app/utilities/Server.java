@@ -447,6 +447,7 @@ public class Server {
 
             // Klíč / identifikátor Trrigru definující, kdy se konkrétní job zapne.
             // Jednodenní Klíče
+            TriggerKey every_day_key0       = TriggerKey.triggerKey("every_day_00:00"); // 0)
             TriggerKey every_day_key1       = TriggerKey.triggerKey("every_day_03:00"); // 1)
             TriggerKey every_day_key2       = TriggerKey.triggerKey("every_day_03:10"); // 2)
             TriggerKey every_day_key3       = TriggerKey.triggerKey("every_day_03:20"); // 3)
@@ -476,6 +477,10 @@ public class Server {
 
             // Definované Trigry
             if(!scheduler.checkExists(every_day_key1)){
+
+                Trigger every_day_0 = newTrigger().withIdentity(every_day_key1).startNow()
+                        .withSchedule(dailyAtHourAndMinute(0,0))// Spuštění každý den v 00:00 AM
+                        .build();
 
                 Trigger every_day_1 = newTrigger().withIdentity(every_day_key1).startNow()
                         .withSchedule(dailyAtHourAndMinute(3,0))// Spuštění každý den v 03:00 AM
@@ -520,6 +525,11 @@ public class Server {
 
                 // Přidání úkolů do scheduleru
 
+                // 0) Přesouvání logu z tyriona do BLOB serveru
+                if(!server_mode.equals("developer")) {
+                    logger.info("Scheduling new Job - Log_Azure_Upload");
+                    scheduler.scheduleJob(newJob(Log_Azure_Upload.class).withIdentity(JobKey.jobKey("log_azure_upload")).build(), every_day_0);
+                }
                 // 1) Odstraňování starých auth-tokenů z přihlášení, které mají živostnost jen 72h
                 logger.info("Scheduling new Job - Old_Floating_Person_Token_Removal");
                 scheduler.scheduleJob( newJob(Old_Floating_Person_Token_Removal.class).withIdentity( JobKey.jobKey("removing_old_floating_person_tokens") ).build(), every_day_1);
@@ -541,12 +551,10 @@ public class Server {
                 scheduler.scheduleJob( newJob(Spending_Credit_Every_Day.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_5);
 
                 // 6) Obnovení certifikátu od Lets Encrypt
-                logger.info("Scheduling new Job - Certificate_Renewal");
-                scheduler.scheduleJob( newJob(Certificate_Renewal.class).withIdentity( JobKey.jobKey("certificate_renewal") ).build(), every_day_6);
-
-                // 9) Přesouvání logů v DB do Blob Serveru a uvolňování místa v DB a na serveru
-                // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-433
-
+                if(server_mode.equals("production")) {
+                    logger.info("Scheduling new Job - Certificate_Renewal");
+                    scheduler.scheduleJob(newJob(Certificate_Renewal.class).withIdentity(JobKey.jobKey("certificate_renewal")).build(), every_day_6);
+                }
                 // 7) Kontrola zaseknutých kompilací - těch co jsou in progress déle než 5 minut.
                 logger.info("Scheduling new Job - Checking stuck compilations");
                 scheduler.scheduleJob( newJob(Compilation_Checker.class).withIdentity( JobKey.jobKey("stuck_compilation_check") ).build(), every_10_minutes_7);

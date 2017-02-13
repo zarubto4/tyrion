@@ -105,7 +105,7 @@ public class Controller_Person extends Controller {
                             .addEmptyLineSpace()
                             .addSeparatorLine()
                             .addEmptyLineSpace()
-                            .addLink(link,"Click here to verify","18")
+                            .addLink(link,"Verify your email address","18")
                             .addEmptyLineSpace()
                             .sendEmail(validationToken.personEmail, "Email Verification");
 
@@ -204,7 +204,7 @@ public class Controller_Person extends Controller {
                         .addEmptyLineSpace()
                         .addSeparatorLine()
                         .addEmptyLineSpace()
-                        .addLink(link,"Click here to verify","18")
+                        .addLink(link,"Verify your email address","18")
                         .addEmptyLineSpace()
                         .sendEmail(validationToken.personEmail, "Email Verification");
 
@@ -283,7 +283,7 @@ public class Controller_Person extends Controller {
                         .addEmptyLineSpace()
                         .addSeparatorLine()
                         .addEmptyLineSpace()
-                        .addLink(link,"Click here to reset your password","18")
+                        .addLink(link,"Reset your password","18")
                         .addEmptyLineSpace()
                         .sendEmail(help.mail,"Password Reset" );
 
@@ -967,12 +967,12 @@ public class Controller_Person extends Controller {
                         .addText(text)
                         .endParagraph()
                         .startParagraph("13")
-                        .addText("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password there, because it was probably stolen")
+                        .addText("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password there, because it was probably stolen.")
                         .endParagraph()
                         .addEmptyLineSpace()
                         .addSeparatorLine()
                         .addEmptyLineSpace()
-                        .addLink(link, "Authorize", "18")
+                        .addLink(link, "Authorize change", "18")
                         .addEmptyLineSpace()
                         .sendEmail(Controller_Security.getPerson().mail, subject);
 
@@ -1035,7 +1035,7 @@ public class Controller_Person extends Controller {
                                 .addEmptyLineSpace()
                                 .addSeparatorLine()
                                 .addEmptyLineSpace()
-                                .addLink(link,"Click here to verify","18")
+                                .addLink(link,"Verify your email address","18")
                                 .addEmptyLineSpace()
                                 .sendEmail(validationToken.personEmail, "Email Verification");
 

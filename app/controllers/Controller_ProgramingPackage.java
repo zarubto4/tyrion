@@ -2694,6 +2694,7 @@ public class Controller_ProgramingPackage extends Controller {
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.blocko_block = blockoBlock;
+            version.author = Controller_Security.getPerson();
 
             // Kontrola oprávnění
             if (! version.create_permission()) return GlobalResult.forbidden_Permission();

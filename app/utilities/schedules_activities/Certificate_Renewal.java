@@ -1,11 +1,16 @@
 package utilities.schedules_activities;
 
 
+import com.google.inject.Inject;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.Application;
 
 public class Certificate_Renewal implements Job {
+
+    @Inject
+    Application application;
 
     public Certificate_Renewal(){ /** do nothing */ }
 
@@ -21,20 +26,21 @@ public class Certificate_Renewal implements Job {
         @Override
         public void run() {
 
-          try {
-              logger.info("Independent Thread in Certificate_Renewal now working");
-              /*
-              Runtime rt = Runtime.getRuntime();
-              Process pr = rt.exec("certificate_renewal.sh");
+            logger.info("Certificate_Renewal:: renew_certificate_thread.run():: started");
+
+            try {
+
+              Process pr = Runtime.getRuntime().exec(application.path() + "/certificate_renewal.sh");
 
               int exitVal = pr.waitFor();
 
               logger.warn("Certificate renewal exited with code " + exitVal);
-              */
 
-          } catch (Exception e) {
+            } catch (Exception e) {
               logger.error("Certificate renewal failed");
-          }
+            }
+
+            logger.info("Certificate_Renewal:: renew_certificate_thread.run():: stopped");
         }
     };
 }
