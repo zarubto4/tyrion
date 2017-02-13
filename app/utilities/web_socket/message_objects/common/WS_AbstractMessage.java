@@ -10,6 +10,7 @@ public abstract class  WS_AbstractMessage {
 
     public String status = "error";
     public String error  = null;
+    public Integer errorCode  = null;
 
 }
 

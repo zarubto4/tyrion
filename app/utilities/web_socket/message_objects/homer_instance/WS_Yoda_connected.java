@@ -15,9 +15,9 @@ public class WS_Yoda_connected extends WS_AbstractMessageBoard {
     @JsonIgnore public static final String messageType = "yodaConnected";
 
     @Constraints.Required public String deviceId;
-    @Constraints.Required public boolean autobackup;
-
+                          public boolean autobackup = false;
+                          public boolean online_status = false;
 
     @Valid
-    public List<WS_Device_connected> devices_summary  = new ArrayList<>();
+    public List<WS_Device_connected> deviceList  = new ArrayList<>();
 }
