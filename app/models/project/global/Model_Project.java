@@ -188,7 +188,7 @@ public class Model_Project extends Model {
 
         // Server je v Developer Modu
         }else{
-            instance.cloud_homer_server = Model_HomerServer.getDestinationServer();
+            instance.cloud_homer_server = Model_HomerServer.get_destination_server();
         }
 
         instance.save();

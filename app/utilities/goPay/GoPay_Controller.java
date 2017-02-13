@@ -63,27 +63,10 @@ public class GoPay_Controller  extends Controller {
                         Calendar cal = Calendar.getInstance();
                         product.monthly_day_period = (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7) > 28 ? 28 : (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7);
                         product.on_demand_active = true;
-
-                            // Nastavím čas, kdy dojde k vypršení služby
-                            cal.setTime(new Date());
-                            cal.add(Calendar.MONTH, 1);
-                            product.paid_until_the_day = cal.getTime() ;
-
                         product.update();
                     } else if (product.mode.name().equals(Payment_mode.annual.name())) {
                         payment.recurrence = new Recurrence();
                         payment.recurrence.recurrence_cycle = Recurrence_cycle.ON_DEMAND;
-
-                        Calendar cal = Calendar.getInstance();
-                        product.monthly_day_period = (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7) > 28 ? 28 : (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7);
-                        product.on_demand_active = true;
-
-
-                            // Nastavím čas, kdy dojde k vypršení služby
-                            cal.setTime(new Date());
-                            cal.add(Calendar.YEAR, 1);
-                            product.paid_until_the_day = cal.getTime() ;
-
                         product.update();
                     }
                 }

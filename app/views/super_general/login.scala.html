@@ -39,9 +39,24 @@
     text-decoration: none;
   }
 
-  header{
-    background-color: #3c8dbc;
-    width: 100%;
+  @if(Server.server_mode == "developer"){
+    header{
+      background-color: #3c8dbc;
+      width: 100%;
+    }
+   }
+
+  @if(Server.server_mode == "stage"){
+      header{
+      background-color: #b604bc;
+      width: 100%;
+    }
+  }
+    @if(Server.server_mode == "production"){
+      header{
+      background-color: #bc0015;
+      width: 100%;
+    }
   }
 
   header h1{
@@ -89,7 +104,7 @@
     <div style="width: 350px; margin-left: auto; margin-right: auto; margin-top: 1%; padding: 20px; background-color: white;" class="login-box">
 
       <div class="login-box-body">
-        <p class="login-box-msg"><img src="@routes.Assets.at("../../../../public/images/Logo_byzance_orlice-01.png")"  width="200"></p>
+        <p class="login-box-msg"><img src="@routes.Assets.at("../../../../public/images/hwlogo.png")"  width="200"></p>
         <p class="login-box-msg"><b>Login to Tyrion administration</b></p>
 
         <form onsubmit="login(); return false;" id="login_form">

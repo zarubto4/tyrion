@@ -322,7 +322,7 @@ POST            /library/version/upload_example/:version_id                     
 DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_removeExample(example_id)
 
 #Actualization
-PUT             /c_program/version/upload/:version_id                           @controllers.Controller_CompilationLibraries.uploadCompilationToBoard(version_id)
+PUT             /c_program/version/upload                                       @controllers.Controller_CompilationLibraries.uploadCompilationToBoard()
 POST            /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
 #Processor
@@ -336,10 +336,11 @@ DELETE          /processor/:processor_id                                        
 POST            /board                                                          @controllers.Controller_CompilationLibraries.board_create()
 PUT             /board/userDescription/:type_of_board_id                        @controllers.Controller_CompilationLibraries.board_update(type_of_board_id)
 
-PUT             /board/filter/:page_number                                      @controllers.Controller_CompilationLibraries.board_getByFilter(page_number:Int )
+PUT             /board/filter                                                   @controllers.Controller_CompilationLibraries.board_getByFilter()
+GET             /board/check/:hash_for_adding                                   @controllers.Controller_CompilationLibraries.board_check(hash_for_adding)
 GET             /board/:board_id                                                @controllers.Controller_CompilationLibraries.board_get(board_id)
 DELETE          /board/deactivateBoard/:board_id                                @controllers.Controller_CompilationLibraries.board_deactivate(board_id)
-PUT             /board/:board_id/:project_id                                    @controllers.Controller_CompilationLibraries.board_connectProject(board_id, project_id)
+PUT             /board/:hash_for_adding/:project_id                             @controllers.Controller_CompilationLibraries.board_connectProject(hash_for_adding, project_id)
 DELETE          /board/:board_id                                                @controllers.Controller_CompilationLibraries.board_disconnectProject(board_id)
 
 
@@ -494,10 +495,8 @@ GET             /admin/permission/role/:role_id                 @controllers.Con
 
 GET             /admin/blocko_objects                           @controllers.Controller_Dashboard.blocko_objects()
 GET             /admin/blocko_management                        @controllers.Controller_Dashboard.blocko_management()
-GET             /admin/blocko_block_content                     @controllers.Controller_Dashboard.blocko_first_block_content()
 GET             /admin/grid_public                              @controllers.Controller_Dashboard.grid_public()
 GET             /admin/grid_management                          @controllers.Controller_Dashboard.grid_management()
-GET             /admin/grid_widget_content                      @controllers.Controller_Dashboard.grid_first_widget_content()
 GET             /admin/public_code                              @controllers.Controller_Dashboard.public_code()
 GET             /admin/libraries                                @controllers.Controller_Dashboard.libraries()
 GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_approve_procedure()
@@ -517,16 +516,7 @@ PUT             /admin/demo_data/producers                      @utilities.demo_
 PUT             /admin/demo_data/type_of_board                  @utilities.demo_data.Demo_Data_Controller.type_of_board()
 PUT             /admin/demo_data/test_boards                    @utilities.demo_data.Demo_Data_Controller.test_boards()
 PUT             /admin/demo_data/c_program_configuration        @utilities.demo_data.Demo_Data_Controller.c_program_configuration()
-
-PUT             /admin/demo_data/blocko_demo_data               @utilities.demo_data.Demo_Data_Controller.blocko_demo_data()
-PUT             /admin/demo_data/grid_demo_data                 @utilities.demo_data.Demo_Data_Controller.grid_demo_data()
-
 PUT             /admin/demo_data/person                         @utilities.demo_data.Demo_Data_Controller.person_test_user()
-PUT             /admin/demo_data/person_project                 @utilities.demo_data.Demo_Data_Controller.person_project_and_programs()
-
-PUT             /admin/demo_data/person_instancies              @utilities.demo_data.Demo_Data_Controller.person_instancies()
-
-
 
 GET             /admin/test                                     @controllers.Controller_Dashboard.test()
 

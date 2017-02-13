@@ -18,7 +18,7 @@ import utilities.enums.Payment_status;
 import utilities.fakturoid.Fakturoid_Controller;
 import utilities.goPay.GoPay_Controller;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
+import utilities.login_entities.Secured_API;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_BadRequest;
@@ -32,7 +32,6 @@ import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -553,7 +552,6 @@ public class Controller_Finance extends Controller {
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
 
                 product.mode = Payment_mode.free;
-                product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
 
                 Model_Person person = Controller_Security.getPerson();
 
@@ -631,7 +629,7 @@ public class Controller_Finance extends Controller {
 
                 // Přidám ty, co vybral uživatel
                 if(help.extensions_ids.size() > 0) {
-                    List<Model_GeneralTariffExtensions> list = Model_GeneralTariffExtensions.find.where().in("id", help.extensions_ids).eq("general_tariff.id", tariff.id).findList();
+                    List<Model_GeneralTariffExtensions> list = Model_GeneralTariffExtensions.find.where().in("id", help.extensions_ids).eq("general_tariff_optional.id", tariff.id).findList();
                     product.extensions.addAll(list);
                 }
 
@@ -675,7 +673,7 @@ public class Controller_Finance extends Controller {
                 invoice_item_1.name = product.general_tariff.tariff_name + " in Mode(" + product.mode.name() + ")";
                 invoice_item_1.unit_price = product.general_tariff.price_in_usd;
                 invoice_item_1.quantity = (long) 1;
-                invoice_item_1.unit_name = "Monthly fee";
+                invoice_item_1.unit_name = "Currency";
                 invoice_item_1.currency = Currency.USD;
 
                 invoice.invoice_items.add(invoice_item_1);
@@ -736,6 +734,7 @@ public class Controller_Finance extends Controller {
                 }
 
         } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
 

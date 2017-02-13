@@ -153,7 +153,7 @@ public class Model_BProgram extends Model {
         if(instance == null){
 
             Model_HomerInstance instance = new Model_HomerInstance();
-            instance.cloud_homer_server = Model_HomerServer.getDestinationServer();
+            instance.cloud_homer_server = Model_HomerServer.get_destination_server();
             instance.save();
             this.instance = instance;
 

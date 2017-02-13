@@ -23,21 +23,20 @@ import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
 import models.project.m_program.Model_GridTerminal;
-import play.libs.Json;
-import utilities.enums.Firmware_type;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
-import utilities.enums.Type_of_command;
+import play.data.Form;
+import play.i18n.Lang;
+import utilities.enums.*;
 import utilities.hardware_updater.Master_Updater;
-import utilities.hardware_updater.States.C_ProgramUpdater_State;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import utilities.webSocket.WS_HomerServer;
-import utilities.webSocket.WebSCType;
-import utilities.webSocket.messageObjects.WS_BoardStats_AbstractClass;
+import utilities.web_socket.WS_HomerServer;
+import utilities.web_socket.WebSCType;
+import utilities.web_socket.message_objects.common.WS_AbstractMessageBoard;
+import utilities.web_socket.message_objects.homer_instance.*;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -230,7 +229,7 @@ public class Model_HomerInstance extends Model {
 
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER---------------------------------------------------------------------------------*/
 
-    public static String CHANNEL = "tyrion";
+    public static final String CHANNEL = "tyrion";
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 
@@ -240,33 +239,71 @@ public class Model_HomerInstance extends Model {
         try {
             switch (json.get("messageType").asText()) {
 
+                case WS_Device_connected.messageType: {
 
-                case "deviceConnected": {
-                    logger.debug("Homer_Instance:: Incoming message:: deviceConnected");
+                    final Form<WS_Device_connected> form = Form.form(WS_Device_connected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
-
-                    return;
-                }
-                case "yodaConnected": {
-                    logger.debug("Homer_Instance:: Incoming message:: yodaConnected");
-
-                    return;
-                }
-                case "instanceSummary": {
-                    logger.debug("Homer_Instance:: Incoming message:: instanceSummary");
-
+                    Model_Board.device_Connected(homer, form.get());
                     return;
                 }
 
-                case "token_grid_verification": {
-                    logger.debug("Homer_Instance:: Incoming message:: Token Grid Verification");
-                    Model_HomerInstance.find.byId(json.get("instanceId").asText()).cloud_verification_token_GRID(json);
+                case WS_Yoda_connected.messageType: {
+
+                    // Zpracování Json
+                    final Form<WS_Yoda_connected> form = Form.form(WS_Yoda_connected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+
+                    Model_Board.master_device_Connected(homer, form.get());
                     return;
                 }
 
-                case "token_webView_verification": {
-                    logger.debug("Homer_Instance:: Incoming message:: Token WebView Verification");
-                    Model_HomerInstance.find.byId(json.get("instanceId").asText()).cloud_verification_token_WEBVIEW(json);
+                case WS_Yoda_disconnected.messageType: {
+
+                    final Form<WS_Yoda_disconnected> form = Form.form(WS_Yoda_disconnected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+
+                    Model_Board.master_device_Disconnected(form.get());
+                    return;
+                }
+
+                case WS_Device_disconnected.messageType: {
+
+                    final Form<WS_Device_disconnected> form = Form.form(WS_Device_disconnected.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+
+                    Model_Board.device_Disconnected(form.get());
+                    return;
+                }
+
+                case WS_Get_summary_information.messageType: {
+
+                    final Form<WS_Get_summary_information> form = Form.form(WS_Get_summary_information.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: instanceSummary:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+
+                    Model_HomerInstance.summary_information(homer, form.get());
+                    return;
+                }
+
+                case WS_Grid_token_verification.messageType : {
+
+                    final Form<WS_Grid_token_verification> form = Form.form(WS_Grid_token_verification.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: token_grid_verification:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+
+                    WS_Grid_token_verification help = form.get();
+                    help.get_instance().cloud_verification_token_GRID(help);
+
+                    return;
+                }
+
+                case WS_WebView_token_verification.messageType : {
+
+                    final Form<WS_WebView_token_verification> form = Form.form(WS_WebView_token_verification.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: token_webView_verification:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+
+                    WS_WebView_token_verification help = form.get();
+                    help.get_instance().cloud_verification_token_WEBVIEW(help);
+
                     return;
                 }
 
@@ -285,24 +322,26 @@ public class Model_HomerInstance extends Model {
 
 
 
-    @JsonIgnore @Transient public WebSCType sendToInstance(){ return Controller_WebSocket.blocko_servers.get(this.cloud_homer_server.unique_identificator);}
 
-    @JsonIgnore @Transient public  JsonNode getState(){
+
+    @JsonIgnore @Transient public  WebSCType send_to_instance(){ return Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator);}
+
+    @JsonIgnore @Transient public  WS_Instance_status get_instance_status(){
         try{
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "getState");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
+            JsonNode node =  send_to_instance().write_with_confirmation( new WS_Instance_status().make_request(this), 1000*3, 0, 2);
 
-            return sendToInstance().write_with_confirmation(request, 1000*3, 0, 2);
+            final Form<WS_Instance_status> form = Form.form(WS_Instance_status.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Instance_status:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Instance_status();}
+
+            return form.get();
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Instance_status();
         }
     }
 
-    @JsonIgnore @Transient public void remove_board_from_virtual_instance(Model_Board board){
+    @JsonIgnore @Transient public  void remove_board_from_virtual_instance(Model_Board board){
         try{
 
             this.boards_in_virtual_instance.remove(board);
@@ -320,151 +359,142 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode ping() {
-
+    @JsonIgnore @Transient public  WS_Ping_instance ping() {
         try{
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "ping_instance");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
+            JsonNode node = send_to_instance().write_with_confirmation( new WS_Ping_instance().make_request(this), 1000*3, 0, 2);
 
-            return sendToInstance().write_with_confirmation(request, 1000*3, 0, 2);
+            final Form<WS_Ping_instance> form = Form.form(WS_Ping_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_instance:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Ping_instance();}
+
+            return form.get();
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Ping_instance();
         }
     }
 
     @JsonIgnore @Transient public  JsonNode devices_commands(String targetId, Type_of_command command) {
         try{
 
-            ObjectNode request = Json.newObject();
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
-            request.put("messageType", "basicCommand");
-            request.put("commandType", command.get_command());
-            request.put("targetId", targetId);
-
-            return  sendToInstance().write_with_confirmation(request, 1000*10, 0, 4);
+           return send_to_instance().write_with_confirmation(new WS_Basic_command_for_device().make_request(this, targetId, command), 1000*10, 0, 4);
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return null;
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode add_Yoda_to_instance(String yoda_id){
+    @JsonIgnore @Transient public  WS_Add_yoda_to_instance add_Yoda_to_instance(String yoda_id){
         try{
 
             if(project != null ){
                 // Přidávám Yodu do virutální instance! - skontroluji tedy jestli instance někde běží - virtuální instance
-                // nemusí mít žádného Yod, třeba na začátku. Pak nemá smysl aby byla zapnutá.
+                // nemusí mít žádného Yodu, třeba na začátku. Pak nemá smysl aby byla zapnutá.
 
                 if(!instance_online()) {
                     this.add_instance_to_server();
                 }
             }
 
+            JsonNode node =  send_to_instance().write_with_confirmation(new WS_Add_yoda_to_instance().make_request(this, yoda_id), 1000*3, 0, 4);
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "addYodaToInstance");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
-            request.put("yodaId", yoda_id);
+            final Form<WS_Add_yoda_to_instance> form = Form.form(WS_Add_yoda_to_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_yoda_to_instance:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Add_yoda_to_instance();}
 
-            return sendToInstance().write_with_confirmation(request, 1000*3, 0, 4);
-
-
-
+            return form.get();
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Add_yoda_to_instance();
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode remove_Yoda_from_instance(String yoda_id) {
+    @JsonIgnore @Transient public  WS_Remove_yoda_from_instance remove_Yoda_from_instance(String yoda_id) {
         try{
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "removeYodaFromInstance");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
-            request.put("yodaId", yoda_id);
+            JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_yoda_from_instance().make_request(this, yoda_id), 1000*3, 0, 4);
 
-            return sendToInstance().write_with_confirmation(request, 1000*3, 0, 4);
+            final Form<WS_Remove_yoda_from_instance> form = Form.form(WS_Remove_yoda_from_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_yoda_from_instance();}
+
+            return form.get();
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Remove_yoda_from_instance();
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode add_Device_to_instance(String yoda_id, List<String> devices_id){
+    @JsonIgnore @Transient public WS_Add_device_to_instance add_Device_to_instance(String yoda_id, List<String> devices_id){
         try{
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "addDeviceToInstance");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
-            request.put("yodaId", yoda_id);
-            request.set("devicesId", Json.toJson(devices_id) );
+            JsonNode node =   send_to_instance().write_with_confirmation(new WS_Add_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
 
-            return  sendToInstance().write_with_confirmation(request, 1000*3, 0, 4);
+            final Form<WS_Add_device_to_instance> form = Form.form(WS_Add_device_to_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Add_device_to_instance();}
 
+            return form.get();
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
-        }
-
-    }
-
-    @JsonIgnore @Transient public  JsonNode remove_Device_from_instance(String yoda_id, List<String> devices_id){
-        try{
-
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "removeDeviceFromInstance");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
-            request.put("yodaId", yoda_id);
-            request.set("devicesId", Json.toJson(devices_id));
-
-            return  sendToInstance().write_with_confirmation(request, 1000*3, 0, 4);
-
-        }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Add_device_to_instance();
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode add_instance_to_server() {
+    @JsonIgnore @Transient public WS_Remove_device_to_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
         try{
+
+            JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
+
+            final Form<WS_Remove_device_to_instance> form = Form.form(WS_Remove_device_to_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_Device_to_instance:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_device_to_instance();}
+
+            return form.get();
+
+        }catch (Exception e){
+            return new WS_Remove_device_to_instance();
+        }
+    }
+
+    @JsonIgnore @Transient public  WS_Update_device_summary_collection add_instance_to_server() {
+        try{
+
+            System.out.println("Creating Command for new instance!");
 
             // Vytvořím Instanci
-            JsonNode result_instance        = this.cloud_homer_server.add_instance(this);
+            WS_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
              //System.err.println("Result instance:: " + result_instance);
-            if(!result_instance.get("status").asText().equals("success")) return result_instance;
+            if(!result_instance.status.equals("success")) return new WS_Update_device_summary_collection();
+
+            System.out.println("Přidal jsem instanci!");
 
             // Doplním do ní HW
-            JsonNode result_device          = this.update_device_summary_collection();
+            WS_Update_device_summary_collection result_device  = this.update_device_summary_collection();
              //System.err.println("Result device:: " + result_device);
-            if(!result_device.get("status").asText().equals("success")) return result_device;
+            if(!result_device.status.equals("success")) return new WS_Update_device_summary_collection();
+
+            System.out.println("Přidal jsem hardware!");
 
             if(virtual_instance) return result_device; // Virutální instance nemá blocko!
 
+
+
             // Nahraju Blocko Program
-            JsonNode result_blocko_program  = this.upload_blocko_program();
+            WS_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
+            if(!result_blocko_program.status.equals("success")) return new WS_Update_device_summary_collection();
 
-            this.actual_instance.add_new_actualization_request();
+            System.out.println("Přidal jsem blocko program!");
 
-            return   result_blocko_program;
+            WS_Update_device_summary_collection response = new WS_Update_device_summary_collection();
+            response.status = "success";
 
+            return   response;
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Update_device_summary_collection();
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode remove_instance_from_server() {
+    @JsonIgnore @Transient public  WS_Destroy_instance remove_instance_from_server() {
         try{
 
             // Vytvořím Instanci
-            JsonNode result_instance        = this.cloud_homer_server.remove_instance(this.blocko_instance_name);
+            WS_Destroy_instance result_instance  = this.cloud_homer_server.remove_instance(this.blocko_instance_name);
 
             this.actual_instance.actual_running_instance = null;
             this.actual_instance.update();
@@ -474,84 +504,57 @@ public class Model_HomerInstance extends Model {
             return result_instance;
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Destroy_instance();
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode update_instance_to_actual_instance_record() { // TODO tuto metodu budu volat ve chvíli kdy nějakou časovu známkou prohodím verze - podle času uživatele
+    // TODO tuto metodu budu volat ve chvíli kdy nějakou časovu známkou prohodím verze - podle času uživatele
+    @JsonIgnore @Transient public  WS_Update_instance_to_actual_instance_record update_instance_to_actual_instance_record() {
         try{
 
             // Nastartuji aktualizační proces
             this.actual_instance.add_new_actualization_request();
 
             // Doplním do ní HW
-            JsonNode result_device          = this.update_device_summary_collection();
-            if(!result_device.get("status").asText().equals("success")) return result_device;
+            WS_Update_device_summary_collection result_device  = this.update_device_summary_collection();
+            if(!result_device.status.equals("success")) return new WS_Update_instance_to_actual_instance_record();
 
             // Nahraju Blocko Program
-            JsonNode result_blocko_program  = this.upload_blocko_program();
-            if(!result_device.get("status").asText().equals("success")) return result_blocko_program;
+            WS_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
+            if(!result_device.status.equals("success")) return new WS_Update_instance_to_actual_instance_record();
 
             this.check_hardware_c_program_state();
 
-            return   result_blocko_program;
+            WS_Update_instance_to_actual_instance_record response = new WS_Update_instance_to_actual_instance_record();
+            response.status = "success";
+
+            return response;
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return  new WS_Update_instance_to_actual_instance_record();
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode upload_blocko_program(){
+    @JsonIgnore @Transient public  WS_Upload_blocko_program upload_blocko_program(){
         try {
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
 
-            if (fileRecord == null) {
-                return RESULT_file_record_not_found();
-            }
+            if (fileRecord == null) return new WS_Upload_blocko_program();
 
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "loadProgram");
-            result.put("messageChannel", CHANNEL);
-            result.put("instanceId", this.blocko_instance_name);
-            result.put("programId", actual_instance.version_object.id);
-            result.put("program", fileRecord.get_fileRecord_from_Azure_inString());
+            JsonNode node = this.send_to_instance().write_with_confirmation(new WS_Upload_blocko_program().make_request(this, fileRecord, actual_instance.version_object.id), 1000 * 3, 0, 4);
 
-            return this.sendToInstance().write_with_confirmation(result, 1000 * 3, 0, 4);
+            final Form<WS_Upload_blocko_program> form = Form.form(WS_Upload_blocko_program.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Upload_blocko_program:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Upload_blocko_program();}
 
+            return form.get();
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return  new WS_Upload_blocko_program();
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode upload_blocko_program(String program_name, String program){
+    @JsonIgnore @Transient public  WS_Update_device_summary_collection update_device_summary_collection(){
+
         try {
-            Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
-
-            if (fileRecord == null) {
-                return RESULT_file_record_not_found();
-            }
-
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "loadProgram");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
-            request.put("programId", program_name);
-            request.put("program", program);
-
-            return this.sendToInstance().write_with_confirmation(request, 1000 * 3, 0, 4);
-
-        }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
-        }
-    }
-
-    @JsonIgnore @Transient public  JsonNode update_device_summary_collection(){
-        try {
-
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "addDevices");
-            request.put("messageChannel", CHANNEL);
-            request.put("instanceId", this.blocko_instance_name);
 
             List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
 
@@ -582,134 +585,75 @@ public class Model_HomerInstance extends Model {
 
             }
 
-            request.set("devices", Json.toJson(hw_groups));
 
-            return this.sendToInstance().write_with_confirmation(request, 1000 * 3, 0, 4);
+            ObjectNode node = send_to_instance().write_with_confirmation( new WS_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
+
+            final Form<WS_Update_device_summary_collection> form = Form.form(WS_Update_device_summary_collection.class).bind(node);
+            if (form.hasErrors()) {logger.error("Model_HomerInstance:: WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson().toString()); throw new Exception("Invalid Json data format");}
+
+            return form.get();
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            logger.error("Model_HomerInstance:: get_summary_information: Error:: ", e);
+            return null;
         }
     }
 
     @JsonIgnore @Transient public  boolean online_state(){
-        return this.cloud_homer_server.isInstanceExist(this.blocko_instance_name);
+        return this.cloud_homer_server.is_instance_exist(this.blocko_instance_name);
     }
 
-    @JsonIgnore @Transient public  JsonNode get_device_list(){
-        try {
+    @JsonIgnore @Transient public  WS_Online_states_devices get_devices_online_state(List<String> device_id){
+        try{
 
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "getDeviceList");
-            result.put("messageChannel", CHANNEL);
-            result.put("instanceId", this.blocko_instance_name);
+            JsonNode node = send_to_instance().write_with_confirmation( new WS_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
 
-            return sendToInstance().write_with_confirmation(result, 1000*3, 0, 4);
+            final Form<WS_Online_states_devices> form = Form.form(WS_Online_states_devices.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Online_states_devices:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Online_states_devices();}
+
+            return form.get();
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Online_states_devices();
+        }
+    }
+
+    @JsonIgnore @Transient public  WS_Get_summary_information get_summary_information(){
+        try {
+
+            logger.warn("Model_HomerInstance:: get_summary_information::");
+            ObjectNode node = send_to_instance().write_with_confirmation( new WS_Get_summary_information().make_request(this), 1000*5, 0, 1);
+
+            logger.warn("Model_HomerInstance:: get_summary_information::" + node);
+
+            final Form<WS_Get_summary_information> form = Form.form(WS_Get_summary_information.class).bind(node);
+            if (form.hasErrors()) {logger.error("Model_HomerInstance:: WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson().toString()); throw new Exception("Invalid Json data format");}
+
+            return form.get();
+
+        }catch (Exception e){
+            logger.error("Model_HomerInstance:: get_summary_information: Error:: ", e);
+            return null;
+        }
+    }
+
+    @JsonIgnore @Transient public  static void  summary_information(WS_HomerServer homer_server , WS_Get_summary_information summary_information){
+        try {
+
+            homer_server.check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
+
+        }catch (Exception e){
+            logger.error("Model_HomerInstance:: get_summary_information: Error:: ", e);
         }
     }
 
 
-    // TOKEN verification
-    @JsonIgnore @Transient  public  void cloud_verification_token_GRID(JsonNode node){
-        try {
+    @JsonIgnore  @Transient public void check_hardware_c_program_state(){
 
-            logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
-            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(server_id());
-
-            Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", node.get("token").asText()).findUnique();
-
-
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "token_grid_verification");
-            request.put("messageChannel", CHANNEL);
-            request.put("status", "Success");
-            request.put("messageId", node.get("messageId").asText());
-            request.put("instanceId", node.get("instanceId").asText());
-
-            if(terminal == null){
-                logger.warn("Homer_Instance:: cloud_verification_token:: Grid_Terminal object not found!");
-                request.put("token_approve", false);
-                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(request);
-                return;
-            }
-
-            Integer size;
-
-            if(terminal.person == null) {
-                logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
-                size = Model_HomerInstance.find.where().eq("blocko_instance_name", node.get("instanceId").asText()).eq("actual_instance.version_object.public_version", true).findRowCount();
-            }else {
-                logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
-                size = Model_HomerInstance.find.where().eq("blocko_instance_name", node.get("instanceId").asText())
-                            .disjunction()
-                                .eq("b_program.project.participants.person.id", terminal.person.id)
-                                .eq("actual_instance.version_object.public_version", true)
-                            .findRowCount();
-            }
-
-            if(size == 0){
-                logger.warn("Homer_Instance:: cloud_verification_token:: Token found but this user has not permission!");
-                request.put("token_approve", false);
-                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(request);
-                return;
-            }
-
-            logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
-            request.put("token_approve", true);
-            Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(request);
-            return;
-
-        }catch (Exception e){
-            e.printStackTrace();
-            logger.warn("Cloud Homer server", server_id(), " is offline!");
-        }
-
-    }
-    @JsonIgnore @Transient  public  void cloud_verification_token_WEBVIEW(JsonNode node){
-        try {
-
-            logger.debug("Homer_Instance:: cloud_verification_token:: WebView  Checking Token");
-            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.blocko_servers.get(server_id());
-
-
-            Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("authToken", node.get("token").asText()).findUnique();
-
-            // Ještě instanci ke které se to chce přihlásit
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "result");
-            request.put("messageChannel", node.get("messageChannel").asText());
-            request.put("status", "Success");
-            request.put("instanceId", node.get("instanceId").asText());
-
-            if(floatingPersonToken == null){
-                logger.warn("Homer_Instance:: cloud_verification_token:: FloatingPersonToken not found!");
-                request.put("token_approve", false);
-                Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation(node.get("messageId").asText(), request);
-                return;
-            }
-
-            logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
-            request.put("token_approve", true);
-            Controller_WebSocket.blocko_servers.get(server_id()).write_without_confirmation( node.get("messageId").asText(), request);
-            return;
-
-        }catch (Exception e){
-            e.printStackTrace();
-            logger.warn("Cloud Homer server", server_id(), " is offline!");
-        }
-
+        logger.error("TODO proběhl update instance a teď bych chtěl sesynchronizovat HW");
     }
 
-    // Update
-    @JsonIgnore @Transient public  void check_hardware_c_program_state(){
-        logger.error("Tady chci kontrolovat hardware!!! Všechen!!!!!! Instance ID:: ", blocko_instance_name);
-    }
-
-    @JsonIgnore @Transient public  void check_hardware(Model_Board board, WS_BoardStats_AbstractClass report){
-
-        logger.error("Tady chci kontrolovat hardware!!! Všechen!!!!!! Instance ID:: ", blocko_instance_name, " hardware ID:: ", board.id);
+    @JsonIgnore @Transient public  void check_hardware(Model_Board board, WS_AbstractMessageBoard report){
 
         if(!virtual_instance) {
             logger.debug("Homer_Instance_Record:: check_hardware:: Found one actualization procedure on ", board.id);
@@ -778,24 +722,79 @@ public class Model_HomerInstance extends Model {
 
     }
 
-
-
-
-    // Pomocné objekty - Defaultní zprávy
-
-    @JsonIgnore @Transient  public static JsonNode RESULT_file_record_not_found(){
+    // TOKEN verification
+    @JsonIgnore @Transient public  void cloud_verification_token_GRID(WS_Grid_token_verification help){
         try {
 
-            ObjectNode result = Json.newObject();
-            result.put("status", "error");
-            result.put("code", 803);
-            result.put("error", "Server is offline");
-            return result;
+            logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
+            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(server_id());
+
+            Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
+
+            if(terminal == null){
+                logger.warn("Homer_Instance:: cloud_verification_token:: Grid_Terminal object not found!");
+                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+                return;
+            }
+
+            Integer size;
+
+            if(terminal.person == null) {
+                logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
+                size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId).eq("actual_instance.version_object.public_version", true).findRowCount();
+            }else {
+                logger.debug("Homer_Instance:: cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
+                size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId)
+                            .disjunction()
+                                .eq("b_program.project.participants.person.id", terminal.person.id)
+                                .eq("actual_instance.version_object.public_version", true)
+                            .findRowCount();
+            }
+
+            if(size == 0){
+                logger.warn("Homer_Instance:: cloud_verification_token:: Token found but this user has not permission!");
+                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+                return;
+            }
+
+            logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
+            Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(true));
+            return;
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            e.printStackTrace();
+            logger.warn("Cloud Homer server", server_id(), " is offline!");
         }
+
     }
+    @JsonIgnore @Transient public  void cloud_verification_token_WEBVIEW(WS_WebView_token_verification help){
+        try {
+
+            logger.debug("Homer_Instance:: cloud_verification_token:: WebView  Checking Token");
+
+            Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("authToken", help.token).findUnique();
+
+            if(floatingPersonToken == null){
+                logger.warn("Homer_Instance:: cloud_verification_token:: FloatingPersonToken not found!");
+                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+                return;
+            }
+
+            logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
+            Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(true));
+            return;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.warn("Cloud Homer server", server_id(), " is offline!");
+        }
+
+    }
+
+
+
+
+
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 

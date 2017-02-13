@@ -13,7 +13,7 @@ import utilities.enums.Burning_state;
 import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.enums.NetSource;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_Admin;
+import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;

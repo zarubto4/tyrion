@@ -9,12 +9,13 @@ import controllers.Controller_Security;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.b_program.servers.Model_HomerServer;
+import play.data.Form;
 import play.libs.Json;
 import utilities.enums.Compile_Status;
 import utilities.independent_threads.Compilation_After_BlackOut;
-import utilities.webSocket.SendMessage;
-import utilities.webSocket.WS_CompilerServer;
+import utilities.web_socket.SendMessage;
+import utilities.web_socket.WS_CompilerServer;
+import utilities.web_socket.message_objects.compilator_tyrion.WS_Ping_compilation_server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -102,20 +103,25 @@ public class Model_CompilationServer extends Model {
             return result;
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return null;
         }
     }
 
-    @JsonIgnore @Transient public JsonNode ping(){
+    @JsonIgnore @Transient public WS_Ping_compilation_server ping(){
         try {
             ObjectNode request = Json.newObject();
             request.put("messageType", "ping");
             request.put("messageChannel", CHANNEL);
 
-            return  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(request, 1000 * 3, 0, 3);
+            JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
+
+            final Form<WS_Ping_compilation_server> form = Form.form(WS_Ping_compilation_server.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_compilation_server:: Incoming Json for Yoda has not right Form");return new WS_Ping_compilation_server();}
+
+            return form.get();
 
         }catch (Exception e){
-            return Model_HomerServer.RESULT_server_is_offline();
+            return new WS_Ping_compilation_server();
         }
     }
 

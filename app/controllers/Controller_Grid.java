@@ -22,8 +22,8 @@ import play.mvc.*;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
-import utilities.loginEntities.Secured_Admin;
+import utilities.login_entities.Secured_API;
+import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -804,6 +804,10 @@ public class Controller_Grid extends Controller {
 
 
             // Uživatelům dovolíme se připojit na offline instanci - odpovědnost a vysvětlení přebírá Grid APP
+            if(record.actual_running_instance == null){
+                return GlobalResult.result_BadRequest("Actual Instance is missing!");
+            }
+
             if(!record.actual_running_instance.instance_online()){
                 return GlobalResult.result_external_server_is_offline("Instance is offline");
             }
@@ -820,6 +824,7 @@ public class Controller_Grid extends Controller {
                 return GlobalResult.notFoundObject("Server not found");
             }
 
+            logger.debug("Controller_Grid:: get_conection_url:: record ID:: "           + record.id);
             logger.debug("Controller_Grid:: get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance.blocko_instance_name);
             logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server identificator::"             + server.unique_identificator);
             logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server Grid Port::"                 + server.grid_port);

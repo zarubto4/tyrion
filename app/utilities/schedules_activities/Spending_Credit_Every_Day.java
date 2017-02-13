@@ -236,7 +236,7 @@ public class Spending_Credit_Every_Day implements Job {
             invoice_item_1.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
             invoice_item_1.unit_price = product.general_tariff.price_in_usd;
             invoice_item_1.quantity = (long) 1;
-            invoice_item_1.unit_name = "Service";
+            invoice_item_1.unit_name = "Currency";
             invoice_item_1.currency = Currency.USD;
 
             invoice.invoice_items.add(invoice_item_1);

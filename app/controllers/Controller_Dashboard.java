@@ -23,13 +23,14 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.twirl.api.Html;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_Admin;
+import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
-import utilities.webSocket.*;
+import utilities.web_socket.*;
+import utilities.web_socket.message_objects.compilator_tyrion.WS_Ping_compilation_server;
+import utilities.web_socket.message_objects.homer_instance.WS_Ping_instance;
 import views.html.*;
-import views.html.blocko.blocko_block_content;
 import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
 import views.html.boards.board_settings;
@@ -39,7 +40,6 @@ import views.html.demo_data.demo_data_main;
 import views.html.external_servers.external_servers;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
-import views.html.grid.grid_widget_content;
 import views.html.hardware_generator.generator_main;
 import views.html.helpdesk_tool.project_detail;
 import views.html.helpdesk_tool.user_summary;
@@ -132,7 +132,7 @@ public class Controller_Dashboard extends Controller {
 
         // Blocko
         Map<String, WS_HomerServer> blockoServerMap = new HashMap<>();
-        Map<String, WebSCType> map_blocko            =  Controller_WebSocket.blocko_servers;
+        Map<String, WebSCType> map_blocko            =  Controller_WebSocket.homer_servers;
         for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_HomerServer) entry.getValue());
 
         // Compilation
@@ -231,8 +231,8 @@ public class Controller_Dashboard extends Controller {
     public Result disconnect_blocko_server(String identificator) {
         try {
 
-            if (Controller_WebSocket.blocko_servers.containsKey(identificator)) {
-                Controller_WebSocket.blocko_servers.get(identificator).onClose();
+            if (Controller_WebSocket.homer_servers.containsKey(identificator)) {
+                Controller_WebSocket.homer_servers.get(identificator).onClose();
 
                 ObjectNode result = Json.newObject();
                 result.put("status", "Blocko was disconnected successfully");
@@ -286,9 +286,9 @@ public class Controller_Dashboard extends Controller {
 
                 if (ws.all_person_Connections.containsKey(token)){
 
-                    JsonNode result = Controller_WebSocket.becki_ping((WS_Becki_Single_Connection) ws.all_person_Connections.get(token));
-
-                    return GlobalResult.result_ok(result);
+                     // JsonNode result = Controller_WebSocket.becki_ping((WS_Becki_Single_Connection) ws.all_person_Connections.get(token));
+                    //return GlobalResult.result_ok(result);
+                    return GlobalResult.result_ok();
                 }else {
 
                     ObjectNode result = Json.newObject();
@@ -315,8 +315,8 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", identificator).findUnique();
-            JsonNode result = server.ping();
-            return GlobalResult.result_ok(result);
+
+            return GlobalResult.result_ok(Json.toJson(server.ping()));
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
@@ -327,8 +327,8 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_HomerInstance instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_id).findUnique();
-            JsonNode result = instance.ping();
-            return GlobalResult.result_ok(result);
+            WS_Ping_instance result = instance.ping();
+            return GlobalResult.result_ok(Json.toJson(result));
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
@@ -339,10 +339,9 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_CompilationServer server = Model_CompilationServer.find.where().eq("unique_identificator", identificator).findUnique();
-            JsonNode result = server.ping();
+            WS_Ping_compilation_server result = server.ping();
 
-
-            return GlobalResult.result_ok(result);
+            return GlobalResult.result_ok(Json.toJson(result));
 
 
         }catch (Exception e){
@@ -617,30 +616,6 @@ public class Controller_Dashboard extends Controller {
 
             Html grid_management_content = grid_management.render();
             return return_page(grid_management_content);
-
-        }catch (Exception e){
-            return ok();
-        }
-    }
-
-    @Security.Authenticated(Secured_Admin.class)
-    public Result grid_first_widget_content(){
-        try {
-
-            Html widget_content = grid_widget_content.render();
-            return return_page(widget_content);
-
-        }catch (Exception e){
-            return ok();
-        }
-    }
-
-    @Security.Authenticated(Secured_Admin.class)
-    public Result blocko_first_block_content(){
-        try {
-
-            Html block_content = blocko_block_content.render();
-            return return_page(block_content);
 
         }catch (Exception e){
             return ok();

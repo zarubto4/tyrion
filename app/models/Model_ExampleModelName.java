@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -23,12 +24,17 @@ public class Model_ExampleModelName extends Model{
 
     @Id public String id;
 
+    @JsonIgnore public Date date_of_create;
+
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
+
+        date_of_create = new Date();
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();

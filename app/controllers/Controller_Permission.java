@@ -11,7 +11,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;

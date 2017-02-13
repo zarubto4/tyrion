@@ -190,6 +190,34 @@ public class Model_FileRecord extends Model {
     }
 
     @JsonIgnore @Transient
+    public static Model_FileRecord uploadAzure_File(String file, String contentType, String file_name, String file_path) throws Exception{
+
+        logger.debug("Azure file:"+ file.substring(0,50));
+
+        byte[] bytes = Model_FileRecord.get_decoded_binary_string_from_Base64(file);
+
+        logger.debug("Azure load:"+ file_path);
+        logger.debug("Azure name:" + file_name);
+        logger.debug("Azure contentType:" + contentType);
+
+        String container_name = file_path.substring(0,file_path.indexOf("/"));
+        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+
+        CloudBlockBlob blob = container.getBlockBlobReference(file_name);
+
+        InputStream is = new ByteArrayInputStream(bytes);
+        blob.getProperties().setContentType(contentType);
+        blob.upload(is, -1);
+
+        Model_FileRecord fileRecord = new Model_FileRecord();
+        fileRecord.file_name = file_name;
+        fileRecord.file_path = file_path;
+        fileRecord.save();
+
+        return fileRecord;
+    }
+
+    @JsonIgnore @Transient
     public void remove_file_from_Azure(){
         try{
 
@@ -263,6 +291,13 @@ public class Model_FileRecord extends Model {
         fileInputStreamReader.read(bytes);
 
         return new String(Base64.getEncoder().encode(bytes));
+
+    }
+
+    @JsonIgnore @Transient
+    public static byte[] get_decoded_binary_string_from_Base64(String binary_file) throws Exception {
+
+        return Base64.getDecoder().decode(binary_file.getBytes());
 
     }
 

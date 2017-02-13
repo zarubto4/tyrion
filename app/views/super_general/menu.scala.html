@@ -102,7 +102,7 @@
                         <li>
                             <a href='@routes.Controller_Dashboard.show_web_socket_stats()' >
                                 <i class="fa fa-heart"></i> <span>Websocket connections</span>
-                                <small class="label pull-right bg-yellow">  @( Controller_WebSocket.becki_website.size()  + Controller_WebSocket.compiler_cloud_servers.size() + Controller_WebSocket.blocko_servers.size()) </small>
+                                <small class="label pull-right bg-yellow">  @( Controller_WebSocket.becki_website.size()  + Controller_WebSocket.compiler_cloud_servers.size() + Controller_WebSocket.homer_servers.size()) </small>
                             </a>
                         </li>
 
@@ -118,7 +118,7 @@
                     <li>
                         <a href='@routes.Controller_Dashboard.show_web_socket_stats()' >
                             <i class="fa fa-heart"></i> <span>Websocket connections</span>
-                            <small class="label pull-right bg-yellow">  @( Controller_WebSocket.becki_website.size()  + Controller_WebSocket.compiler_cloud_servers.size() + Controller_WebSocket.blocko_servers.size()) </small>
+                            <small class="label pull-right bg-yellow">  @( Controller_WebSocket.becki_website.size()  + Controller_WebSocket.compiler_cloud_servers.size() + Controller_WebSocket.homer_servers.size()) </small>
                         </a>
                     </li>
                 }
@@ -173,11 +173,6 @@
                                         <i class="fa fa-wrench"></i> <span>Public Object Approval</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a href='@routes.Controller_Dashboard.grid_first_widget_content()' >
-                                        <i class="fa fa-wrench"></i> <span>First Version Content</span>
-                                    </a>
-                                </li>
                             </ul>
                         </li>
 
@@ -192,11 +187,6 @@
                                 <li>
                                     <a href='@routes.Controller_Dashboard.blocko_objects()' >
                                         <i class="fa fa-wrench"></i> <span>Public Object Approval</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href='@routes.Controller_Dashboard.blocko_first_block_content()' >
-                                        <i class="fa fa-wrench"></i> <span>First Version Content</span>
                                     </a>
                                 </li>
                             </ul>

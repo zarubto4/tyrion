@@ -1,13 +1,11 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import models.compiler.Model_CompilationServer;
-import models.notification.Model_Notification;
 import models.person.Model_Person;
 import models.project.b_program.servers.Model_HomerServer;
 import play.libs.Json;
@@ -16,19 +14,18 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
-import utilities.loginEntities.TokenCache;
+import utilities.login_entities.Secured_API;
+import utilities.login_entities.TokenCache;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
-import utilities.webSocket.*;
-import utilities.webSocket.messageObjects.WS_Token;
+import utilities.web_socket.*;
+import utilities.web_socket.message_objects.common.WS_Token;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Ping_server;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_WebSocket extends Controller {
@@ -41,7 +38,7 @@ public class Controller_WebSocket extends Controller {
     // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jednoduché čisté spojení a
     // několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
     // je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
-    public static Map<String, WebSCType> blocko_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
+    public static Map<String, WebSCType> homer_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
 
     // Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
     public static Map<String, WebSCType> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
@@ -96,17 +93,49 @@ public class Controller_WebSocket extends Controller {
             logger.debug("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator);
 
             Model_HomerServer homer_server = Model_HomerServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
-            if(homer_server== null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
+            if(homer_server== null){
 
-            if(blocko_servers.containsKey(unique_identificator)) {
+                // Připojím se
+                logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " is not registred in database!!!!!");
+
+                WS_HomerServer server = new WS_HomerServer(null, homer_servers);
+                WebSocket<String> webSocket = server.connection();
+
+                Thread not_valid = new Thread() {
+
+                    @Override
+                    public void run() {
+                        try {
+
+                            sleep(2000);
+                            logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " Sending message about validation");
+                            server.unique_connection_name_not_valid();
+
+                            logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " Message sent");
+                            sleep(1000 * 60);
+
+                            logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " Closing connection");
+                            server.close();
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+
+                not_valid.start();
+                return webSocket;
+            }
+
+            if(homer_servers.containsKey(unique_identificator)) {
                 logger.warn("Homer Server:: Connection:: Server is connected -> Tyrion try to send ping");
 
-                WS_HomerServer ws_blockoServer = (WS_HomerServer) blocko_servers.get(unique_identificator);
-                JsonNode result = homer_server.ping();
-                if(!result.get("status").asText().equals("success")){
+                WS_HomerServer ws_blockoServer = (WS_HomerServer) homer_servers.get(unique_identificator);
+                WS_Ping_server result = homer_server.ping();
+                if(!result.status.equals("success")){
                     logger.warn("Homer Server:: Connection:: Ping Failed - Tyrion remove previous connection");
-                    if(blocko_servers.containsKey(unique_identificator)){
-                        blocko_servers.get(unique_identificator).onClose();
+                    if(homer_servers.containsKey(unique_identificator)){
+                        homer_servers.get(unique_identificator).onClose();
                     }
                     return null;
                 }
@@ -117,8 +146,8 @@ public class Controller_WebSocket extends Controller {
 
 
             logger.debug("Homer Server:: Connection:: Tyrion initialize connection for Homer Server");
-            WS_HomerServer server = new WS_HomerServer(homer_server, blocko_servers);
-            blocko_servers.put(unique_identificator, server);
+            WS_HomerServer server = new WS_HomerServer(homer_server, homer_servers);
+            homer_servers.put(unique_identificator, server);
 
             // Připojím se
             logger.debug("Homer Server:: Connection:: Connection is successful");
@@ -148,9 +177,7 @@ public class Controller_WebSocket extends Controller {
             check.start();
 
 
-
-
-            blocko_servers.put(homer_server.unique_identificator, server);
+            homer_servers.put(homer_server.unique_identificator, server);
 
             logger.debug("Blocko Server: Successfully connected");
             return webSocket;
@@ -242,163 +269,6 @@ public class Controller_WebSocket extends Controller {
     }
 
 
-// PRIVATE Compiler-Server --------------------------------------------------------------------------------------------------------
-    public static void compilation_server_incoming_message(WS_CompilerServer server, ObjectNode json){
-        logger.warn("Speciálně  server2server přišla zpráva: " + json.asText() );
-        logger.warn("Zatím není implementovaná žádná reakce na příchozá zprávu z Compilačního serveru !!");
-    }
-
-
-// PRIVATE Becki -----------------------------------------------------------------------------------------------------------------
-
-    public static void becki_incoming_message(WS_Becki_Website becki, ObjectNode json){
-
-        logger.debug("Becki: " + becki.identifikator + " Incoming message: " + json.toString() );
-
-        if(json.has("messageChannel")) {
-
-            switch (json.get("messageChannel").asText()) {
-
-                case "becki": {
-                    switch (json.get("messageType").asText()) {
-
-                        case "notification"             :   {  becki_notification_confirmation_from_becki(becki, json); return;}    // Becki poslala odpověď, že dostala notifikaci
-                        case "subscribe_notification"   :   {  becki_subscribe_notification(becki, json);               return;}    // Becki poslala odpověď, že ví že subscribe_notification
-                        case "unsubscribe_notification" :   {  becki_unsubscribe_notification(becki, json);             return;}    // Becki poslala odpověď, že ví že už ne! subscribe_notification
-
-                        default: {
-                            logger.error("ERROR \n");
-                            logger.error("Becki: "+ becki.identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!");
-                            logger.error("ERROR \n");
-                        }/**/
-
-                    }
-                }
-                case "tyrion": {
-                    logger.warn("Homer: Incoming message: Tyrion: Server receive message: ");
-                    logger.warn("Homer: Incoming message: Tyrion: Server don't know what to do!");
-                    return;
-                }
-
-                default: {
-                    // Přepošlu to na všehcny odběratele Becki
-                    if (becki.all_person_Connections != null && !becki.all_person_Connections.isEmpty()) {
-                        for (String key : becki.all_person_Connections.keySet()) {
-                            becki.all_person_Connections.get(key).write_without_confirmation(json);
-                        }
-                    }
-                }
-
-            }
-
-        }else {
-            logger.error("ERROR \n");
-            logger.error("Becki: "+ becki.identifikator + " Incoming message has not messageChannel!!!!");
-            logger.error("ERROR \n");
-        }
-    }
-
-    // Odebírání streamu notifikací z Tyriona
-        public static void becki_subscribe_notification (WS_Becki_Website becki, ObjectNode json){
-            try {
-
-                WS_Becki_Single_Connection single_connection = (WS_Becki_Single_Connection) becki.all_person_Connections.get(json.get("single_connection_token").asText());
-                single_connection.notification_subscriber = true;
-
-                becki_approve_subscription_notification_success(single_connection, json.get("messageId").asText());
-
-            }catch (Exception e){
-                logger.error("becki_subscribe_notification", e);
-            }
-
-        }
-
-        public static void becki_unsubscribe_notification (WS_Becki_Website becki, ObjectNode json){
-            try{
-
-                WS_Becki_Single_Connection single_connection = (WS_Becki_Single_Connection) becki.all_person_Connections.get( json.get("single_connection_token").asText());
-                single_connection.notification_subscriber = true;
-
-                becki_approve_unsubscription_notification_success(single_connection, json.get("messageId").asText() );
-
-            }catch (Exception e){
-                logger.error("becki_unsubscribe_notification", e);
-            }
-        }
-
-            // Json Messages
-            public static void becki_approve_subscription_notification_success(WS_Becki_Single_Connection becki, String messageId){
-                ObjectNode result = Json.newObject();
-                result.put("messageType", "subscribe_notification");
-                result.put("messageChannel", "becki");
-                result.put("status", "success");
-
-                becki.write_without_confirmation( messageId, result);
-            }
-
-            public static void becki_approve_unsubscription_notification_success(WS_Becki_Single_Connection becki, String messageId){
-                ObjectNode result = Json.newObject();
-                result.put("messageType", "unsubscribe_notification");
-                result.put("messageChannel", "becki");
-                result.put("status", "success");
-
-                becki.write_without_confirmation( messageId, result);
-            }
-
-            public static void becki_sendNotification(WS_Becki_Website becki, Model_Notification notification){
-
-                ObjectNode result = Json.newObject();
-                result.put("messageType", "notification");
-                result.put("messageChannel", "becki");
-                result.put("id", notification.id);
-                result.put("notification_level",   notification.notification_level.name());
-                result.put("notification_importance", notification.notification_importance.name());
-                result.set("notification_body", Json.toJson(notification.notification_body()));
-                result.set("buttons", Json.toJson(notification.buttons()));
-                result.put("confirmation_required", notification.confirmation_required);
-                result.put("confirmed", notification.confirmed);
-                result.put("was_read", notification.was_read);
-                result.put("created", notification.created.getTime());
-                result.put("state", notification.state.name());
-
-                for(String person_connection_token : becki.all_person_Connections.keySet()){
-                    WS_Becki_Single_Connection single_connection =  (WS_Becki_Single_Connection) becki.all_person_Connections.get(person_connection_token);
-                    if(single_connection.notification_subscriber) single_connection.write_without_confirmation(result);
-                }
-
-            }
-
-            public static void becki_notification_confirmation_from_becki(WS_Becki_Website becki, JsonNode json){
-                // TODO
-                // Tady dosátvám potvrzení, že becki dostala notifikaci
-            }
-
-        // Ping
-        public static JsonNode becki_ping(WS_Becki_Single_Connection becki) throws TimeoutException, InterruptedException, ExecutionException {
-
-            ObjectNode result = Json.newObject();
-
-            try {
-
-                result.put("messageType", "ping");
-                result.put("messageChannel", "becki");
-
-                return becki.write_with_confirmation(result, 1000 * 3, 0, 3);
-
-            }catch (ExecutionException e){
-
-                result.put("messageType", "ping");
-                result.put("messageChannel", "becki");
-                result.put("status", "unsuccessful");
-
-                return result;
-            }
-        }
-
-        // Reakce na odhlášení blocka
-        public static void becki_disconnect(WebSCType becki){
-             System.out.println("Becki se mi odpojilo");
-        }
 
 
 // Test & Control API ---------------------------------------------------------------------------------------------------------
@@ -420,7 +290,7 @@ public class Controller_WebSocket extends Controller {
 
         logger.warn("Tyrion is shutting down: Trying to safely disconnect all Blocko Servers");
 
-        for (Map.Entry<String, WebSCType> entry :  Controller_WebSocket.blocko_servers.entrySet())
+        for (Map.Entry<String, WebSCType> entry :  Controller_WebSocket.homer_servers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
@@ -428,7 +298,7 @@ public class Controller_WebSocket extends Controller {
 
     public static void disconnect_all_Compilation_Servers() {
 
-        logger.warn("Tyrion is shutting down: Trying to safely disconnect all Compilation Servers");
+        logger.warn("Tyrion is shutting down: Trying to safety disconnect all Compilation Servers");
 
         for (Map.Entry<String, WebSCType> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet())
         {

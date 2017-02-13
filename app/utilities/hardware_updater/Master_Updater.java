@@ -9,7 +9,7 @@ import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import play.libs.Json;
 import utilities.enums.Firmware_type;
-import utilities.hardware_updater.States.C_ProgramUpdater_State;
+import utilities.enums.C_ProgramUpdater_State;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,7 +127,7 @@ public class Master_Updater{
            for (Model_CProgramUpdatePlan plan : plans) {
                try {
 
-                   System.err.println("Json: " + Json.toJson(plan));
+                   logger.debug("Json CProgramUpdatePlan: " + Json.toJson(plan));
 
                    logger.debug("Zkoumaná plan id: " + plan.id);
 
@@ -160,7 +160,7 @@ public class Master_Updater{
                    logger.debug("Server: "+ homer_instance.cloud_homer_server.unique_identificator) ;
 
 
-                   if(! Controller_WebSocket.blocko_servers.containsKey( homer_instance.cloud_homer_server.unique_identificator )){
+                   if(! Controller_WebSocket.homer_servers.containsKey( homer_instance.cloud_homer_server.unique_identificator )){
                       logger.warn("Server is offline. Putting off the task for later ");
                       plan.state = C_ProgramUpdater_State.homer_server_is_offline;
                       plan.update();

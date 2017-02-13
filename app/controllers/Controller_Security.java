@@ -18,9 +18,10 @@ import play.libs.ws.WSRequest;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.enums.Where_logged_tag;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
-import utilities.loginEntities.Socials;
+import utilities.login_entities.Secured_API;
+import utilities.login_entities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_JsonValueMissing;
@@ -31,11 +32,13 @@ import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
-import utilities.webSocket.WS_Becki_Website;
+import utilities.web_socket.WS_Becki_Website;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static utilities.response.GlobalResult.result_ok;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Security extends Controller {
@@ -99,9 +102,8 @@ public class Controller_Security extends Controller {
 
 
             Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
-            floatingPersonToken.set_basic_values();
             floatingPersonToken.person = person;
-            floatingPersonToken.where_logged  = "Byzance Portal";
+            floatingPersonToken.where_logged  = Where_logged_tag.BECKI_WEBSITE;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
@@ -112,7 +114,7 @@ public class Controller_Security extends Controller {
             swagger_login_token.authToken = floatingPersonToken.authToken;
 
 
-            return GlobalResult.result_ok( Json.toJson( swagger_login_token ) );
+            return result_ok( Json.toJson( swagger_login_token ) );
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -155,7 +157,7 @@ public class Controller_Security extends Controller {
 
             result.permissions = permissions;
 
-            return GlobalResult.result_ok( Json.toJson( result ) );
+            return result_ok( Json.toJson( result ) );
 
 
         } catch (Exception e) {
@@ -184,10 +186,12 @@ public class Controller_Security extends Controller {
 
                 // Pokus o smazání Tokenu
                 String token = request().getHeader("X-AUTH-TOKEN");
+                if(token == null) return GlobalResult.result_ok();
+
                 Model_FloatingPersonToken token_model = Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique();
 
                 //Pokud token existuje jednak ho smažu - ale pořeší i odpojení websocketu
-                if(token != null){
+                if(token_model != null){
 
                     // Úklid přihlášených websocketů
                     WS_Becki_Website becki_website = (WS_Becki_Website) Controller_WebSocket.becki_website.get(token_model.person.id);
@@ -262,32 +266,33 @@ public class Controller_Security extends Controller {
             List<Model_FloatingPersonToken> before_registred = Model_FloatingPersonToken.find.where().eq("provider_user_id", floatingPersonToken.provider_user_id).where().ne("connection_id", floatingPersonToken.connection_id).findList();
             if (!before_registred.isEmpty()) {
                 System.out.println("Tento uživatel se nepřihlašuje poprvné");
+
+                // Zreviduji stav z GitHubu
+                // TODO
+
                 floatingPersonToken.person = before_registred.get(0).person;
                 floatingPersonToken.update();
 
             } else {
+                System.out.println("Tento uživatel se přihlašuje poprvé");
+                System.out.println("Json::" + jsonNode.toString());
 
                 Model_Person person = new Model_Person();
 
-                if (jsonNode.has("mail")) person.mail = jsonNode.get("mail").asText();
-                if (jsonNode.has("login")) person.nick_name = jsonNode.get("login").asText();
-                // TODO  + další info co lze z JSONu dostat
 
+                if (jsonNode.has("mail"))   person.mail = jsonNode.get("mail").asText();
+                if (jsonNode.has("login"))  person.nick_name = jsonNode.get("login").asText();
+                if (jsonNode.has("name") && jsonNode.get("name") != null &&  !jsonNode.get("name").equals("") && !jsonNode.get("name").equals("null"))   person.full_name = jsonNode.get("name").asText();
+                if (jsonNode.has("avatar_url")) person.azure_picture_link = jsonNode.get("avatar_url").asText();
 
-                if (jsonNode.has("name")) {
-                    try {
-                        System.out.println("name: " + jsonNode.get("login").asText());
-                       person.full_name = jsonNode.get("name").asText();
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("Uživatel nemá vyplněné jméno a příjmení s mezerou .. nebo jiná TODO aktivita");
-                    }
-                }
 
                 person.save();
                 floatingPersonToken.person = person;
                 floatingPersonToken.update();
 
             }
+
+            logger.debug("Controller_Security:: GET_github_oauth:: Return URL:: " + Server.becki_mainUrl + floatingPersonToken.return_url);
 
             return redirect(Server.becki_mainUrl + floatingPersonToken.return_url);
 
@@ -397,6 +402,7 @@ public class Controller_Security extends Controller {
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("GitHub");
 
             floatingPersonToken.return_url = return_link;
+            floatingPersonToken.where_logged = Where_logged_tag.BECKI_WEBSITE;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
@@ -410,9 +416,12 @@ public class Controller_Security extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;
 
-            return GlobalResult.result_ok(Json.toJson(result));
+            System.out.println(Json.toJson(result));
+
+            return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }
@@ -452,7 +461,7 @@ public class Controller_Security extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;
 
-            return GlobalResult.result_ok(Json.toJson(result));
+            return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -474,7 +483,7 @@ public class Controller_Security extends Controller {
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;
 
-            return GlobalResult.result_ok(Json.toJson(result));
+            return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -494,7 +503,7 @@ public class Controller_Security extends Controller {
             result.put("url", service.getAuthorizationUrl(null));
             result.put("authToken", floatingPersonToken.authToken);
 
-            return GlobalResult.result_ok(result);
+            return result_ok(result);
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -507,7 +516,7 @@ public class Controller_Security extends Controller {
     @ApiOperation( value = "option", hidden = true)
     public Result option(){
 
-        return GlobalResult.result_ok();
+        return result_ok();
     }
 
     @ApiOperation( value = "optionLink", hidden = true)

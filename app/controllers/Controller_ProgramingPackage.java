@@ -36,11 +36,12 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.EmailTool;
 import utilities.enums.Approval_state;
+import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.enums.Participant_status;
 import utilities.enums.Type_of_command;
 import utilities.loggy.Loggy;
-import utilities.loginEntities.Secured_API;
-import utilities.loginEntities.Secured_Admin;
+import utilities.login_entities.Secured_API;
+import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -49,6 +50,8 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
+import utilities.web_socket.message_objects.homer_instance.*;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -1365,7 +1368,7 @@ public class Controller_ProgramingPackage extends Controller {
                     try {
 
                         // Ověřím připojený server
-                        if (!Controller_WebSocket.blocko_servers.containsKey(b_program.instance.cloud_homer_server.unique_identificator)) {
+                        if (!Controller_WebSocket.homer_servers.containsKey(b_program.instance.cloud_homer_server.unique_identificator)) {
                             b_program.instance.notification_instance_unsuccessful_upload("Server is offline now. It will be uploaded as soon as possible");
                             logger.warn("Server je offline!! Nenahraju instanci!!");
                             return;
@@ -1422,10 +1425,10 @@ public class Controller_ProgramingPackage extends Controller {
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.forbidden_Permission();
 
-            JsonNode result = homer_instance.remove_instance_from_server();
+            WS_Destroy_instance result = homer_instance.remove_instance_from_server();
 
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(result);
+            if(result.status.equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(Json.toJson(result));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1507,6 +1510,23 @@ public class Controller_ProgramingPackage extends Controller {
     }
 
 
+    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
+    public Result ping_instance(String instance_name){
+        try{
+            // Kontrola objektu
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
+
+            if(!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
+
+            WS_Ping_instance result = homer_instance.ping();
+
+            if(result.status.equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest(Json.toJson(result));
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
     public Result instance_add_temporary_instance(){
@@ -1520,10 +1540,10 @@ public class Controller_ProgramingPackage extends Controller {
             Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", help.unique_identificator).findUnique();
             if(server == null) return GlobalResult.notFoundObject("Server not found");
 
-            JsonNode result = server.add_temporary_instance(help.instance_name);
+           // JsonNode result = server.add_temporary_instance(help.instance_name);
 
-            if(result.get("status").asText().equals("success")) return GlobalResult.result_ok(result);
-            else return GlobalResult.result_BadRequest(result);
+           // if(result.get("status").asText().equals("success")) return GlobalResult.result_ok(result);
+            else return GlobalResult.result_BadRequest("");
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1550,31 +1570,11 @@ public class Controller_ProgramingPackage extends Controller {
 
             if(!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance is not online");
 
-            JsonNode result = homer_instance.upload_blocko_program("fake_program", help.code );
+            // WS_Upload_blocko_program result = homer_instance.upload_blocko_program("fake_program", help.code );
 
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(result);
+            // if(result.status.equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest();
 
-        } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result ping_instance(String instance_name){
-        try{
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name",instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.notFoundObject("Homer_Instance id not found");
-
-            if(!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
-
-
-            JsonNode result = homer_instance.ping();
-
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(result);
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -1590,10 +1590,10 @@ public class Controller_ProgramingPackage extends Controller {
 
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-            JsonNode result = homer_instance.add_Yoda_to_instance( yoda_id);
+            WS_Add_yoda_to_instance result = homer_instance.add_Yoda_to_instance( yoda_id);
 
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(result);
+            if(result.status.equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1609,11 +1609,11 @@ public class Controller_ProgramingPackage extends Controller {
 
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-            JsonNode result = homer_instance.remove_Yoda_from_instance(yoda_id);
+            WS_Remove_yoda_from_instance result = homer_instance.remove_Yoda_from_instance(yoda_id);
 
 
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(result);
+            if(result.status.equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1635,10 +1635,10 @@ public class Controller_ProgramingPackage extends Controller {
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
 
-            JsonNode result = homer_instance.add_Device_to_instance(yoda_id, list_of_devices);
+            WS_Add_device_to_instance result = homer_instance.add_Device_to_instance(yoda_id, list_of_devices);
 
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(result);
+            if(result.status.equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1659,20 +1659,15 @@ public class Controller_ProgramingPackage extends Controller {
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
 
-            JsonNode result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
+            WS_Remove_device_to_instance result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
 
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(result);
+            if(result.status.equals("success")) return GlobalResult.result_ok();
+            return GlobalResult.result_BadRequest();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-
-
-
-
 
 
 
@@ -1702,9 +1697,7 @@ public class Controller_ProgramingPackage extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
 
-   }
-
-
+    }
 
 // B PROGRAM / HOMER / BLOCKO CLOUD SERVER #############################################################################
 
@@ -1753,6 +1746,7 @@ public class Controller_ProgramingPackage extends Controller {
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
             server.personal_server_name = help.personal_server_name;
+            server.server_type = CLoud_Homer_Server_Type.public_server;
 
             // Kontrola oprávnění
             if(!server.create_permission()) return GlobalResult.forbidden_Permission();
@@ -1830,6 +1824,7 @@ public class Controller_ProgramingPackage extends Controller {
 
             // Uložení objektu
             server.update();
+
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(server));

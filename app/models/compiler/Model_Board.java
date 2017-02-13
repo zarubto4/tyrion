@@ -13,19 +13,21 @@ import models.notification.Model_Notification;
 import models.person.Model_Person;
 import models.project.b_program.Model_BPair;
 import models.project.b_program.instnace.Model_HomerInstance;
+import models.project.b_program.servers.Model_HomerServer;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.Json;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
-import utilities.hardware_updater.States.C_ProgramUpdater_State;
+import utilities.enums.*;
+import utilities.hardware_updater.Master_Updater;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
-import utilities.webSocket.WS_HomerServer;
-import utilities.webSocket.messageObjects.WS_DeviceConnected;
-import utilities.webSocket.messageObjects.WS_YodaConnected;
+import utilities.web_socket.WS_HomerServer;
+import utilities.web_socket.message_objects.homer_instance.*;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Is_device_connected;
+import utilities.web_socket.message_objects.homer_tyrion.WS_Unregistred_device_connected;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -48,28 +50,40 @@ public class Model_Board extends Model {
                                    @Id @ApiModelProperty(required = true)   public String id;                   // Full_Id procesoru přiřazené Garfieldem
                                        @ApiModelProperty(required = true)   public String hash_for_adding;      // Vygenerovaný Hash pro přidávání a párování s Platformou.
 
-                                       @ApiModelProperty(required = true)   public String ethernet_mac_address; // Mac Addressa Ethernet konektoru - pravděpodobně stejná jako defaultní MacAdressa!
                                        @ApiModelProperty(required = true)   public String wifi_mac_address;     // Mac addressa wifi čipu
                                        @ApiModelProperty(required = true)   public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
+                                       @ApiModelProperty(required = true)   public String generationDescription;  // Info  výrobní generaci
 
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
                                        @JsonIgnore  @ManyToOne              public Model_TypeOfBoard type_of_board;
                                        @JsonIgnore                          public boolean is_active;
                                        @ApiModelProperty(required = true)   public boolean backup_mode;
-                                       @JsonIgnore                          public Date date_of_create;
+                                                                            public Date date_of_create;
 
                       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)   public Model_Project project;
 
                                                    @JsonIgnore @ManyToOne   public Model_VersionObject actual_c_program_version;
                                                    @JsonIgnore              public String alternative_program_name;
-                                                   @JsonIgnore @ManyToOne   public Model_BootLoader actual_boot_loader;
+
+
+    @JsonIgnore @ManyToOne   public Model_BootLoader actual_boot_loader;
 
     @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_BPair> b_pair = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_CProgramUpdatePlan> c_program_update_plans;
 
-    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.LAZY)              public Model_HomerInstance virtual_instance_under_project; // Propojení pokud HW není připojen do intnace - ale potřebuji na něj referenci - je ve vrituální instanci
 
+
+    /**
+     * Propojení pokud HW není připojen do intnace - ale potřebuji na něj referenci - je ve vrituální instanci
+     */
+    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public Model_HomerInstance virtual_instance_under_project;
+
+    /**
+     * Když device nemá majitele - ale připojí se do internetu - někam se připojí - zde je záznam kam naposledy se připojil.
+     * Pokud je nutné desku přeregistrovat - podle tohohoto záznamu jí zle dohledat a požádat jí o přeregistrování!
+     */
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer connected_server;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -83,6 +97,8 @@ public class Model_Board extends Model {
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status()       {
 
+        logger.debug("Model_Board:: status:: Check Status" + this.id);
+
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
         Model_HomerInstance instance =  Model_HomerInstance.find.where().disjunction()
                 .add( Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", id) )
@@ -91,31 +107,48 @@ public class Model_Board extends Model {
 
 
         Swagger_Board_Status board_status = new Swagger_Board_Status();
+        board_status.status = is_online() ? Board_Status.online : Board_Status.offline;
+        if(project == null) board_status.where = Board_Type_of_connection.connected_to_server_unregistered;
+
+        // Stavy Desky--------------------
+
+        // 1) Není známo kam se deska připojila a nemá instanci
+        if(get_instance() == null && get_connected_server() == null){
+
+            board_status.status = Board_Status.not_yet_first_connected;
+
+        // 2) Je známo kam se deska připojila a nemá instanci - Takže třeba když jí uživatel vyndal z krabičky nahrál na ní něco
+        }else if(get_instance() == null && get_connected_server() != null){
+
+            logger.debug("Model_Board:: status:: Check Status:: ");
+            board_status.where = Board_Type_of_connection.connected_to_byzance;
+            board_status.server_name = connected_server.personal_server_name;
+            board_status.homer_server_id = connected_server.unique_identificator;
+
+        // 3) Je ve Virtuální instanci
+        } else if(instance != null) {
+
+            board_status.where = Board_Type_of_connection.in_person_instance;
+            board_status.instance_id = get_instance().blocko_instance_name;
+            if( instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
+            if( instance.getB_program() != null) board_status.b_program_name = instance.getB_program().name;
+
+            if(instance.actual_instance != null ) board_status.b_program_version_id = instance.actual_instance.version_object.id ;
+            if(instance.actual_instance != null ) board_status.b_program_version_name = instance.actual_instance.version_object.version_name;
 
 
-
-        if(instance == null){
-
-            board_status.where = "nowhere";
-
-        }else  {
-
-            board_status.where = "cloud";
-
-            board_status.b_program_id = instance.getB_program().id;
-            board_status.b_program_name = instance.getB_program().name;
-
-            board_status.b_program_version_id = instance.actual_instance != null ? instance.actual_instance.version_object.id : null;
-            board_status.b_program_version_name =instance.actual_instance != null ? instance.actual_instance.version_object.version_name : null;
+        // 4) Je ve virtuální instanci
+        } else if( get_virtual_instance() != null ){
+            board_status.where = Board_Type_of_connection.under_project_virtual_instance;
+            board_status.server_name = get_virtual_instance().cloud_homer_server.personal_server_name;
+            board_status.homer_server_id = get_virtual_instance().cloud_homer_server.unique_identificator;
         }
 
-        if(alternative_program_name != null ) board_status.actual_program = alternative_program_name;
-
         if(actual_c_program_version != null){
-                    board_status.actual_c_program_id = actual_c_program_version.c_program.id;
-                    board_status.actual_c_program_name = actual_c_program_version.c_program.name;
-                    board_status.actual_c_program_version_id = actual_c_program_version.id;
-                    board_status.actual_c_program_version_name = actual_c_program_version.version_name;
+            board_status.actual_c_program_id = actual_c_program_version.c_program.id;
+            board_status.actual_c_program_name = actual_c_program_version.c_program.name;
+            board_status.actual_c_program_version_id = actual_c_program_version.id;
+            board_status.actual_c_program_version_name = actual_c_program_version.version_name;
         }
 
         if(!c_program_update_plans.isEmpty()){
@@ -157,10 +190,28 @@ public class Model_Board extends Model {
 
     }
 
+    @Transient @JsonIgnore public Model_HomerServer get_connected_server(){
+
+        if(connected_server == null){
+            connected_server = Model_HomerServer.find.where().eq("latest_know_connected_board.id", this.id).findUnique();
+        }
+
+        return connected_server;
+    }
+
+    @Transient @JsonIgnore public Model_HomerInstance get_virtual_instance(){
+
+        if(virtual_instance_under_project == null){
+            virtual_instance_under_project = Model_HomerInstance.find.where().eq("boards_in_virtual_instance.id", this.id).findUnique();
+        }
+
+        return virtual_instance_under_project;
+    }
+
 
 /* BOARD WEBSOCKET CONTROLLING UNDER INSTANCE --------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean is_online(){ // Velmi opatrně s touto proměnou - je časově velmi náročná!!!!!!!!
+    @JsonIgnore @Transient  public boolean is_online(){ // Velmi opatrně s touto proměnou - je časově velmi náročná!!!!!!!!
         try {
 
             Model_HomerInstance homer_instance = get_instance();
@@ -170,23 +221,17 @@ public class Model_Board extends Model {
                 return false;
             }
 
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "device_online_state");
-            request.put("messageChannel", Model_HomerInstance.CHANNEL);
-            request.put("instanceId", homer_instance.blocko_instance_name);
-            request.put("devicesId", this.id);
-
-            JsonNode result = homer_instance.sendToInstance().write_with_confirmation(request, 1000 * 3, 0, 4);
-
-            System.out.println("Status: JSON:::::: " + result.toString());
+            List<String> list = new ArrayList<>();
+            list.add(this.id);
+            WS_Online_states_devices result = homer_instance.get_devices_online_state(list);
 
 
-            if( result.get("status").asText().equals("error")){
+            if( result.status.equals("error")){
                 return false;
             }
 
-            if( result.get("status").asText().equals("success") ){
-                return result.get("device_state").asBoolean();
+            if( result.status.equals("success") ){
+                return result.device_state;
             }
 
             return false;
@@ -199,9 +244,8 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public Model_HomerInstance get_instance(){
-
-            Model_HomerInstance homer_instance;
+    @JsonIgnore @Transient  Model_HomerInstance homer_instance = null; // SLouží pouze k uchovávání get_instance()!
+    @JsonIgnore @Transient  public Model_HomerInstance get_instance(){
 
             // Buď zkoumám virutální instnaci
             if (virtual_instance_under_project != null) {
@@ -217,17 +261,15 @@ public class Model_Board extends Model {
                         .endJunction().findUnique();
             }
 
+            if(homer_instance == null) return null;
             return homer_instance;
     }
 
-    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, ObjectNode json){
+
+    // Kontrola připojení
+    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_Yoda_connected help){
         try {
 
-            // Zpracování Json
-            final Form<WS_YodaConnected> form = Form.form(WS_YodaConnected.class).bind(json);
-            if(form.hasErrors()){logger.error("Incoming Json for Yoda has not right Form");return;}
-
-            WS_YodaConnected help = form.get();
             Model_Board master_device = Model_Board.find.byId(help.deviceId);
 
             if(master_device == null){
@@ -239,14 +281,14 @@ public class Model_Board extends Model {
             logger.debug("Board:: master_device_Connected:: Board connected to Blocko cloud_blocko_server:: ", help.deviceId);
 
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
-            Model_Board.hardware_connected(master_device, help);
+            Model_Board.hardware_firmware_state_check(master_device, help);
 
         }catch (Exception e){
             logger.error("Board:: master_device_Connected:: ERROR::", e);
         }
     }
 
-    @JsonIgnore @Transient  public static void master_device_Disconnected(ObjectNode json){
+    @JsonIgnore @Transient  public static void master_device_Disconnected(WS_Yoda_disconnected help){
         try {
 
         }catch (Exception e){
@@ -254,14 +296,8 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, ObjectNode json){
+    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_Device_connected help){
         try {
-
-            // Zpracování Json
-            final Form<WS_DeviceConnected> form = Form.form(WS_DeviceConnected.class).bind(json);
-            if(form.hasErrors()){ logger.error("Incoming Json from Device has not right Form"); return; }
-
-            WS_DeviceConnected help = form.get();
 
             Model_Board device = Model_Board.find.byId(help.deviceId);
 
@@ -273,21 +309,20 @@ public class Model_Board extends Model {
                 return;
             }
 
-
             if(!device.is_active ){
                 device.is_active = true;
                 device.update();
             }
 
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
-            Model_Board.hardware_connected(device, help);
+           //  Model_Board.hardware_connected(device, help);
 
         }catch (Exception e){
             logger.error("Board:: device_Connected:: ERROR:: ", e);
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Disconnected(ObjectNode json){
+    @JsonIgnore @Transient  public static void device_Disconnected(WS_Device_disconnected help){
         try {
             //TODO
         }catch (Exception e){
@@ -295,77 +330,224 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static void hardware_connected(Model_Board board, WS_YodaConnected report){
 
-        logger.debug("Tyrion Checking summary information of connected master board: ", board.id);
+
+    // Kontrola up_to_date harwaru
+    @JsonIgnore @Transient  public static void hardware_firmware_state_check(Model_Board board, WS_Yoda_connected report) {
+
+        logger.debug("Model_Board:: hardware_firmware_state_check:: Summary information of connected master board: ", board.id);
+
+        System.out.println("Kontrola Yody:: ");
+        System.out.println("Kontrola Yody Id:: " + report.deviceId);
+        System.out.println("Aktuální firmware_id:: " + report.firmware_build_id + " očekávaný dle tyriona" + board.actual_c_program_version != null ? board.actual_c_program_version.c_compilation.firmware_build_id : " zatím žádné");
+        System.out.println("Aktuální bootlader_id:: " + report.bootloader_build_id + " očekávaný dle tyriona" + board.actual_boot_loader != null ? board.actual_boot_loader.version_identificator : " zatím žádné");
 
 
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
-        logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
+
         Integer plans = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).disjunction()
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.not_start_yet)              )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)                )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
+                .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
                 .endJunction().findRowCount();
 
-        if(plans > 0){
+
+        System.out.println("Kolik mám aktualizačních procedur nažhavených pro dané zařízení:: " + plans);
+
+        if (plans > 0) {
+
+            System.out.println("Mám jich více než 0 ");
+
+            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.where()
+                    .eq("board.id", board.id)
+                    .eq("actualization_procedure.homer_instance_record.id", board.get_instance().actual_instance.id)
+                    .disjunction()
+                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .endJunction().findUnique();
+
+            System.out.println("Bubu kontrolovat na co mám plán");
+
+            if (plan.firmware_type == Firmware_type.FIRMWARE) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if (plan.c_program_version_for_update.c_compilation.firmware_build_id.equals(report.firmware_build_id)) {
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                } else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+
+                }
+
+            } else if (plan.firmware_type == Firmware_type.BOOTLOADER) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+
+                // Mám shodu oproti očekávánemů
+                if (plan.binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
+
+                    plan.state = C_ProgramUpdater_State.complete;
+                    plan.update();
+
+                } else {
+
+                    plan.state = C_ProgramUpdater_State.in_progress;
+                    plan.update();
+
+                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+                }
+
+            } else if (plan.firmware_type == Firmware_type.BACKUP) {
+
+                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
+
+                plan.state = C_ProgramUpdater_State.complete;
+                plan.update();
+            }
+
             board.get_instance().check_hardware(board, report);
-        }else {
+        } else {
             logger.debug("No actualization plan found for Master Device: " + board.id);
         }
 
+
+
         board.notification_board_connect();
 
-        for(WS_DeviceConnected device_report : report.devices_summary){
 
-            Model_Board device = Model_Board.find.byId(device_report.deviceId);
+    }
 
-            if(device == null){ // Smazat device z instance a tím i z yody
-                logger.error("Unauthorized device connected to Yoda:: ", board.id, " unauthorized device id is:: ", device_report.deviceId);
-                //TODO
+    @JsonIgnore @Transient public static WS_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, Model_FileRecord record){
 
-            }else {
-                Model_Board.hardware_connected(device, device_report);
+        try {
+
+            logger.debug("Homer: " + instance.send_to_instance().identifikator + ", will update Yodas or Devices");
+
+            JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Update_device_firmware().make_request(instance, actualization_procedure_id, firmware_type, targetIds, record), 1000 * 30, 0, 3);
+
+            final Form<WS_Update_device_firmware> form = Form.form(WS_Update_device_firmware.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_Board:: WS_Update_device_firmware:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Update_device_firmware();}
+
+            return form.get();
+
+        }catch (Exception e){
+            return new WS_Update_device_firmware();
+        }
+    }
+
+    @JsonIgnore @Transient public static void unregistred_device_connected(WS_HomerServer homer_server, WS_Unregistred_device_connected report) {
+        logger.debug("Model_Board:: unregistred_device_connected:: " + report.deviceId);
+
+        Model_Board board = Model_Board.find.byId(report.deviceId);
+        if(board == null){
+            logger.warn("Unknown device tries to connect:: " + report.deviceId);
+            return;
+        }
+
+        if(board.project == null){
+            logger.debug("Model_Board:: unregistred_device_connected is registed under server:: " + homer_server.identifikator + " Server name:: " + homer_server.server.personal_server_name);
+            board.connected_server =  homer_server.server;
+            board.is_active = true;
+            board.update();
+            return;
+        }
+
+
+        if(board.project != null){
+            // Kontrola zda virtuální instance Projektu má stejný server jako je deska teď - Kdyžtak desku přeregistruji jinam!
+            if(board.get_instance() != null){
+                logger.warn("Board without own instance! " + report.deviceId);
+                return;
+            }
+            if(!board.get_instance().cloud_homer_server.unique_identificator.equals(homer_server.server.unique_identificator)){
+                board.device_change_server(board.get_instance().cloud_homer_server);
+            }
+        }
+
+    }
+
+
+    @JsonIgnore @Transient  public void device_change_server(Model_HomerServer homerServer){
+
+        logger.debug("Model_Board:: device_change_server for Device " + this.id);
+
+        ObjectNode request = Json.newObject();
+        request.put("messageType", "changeServerDeviceCommand");
+        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("mainServerUrl", homerServer.server_url);
+        request.put("mqttPort", homerServer.mqtt_port);
+        request.put("mqttPassword",homerServer.mqtt_password);
+        request.put("mqttUser", homerServer.mqtt_username);
+
+
+        // Nejdříve vyzkoušíme Server pod virtuální instancí
+        if(get_virtual_instance() != null && !get_virtual_instance().cloud_homer_server.unique_identificator.equals(homerServer.unique_identificator)){
+            logger.debug("Model_Board:: device_change_server:: Transfer will be from virtual server " + get_virtual_instance().cloud_homer_server.unique_identificator);
+
+           if(!get_virtual_instance().cloud_homer_server.server_is_online()){
+               logger.debug("Model_Board:: device_change_server:: Execution is postponed");
+           }
+        }
+
+        // Poté server posledního záznamu
+        if(get_connected_server() != null && !get_connected_server().unique_identificator.equals(homerServer.unique_identificator)){
+            logger.debug("Model_Board:: device_change_server:: Transfer will be from last connected server " + get_connected_server().unique_identificator);
+
+            if(!get_connected_server().server_is_online()){
+                logger.debug("Model_Board:: device_change_server:: Execution is postponed");
+                // TODO
             }
 
+            // TODO
+            logger.warn("Model_Board:: device_change_server:: TODO");
+            return;
         }
 
-    }
+        // Server pod instancí
+        if(get_instance() != null && !get_instance().cloud_homer_server.unique_identificator.equals(homerServer.unique_identificator)){
+            logger.debug("Model_Board:: device_change_server:: Transfer will be from last know instance" + get_instance().cloud_homer_server.unique_identificator);
 
-    @JsonIgnore @Transient public static void hardware_connected(Model_Board board, WS_DeviceConnected report) {
-        logger.debug("Tyrion Checking summary information of connected padavan board: ", board.id);
+            if(!get_instance().cloud_homer_server.server_is_online()){
+                logger.debug("Model_Board:: device_change_server:: Execution is postponed");
+                // TODO
+            }
 
-        // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
-        logger.debug("Tyrion Checking actualization state of connected board: ", board.id);
-        Integer plans  = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id)
-                .disjunction()
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.not_start_yet)              )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.in_progress)                )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.waiting_for_device)         )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible)      )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.critical_error)             )
-                    .add(   Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline)    )
-                .endJunction()
-                .findRowCount();
 
-        if(plans > 0){
-            board.get_instance().check_hardware(board, report);
-        }else {
-            logger.debug("No actualization plan found for Device: " + board.id);
+            // TODO
+            logger.warn("Model_Board:: device_change_server:: TODO");
+            return;
+
         }
 
-        board.notification_board_connect();
+        logger.debug("Model_Board:: device_change_server:: Server not found - All servers will be checked");
+        // Po zé ze zoufalosti zkusím všechny servery popořadě zeptat se zda ho někdo neviděl (JE to záloha selhání nevalidního přepsání!)
+        for( Model_HomerServer find_server : Model_HomerServer.find.all()){
 
-        // TODO pokračovat s dalšíma píčovinama
+            if(!find_server.server_is_online()) continue;
 
-        // TODO log device is online!
+            WS_Is_device_connected result = find_server.is_device_connected(this.id);
 
+            // TODO...
+
+        }
+
+
+        logger.error("Model_Board:: device_change_server:: Device not found for Transfer!");
 
     }
-
-
 
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -438,7 +620,10 @@ public class Model_Board extends Model {
     public void save(){
 
         while(true){ // I need Unique Value
-            this.hash_for_adding =  UUID.randomUUID().toString().substring(0,14);
+
+            String UUDID = UUID.randomUUID().toString().substring(0,14);
+            this.hash_for_adding = UUDID.substring(0, 4) + "-" + UUDID.substring(5, 8) + "-" + UUDID.substring(10, 14);
+
             if (Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique() == null) break;
         }
 
