@@ -83,9 +83,6 @@ public class Demo_Data_Controller extends Controller {
         result = this.basic_tariffs();
         if (result.status() != 200) return result;
 
-        result = this.c_program_configuration();
-        if (result.status() != 200) return result;
-
         result = this.person_test_user();
         if (result.status() != 200) return result;
 
@@ -991,12 +988,6 @@ public class Demo_Data_Controller extends Controller {
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
-    }
-
-    public Result c_program_configuration() {
-
-        return GlobalResult.result_ok();
-
     }
 
     public Result person_test_user() {
