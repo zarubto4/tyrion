@@ -157,7 +157,7 @@ public class FinanceTest extends TestHelper{
         body.put("company_authorized_email", UUID.randomUUID().toString());
         body.put("company_authorized_phone", UUID.randomUUID().toString());
         body.put("company_web", UUID.randomUUID().toString());
-        body.put("company_invoice_email", UUID.randomUUID().toString() + "@mail.com");
+        body.put("invoice_email", UUID.randomUUID().toString() + "@mail.com");
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)

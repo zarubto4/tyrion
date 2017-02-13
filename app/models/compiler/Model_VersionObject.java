@@ -157,6 +157,7 @@ public class Model_VersionObject extends Model {
         help.delete_permission = c_program.delete_permission();
         help.update_permission = c_program.update_permission();
         help.author = this.author.get_short_person();
+        help.status = this.c_compilation.status;
 
         return help;
     }

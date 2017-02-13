@@ -30,17 +30,19 @@ public class Model_PaymentDetails extends Model {
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_name;
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_authorized_email;
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_authorized_phone;
-    @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_invoice_email;
+
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_web;
 
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_registration_no;
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_vat_number;
 
+    @ApiModelProperty(required = false,value = "Used for billing and invoices") public String full_name;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String street;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String street_number;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String city;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String zip_code;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String country;
+    @ApiModelProperty(required = true, value = "Used for billing and invoices") public String invoice_email;
 
 /* JSON IGNORE ----------------------------------------------------------------------------------------------------------*/
 

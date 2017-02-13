@@ -84,9 +84,9 @@ public class GoPay_Controller  extends Controller {
 
             GoPay_Contact payerContact = new GoPay_Contact();
                 payerContact.first_name = details.person.full_name;
+                payerContact.email = details.invoice_email;
 
                 if(details.company_account) {
-                    payerContact.email = details.company_invoice_email;
                     payerContact.phone_number = details.company_authorized_phone;
                 }
 

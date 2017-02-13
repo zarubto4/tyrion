@@ -29,6 +29,9 @@ public class Swagger_Tariff_User_Register {
     @ApiModelProperty(required = false, value =  "Required: only in if required_payment_method is true  values =>[bank_transfer, credit_card]")
     public String payment_method;
 
+    @Constraints.MinLength(value = 4, message = "The full_name must have at least 4 characters")
+    @ApiModelProperty(required = false, value =  "Can be null")
+    public String full_name;
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The street must have at least 4 characters")
@@ -42,9 +45,9 @@ public class Swagger_Tariff_User_Register {
     public String street_number;
 
     @Constraints.Required
-    @Constraints.MinLength(value = 4, message = "The city must have at least 4 characters")
+    @Constraints.MinLength(value = 2, message = "The city must have at least 2 characters")
     @ApiModelProperty(required = true, value =  "Required: always" +
-                                                "The city must have at least 4 characters")
+                                                "The city must have at least 2 characters")
     public String city;
 
     @Constraints.Required
@@ -89,10 +92,10 @@ public class Swagger_Tariff_User_Register {
                                                  "The company_web must have at least 4 characters")
     public String company_web;
 
-    @Constraints.Email()
-    @ApiModelProperty(required = false, value =  "Required: only if account is business" +
-                                                 "Email must be valid")
-    public String company_invoice_email;
+    @Constraints.Required
+    @Constraints.Email
+    @ApiModelProperty(required = false, value =  "Required: always, Email must be valid")
+    public String invoice_email;
 
 
     @ApiModelProperty(required = false, value = "List of Ids of Extends packages")

@@ -485,15 +485,16 @@ create table model_payment_details (
   company_name              varchar(255),
   company_authorized_email  varchar(255),
   company_authorized_phone  varchar(255),
-  company_invoice_email     varchar(255),
   company_web               varchar(255),
   company_registration_no   varchar(255),
   company_vat_number        varchar(255),
+  full_name                 varchar(255),
   street                    varchar(255),
   street_number             varchar(255),
   city                      varchar(255),
   zip_code                  varchar(255),
   country                   varchar(255),
+  invoice_email             varchar(255),
   constraint uq_model_payment_details_product unique (productidpaymentdetails),
   constraint pk_model_payment_details primary key (id))
 ;
