@@ -3,7 +3,9 @@ package utilities;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.blocko.Model_BlockoBlock;
@@ -437,11 +439,15 @@ public class Server {
 
     }
 
+    //static Injector injector = Guice.createInjector(Module.class);
+
     public static void startScheduling_procedures() {
         try {
 
             // Nastavení schedulleru (Aktivity, která se pravidelně v časových úsecích vykonává)
             scheduler = StdSchedulerFactory.getDefaultScheduler();
+            //scheduler.setJobFactory(injector.getInstance(GuiceJobFactory.class));
+
 
             //-------------------------
 
@@ -462,6 +468,7 @@ public class Server {
             // Minutové - hodinové klíče
             TriggerKey every_10_min_key7 = TriggerKey.triggerKey("every_ten_minutes"); // 7)
             TriggerKey every_fifteen_minute_key = TriggerKey.triggerKey("every_fifteen_minutes");
+            TriggerKey every_minute_key = TriggerKey.triggerKey("every_minute");
 
             //-------------------------
 
@@ -478,7 +485,7 @@ public class Server {
             // Definované Trigry
             if(!scheduler.checkExists(every_day_key1)){
 
-                Trigger every_day_0 = newTrigger().withIdentity(every_day_key1).startNow()
+                Trigger every_day_0 = newTrigger().withIdentity(every_day_key0).startNow()
                         .withSchedule(dailyAtHourAndMinute(0,0))// Spuštění každý den v 00:00 AM
                         .build();
 
@@ -515,6 +522,10 @@ public class Server {
 
                 Trigger every_fifteen_minute = newTrigger().withIdentity(every_fifteen_minute_key).startNow()
                         .withSchedule(repeatMinutelyForever(15))// Spuštění každých 15 minut
+                        .build();
+
+                Trigger every_minute = newTrigger().withIdentity(every_minute_key).startNow()
+                        .withSchedule(cronSchedule("30 0/1 * * * ?"))// Spuštění každou minutu
                         .build();
 
                 /**
@@ -565,6 +576,10 @@ public class Server {
                 //    logger.info("Scheduling new Job - Idle_Connection_Removal");
                 //    scheduler.scheduleJob(newJob(Idle_Connection_Removal.class).withIdentity(JobKey.jobKey("idle_connection_removal")).build(), every_fifteen_minute);
                 //}
+
+                // 9) Update statistiky o requestech
+                //logger.info("Scheduling new Job - Request Stats Update");
+                //scheduler.scheduleJob( newJob(Request_Stats_Update.class).withIdentity( JobKey.jobKey("request_stats_update") ).build(), every_minute);
 
             }else {
                 logger.warn("CRON (Every-Day) is in RAM yet. Be careful with that!");

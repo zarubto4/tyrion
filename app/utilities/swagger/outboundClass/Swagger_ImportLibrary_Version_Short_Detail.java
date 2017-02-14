@@ -7,8 +7,8 @@ import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Json Model for Public Version of C_program",
-        value = "C_Program_Version_Short_Detail")
+@ApiModel(description = "Json Model for ImportLibrary_Version_Short_Detail",
+        value = "ImportLibrary_Version_Short_Detail")
 public class Swagger_ImportLibrary_Version_Short_Detail {
 
 
