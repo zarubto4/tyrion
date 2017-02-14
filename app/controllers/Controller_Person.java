@@ -32,8 +32,7 @@ import java.util.UUID;
 public class Controller_Person extends Controller {
 
     @Inject MailerClient mailerClient;
-    @Inject
-    Controller_ProgramingPackage controllerProgramingPackage;
+    @Inject Controller_ProgramingPackage controllerProgramingPackage;
     @Inject WSClient ws;
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 

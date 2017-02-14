@@ -34,6 +34,7 @@ import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
 import utilities.swagger.outboundClass.*;
+import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
 
 import javax.persistence.*;
 import java.net.ConnectException;
