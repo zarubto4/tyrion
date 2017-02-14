@@ -414,7 +414,7 @@ public class Controller_ProgramingPackage extends Controller {
                     invitation.save();
                 }
 
-                String link = Server.becki_invitationToCollaborate + "/" + mail;
+                String link = Server.becki_invitationToCollaborate + mail.replace("@","%40");
 
                 // Odeslání emailu s linkem pro registraci
                 try {
@@ -430,7 +430,7 @@ public class Controller_ProgramingPackage extends Controller {
                             .addEmptyLineSpace()
                             .addSeparatorLine()
                             .addEmptyLineSpace()
-                            .addLink(link,"Click here to collaborate","18")
+                            .addLink(link,"Register here and collaborate","18")
                             .addEmptyLineSpace()
                             .sendEmail(mail, "Invitation to Collaborate" );
 
