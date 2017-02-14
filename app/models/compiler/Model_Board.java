@@ -124,6 +124,7 @@ public class Model_Board extends Model {
             board_status.where = Board_Type_of_connection.connected_to_byzance;
             board_status.server_name = connected_server.personal_server_name;
             board_status.homer_server_id = connected_server.unique_identificator;
+            board_status.server_online_status = connected_server.server_is_online();
 
         // 3) Je ve Virtuální instanci
         } else if(instance != null) {

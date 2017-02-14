@@ -3490,6 +3490,7 @@ public class Controller_CompilationLibraries extends Controller {
 
     @ApiOperation(value = "new Version of ImportLibrary",
             tags = {"ImportLibrary"},
+            hidden = true,
             notes = "If you want add new code to ImportLibrary",
             produces = "application/json",
             protocols = "https",
