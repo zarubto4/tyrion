@@ -10,11 +10,13 @@ import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.Compile_Status;
 import utilities.independent_threads.Compilation_After_BlackOut;
 import utilities.web_socket.SendMessage;
 import utilities.web_socket.WS_CompilerServer;
+import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
 import utilities.web_socket.message_objects.compilator_tyrion.WS_Ping_compilation_server;
 
 import javax.persistence.*;
@@ -73,22 +75,23 @@ public class Model_CompilationServer extends Model {
         return  !Controller_WebSocket.compiler_cloud_servers.isEmpty();
     }
 
-    @JsonIgnore @Transient public static JsonNode make_Compilation(ObjectNode request){
+    @JsonIgnore @Transient public static WS_Make_compilation make_Compilation(ObjectNode request){
         try{
 
             List<String> keys        = new ArrayList<>(Controller_WebSocket.compiler_cloud_servers.keySet());
             WS_CompilerServer server = (WS_CompilerServer) Controller_WebSocket.compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
 
-            request.put("messageChannel", CHANNEL);
             ObjectNode compilation_request = server.write_with_confirmation(request, 1000*5, 0, 3);
 
             if(!compilation_request.get("status").asText().equals("success")) {
 
                 logger.debug("Model_CompilationServer:: make_Compilation:: Incoming message has not contains state = success");
 
-                ObjectNode error_result = Json.newObject();
-                error_result.put("error", "Something was wrong");
-                return  error_result;
+                WS_Make_compilation make_compilation = new WS_Make_compilation();
+
+                make_compilation.status = "error";
+                make_compilation.error = "Something was wrong";
+                return  make_compilation;
             }
 
             logger.debug("Model_CompilationServer:: make_Compilation:: Start of compilation was successful - waiting for result");
@@ -96,14 +99,23 @@ public class Model_CompilationServer extends Model {
             SendMessage get_compilation = new SendMessage(null, null, "compilation_message", 1000 * 35, 0, 1);
             server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
 
-            ObjectNode result = get_compilation.send_with_response();
-            result.set("interface_code", compilation_request.get("interface_code") ); // Přiřadím interface do zprávy
-            result.put("status", "success" );
+            ObjectNode node = get_compilation.send_with_response();
 
-            return result;
+            logger.debug("Model_CompilationServer:: make_Compilation:: Result is here!!! " + node.toString());
+
+            final Form<WS_Make_compilation> form = Form.form(WS_Make_compilation.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Make_compilation:: Incoming Json from Compilation Server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Make_compilation();}
+
+            WS_Make_compilation compilation = form.get();
+            compilation.interface_code = compilation_request.get("interface_code").toString();
+
+            if(compilation.buildUrl != null) compilation.status = "success";
+
+            return compilation;
 
         }catch (Exception e){
-            return null;
+            e.printStackTrace();
+            return new  WS_Make_compilation();
         }
     }
 

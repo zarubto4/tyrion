@@ -56,11 +56,11 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
                     try {
 
-                        logger.warn("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
+                        logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
 
                         WS_Get_summary_information summary_information = instance.get_summary_information();
 
-                        logger.warn("Check_Update_for_hw_on_homer:: Run:: summary:: " + Json.toJson(summary_information) );
+                        logger.debug("Check_Update_for_hw_on_homer:: Run:: summary:: " + Json.toJson(summary_information) );
 
                         // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
                         if(!summary_information.status.equals("success")){
@@ -84,7 +84,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
     public static void check_Update(WS_HomerServer homer_server, WS_Get_summary_information summary_information){
 
-        logger.error("Check_Update_for_hw_on_homer:: check_Update:: ");
+        logger.debug("Check_Update_for_hw_on_homer:: check_Update:: ");
 
         for(WS_Yoda_connected yoda_connected : summary_information.masterDeviceList){
 

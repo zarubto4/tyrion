@@ -2,9 +2,9 @@ package utilities.web_socket.message_objects.homer_instance;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.web_socket.message_objects.common.WS_AbstractMessage;
+import utilities.web_socket.message_objects.common.WS_AbstractMessageInstance;
 
-public class WS_Device_connected extends WS_AbstractMessage {
+public class WS_Device_connected extends WS_AbstractMessageInstance {
 
     // MessageType
     @JsonIgnore

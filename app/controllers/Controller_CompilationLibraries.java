@@ -3,7 +3,6 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
@@ -32,6 +31,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_Version_Public_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_ImportLibrary_List;
 import utilities.swagger.outboundClass.*;
+import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -1103,12 +1103,6 @@ public class Controller_CompilationLibraries extends Controller {
 
             if(!Model_CompilationServer.is_online()) return GlobalResult.result_external_server_is_offline("Compilation Server offilne");
 
-            // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "build");
-            result.put("target", typeOfBoard.compiler_target_name);
-            result.put("libVersion", "v0");
-            result.put("code", help.main);
 
             List<Swagger_C_Program_Version_New.Library_File> library_files = new ArrayList<>();
 
@@ -1163,34 +1157,31 @@ public class Controller_CompilationLibraries extends Controller {
                 }
 
 
-            result.set("includes", includes);
-
-
             if (Controller_WebSocket.compiler_cloud_servers.isEmpty()) {
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
 
 
             // Odesílám na compilační cloud_compilation_server
-            JsonNode compilation_result = Model_CompilationServer.make_Compilation(result);
-            ObjectMapper mapper = new ObjectMapper();
+            WS_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Make_compilation().make_request( typeOfBoard ,"", help.main, includes ));
+
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
-            if (compilation_result.has("buildUrl")) {
+            if (compilation_result.buildUrl != null && compilation_result.status.equals("success")) {
                 return GlobalResult.result_ok();
             }
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
-            if (compilation_result.has("buildErrors") && !compilation_result.get("buildErrors").toString().equals("[]")) {
+            if (!compilation_result.buildErrors.isEmpty()) {
 
-                return GlobalResult.result_buildErrors(Json.toJson(compilation_result.get("buildErrors")));
+                return GlobalResult.result_buildErrors(Json.toJson(compilation_result.buildErrors));
             }
 
             // Nebylo úspěšné ani odeslání requestu - Chyba v konfiguraci a tak vracím defaulní chybz
-            if (compilation_result.has("error")) {
+            if (compilation_result.error != null) {
 
                 ObjectNode result_json = Json.newObject();
-                result_json.put("error", compilation_result.get("error").asText());
+                result_json.put("error", compilation_result.error);
 
                 return GlobalResult.result_external_server_error(result_json);
             }

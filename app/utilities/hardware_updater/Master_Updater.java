@@ -8,8 +8,8 @@ import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import play.libs.Json;
-import utilities.enums.Firmware_type;
 import utilities.enums.C_ProgramUpdater_State;
+import utilities.enums.Firmware_type;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,7 +104,7 @@ public class Master_Updater{
 
     class Instance{
         public Model_HomerInstance instance;
-        public HashMap<String, Program> programs = new HashMap<>();
+        public HashMap<String, Program> programs = new HashMap<>(); // <Build_ID, Program>
     }
 
     class Program{
@@ -209,7 +209,7 @@ public class Master_Updater{
                             file_record = plan.binary_file;
 
                   }else if(plan.binary_file != null) {
-                            program_identificator = "file_" + plan.binary_file.id;
+                            program_identificator = "f" + plan.binary_file.id;
                             file_record = plan.binary_file;
                   }
 
@@ -248,19 +248,23 @@ public class Master_Updater{
 
         for (Instance instance : structure.instances.values()) {
 
+            Actualization_Task task = new Actualization_Task();
+            task.instance = instance.instance;
+
             for(Program program : instance.programs.values()){
 
-                Actualization_Task task = new Actualization_Task();
-                task.actualization_procedure_id = procedure_id;
-                task.instance = instance.instance;
-                task.file_record = program.file_record;
-                task.boards = program.boards;
-                task.firmware_type = program.firmware_type;
-
-                logger.debug("Actualization task is ready. Sending to Server object to cloud_blocko_server blocko independent Thread");
-                instance.instance.cloud_homer_server.add_task(task);
+                Actualization_procedure procedure = new Actualization_procedure();
+                procedure.actualizationProcedureId = procedure_id;
+                procedure.file_record = program.file_record;
+                procedure.boards = program.boards;
+                procedure.firmwareType = program.firmware_type;
+                task.procedures.add(procedure);
 
             }
+
+            instance.instance.cloud_homer_server.add_task(task);
         }
+
+
     }
 }

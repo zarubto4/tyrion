@@ -21,6 +21,8 @@ public class WS_Get_summary_information  extends WS_AbstractMessageInstance {
     public List<WS_Yoda_connected> masterDeviceList = new ArrayList<>();
 
 
+
+
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance) {
 

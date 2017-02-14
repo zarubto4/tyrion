@@ -21,6 +21,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.*;
+import utilities.hardware_updater.Actualization_procedure;
 import utilities.hardware_updater.Master_Updater;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
@@ -125,6 +126,7 @@ public class Model_Board extends Model {
             board_status.server_name = connected_server.personal_server_name;
             board_status.homer_server_id = connected_server.unique_identificator;
 
+
         // 3) Je ve Virtuální instanci
         } else if(instance != null) {
 
@@ -223,15 +225,20 @@ public class Model_Board extends Model {
 
             List<String> list = new ArrayList<>();
             list.add(this.id);
+
+            logger.warn("Board::"+  id + " Checking online state!");
+
             WS_Online_states_devices result = homer_instance.get_devices_online_state(list);
 
+            logger.warn("Board::"+  id + " Přišla odpověď na state devicu status :: " + result.status);
 
             if( result.status.equals("error")){
+                logger.warn("Board::"+  id + " Checking online state! status is Error:: ");
                 return false;
             }
 
             if( result.status.equals("success") ){
-                return result.device_state;
+                return result.is_device_online(id);
             }
 
             return false;
@@ -334,109 +341,130 @@ public class Model_Board extends Model {
 
     // Kontrola up_to_date harwaru
     @JsonIgnore @Transient  public static void hardware_firmware_state_check(Model_Board board, WS_Yoda_connected report) {
+        try {
+            logger.debug("Model_Board:: hardware_firmware_state_check:: Summary information of connected master board: ", board.id);
 
-        logger.debug("Model_Board:: hardware_firmware_state_check:: Summary information of connected master board: ", board.id);
+            System.out.println("Kontrola Yody:: ");
+            System.out.println("Kontrola Yody Id:: " + report.deviceId);
+            System.out.println("Aktuální firmware_id dle HW:: " + report.firmware_build_id);
 
-        System.out.println("Kontrola Yody:: ");
-        System.out.println("Kontrola Yody Id:: " + report.deviceId);
-        System.out.println("Aktuální firmware_id:: " + report.firmware_build_id + " očekávaný dle tyriona" + board.actual_c_program_version != null ? board.actual_c_program_version.c_compilation.firmware_build_id : " zatím žádné");
-        System.out.println("Aktuální bootlader_id:: " + report.bootloader_build_id + " očekávaný dle tyriona" + board.actual_boot_loader != null ? board.actual_boot_loader.version_identificator : " zatím žádné");
+            if (board.actual_c_program_version == null) System.out.println("Aktuální firmware_id dle DB není znám :: " + report.firmware_build_id);
+            else System.out.println("Aktuální firmware_id dle DB:: " + board.actual_c_program_version.id);
 
-
-        // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
-
-        Integer plans = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).disjunction()
-                .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
-                .endJunction().findRowCount();
+            if (board.actual_boot_loader == null) System.out.println("Aktuální bootlader_id dle DB není znám :: " + report.bootloader_build_id);
+            else System.out.println("Aktuální bootlader_id dle DB:: " + board.actual_boot_loader.version_identificator);
 
 
-        System.out.println("Kolik mám aktualizačních procedur nažhavených pro dané zařízení:: " + plans);
+            // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
 
-        if (plans > 0) {
-
-            System.out.println("Mám jich více než 0 ");
-
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.where()
-                    .eq("board.id", board.id)
-                    .eq("actualization_procedure.homer_instance_record.id", board.get_instance().actual_instance.id)
-                    .disjunction()
+            Integer plans_count = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).disjunction()
                     .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
                     .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
                     .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
                     .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
                     .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
-                    .endJunction().findUnique();
+                    .endJunction().findRowCount();
 
-            System.out.println("Bubu kontrolovat na co mám plán");
 
-            if (plan.firmware_type == Firmware_type.FIRMWARE) {
+            System.out.println("Kolik mám aktualizačních procedur nažhavených pro dané zařízení:: " + plans_count);
 
-                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+            if (plans_count > 0) {
 
-                // Mám shodu oproti očekávánemů
-                if (plan.c_program_version_for_update.c_compilation.firmware_build_id.equals(report.firmware_build_id)) {
+                System.out.println("Mám jich více než 0");
 
-                    plan.state = C_ProgramUpdater_State.complete;
-                    plan.update();
+                List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where()
+                        .eq("board.id", board.id)
+                        .disjunction()
+                        .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                        .endJunction().order().desc("date_of_create").findList();
 
-                } else {
-
-                    plan.state = C_ProgramUpdater_State.in_progress;
-                    plan.update();
-
-                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
-
+                if(plans.size() > 1){
+                    for(int i = 1; i < plans.size(); i++) {
+                        plans.get(i).state = C_ProgramUpdater_State.overwritten;
+                        plans.get(i).update();
+                    }
                 }
 
-            } else if (plan.firmware_type == Firmware_type.BOOTLOADER) {
+                System.out.println("Bubu kontrolovat na co mám plán");
 
-                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+                if (plans.get(0).firmware_type == Firmware_type.FIRMWARE) {
 
-                // Mám shodu oproti očekávánemů
-                if (plan.binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
+                    logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
 
-                    plan.state = C_ProgramUpdater_State.complete;
-                    plan.update();
+                    // Mám shodu oproti očekávánemů
+                    if(plans.get(0).board.actual_c_program_version != null ){
 
-                } else {
+                        // Verze se rovnají
+                        if (plans.get(0).board.actual_c_program_version.c_compilation.firmware_build_id.equals(plans.get(0).c_program_version_for_update.c_compilation.firmware_build_id) ) {
+                            plans.get(0).state = C_ProgramUpdater_State.complete;
+                            plans.get(0).update();
+                        }else {
 
-                    plan.state = C_ProgramUpdater_State.in_progress;
-                    plan.update();
+                            plans.get(0).state = C_ProgramUpdater_State.in_progress;
+                            plans.get(0).update();
+                            Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                        }
 
-                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
+                    }else {
+
+                        logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware - Hardware has Un-databased Value");
+                        plans.get(0).state = C_ProgramUpdater_State.in_progress;
+                        plans.get(0).update();
+
+                        Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
+
+                    }
+
+                } else if (plans.get(0).firmware_type == Firmware_type.BOOTLOADER) {
+
+                    logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+
+                    // Mám shodu oproti očekávánemů
+                    if (plans.get(0).binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
+
+                        plans.get(0).state = C_ProgramUpdater_State.complete;
+                        plans.get(0).update();
+
+                    } else {
+
+                        plans.get(0).state = C_ProgramUpdater_State.in_progress;
+                        plans.get(0).update();
+
+                        Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                    }
+
+                } else if (plans.get(0).firmware_type == Firmware_type.BACKUP) {
+
+                    logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
+
+                    plans.get(0).state = C_ProgramUpdater_State.complete;
+                    plans.get(0).update();
                 }
 
-            } else if (plan.firmware_type == Firmware_type.BACKUP) {
-
-                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
-
-                plan.state = C_ProgramUpdater_State.complete;
-                plan.update();
+                board.get_instance().check_hardware(board, report);
+            } else {
+                logger.debug("No actualization plan found for Master Device: " + board.id);
             }
 
-            board.get_instance().check_hardware(board, report);
-        } else {
-            logger.debug("No actualization plan found for Master Device: " + board.id);
+
+            board.notification_board_connect();
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
-
-
-
-        board.notification_board_connect();
-
-
     }
 
-    @JsonIgnore @Transient public static WS_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, String actualization_procedure_id, List<String> targetIds, Firmware_type firmware_type, Model_FileRecord record){
+    @JsonIgnore @Transient public static WS_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, List<Actualization_procedure> procedures){
 
         try {
 
             logger.debug("Homer: " + instance.send_to_instance().identifikator + ", will update Yodas or Devices");
 
-            JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Update_device_firmware().make_request(instance, actualization_procedure_id, firmware_type, targetIds, record), 1000 * 30, 0, 3);
+            JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Update_device_firmware().make_request(instance, procedures), 1000 * 30, 0, 3);
 
             final Form<WS_Update_device_firmware> form = Form.form(WS_Update_device_firmware.class).bind(node);
             if(form.hasErrors()){logger.error("Model_Board:: WS_Update_device_firmware:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Update_device_firmware();}
@@ -622,7 +650,7 @@ public class Model_Board extends Model {
         while(true){ // I need Unique Value
 
             String UUDID = UUID.randomUUID().toString().substring(0,14);
-            this.hash_for_adding = UUDID.substring(0, 4) + "-" + UUDID.substring(5, 8) + "-" + UUDID.substring(10, 14);
+            this.hash_for_adding = UUDID.substring(0, 4) + "-" + UUDID.substring(5, 8) + "-" + UUDID.substring(9, 13);
 
             if (Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique() == null) break;
         }

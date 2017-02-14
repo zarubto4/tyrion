@@ -6,7 +6,8 @@ public enum Firmware_type {
 
     @EnumValue("FIRMWARE")   FIRMWARE("FIRMWARE"),
     @EnumValue("BOOTLOADER") BOOTLOADER("BOOTLOADER"),
-    @EnumValue("BACKUP")     BACKUP("BACKUP");
+    @EnumValue("BACKUP")     BACKUP("BACKUP"),
+    @EnumValue("WIFI")       WIFI("WIFI");
 
     private String firmwareType;
 

@@ -34,6 +34,7 @@ import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
 import utilities.swagger.outboundClass.*;
+import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
 
 import javax.persistence.*;
 import java.net.ConnectException;
@@ -277,14 +278,6 @@ public class Model_VersionObject extends Model {
         Swagger_C_Program_Version_Update code_file = form.get();
 
 
-        // Vytvářím objekt, jež se zašle přes websocket ke kompilaci
-        ObjectNode request = Json.newObject();
-        request.put("messageType", "build");
-        request.put("target", typeOfBoard.compiler_target_name);
-        request.put("libVersion", "v0"); // TODO longetrm podle verzí komplační knohovny
-        request.put("versionId", this.id);
-        request.put("code", code_file.main);
-
         List<Swagger_C_Program_Version_New.Library_File> library_files = new ArrayList<>();
 
         for (String lib_id : code_file.library_files) {
@@ -345,7 +338,8 @@ public class Model_VersionObject extends Model {
                 includes.put(user_file.file_name , user_file.code);
             }
 
-        request.set("includes", includes);
+
+
 
 
         // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
@@ -363,25 +357,24 @@ public class Model_VersionObject extends Model {
             return result;
         }
 
-        JsonNode json_compilation_result = Model_CompilationServer.make_Compilation(request);
 
+
+        WS_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Make_compilation().make_request( typeOfBoard ,this.id, code_file.main, includes   ));
 
         // Controller_Notification.successful_compilation(Controller_Security.getPerson(), this); TODO Notifikace
 
         // Když obsahuje chyby - vrátím rovnou Becki
-        if(json_compilation_result.has("buildErrors")) {
-            logger.debug("Version Object:: compile_program_procedure:: compilation contains user Errors");
+        if(!compilation.buildErrors.isEmpty()) {
 
-            Form<Swagger_Compilation_Build_Error> form_compilation =  Form.form(Swagger_Compilation_Build_Error.class).bind(json_compilation_result.get("buildErrors").get(0) );
-            Swagger_Compilation_Build_Error swagger_compilation_build_error = form_compilation.get();
+            logger.debug("Version Object:: compile_program_procedure:: compilation contains user Errors");
 
             c_compilation.status = Compile_Status.compiled_with_code_errors;
             c_compilation.update();
 
-            return (ObjectNode) Json.toJson( swagger_compilation_build_error );
+            return (ObjectNode) Json.toJson( compilation.buildErrors );
         }
 
-        if(!json_compilation_result.has("interface_code") || !json_compilation_result.has("buildUrl")){
+        if(compilation.interface_code == null || compilation.buildUrl == null){
 
             logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
 
@@ -395,7 +388,7 @@ public class Model_VersionObject extends Model {
             return result;
         }
 
-        if(json_compilation_result.has("error")){
+        if(compilation.error != null || !compilation.status.equals("success")){
 
             logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
 
@@ -410,7 +403,8 @@ public class Model_VersionObject extends Model {
             return result;
         }
 
-        if(json_compilation_result.get("status").asText().equals("success")) {
+        if(compilation.status.equals("success")) {
+
             logger.debug("Version Object:: compile_program_procedure:: compilation was successfull");
 
             try {
@@ -419,7 +413,7 @@ public class Model_VersionObject extends Model {
 
 
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-                F.Promise<WSResponse> responsePromise = ws.url(json_compilation_result.get("buildUrl").asText())
+                F.Promise<WSResponse> responsePromise = ws.url(compilation.buildUrl)
                         .setContentType("undefined")
                         .setRequestTimeout(7500)
                         .get();
@@ -438,8 +432,9 @@ public class Model_VersionObject extends Model {
 
                 logger.debug("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
                 c_compilation.status = Compile_Status.successfully_compiled_and_restored;
-                c_compilation.c_comp_build_url = json_compilation_result.get("buildId").asText();
-                c_compilation.virtual_input_output = json_compilation_result.get("interface_code").toString();
+                c_compilation.c_comp_build_url = compilation.buildUrl;
+                c_compilation.firmware_build_id = compilation.buildId;
+                c_compilation.virtual_input_output = compilation.interface_code;
                 c_compilation.date_of_create = new Date();
                 c_compilation.update();
 
@@ -447,7 +442,7 @@ public class Model_VersionObject extends Model {
 
             }catch (ConnectException e){
 
-                logger.error("Compilation Server is probably offline on URL:: " + json_compilation_result.get("buildUrl").asText() );
+                logger.error("Compilation Server is probably offline on URL:: " + compilation.buildUrl );
                 c_compilation.status = Compile_Status.successfully_compiled_not_restored;
                 c_compilation.update();
 

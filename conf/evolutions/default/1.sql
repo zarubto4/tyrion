@@ -153,7 +153,7 @@ create table model_cprogram_update_plan (
   bootloader_id             varchar(255),
   binary_file_id            varchar(255),
   state                     varchar(23),
-  constraint ck_model_cprogram_update_plan_firmware_type check (firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER')),
+  constraint ck_model_cprogram_update_plan_firmware_type check (firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),
   constraint ck_model_cprogram_update_plan_state check (state in ('canceled','in_progress','waiting_for_device','overwritten','bin_file_not_found','homer_server_is_offline','complete','instance_inaccessible','critical_error','not_start_yet')),
   constraint pk_model_cprogram_update_plan primary key (id))
 ;

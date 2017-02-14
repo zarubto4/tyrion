@@ -4,11 +4,11 @@ import play.data.validation.Constraints;
 
 public abstract class  WS_AbstractMessage {
 
-                           public String messageType;
-    @Constraints.Required  public String messageId;
-    @Constraints.Required  public String messageChannel;
+    public String messageType;
+    public String messageId;
+    public String messageChannel;
 
-    public String status = "error";
+    @Constraints.Required  public String status = "error";
     public String error  = null;
     public Integer errorCode  = null;
 

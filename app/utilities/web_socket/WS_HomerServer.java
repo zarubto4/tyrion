@@ -245,7 +245,7 @@ public class WS_HomerServer extends WebSCType{
                         if(task.instance != null){
 
 
-                            WS_Update_device_firmware result = Model_Board.update_devices_firmware(task.instance, task.actualization_procedure_id, task.get_ids(), task.firmware_type, task.file_record);
+                            WS_Update_device_firmware result = Model_Board.update_devices_firmware(task.instance, task.procedures);
                             System.out.println("Odpověď na Aktualizaci:" + result.toString());
                             System.out.println("Ještě neřeším reakci");
                             task_list.remove(task);

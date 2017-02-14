@@ -1,6 +1,6 @@
 package utilities.web_socket.message_objects.common;
 
-public abstract class WS_AbstractMessageBoard extends WS_AbstractMessage {
+public abstract class WS_AbstractMessageBoard {
 
     public boolean online_status = false; // Defaultně - musí být přepsán příchozím JSON
 
@@ -22,5 +22,8 @@ public abstract class WS_AbstractMessageBoard extends WS_AbstractMessage {
     public String short_id;
     public int count;
 
+    public String  status = null;
+    public String  error  = null;
+    public Integer errorCode  = null;
 
 }

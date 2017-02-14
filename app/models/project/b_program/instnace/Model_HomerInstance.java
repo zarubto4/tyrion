@@ -229,7 +229,7 @@ public class Model_HomerInstance extends Model {
 
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER---------------------------------------------------------------------------------*/
 
-    public static final String CHANNEL = "tyrion";
+    public static final String CHANNEL = "instance";
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
 
@@ -242,7 +242,7 @@ public class Model_HomerInstance extends Model {
                 case WS_Device_connected.messageType: {
 
                     final Form<WS_Device_connected> form = Form.form(WS_Device_connected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Device_connected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.device_Connected(homer, form.get());
                     return;
@@ -252,16 +252,17 @@ public class Model_HomerInstance extends Model {
 
                     // Zpracování Json
                     final Form<WS_Yoda_connected> form = Form.form(WS_Yoda_connected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Yoda_connected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.master_device_Connected(homer, form.get());
                     return;
                 }
 
+
                 case WS_Yoda_disconnected.messageType: {
 
                     final Form<WS_Yoda_disconnected> form = Form.form(WS_Yoda_disconnected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Yoda_disconnected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.master_device_Disconnected(form.get());
                     return;
@@ -270,16 +271,30 @@ public class Model_HomerInstance extends Model {
                 case WS_Device_disconnected.messageType: {
 
                     final Form<WS_Device_disconnected> form = Form.form(WS_Device_disconnected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: yodaConnected:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Device_disconnected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.device_Disconnected(form.get());
                     return;
                 }
 
+                case WS_Update_device_firmware.messageType : {
+
+                    final Form<WS_Update_device_firmware> form = Form.form(WS_Update_device_firmware.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Update_device_firmware:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+
+                    // TODO
+
+                    System.out.println("Přišla zpráva z Homera!");
+
+                    //  Model_Board.device_Disconnected(form.get());
+                    return;
+                    
+                }
+
                 case WS_Get_summary_information.messageType: {
 
                     final Form<WS_Get_summary_information> form = Form.form(WS_Get_summary_information.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: instanceSummary:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Get_summary_information:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_HomerInstance.summary_information(homer, form.get());
                     return;
@@ -288,7 +303,7 @@ public class Model_HomerInstance extends Model {
                 case WS_Grid_token_verification.messageType : {
 
                     final Form<WS_Grid_token_verification> form = Form.form(WS_Grid_token_verification.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: token_grid_verification:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: token_grid_verification:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     WS_Grid_token_verification help = form.get();
                     help.get_instance().cloud_verification_token_GRID(help);
@@ -299,7 +314,7 @@ public class Model_HomerInstance extends Model {
                 case WS_WebView_token_verification.messageType : {
 
                     final Form<WS_WebView_token_verification> form = Form.form(WS_WebView_token_verification.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: token_webView_verification:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: token_webView_verification:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     WS_WebView_token_verification help = form.get();
                     help.get_instance().cloud_verification_token_WEBVIEW(help);
@@ -332,7 +347,7 @@ public class Model_HomerInstance extends Model {
             JsonNode node =  send_to_instance().write_with_confirmation( new WS_Instance_status().make_request(this), 1000*3, 0, 2);
 
             final Form<WS_Instance_status> form = Form.form(WS_Instance_status.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Instance_status:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Instance_status();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Instance_status:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Instance_status();}
 
             return form.get();
 
@@ -365,7 +380,7 @@ public class Model_HomerInstance extends Model {
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Ping_instance().make_request(this), 1000*3, 0, 2);
 
             final Form<WS_Ping_instance> form = Form.form(WS_Ping_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_instance:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Ping_instance();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Ping_instance();}
 
             return form.get();
 
@@ -399,7 +414,7 @@ public class Model_HomerInstance extends Model {
             JsonNode node =  send_to_instance().write_with_confirmation(new WS_Add_yoda_to_instance().make_request(this, yoda_id), 1000*3, 0, 4);
 
             final Form<WS_Add_yoda_to_instance> form = Form.form(WS_Add_yoda_to_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_yoda_to_instance:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Add_yoda_to_instance();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_yoda_to_instance:: Incoming Json from Homer server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Add_yoda_to_instance();}
 
             return form.get();
         }catch (Exception e){
@@ -413,7 +428,7 @@ public class Model_HomerInstance extends Model {
             JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_yoda_from_instance().make_request(this, yoda_id), 1000*3, 0, 4);
 
             final Form<WS_Remove_yoda_from_instance> form = Form.form(WS_Remove_yoda_from_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_yoda_from_instance();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_yoda_from_instance();}
 
             return form.get();
 
@@ -428,7 +443,7 @@ public class Model_HomerInstance extends Model {
             JsonNode node =   send_to_instance().write_with_confirmation(new WS_Add_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
 
             final Form<WS_Add_device_to_instance> form = Form.form(WS_Add_device_to_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Add_device_to_instance();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Add_device_to_instance();}
 
             return form.get();
         }catch (Exception e){
@@ -442,7 +457,7 @@ public class Model_HomerInstance extends Model {
             JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
 
             final Form<WS_Remove_device_to_instance> form = Form.form(WS_Remove_device_to_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_Device_to_instance:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_device_to_instance();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_device_to_instance();}
 
             return form.get();
 
@@ -544,7 +559,7 @@ public class Model_HomerInstance extends Model {
             JsonNode node = this.send_to_instance().write_with_confirmation(new WS_Upload_blocko_program().make_request(this, fileRecord, actual_instance.version_object.id), 1000 * 3, 0, 4);
 
             final Form<WS_Upload_blocko_program> form = Form.form(WS_Upload_blocko_program.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Upload_blocko_program:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Upload_blocko_program();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Upload_blocko_program:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Upload_blocko_program();}
 
             return form.get();
         }catch (Exception e){
@@ -589,7 +604,7 @@ public class Model_HomerInstance extends Model {
             ObjectNode node = send_to_instance().write_with_confirmation( new WS_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
 
             final Form<WS_Update_device_summary_collection> form = Form.form(WS_Update_device_summary_collection.class).bind(node);
-            if (form.hasErrors()) {logger.error("Model_HomerInstance:: WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson().toString()); throw new Exception("Invalid Json data format");}
+            if (form.hasErrors()) {logger.error("Model_HomerInstance:: WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); throw new Exception("Invalid Json data format");}
 
             return form.get();
 
@@ -608,12 +623,14 @@ public class Model_HomerInstance extends Model {
 
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
 
+
             final Form<WS_Online_states_devices> form = Form.form(WS_Online_states_devices.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Online_states_devices:: Incoming Json for Yoda has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Online_states_devices();}
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Online_states_devices:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Online_states_devices();}
 
             return form.get();
 
         }catch (Exception e){
+            logger.error("Model_HomerInstance:: get_devices_online_state: Error:: ", e);
             return new WS_Online_states_devices();
         }
     }
@@ -621,13 +638,10 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient public  WS_Get_summary_information get_summary_information(){
         try {
 
-            logger.warn("Model_HomerInstance:: get_summary_information::");
             ObjectNode node = send_to_instance().write_with_confirmation( new WS_Get_summary_information().make_request(this), 1000*5, 0, 1);
 
-            logger.warn("Model_HomerInstance:: get_summary_information::" + node);
-
             final Form<WS_Get_summary_information> form = Form.form(WS_Get_summary_information.class).bind(node);
-            if (form.hasErrors()) {logger.error("Model_HomerInstance:: WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson().toString()); throw new Exception("Invalid Json data format");}
+            if (form.hasErrors()) {logger.error("Model_HomerInstance:: WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); throw new Exception("Invalid Json data format");}
 
             return form.get();
 
@@ -637,13 +651,13 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  static void  summary_information(WS_HomerServer homer_server , WS_Get_summary_information summary_information){
+    @JsonIgnore @Transient public  static void summary_information(WS_HomerServer homer_server , WS_Get_summary_information summary_information){
         try {
 
             homer_server.check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
 
         }catch (Exception e){
-            logger.error("Model_HomerInstance:: get_summary_information: Error:: ", e);
+            logger.error("Model_HomerInstance:: void summary_information: Error:: ", e);
         }
     }
 
