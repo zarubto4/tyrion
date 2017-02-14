@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.person.Model_Person;
 import utilities.enums.Approval_state;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -38,6 +39,11 @@ public class Model_GridWidgetVersion extends Model{
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty
+    public Swagger_Person_Short_Detail author(){
+        return this.author.get_short_person();
+    }
+    
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
