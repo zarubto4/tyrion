@@ -559,12 +559,15 @@ public class Controller_Finance extends Controller {
                     payment_details.person = person;
                     payment_details.company_account = false;
 
+                    if (help.full_name != null) payment_details.full_name = help.full_name;
+                    else payment_details.full_name = person.full_name;
 
                     payment_details.street = help.street;
                     payment_details.street_number = help.street_number;
                     payment_details.city = help.city;
                     payment_details.zip_code = help.zip_code;
                     payment_details.country = help.country;
+                    payment_details.invoice_email = help.invoice_email;
 
 
                     if(tariff.company_details_required){
@@ -575,7 +578,6 @@ public class Controller_Finance extends Controller {
                         if(help.company_authorized_email == null)   return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
                         if(help.company_authorized_phone == null)   return GlobalResult.result_BadRequest("company_authorized_phone is required with this tariff");
                         if(help.company_web == null)                return GlobalResult.result_BadRequest("company_web is required with this tariff");
-                        if(help.company_invoice_email == null)      return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
 
                         if(help.vat_number != null) {
                             payment_details.company_vat_number = help.vat_number;
@@ -590,7 +592,7 @@ public class Controller_Finance extends Controller {
                         payment_details.company_authorized_email = help.company_authorized_email;
                         payment_details.company_authorized_phone = help.company_authorized_phone;
                         payment_details.company_web              = help.company_web;
-                        payment_details.company_invoice_email    = help.company_invoice_email;
+
                     }
 
 
@@ -1045,7 +1047,7 @@ public class Controller_Finance extends Controller {
                 payment_details.company_authorized_email = null;
                 payment_details.company_authorized_phone = null;
                 payment_details.company_web              = null;
-                payment_details.company_invoice_email    = null;
+                payment_details.invoice_email = null;
             }
 
             // Pokud je účet business - jsou vyžadovány následující informace
@@ -1056,7 +1058,7 @@ public class Controller_Finance extends Controller {
                 if (help.company_authorized_email == null)  return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
                 if (help.company_authorized_phone == null)  return GlobalResult.result_BadRequest("company_authorized_phone is required with this tariff");
                 if (help.company_web == null)               return GlobalResult.result_BadRequest("company_web is required with this tariff");
-                if (help.company_invoice_email == null)     return GlobalResult.result_BadRequest("company_invoice_email is required with this tariff");
+                if (help.company_invoice_email == null)     return GlobalResult.result_BadRequest("invoice_email is required with this tariff");
 
                 if (help.vat_number != null) {
                     if (!Model_PaymentDetails.control_vat_number(help.vat_number))
@@ -1069,7 +1071,7 @@ public class Controller_Finance extends Controller {
                 payment_details.company_authorized_email = help.company_authorized_email;
                 payment_details.company_authorized_phone = help.company_authorized_phone;
                 payment_details.company_web = help.company_web;
-                payment_details.company_invoice_email = help.company_invoice_email;
+                payment_details.invoice_email = help.company_invoice_email;
 
             }
 

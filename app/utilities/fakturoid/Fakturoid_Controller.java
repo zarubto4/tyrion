@@ -227,7 +227,7 @@ public class Fakturoid_Controller extends Controller {
                         .addText("Have a nice day")
                         .addEmptyLineSpace()
                         .addAttachment_PDF(invoice.invoice_number + ".pdf", body)
-                        .sendEmail( invoice.product.payment_details.company_invoice_email != null ? invoice.product.payment_details.company_invoice_email : invoice.product.payment_details.person.mail  , "Invoice " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] );
+                        .sendEmail( invoice.product.payment_details.invoice_email != null ? invoice.product.payment_details.invoice_email : invoice.product.payment_details.person.mail  , "Invoice " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] );
 
 
                 logger.debug("Email was successfully sanded");
@@ -274,7 +274,7 @@ public class Fakturoid_Controller extends Controller {
                     .endParagraph()
 
                     .addAttachment_PDF(invoice.invoice_number + ".pdf", body)
-                    .sendEmail( invoice.product.payment_details.company_invoice_email != null ? invoice.product.payment_details.company_invoice_email : invoice.product.payment_details.person.mail , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + ". Problems with payment" );
+                    .sendEmail( invoice.product.payment_details.invoice_email != null ? invoice.product.payment_details.invoice_email : invoice.product.payment_details.person.mail , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + ". Problems with payment" );
 
 
         }catch (Exception e){

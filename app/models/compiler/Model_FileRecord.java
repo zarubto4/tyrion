@@ -10,6 +10,7 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.loggy.Model_Log;
 import models.person.Model_Person;
 import models.project.c_program.Model_CCompilation;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
@@ -39,6 +40,7 @@ public class Model_FileRecord extends Model {
 
                 @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Person person;   // personal_picture
                 @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_TypeOfBoard type_of_board;   // type_of_board_picture
+                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_Log log;
                                     @JsonIgnore @OneToOne()                             public Model_BootLoader boot_loader;
                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)       public Model_VersionObject version_object;
              @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)      public List<Model_CProgramUpdatePlan> c_program_update_plan  = new ArrayList<>();

@@ -99,11 +99,11 @@
                 <div class="pull-right">
                     @if(typeOfBoard.version_scheme == null) {
                         <div class="btn-group">
-                            <button class="btn btn-block btn-warning" type="button" onclick="createCProgramModal(@typeOfBoard.id)">Create default program</button>
+                            <button class="btn btn-block btn-warning" type="button" onclick="createCProgramModal('@typeOfBoard.id')">Create default program</button>
                         </div>
                     }else{
                         <div class="btn-group">
-                            <a onclick="editCProgramModal( '@typeOfBoard.version_scheme.id' , '@typeOfBoard.id', '@typeOfBoard.version_scheme.version_name', '@typeOfBoard.version_scheme.version_description' )" class="btn btn-warning btn-sm"><b> Update Information </b></a>
+                            <a onclick="editCProgramModal( '@typeOfBoard.version_scheme.id' , '@typeOfBoard.id', '@typeOfBoard.version_scheme.name', '@typeOfBoard.version_scheme.description' )" class="btn btn-warning btn-sm"><b> Update Information </b></a>
                             <a onclick="createCProgramVersionModal('@typeOfBoard.version_scheme.id')" class="btn btn-info btn-sm"><b>New Version </b></a>
                         </div>
                     }
@@ -116,14 +116,14 @@
                     <div class="row invoice-info">
                         <div class="col-sm-4 invoice-col">
                             <address>
-                                <strong>Name: </strong>  @typeOfBoard.version_scheme.version_name<br>
+                                <strong>Name: </strong>  @typeOfBoard.version_scheme.name<br>
                                 <strong>ID:   </strong>  @typeOfBoard.version_scheme.id<br>
                                 <strong>Date: </strong>  @typeOfBoard.version_scheme.date_of_create<br>
                             </address>
                         </div>
                         <div class="col-sm-4 invoice-col">
                             <address>
-                                <strong>Description: </strong>  @typeOfBoard.version_scheme.version_description
+                                <strong>Description: </strong>  @typeOfBoard.version_scheme.description
                             </address>
                         </div>
                     </div>
@@ -140,15 +140,15 @@
                         <th>State</th>
                     </tr>
 
-                    <!--for(version <- Model_VersionObject.find.where().eq("c_program.default_program_type_of_board.id", typeOfBoard.id).findList()){
+                    @for(version <- Model_VersionObject.find.where().eq("c_program.type_of_board_default.id", typeOfBoard.id).findList()){
                         <tr>
-                            <td>version.id</td>
-                            <td>version.date_of_create</td>
-                            <td>version.version_name</td>
-                            <td>version.version_description</td>
+                            <td>@version.id</td>
+                            <td>@version.date_of_create</td>
+                            <td>@version.version_name</td>
+                            <td>@version.version_description</td>
 
                             <td>
-                                if(version.c_compilation.status == Compile_Status.successfully_compiled_and_restored){
+                                @if(version.c_compilation.status == Compile_Status.successfully_compiled_and_restored){
                                     <p class="text-green">Yes</p>
 
                                 }else{
@@ -157,20 +157,20 @@
                             </td>
 
                             <td>
-                                if(typeOfBoard.default_program != null && typeOfBoard.default_program.default_main_version != null && typeOfBoard.default_program.default_main_version.id == version.id) {
+                                @if(typeOfBoard.version_scheme != null && typeOfBoard.version_scheme.default_main_version != null && typeOfBoard.version_scheme.default_main_version.id == version.id) {
                                     <p class="lead text-green">(ITS Main)</p>
                                 }
-                                if(version.default_version_program == null && (version.c_compilation.status == Compile_Status.successfully_compiled_and_restored)){
+                                @if(version.default_program == null && (version.c_compilation.status == Compile_Status.successfully_compiled_and_restored)){
                                     <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('version.id')" > SET as Main </button>
                                 }
-                                if(version.default_version_program == null && (version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) ){
-                                    <p class="text-red"> version.c_compilation.status</p>
+                                @if(version.default_program == null && (version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) ){
+                                    <p class="text-red"> @version.c_compilation.status</p>
                                 }
                             </td>
 
 
                         </tr>
-                    } -->
+                    }
                 </table>
 
             </div>
@@ -432,7 +432,7 @@
     function setVersionAsMain(version_id) {
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.typeOfBoard_mark_C_program_Version_as_main(typeOfBoard.id,"")' + version_id,
+            url: '@routes.Controller_CompilationLibraries.typeOfBoard_versionScheme(typeOfBoard.id,"")' + version_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),

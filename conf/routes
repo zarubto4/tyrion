@@ -359,7 +359,7 @@ PUT             /typeOfBoard/:type_of_board_id                                  
 DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_delete(type_of_board_id)
 GET             /typeOfBoard/all                                                @controllers.Controller_CompilationLibraries.typeOfBoard_getAll()
 GET             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_get(type_of_board_id)
-PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.Controller_CompilationLibraries.typeOfBoard_mark_C_program_Version_as_main(type_of_board_id,version_id)
+PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.Controller_CompilationLibraries.typeOfBoard_versionScheme(type_of_board_id,version_id)
 
 #Bootloader
 POST            /bootloader/:type_of_board_id                                   @controllers.Controller_CompilationLibraries.boot_loader_create(type_of_board_id)
@@ -515,7 +515,6 @@ PUT             /admin/demo_data/basic_tarifs                   @utilities.demo_
 PUT             /admin/demo_data/producers                      @utilities.demo_data.Demo_Data_Controller.producers()
 PUT             /admin/demo_data/type_of_board                  @utilities.demo_data.Demo_Data_Controller.type_of_board()
 PUT             /admin/demo_data/test_boards                    @utilities.demo_data.Demo_Data_Controller.test_boards()
-PUT             /admin/demo_data/c_program_configuration        @utilities.demo_data.Demo_Data_Controller.c_program_configuration()
 PUT             /admin/demo_data/person                         @utilities.demo_data.Demo_Data_Controller.person_test_user()
 
 GET             /admin/test                                     @controllers.Controller_Dashboard.test()

@@ -132,7 +132,8 @@ public class Controller_CompilationLibraries extends Controller {
             c_program.refresh();
 
             // Přiřadím první verzi!
-            if (typeOfBoard.version_scheme != null) {
+            if (typeOfBoard.version_scheme != null && typeOfBoard.version_scheme.default_main_version != null) {
+
                 Model_VersionObject version_object = new Model_VersionObject();
                 version_object.version_name = "First default version of C_Program.";
                 version_object.version_description = "This is default description.";
@@ -146,7 +147,7 @@ public class Controller_CompilationLibraries extends Controller {
 
                 version_object.save();
 
-                for (Model_FileRecord file : typeOfBoard.version_scheme.files) {
+                for (Model_FileRecord file : typeOfBoard.version_scheme.default_main_version.files) {
 
                     JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
@@ -170,6 +171,9 @@ public class Controller_CompilationLibraries extends Controller {
                     version_object.update();
                 }
             }
+
+            c_program.refresh();
+
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (Exception e) {
@@ -819,7 +823,7 @@ public class Controller_CompilationLibraries extends Controller {
                 if(!c_program.create_permission()) return GlobalResult.forbidden_Permission();
                 c_program.save();
 
-                Model_VersionObject version_object      = new Model_VersionObject();
+                Model_VersionObject version_object = new Model_VersionObject();
                 version_object.version_name        = help.version_name;
                 version_object.version_description = help.version_description;
                 version_object.date_of_create      = new Date();
@@ -1021,7 +1025,7 @@ public class Controller_CompilationLibraries extends Controller {
     public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
         try{
 
-            logger.debug("CompilationControler:: Starting compilation on version_id = " + version_id);
+            logger.debug("CompilationController:: Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
@@ -2398,7 +2402,7 @@ public class Controller_CompilationLibraries extends Controller {
 
     @ApiOperation(value = "Mark as main", hidden = true)
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result typeOfBoard_mark_C_program_Version_as_main(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id, @ApiParam(value = "version_object_id", required = true) String version_object_id) {
+    public Result typeOfBoard_versionScheme(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id, @ApiParam(value = "version_object_id", required = true) String version_object_id) {
         try {
 
             // Kontrola objektu
@@ -2408,10 +2412,19 @@ public class Controller_CompilationLibraries extends Controller {
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_object_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_object_id not found");
 
+            if (version_object.c_program == null || version_object.c_program.type_of_board == null) return GlobalResult.result_BadRequest("Version_object is not version of c_program");
+
+            if (!typeOfBoard.id.equals(version_object.c_program.type_of_board_id())) return GlobalResult.result_BadRequest("Version_object is not version for this type_of_board");
+
+            // Kontrola oprávnění
             if(!typeOfBoard.edit_permission()) return GlobalResult.forbidden_Permission();
 
-            version_object.type_of_board = typeOfBoard;
+            version_object.c_program.type_of_board_default = typeOfBoard;
+            version_object.c_program.update();
+
+            version_object.default_program = version_object.c_program;
             version_object.update();
+
 
             typeOfBoard.refresh();
 
@@ -3468,6 +3481,7 @@ public class Controller_CompilationLibraries extends Controller {
 
     @ApiOperation(value = "new Version of ImportLibrary",
             tags = {"ImportLibrary"},
+            hidden = true,
             notes = "If you want add new code to ImportLibrary",
             produces = "application/json",
             protocols = "https",

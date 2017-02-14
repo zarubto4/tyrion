@@ -41,7 +41,7 @@ public class Model_TypeOfBoard extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL)                 public List<Model_BootLoader>  boot_loaders = new ArrayList<>();
                 @OneToOne (mappedBy="main_type_of_board")                                       public Model_BootLoader main_boot_loader;
-    @JsonIgnore @OneToOne(mappedBy="type_of_board", cascade = CascadeType.ALL)                  public Model_VersionObject version_scheme;
+    @JsonIgnore @OneToOne(mappedBy="type_of_board_default", cascade = CascadeType.ALL)          public Model_CProgram version_scheme;
 
     @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_ImportLibrary> libraries = new ArrayList<>();
 
@@ -84,6 +84,8 @@ public class Model_TypeOfBoard extends Model {
         this.processor = null;
         this.producer = null;
         this.update();
+
+        this.picture.delete();
 
         super.delete();
     }

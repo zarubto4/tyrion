@@ -34,7 +34,6 @@ import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
 import utilities.swagger.outboundClass.*;
-import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
 
 import javax.persistence.*;
 import java.net.ConnectException;
@@ -90,10 +89,8 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
-
-                                                                                          @JsonIgnore @OneToOne public Model_TypeOfBoard type_of_board;    // Použito pro defaulntí program vázaný na TypeOfBoard hlavní verze určená k aktivitám - typu hardwaru a taktéž firmware, který se nahrává na devices
-
                                                                                                    @JsonIgnore  public Approval_state approval_state; // Zda je program schválený veřejný program
+                                                                                         @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
     // B_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)                           public Model_BProgram b_program;
@@ -161,6 +158,8 @@ public class Model_VersionObject extends Model {
         help.version_description = version_description;
         help.delete_permission = c_program.delete_permission();
         help.update_permission = c_program.update_permission();
+        help.author = this.author.get_short_person();
+        help.status = this.c_compilation.status;
 
         return help;
     }
@@ -173,6 +172,7 @@ public class Model_VersionObject extends Model {
         help.version_description = version_description;
         help.delete_permission = b_program.delete_permission();
         help.update_permission = b_program.update_permission();
+        help.author = this.author.get_short_person();
 
         return help;
     }
@@ -185,6 +185,7 @@ public class Model_VersionObject extends Model {
         help.version_description = version_description;
         help.delete_permission = m_program.delete_permission();
         help.edit_permission = m_program.edit_permission();
+        help.author = this.author.get_short_person();
 
         return help;
     }
@@ -261,7 +262,7 @@ public class Model_VersionObject extends Model {
 
         // Zpracování Json
         JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
-        System.out.println("JSON:::::" + json.toString());
+
         Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
         if(form.hasErrors()){
 

@@ -25,6 +25,8 @@ public class Swagger_Board_Status {
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public Board_Type_of_connection where;
 
+    @ApiModelProperty(readOnly = true, required = true)
+    public boolean server_online_status;
 
 //*****
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = false)

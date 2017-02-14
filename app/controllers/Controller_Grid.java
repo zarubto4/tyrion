@@ -1762,6 +1762,7 @@ public class Controller_Grid extends Controller {
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.grid_widget = gridWidget;
+            version.author = Controller_Security.getPerson();
 
             // Kontrola oprávnění
             if (! version.create_permission()) return GlobalResult.forbidden_Permission();

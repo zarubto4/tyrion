@@ -5,6 +5,7 @@ import play.GlobalSettings;
 import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
+import utilities.request_counter.RequestCounter;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -12,7 +13,7 @@ import java.util.Date;
 
 public class Global extends GlobalSettings {
 
-   static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     @Override
     public void onStart(Application app) {
@@ -50,7 +51,6 @@ public class Global extends GlobalSettings {
           logger.error( "Server Start Exception - Global Settings",e);
        }
     }
-
 
     @Override
     public void onStop(Application app){
@@ -98,16 +98,13 @@ public class Global extends GlobalSettings {
 
     }
 
-
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
+
         logger.debug(request.toString());
+
+        RequestCounter.count(request.toString());
+
         return super.onRequest(request, actionMethod);
     }
-
-
-
-
-
 }
-

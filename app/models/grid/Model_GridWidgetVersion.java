@@ -6,7 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.person.Model_Person;
 import utilities.enums.Approval_state;
+import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -25,10 +28,10 @@ public class Model_GridWidgetVersion extends Model{
                                                             @ApiModelProperty(required = true)    public String version_name;
                                                             @ApiModelProperty(required = true)    public String version_description;
                                                             @ApiModelProperty(required = true)    public Approval_state approval_state;
-    @ApiModelProperty(required = true,
-            dataType = "integer", readOnly = true,
-            value = "UNIX time in milis - Date: number of miliseconds elapsed since  Thursday, 1 January 1970",
-            example = "1466163478925")                                                            public Date date_of_create;
+
+                                                                        @JsonIgnore @ManyToOne    public Model_Person author;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
+            value = "UNIX time in ms", example = "1466163478925")                             public Date date_of_create;
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String design_json;
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
@@ -36,6 +39,11 @@ public class Model_GridWidgetVersion extends Model{
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty
+    public Swagger_Person_Short_Detail author(){
+        return this.author.get_short_person();
+    }
+    
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
@@ -46,6 +54,20 @@ public class Model_GridWidgetVersion extends Model{
             if (Model_GridWidgetVersion.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore
+    public Swagger_GridWidgetVersion_Short_Detail get_short_gridwidget_version(){
+
+        Swagger_GridWidgetVersion_Short_Detail help = new Swagger_GridWidgetVersion_Short_Detail();
+        help.id = this.id;
+        help.name = this.version_name;
+        help.description = this.version_description;
+        help.date_of_create = this.date_of_create;
+        help.design_json = this.design_json;
+        help.author = this.author.get_short_person();
+
+        return help;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

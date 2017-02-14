@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Blocko_Block Light (only few properties)",
-        value = "Blocko_Block_Short_Detail")
+        value = "Blocko_Block_Filter_Detail")
 public class Swagger_Blocko_Block_Filter_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
