@@ -16,5 +16,5 @@ Každá příchozí nebo odchozí zpráva na Tyrion a z Tyriona obsahuje
 
 Channel Code:: **tyrion**
 
-**List of Json Objects for Comunication between Tyrion and Homer Instance**
+**List of Json Objects for Communication between Tyrion and Homer Instance**
 

@@ -1,21 +1,14 @@
 package utilities.schedules_activities;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.Inject;
+import models.loggy.Model_RequestLog;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.Application;
-import play.libs.Json;
 import utilities.request_counter.RequestCounter;
 
-import java.io.File;
-import java.io.PrintWriter;
+import java.util.Map.Entry;
 
 public class Request_Stats_Update implements Job {
-
-    @Inject
-    Application application;
 
     public Request_Stats_Update(){ /** do nothing */ }
 
@@ -36,15 +29,27 @@ public class Request_Stats_Update implements Job {
 
                 if (!RequestCounter.requests.isEmpty()) {
 
-                    ObjectNode json = Json.newObject();
 
-                    json.set("requests", Json.toJson(RequestCounter.requests.entrySet()));
+                    for (Entry<String,Long> entry : RequestCounter.requests.entrySet()) {
 
-                    System.out.println();
+                        Model_RequestLog log = Model_RequestLog.find.where().eq("request",entry.getKey()).findUnique();
+                        if (log == null){
 
-                    //PrintWriter writer = new PrintWriter(new File(application.path() + "/logs/requests.log"));
-                    //writer.print(json);
-                    //writer.close();
+                            log = new Model_RequestLog();
+                            log.request = entry.getKey();
+                            log.count = entry.getValue();
+
+                            log.save();
+
+                        }else {
+
+                            log.count += entry.getValue();
+
+                            log.update();
+                        }
+                    }
+
+                    RequestCounter.requests.clear();
 
                     logger.info("Request_Stats_Update:: log_upload_thread:: log successfully uploaded");
                 } else {
