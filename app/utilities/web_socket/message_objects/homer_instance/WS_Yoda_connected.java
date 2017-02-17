@@ -2,7 +2,7 @@ package utilities.web_socket.message_objects.homer_instance;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import play.data.validation.Constraints;
-import utilities.web_socket.message_objects.common.WS_AbstractMessageBoard;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageBoard;
 
 import javax.validation.Valid;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package utilities.web_socket.message_objects.common;
+package utilities.web_socket.message_objects.common.abstract_class;
 
 public abstract class WS_AbstractMessageBoard {
 

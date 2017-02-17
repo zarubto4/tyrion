@@ -37,11 +37,11 @@ public class SynchronizeHomerServer extends Thread {
 
             if(help.get_Date().compareTo(homer_server.server.time_stamp_configuration) == 0){
                 // Nedochází k žádným změnám
-                logger.debug("SynchronizeHomerServer:: synchronize_configuration: configuration without changes");
+                logger.trace("SynchronizeHomerServer:: synchronize_configuration: configuration without changes");
 
             }else if(help.get_Date().compareTo(homer_server.server.time_stamp_configuration) > 0){
                 // Homer server má novější novou konfiguraci
-                logger.debug("SynchronizeHomerServer:: synchronize_configuration: Homer server has new configuration");
+                logger.debug("SynchronizeHomerServer:: " + homer_server.identifikator + " synchronize_configuration: Homer server has new configuration");
 
                 homer_server.server.personal_server_name = help.serverName;
                 homer_server.server.mqtt_port = help.mqttPort;
@@ -67,7 +67,7 @@ public class SynchronizeHomerServer extends Thread {
             }else {
                 // Tyrion server má novější konfiguraci
 
-                logger.debug("synchronize_configuration:: synchronize_configuration: Sending new Configuration");
+                logger.trace("Synchronize_configuration::  " + homer_server.identifikator + " Sending new Configuration to Homer Server");
                 JsonNode result = homer_server.write_with_confirmation( new WS_Set_homer_server_configuration().make_request(homer_server.server) , 1000 * 5, 0, 2);
 
                 final Form<WS_Set_homer_server_configuration> form_set = Form.form(WS_Set_homer_server_configuration.class).bind(result);
@@ -76,14 +76,14 @@ public class SynchronizeHomerServer extends Thread {
                 WS_Set_homer_server_configuration help_conf = form_set.get();
 
                 if(help_conf.status.equals("success")){
-                    logger.debug("SynchronizeHomerServer:: synchronize_configuration: New Config state:: success! ");
+                    logger.trace("SynchronizeHomerServer:: synchronize_configuration: New Config state:: success! ");
                 }else {
                     logger.error("SynchronizeHomerServer:: synchronize_configuration: New Config state:: unsuccess! ");
                 }
 
             }
 
-            logger.debug("SynchronizeHomerServer:: synchronize_configuration: done!");
+            logger.trace("SynchronizeHomerServer::  " + homer_server.identifikator + "synchronize_configuration: done!");
             homer_server.synchronize = null;
 
         }catch(ClosedChannelException e){

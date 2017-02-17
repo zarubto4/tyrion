@@ -130,8 +130,6 @@ public class Model_HomerServer extends Model{
 
             for (Object server_id :  Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.public_server).findIds()) {
 
-                System.out.println();
-
 
                 Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", server_id).findRowCount();
 

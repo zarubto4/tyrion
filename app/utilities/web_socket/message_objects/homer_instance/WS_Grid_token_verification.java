@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import utilities.web_socket.message_objects.common.WS_AbstractMessageInstance;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageInstance;
 
 public class WS_Grid_token_verification extends WS_AbstractMessageInstance {
 

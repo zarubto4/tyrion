@@ -1,4 +1,4 @@
-package utilities.web_socket.message_objects.common;
+package utilities.web_socket.message_objects.common.abstract_class;
 
 import play.data.validation.Constraints;
 

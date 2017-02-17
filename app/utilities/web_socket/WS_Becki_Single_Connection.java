@@ -18,7 +18,8 @@ public class WS_Becki_Single_Connection extends  WebSCType {
 
     @Override
     public void onClose() {
-        System.out.println("WS_Becki_Single_Connection onClose " + super.identifikator);
+
+        logger.trace("WS_Becki_Single_Connection::  onClose::  " + super.identifikator);
 
         this.close();
 

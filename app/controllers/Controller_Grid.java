@@ -1739,8 +1739,6 @@ public class Controller_Grid extends Controller {
     public Result gridWidgetVersion_create(@ApiParam(value = "grid_widget_id String path",   required = true) String grid_widget_id){
         try {
 
-            System.out.print("grid_widget_id:" + grid_widget_id);
-
             // Zpracování Json
             final Form<Swagger_GridWidgetVersion_New> form = Form.form(Swagger_GridWidgetVersion_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}

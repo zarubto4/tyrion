@@ -506,8 +506,6 @@ public class Controller_Permission extends Controller {
     public Result remove_Role_Person(@ApiParam(required = true)  String person_id, @ApiParam(required = true) String role_id) {
         try {
 
-            System.out.println("Jsem opravdu zde");
-
             Model_Person person = Model_Person.find.byId(person_id);
             if(person == null) return GlobalResult.notFoundObject("Person person_id not found");
 

@@ -1271,6 +1271,7 @@ public class Controller_CompilationLibraries extends Controller {
     }
     */
 
+    /**
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result uploadBinaryFileToBoard_fake_board(String instance_id, String board_id, String build_id,  String firmware_type_string){
@@ -1331,6 +1332,7 @@ public class Controller_CompilationLibraries extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+    */
 
     @ApiOperation(value = "update Embedded Hardware with C_program compilation",
             tags = {"C_Program", "Actualization"},
@@ -1399,11 +1401,15 @@ public class Controller_CompilationLibraries extends Controller {
             String typeOfBoard_id = c_program_version.c_program.type_of_board_id();
 
             // Vyhledání objektů
-            List<Model_Board> board_from_request = Model_Board.find.where().idIn(help.board_id).findList();
+            List<Model_Board> board_from_request = Model_Board.find.where().idIn(help.board_ids).findList();
             if (board_from_request.size() == 0) return GlobalResult.result_BadRequest("0 device is available. Does not exist or is decommissioned.");
 
+
+            System.out.println("Kolik jsem jich našel:: " +  board_from_request.size());
+
             // Vyseparované desky nad který lze provádět nějaké operace
-            List<Model_Board> board_for_update = Model_Board.find.where().idIn(help.board_id).findList();
+            List<Model_Board> board_for_update = new ArrayList<>();
+
             // Kontrola oprávnění
             for (Model_Board board : board_from_request) {
                 // Kontrola oprávnění
@@ -1416,6 +1422,12 @@ public class Controller_CompilationLibraries extends Controller {
 
             for(Model_Board board : board_for_update)
             {
+                List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).findList();
+                for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
+                    cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
+                    cProgramUpdatePlan.update();
+                }
+
                 Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
                 plan.board = board;
                 plan.firmware_type = Firmware_type.FIRMWARE;
@@ -2733,6 +2745,57 @@ public class Controller_CompilationLibraries extends Controller {
         }
     }
 
+    @ApiOperation(value = "get List of Boards for Firmware Upload",
+            tags = { "Board"},
+            notes = "List of boards under Project for fast upload of Firmware to Board from Web IDE",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Board.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Board_edit"),
+                    }),
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_Short_Detail.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_get_for_fat_upload(@ApiParam(required = true)  String project_id){
+        try {
+
+            // Kotrola objektu
+            Model_Project project = Model_Project.find.byId(project_id);
+            if(project == null ) return GlobalResult.notFoundObject("Project project not found");
+
+            // Kontrola oprávnění
+            if(!project.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            // Vyhledání seznamu desek na které lze nahrát firmware - okamžitě
+            List<Model_Board> boards = Model_Board.find.where().eq("type_of_board.connectible_to_internet", true).isNotNull("virtual_instance_under_project").findList();
+
+            List<Swagger_Board_Short_Detail> list = new ArrayList<>();
+
+            for(Model_Board board : boards ){
+
+                list.add(board.get_short_board());
+
+            }
+
+            // Vrácení upravenéh objektu
+            return GlobalResult.result_ok(Json.toJson(list));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "edit Board - update personal description",
             tags = { "Board"},
             notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Projec\" ",
@@ -2834,9 +2897,6 @@ public class Controller_CompilationLibraries extends Controller {
             final Form<Swagger_Board_Filter> form = Form.form(Swagger_Board_Filter.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_Filter help = form.get();
-
-            System.out.println("Filter board");
-            System.out.println(Json.toJson(help));
 
             // Tvorba parametru dotazu
             Query<Model_Board> query = Ebean.find(Model_Board.class);

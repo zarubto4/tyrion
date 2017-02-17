@@ -34,7 +34,7 @@ import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.WebSCType;
-import utilities.web_socket.message_objects.common.WS_AbstractMessageBoard;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageBoard;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
 

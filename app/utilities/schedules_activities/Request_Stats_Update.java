@@ -9,9 +9,6 @@ import play.Application;
 import play.libs.Json;
 import utilities.request_counter.RequestCounter;
 
-import java.io.File;
-import java.io.PrintWriter;
-
 public class Request_Stats_Update implements Job {
 
     @Inject
@@ -40,7 +37,6 @@ public class Request_Stats_Update implements Job {
 
                     json.set("requests", Json.toJson(RequestCounter.requests.entrySet()));
 
-                    System.out.println();
 
                     //PrintWriter writer = new PrintWriter(new File(application.path() + "/logs/requests.log"));
                     //writer.print(json);

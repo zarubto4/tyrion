@@ -86,7 +86,7 @@ public class HardwareGeneratorController extends Controller {
             return address;
 
         }catch (NullPointerException e){
-            logger.error("Utilities - HardwareGeneratorController:: get_macAddress_type_of_board_from:: ERROR! targetName is not set in configuration file!!",e);
+            logger.error("HardwareGeneratorController:: get_macAddress_type_of_board_from:: ERROR! targetName is not set in configuration file!!",e);
             return "ERROR! targetName is not set in configuration file!!";
         }
     }
@@ -151,7 +151,7 @@ public class HardwareGeneratorController extends Controller {
 
             // Ověřím full_id - pokud už existuje a je shodný s MacAdressou - pak zašlu jen novou konfiguraci
             if( Model_Board.find.where().eq("id", help.full_id).findUnique() != null){
-                logger.debug("Full_Id is used - Just new Configuration!");
+                logger.debug("HardwareGeneratorController:: new_hardware_request:: Full_Id is used - Just new Configuration!");
             }
 
 

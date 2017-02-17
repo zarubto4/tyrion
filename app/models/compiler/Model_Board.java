@@ -651,7 +651,7 @@ public class Model_Board extends Model {
         while(true){ // I need Unique Value
 
             String UUDID = UUID.randomUUID().toString().substring(0,14);
-            this.hash_for_adding = UUDID.substring(0, 4) + "-" + UUDID.substring(5, 8) + "-" + UUDID.substring(9, 13);
+            this.hash_for_adding = UUDID.substring(0, 4) + "-" + UUDID.substring(4, 8) + "-" + UUDID.substring(9, 13);
 
             if (Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique() == null) break;
         }

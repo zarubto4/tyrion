@@ -31,13 +31,13 @@ public class Security_WS_token_confirm_procedure extends Thread {
         while (true) {
 
             try {
-                logger.warn("WS_HomerServer:: security_token_confirm_procedure:: Trying to Confirm WebSocket");
+                logger.trace("Security_WS_token_confirm_procedure:: run:: Trying to Confirm WebSocket");
 
                 ObjectNode ask_for_token = server.super_write_with_confirmation(new WS_Check_homer_server_permission().make_request(), 1000 * 5, 0, 2);
 
                 final Form<WS_Check_homer_server_permission> form = Form.form(WS_Check_homer_server_permission.class).bind(ask_for_token);
                 if (form.hasErrors()) {
-                    logger.error("Security_WS_token_confirm_procedure:: WS_Check_homer_server_permission: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());
+                    logger.error("Security_WS_token_confirm_procedure:: run:: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());
                     sleep(1000 * 10  * ++number_of_tries);
                     continue;
                 }
@@ -50,7 +50,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 // Kontrola
                 if (!check_server.unique_identificator.equals(server.server.unique_identificator)) {
-                    logger.error("Security_WS_token_confirm_procedure:: Connected server has not permission");
+                    logger.warn("Security_WS_token_confirm_procedure:: run:: Connected server has not permission");
                     sleep(1000 * 10  * ++number_of_tries);
                     continue;
                 }
@@ -58,7 +58,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 ObjectNode approve_result = server.super_write_with_confirmation(new WS_Approve_homer_server().make_request(), 1000 * 5, 0, 2);
                 final Form<WS_Approve_homer_server> form_approve = Form.form(WS_Approve_homer_server.class).bind(ask_for_token);
-                if (form_approve.hasErrors()) {logger.error("WS_HomerServer:: WS_Apúrove_homer_server: Error:: Some value missing:: " + form_approve.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                if (form_approve.hasErrors()) {logger.error("Security_WS_token_confirm_procedure:: run:: WS_Approve_homer_server: Error:: Some value missing:: " + form_approve.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                 // Vytovření objektu
                 WS_Approve_homer_server help_approve = form_approve.get();
@@ -76,12 +76,12 @@ public class Security_WS_token_confirm_procedure extends Thread {
                 // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
                 server.server.check_after_connection();
 
-                logger.debug("Security_WS_token_confirm_procedure:: Connection procedure done!");
+                logger.trace("Security_WS_token_confirm_procedure:: run:: Connection procedure done!");
                 break;
 
 
             }catch(NullPointerException e){
-                logger.error("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: NullPointerException");
+                logger.error("Security_WS_token_confirm_procedure:: run:: NullPointerException");
                 e.printStackTrace();
 
                 try {
@@ -89,16 +89,16 @@ public class Security_WS_token_confirm_procedure extends Thread {
                 } catch (InterruptedException e1) {}
 
             }catch(ClosedChannelException e){
-                logger.warn("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: ClosedChannelException");
+                logger.warn("Security_WS_token_confirm_procedure:: run:: ClosedChannelException");
                 break;
             }catch(ExecutionException e){
-                logger.error("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: ExecutionException");
+                logger.error("Security_WS_token_confirm_procedure:: run:: ExecutionException");
                 break;
             }catch(TimeoutException e){
-                logger.warn("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: TimeoutException");
+                logger.warn("Security_WS_token_confirm_procedure:: run:: TimeoutException");
                 break;
             }catch(Exception e){
-                logger.error("Security_WS_token_confirm_procedure:: security_token_confirm_procedure :: Error", e);
+                logger.error("Security_WS_token_confirm_procedure:: run:: Error", e);
                 break;
             }
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.instnace.Model_HomerInstance;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import utilities.web_socket.message_objects.common.WS_AbstractMessageInstance;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageInstance;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ public class WS_Online_states_devices extends WS_AbstractMessageInstance{
     // Obsah příchozí zprávy
 
     @Valid public List<DeviceStatus> deviceList = new ArrayList<>();
-
 
 
     public static class DeviceStatus{

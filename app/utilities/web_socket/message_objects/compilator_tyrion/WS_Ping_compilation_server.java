@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.compiler.Model_CompilationServer;
 import play.libs.Json;
-import utilities.web_socket.message_objects.common.WS_AbstractMessageInstance;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageInstance;
 
 public class WS_Ping_compilation_server extends WS_AbstractMessageInstance {
 

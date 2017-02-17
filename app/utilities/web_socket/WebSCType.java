@@ -39,9 +39,7 @@ public abstract class WebSCType {
 
             logger.debug("Incoming message: " + message);
 
-
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
-
 
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
             if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
@@ -56,6 +54,7 @@ public abstract class WebSCType {
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "JsonUnrecognized");
+
             webSCtype.write_without_confirmation(result);
 
         }catch (Exception e){

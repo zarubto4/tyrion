@@ -72,22 +72,6 @@ public class Fakturoid_Controller extends Controller {
 // PUBLIC CONTROLLERS METHODS ##########################################################################################
 
 
-   /** public Result invoice_get_pdf(Long invoice_id){
-
-        try {
-
-            Invoice invoice = Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
-
-            byte[] pdf_in_array = download_PDF_invoice(invoice);
-
-            return GlobalResult.result_pdf_file(pdf_in_array, invoice.invoice_number + ".pdf");
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }*/
-
 
 // PRIVATE EXECUTIVE METHODS ###########################################################################################
 
@@ -103,25 +87,23 @@ public class Fakturoid_Controller extends Controller {
 
         if(product.fakturoid_subject_id == null) {
 
-            logger.debug("Client has not registration object in Fakturoid");
+            logger.debug("Fakturoid_Controller:: create_proforma:: Client has not registration object in Fakturoid");
             // Ověřím zda tam je - a jestli ano - tak ho jen vytvořím v lokální DB
-
-
 
             // Pokud ne tak ho vytvořím
             String fakturoid_subject_id = create_subject_in_fakturoid(product);
             product.update();
 
-            logger.debug("New Client Id in Fakturoid is " + fakturoid_subject_id);
+            logger.debug("Fakturoid_Controller:: create_proforma:: New Client Id in Fakturoid is " + fakturoid_subject_id);
             fakturoid_invoice.subject_id = fakturoid_subject_id;
 
         }else {
-            logger.debug("Client has already registration object in Fakturoid");
+            logger.debug("Fakturoid_Controller:: create_proforma:: Client has already registration object in Fakturoid");
             fakturoid_invoice.subject_id = product.fakturoid_subject_id;
         }
 
         invoice.refresh();
-        logger.debug("Sending Proforma to Fakturoid");
+        logger.debug("Fakturoid_Controller:: create_proforma::  Sending Proforma to Fakturoid");
 
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + "/invoices.json")
                 .setAuth(Server.Fakturoid_secret_combo)
@@ -132,15 +114,15 @@ public class Fakturoid_Controller extends Controller {
 
             WSResponse response = responsePromise.get(5000);
 
-            logger.debug("Incoming status: " + response.getStatus());
+            logger.debug("Fakturoid_Controller:: create_proforma:: Incoming status: " + response.getStatus());
 
 
             if( response.getStatus() == 201) {
                 JsonNode result = response.asJson();
-                logger.debug("Fakturoid controller: POST: Result: " + result.toString());
+                logger.debug("Fakturoid_Controller:: create_proforma:: POST: Result: " + result.toString());
 
                 if(!result.has("id")){
-                    logger.error("Invoice From fakturoid does not contains ID");
+                    logger.error("Fakturoid_Controller:: create_proforma:: Invoice From fakturoid does not contains ID");
                     throw new NullPointerException("Invoice From fakturoid does not contains ID");
                 }
 
@@ -153,17 +135,15 @@ public class Fakturoid_Controller extends Controller {
                 return invoice;
 
             }else if( response.getStatus() == 401){
-                logger.error("Fakturoid Unauthorized");
+                logger.error("Fakturoid_Controller:: create_proforma:: Fakturoid Unauthorized");
                 throw new NullPointerException();
             }else if( response.getStatus() == 403){
-                logger.error("Fakturoid you have maximum of customers!!!");
+                logger.error("Fakturoid_Controller:: create_proforma:: Fakturoid you have maximum of customers!!!");
                 throw new NullPointerException();
 
             }else if( response.getStatus() == 422 ){
 
-                logger.error("Fakturoid!!!!!!!!!!!!!");
-                logger.error("Response"+ response.getBody());
-                logger.error("Fakturoid!!!!!!!!!!!!!");
+                logger.error("Fakturoid_Controller:: create_proforma::  Response"+ response.getBody());
 
                 throw new NullPointerException();
             }
@@ -183,7 +163,7 @@ public class Fakturoid_Controller extends Controller {
         fakturoid_invoice.subject_id        = product.fakturoid_subject_id;
 
 
-        logger.debug("Sending Invoice to Fakturoid");
+        logger.debug("Fakturoid_Controller:: create_paid_invoice:: Sending Invoice to Fakturoid");
         JsonNode result = fakturoid_post("/invoices.json", Json.toJson(fakturoid_invoice));
 
         if(!result.has("id")) throw new NullPointerException("Invoice From fakturoid does not contain ID");
@@ -200,7 +180,7 @@ public class Fakturoid_Controller extends Controller {
     public static void send_Invoice_to_Email(Model_Invoice invoice){
         try {
 
-            logger.debug("Trying send PDF Invoice to User Email");
+            logger.debug("Fakturoid_Controller:: send_Invoice_to_Email:: Trying send PDF Invoice to User Email");
 
 
                 byte[] body = download_PDF_invoice(invoice);
@@ -210,7 +190,7 @@ public class Fakturoid_Controller extends Controller {
                     return;
                 }
 
-                logger.debug("PDF with invoice was successfully downloaded from Facturoid");
+                logger.debug("Fakturoid_Controller:: send_Invoice_to_Email:: PDF with invoice was successfully downloaded from Facturoid");
 
                 String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
@@ -230,12 +210,12 @@ public class Fakturoid_Controller extends Controller {
                         .sendEmail( invoice.product.payment_details.invoice_email != null ? invoice.product.payment_details.invoice_email : invoice.product.payment_details.person.mail  , "Invoice " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] );
 
 
-                logger.debug("Email was successfully sanded");
+                logger.debug("Fakturoid_Controller:: send_Invoice_to_Email:: Email was successfully sanded");
 
 
 
         }catch (Exception e){
-            logger.error("Error while sending invoice", e);
+            logger.error("Fakturoid_Controller:: send_Invoice_to_Email:: Error while sending invoice", e);
         }
     }
 
@@ -278,7 +258,7 @@ public class Fakturoid_Controller extends Controller {
 
 
         }catch (Exception e){
-            logger.error("Error while sending invoice", e);
+            logger.error("Fakturoid_Controller:: send_Invoice_to_Email:: Error while sending invoice", e);
         }
     }
 
@@ -321,7 +301,7 @@ public class Fakturoid_Controller extends Controller {
 
     public static JsonNode fakturoid_put(String url, JsonNode node){
 
-        logger.debug("Fakturoid controller: PUT: URL: " + Server.Fakturoid_url + url + "  Json: " + node.toString());
+        logger.debug("Fakturoid_Controller:: fakturoid_put:: PUT: URL: " + Server.Fakturoid_url + url + "  Json: " + node.toString());
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + url)
                 .setContentType("application/json")
                 .setHeader("User-Agent", Server.Fakturoid_user_agent)
@@ -331,18 +311,18 @@ public class Fakturoid_Controller extends Controller {
         try {
 
             JsonNode response = responsePromise.get(5000).asJson();
-            logger.debug("Fakturoid controller: PUT: Result: " + response.toString() );
+            logger.debug("Fakturoid_Controller:: fakturoid_put:: Result: " + response.toString() );
             return response;
 
         }catch(Exception e){
-            logger.error("Put Failed: " + responsePromise.get(5000).toString() );
+            logger.error("Fakturoid_Controller:: fakturoid_put::  Error: " + responsePromise.get(5000).toString() );
             throw new NullPointerException();
         }
     }
 
     public static JsonNode fakturoid_post(String url, JsonNode node){
 
-        logger.debug("Fakturoid controller: POST: URL: " + Server.Fakturoid_url + url + "  Json: " + node);
+        logger.debug("Fakturoid_Controller:: fakturoid_post:: URL: " + Server.Fakturoid_url + url + "  Json: " + node);
 
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + url)
                 .setAuth(Server.Fakturoid_secret_combo)
@@ -355,34 +335,29 @@ public class Fakturoid_Controller extends Controller {
 
             WSResponse response = responsePromise.get(5000);
 
-            logger.debug("Incoming status: " + response.getStatus());
-            logger.debug("Incoming message: " + Json.toJson(response.getBody()).toString());
+            logger.debug("Fakturoid_Controller:: fakturoid_post:: Incoming status: " + response.getStatus());
+            logger.debug("Fakturoid_Controller:: fakturoid_post:: Incoming message: " + Json.toJson(response.getBody()).toString());
 
 
             if( response.getStatus() == 201) {
                 JsonNode json = response.asJson();
-                logger.debug("Fakturoid controller: POST: Result: " + json.toString());
+                logger.debug("Fakturoid_Controller:: fakturoid_post::  Result: " + json.toString());
                 return json;
 
             }else if( response.getStatus() == 401){
-                logger.error("Fakturoid!!!!!!!!!!!!!");
-                logger.error("Fakturoid Unauthorized");
-                logger.error("Fakturoid!!!!!!!!!!!!!");
+                logger.error("Fakturoid_Controller:: fakturoid_post:: Error:: Fakturoid Unauthorized");
 
                 throw new NullPointerException();
 
             }else if( response.getStatus() == 403){
-                logger.error("Fakturoid!!!!!!!!!!!!!");
-                logger.error("Fakturoid you have maximum of customers!!!");
-                logger.error("Fakturoid!!!!!!!!!!!!!");
+
+                logger.error("Fakturoid_Controller:: fakturoid_post::  Error:: Fakturoid you have maximum of customers!!!");
 
                 throw new NullPointerException();
 
             }else if( response.getStatus() == 422 ){
 
-                logger.error("Fakturoid!!!!!!!!!!!!!");
-                logger.error("Error:: " + Json.toJson(response.getBody()).toString());
-                logger.error("Fakturoid!!!!!!!!!!!!!");
+                logger.error("Fakturoid_Controller:: fakturoid_post::  Error:: " + Json.toJson(response.getBody()).toString());
 
                 throw new NullPointerException();
             }
@@ -391,7 +366,7 @@ public class Fakturoid_Controller extends Controller {
 
         }catch(Exception e){
             e.printStackTrace();
-            logger.error("POST Failed: " + responsePromise.get(5000).toString() );
+            logger.error("Fakturoid_Controller:: fakturoid_post:: Error:: " + responsePromise.get(5000).toString() );
             throw new NullPointerException();
         }
     }
@@ -414,7 +389,7 @@ public class Fakturoid_Controller extends Controller {
     public static boolean fakturoid_delete(String url){
         // Slouží například k mazáním proformy a transfromace na fakturu
 
-        logger.debug("Fakturoid controller: DELETE: URL: " + Server.Fakturoid_url + url);
+        logger.debug("Fakturoid_Controller:: fakturoid_delete::  URL: " + Server.Fakturoid_url + url);
 
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + url)
                 .setAuth(Server.Fakturoid_secret_combo)
@@ -436,7 +411,7 @@ public class Fakturoid_Controller extends Controller {
             while (terminator >= 0) {
                 try {
 
-                    logger.debug("Trying download PDF invoice from Fakturoid on url: " + invoice.facturoid_pdf_url);
+                    logger.debug("Fakturoid_Controller:: download_PDF_invoice::  Trying download PDF invoice from Fakturoid on url: " + invoice.facturoid_pdf_url);
 
                     F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(invoice.facturoid_pdf_url)
                             .setAuth(Server.Fakturoid_secret_combo)
@@ -446,16 +421,16 @@ public class Fakturoid_Controller extends Controller {
 
                     WSResponse promise = responsePromise.get(5000);
 
-                    System.out.println("promise status " + promise.getStatus());
+                    logger.debug("Fakturoid_Controller:: download_PDF_invoice:: download_PDF_invoice:: promise status " + promise.getStatus());
 
                     if (promise.getStatus() == 200) {
-                        logger.debug("PDF Download successfully to byte[]");
+                        logger.debug("Fakturoid_Controller:: download_PDF_invoice:: PDF Download successfully to byte[]");
                         return promise.asByteArray();
 
                     } else {
 
-                        logger.warn("promise status" + promise.getStatus());
-                        logger.warn("PDF Download un-successfully to byte[]");
+                        logger.warn("Fakturoid_Controller:: download_PDF_invoice:: promise status" + promise.getStatus());
+                        logger.warn("Fakturoid_Controller:: download_PDF_invoice:: PDF Download un-successfully to byte[]");
 
                         --terminator;
                         Thread.sleep(2500);
@@ -463,11 +438,11 @@ public class Fakturoid_Controller extends Controller {
                     }
 
                 } catch (InterruptedException e) {
-                    logger.error("Interupted exception", e);
+                    logger.error("Fakturoid_Controller:: download_PDF_invoice::  Error:: Interupted exception", e);
                 }
             }
 
-        logger.error("PDF Download un-successfully to byte[]");
+        logger.error("Fakturoid_Controller:: download_PDF_invoice:: Error:: PDF Download un-successfully to byte[]");
         throw new NullPointerException("File not found");
 
     }

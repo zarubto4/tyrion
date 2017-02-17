@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.instnace.Model_HomerInstance;
 import play.libs.Json;
 import utilities.enums.Type_of_command;
-import utilities.web_socket.message_objects.common.WS_AbstractMessageInstance;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageInstance;
 
 public class WS_Basic_command_for_device extends WS_AbstractMessageInstance {
 

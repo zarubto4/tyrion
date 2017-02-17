@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.compiler.Model_CompilationServer;
-import play.libs.Json;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Rejection_homer_server;
 
 import java.util.HashMap;
@@ -16,7 +15,7 @@ public class WS_CompilerServer extends WebSCType{
     public String server_address;
     public Map<String, ObjectNode> compilation_results = new HashMap<>();
     public Map<String, ObjectNode> compilation_request = new HashMap<>();
-    Model_CompilationServer server;
+    public Model_CompilationServer server;
     public boolean security_token_confirm = true;
 
 
@@ -35,26 +34,28 @@ public class WS_CompilerServer extends WebSCType{
         logger.debug("WS_CompilerServer:: onClose ");
         this.close();
 
-        logger.debug("WS_CompilerServer:: close thread");
+        logger.trace("WS_CompilerServer:: close thread");
 
-        logger.debug("WS_CompilerServer:: removing object");
+        logger.trace("WS_CompilerServer:: removing object");
         Controller_WebSocket.compiler_cloud_servers.remove(this.identifikator);
 
-        logger.debug("WS_CompilerServer:: removing on object");
+        logger.trace("WS_CompilerServer:: removing on object");
         server.compiler_server_is_disconnect();
     }
+
+
 
     @Override
     public void onMessage(String message) {
 
         try{
 
-            logger.debug("Incoming message on compilation server: " + message);
+            logger.trace("WS_CompilerServer:: onMessage:: Incoming message:: " + message);
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
             if (json.has("buildId") && super.sendMessageMap.containsKey(json.get("buildId").asText())) {
 
-                System.out.println("Jedná se o zprávu už s hotovým buildem");
+                logger.trace("WS_CompilerServer:: onMessage:: Message with compiled build");
 
                 super.sendMessageMap.get(json.get("buildId").asText()).insert_result(json);
                 super.sendMessageMap.remove(json.get("buildId").asText());
@@ -64,8 +65,7 @@ public class WS_CompilerServer extends WebSCType{
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
             if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
 
-                System.out.println("Jedná se o zprávu potvrzující začátek buildu");
-
+                logger.trace("WS_CompilerServer:: onMessage:: Message approve compilation start");
                 sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
                 return;
             }
@@ -74,16 +74,12 @@ public class WS_CompilerServer extends WebSCType{
 
         }catch (JsonParseException e){
 
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "JsonUnrecognized");
-            webSCtype.write_without_confirmation(result);
+            logger.error("WS_CompilerServer:: onMessage:: JsonParseException:: Message:: " + message);
+
 
         }catch (Exception e){
 
-            ObjectNode result = Json.newObject();
-            result.put("messageType", "JsonUnrecognized");
-            webSCtype.write_without_confirmation(result);
-            e.printStackTrace();
+            logger.error("WS_CompilerServer:: onMessage:: JsonParseException:: Message:: " + message , e);
 
         }
     }
@@ -92,8 +88,7 @@ public class WS_CompilerServer extends WebSCType{
     @Override
     public void onMessage(ObjectNode json) {
 
-        logger.debug("Incoming not requested message: " + json.toString());
-        logger.debug("BlockoServer: "+ super.identifikator + " Incoming message: " + json.toString());
+        logger.trace("WS_CompilerServer:: onMessage:: Not requested message:: " + json.toString());
 
         // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj
         if(!security_token_confirm){
@@ -109,11 +104,11 @@ public class WS_CompilerServer extends WebSCType{
 
             switch (json.get("messageChannel").asText()){
 
-                default: logger.error("Homer Server Incoming message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
+                default: logger.error("WS_CompilerServer:: onMessage:: not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
             }
 
         }else {
-            logger.error("Homer Server: "+ super.identifikator + " Incoming message has not messageChannel!!!!");
+            logger.error("WS_CompilerServer:: onMessage:: "+ super.identifikator + " Incoming message has not messageChannel!!!!");
         }
 
     }

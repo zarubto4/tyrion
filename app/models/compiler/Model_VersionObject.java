@@ -368,7 +368,7 @@ public class Model_VersionObject extends Model {
         // Když obsahuje chyby - vrátím rovnou Becki
         if(!compilation.buildErrors.isEmpty()) {
 
-            logger.debug("Version Object:: compile_program_procedure:: compilation contains user Errors");
+            logger.trace("Version Object:: compile_program_procedure:: compilation contains user Errors");
 
             c_compilation.status = Compile_Status.compiled_with_code_errors;
             c_compilation.update();
@@ -407,11 +407,11 @@ public class Model_VersionObject extends Model {
 
         if(compilation.status.equals("success")) {
 
-            logger.debug("Version Object:: compile_program_procedure:: compilation was successfull");
+            logger.trace("Version Object:: compile_program_procedure:: compilation was successfull");
 
             try {
 
-                logger.debug("Version Object:: compile_program_procedure:: try to download file");
+                logger.trace("Version Object:: compile_program_procedure:: try to download file");
 
 
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -427,12 +427,12 @@ public class Model_VersionObject extends Model {
                     throw new FileExistsException();
                 }
 
-                logger.debug("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure");
+                logger.trace("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure");
 
                 // Daný soubor potřebuji dostat na Azure a Propojit s verzí
                 c_compilation.bin_compilation_file = Model_FileRecord.create_Binary_file(c_compilation.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(body), "compilation.bin");
 
-                logger.debug("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
+                logger.trace("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
                 c_compilation.status = Compile_Status.successfully_compiled_and_restored;
                 c_compilation.c_comp_build_url = compilation.buildUrl;
                 c_compilation.firmware_build_id = compilation.buildId;
@@ -444,7 +444,7 @@ public class Model_VersionObject extends Model {
 
             }catch (ConnectException e){
 
-                logger.error("Compilation Server is probably offline on URL:: " + compilation.buildUrl );
+                logger.error("Version Object:: compile_program_procedure:: Compilation Server is probably offline on URL:: " + compilation.buildUrl );
                 c_compilation.status = Compile_Status.successfully_compiled_not_restored;
                 c_compilation.update();
 
@@ -457,7 +457,7 @@ public class Model_VersionObject extends Model {
 
             }catch (FileExistsException e){
 
-                logger.debug("Version Object:: compile_program_procedure:: FileExistsException - Body is empty");
+                logger.error("Version Object:: compile_program_procedure:: FileExistsException - Body is empty");
 
                 c_compilation.status = Compile_Status.successfully_compiled_not_restored;
                 c_compilation.update();

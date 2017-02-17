@@ -7,7 +7,7 @@ import models.person.Model_Person;
 import models.project.b_program.servers.Model_HomerServer;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import utilities.web_socket.message_objects.common.WS_AbstractMessage;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
 public class WS_Valid_person_token_homer_server extends WS_AbstractMessage {
 

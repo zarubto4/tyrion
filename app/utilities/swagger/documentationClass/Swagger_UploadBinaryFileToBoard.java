@@ -13,7 +13,7 @@ public class Swagger_UploadBinaryFileToBoard {
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Only boards where type_of_board.connectible_to_internet = true ")
-    public List<String> board_id = new ArrayList<>();
+    public List<String> board_ids = new ArrayList<>();
 
     @Constraints.Required
     @ApiModelProperty(required = true)

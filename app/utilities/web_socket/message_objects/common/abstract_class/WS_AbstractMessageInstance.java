@@ -1,4 +1,4 @@
-package utilities.web_socket.message_objects.common;
+package utilities.web_socket.message_objects.common.abstract_class;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import models.project.b_program.instnace.Model_HomerInstance;
@@ -12,7 +12,7 @@ public abstract class WS_AbstractMessageInstance {
                            public String messageType;
                            public String messageId;
                            public String messageChannel;
-                           public String status;
+                           public String status = "error";
 
     public String error  = null;
     public Integer errorCode  = null;

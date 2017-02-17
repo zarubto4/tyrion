@@ -68,15 +68,15 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient  public String get_fileRecord_from_Azure_inString(){
         try {
 
-            logger.debug("FileRecord: get_fileRecord_from_Azure_inString");
+            logger.trace("FileRecord: get_fileRecord_from_Azure_inString");
 
             int slash = file_path.indexOf("/");
             String container_name = file_path.substring(0,slash);
             String real_file_path = file_path.substring(slash+1);
 
-            logger.debug("Azure load path: " + file_path );
-            logger.debug("Azure Container: " + container_name);
-            logger.debug("Real File  Path: " + real_file_path);
+            logger.trace("Azure load path: " + file_path );
+            logger.trace("Azure Container: " + container_name);
+            logger.trace("Real File  Path: " + real_file_path);
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
 

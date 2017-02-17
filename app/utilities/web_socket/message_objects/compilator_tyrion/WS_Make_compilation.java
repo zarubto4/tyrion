@@ -6,7 +6,7 @@ import models.compiler.Model_CompilationServer;
 import models.compiler.Model_TypeOfBoard;
 import play.libs.Json;
 import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
-import utilities.web_socket.message_objects.common.WS_AbstractMessage;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
 import javax.validation.Valid;
 import java.util.ArrayList;

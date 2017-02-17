@@ -12,6 +12,4 @@ public class Actualization_Task {
     public List<Actualization_procedure> procedures = new ArrayList<>();
 
 
-
-
 }

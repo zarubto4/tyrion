@@ -25,6 +25,7 @@ public class Swagger_B_Program_Version_New {
 
     @Constraints.Required
     @ApiModelProperty(required = true)
+    @Constraints.MaxLength(value = 4550000, message = "The description must not have more than 4550000 characters.")
     public String program;
 
     @Valid
@@ -71,7 +72,7 @@ public class Swagger_B_Program_Version_New {
         @Constraints.Required @ApiModelProperty(required = true)
         public String m_project_id;
 
-        @Valid @ApiModelProperty(value = "Connected boards (padavans)", required = true)
+        @Valid @ApiModelProperty(value = "Connected boards", required = true)
         public List<M_Program_SnapShot> m_program_snapshots = new ArrayList<>();
 
     }

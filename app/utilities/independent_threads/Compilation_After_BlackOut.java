@@ -36,14 +36,14 @@ public class Compilation_After_BlackOut {
 
     public void start(Model_CompilationServer server){
 
-        logger.debug("Compilation_After_BlackOut creating new 2 threads for compilations");
+        logger.debug("Compilation_After_BlackOut:: start:: creating new 2 threads for compilations");
         Compilation_Thread thread_1 = new Compilation_Thread(server.unique_identificator + "_1");
         Compilation_Thread thread_2 = new Compilation_Thread(server.unique_identificator + "_2");
 
         threads.add(thread_1);
         threads.add(thread_2);
 
-        logger.debug("Compilation_After_BlackOut starting new 2 threads");
+        logger.trace("Compilation_After_BlackOut:: start:: starting new 2 threads");
         thread_1.start();
         thread_2.start();
     }
@@ -69,7 +69,7 @@ public class Compilation_After_BlackOut {
                         if(version_object == null){
                             break;
                         }
-                        logger.debug("Compilation_Thread:: " + thread_name + " starting compilation");
+                        logger.debug("Compilation_After_BlackOut:: Compilation_Thread:: " + thread_name + " starting compilation");
                         version_object.c_compilation.status = Compile_Status.compilation_in_progress;
                         version_object.c_compilation.update();
 

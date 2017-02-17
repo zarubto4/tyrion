@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.servers.Model_HomerServer;
 import play.libs.Json;
-import utilities.web_socket.message_objects.common.WS_AbstractMessage;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
 public class WS_Set_homer_server_configuration extends WS_AbstractMessage {
 

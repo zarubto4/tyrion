@@ -22,18 +22,18 @@ public class Check_update_for_hw_under_homer_ws  {
 
 
     public void start_thread_box(){
-        logger.debug("Check_update_for_hw_under_homer_ws will be started");
+        logger.trace("Check_update_for_hw_under_homer_ws:: start_thread_box:: will be started");
         if(!hw_checker_thread.isAlive()) hw_checker_thread.start();
     }
 
     public void add_new_Procedure(WS_Get_summary_information summary_information){
 
-        logger.debug("Master Updater - new incoming procedure");
+        logger.debug("Check_update_for_hw_under_homer_ws:: add_new_Procedure:: new incoming procedure");
 
         list.add(summary_information);
 
         if(hw_checker_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.debug("Thread is sleeping - wait for interrupt!");
+            logger.trace("Thread is sleeping - wait for interrupt!");
             hw_checker_thread.interrupt();
         }
     }
@@ -43,7 +43,7 @@ public class Check_update_for_hw_under_homer_ws  {
         @Override
         public void run() {
 
-            logger.info("Check_update_for_hw_under_homer_ws:: Independent Thread in Check_update_for_hw_under_homer_ws now working") ;
+            logger.trace("Check_update_for_hw_under_homer_ws:: add_new_Procedure:: Independent Thread in Check_update_for_hw_under_homer_ws now working"); ;
 
             while(true){
                 try{
@@ -54,7 +54,7 @@ public class Check_update_for_hw_under_homer_ws  {
                         list.remove(list.get(0));
 
                     } else{
-                        logger.debug("Check_update_for_hw_under_homer_ws:: Thread has not other tasks. Going to sleep!");
+                        logger.trace("Check_update_for_hw_under_homer_ws:: Thread has not other tasks. Going to sleep!");
                         sleep(500000000);
                     }
 

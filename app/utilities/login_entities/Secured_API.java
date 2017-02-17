@@ -29,7 +29,7 @@ public class Secured_API extends Security.Authenticator {
             token = request().headers().get("X-AUTH-TOKEN")[0];
         }
 
-        logger.debug("Security Token:: " + token);
+        logger.trace("Security Token:: " + token);
 
         //TODO Přepsat do Try and Catche - aby se odstranili podmínkya v případě null poitnexception se vracel null
         if ((token != null)) {

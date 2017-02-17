@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.notification.Model_Notification;
 import models.person.Model_Person;
+import models.project.b_program.servers.Model_HomerServer;
 import play.libs.Json;
 import play.mvc.WebSocket;
 
@@ -28,7 +29,7 @@ public class WS_Becki_Website extends  WebSCType {
 
     @Override
     public void onClose() {
-        System.out.println("Local_Terminal onClose " + super.identifikator);
+        logger.trace("Local_Terminal onClose " + super.identifikator);
         this.close();
     }
 
@@ -50,13 +51,14 @@ public class WS_Becki_Website extends  WebSCType {
     @Override
     public void onMessage(ObjectNode json) {
 
-        logger.debug("Becki: " + identifikator + " Incoming message: " + json.toString() );
+        logger.debug("WS_Becki_Website:: onMessage " + identifikator + " Incoming message: " + json.toString() );
 
         if(json.has("messageChannel")) {
 
             switch (json.get("messageChannel").asText()) {
 
-                case "becki": {
+                case WS_Becki_Website.CHANNEL : {
+
                     switch (json.get("messageType").asText()) {
 
                         case "notification"             :   {  becki_notification_confirmation_from_becki(json); return;}    // Becki poslala odpověď, že dostala notifikaci
@@ -65,14 +67,14 @@ public class WS_Becki_Website extends  WebSCType {
 
                         default: {
 
-                            logger.error("Becki: "+ identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!" + json.toString());
+                            logger.error("WS_Becki_Website:: onMessage::  "+ identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!" + json.toString());
 
                         }
                     }
                 }
-                case "tyrion": {
-                    logger.warn("Homer: Incoming message: Tyrion: Server receive message: ");
-                    logger.warn("Homer: Incoming message: Tyrion: Server don't know what to do!");
+                case Model_HomerServer.CHANNEL : {
+                    logger.warn("WS_Becki_Website:: onMessage:: Incoming message: Tyrion: Server receive message: ");
+                    logger.warn("WS_Becki_Website:: onMessage:: Incoming message: Tyrion: Server don't know what to do!");
                     return;
                 }
 
@@ -88,7 +90,7 @@ public class WS_Becki_Website extends  WebSCType {
             }
 
         }else {
-            logger.error("Becki: "+ identifikator + " Incoming message has not messageChannel!!!!" + json.toString());
+            logger.error("WS_Becki_Website:: "+ identifikator + " Incoming message has not messageChannel!!!!" + json.toString());
         }
     }
 
@@ -168,32 +170,6 @@ public class WS_Becki_Website extends  WebSCType {
         // Tady dosátvám potvrzení, že becki dostala notifikaci
     }
 
-    // Ping
-    public static JsonNode becki_ping(WS_Becki_Single_Connection becki){
-
-        ObjectNode result = Json.newObject();
-
-        try {
-
-            result.put("messageType", "ping");
-            result.put("messageChannel", "becki");
-
-            return becki.write_with_confirmation(result, 1000 * 3, 0, 3);
-
-        }catch (Exception e){
-
-            result.put("messageType", "ping");
-            result.put("messageChannel", "becki");
-            result.put("status", "unsuccessful");
-
-            return result;
-        }
-    }
-
-    // Reakce na odhlášení blocka
-    public static void becki_disconnect(WebSCType becki){
-        System.out.println("Becki se mi odpojilo");
-    }
 
 }
 

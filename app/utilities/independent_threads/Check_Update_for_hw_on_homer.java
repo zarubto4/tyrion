@@ -88,6 +88,8 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
         for(WS_Yoda_connected yoda_connected : summary_information.masterDeviceList){
 
+            if(!yoda_connected.online_status) continue;
+
             Model_Board yoda = Model_Board.find.byId(yoda_connected.deviceId);
             if(yoda == null){
                 logger.error("Check_Update_for_hw_on_homer:: unknow Device!!! ");

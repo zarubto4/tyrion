@@ -10,6 +10,7 @@ import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import play.libs.Json;
 import utilities.enums.C_ProgramUpdater_State;
 import utilities.enums.Firmware_type;
+import utilities.hardware_updater.helper_objects.Target_pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class Master_Updater{
 
 
     public static void start_thread_box(){
-        logger.debug("Master Update will be started");
+        logger.trace("Master_Updater:: start_thread_box:: will be started");
 
         if(!comprimator_thread.isAlive()) comprimator_thread.start();
     }
@@ -39,12 +40,12 @@ public class Master_Updater{
 
     public static void add_new_Procedure(Model_ActualizationProcedure procedure){
 
-        logger.debug("Master Updater - new incoming procedure");
+        logger.trace("Master_Updater:: start_thread_box:: new incoming procedure");
 
         procedures.add(procedure.id);
 
         if(comprimator_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.debug("Thread is sleeping - wait for interrupt!");
+            logger.trace("Master_Updater:: start_thread_box::  wait for interrupt!");
             comprimator_thread.interrupt();
         }
     }
@@ -59,14 +60,14 @@ public class Master_Updater{
         public void run() {
 
 
-            logger.info("Independent Thread in Master updater now working") ;
+            logger.info("Master_Updater:: run:: run") ;
 
             while(true){
                 try{
 
                     if(!procedures.isEmpty()) {
 
-                        logger.debug("Master updater Thread is running. Tasks to solve: " + procedures.size() );
+                        logger.debug("Master_Updater:: run:: Tasks to solve: " + procedures.size() );
 
                         new Master_Updater().actualization_update_procedure( procedures.get(0) );
                         procedures.remove( procedures.get(0) );
@@ -74,7 +75,7 @@ public class Master_Updater{
                     }
 
                     else{
-                        logger.debug("Master updater Thread has not other tasks. Going to sleep!");
+                        logger.trace("Master_Updater:: run:: Going to sleep!");
                         sleep(500000000);
                     }
 
@@ -83,7 +84,7 @@ public class Master_Updater{
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    logger.error("Master Updater Error", e);
+                    logger.error("Master_Updater:: run:: Error", e);
                 }
             }
         }
@@ -111,13 +112,13 @@ public class Master_Updater{
         public String program_identificator;
         public Firmware_type firmware_type;
         public Model_FileRecord file_record;
-        public List<Model_Board> boards = new ArrayList<>();
+
+        public List<Target_pair> target_pairs = new ArrayList<>();
     }
 
 
+
     public void actualization_update_procedure(String procedure_id){
-
-
 
         Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
         ActualizationStructure structure = new ActualizationStructure();
@@ -127,14 +128,12 @@ public class Master_Updater{
            for (Model_CProgramUpdatePlan plan : plans) {
                try {
 
-                   logger.debug("Json CProgramUpdatePlan: " + Json.toJson(plan));
-
-                   logger.debug("Zkoumaná plan id: " + plan.id);
-
+                   logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: " + Json.toJson(plan));
+                   logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: ID:: " + plan.id);
+                   logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: Board ID:: " +  plan.board.id);
 
                    Model_Board board  = plan.board;
 
-                   logger.debug("Zkoumaná Boar id: "+ board.id);
 
                    // Najdu instanci - pod kterou deska běží
                    Model_HomerInstance homer_instance = Model_HomerInstance.find.where()
@@ -146,35 +145,35 @@ public class Master_Updater{
                    .findUnique();
 
                    if (homer_instance == null) {
-                       logger.error("Device has not own instance!");
+                       logger.error("Master_Updater:: actualization_update_procedure:: Device has not own instance!");
                        plan.state = C_ProgramUpdater_State.instance_inaccessible;
                        plan.update();
                        continue;
                    }
 
-                   logger.debug("Homer_instance id: "+ homer_instance.blocko_instance_name);
+                   logger.debug("Master_Updater:: actualization_update_procedure:: Homer_instance id: "+ homer_instance.blocko_instance_name);
 
 
-                   logger.debug("Hardware (board) is running under cloud blocko program");
-                   logger.debug("Blocko Instance: "+ homer_instance.blocko_instance_name);
-                   logger.debug("Server: "+ homer_instance.cloud_homer_server.unique_identificator) ;
+                   logger.debug("Master_Updater:: actualization_update_procedure:: Hardware (board) is running under cloud blocko program");
+                   logger.debug("Master_Updater:: actualization_update_procedure:: Blocko Instance: "+ homer_instance.blocko_instance_name);
+                   logger.debug("Master_Updater:: actualization_update_procedure:: Server: "+ homer_instance.cloud_homer_server.unique_identificator) ;
 
 
                    if(! Controller_WebSocket.homer_servers.containsKey( homer_instance.cloud_homer_server.unique_identificator )){
-                      logger.warn("Server is offline. Putting off the task for later ");
+                      logger.warn("Master_Updater:: actualization_update_procedure:: Server is offline. Putting off the task for later ");
                       plan.state = C_ProgramUpdater_State.homer_server_is_offline;
                       plan.update();
                       continue;
                    }
 
                    if (!homer_instance.instance_online()) {
-                        logger.warn("Homer is offline. Putting off the task for later ");
+                        logger.warn("Master_Updater:: actualization_update_procedure:: Homer is offline. Putting off the task for later ");
                         plan.state = C_ProgramUpdater_State.instance_inaccessible;
                         plan.update();
                         continue;
                    }
 
-                   logger.debug("Instance of blocko program is online and connected with Tyrion");
+                   logger.debug("Master_Updater:: actualization_update_procedure::  Instance of blocko program is online and connected with Tyrion");
 
 
                    // Založím ve Struktuře seznam instnací
@@ -192,13 +191,13 @@ public class Master_Updater{
                             program_identificator = "firmware_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
 
                             if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
-                                logger.debug("User create own C_program and cloud_blocko_server has bin file of that");
+                                logger.debug("Master_Updater:: actualization_update_procedure:: User create own C_program and cloud_blocko_server has bin file of that");
                                 file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
                             }
                             else{
-                                System.out.println("..........V Blob serveru nebyla - musí se vytvořit");
-                                System.out.println("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
-                                System.out.println("..........Tato procedura chybí!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                                logger.error("..........V Blob serveru nebyla - musí se vytvořit");
+                                logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
+                                logger.error("..........Tato procedura chybí!");
                                 plan.state = C_ProgramUpdater_State.bin_file_not_found;
                                 plan.update();
                                 continue;
@@ -216,7 +215,7 @@ public class Master_Updater{
 
 
                    if(program_identificator == null){
-                       logger.error("C_program updateter has not any object for uploud! (Program, Bootloader, File) ");
+                       logger.error("Master_Updater:: actualization_update_procedure:: C_program updateter has not any object for uploud! (Program, Bootloader, File) ");
                        continue;
                    }
 
@@ -233,13 +232,17 @@ public class Master_Updater{
 
                   }
 
-                   structure.instances.get(homer_instance.blocko_instance_name).programs.get(program_identificator).boards.add(board);
+                   Target_pair pair = new Target_pair();
+                   pair.targetId = board.id;
+                   pair.c_program_update_plan_id = plan.id;
+
+                   structure.instances.get(homer_instance.blocko_instance_name).programs.get(program_identificator).target_pairs.add(pair);
 
                    plan.state = C_ProgramUpdater_State.in_progress;
                    plan.update();
 
                }catch(Exception e) {
-                   logger.error("Error while cloud_blocko_server tried compile version of C_program", e);
+                   logger.error("Master_Updater:: actualization_update_procedure:: Error:: ", e);
                    plan.state = C_ProgramUpdater_State.critical_error;
                    plan.update();
                    break;
@@ -256,10 +259,10 @@ public class Master_Updater{
                 Actualization_procedure procedure = new Actualization_procedure();
                 procedure.actualizationProcedureId = procedure_id;
                 procedure.file_record = program.file_record;
-                procedure.boards = program.boards;
                 procedure.firmwareType = program.firmware_type;
-                task.procedures.add(procedure);
+                procedure.targetPairs.addAll(program.target_pairs);
 
+                task.procedures.add(procedure);
             }
 
             instance.instance.cloud_homer_server.add_task(task);
