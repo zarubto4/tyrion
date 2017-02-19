@@ -582,6 +582,15 @@ create table model_project_participant (
   constraint pk_model_project_participant primary key (id))
 ;
 
+create table model_request_log (
+  id                        varchar(255) not null,
+  request                   varchar(255),
+  count                     bigint,
+  date_of_create            timestamp,
+  constraint uq_model_request_log_request unique (request),
+  constraint pk_model_request_log primary key (id))
+;
+
 create table model_security_role (
   id                        varchar(255) not null,
   name                      varchar(255),
@@ -1119,6 +1128,8 @@ drop table if exists model_product cascade;
 drop table if exists model_project cascade;
 
 drop table if exists model_project_participant cascade;
+
+drop table if exists model_request_log cascade;
 
 drop table if exists model_security_role cascade;
 

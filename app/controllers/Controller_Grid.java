@@ -815,9 +815,7 @@ public class Controller_Grid extends Controller {
             Model_VersionObject version_object = Model_VersionObject.find.where().eq("id", help.version_object_id).isNotNull("m_program").findUnique();
             if(version_object == null) return GlobalResult.notFoundObject("Version M_program_Version not found");
 
-            if(version_object.m_program.read_permission()){
-                return GlobalResult.forbidden_Permission();
-            }
+            if(!version_object.m_program.read_permission()) return GlobalResult.forbidden_Permission();
 
             Model_HomerServer server = Model_HomerServer.find.where().eq("cloud_instances.instance_history.id", help.instance_record_id).findUnique();
             if(server == null){
@@ -837,6 +835,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.created(Json.toJson(summary));
 
         }catch (Exception e){
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

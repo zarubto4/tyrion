@@ -113,7 +113,7 @@ public class Model_VersionObject extends Model {
 
     // M_Project --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_MProgram m_program;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER) public Model_MProgram m_program;
                                     @JsonIgnore @Column(columnDefinition = "TEXT") public String m_program_virtual_input_output;
                                                                        @JsonIgnore public String qr_token;
 

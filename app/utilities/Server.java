@@ -44,6 +44,7 @@ import java.util.List;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.repeatHourlyForever;
 import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
 
@@ -469,6 +470,7 @@ public class Server {
             TriggerKey every_10_min_key7 = TriggerKey.triggerKey("every_ten_minutes"); // 7)
             TriggerKey every_fifteen_minute_key = TriggerKey.triggerKey("every_fifteen_minutes");
             TriggerKey every_minute_key = TriggerKey.triggerKey("every_minute");
+            TriggerKey every_hour_key = TriggerKey.triggerKey("every_hour");
 
             //-------------------------
 
@@ -528,6 +530,10 @@ public class Server {
                         .withSchedule(cronSchedule("30 0/1 * * * ?"))// Spuštění každou minutu
                         .build();
 
+                Trigger every_hour = newTrigger().withIdentity(every_hour_key).startNow()
+                        .withSchedule(repeatHourlyForever())// Spuštění každou minutu
+                        .build();
+
                 /**
                  *  !!!
                  *  Každý Job musí mít Trigger, který má unikátní TriggerKey
@@ -578,8 +584,8 @@ public class Server {
                 //}
 
                 // 9) Update statistiky o requestech
-                //logger.info("Scheduling new Job - Request Stats Update");
-                //scheduler.scheduleJob( newJob(Request_Stats_Update.class).withIdentity( JobKey.jobKey("request_stats_update") ).build(), every_minute);
+                logger.info("Scheduling new Job - Request Stats Update");
+                scheduler.scheduleJob( newJob(Request_Stats_Update.class).withIdentity( JobKey.jobKey("request_stats_update") ).build(), every_hour);
 
             }else {
                 logger.warn("CRON (Every-Day) is in RAM yet. Be careful with that!");

@@ -1,9 +1,12 @@
-@import models.compiler.{Model_Board, Model_CompilationServer}
+@import models.compiler.Model_Board
+@import models.compiler.Model_CompilationServer
 @import models.person.Model_Person
 @import models.project.b_program.servers.Model_HomerServer
 @import models.project.global.Model_Project
+@import models.loggy.Model_RequestLog
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 
 <section class="content-header">
     <h1> Dashboard <small>Control panel</small> </h1>
@@ -78,7 +81,7 @@
                 class="small-box bg-red"
                 }><div class="inner">
             <h3>@x.personal_server_name
-                @if(!x.server_is_online()){                    <small style="color: white">(Offline)</small>                }
+                @if(!x.server_is_online()){ <small style="color: white">(Offline)</small> }
             </h3>
             <p></p>
         </div><div class="icon"><i class="ion fa-cloud_blocko_server"></i></div> </div>
@@ -87,6 +90,58 @@
 
     </div><!-- /.row -->
 </section>
+
+<section class="content" style="min-height: 150px; display: none;">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Request stats</h3>
+                    <div class="box-tools pull-right">
+                        <button class="btn btn-box-tool" type="button" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="chart">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+
+    //var values = [@for(log <- Model_RequestLog.find.order().desc("count").findList()){ [ @log.count, @log.request ] , }];
+
+    var ctx = document.getElementById("barChart");
+    var barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange", "Blue", "Yellow", "Green", "Purple", "Orange"],
+            datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3, 19, 3, 5, 2, 3]
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    }
+                }]
+            }
+
+        }
+    });
+</script>
+
+
+
+
 
 
 
