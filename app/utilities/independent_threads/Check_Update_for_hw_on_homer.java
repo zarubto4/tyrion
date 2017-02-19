@@ -49,6 +49,16 @@ public class Check_Update_for_hw_on_homer extends Thread {
         // Musím najít klasické instnace s Blockem a také virtuální instance
         Model_HomerInstance.find
                 .where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator)
+                        .disjunction()
+                            .conjunction()
+                                .eq("virtual_instance", false)
+                                .isNotNull("actual_instance")
+                            .endJunction()
+                            .conjunction()
+                                .eq("virtual_instance", true)
+                                .isNotNull("boards_in_virtual_instance")
+                             .endJunction()
+                            .endJunction()
                 .order().asc("blocko_instance_name")
                 .findEachWhile( (Model_HomerInstance instance) -> {
 

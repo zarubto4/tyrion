@@ -16,11 +16,8 @@ public class WS_Get_summary_information  extends WS_AbstractMessageInstance {
     @JsonIgnore
     public static final String messageType = "instanceSummary";
 
-
     @Valid
     public List<WS_Yoda_connected> masterDeviceList = new ArrayList<>();
-
-
 
 
     @JsonIgnore

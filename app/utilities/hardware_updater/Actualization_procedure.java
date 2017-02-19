@@ -21,8 +21,7 @@ public class Actualization_procedure {
 
     @JsonProperty
     public String program(){
-        return  "blllllaaaaaaaaaaaaaaaa";
-      //  return file_record.get_fileRecord_from_Azure_inString();
+        return file_record.get_fileRecord_from_Azure_inString();
     }
 
     @JsonProperty

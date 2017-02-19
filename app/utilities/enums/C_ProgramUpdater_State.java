@@ -26,6 +26,9 @@ public enum C_ProgramUpdater_State {
     @ApiModelProperty(value =  " State where procedure was overwritten by newer versions" )  @EnumValue("overwritten")  overwritten,
 
     // Stav kdy je stále možné zařízení aktulaizovat
+    @ApiModelProperty(value = " State where board wasn updated to right version of Firmware"  ) @EnumValue("not_updated")  not_updated,
+
+    // Stav kdy je stále možné zařízení aktulaizovat
     @ApiModelProperty(value = " State where board is not connected to Homer Server and Main Center is waiting for that"  ) @EnumValue("waiting_for_device")  waiting_for_device,
 
     // Stav kdy je stále možné zařízení aktulaizovat

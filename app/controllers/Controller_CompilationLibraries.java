@@ -1425,6 +1425,7 @@ public class Controller_CompilationLibraries extends Controller {
                 List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).findList();
                 for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
                     cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
+                    cProgramUpdatePlan.date_of_finish = new Date();
                     cProgramUpdatePlan.update();
                 }
 
@@ -1447,8 +1448,7 @@ public class Controller_CompilationLibraries extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-
+    
 ///###################################################################################################################*/
 
     @ApiOperation(value = "Create new Compilation Server",

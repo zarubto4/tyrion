@@ -59,11 +59,13 @@ public class Model_HomerInstanceRecord extends Model {
 
 /* ENUMS PARAMETERS ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public List<Model_ActualizationProcedure> getProcedures() {return procedures;}
+    @JsonIgnore public List<Model_ActualizationProcedure> getProcedures() {
+        if(procedures == null) procedures = Model_ActualizationProcedure.find.where().eq("homer_instance_record.id", id).findList();
+        return procedures;
+    }
 
     @JsonIgnore @Override
     public void save(){
-       // this.websocket_grid_token = UUID.randomUUID().toString() +"_"+ UUID.randomUUID().toString();
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             if (Model_HomerInstanceRecord.find.byId(this.id) == null) break;
@@ -122,6 +124,7 @@ public class Model_HomerInstanceRecord extends Model {
                     for (Model_CProgramUpdatePlan old_plan : old_plans) {
                         logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
                         old_plan.state = C_ProgramUpdater_State.overwritten;
+                        old_plan.date_of_finish = new Date();
                         old_plan.update();
                     }
 

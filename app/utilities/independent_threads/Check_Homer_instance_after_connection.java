@@ -63,14 +63,14 @@ public class Check_Homer_instance_after_connection extends Thread {
                         // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
                         Integer size = Model_HomerInstance.find.where().eq("blocko_instance_name", identificator)
                                 .disjunction()
-                                .conjunction()
-                                .eq("virtual_instance", false)
-                                .isNotNull("actual_instance")
-                                .endJunction()
-                                .conjunction()
-                                .eq("virtual_instance", true)
-                                .isNotNull("boards_in_virtual_instance")
-                                .endJunction()
+                                    .conjunction()
+                                        .eq("virtual_instance", false)
+                                        .isNotNull("actual_instance")
+                                    .endJunction()
+                                    .conjunction()
+                                        .eq("virtual_instance", true)
+                                        .isNotNull("boards_in_virtual_instance")
+                                    .endJunction()
                                 .endJunction().findRowCount();
 
                         if(size < 1){

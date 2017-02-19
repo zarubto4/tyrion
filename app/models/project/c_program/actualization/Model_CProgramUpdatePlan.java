@@ -12,6 +12,7 @@ import models.compiler.Model_FileRecord;
 import models.compiler.Model_VersionObject;
 import utilities.enums.Firmware_type;
 import utilities.enums.C_ProgramUpdater_State;
+import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -52,9 +53,12 @@ public class Model_CProgramUpdatePlan extends Model {
 
     @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer errorCode;
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = false, value = "Is visible only if user send compilation under C_program in system  ( OR state for binary_file)")
+    @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public C_Program_Update_program c_program_detail(){
 
@@ -68,6 +72,21 @@ public class Model_CProgramUpdatePlan extends Model {
 
             return c_program_detail;
     }
+
+    @ApiModelProperty(required = false, value = "Is visible only if update is for Bootloader")
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
+    public Bootloader_Update_program bootloader_detail(){
+
+        if(bootloader == null ) return null;
+
+        Bootloader_Update_program bootloader_update_detail  = new  Bootloader_Update_program();
+        bootloader_update_detail.bootloader_id                      = bootloader.id;
+        bootloader_update_detail.bootloader_name                    = bootloader.name;
+        bootloader_update_detail.version_identificator   = bootloader.version_identificator;
+
+        return bootloader_update_detail;
+    }
+
 
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
@@ -92,6 +111,33 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+
+    @JsonIgnore
+    public Swagger_C_Program_Update_plan_Short_Detail get_short_version_for_board(){
+
+        Swagger_C_Program_Update_plan_Short_Detail detail = new Swagger_C_Program_Update_plan_Short_Detail();
+        detail.id = this.id;
+        detail.date_of_create = date_of_create;
+        detail.date_of_finish = date_of_finish;
+        detail.firmware_type = firmware_type;
+        detail.state = state;
+
+        if(detail.firmware_type == Firmware_type.FIRMWARE || detail.firmware_type == Firmware_type.BACKUP){
+            detail.c_program_id               = c_program_version_for_update.c_program.id;
+            detail.c_program_program_name     = c_program_version_for_update.c_program.name;
+            detail.c_program_version_id       = c_program_version_for_update.id;
+            detail.c_program_version_name     = c_program_version_for_update.version_name;
+        }
+
+        if(detail.firmware_type == Firmware_type.BOOTLOADER ){
+            detail.bootloader_id           = bootloader.id;
+            detail.bootloader_name         = bootloader.name;
+            detail.version_identificator   = bootloader.version_identificator;
+        }
+
+        return detail;
+    }
+
     @JsonIgnore @Override
     public void save() {
 
@@ -105,6 +151,14 @@ public class Model_CProgramUpdatePlan extends Model {
         super.save();
     }
 
+    @JsonIgnore @Override
+    public void update() {
+
+        super.update();
+        actualization_procedure.update_state();
+
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     class C_Program_Update_program{
@@ -114,13 +168,12 @@ public class Model_CProgramUpdatePlan extends Model {
         @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_version_name;
     }
 
-    class Server_detail{
-        @ApiModelProperty(required = true, readOnly = true) public String  server_id;
-        @ApiModelProperty(required = true, readOnly = true) public boolean is_private;
-        @ApiModelProperty(required = true, readOnly = true) public String  server_name;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String instnace_id;
-    }
+    class Bootloader_Update_program{
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String bootloader_id;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String bootloader_name;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String version_identificator;
 
+    }
 
     class Board_detail{
         @ApiModelProperty(required = true, readOnly = true) public String board_id;

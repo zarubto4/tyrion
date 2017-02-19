@@ -36,7 +36,7 @@ public class Model_ActualizationProcedure extends Model {
                                                     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerInstanceRecord homer_instance_record;
 
     @ApiModelProperty(required = true, value = "Can be empty")
-    @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL)                       public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
+    @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
 
     @ApiModelProperty(required = true, value = "UNIX time in ms",
                                                 example = "1466163478925")                          public Date date_of_create;
@@ -47,7 +47,6 @@ public class Model_ActualizationProcedure extends Model {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true ) public Actual_procedure_State state (){
-        //update_state();
         return state;
     }
 
@@ -70,24 +69,22 @@ public class Model_ActualizationProcedure extends Model {
         super.save();
     }
 
-    /**
+
     @JsonIgnore @Transient
     public void update_state(){
 
         System.out.println("Actualization procedure - update state");
 
-        this.refresh();
-
         // Metoda je vyvolána, pokud chceme synchronizovat Aktualizační proceduru a nějakým způsobem jí označit
         // Třeba kolik procent už je vykonáno
 
-        int all = C_Program_Update_Plan.find.where()
+        int all = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id)
                 .findRowCount();
 
-        int complete = C_Program_Update_Plan.find.where()
+        int complete = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
-                .eq("state",C_ProgramUpdater_State.complete)
+                .eq("state", C_ProgramUpdater_State.complete)
                 .findRowCount();
 
         if( ( ( complete ) * 1.0 / all ) == 1.0 ){
@@ -97,36 +94,52 @@ public class Model_ActualizationProcedure extends Model {
             return;
         }
 
-        int canceled = C_Program_Update_Plan.find.where()
+        int canceled = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
                 .eq("state",C_ProgramUpdater_State.canceled)
                 .findRowCount();
 
-        int override = C_Program_Update_Plan.find.where()
+
+        int override = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
                 .eq("state",C_ProgramUpdater_State.overwritten)
                 .findRowCount();
 
-        if( ( ( complete + canceled + override ) * 1.0 / all ) == 1.0 ){
+        if( ( ( complete + canceled + override) * 1.0 / all ) == 1.0 ){
             date_of_finish = new Date();
             state = Actual_procedure_State.complete;
             this.update();
             return;
         }
 
-        int critical_error = C_Program_Update_Plan.find.where()
+        int in_progress = Model_CProgramUpdatePlan.find.where()
+                .eq("actualization_procedure.id",id).where()
+                .eq("state",C_ProgramUpdater_State.in_progress)
+                .findRowCount();
+
+        if(in_progress != 0){
+            state = Actual_procedure_State.in_progress;
+            this.update();
+        }
+
+        int critical_error = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
                 .eq("state",C_ProgramUpdater_State.critical_error)
                 .findRowCount();
 
-        if( ( (critical_error +override + canceled + complete ) * 1.0 / all ) == 1.0 ){
+        int not_updated = Model_CProgramUpdatePlan.find.where()
+                .eq("actualization_procedure.id",id).where()
+                .eq("state",C_ProgramUpdater_State.not_updated)
+                .findRowCount();
+
+        if( ( (critical_error + override + canceled + complete  + not_updated) * 1.0 / all ) == 1.0 ){
             date_of_finish = new Date();
             state = Actual_procedure_State.complete_with_error;
             this.update();
             return;
         }
     }
-     */
+
 
     @JsonIgnore @Transient
     public void cancel_procedure(){

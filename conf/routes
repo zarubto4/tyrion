@@ -269,7 +269,8 @@ GET             /blocko/all_details/:project_id                                 
 ################################################################################################################################################################################
 
 #Actualization Procedure
-GET             /actualization_procedure/:actualization_procedure_id                @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
+GET             /actualization_procedure/project/:project_id                @controllers.Controller_Actualization.get_Actualization_Procedures_by_project(project_id)
+GET             /actualization_procedure/:actualization_procedure_id        @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
 
 
 

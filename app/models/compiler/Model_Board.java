@@ -25,6 +25,7 @@ import utilities.hardware_updater.Actualization_procedure;
 import utilities.hardware_updater.Master_Updater;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
+import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Is_device_connected;
@@ -65,10 +66,8 @@ public class Model_Board extends Model {
                       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)   public Model_Project project;
 
                                                    @JsonIgnore @ManyToOne   public Model_VersionObject actual_c_program_version;
-                                                   @JsonIgnore              public String alternative_program_name;
-
-
-    @JsonIgnore @ManyToOne   public Model_BootLoader actual_boot_loader;
+                                                   @JsonIgnore @ManyToOne   public Model_VersionObject actual_backup_c_program_version;
+                                                   @JsonIgnore @ManyToOne   public Model_BootLoader    actual_boot_loader;
 
     @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_BPair> b_pair = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_CProgramUpdatePlan> c_program_update_plans;
@@ -95,6 +94,17 @@ public class Model_Board extends Model {
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_id()         { return       project == null ? null : project.id; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_name()       { return       project == null ? null : project.name; }
+
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
+
+        List<Swagger_C_Program_Update_plan_Short_Detail> plans = new ArrayList<>();
+
+        for(Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().asc("date_of_create").findList())
+        plans.add(plan.get_short_version_for_board());
+
+        return plans;
+    }
+
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status()       {
 
@@ -133,6 +143,7 @@ public class Model_Board extends Model {
 
             board_status.where = Board_Type_of_connection.in_person_instance;
             board_status.instance_id = get_instance().blocko_instance_name;
+            board_status.instance_online_status = get_instance().instance_online();
             if( instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
             if( instance.getB_program() != null) board_status.b_program_name = instance.getB_program().name;
 
@@ -154,16 +165,39 @@ public class Model_Board extends Model {
             board_status.actual_c_program_version_name = actual_c_program_version.version_name;
         }
 
-        if(!c_program_update_plans.isEmpty()){
+        if(actual_backup_c_program_version != null){
+            board_status.actual_backup_c_program_id = actual_backup_c_program_version.c_program.id;
+            board_status.actual_backup_c_program_name = actual_backup_c_program_version.c_program.name;
+            board_status.actual_backup_c_program_version_id = actual_backup_c_program_version.id;
+            board_status.actual_backup_c_program_version_name = actual_backup_c_program_version.version_name;
+        }
 
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.where().eq("board.id", id).order().asc("actualization_procedure.date_of_create").setMaxRows(1).findUnique();
 
-            board_status.required_c_program_id = plan.c_program_version_for_update.c_program.id;
-            board_status.required_c_program_name = plan.c_program_version_for_update.c_program.name;
+        List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.where()
+                .eq("firmware_type", Firmware_type.FIRMWARE)
+                .disjunction()
+                    .eq("state",C_ProgramUpdater_State.in_progress)
+                    .eq("state",C_ProgramUpdater_State.waiting_for_device)
+                    .eq("state",C_ProgramUpdater_State.homer_server_is_offline)
+                    .eq("state",C_ProgramUpdater_State.instance_inaccessible)
+                .endJunction()
+                .eq("board.id", id).order().asc("actualization_procedure.date_of_create").findList();
 
-            board_status.required_c_program_version_id = plan.c_program_version_for_update.id;
-            board_status.required_c_program_version_name = plan.c_program_version_for_update.version_name;
-         }
+        for(Model_CProgramUpdatePlan plan : c_program_plans) board_status.required_c_programs.add(plan.get_short_version_for_board());
+
+
+
+        List<Model_CProgramUpdatePlan> c_backup_program_plans = Model_CProgramUpdatePlan.find.where()
+                .eq("firmware_type", Firmware_type.BACKUP)
+                .disjunction()
+                .eq("state",C_ProgramUpdater_State.in_progress)
+                .eq("state",C_ProgramUpdater_State.waiting_for_device)
+                .eq("state",C_ProgramUpdater_State.homer_server_is_offline)
+                .eq("state",C_ProgramUpdater_State.instance_inaccessible)
+                .endJunction()
+                .eq("board.id", id).order().asc("date_of_create").findList();
+
+        for(Model_CProgramUpdatePlan plan : c_backup_program_plans) board_status.required_backup_c_programs.add(plan.get_short_version_for_board());
 
 
 
@@ -338,7 +372,85 @@ public class Model_Board extends Model {
         }
     }
 
+    @JsonIgnore @Transient public static void update_report_from_homer(WS_Update_device_firmware report){
 
+        for(WS_Update_device_firmware.UpdateDeviceInformation updateDeviceInformation : report.procedure_list){
+
+
+            for(WS_Update_device_firmware.UpdateDeviceInformation_Device updateDeviceInformation_device : updateDeviceInformation.device_state_list){
+
+                try{
+
+                    Hardware_update_state_from_Homer status = Hardware_update_state_from_Homer.getUpdate_state(updateDeviceInformation_device.update_state);
+                    if(status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + updateDeviceInformation_device.update_state + " is not recognize in Json!");
+
+                    Model_Board board = Model_Board.find.byId(updateDeviceInformation_device.deviceId);
+                    if(board == null) throw new NullPointerException("Device id" +updateDeviceInformation_device.deviceId + " not found!");
+
+                    Firmware_type firmware_type = Firmware_type.getFirmwareType(updateDeviceInformation_device.firmwareType);
+                    if(firmware_type == null) throw new NullPointerException("Firmware_type " +updateDeviceInformation_device.firmwareType + "is not recognize in Json!");
+
+
+                    Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.byId(updateDeviceInformation_device.c_program_update_plan_id);
+                    if(plan == null) throw new NullPointerException("Plan id" +updateDeviceInformation_device.c_program_update_plan_id + " not found!");
+
+
+                    if(status == Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE){
+                        plan.state = C_ProgramUpdater_State.complete;
+                        plan.date_of_finish = new Date();
+                        plan.update();
+
+                        if(firmware_type == Firmware_type.FIRMWARE){
+                            board.actual_c_program_version = plan.c_program_version_for_update;
+                            board.update();
+                            continue;
+                        }
+
+                        if(firmware_type == Firmware_type.BACKUP){
+                            board.actual_backup_c_program_version = plan.c_program_version_for_update;
+                            board.update();
+                            continue;
+                        }
+
+                        if(firmware_type == Firmware_type.BOOTLOADER){
+
+                            board.actual_boot_loader = plan.bootloader;
+                            board.update();
+                            continue;
+                        }
+
+                    }
+
+                    if(status == Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || status == Hardware_update_state_from_Homer.YODA_WAS_OFFLINE){
+                        plan.state = C_ProgramUpdater_State.waiting_for_device;
+                        plan.update();
+                        continue;
+                    }
+
+                    if(status == Hardware_update_state_from_Homer.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION){
+                        plan.state = C_ProgramUpdater_State.not_updated;
+                        plan.date_of_finish = new Date();
+                        plan.update();
+                        continue;
+                    }
+
+                    // Na závěr vše ostatní je chyba
+
+                    plan.state = C_ProgramUpdater_State.critical_error;
+                    plan.error = updateDeviceInformation_device.error;
+                    plan.errorCode = updateDeviceInformation_device.errorCode;
+                    plan.date_of_finish = new Date();
+                    plan.update();
+
+                }catch (Exception e){
+                    logger.error("Model_Board:: update_report_from_homer:: Error:: ", e);
+                }
+            }
+        }
+
+
+
+    }
 
     // Kontrola up_to_date harwaru
     @JsonIgnore @Transient  public static void hardware_firmware_state_check(Model_Board board, WS_Yoda_connected report) {
@@ -462,8 +574,6 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static WS_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, List<Actualization_procedure> procedures){
 
         try {
-
-            logger.debug("Homer: " + instance.send_to_instance().identifikator + ", will update Yodas or Devices");
 
             JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Update_device_firmware().make_request(instance, procedures), 1000 * 30, 0, 3);
 

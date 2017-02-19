@@ -89,6 +89,7 @@ public class Model_VersionObject extends Model {
             inverseJoinColumns = @JoinColumn(name = "c_program_version_id"))                                    public List<Model_VersionObject> library_versions = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
+    @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version")                                          public List<Model_Board>  c_program_version_backup_boards  = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
                                                                                                    @JsonIgnore  public Approval_state approval_state; // Zda je program schválený veřejný program
                                                                                          @OneToOne @JsonIgnore  public Model_CProgram default_program;

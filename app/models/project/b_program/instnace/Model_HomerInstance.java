@@ -19,6 +19,7 @@ import models.project.b_program.Model_BPair;
 import models.project.b_program.Model_BProgram;
 import models.project.b_program.Model_BProgramHwGroup;
 import models.project.b_program.servers.Model_HomerServer;
+import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
@@ -60,7 +61,7 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)                  public Model_HomerInstanceRecord actual_instance; // Aktuálně běžící instnace na Serveru
 
-                @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("id ASC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
+                @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("id DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
 
     @JsonIgnore                                                                                                         public boolean virtual_instance; // Pokud je vázaná na project (na držení fiktivního HW)
@@ -79,7 +80,7 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.personal_server_name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.unique_identificator;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public boolean instance_online()          {  return this.online_state();}
-    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer - can be null") public Swagger_B_Program_Instance actual_summary() {
+    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer") public Swagger_B_Program_Instance actual_summary() {
         try {
 
             Swagger_B_Program_Instance instance = new Swagger_B_Program_Instance();
@@ -116,7 +117,9 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-
+    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer and contains Hardware") public List<Model_ActualizationProcedure> hardware_update_procedures(){
+        return Model_ActualizationProcedure.find.where().eq("main_instance_history.blocko_instance_name", blocko_instance_name).order().asc("date_of_create").findList();
+    }
 
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
@@ -282,11 +285,8 @@ public class Model_HomerInstance extends Model {
                     final Form<WS_Update_device_firmware> form = Form.form(WS_Update_device_firmware.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: WS_Update_device_firmware:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
-                    // TODO
 
-                    System.out.println("Přišla zpráva z Homera!");
-
-                    //  Model_Board.device_Disconnected(form.get());
+                    Model_Board.update_report_from_homer(form.get());
                     return;
                     
                 }
@@ -609,7 +609,7 @@ public class Model_HomerInstance extends Model {
             return form.get();
 
         }catch (Exception e){
-            logger.error("Model_HomerInstance:: get_summary_information: Error:: ", e);
+            logger.error("Model_HomerInstance:: update_device_summary_collection:: Error:: ", e);
             return null;
         }
     }
