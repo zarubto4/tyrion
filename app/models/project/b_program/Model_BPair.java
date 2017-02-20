@@ -20,7 +20,7 @@ public class Model_BPair extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                          @JsonIgnore @Id public String id;
+                                          @JsonIgnore @Id public UUID id;
 
     @JsonIgnore @ManyToOne()                              public Model_VersionObject c_program_version;      // Týká se aktualizace C_Programu na HW.
     @JsonIgnore @ManyToOne()                              public Model_Board board;
@@ -48,11 +48,6 @@ public class Model_BPair extends Model {
 
     @JsonIgnore @Override
     public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_BPair.find.byId(this.id) == null) break;
-        }
         super.save();
     }
 

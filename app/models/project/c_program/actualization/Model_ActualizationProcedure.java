@@ -38,11 +38,9 @@ public class Model_ActualizationProcedure extends Model {
     @ApiModelProperty(required = true, value = "Can be empty")
     @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
 
-    @ApiModelProperty(required = true, value = "UNIX time in ms",
-                                                example = "1466163478925")                          public Date date_of_create;
-    @ApiModelProperty(required = true, value = "can be empty, which means that the procedure is not done yet. " +
-                                               "UNIX time in ms",
-                                                example = "1466163478925")                          public Date date_of_finish;
+    @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_create;
+    @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_planing;
+    @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_finish;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -180,7 +178,7 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Transient   public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
 
-    @JsonIgnore @Transient   public boolean read_permission()      {  return Model_Project.find.where().eq("b_program.version_objects.actualization_procedures.id",id ).findUnique().read_permission() || Controller_Security.getPerson().has_permission("Actualization_procedure_read"); }
+    @JsonIgnore @Transient   public boolean read_permission()      {  return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id",id ).findUnique().read_permission() || Controller_Security.getPerson().has_permission("Actualization_procedure_read"); }
 
     public enum permissions{Actualization_procedure_read}
 

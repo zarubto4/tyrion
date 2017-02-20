@@ -53,6 +53,7 @@ public class Controller_Actualization extends Controller {
             return GlobalResult.result_ok(Json.toJson(procedure));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

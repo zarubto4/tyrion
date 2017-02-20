@@ -19,8 +19,10 @@ import utilities.response.GlobalResult;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.net.NetworkInterface;
-import java.util.*;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 public class Loggy{
 
@@ -37,7 +39,7 @@ public class Loggy{
 
     public static Result result_internalServerError(Exception exception, Http.Request request) {
 
-        // logger.error("Error:: ", exception);
+       logger.error("Error:: ", exception);
 
         String id;
 
@@ -70,8 +72,6 @@ public class Loggy{
         descriptionBuilder.append("    Tyrion version: " + Server.server_version);
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Tyrion mode: " + Server.server_mode);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Server MAC address: " + getMac());
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
         descriptionBuilder.append("\n");
@@ -123,8 +123,6 @@ public class Loggy{
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Tyrion mode: " + Server.server_mode);
         descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Server MAC address: " + getMac());
-        descriptionBuilder.append("\n");
         descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
         descriptionBuilder.append("\n");
 
@@ -169,8 +167,6 @@ public class Loggy{
         descriptionBuilder.append("    Tyrion version: " + Server.server_version);
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Tyrion mode: " + Server.server_mode);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Server MAC address: " + getMac());
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
         descriptionBuilder.append("\n");
@@ -256,24 +252,6 @@ public class Loggy{
 
     public static Model_LoggyError getError(String id) {
         return Model_LoggyError.find.byId(id);
-    }
-
-    private static String getMac() {
-        StringBuilder builder = new StringBuilder();
-        try {
-            byte[] mac = NetworkInterface
-                    .getNetworkInterfaces()
-                    .nextElement()
-                    .getHardwareAddress();  // byty MAC adresy
-
-            for (int i = 0; i < mac.length; i++) {  // formátování MAC na čitelný formát
-                builder.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
-            }
-        }
-        catch (Exception e) {
-            play.Logger.error("network problem", e);
-        }
-        return builder.toString();
     }
 
     private static F.Promise<Result> youtrack_login() {

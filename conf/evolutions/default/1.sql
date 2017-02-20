@@ -21,17 +21,18 @@ create table model_actualization_procedure (
   state                     varchar(19),
   homer_instance_record_id  varchar(255),
   date_of_create            timestamp,
+  date_of_planing           timestamp,
   date_of_finish            timestamp,
   constraint ck_model_actualization_procedure_state check (state in ('complete_with_error','canceled','in_progress','successful_complete','complete','not_start_yet')),
   constraint pk_model_actualization_procedure primary key (id))
 ;
 
 create table model_bpair (
-  id                        varchar(255) not null,
+  id                        varchar(40) not null,
   c_program_version_id      varchar(255),
   board_id                  varchar(255),
-  device_board_pair_id      varchar(255),
-  main_board_pair_id        varchar(255),
+  device_board_pair_id      varchar(40),
+  main_board_pair_id        varchar(40),
   constraint uq_model_bpair_main_board_pair_i unique (main_board_pair_id),
   constraint pk_model_bpair primary key (id))
 ;
@@ -44,13 +45,14 @@ create table model_bprogram (
   last_update               timestamp,
   date_of_create            timestamp,
   project_id                varchar(255),
+  removed_by_user           boolean,
   azure_b_program_link      varchar(255),
   constraint uq_model_bprogram_instance_block unique (instance_blocko_instance_name),
   constraint pk_model_bprogram primary key (id))
 ;
 
 create table model_bprogram_hw_group (
-  id                        varchar(255) not null,
+  id                        varchar(40) not null,
   constraint pk_model_bprogram_hw_group primary key (id))
 ;
 
@@ -138,6 +140,7 @@ create table model_cprogram (
   project_id                varchar(255),
   type_of_board_id          varchar(255),
   date_of_create            timestamp,
+  removed_by_user           boolean,
   type_of_board_default_id  varchar(255),
   example_library_id        varchar(255),
   azure_c_program_link      varchar(255),
@@ -436,7 +439,7 @@ create table model_mproject (
 ;
 
 create table model_mproject_program_snap_shot (
-  id                        varchar(255) not null,
+  id                        varchar(40) not null,
   m_project_id              varchar(255),
   constraint pk_model_mproject_program_snap_s primary key (id))
 ;
@@ -714,13 +717,13 @@ create table model_import_library_model_type_ (
 ;
 
 create table b_program_version_snapshots (
-  model_mproject_program_snap_shot_id varchar(255) not null,
+  model_mproject_program_snap_shot_id varchar(40) not null,
   model_version_object_id        varchar(255) not null,
   constraint pk_b_program_version_snapshots primary key (model_mproject_program_snap_shot_id, model_version_object_id))
 ;
 
 create table m_project_program_snapshots (
-  model_mproject_program_snap_shot_id varchar(255) not null,
+  model_mproject_program_snap_shot_id varchar(40) not null,
   model_version_object_id        varchar(255) not null,
   constraint pk_m_project_program_snapshots primary key (model_mproject_program_snap_shot_id, model_version_object_id))
 ;
@@ -757,7 +760,7 @@ create table model_c_program_library_version (
 
 create table model_version_object_model_bprog (
   model_version_object_id        varchar(255) not null,
-  model_bprogram_hw_group_id     varchar(255) not null,
+  model_bprogram_hw_group_id     varchar(40) not null,
   constraint pk_model_version_object_model_bprog primary key (model_version_object_id, model_bprogram_hw_group_id))
 ;
 
@@ -773,8 +776,6 @@ create table type_of_confirms_post (
   constraint pk_type_of_confirms_post primary key (type_of_confirms_id, post_id))
 ;
 create sequence linked_post_seq;
-
-create sequence model_bprogram_hw_group_seq;
 
 create sequence model_invoice_item_seq;
 
@@ -1158,8 +1159,6 @@ drop table if exists type_of_confirms cascade;
 drop table if exists type_of_post cascade;
 
 drop sequence if exists linked_post_seq;
-
-drop sequence if exists model_bprogram_hw_group_seq;
 
 drop sequence if exists model_invoice_item_seq;
 

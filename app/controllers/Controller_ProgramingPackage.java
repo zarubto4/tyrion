@@ -985,14 +985,7 @@ public class Controller_ProgramingPackage extends Controller {
                     snap.version_objects_program.add(m_program_version);
                 }
 
-
                 version_object.b_program_version_snapshots.add(snap);
-            }
-
-
-            logger.debug("Controller_ProgramingPackage:: update_b_program_new_version:: Saving Snap");
-            for(Model_MProjectProgramSnapShot snap : version_object.b_program_version_snapshots){
-                snap.save();
             }
 
 
@@ -1004,6 +997,7 @@ public class Controller_ProgramingPackage extends Controller {
                 // Definuji Main Board - Tedy yodu pokud v Json přišel (není podmínkou)
                 if(group.main_board_pair != null) {
 
+                    System.out.println("Mám main Board ID: " + group.main_board_pair.board_id);
                     Model_BPair b_pair = new Model_BPair();
 
                     b_pair.board = Model_Board.find.byId(group.main_board_pair.board_id);
@@ -1022,11 +1016,13 @@ public class Controller_ProgramingPackage extends Controller {
 
                     b_program_hw_group.main_board_pair = b_pair;
 
+                }else {
+                    return GlobalResult.result_BadRequest("Hardware Group hasn't Main Board!");
                 }
 
                 // Definuji Devices - Tedy yodu pokud v Json přišly (není podmínkou)
 
-                if(group.device_board_pairs != null) {
+                if(group.device_board_pairs != null && !group.device_board_pairs.isEmpty() ) {
 
                     for(Swagger_B_Program_Version_New.Connected_Board connected_board : group.device_board_pairs ){
 
@@ -1051,17 +1047,19 @@ public class Controller_ProgramingPackage extends Controller {
                 version_object.b_program_hw_groups.add(b_program_hw_group);
             }
 
+
+            /**
+            logger.debug("Controller_ProgramingPackage:: update_b_program_new_version:: Saving Snap");
+            for(Model_MProjectProgramSnapShot snap : version_object.b_program_version_snapshots){
+                snap.save();
+            }
+
             logger.debug("Controller_ProgramingPackage:: update_b_program_new_version:: Saving b_program_hw_group");
             for(Model_BProgramHwGroup b_program_hw_group : version_object.b_program_hw_groups){
-
-                b_program_hw_group.main_board_pair.save();
-
-                for(Model_BPair b_pair : b_program_hw_group.device_board_pairs){
-                    b_pair.save();
-                }
-
                 b_program_hw_group.save();
             }
+            */
+
 
             logger.debug("Controller_ProgramingPackage:: update_b_program_new_version:: Saving version");
             // Uložení objektu
@@ -1085,6 +1083,7 @@ public class Controller_ProgramingPackage extends Controller {
             return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }
@@ -1286,9 +1285,7 @@ public class Controller_ProgramingPackage extends Controller {
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
 
 
-
-            if(b_program.instance.actual_instance != null && b_program.instance.actual_instance.version_object.id.equals(version_object.id)) return GlobalResult.result_BadRequest("This Version is already in Cloud!");
-
+            //if(b_program.instance.actual_instance != null && b_program.instance.actual_instance.version_object.id.equals(version_object.id)) return GlobalResult.result_BadRequest("This Version is already in Cloud!");
 
             Model_HomerInstanceRecord record = new Model_HomerInstanceRecord();
             record.main_instance_history = b_program.instance;
@@ -1301,97 +1298,28 @@ public class Controller_ProgramingPackage extends Controller {
                 if (!help.upload_time.after(new Date()))  return GlobalResult.result_BadRequest("time must be set in the future");
                 record.planed_when = help.upload_time;
 
-                b_program.instance.actual_instance =null;
-                b_program.instance.update();
-
-                record.actual_running_instance = b_program.instance;
-
-            } else record.running_from = new Date();
-
+            } else{
+                Date date_from = new Date();
+                record.running_from = date_from;
+                record.planed_when = date_from;
+            }
             record.save();
 
-            // Kontrola HW
-            if(version_object.b_program_hw_groups != null) {
+            Long minutes = new Long("60000");
+            Long one_month = new Date().getTime() + minutes;
+            Date created = new Date(one_month);
 
-                logger.trace("Upload version to cloud contains Hardware!");
-                for(Model_BProgramHwGroup group : version_object.b_program_hw_groups){
+            // If immidietly
+            if(record.planed_when.getTime() < created.getTime()){
 
-                    // Kontrola Yody
-                    if(group.main_board_pair != null ) {
+                logger.debug("Instanci budu nasazovat okamžitě");
+                Model_HomerInstance.upload_Record_immediately(record);
 
-                        Model_Board yoda = group.main_board_pair.board;
-
-                        //1. Pokud už běží v jiné instanci mimo vlastní dočasnou instnaci
-                        if (yoda.virtual_instance_under_project != null) {
-                            yoda.virtual_instance_under_project.remove_board_from_virtual_instance(yoda);
-                        }
-
-                        if(group.device_board_pairs != null) {
-                            //1.
-
-                            //2. Pokud nikdy nebyl spárován
-
-                            // Kontrola Deviců
-                            //1. Jestli nejsou už v jiné instanci
-
-                            //2.
-                        }
-
-
-
-                    }else {
-                        logger.debug("Instance neobsahovala žádný HW - respektive neobsahovala Yodu!!");
-                    }
-                }
+            }else {
+                logger.debug("Instanci má na své nasazení ještě čas");
             }
 
 
-            //Určím podle časové konstanty zda nahraju hned nebo až za chvíli
-            if(record.planed_when != null) return GlobalResult.result_ok();
-
-            if( b_program.instance.actual_instance != null) {
-                b_program.instance.actual_instance.actual_running_instance = null;
-                b_program.instance.actual_instance.update();
-            }
-
-            b_program.instance.actual_instance = record;
-            record.actual_running_instance = b_program.instance;
-            record.update();
-            b_program.instance.update();
-
-            Thread upload_instance = new Thread() {
-                @Override
-                public void run() {
-
-                    try {
-
-                        // Ověřím připojený server
-                        if (!Controller_WebSocket.homer_servers.containsKey(b_program.instance.cloud_homer_server.unique_identificator)) {
-                            b_program.instance.notification_instance_unsuccessful_upload("Server is offline now. It will be uploaded as soon as possible");
-                            logger.warn("Server je offline!! Nenahraju instanci!!");
-                            return;
-                        }
-
-                        // Server je připojený
-                        try {
-
-
-                            if (!record.main_instance_history.instance_online()) {
-                                 record.main_instance_history.add_instance_to_server();
-                            } else {
-                                 record.main_instance_history.update_instance_to_actual_instance_record();
-                            }
-
-                        } catch (Exception e) {
-                            logger.error("Error while cloud_compilation_server tried compile version of C_program", e);
-                        }
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            };
-
-            upload_instance.start();
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
@@ -1423,10 +1351,34 @@ public class Controller_ProgramingPackage extends Controller {
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.forbidden_Permission();
 
+            if(homer_instance.actual_instance != null && !homer_instance.actual_instance.hardware_group().isEmpty()){
+
+                for(Model_BProgramHwGroup group : homer_instance.actual_instance.hardware_group()){
+
+                    group.main_board_pair.board.virtual_instance_under_project = group.main_board_pair.board.project.private_instance;
+                    group.main_board_pair.board.update();
+
+                }
+            }
+
+            Model_HomerInstanceRecord record =  homer_instance.actual_instance;
+            record.running_to = new Date();
+            record.actual_running_instance = null;
+
+            homer_instance.actual_instance = null;
+
+            record.update();
+            homer_instance.update();
+
+
+
+            homer_instance.actual_instance = null;
+            homer_instance.update();
+
+
             WS_Destroy_instance result = homer_instance.remove_instance_from_server();
 
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_BadRequest(Json.toJson(result));
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1472,7 +1424,7 @@ public class Controller_ProgramingPackage extends Controller {
 
     @ApiOperation(value = "get Instance by instance_id",
             tags = {"Instance"},
-            notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instnace schema yet",
+            notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instance schema yet",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1503,6 +1455,39 @@ public class Controller_ProgramingPackage extends Controller {
             return GlobalResult.result_ok(Json.toJson(instance));
 
         } catch (Exception e) {
+            e.printStackTrace();
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Instance Record by instance_record_id",
+            tags = {"Instance"},
+            notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instance schema yet",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success",                                   response = Model_HomerInstanceRecord.class),
+            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_b_program_instance_record(String instance_record_id){
+        try{
+
+
+            Model_HomerInstanceRecord instance = Model_HomerInstanceRecord.find.byId(instance_record_id);
+            if (instance == null) return GlobalResult.notFoundObject("Homer_Instance instance_id not found");
+
+            if(!instance.main_instance_history.getB_program().read_permission()) return GlobalResult.forbidden_Permission();
+
+            return GlobalResult.result_ok(Json.toJson(instance));
+
+        } catch (Exception e) {
+            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

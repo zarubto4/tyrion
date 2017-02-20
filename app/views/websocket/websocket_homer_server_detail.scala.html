@@ -65,10 +65,10 @@
 
                                 <td>
                                 @if(x.virtual_instance){
-                                   @if(x.getBoards_in_virtual_instance().size() > 0){
-                                       <p class="small text-red">yes</p>
+                                   @if(x.getBoards_in_virtual_instance().isEmpty()){
+                                           <p class="small text-gray">no</p>
                                    }else{
-                                       <p class="small text-gray">no</p>
+                                       <p class="small text-red">yes</p>
                                    }
                                 }else{
                                     @if(x.actual_instance != null){

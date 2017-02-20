@@ -21,7 +21,7 @@ public class Model_MProjectProgramSnapShot extends Model {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id @ApiModelProperty(required = true)  public String id;
+    @JsonIgnore @Id @ApiModelProperty(required = true)  public UUID id;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_MProject m_project;
 
@@ -65,11 +65,6 @@ public class Model_MProjectProgramSnapShot extends Model {
 
     @JsonIgnore @Override
     public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_MProjectProgramSnapShot.find.byId(this.id) == null) break;
-        }
         super.save();
     }
 

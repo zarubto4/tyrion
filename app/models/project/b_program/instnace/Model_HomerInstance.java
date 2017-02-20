@@ -29,7 +29,6 @@ import play.i18n.Lang;
 import utilities.enums.*;
 import utilities.hardware_updater.Master_Updater;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
-import utilities.swagger.outboundClass.Swagger_B_Program_Instance;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
@@ -41,6 +40,7 @@ import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,11 +57,11 @@ public class Model_HomerInstance extends Model {
                              @JsonIgnore @ManyToOne()               public Model_HomerServer cloud_homer_server;
 
 
-    @JsonIgnore @OneToOne(mappedBy="instance", fetch = FetchType.LAZY)                                  public Model_BProgram b_program;                     //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
+    @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY)          public Model_BProgram b_program;                     //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
-    @JsonIgnore @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)                  public Model_HomerInstanceRecord actual_instance; // Aktuálně běžící instnace na Serveru
+                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)                  public Model_HomerInstanceRecord actual_instance; // Aktuálně běžící instnace na Serveru
 
-                @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("id DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
+                @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
 
     @JsonIgnore                                                                                                         public boolean virtual_instance; // Pokud je vázaná na project (na držení fiktivního HW)
@@ -80,45 +80,13 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.personal_server_name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.unique_identificator;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public boolean instance_online()          {  return this.online_state();}
-    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer") public Swagger_B_Program_Instance actual_summary() {
-        try {
+    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return cloud_homer_server.server_is_online();}
 
-            Swagger_B_Program_Instance instance = new Swagger_B_Program_Instance();
-
-            if(actual_instance != null) {
-
-                instance.instance_is_online = online_state();
-                instance.instance_record_id = actual_instance.id;
-                instance.date_of_created = actual_instance.date_of_created;
-                instance.running_from = actual_instance.running_from;
-                instance.running_to = actual_instance.running_to;
-                instance.planed_when = actual_instance.planed_when;
-
-                instance.b_program_id = actual_instance.version_object.b_program.id;
-                instance.b_program_name = actual_instance.version_object.b_program.name;
-                instance.b_program_version_name = actual_instance.b_program_version_name();
-                instance.b_program_version_id = actual_instance.b_program_version_id();
-
-                instance.hardware_group = actual_instance.version_object.b_program_hw_groups;
-                instance.m_project_program_snapshots = actual_instance.version_object.b_program_version_snapshots;
-
-                instance.instance_remote_url = "ws://" + cloud_homer_server.server_url + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
-            }
-
-            instance.server_is_online = cloud_homer_server.server_is_online();
-            instance.server_name = cloud_homer_server.unique_identificator;
-            instance.server_id = cloud_homer_server.unique_identificator;
-
-            return instance;
-
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
+    @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
+        if(actual_instance != null) {
+            return "ws://" + cloud_homer_server.server_url + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
         }
-    }
-
-    @Transient @JsonProperty @ApiModelProperty(required = false, value = "Only if instance is upload in Homer and contains Hardware") public List<Model_ActualizationProcedure> hardware_update_procedures(){
-        return Model_ActualizationProcedure.find.where().eq("main_instance_history.blocko_instance_name", blocko_instance_name).order().asc("date_of_create").findList();
+        return null;
     }
 
 
@@ -158,12 +126,6 @@ public class Model_HomerInstance extends Model {
 
     @Override
     public void delete(){
-        try {
-
-            this.cloud_homer_server.remove_instance(blocko_instance_name);
-
-        }catch (Exception e){}
-
         super.delete();
     }
 
@@ -508,6 +470,8 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient public  WS_Destroy_instance remove_instance_from_server() {
         try{
 
+            if(!instance_online())return  new WS_Destroy_instance();
+
             // Vytvořím Instanci
             WS_Destroy_instance result_instance  = this.cloud_homer_server.remove_instance(this.blocko_instance_name);
 
@@ -523,12 +487,73 @@ public class Model_HomerInstance extends Model {
         }
     }
 
+    @JsonIgnore @Transient public static void upload_Record_immediately(Model_HomerInstanceRecord record) {
+
+        Thread upload_record= new Thread() {
+            @Override
+            public void run() {
+
+                try {
+
+                    Model_HomerInstance instance = record.main_instance_history;
+
+
+                    if( instance.actual_instance != null) {
+                        instance.actual_instance.running_to = new Date();
+                        instance.actual_instance.actual_running_instance = null;
+                        instance.actual_instance.update();
+                    }else {
+
+                    }
+
+                    instance.actual_instance = record;
+                    record.actual_running_instance = instance;
+                    record.update();
+                    instance.update();
+
+                    for(Model_BProgramHwGroup group : record.hardware_group()){
+
+                        // Kontrola Yody
+                        if(group.main_board_pair != null ) {
+
+                            Model_Board yoda = group.main_board_pair.board;
+
+                            //1. Pokud už běží v jiné instanci mimo vlastní dočasnou instnaci
+                            if (yoda.virtual_instance_under_project != null) {
+                                yoda.virtual_instance_under_project.remove_board_from_virtual_instance(yoda);
+                            }
+                        }
+                    }
+
+
+                        // Ověřím připojený server
+                    if (!Controller_WebSocket.homer_servers.containsKey(instance.cloud_homer_server.unique_identificator)) {
+                        logger.error("Server je offline!! Instanci nenahraji !!");
+                        return;
+                    }
+
+                    // Server je připojený
+                    try {
+
+                        instance.actual_instance.create_actualization_request();
+                        instance.update_instance_to_actual_instance_record();
+
+                    } catch (Exception e) {
+                        logger.error("Error while upload_Record_immediately tried uploud Instance Record to Homer", e);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        upload_record.start();
+    }
+
+
     // TODO tuto metodu budu volat ve chvíli kdy nějakou časovu známkou prohodím verze - podle času uživatele
     @JsonIgnore @Transient public  WS_Update_instance_to_actual_instance_record update_instance_to_actual_instance_record() {
         try{
-
-            // Nastartuji aktualizační proces
-            this.actual_instance.add_new_actualization_request();
 
             // Doplním do ní HW
             WS_Update_device_summary_collection result_device  = this.update_device_summary_collection();
@@ -621,6 +646,7 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient public  WS_Online_states_devices get_devices_online_state(List<String> device_id){
         try{
 
+            if(!online_state()) return new WS_Online_states_devices();
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
 
 
@@ -664,7 +690,17 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore  @Transient public void check_hardware_c_program_state(){
 
-        logger.error("TODO proběhl update instance a teď bych chtěl sesynchronizovat HW");
+        logger.debug("Check check_hardware_c_program_state");
+
+        // Mohu nahrávat instanci která nemusí mít vůbec žádný update hardwaru a tak je zbytečné vytvářet objekt
+        if(actual_instance.procedures.size() > 0){
+            logger.debug("Sending new Actualization procedure to Master Updater");
+            for(Model_ActualizationProcedure procedure : actual_instance.procedures) Master_Updater.add_new_Procedure(procedure);
+        }else {
+            logger.debug("No new Actualization procedure for Master Procedure");
+        }
+
+
     }
 
     @JsonIgnore @Transient public  void check_hardware(Model_Board board, WS_AbstractMessageBoard report){

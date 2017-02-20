@@ -36,16 +36,16 @@ public class Model_HomerInstanceRecord extends Model {
 
                                                                 @JsonIgnore @Id   public String id;
 
-    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public Model_HomerInstance main_instance_history;
+    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL,  fetch = FetchType.LAZY)     public Model_HomerInstance main_instance_history;
 
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date date_of_created;
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date running_from;
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date running_to;
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date planed_when;
 
-                                                        @JsonIgnore @ManyToOne()  public Model_VersionObject version_object;
+                                   @JsonIgnore @ManyToOne(cascade=CascadeType.ALL)  public Model_VersionObject version_object;
                                    @JsonIgnore @OneToOne(cascade=CascadeType.ALL) public Model_HomerInstance actual_running_instance;
-    @JsonIgnore @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
+    @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -56,13 +56,32 @@ public class Model_HomerInstanceRecord extends Model {
 
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_BProgramHwGroup> hardware_group()               {  return version_object.b_program_hw_groups;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_MProjectProgramSnapShot> m_project_snapshop()    {  return version_object.b_program_version_snapshots;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String status()    {
 
-/* ENUMS PARAMETERS ----------------------------------------------------------------------------------------------------*/
+        if(planed_when.getTime() > new Date().getTime()) return "furure";
+        if(actual_running_instance != null) return "now";
+        else return "history";
+    }
 
-    @JsonIgnore public List<Model_ActualizationProcedure> getProcedures() {
+
+/* JSON IGNORE  ----------------------------------------------------------------------------------------------------*/
+    @ApiModelProperty(required = true, readOnly = true)  @JsonProperty(value = "procedures")
+    public List<Model_ActualizationProcedure> getProcedures() {
         if(procedures == null) procedures = Model_ActualizationProcedure.find.where().eq("homer_instance_record.id", id).findList();
         return procedures;
     }
+
+    @JsonIgnore public  Homer_InstanceRecord_Short_detail get_short_detail(){
+
+        Homer_InstanceRecord_Short_detail detail = new Homer_InstanceRecord_Short_detail();
+        detail.date_of_created = date_of_created;
+        detail.running_from = running_from;
+        detail.running_to = running_to;
+        detail.planed_when = planed_when;
+
+        return detail;
+    }
+
 
     @JsonIgnore @Override
     public void save(){
@@ -76,8 +95,10 @@ public class Model_HomerInstanceRecord extends Model {
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER-----------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public void add_new_actualization_request() {
+    public void create_actualization_request() {
         try {
+
+            logger.error("add_new_actualization_request byl zavolán na Instance Record:: "  + id);
 
             if(!getProcedures().isEmpty() || version_object.b_program_hw_groups.isEmpty()) return;
 
@@ -85,6 +106,29 @@ public class Model_HomerInstanceRecord extends Model {
             for(Model_BProgramHwGroup group : version_object.b_program_hw_groups) {
 
                 List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
+
+
+                // Nejdříve Main Boad
+                List<Model_CProgramUpdatePlan> old_plans_main_board = Model_CProgramUpdatePlan.find.where()
+                        .eq("firmware_type", Firmware_type.FIRMWARE.name())
+                        .eq("board.id", group.main_board_pair.board.id).where()
+                        .disjunction()
+                        .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                        .add(Expr.isNull("state"))
+                        .endJunction()
+                        .findList();
+
+                logger.debug("The number still valid update plans for Main Board that must be override: " + old_plans_main_board.size());
+
+                for (Model_CProgramUpdatePlan old_plan : old_plans_main_board) {
+                    logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
+                    old_plan.state = C_ProgramUpdater_State.overwritten;
+                    old_plan.date_of_finish = new Date();
+                    old_plan.update();
+                }
 
                 // ID C_programu aktuálního != požadovanému -> zařadím do aktualizační procedury!
                 if(group.main_board_pair.board.actual_c_program_version == null || !group.main_board_pair.c_program_version_id().equals(group.main_board_pair.board.actual_c_program_version.id)){
@@ -100,6 +144,8 @@ public class Model_HomerInstanceRecord extends Model {
                 }
 
 
+
+                // Device
                 for (Model_BPair pair : group.device_board_pairs) {
 
                     // Tady chci zrušit všechny předchozí procedury vázající se na seznam příchozího hardwaru!
@@ -144,24 +190,21 @@ public class Model_HomerInstanceRecord extends Model {
                     }
                 }
 
+
                 // Mohu nahrávat instanci která nemusí mít vůbec žádný update hardwaru a tak je zbytečné vytvářet objekt
                 if(updates.size() > 0){
 
                     Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
                     procedure.date_of_create = new Date();
+                    if(running_from != null) procedure.date_of_planing = running_from;
                     procedure.state = Actual_procedure_State.not_start_yet;
                     procedure.homer_instance_record = this;
                     procedure.save();
 
-
-                    procedure.updates.addAll(updates);
-                    procedure.update();
-
-                    this.procedures.add(procedure);
-                    this.update();
-
-                    logger.debug("Sending new Actualization procedure to Master Updater");
-                    Master_Updater.add_new_Procedure(procedure);
+                    for(Model_CProgramUpdatePlan plan_update : updates){
+                        plan_update.actualization_procedure = procedure;
+                        plan_update.save();
+                    }
                 }
             }
 
@@ -255,6 +298,15 @@ public class Model_HomerInstanceRecord extends Model {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+    public class Homer_InstanceRecord_Short_detail{
+
+        public Date date_of_created;
+        public Date running_from;
+        public Date running_to;
+        public Date planed_when;
+
+
+    }
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

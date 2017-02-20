@@ -55,8 +55,11 @@ public class Model_CProgramUpdatePlan extends Model {
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer errorCode;
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+
+    @JsonProperty @Transient
+    public Date date_of_planing() { return actualization_procedure.date_of_planing;}
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient

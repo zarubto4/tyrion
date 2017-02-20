@@ -8,6 +8,7 @@ import models.compiler.Model_VersionObject;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Hardware_group") // POZOR - Je zde záměrně sjednocen objekt s dokumentační třídou pro swagger Hardware_group.class
@@ -17,7 +18,7 @@ public class Model_BProgramHwGroup extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String  id;
+    @JsonIgnore @Id public UUID id;
 
     @OneToMany(mappedBy="device_board_pair",cascade= CascadeType.ALL, fetch = FetchType.EAGER)   public List<Model_BPair> device_board_pairs = new ArrayList<>();
     @OneToOne(mappedBy="main_board_pair",cascade=CascadeType.ALL, fetch = FetchType.EAGER)       public Model_BPair main_board_pair;

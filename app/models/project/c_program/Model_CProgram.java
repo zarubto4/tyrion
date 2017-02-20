@@ -42,9 +42,9 @@ public class Model_CProgram extends Model {
                        @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)  public Model_TypeOfBoard type_of_board;  // Typ desky
 
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
-            value = "UNIX time in ms",
-            example = "1466163478925")                                                                  public Date date_of_create;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;
+
+    @JsonIgnore  public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_VersionObject> version_objects = new ArrayList<>();
 
@@ -221,6 +221,12 @@ public class Model_CProgram extends Model {
 
         super.save();
     }
+
+    @JsonIgnore @Override public void delete() {
+        this.removed_by_user = true;
+        this.update();
+    }
+
 
     @JsonIgnore @Transient
     public String get_path(){

@@ -333,6 +333,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public boolean is_instance_exist(String instance_name){
         try {
 
+            if(!server_is_online()) return false;
             JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Is_instance_exist().make_request(instance_name), 1000 * 5, 0, 2);
 
             final Form<WS_Is_instance_exist> form = Form.form(WS_Is_instance_exist.class).bind(node);

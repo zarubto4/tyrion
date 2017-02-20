@@ -44,7 +44,7 @@ public class Model_BProgram extends Model {
             value = "UNIX time in ms",
             example = "1466163478925")                       public Date date_of_create;
                                     @JsonIgnore @ManyToOne   public Model_Project project;
-
+                                    @JsonIgnore              public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
     @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
@@ -163,7 +163,9 @@ public class Model_BProgram extends Model {
 
     @JsonIgnore @Override public void delete() {
 
-       instance.delete();
+      instance.remove_instance_from_server();
+      this.removed_by_user = true;
+      super.update();
 
     }
 
