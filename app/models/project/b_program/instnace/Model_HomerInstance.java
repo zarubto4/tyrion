@@ -711,11 +711,11 @@ public class Model_HomerInstance extends Model {
                     .eq("board.id", board.id)
                     .eq("actualization_procedure.homer_instance_record.id", actual_instance.id)
                     .disjunction()
-                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                        .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
                     .endJunction().findUnique();
 
             if (plan.firmware_type == Firmware_type.FIRMWARE) {

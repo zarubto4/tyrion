@@ -136,17 +136,17 @@ public class Controller_Person extends Controller {
         try{
 
             Model_ValidationToken validationToken = Model_ValidationToken.find.where().eq("authToken", authToken).findUnique();
-            if (validationToken == null) return GlobalResult.redirect( Server.becki_accountAuthorizedFailed  );
+            if (validationToken == null) return GlobalResult.redirect(Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedFailed  );
 
             Model_Person person = Model_Person.find.where().eq("mail", validationToken.personEmail).findUnique();
-            if(person == null) return GlobalResult.redirect( Server.becki_accountAuthorizedFailed  );
+            if(person == null) return GlobalResult.redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedFailed  );
 
             person.mailValidated = true;
             person.update();
 
            validationToken.delete();
 
-            return GlobalResult.redirect( Server.becki_accountAuthorizedSuccessful );
+            return GlobalResult.redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedSuccessful );
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
@@ -270,9 +270,9 @@ public class Controller_Person extends Controller {
                 passwordRecoveryToken.time_of_creation = new Date();
                 passwordRecoveryToken.save();
 
-                link = Server.becki_passwordReset + "/" + passwordRecoveryToken.password_recovery_token;
+                link =Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + passwordRecoveryToken.password_recovery_token;
             }else {
-                link = Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
+                link =Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
             }
             try {
                         new EmailTool()
@@ -992,15 +992,15 @@ public class Controller_Person extends Controller {
     public Result person_authorizePropertyChange(String token){
         try{
             Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.find.byId(token);
-            if(changePropertyToken == null) return redirect(Server.becki_propertyChangeFailed);
+            if(changePropertyToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
 
             if(((new Date()).getTime() - changePropertyToken.time_of_creation.getTime()) > 14400000 ){
                 changePropertyToken.delete();
-                return redirect(Server.becki_propertyChangeFailed);
+                return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
             }
 
             Model_Person person = Model_Person.find.byId(changePropertyToken.person.id);
-            if(person == null) return redirect(Server.becki_propertyChangeFailed);
+            if(person == null) return redirect(Server.becki_mainUrl + "/" +  Server.becki_propertyChangeFailed);
 
             switch (changePropertyToken.property){
 

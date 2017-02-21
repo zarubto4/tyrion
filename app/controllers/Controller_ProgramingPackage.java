@@ -412,7 +412,7 @@ public class Controller_ProgramingPackage extends Controller {
                     invitation.save();
                 }
 
-                String link = Server.becki_invitationToCollaborate + mail.replace("@","%40");
+                String link =Server.becki_mainUrl + "/" +  Server.becki_invitationToCollaborate + mail.replace("@","%40");
 
                 // Odeslání emailu s linkem pro registraci
                 try {

@@ -2,7 +2,6 @@ package controllers;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuthService;
 import com.google.inject.Inject;
@@ -234,7 +233,7 @@ public class Controller_Security extends Controller {
             if (map.containsKey("error")) {
                 if (map.containsKey("state"))
                     Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
-                return redirect(Server.becki_redirectFail);
+                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
             }
 
             String state = map.get("state").replace("[", "").replace("]", "");
@@ -242,7 +241,23 @@ public class Controller_Security extends Controller {
 
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
-            if (floatingPersonToken == null) return redirect(Server.becki_redirectFail);
+            if (floatingPersonToken == null){
+
+                if(floatingPersonToken.return_url.contains(".cz")) {
+                    String[] parts = floatingPersonToken.return_url.split(".cz");
+
+                    return redirect(parts[1] + "/" + Server.becki_redirectFail );
+
+                }else if(floatingPersonToken.return_url.contains(".com")){
+                    String[] parts = floatingPersonToken.return_url.split(".com");
+
+                    return redirect(parts[1] + "/" + Server.becki_redirectFail );
+                }
+
+                else logger.error("Not recognize URL fragment!!!!!! ");
+                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
+            }
+
             floatingPersonToken.social_token_verified = true;
 
             OAuthService service = Socials.GitHub(state);
@@ -254,7 +269,7 @@ public class Controller_Security extends Controller {
             Response response = request.send();
 
 
-            if (!response.isSuccessful()) redirect(Server.becki_redirectFail);
+            if (!response.isSuccessful()) redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
 
 
             JsonNode jsonNode = Json.parse(response.getBody());
@@ -298,14 +313,14 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
-            return redirect( Server.becki_redirectFail );
+            return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail );
         }
 
 
     }
 
 
-    @ApiOperation( value = "GET_github_oauth", hidden = true)
+    @ApiOperation( value = "GET_facebook_oauth", hidden = true)
     public Result GET_facebook_oauth(String url) {
         try {
 
@@ -314,7 +329,7 @@ public class Controller_Security extends Controller {
             if (map.containsKey("error")) {
                 if (map.containsKey("state"))
                 Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
-                return redirect(Server.becki_redirectFail);
+                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
             }
 
             String state = map.get("state").replace("[", "").replace("]", "");
@@ -325,7 +340,7 @@ public class Controller_Security extends Controller {
 
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
-            if (floatingPersonToken == null) return redirect(Server.becki_redirectFail);
+            if (floatingPersonToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
             floatingPersonToken.social_token_verified = true;
             floatingPersonToken.setDate();
 
@@ -337,7 +352,22 @@ public class Controller_Security extends Controller {
             service.signRequest(accessToken, request);
 
             Response response = request.send();
-            if (!response.isSuccessful()) redirect(Server.becki_redirectFail );
+            if (!response.isSuccessful()){
+
+                if(floatingPersonToken.return_url.contains(".cz")) {
+                    String[] parts = floatingPersonToken.return_url.split(".cz");
+
+                    return redirect(parts[1] + "/" + Server.becki_redirectFail );
+
+                }else if(floatingPersonToken.return_url.contains(".com")){
+                    String[] parts = floatingPersonToken.return_url.split(".com");
+
+                    return redirect(parts[1] + "/" + Server.becki_redirectFail );
+                }
+
+                else logger.error("Not recognize URL fragment!!!!!! ");
+                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
+            }
 
 
             JsonNode jsonNode = Json.parse(response.getBody());
@@ -368,11 +398,11 @@ public class Controller_Security extends Controller {
                 floatingPersonToken.update();
             }
 
-            return redirect(Server.becki_mainUrl + floatingPersonToken.return_url);
+            return redirect(floatingPersonToken.return_url);
 
 
         } catch (Exception e) {
-            return redirect( Server.becki_redirectFail );
+            return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail );
         }
     }
 
@@ -396,12 +426,12 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result GitHub( @ApiParam(value = "this is return url address in format  /link/link", required = true)  String return_link){
+    public Result GitHub( @ApiParam(value = "this is return full url address in format  http//portal.byzance.cz/something", required = true)  String return_link){
         try {
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("GitHub");
 
-            floatingPersonToken.return_url = return_link;
+            floatingPersonToken.return_url = return_link.replace("/github/", "");
             floatingPersonToken.where_logged = Where_logged_tag.BECKI_WEBSITE;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
@@ -443,11 +473,11 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result Facebook(@ApiParam(value = "this is return url address in format  ?return_link=/link/link", required = true)  String return_link){
+    public Result Facebook(@ApiParam(value = "this is return full url address in format  http//portal.byzance.cz/something", required = true)  String return_link){
         try {
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("Facebook");
 
-            floatingPersonToken.return_url = return_link;
+            floatingPersonToken.return_url = return_link.replace("/facebook/", "");
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
@@ -462,48 +492,6 @@ public class Controller_Security extends Controller {
             result.authToken = floatingPersonToken.authToken;
 
             return result_ok(Json.toJson(result));
-
-        }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    // TODO implementovat twitter http://youtrack.byzance.cz/youtrack/issue/TYRION-49
-    @ApiOperation( value = "login via Twitter", hidden = true)
-    public Result Twitter(String returnLink){
-        try {
-            Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("Twitter");
-
-            OAuthService service = Socials.Twitter(floatingPersonToken.provider_key);
-
-            Token requestToken = service.getRequestToken();
-
-            Login_Social_Network result = new Login_Social_Network();
-            result.type = "GitHub";
-            result.redirect_url = service.getAuthorizationUrl(null);
-            result.authToken = floatingPersonToken.authToken;
-
-            return result_ok(Json.toJson(result));
-
-        }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    // TODO implementovat Vkontakte http://youtrack.byzance.cz/youtrack/issue/TYRION-49
-    @ApiOperation( value = "login via Vkontakte", hidden = true)
-    public Result Vkontakte(String returnLink){
-        try {
-            Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("Vkontakte");
-
-            OAuthService service = Socials.Vkontakte(floatingPersonToken.provider_key);
-
-            ObjectNode result = Json.newObject();
-            result.put("type", "Vkontakte");
-            result.put("url", service.getAuthorizationUrl(null));
-            result.put("authToken", floatingPersonToken.authToken);
-
-            return result_ok(result);
 
         }catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -527,6 +515,3 @@ public class Controller_Security extends Controller {
 
     }
 }
-
-// curl -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' 'http://127.0.0.1:9000/project/b_program/uploadToCloud/1'
-// curl -X PUT -H "http://localhost:9000/project/b_program/uploadToCloud/21"

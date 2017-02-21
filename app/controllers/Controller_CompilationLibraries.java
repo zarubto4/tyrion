@@ -1,6 +1,7 @@
 package controllers;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Expr;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -1422,7 +1423,18 @@ public class Controller_CompilationLibraries extends Controller {
 
             for(Model_Board board : board_for_update)
             {
-                List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).findList();
+                List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
+                                                    .find
+                                                    .where()
+                                                        .disjunction()
+                                                            .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                                                            .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                                                            .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                                                            .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                                                            .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                                                        .endJunction()
+                                                    .eq("board.id", board.id).findList();
+
                 for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
                     cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
                     cProgramUpdatePlan.date_of_finish = new Date();

@@ -70,7 +70,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
                         WS_Get_summary_information summary_information = instance.get_summary_information();
 
-                        logger.debug("Check_Update_for_hw_on_homer:: Run:: summary:: " + Json.toJson(summary_information) );
+                        logger.error("TODO:: Check_Update_for_hw_on_homer:: Run:: summary:: " + Json.toJson(summary_information) );
 
                         // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
                         if(!summary_information.status.equals("success")){
@@ -81,7 +81,6 @@ public class Check_Update_for_hw_on_homer extends Thread {
                         }
 
                         // Ten porovnám se stavem - který se tam aktuálně očekává
-
                         Check_Update_for_hw_on_homer.check_Update(ws_homerServer, summary_information);
 
                     }catch (Exception e){
@@ -98,7 +97,10 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
         for(WS_Yoda_connected yoda_connected : summary_information.masterDeviceList){
 
-            if(!yoda_connected.online_status) continue;
+            if(!yoda_connected.online_status) {
+                logger.debug("Check_Update_for_hw_on_homer:: Device is offline check is not possible!!!");
+                continue;
+            }
 
             Model_Board yoda = Model_Board.find.byId(yoda_connected.deviceId);
             if(yoda == null){

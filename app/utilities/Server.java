@@ -3,9 +3,7 @@ package utilities;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.blocko.Model_BlockoBlock;
@@ -27,7 +25,10 @@ import models.project.global.Model_Product;
 import models.project.global.Model_Project;
 import models.project.m_program.Model_MProgram;
 import models.project.m_program.Model_MProject;
-import org.quartz.*;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
@@ -139,13 +140,13 @@ public class Server {
 
             // Nastavení pro Becki Adresy
             becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.localhost.mainUrl");
-            becki_redirectOk                    = "http://" + Configuration.root().getString("Becki.localhost.redirectOk");
-            becki_redirectFail                  = "http://" + Configuration.root().getString("Becki.localhost.redirectFail");
-            becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.localhost.accountAuthorizedSuccessful");
-            becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.localhost.accountAuthorizedFailed");
-            becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.localhost.passwordReset");
-            becki_invitationToCollaborate       = "http://" + Configuration.root().getString("Becki.localhost.invitationToCollaborate");
-            becki_propertyChangeFailed          = "http://" + Configuration.root().getString("Becki.localhost.propertyChangeFailed");
+            becki_redirectOk                    = Configuration.root().getString("Becki.redirectOk");
+            becki_redirectFail                  = Configuration.root().getString("Becki.redirectFail");
+            becki_accountAuthorizedSuccessful   = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
+            becki_accountAuthorizedFailed       = Configuration.root().getString("Becki.accountAuthorizedFailed");
+            becki_passwordReset                 = Configuration.root().getString("Becki.passwordReset");
+            becki_invitationToCollaborate       = Configuration.root().getString("Becki.invitationToCollaborate");
+            becki_propertyChangeFailed          = Configuration.root().getString("Becki.propertyChangeFailed");
 
             GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
             GitHub_clientSecret                 = Configuration.root().getString("GitHub.localhost.clientSecret");
@@ -188,13 +189,13 @@ public class Server {
 
             // Nastavení pro Becki Adresy
             becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.production.mainUrl");
-            becki_redirectOk                    = "http://" + Configuration.root().getString("Becki.production.redirectOk");
-            becki_redirectFail                  = "http://" + Configuration.root().getString("Becki.production.redirectFail");
-            becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.production.accountAuthorizedSuccessful");
-            becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.production.accountAuthorizedFailed");
-            becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.production.passwordReset ");
-            becki_invitationToCollaborate       = "http://" + Configuration.root().getString("Becki.production.invitationToCollaborate");
-            becki_propertyChangeFailed          = "http://" + Configuration.root().getString("Becki.production.propertyChangeFailed");
+            becki_redirectOk                    = Configuration.root().getString("Becki.redirectOk");
+            becki_redirectFail                  = Configuration.root().getString("Becki.redirectFail");
+            becki_accountAuthorizedSuccessful   = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
+            becki_accountAuthorizedFailed       = Configuration.root().getString("Becki.accountAuthorizedFailed");
+            becki_passwordReset                 = Configuration.root().getString("Becki.passwordReset ");
+            becki_invitationToCollaborate       = Configuration.root().getString("Becki.invitationToCollaborate");
+            becki_propertyChangeFailed          = Configuration.root().getString("Becki.propertyChangeFailed");
 
             GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.production.callBack");
             GitHub_clientSecret                 = Configuration.root().getString("GitHub.production.clientSecret");
@@ -237,13 +238,13 @@ public class Server {
 
                 // Nastavení pro Becki Adresy
                 becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.stage.mainUrl");
-                becki_redirectOk                    = "http://" + Configuration.root().getString("Becki.stage.redirectOk");
-                becki_redirectFail                  = "http://" + Configuration.root().getString("Becki.stage.redirectFail");
-                becki_accountAuthorizedSuccessful   = "http://" + Configuration.root().getString("Becki.stage.accountAuthorizedSuccessful");
-                becki_accountAuthorizedFailed       = "http://" + Configuration.root().getString("Becki.stage.accountAuthorizedFailed");
-                becki_passwordReset                 = "http://" + Configuration.root().getString("Becki.stage.passwordReset ");
-                becki_invitationToCollaborate       = "http://" + Configuration.root().getString("Becki.stage.invitationToCollaborate");
-                becki_propertyChangeFailed          = "http://" + Configuration.root().getString("Becki.stage.propertyChangeFailed");
+                becki_redirectOk                    = Configuration.root().getString("Becki.redirectOk");
+                becki_redirectFail                  = Configuration.root().getString("Becki.redirectFail");
+                becki_accountAuthorizedSuccessful   = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
+                becki_accountAuthorizedFailed       = Configuration.root().getString("Becki.accountAuthorizedFailed");
+                becki_passwordReset                 = Configuration.root().getString("Becki.passwordReset ");
+                becki_invitationToCollaborate       = Configuration.root().getString("Becki.invitationToCollaborate");
+                becki_propertyChangeFailed          = Configuration.root().getString("Becki.propertyChangeFailed");
 
                 GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
                 GitHub_clientSecret                 = Configuration.root().getString("GitHub.stage.clientSecret");
