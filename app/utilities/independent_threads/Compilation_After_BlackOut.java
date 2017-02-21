@@ -8,6 +8,7 @@ import utilities.enums.Compile_Status;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Compilation_After_BlackOut {
 
@@ -61,15 +62,24 @@ public class Compilation_After_BlackOut {
             @Override
             public void run() {
                 try {
+
+                    // Náhodný sleeping před startem - aby se vlákna časove rozhodila
+                    sleep(2000 + ThreadLocalRandom.current().nextInt(50, 5000));
+
                     while (true) {
 
-                        if(Controller_WebSocket.compiler_cloud_servers.isEmpty()) break;
+
+
+                        if(Controller_WebSocket.compiler_cloud_servers.isEmpty()){
+                            logger.warn("Compilation_After_BlackOut:: run:: server is offline again");
+                            break;
+                        }
 
                         Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Compile_Status.server_was_offline.name()).order().desc("date_of_create").setMaxRows(1).findUnique();
                         if(version_object == null){
                             break;
                         }
-                        logger.debug("Compilation_After_BlackOut:: Compilation_Thread:: " + thread_name + " starting compilation");
+                        logger.debug("Compilation_After_BlackOut:: run:: " + thread_name + " starting compilation");
                         version_object.c_compilation.status = Compile_Status.compilation_in_progress;
                         version_object.c_compilation.update();
 

@@ -48,8 +48,20 @@ public class Model_ActualizationProcedure extends Model {
         return state;
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public Integer state_percentage(){ return 41; }        // TODO - připraveno pro becki - nutno dodělat v Tyrionovi http://youtrack.byzance.cz/youtrack/issue/TYRION-346
-    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String  state_fraction(){ return "21/35"; }     // TODO - http://youtrack.byzance.cz/youtrack/issue/TYRION-347
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String  state_fraction(){
+
+        int all = Model_CProgramUpdatePlan.find.where()
+                .eq("actualization_procedure.id",id)
+                .findRowCount();
+
+        int complete = Model_CProgramUpdatePlan.find.where()
+                .eq("actualization_procedure.id",id).where()
+                .eq("state", C_ProgramUpdater_State.complete)
+                .findRowCount();
+
+        return all + "/" + complete;
+
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

@@ -1082,7 +1082,7 @@ public class Controller_CompilationLibraries extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Compilation successful",    response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Cloud_Compilation_Server_CompilationResult.class),
             @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
             @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -1173,7 +1173,11 @@ public class Controller_CompilationLibraries extends Controller {
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
             if (compilation_result.buildUrl != null && compilation_result.status.equals("success")) {
-                return GlobalResult.result_ok();
+
+                Swagger_Cloud_Compilation_Server_CompilationResult result = new Swagger_Cloud_Compilation_Server_CompilationResult();
+                result.interface_code = compilation_result.interface_code;
+
+                return GlobalResult.result_ok(Json.toJson(result));
             }
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
@@ -2778,7 +2782,6 @@ public class Controller_CompilationLibraries extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result board_get_for_fat_upload(@ApiParam(required = true)  String project_id){
         try {
 

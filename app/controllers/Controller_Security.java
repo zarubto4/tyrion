@@ -231,9 +231,29 @@ public class Controller_Security extends Controller {
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
             if (map.containsKey("error")) {
-                if (map.containsKey("state"))
-                    Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
-                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
+                if (map.containsKey("state")){
+
+                    Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique();
+
+                    if(floatingPersonToken.return_url.contains(".cz")) {
+
+                        String[] parts = floatingPersonToken.return_url.split(".cz");
+
+                        floatingPersonToken.delete();
+                        return redirect(parts[1] + "/" + Server.becki_redirectFail );
+
+                    }else if(floatingPersonToken.return_url.contains(".com")){
+                        String[] parts = floatingPersonToken.return_url.split(".com");
+
+                        floatingPersonToken.delete();
+                        return redirect(parts[1] + "/" + Server.becki_redirectFail );
+                    }
+
+                    else logger.error("Not recognize URL fragment!!!!!! ");
+                    floatingPersonToken.delete();
+                    return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
+
+                }
             }
 
             String state = map.get("state").replace("[", "").replace("]", "");
@@ -307,9 +327,9 @@ public class Controller_Security extends Controller {
 
             }
 
-            logger.debug("Controller_Security:: GET_github_oauth:: Return URL:: " + Server.becki_mainUrl + floatingPersonToken.return_url);
+            logger.debug("Controller_Security:: GET_github_oauth:: Return URL:: " + floatingPersonToken.return_url);
 
-            return redirect(Server.becki_mainUrl + floatingPersonToken.return_url);
+            return redirect(floatingPersonToken.return_url);
 
 
         } catch (Exception e) {

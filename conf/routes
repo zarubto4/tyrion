@@ -26,13 +26,15 @@ GET              /websocket/access_token                       @controllers.Cont
 POST            /login          @controllers.Controller_Security.login()
 POST            /logout         @controllers.Controller_Security.logout()
 
+GET             /login/facebook/*url                        @controllers.Controller_Security.GET_facebook_oauth(url)
+GET             /login/github/*url                          @controllers.Controller_Security.GET_github_oauth(url)
+
 GET             /facebook/*return_link                      @controllers.Controller_Security.Facebook(return_link)
 GET             /github/*return_link                        @controllers.Controller_Security.GitHub(return_link)
 
 GET             /login/person                               @controllers.Controller_Security.getPersonByToken
 
-GET             /login/facebook/*url                        @controllers.Controller_Security.GET_facebook_oauth(url)
-GET             /login/github/*url                          @controllers.Controller_Security.GET_github_oauth(url)
+
 
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ################################################################
 ######################################################################################################################################################################
