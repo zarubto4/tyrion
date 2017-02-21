@@ -165,7 +165,13 @@ public class Model_MProgram extends Model{
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient public boolean create_permission(){  return ( Model_Project.find.where().where().eq("participants.person.id", Controller_Security.getPerson().id ).eq("m_projects.id", m_project.id).findUnique().create_permission() ) || Controller_Security.getPerson().has_permission("M_Program_create");      }
-    @JsonIgnore   @Transient public boolean read_permission()  {  return ( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.getPerson().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("M_Program_read"); }
+    @JsonIgnore   @Transient public boolean read_permission()  {
+        if(Controller_Security.getPerson() == null){
+            System.out.println("Person == null");
+        }
+        return ( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.getPerson().id).where().eq("id", id).findRowCount() > 0) ||
+                Controller_Security.getPerson().has_permission("M_Program_read");
+    }
     @JsonProperty @Transient public boolean read_qr_token_permission() { return  true; } // TODO pokud uživatel vyloženě nebude chtít zakázat public přístup
     @JsonProperty @Transient public boolean edit_permission() {return Controller_Security.getPerson() != null && ((Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.getPerson().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("M_Program_edit"));}
     @JsonProperty @Transient public boolean delete_permission(){

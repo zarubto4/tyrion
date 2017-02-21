@@ -792,6 +792,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result get_conection_url(){
         try{
 
@@ -814,6 +815,10 @@ public class Controller_Grid extends Controller {
 
             Model_VersionObject version_object = Model_VersionObject.find.where().eq("id", help.version_object_id).isNotNull("m_program").findUnique();
             if(version_object == null) return GlobalResult.notFoundObject("Version M_program_Version not found");
+
+
+            if(version_object.b_program == null) System.out.println("b_program == null");
+            if(version_object.m_program == null) System.out.println("m_program == null");
 
             if(!version_object.m_program.read_permission()) return GlobalResult.forbidden_Permission();
 
