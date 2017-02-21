@@ -23,6 +23,7 @@ public class WS_Grid_token_verification extends WS_AbstractMessageInstance {
         result.put("token_approve", token_approve);
         result.put("messageId", messageId);
         result.put("instanceId", instanceId);
+        result.put("status" , "success");
         return result;
 
     }
