@@ -8,7 +8,7 @@ import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMes
 
 import java.util.List;
 
-public class WS_Remove_device_to_instance extends WS_AbstractMessageInstance {
+public class WS_Remove_device_from_instance extends WS_AbstractMessageInstance {
 
     // MessageType
     @JsonIgnore

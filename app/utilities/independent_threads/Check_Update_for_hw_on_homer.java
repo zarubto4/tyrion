@@ -3,7 +3,6 @@ package utilities.independent_threads;
 import models.compiler.Model_Board;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
-import play.libs.Json;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
 import utilities.web_socket.message_objects.homer_instance.WS_Yoda_connected;
@@ -69,8 +68,6 @@ public class Check_Update_for_hw_on_homer extends Thread {
                         logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
 
                         WS_Get_summary_information summary_information = instance.get_summary_information();
-
-                        logger.error("TODO:: Check_Update_for_hw_on_homer:: Run:: summary:: " + Json.toJson(summary_information) );
 
                         // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
                         if(!summary_information.status.equals("success")){

@@ -1642,7 +1642,7 @@ public class Controller_ProgramingPackage extends Controller {
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
 
-            WS_Remove_device_to_instance result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
+            WS_Remove_device_from_instance result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_BadRequest();

@@ -53,11 +53,13 @@ public class Model_CompilationServer extends Model {
     @JsonIgnore @Transient
     public void save(){
 
+        if(hash_certificate == null)
         while(true){ // I need Unique Value
             hash_certificate = UUID.randomUUID().toString();
             if (Model_CompilationServer.find.where().eq("hash_certificate",hash_certificate).findUnique() == null) break;
         }
 
+        if(unique_identificator == null)
         while(true){ // I need Unique Value
             unique_identificator = UUID. randomUUID().toString().substring(0,6);
             if (Model_CompilationServer.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;

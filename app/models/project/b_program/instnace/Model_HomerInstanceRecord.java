@@ -95,10 +95,29 @@ public class Model_HomerInstanceRecord extends Model {
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER-----------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
+    public boolean contains_HW(String board_id) {
+        try {
+
+            // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
+            Integer contains =  Model_HomerInstanceRecord.find.where().disjunction()
+                                    .add( Expr.eq("version_object.b_program_hw_groups.main_board_pair.board.id", board_id) )
+                                    .add( Expr.eq("version_object.b_program_hw_groups.device_board_pairs.board.id", board_id) )
+                               .findRowCount();
+
+            return contains > 0;
+
+        } catch (Exception e) {
+            logger.error("Model_HomerInstanceRecord:: contains_HW:: Error:: ", e);
+            return false;
+        }
+    }
+
+
+    @JsonIgnore @Transient
     public void create_actualization_request() {
         try {
 
-            logger.error("add_new_actualization_request byl zavolán na Instance Record:: "  + id);
+            logger.error("Model_HomerInstanceRecord:: create_actualization_request byl zavolán na Instance Record:: "  + id);
 
             if(!getProcedures().isEmpty() || version_object.b_program_hw_groups.isEmpty()) return;
 
@@ -121,10 +140,10 @@ public class Model_HomerInstanceRecord extends Model {
                         .endJunction()
                         .findList();
 
-                logger.debug("The number still valid update plans for Main Board that must be override: " + old_plans_main_board.size());
+                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board that must be override: " + old_plans_main_board.size());
 
                 for (Model_CProgramUpdatePlan old_plan : old_plans_main_board) {
-                    logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
+                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Old plan for override under B_Program in Cloud: " + old_plan.id);
                     old_plan.state = C_ProgramUpdater_State.overwritten;
                     old_plan.date_of_finish = new Date();
                     old_plan.update();
@@ -164,7 +183,7 @@ public class Model_HomerInstanceRecord extends Model {
                             .findList();
 
                     //2 Měl bych zkontrolovat zda ještě nejsou nějaké aktualizace v chodu
-                    logger.debug("The number still valid update plans that must be override: " + old_plans.size());
+                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans that must be override: " + old_plans.size());
 
                     //3. Neukončené procedury ukončím
                     for (Model_CProgramUpdatePlan old_plan : old_plans) {
@@ -176,7 +195,7 @@ public class Model_HomerInstanceRecord extends Model {
 
 
                     if(pair.board.actual_c_program_version == null || !pair.c_program_version_id().equals(pair.board.actual_c_program_version.id)) {
-                        logger.debug("Crating new update plan procedure ");
+                        logger.debug("Model_HomerInstanceRecord::  create_actualization_request:: Crating new update plan procedure ");
                         // Vytvářím nový aktualizační plán protože požadovaná verze je jiná než aktuální!!
 
                         Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
@@ -186,7 +205,7 @@ public class Model_HomerInstanceRecord extends Model {
                         plan.c_program_version_for_update = pair.c_program_version;
                         updates.add(plan);
 
-                        logger.debug("Crating update procedure done");
+                        logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Crating update procedure done");
                     }
                 }
 
@@ -209,7 +228,7 @@ public class Model_HomerInstanceRecord extends Model {
             }
 
         }catch (Exception e){
-            logger.error("Homer_Instance_Record:: add_new_actualization_request:: Error ", e);
+            logger.error("Model_HomerInstanceRecord::  create_actualization_request:: add_new_actualization_request:: Error ", e);
         }
     }
 

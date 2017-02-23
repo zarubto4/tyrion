@@ -35,6 +35,7 @@ import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.WebSCType;
 import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageBoard;
+import utilities.web_socket.message_objects.homer_instance.Help_object.YodaOnlyHardwareIdList;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
 
@@ -108,7 +109,9 @@ public class Model_HomerInstance extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore             public Model_BProgram getB_program()   { return b_program;}
-    @JsonIgnore @Transient  public List<Model_Board>  getBoards_in_virtual_instance() { return boards_in_virtual_instance; }
+    @JsonIgnore @Transient  public List<Model_Board>  getBoards_in_virtual_instance() {
+            return Model_Board.find.where().eq("virtual_instance_under_project.blocko_instance_name", blocko_instance_name).findList();
+    }
 
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
@@ -321,15 +324,16 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient public  void remove_board_from_virtual_instance(Model_Board board){
         try{
 
-            this.boards_in_virtual_instance.remove(board);
             board.virtual_instance_under_project = null;
             board.update();
 
-            if(this.boards_in_virtual_instance.isEmpty()){
+            List<Model_Board> boards = getBoards_in_virtual_instance();
+
+
+            if(boards.isEmpty()){
+                logger.debug("Model_HomerInstance:: remove_board_from_virtual_instance:: Virtual instance is empty - removing instance from server");
                 this.remove_instance_from_server();
             }
-
-            update();;
 
         }catch (Exception e){
             e.printStackTrace();
@@ -413,18 +417,18 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Remove_device_to_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
+    @JsonIgnore @Transient public WS_Remove_device_from_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
         try{
 
-            JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
+            JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_device_from_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
 
-            final Form<WS_Remove_device_to_instance> form = Form.form(WS_Remove_device_to_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_device_to_instance();}
+            final Form<WS_Remove_device_from_instance> form = Form.form(WS_Remove_device_from_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_device_from_instance();}
 
             return form.get();
 
         }catch (Exception e){
-            return new WS_Remove_device_to_instance();
+            return new WS_Remove_device_from_instance();
         }
     }
 
@@ -435,19 +439,20 @@ public class Model_HomerInstance extends Model {
 
             // Vytvořím Instanci
             WS_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
-             //System.err.println("Result instance:: " + result_instance);
             if(!result_instance.status.equals("success")) return new WS_Update_device_summary_collection();
 
             System.out.println("Přidal jsem instanci!");
 
             // Doplním do ní HW
-            WS_Update_device_summary_collection result_device  = this.update_device_summary_collection();
-             //System.err.println("Result device:: " + result_device);
-            if(!result_device.status.equals("success")) return new WS_Update_device_summary_collection();
+            this.update_device_summary_collection();
 
-            System.out.println("Přidal jsem hardware!");
 
-            if(virtual_instance) return result_device; // Virutální instance nemá blocko!
+            if(virtual_instance){
+
+                WS_Update_device_summary_collection ws_update_device_summary_collection = new WS_Update_device_summary_collection();
+                ws_update_device_summary_collection.status = "success";
+                return ws_update_device_summary_collection; // Virutální instance nemá blocko!
+            }
 
 
 
@@ -494,16 +499,20 @@ public class Model_HomerInstance extends Model {
             public void run() {
 
                 try {
+                    logger.debug("Model_HomerInstance:: upload_Record_immediately:: thread is running under record ID:: " + record.id);
 
                     Model_HomerInstance instance = record.main_instance_history;
 
 
                     if( instance.actual_instance != null) {
+
+                        logger.debug("Model_HomerInstance:: upload_Record_immediately:: Record overwriting previous instance record:: " + instance.actual_instance .id);
+
                         instance.actual_instance.running_to = new Date();
                         instance.actual_instance.actual_running_instance = null;
                         instance.actual_instance.update();
                     }else {
-
+                        logger.debug("Model_HomerInstance:: upload_Record_immediately:: First uploading of instnace:: ");
                     }
 
                     instance.actual_instance = record;
@@ -528,14 +537,14 @@ public class Model_HomerInstance extends Model {
 
                         // Ověřím připojený server
                     if (!Controller_WebSocket.homer_servers.containsKey(instance.cloud_homer_server.unique_identificator)) {
-                        logger.error("Server je offline!! Instanci nenahraji !!");
+                        logger.error("Server je offline!! Instanci nenahraji - Nahraji ji as soon as possible!!");
                         return;
                     }
 
                     // Server je připojený
                     try {
 
-                        instance.actual_instance.create_actualization_request();
+                        // Na instanci zavolám nastavení na aktuální Record
                         instance.update_instance_to_actual_instance_record();
 
                     } catch (Exception e) {
@@ -555,13 +564,47 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient public  WS_Update_instance_to_actual_instance_record update_instance_to_actual_instance_record() {
         try{
 
-            // Doplním do ní HW
-            WS_Update_device_summary_collection result_device  = this.update_device_summary_collection();
-            if(!result_device.status.equals("success")) return new WS_Update_instance_to_actual_instance_record();
+            // Zkontroluji jestli běží server
+            if(!server_is_online()) {
+                logger.error("Model_HomerServer:: update_instance_to_actual_instance_record:: Server is offline and some procedure called update_instance_to_actual_instance_record");
+
+                WS_Update_instance_to_actual_instance_record response = new  WS_Update_instance_to_actual_instance_record();
+                response.status = "error";
+                response.error = "Server is offline";
+
+                return response;
+            }
+
+            if(!instance_online()){
+                // Vytvořím Instanci
+                WS_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
+                if(!result_instance.status.equals("success")){
+
+                    logger.error("Model_HomerServer:: update_instance_to_actual_instance_record:: Add Instance Failed:: Error:: " + result_instance.error + " ErrorCode:: "+ result_instance.errorCode);
+                    WS_Update_instance_to_actual_instance_record response = new  WS_Update_instance_to_actual_instance_record();
+                    response.status = result_instance.status;
+                    response.error =  result_instance.error;
+                    response.errorCode =  result_instance.errorCode;
+                    return response;
+                }
+            }
+
+
+            // Doplním respektive vymažu HW, který by měl nebo má být v instanci
+            this.update_device_summary_collection();
+
 
             // Nahraju Blocko Program
             WS_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
-            if(!result_device.status.equals("success")) return new WS_Update_instance_to_actual_instance_record();
+            if(!result_blocko_program.status.equals("success")){
+                logger.error("Model_HomerServer:: update_instance_to_actual_instance_record:: upload_blocko_program() Failed:: Error:: " + result_blocko_program.error + " ErrorCode:: " + result_blocko_program.errorCode);
+
+                WS_Update_instance_to_actual_instance_record response = new  WS_Update_instance_to_actual_instance_record();
+                response.status = result_blocko_program.status;
+                response.error =  result_blocko_program.error;
+                response.errorCode =  result_blocko_program.errorCode;
+                return response;
+            }
 
             this.check_hardware_c_program_state();
 
@@ -592,50 +635,177 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  WS_Update_device_summary_collection update_device_summary_collection(){
-
+    @JsonIgnore @Transient public void update_device_summary_collection(){
         try {
 
-            List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
-
             if(actual_instance != null) {
-                List<Model_BProgramHwGroup> hw_group_for_checking = Model_BProgramHwGroup.find.where().eq("b_program_version_groups.id", actual_instance.version_object.id).findList();
-                if (hw_group_for_checking != null) {
-                    for (Model_BProgramHwGroup b_program_hw_group : hw_group_for_checking) {
 
-                        if (b_program_hw_group.main_board_pair != null) {
 
+                // Seznam - který by na instanci měl běžet!
+                List<Model_BProgramHwGroup> hardware_groups = Model_BProgramHwGroup.find.where().eq("b_program_version_groups.b_program.instance.actual_instance.id", actual_instance.id).findList();
+
+                // Zkontroluji HW který aktálně v instanci vysí
+                WS_Get_Hardware_list summary_information = this.get_hardware_list();
+
+                if(!summary_information.status.equals("success")){
+                    logger.error("Model_HomerServer:: update_device_summary_collection:: Get Instance status Failed:: Error:: " + summary_information.error + " ErrorCode:: "+ summary_information.errorCode);
+                    return;
+                }
+
+                List<String> yodas_id_on_instance = new ArrayList<>();
+
+                for(YodaOnlyHardwareIdList yoda_list : summary_information.hardwareIdList){
+
+                    yodas_id_on_instance.add(yoda_list.deviceId);
+
+                    // Nová instance k nasazení neobsahuje Yodu který v instanci už je!!!
+                    if(!this.actual_instance.contains_HW(yoda_list.deviceId)){
+
+                        for(String devicesId : yoda_list.devicesId){
+
+                            //Model_Board device_board = Model_Board.find.byId(devicesId);
+                            // Můžu změnit nějaký parametr tohoto devicu???
+                            // Notifikaci???
+                            this.remove_Device_from_instance(devicesId, yoda_list.devicesId);
+                        }
+
+                        WS_Remove_yoda_from_instance remove_yoda_from_instance =  this.remove_Yoda_from_instance(yoda_list.deviceId);
+                        if(!remove_yoda_from_instance.status.equals("success")){
+                            logger.error("Model_HomerServer:: update_device_summary_collection:: Remove Yoda Failed:: Error:: " + remove_yoda_from_instance.error + " ErrorCode:: "+ remove_yoda_from_instance.errorCode);
+                        }
+
+                        Model_Board master_board = Model_Board.find.byId(yoda_list.deviceId);
+                        if(master_board.virtual_instance_under_project == null){
+                            master_board.virtual_instance_under_project = master_board.project.private_instance;
+                            master_board.virtual_instance_under_project.add_Yoda_to_instance(yoda_list.deviceId);
+                            master_board.update();
+                        }
+
+                        continue;
+                    }
+
+
+                    Model_BProgramHwGroup group_where_yoda_is = null;
+
+                    for(Model_BProgramHwGroup group :hardware_groups) {
+                        if (group.main_board_pair.board.id.equals(yoda_list.deviceId)) {
+                            group_where_yoda_is = group;
+                            break;
+                        }
+                    }
+
+                    if(group_where_yoda_is == null) {
+                        logger.error("Model_HomerServer:: update_device_summary_collection:: Error::  group_where_yoda_is is Null" );
+                        continue; // Tohle by se stát nemělo!
+                    }
+
+
+                    List<String> devicesId_for_removing = new ArrayList<>();
+
+                    for(String deviceId : yoda_list.devicesId){
+
+                        if(!group_where_yoda_is.contains_HW(deviceId)){
+                            devicesId_for_removing.add(deviceId);
+                        }
+                    }
+
+                    // Device je pod špatným Yodou
+
+
+                    if(devicesId_for_removing.isEmpty()) continue;
+                    WS_Remove_device_from_instance remove_device_from_instance = this.remove_Device_from_instance(yoda_list.deviceId,devicesId_for_removing);
+                    if(!remove_device_from_instance.status.equals("success")) {
+                        logger.error("Model_HomerServer:: update_device_summary_collection:: Remove Yoda Failed:: Error:: " + remove_device_from_instance.error + " ErrorCode:: " + remove_device_from_instance.errorCode);
+                    }
+
+                }
+
+
+
+                List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
+
+                for (Model_BProgramHwGroup b_program_hw_group : hardware_groups) {
+
+                    if (b_program_hw_group.main_board_pair != null) {
+
+                        // Neobsahuje Yodu - Tak vytvořím skupinu s Yodou a devicama
+                        if(!yodas_id_on_instance.contains(b_program_hw_group.main_board_pair.board_id())) {
                             Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
                             group.yodaId = b_program_hw_group.main_board_pair.board.id;
 
                             for (Model_BPair pair : b_program_hw_group.device_board_pairs) {
                                 group.devicesId.add(pair.board.id);
                             }
+
                             hw_groups.add(group);
+                            continue;
                         }
+
+                        // Obsahuje Yodu - takže kontroluji ještě Devices
+                        List<String> devices_id_under_yoda = new ArrayList<>();
+
+                        YodaOnlyHardwareIdList yodaList = summary_information.getListWithYoda(b_program_hw_group.main_board_pair.board_id());
+                        if(yodaList == null){
+                            logger.error("Model_HomerServer:: update_device_summary_collection:: Error::  yodaList is Null" );
+                            continue;
+                        }
+
+                        for(Model_BPair bPair : b_program_hw_group.device_board_pairs){
+                            if(!yodaList.devicesId.contains( bPair.board_id())) devices_id_under_yoda.add(bPair.board_id());
+                        }
+
+                        if(!devices_id_under_yoda.isEmpty()) add_Device_to_instance(b_program_hw_group.main_board_pair.board_id(), devices_id_under_yoda);
                     }
                 }
-            }else if(virtual_instance){
 
-                for(Model_Board board : boards_in_virtual_instance){
-                    Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
-                    group.yodaId = board.id;
-                    hw_groups.add(group);
+
+                if (!hw_groups.isEmpty()) {
+                    ObjectNode node = send_to_instance().write_with_confirmation( new WS_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
+
+                    final Form<WS_Update_device_summary_collection> form = Form.form(WS_Update_device_summary_collection.class).bind(node);
+                    if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Update_device_summary_collection:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());}
+
+                    WS_Update_device_summary_collection rsp = form.get();
+                    if(!rsp.status.equals("success")) {
+                        logger.error("Model_HomerServer:: WS_Update_device_summary_collection:: Remove Yoda Failed:: Error:: " + rsp.error + " ErrorCode:: " + rsp.errorCode);
+                    }
+
+                }
+
+                // Virutální instance - kontrola Yodů kteřá tam mají být a kteří ne!
+            }else if(virtual_instance) {
+
+                List<String> board_id_on_instance = new ArrayList<>();
+
+                // Zkontroluji HW který tam být nemá
+                WS_Get_Hardware_list summary_information = get_hardware_list();
+                if (!summary_information.status.equals("success")) {
+                    logger.error("Model_HomerServer:: update_device_summary_collection:: Get Instance status Failed:: Error:: " + summary_information.error + " ErrorCode:: " + summary_information.errorCode);
+                }
+
+                for (YodaOnlyHardwareIdList yoda_list : summary_information.hardwareIdList) {
+
+                    if (!this.actual_instance.contains_HW(yoda_list.deviceId)) {
+                        logger.error("Model_HomerServer:: update_device_summary_collection:: Illegal Connected Yoda " + yoda_list.deviceId + " in Virtual instance ");
+                        this.remove_Yoda_from_instance(yoda_list.deviceId);
+                    }
+
+                    board_id_on_instance.add(yoda_list.deviceId);
+                }
+
+                for (Model_Board board : boards_in_virtual_instance) {
+
+                    if (!board_id_on_instance.contains(board.id)) {
+                        logger.debug("Model_HomerServer:: update_device_summary_collection:: Missing Connected Yoda " + board.id + " in Virtual instance ");
+                        this.add_Yoda_to_instance(board.id);
+                    }
                 }
 
             }
 
-
-            ObjectNode node = send_to_instance().write_with_confirmation( new WS_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
-
-            final Form<WS_Update_device_summary_collection> form = Form.form(WS_Update_device_summary_collection.class).bind(node);
-            if (form.hasErrors()) {logger.error("Model_HomerInstance:: WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); throw new Exception("Invalid Json data format");}
-
-            return form.get();
-
         }catch (Exception e){
             logger.error("Model_HomerInstance:: update_device_summary_collection:: Error:: ", e);
-            return null;
+            return;
         }
     }
 
@@ -673,12 +843,29 @@ public class Model_HomerInstance extends Model {
 
         }catch (Exception e){
             logger.error("Model_HomerInstance:: get_summary_information: Error:: ", e);
-            return null;
+            return new WS_Get_summary_information();
+        }
+    }
+
+    @JsonIgnore @Transient public  WS_Get_Hardware_list get_hardware_list(){
+        try {
+
+            ObjectNode node = send_to_instance().write_with_confirmation( new WS_Get_Hardware_list().make_request(this), 1000*5, 0, 1);
+
+            final Form<WS_Get_Hardware_list> form = Form.form(WS_Get_Hardware_list.class).bind(node);
+            if (form.hasErrors()) {logger.error("Model_HomerInstance:: get_hardware_list: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); throw new Exception("Invalid Json data format");}
+
+            return form.get();
+
+        }catch (Exception e){
+            logger.error("Model_HomerInstance:: get_hardware_list: Error:: ", e);
+            return new WS_Get_Hardware_list();
         }
     }
 
     @JsonIgnore @Transient public  static void summary_information(WS_HomerServer homer_server , WS_Get_summary_information summary_information){
         try {
+
 
             homer_server.check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
 

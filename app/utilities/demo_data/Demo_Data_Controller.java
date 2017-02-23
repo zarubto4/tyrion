@@ -1,12 +1,10 @@
 package utilities.demo_data;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.Api;
 import models.compiler.*;
 import models.person.Model_FloatingPersonToken;
 import models.person.Model_Person;
 import models.project.b_program.servers.Model_HomerServer;
-import models.project.c_program.Model_CProgram;
 import models.project.global.Model_Product;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
@@ -17,7 +15,6 @@ import models.project.global.financial.Model_PaymentDetails;
 import org.apache.commons.io.IOUtils;
 import play.Application;
 import play.Play;
-import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -492,6 +489,11 @@ public class Demo_Data_Controller extends Controller {
             compilation_server_2.personal_server_name = "Pegas";
             compilation_server_2.save();
 
+            Model_CompilationServer compilation_server_3 = new Model_CompilationServer();
+            compilation_server_3.personal_server_name = "Test Server";
+            compilation_server_3.unique_identificator = "test";
+            compilation_server_3.hash_certificate = "testHash";
+            compilation_server_3.save();
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
