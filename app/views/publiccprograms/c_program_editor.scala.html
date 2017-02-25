@@ -1,0 +1,875 @@
+@import models.compiler.Model_TypeOfBoard
+
+<section class="content-header">
+  <h1> C Program editor - nefunkční! </h1>
+  <ol class="breadcrumb">
+    <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+    <li class="active"><i class="fa fa-share"></i> Server Management </li>
+    <li class="active"><i class="fa fa-wrench"></i> C Program Management </li>
+    <li><a href="@routes.Controller_Dashboard.public_code()"><i class="fa fa-wrench"></i> Public Firmware Code </a></li>
+  </ol>
+</section>
+
+@*/*/*  Modals ---------------------------------------------------------------------------------------------   */*/*@
+
+<div id="newCProgramModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newCProgramModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="newCProgramModalTitle" class="modal-title">New CProgram</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newCProgram">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="newCProgramName" placeholder="Name" style="display: block" type="text" name="name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="newCProgramDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
+          </div>
+          <select class="form-control select2" style="width: 100%; margin-top: 10px;" name="tag">
+            <option selected="selected" disabled>Choose tag</option>
+
+          </select>
+          <label>Long Description(markdown)</label>
+          <textarea style="width: 100%;" id="newCProgramLongDescription" rows="5" name="long_description"></textarea>
+        </form>
+        <div id="newCProgramModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="newCProgram()">Save</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+<div id="editCProgramModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCProgramModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="editCProgramModalTitle" class="modal-title">Edit CProgram</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editCProgram">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="editCProgramName" placeholder="Name" style="display: block" type="text" name="name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="editCProgramDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
+          </div>
+          <select id="editSelectTag" class="form-control select2" style="width: 48%; margin-top: 10px; float: left;" name="tag">
+
+          </select>
+          <select id="editSelectState" class="form-control select2" style="width: 48%; margin-top: 10px; float: right;" name="state">
+
+          </select>
+          <label>Long Description(markdown)</label>
+          <textarea style="width: 100%;" id="editCProgramLongDescription" rows="15" name="long_description"></textarea>
+        </form>
+        <div id="editCProgramModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="editCProgram()">Save</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+<div id="newCProgramVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newCProgramVersionModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="newCProgramVersionModalTitle" class="modal-title">New CProgram</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newCProgramVersion">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="newCProgramVersionName" placeholder="Name" style="display: block" type="text" name="version_name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="newCProgramVersionDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+          </div>
+        </form>
+        <div id="newCProgramVersionModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="newCProgramVersion()">Save</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+<div id="editCProgramVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCProgramVersionModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="editCProgramVersionModalTitle" class="modal-title">New CProgram</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editCProgramVersion">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="editCProgramVersionName" placeholder="Name" style="display: block" type="text" name="version_name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="editCProgramVersionDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+          </div>
+        </form>
+        <div id="editCProgramVersionModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="editCProgramVersion()">Save</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+<div id="newFileModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newFileModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="newFileModalTitle" class="modal-title">New File</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newFile">
+          <label>Name</label>
+          <p class="text-red">Specify the full path, place every file or folder in some "c_program" root directory (example: "c_program/folder/file.cpp)</p>
+          <input id="newFileName" placeholder="Name" style="display: block" type="text" name="file_name" >
+        </form>
+        <div id="newFileModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="newFile()">Create</button>
+      </div>
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div id="newExampleModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newExampleModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="newExampleModalTitle" class="modal-title">New Example</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newExample">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="newExampleName" placeholder="Name" style="display: block" type="text" name="version_name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="newExampleDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+          </div>
+        </form>
+        <div id="newExampleModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="newExample()">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@*/*/*  Content ---------------------------------------------------------------------------------------------   */*/*@
+
+<section class="content">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">CProgram</h3>
+          <button class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newCProgramModal" title="New CProgram"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="box-header with-border">
+          <select id="selectTypeOfBoard" class="form-control select2" style="width: 100%;">
+            <option selected="selected" disabled>Choose Type of Board</option>
+            @for(typeOfBoard <- Model_TypeOfBoard.find.all()){
+              <option onclick="getCProgramsByType('@typeOfBoard.id')">@typeOfBoard.name</option>
+            }
+          </select>
+        </div>
+        <div class="box-header with-border">
+          <select id="selectCProgram" class="form-control select2" style="width: 100%;">
+            <option selected="selected" disabled>Choose C Program</option>
+          </select>
+        </div>
+        <div class="box-header with-border">
+          <h3 class="box-title pull-left">Selected CProgram:  </h3>
+          <h3 id="openedCProgramName" class="box-title text-bold">-</h3>
+          <div id="c_program_btn_group" class="btn-group pull-right">
+            <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="removeCProgram()" title="Remove CProgram"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info disabled" disabled type="button" data-toggle="modal" data-target="#editCProgramModal" onclick="fillEditCProgramForm()" title="Edit CProgram"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-success disabled" disabled type="button" data-toggle="modal" data-target="#newCProgramVersionModal" title="New Version"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <div class="box-header with-border">
+          <div style="display: inline-block; width: 48%; ">
+            <label>Tag</label>
+            <input id="openedCProgramTag" style="display: block; width: 100%;" type="text" readonly>
+          </div>
+          <div style="width: 48%; display: inline-block; float: right">
+            <label>State</label>
+            <input id="openedCProgramState" style="display: block; width: 100%;" type="text" readonly>
+          </div>
+          <label>Description</label>
+          <input  style="width: 100%;" id="openedCProgramDescription" readonly type="text">
+          <label>Long Description(markdown)</label>
+          <div style="width: 100%; height: 250px; border: solid black 1px; overflow: scroll; padding: 5px;" id="openedCProgramLongDescription"></div>
+        </div>
+        <div class="box-header with-border">
+          <select id="selectVersion" class="form-control select2" style="width: 100%;">
+          </select>
+        </div>
+        <div class="box-header with-border">
+          <h3 class="box-title pull-left">Selected Version:  </h3>
+          <h3 id="openedCProgramVersionName" class="box-title text-bold">-</h3>
+          <div id="c_program_version_btn_group" class="btn-group pull-right">
+            <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="removeCProgramVersion()" title="Remove CProgram Version"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info disabled" disabled type="button" data-toggle="modal" data-target="#editCProgramVersionModal" onclick="fillEditVersionForm()" title="Edit CProgram Version"><i class="fa fa-edit"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+          <label>Description</label>
+          <input style="width: 100%;" id="openedCProgramVersionDescription" readonly type="text">
+        </div>
+        <div class="box-footer">
+                </div>
+      </div>
+
+    </div>
+    <div class="col-md-3">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Files</h3>
+          <button id="newFileButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newFileModal" title="New File"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="box-body">
+          <div class="nav nav-sidebar" id="files">
+                    </div>
+        </div>
+        <div class="box-footer">
+                </div>
+      </div>
+      
+    </div>
+    <div class="col-md-5">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Code Editor</h3>
+        </div>
+        <div class="box-body">
+          <div id="editor">public int main() {
+            int x = 0;
+            return x;
+            }</div>
+        </div>
+        <div class="box-footer">
+          <p class="pull-left" id="file_name"></p>
+          <button id="saveFileButton" disabled class="btn btn-success pull-right disabled" type="button" onclick="saveFile()">Save</button>
+          <button id="saveExampleButton" disabled class="btn btn-success pull-right disabled" type="button" style="margin-right: 10px;" onclick="saveExample()">Save example</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+
+        $.ajaxSetup({ cache: false });
+
+        var fileContents = [];
+        var exampleContents = [];
+        var openedCProgram = {};
+        var openedVersion = {};
+        var openedFile = {};
+        var openedExample = {};
+
+        var converter = new showdown.Converter();
+
+        function makeId()
+        {
+          var text = "";
+          var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+          for( var i=0; i < 5; i++ )
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+          return text;
+        }
+
+        function makeJson(data){
+
+          var tree = {};
+
+          function fillTree(content, steps, x) {
+            var current = null,
+                    existing = null,
+                    i = 0;
+            for (var y = 0; y < steps.length; y++) {
+              if (y == 0) {
+                if (!tree.children || typeof tree.children == 'undefined') {
+                  tree = {text: steps[y], leaf: false, children: []};
+                }
+                current = tree.children;
+              } else {
+                existing = null;
+                for (i = 0; i < current.length; i++) {
+                  if (current[i].text === steps[y]) {
+                    existing = current[i];
+                    break;
+                  }
+                }
+                if (existing) {
+                  current = existing.children;
+                } else {
+                  current.push({text: steps[y], leaf: false, children: []});
+                  current = current[current.length - 1].children;
+                }
+              }
+            }
+            current.push({text: content, leaf: true, order: x})
+          }
+
+          for (x = 0; x < data.length; x++) {
+            steps = data[x].file_name.split('/');
+            fillTree(data[x].content, steps, x)
+          }
+
+          return tree;
+        }
+
+        function makeTree(t) {
+
+          var content = "<ul style='list-style-type: none; margin: 0; padding: 0;'>";
+
+          if (t.leaf != true) {
+            if (t.children.length == 1 && t.children[0].leaf == true) {
+              content += "<li style='margin: 0; padding: 0;'>" +
+                      "<div class='panel-group' style='margin: 5px 0;' id='" + t.text + "'>" +
+                      "<div class='panel panel-default'>" +
+                      "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                      "<h4 class='panel-title'>" +
+                      "<a onclick=\"" +
+                      "openFile(" + t.children[0].order + ");" +
+                      "\">";
+
+              content += t.text;
+
+              content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeFile(" + t.children[0].order + ")' title='Remove File'><i class='fa fa-times'></i></button></h4></div>" +
+                      "<div id='collapse" + t.text + "' class='panel-collapse collapse'>" +
+                      "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+            } else {
+              var randomId = makeId();
+              content += "<li style='margin: 0; padding: 0;'>" +
+                      "<div class='panel-group' style='margin: 5px 0;' id='" + t.text + "'>" +
+                      "<div class='panel panel-default'>" +
+                      "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                      "<h4 class='panel-title'>" +
+                      "<a style='display:block;' data-toggle='collapse' data-parent='#" + t.text + randomId + "' href='#collapse" + t.text + randomId + "'>" + t.text + "</a></h4></div>" +
+                      "<div id='collapse" + t.text + randomId + "' class='panel-collapse collapse'>" +
+                      "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+            }
+            $.each(t.children, function (k, v) {
+              content += makeTree(v);
+            });
+            content += "</div></div></div></div></li>";
+          }
+
+          content += "</ul>";
+
+          return content;
+        }
+
+        function fillSelectCProgram(json) {
+          $('#selectCProgram').html("");
+          $('#selectCProgram').append("<option selected=\"selected\" disabled>Choose C Program</option>");
+          $.each(json, function (k, v) {
+            $('#selectCProgram').append("<option onclick=\"getCProgram('" + v.id + "')\">" + v.name + "</option>");
+          });
+        }
+
+        function getCProgramsByType(id){
+          $.ajax({
+            url: '/c_program/public/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              fillSelectCProgram(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function getCProgram(id){
+          $.ajax({
+            url: '/c_program/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              openCProgram(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function getCProgramVersion(id){
+          $.ajax({
+            url: '/c_program/version/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              openVersion(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+
+        function openFile(order){
+
+          $('#file_name').text(fileContents[order].file_name);
+
+          openedFile = fileContents[order];
+
+          var content = fileContents[order].content;
+
+          editor.setValue(content, 1);
+
+          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+          $('#saveExampleButton').prop('disabled', true).addClass('disabled');
+        }
+
+        function disableButtonGroup(id, state) {
+          $(id + ' button').prop('disabled', state);
+          if(state){
+            $(id + ' button').addClass('disabled');
+          }else {
+            $(id + ' button').removeClass('disabled');
+          }
+        }
+
+        function newCProgram(){
+          model_data = $("#newCProgram").serializeObject();
+          $.ajax({
+            url: '@routes.Controller_CompilationLibraries.c_program_create()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#newCProgram input[type=text]").val("");
+              $("#newCProgramModal").modal('hide');
+              $("#newCProgramModalMessage").css("display", "none");
+              $("#newCProgramLongDescription").text("");
+              $("#selectCProgram option:selected").removeAttr('selected');
+              $("#selectCProgram").prepend("<option onclick=\"getCProgram('" + json.id + "')\">" + json.name + "</option>");
+              $("#selectCProgram option:first").attr('selected','selected');
+              openCProgram(json);
+            },
+            error:function(e) {
+              $("#newCProgramModalMessage").css("display", "block");
+              $("#newCProgramModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newCProgramModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          })
+        }
+
+        function newCProgramVersion(){
+          model_data = $("#newCProgramVersion").serializeObject();
+          $.ajax({
+            url: '/c_program/version/' + openedCProgram.id,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#newCProgramVersion input[type=text]").val("");
+              $("#newCProgramVersionModal").modal('hide');
+              $("#newCProgramVersionModalMessage").css("display", "none");
+              $("#selectVersion option:selected").removeAttr('selected');
+              $("#selectVersion").prepend("<option onclick=\"getCProgramVersion('" + json.version_id + "')\">" + json.version_name + "</option>");
+              $("#selectVersion option:first").attr('selected','selected');
+              openVersion(json);
+            },
+            error:function(e) {
+              $("#newCProgramVersionModalMessage").css("display", "block");
+              $("#newCProgramVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newCProgramVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          })
+        }
+
+        function editCProgram(){
+          model_data = $("#editCProgram").serializeObject();
+          $.ajax({
+            url: '/c_program/' + openedCProgram.id,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#editCProgram input[type=text]").val("");
+              $("#editCProgramModal").modal('hide');
+              $("#editCProgramModalMessage").css("display", "none");
+              $("#editCProgramLongDescription").text("");
+              openCProgram(json);
+            },
+            error:function(e) {
+              $("#editCProgramModalMessage").css("display", "block");
+              $("#editCProgramModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editCProgramModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          })
+        }
+
+        function editCProgramVersion(){
+          model_data = $("#editCProgramVersion").serializeObject();
+          $.ajax({
+            url: '/c_program/version/' + openedVersion.version_id,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#editCProgramVersion input[type=text]").val("");
+              $("#editCProgramVersionModal").modal('hide');
+              $("#editCProgramVersionModalMessage").css("display", "none");
+              openVersion(json);
+            },
+            error:function(e) {
+              $("#editCProgramVersionModalMessage").css("display", "block");
+              $("#editCProgramVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editCProgramVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          })
+        }
+
+        function removeCProgram(){
+          $.ajax({
+            url: '/c_program/' + openedCProgram.id,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              window.location.reload();
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function removeCProgramVersion(){
+          $.ajax({
+            url: '/c_program/version/' + openedVersion.version_id,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              openCProgram(openedCProgram);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function newFile(){
+          openedFile = {file_name: $('#newFileName').val(), content: ''};
+          $('#file_name').text(openedFile.file_name);
+          editor.setValue("// your new file - " + openedFile.file_name,1);
+          $("#newFileModal").modal('hide');
+          $('#newFileName').val("");
+
+          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+          $('#saveExampleButton').prop('disabled', true).addClass('disabled');
+        }
+
+        function saveFile(){
+
+          var sendFile = {library_files:[]};
+          openedFile.content = editor.getValue();
+          sendFile.library_files[0] = openedFile;
+
+          $.ajax({
+            url: '/c_program/version/upload_file/' + openedVersion.version_id,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(sendFile),
+            dataType: 'json',
+            success:function(json){
+              openVersion(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function removeFile(count){
+
+          var sendFile = {library_files:[]};
+          sendFile.library_files[0] = fileContents[count];
+
+          $.ajax({
+            url: '/c_program/version/remove_file/' + openedVersion.version_id,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(sendFile),
+            dataType: 'json',
+            success:function(json){
+              openVersion(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function openCProgram(json) {
+
+          disableButtonGroup("#c_program_btn_group", false);
+
+          $("#openedCProgramName").text(json.name);
+          $("#openedCProgramDescription").val(json.description);
+
+          openedCProgram = json;
+
+          $('#files').html("");
+          $('#selectVersion').html("");
+
+          $('#newFileButton').prop('disabled', true).addClass('disabled');
+
+          closeFile();
+
+          $.each(openedCProgram.program_versions, function (k, v) {
+            if(k == 0){
+              $('#selectVersion').append("<option selected='selected' onclick=\"getCProgramVersion('" + v.version_id + "')\">" + v.version_name + "</option>");
+            }else {
+              $('#selectVersion').append("<option onclick=\"getCProgramVersion('" + v.version_id + "')\">" + v.version_name + "</option>");
+            }
+          });
+
+          if(json.program_versions[0] != null) {
+
+            //$("#selectVersion option:first").attr('selected','selected');
+
+            //openVersion(json.program_versions[0]);
+          }else {
+            $("#selectVersion").html("");
+            $("#selectVersion").append("<option>No versions here!</option>");
+            $("#openedCProgramVersionName").text("");
+            $("#openedCProgramVersionDescription").val("");
+            disableButtonGroup("#c_program_version_btn_group", true);
+          }
+        }
+
+        function openVersion(json) {
+
+          openedVersion = json;
+
+          $("#openedCProgramVersionName").text(openedVersion.version_name);
+          $("#openedCProgramVersionDescription").val(openedVersion.version_description);
+
+          disableButtonGroup("#c_program_version_btn_group", false);
+          $('#newFileButton').prop('disabled', false).removeClass('disabled');
+
+          closeFile();
+
+          $('#files').html("");
+
+          if (json.c_program_files.length > 0) {
+
+            fileContents = json.c_program_files;
+
+            $('#files').append(makeTree(makeJson(fileContents)));
+          }else{
+            $('#files').append("<p>No files here! Hit the plus button to add o new one.</p>");
+          }
+
+          if (json.examples.length > 0) {
+
+            exampleContents = json.examples;
+
+
+
+            $.each(exampleContents, function (k, v) {
+
+              var content = "";
+
+              content += "<ul style='list-style-type: none; padding: 0;'><li style='margin: 0; padding: 0;'>" +
+                      "<div class='panel-group' style='margin: 5px 0;'>" +
+                      "<div class='panel panel-default'>" +
+                      "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                      "<h4 class='panel-title'>" +
+                      "<a onclick=\"" +
+                      "openExample(" + k + ");" +
+                      "\">";
+              content += v.name;
+
+              content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeExample(" + k + ")' title='Remove Example'><i class='fa fa-times'></i></button></h4></div>" +
+                      "<div class='panel-collapse collapse'>" +
+                      "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+              content += "</div></div></div></div></li></ul>";
+
+              $('#examples').append(content);
+            });
+
+
+          }else{
+            $('#examples').append("<p>No examples here! Hit the plus button to add o new one.</p>");
+          }
+        }
+
+        function fillEditVersionForm() {
+          $("#editCProgramVersionName").val(openedVersion.version_name);
+          $("#editCProgramVersionDescription").val(openedVersion.version_description);
+        }
+
+        function fillEditCProgramForm() {
+          $("#editCProgramName").val(openedCProgram.name);
+          $("#editCProgramDescription").val(openedCProgram.description);
+          $("#editCProgramLongDescription").val(openedCProgram.long_description);
+          $("#editSelectTag option[value=" + openedCProgram.tag + "]").attr('selected','selected');
+          $("#editSelectState option[value=" + openedCProgram.state + "]").attr('selected','selected');
+        }
+
+        function closeFile() {
+          $('#saveFileButton').prop('disabled', true).addClass('disabled');
+          $('#saveExampleButton').prop('disabled', true).addClass('disabled');
+
+          $('#file_name').text("");
+          editor.setValue("");
+        }
+
+        function newExample(){
+          openedExample = {version_name: $('#newExampleName').val(), version_description: $('#newExampleDescription').val(), main: ''};
+          $('#file_name').text(openedExample.version_name);
+          editor.setValue("// your new example - " + openedExample.version_name,1);
+          $("#newExampleModal").modal('hide');
+          $('#newExampleName').val("");
+          $('#newExampleDescription').val("");
+
+          $('#saveFileButton').prop('disabled', true).addClass('disabled');
+          $('#saveExampleButton').prop('disabled', false).removeClass('disabled');
+        }
+
+        function openExample(order){
+
+          $('#file_name').text(exampleContents[order].name);
+
+          openedExample.version_name = exampleContents[order].name;
+          openedExample.version_description = exampleContents[order].description;
+
+          var content = exampleContents[order].main;
+
+          editor.setValue(content, 1);
+
+          $('#saveFileButton').prop('disabled', true).addClass('disabled');
+          $('#saveExampleButton').prop('disabled', false).removeClass('disabled');
+        }
+
+        function saveExample(){
+
+          openedExample.main = editor.getValue();
+
+          $.ajax({
+            url: '/c_program/version/upload_example/' + openedVersion.version_id,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(openedExample),
+            dataType: 'json',
+            success:function(json){
+              openVersion(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function removeExample(count){
+
+          $.ajax({
+            url: '/c_program/version/remove_example/' + exampleContents[count].id,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              openVersion(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+</script>

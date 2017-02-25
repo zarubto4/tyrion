@@ -1,5 +1,6 @@
-@import models.compiler.{Model_TypeOfBoard, Model_VersionObject}
+@import models.compiler.Model_VersionObject
 @import models.project.c_program.Model_CProgram
+@import models.compiler.Model_TypeOfBoard
 
 <section class="content-header">
     <h1> Public code </h1>
@@ -18,123 +19,115 @@
                     <h3 class="box-title">All Public programs</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <td><button class="btn btn-block btn-info" type="button" onclick="createProgramShow()">Create Public Program</button></td>
+                            <button class="btn btn-block btn-info" type="button" onclick="createProgramShow()">Create Public Program</button>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="nav-tabs-custom">
                     <ul class="nav nav-tabs">
 
-                    @for( type_of_board <- Model_TypeOfBoard.find.findList()){
+                    @for( type_of_board <- Model_TypeOfBoard.find.all()){
                         <li><a href="#type_of_board_tab_@type_of_board.id" data-toggle="tab">@type_of_board.name</a></li>
                     }
-
                     </ul>
                 </div>
-                <p></p>
-                <p></p>
-                <div class="tab-content" id="all_c_programs">
-                @for( type_of_board <- Model_TypeOfBoard.find.findList() ) {
+                <div id="all_c_programs_wrapper">
+                    <div class="tab-content" id="all_c_programs">
+                    @for( type_of_board <- Model_TypeOfBoard.find.all() ) {
 
-                    <div class="tab-pane" id="type_of_board_tab_@type_of_board.id">
-                        <div class="box-body">
+                        <div class="tab-pane" id="type_of_board_tab_@type_of_board.id">
+                            <div class="box-body">
 
-                            <p></p>
+                                @for(c_program <- Model_CProgram.find.where().isNull("project").eq("type_of_board.id", type_of_board.id).findList()){
 
-                            @for(c_program <- Model_CProgram.find.where().isNull("project").eq("type_of_board.id", type_of_board.id).findList()){
+                                    <h4 class="text-warning"> @c_program.name <small class="text-warning">@c_program.type_of_board_name() </small>
 
-                                <label style=""><h4 class="text-warning"> @c_program.name <small class="text-warning">@c_program.type_of_board_name() </small>
-
-                                    @if(Model_VersionObject.find.where().eq("public_version", true).eq("removed_by_user", false).eq("c_program.id", c_program.id).findUnique() != null){
-                                        <small class="text-success">(Visible)</small>
-                                    }else{
-                                        <small class="text-danger">(Not Visible)</small>
-                                    }
-
-
-                                </h4></label>
-                                <br><label style="">@c_program.description </label>
-
-                                <div class="pull-right">
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
-                                            <span class="caret"></span>
-                                            <span class="sr-only">Toggle Dropdown</span>
-                                            Program Action
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                            <li><button class="btn btn-block btn-primary" type="button" onclick="createC_Program_VersionShow('@c_program.id')">Create Version</button></li>
-                                            <li><button class="btn btn-block btn-info"    type="button" onclick="showEditForm('@c_program.id')">Hide</button></li>
-                                            <li><button class="btn btn-block btn-danger"  type="button" onclick="removeProgram('@c_program.id')">Delete</button></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <table id="c_program_detail" class="table table-bordered">
-
-                                    <th class="col-md-1" >Id</th>
-                                    <th class="col-md-1" >Name</th>
-                                    <th class="col-md-3" >Description</th>
-                                    <th class="col-md-1" >Author</th>
-                                    <th class="col-md-1" >Comp. Status</th>
-                                    <th class="col-md-1" >Visible Status</th>
-                                    <th class="col-md-1" >Actions</th>
-
-
-                                    @for(version <- c_program.getVersion_objects_all_For_Admin()){
-
-                                        @if(version.removed_by_user == false){
-                                            <tr>
-
-                                                <td>@version.id</td>
-                                                <td>@version.version_name</td>
-                                                <td>@version.version_description</td>
-                                                <td>@if(version.author != null){
-                                                    @version.author.mail
-                                                }else{
-                                                    not defined
-                                                }
-                                                </td>
-                                                <td>@version.c_compilation.status</td>
-                                                <td>@version.public_version</td>
-                                                <td>
-
-
-                                                    <div class="btn-group">
-                                                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
-                                                            <span class="caret"></span>
-                                                            <span class="sr-only">Toggle Dropdown</span>
-                                                            Version Action
-                                                        </button>
-                                                        <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                                            <li><button class="btn btn-block btn-primary" type="button" onclick="showCode('@version.id')">Show Code</button></li>
-                                                            <li><button class="btn btn-block btn-info"    type="button" onclick="editC_Program_VersionShow('@version.id', '@version.version_name', '@version.version_description')">Edit</button></li>
-                                                            @if(version.public_version){
-                                                                <li><button class="btn btn-block btn-warning"  type="button" onclick="dispproveVersion(@version.id)">Disapprove</button></li>
-                                                            }else{
-                                                                <li><button class="btn btn-block btn-warning"  type="button" onclick="approveVersion(@version.id)">Approve</button></li>
-                                                            }
-                                                            <li><button class="btn btn-block btn-danger"  type="button" onclick="removeVersion(@version.id)">Delete</button></li>
-                                                        </ul>
-                                                    </div>
-
-
-
-                                                </td>
-
-                                            </tr>
+                                        @if(Model_VersionObject.find.where().eq("public_version", true).eq("removed_by_user", false).eq("c_program.id", c_program.id).findUnique() != null){
+                                            <small class="text-success">(Visible)</small>
+                                        }else{
+                                            <small class="text-danger">(Not Visible)</small>
                                         }
-                                    }
-                                </table>
-                                <p></p>
-                                <p></p>
-                                <hr>
-                                <p></p>
-                                <p></p>
-                            }
 
+
+                                    </h4>
+                                    <br><label style="">@c_program.description </label>
+
+                                    <div class="pull-right">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
+                                                <span class="caret"></span>
+                                                <span class="sr-only">Toggle Dropdown</span>
+                                                Program Action
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                                <li><button class="btn btn-block btn-primary" type="button" onclick="createC_Program_VersionShow('@c_program.id')">Create Version</button></li>
+                                                <li><button class="btn btn-block btn-info"    type="button" onclick="showEditForm('@c_program.id')">Hide</button></li>
+                                                <li><button class="btn btn-block btn-danger"  type="button" onclick="removeProgram('@c_program.id')">Delete</button></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <table id="c_program_detail" class="table table-bordered">
+
+                                        <tr>
+                                            <th class="col-md-1" >Id</th>
+                                            <th class="col-md-1" >Name</th>
+                                            <th class="col-md-3" >Description</th>
+                                            <th class="col-md-1" >Author</th>
+                                            <th class="col-md-1" >Comp. Status</th>
+                                            <th class="col-md-1" >Visible Status</th>
+                                            <th class="col-md-1" >Actions</th>
+                                        </tr>
+
+                                        @for(version <- c_program.getVersion_objects_all_For_Admin()){
+
+                                            @if(!version.removed_by_user){
+                                                <tr>
+
+                                                    <td>@version.id</td>
+                                                    <td>@version.version_name</td>
+                                                    <td>@version.version_description</td>
+                                                    <td>@if(version.author != null){
+                                                        @version.author.mail
+                                                    }else{
+                                                        not defined
+                                                    }</td>
+                                                    <td>@version.c_compilation.status</td>
+                                                    <td>@version.public_version</td>
+                                                    <td>
+
+
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+                                                                <span class="caret"></span>
+                                                                <span class="sr-only">Toggle Dropdown</span>
+                                                                Version Action
+                                                            </button>
+                                                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                                                <li><button class="btn btn-block btn-primary" type="button" onclick="showCode('@version.id')">Show Code</button></li>
+                                                                <li><button class="btn btn-block btn-info"    type="button" onclick="editC_Program_VersionShow('@version.id', '@version.version_name', '@version.version_description')">Edit</button></li>
+                                                                @if(version.public_version){
+                                                                    <li><button class="btn btn-block btn-warning"  type="button" onclick="dispproveVersion(@version.id)">Disapprove</button></li>
+                                                                }else{
+                                                                    <li><button class="btn btn-block btn-warning"  type="button" onclick="approveVersion(@version.id)">Approve</button></li>
+                                                                }
+                                                                <li><button class="btn btn-block btn-danger"  type="button" onclick="removeVersion(@version.id)">Delete</button></li>
+                                                            </ul>
+                                                        </div>
+
+
+
+                                                    </td>
+
+                                                </tr>
+                                            }
+                                        }
+                                    </table>
+                                }
+
+                            </div>
                         </div>
+                    }
                     </div>
-                }
                 </div>
                 <div class="box-footer">
                 </div>
@@ -165,7 +158,7 @@
                         <div class="form-group">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="c_program_public_admin_create" value="true" checked true>
+                                    <input type="checkbox" name="c_program_public_admin_create" value="true" checked>
                                     Public C Program
                                 </label>
                             </div>
@@ -296,7 +289,7 @@
                 success:function(e){
                     $("#createProgramModal input[type=text]").val("");
                     $("#createProgramModal").css("display","none");
-                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                    $('#all_c_programs_wrapper').load(document.URL +  ' #all_c_programs');
                 },
                 error:function(e) {
                     BootstrapDialog.show({
@@ -326,7 +319,7 @@
                 dataType: 'json',
 
                 success:function(e){
-                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                    $('#all_c_programs_wrapper').load(document.URL +  ' #all_c_programs');
                 },
                 error:function(e) {
                     BootstrapDialog.show({
@@ -356,7 +349,7 @@
                 dataType: 'json',
 
                 success:function(e){
-                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                    $('#all_c_programs_wrapper').load(document.URL +  ' #all_c_programs');
                 },
                 error:function(e) {
                     BootstrapDialog.show({
@@ -391,7 +384,7 @@
                 success:function(e){
                     $("#editCProgramVersionForm input[type=text]").val("");
                     $("#editCProgramVersionModal").css("display","none");
-                    $('#all_c_programs').load(document.URL +  ' #all_c_programs');
+                    $('#all_c_programs_wrapper').load(document.URL +  ' #all_c_programs');
                 },
                 error:function(e) {
                     BootstrapDialog.show({
@@ -427,7 +420,7 @@
 
                     $("#newCProgramVersionForm input[type=text]").val("");
                     $("#newCProgramVersionModal").css("display", "none");
-                    $('#all_c_programs').load(document.URL + ' #all_c_programs');
+                    $('#all_c_programs_wrapper').load(document.URL + ' #all_c_programs');
 
                 },
                 error: function(data) {
@@ -446,10 +439,5 @@
                 }
             })
         }
-
-
-
-
-
 
 </script>

@@ -1,4 +1,4 @@
-package utilities.schedules_activities;
+package utilities.scheduler.schedules_activities;
 
 
 import org.quartz.Job;

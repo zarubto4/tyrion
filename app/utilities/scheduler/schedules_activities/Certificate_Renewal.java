@@ -1,16 +1,11 @@
-package utilities.schedules_activities;
+package utilities.scheduler.schedules_activities;
 
 
-import com.google.inject.Inject;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.Application;
 
 public class Certificate_Renewal implements Job {
-
-    @Inject
-    Application application;
 
     public Certificate_Renewal(){ /** do nothing */ }
 
@@ -30,7 +25,7 @@ public class Certificate_Renewal implements Job {
 
             try {
 
-              Process pr = Runtime.getRuntime().exec(application.path() + "/certificate_renewal.sh");
+              Process pr = Runtime.getRuntime().exec(System.getProperty("user.dir") + "/app/certificate_renewal.sh");
 
               int exitVal = pr.waitFor();
 

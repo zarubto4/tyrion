@@ -168,6 +168,7 @@ public class Model_Person extends Model {
     @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.getPerson() != null && Controller_Security.getPerson().id.equals(this.id) || Controller_Security.getPerson().has_permission("Person_edit");}
     @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.getPerson().has_permission("Person_activation");}
     @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.getPerson().has_permission("Person_delete");}
+    @JsonIgnore   @Transient public boolean admin_permission()     {  return Controller_Security.getPerson().has_permission("Byzance_employee");}
 
     public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
 

@@ -1,4 +1,4 @@
-package utilities.schedules_activities;
+package utilities.scheduler.schedules_activities;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import models.project.global.Model_Product;
@@ -69,7 +69,7 @@ public class Spending_Credit_Every_Day implements Job {
 
             for (int page = 0; page <= page_total - 1; page++) {
 
-                logger.info("Spending_Credit_Every_Day:: procedure for page " + page + 1 + " from " + page_total + 1);
+                logger.info("Spending_Credit_Every_Day:: procedure for page " + (page + 1) + " from " + page_total);
 
                 List<Model_Product> products = Model_Product.find.where()
                         .disjunction()

@@ -4,7 +4,7 @@ package controllers;
 import io.swagger.annotations.Api;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.schedules_activities.Spending_Credit_Every_Day;
+import utilities.scheduler.schedules_activities.Spending_Credit_Every_Day;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Wiky extends Controller {

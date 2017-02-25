@@ -70,8 +70,8 @@ public class Loggy{
         descriptionBuilder.append("    Tyrion version: " + Server.server_version);
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Tyrion mode: " + Server.server_mode);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Server MAC address: " + getMac());
+        //descriptionBuilder.append("\n");
+        //descriptionBuilder.append("    Server MAC address: " + getMac());
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
         descriptionBuilder.append("\n");
@@ -88,7 +88,7 @@ public class Loggy{
         String description = descriptionBuilder.toString();
 
         error(id, summary, description);
-        return GlobalResult.result_InternalServerError(summary);
+        return GlobalResult.result_InternalServerError(exception.getMessage());
     }
 
     public static Result result_internalServerError(String problem, Http.Request request) {
@@ -199,7 +199,7 @@ public class Loggy{
     }
 
     private static void error(String id, String summary, String description) {
-        // logger.error(summary+"\n"+description); // zapíšu do souboru
+        logger.error(summary+"\n"+description); // zapíšu do souboru
         Model_LoggyError error = new Model_LoggyError(id, summary, description); // zapíšu do databáze
         error.save();
     }

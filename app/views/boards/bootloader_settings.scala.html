@@ -33,12 +33,12 @@
                 <h3 class="box-title">Bootlooder summary</h3>
                 <div class="pull-right">
                     <div class="btn-group">
-                        <td><button class="btn btn-block btn-info" type="button" onclick="openNewBootLoaderModal('@typeOfBoard.id')">New Bootloader</button></td>
+                        <button class="btn btn-block btn-info" type="button" onclick="openNewBootLoaderModal('@typeOfBoard.id')">New Bootloader</button>
                     </div><!-- /.btn-group -->
                 </div><!-- /.pull-right -->
             </div>
             <div class="box-body">
-
+                <div id="allBootloaderVersionsWrapper">
                 <table id="allBootloaderVersions" class="table table-bordered">
                     <tr>
                         <th>ID</th>
@@ -82,7 +82,7 @@
                         </tr>
                     }
                 </table>
-
+                </div>
             </div>
             <div class="box-footer">
         </div>
@@ -93,6 +93,7 @@
 
 <div class="row">
     <div class="col-md-12">
+        <div id="firmware_summary_wrapper">
         <div id="firmware_summary" class="box">
             <div class="box-header with-border">
                 <h3 class="box-title">Default Device Program - FirstVersion of C_Program && First Firmware in Device! </h3>
@@ -128,53 +129,47 @@
                         </div>
                     </div>
                 }
-
-                <table id="allCProgramsVersions" class="table table-bordered">
-
-                    <tr>
-                        <th>C_Program ID</th>
-                        <th>Date</th>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Compiled & BIN Restored</th>
-                        <th>State</th>
-                    </tr>
-
-                    @for(version <- Model_VersionObject.find.where().eq("c_program.type_of_board_default.id", typeOfBoard.id).findList()){
+                <div id="allCProgramsVersionsWrapper">
+                    <table id="allCProgramsVersions" class="table table-bordered">
                         <tr>
-                            <td>@version.id</td>
-                            <td>@version.date_of_create</td>
-                            <td>@version.version_name</td>
-                            <td>@version.version_description</td>
-
-                            <td>
-                                @if(version.c_compilation.status == Compile_Status.successfully_compiled_and_restored){
-                                    <p class="text-green">Yes</p>
-
-                                }else{
-                                    <p class="text-red">NO!!!!</p>
-                                }
-                            </td>
-
-                            <td>
-                                @if(typeOfBoard.version_scheme != null && typeOfBoard.version_scheme.default_main_version != null && typeOfBoard.version_scheme.default_main_version.id == version.id) {
-                                    <p class="lead text-green">(ITS Main)</p>
-                                }
-                                @if(version.default_program == null && (version.c_compilation.status == Compile_Status.successfully_compiled_and_restored)){
-                                    <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('version.id')" > SET as Main </button>
-                                }
-                                @if(version.default_program == null && (version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) ){
-                                    <p class="text-red"> @version.c_compilation.status</p>
-                                }
-                            </td>
-
-
+                            <th>C_Program ID</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Compiled & BIN Restored</th>
+                            <th>State</th>
                         </tr>
-                    }
-                </table>
-
+                        @for(version <- Model_VersionObject.find.where().eq("c_program.type_of_board_default.id", typeOfBoard.id).findList()){
+                            <tr>
+                                <td>@version.id</td>
+                                <td>@version.date_of_create</td>
+                                <td>@version.version_name</td>
+                                <td>@version.version_description</td>
+                                <td>
+                                    @if(version.c_compilation.status == Compile_Status.successfully_compiled_and_restored){
+                                        <p class="text-green">Yes</p>
+                                    }else{
+                                        <p class="text-red">NO!!!!</p>
+                                    }
+                                </td>
+                                <td>
+                                    @if(typeOfBoard.version_scheme != null && typeOfBoard.version_scheme.default_main_version != null && typeOfBoard.version_scheme.default_main_version.id == version.id) {
+                                        <p class="lead text-green">(ITS Main)</p>
+                                    }
+                                    @if(version.default_program == null && (version.c_compilation.status == Compile_Status.successfully_compiled_and_restored)){
+                                        <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('@typeOfBoard.version_scheme.id','@version.id')" > SET as Main </button>
+                                    }
+                                    @if(version.default_program == null && (version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) ){
+                                        <p class="text-red"> @version.c_compilation.status</p>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
             </div>
             <div class="box-footer">
+        </div>
         </div>
         </div>
     </div>
@@ -411,7 +406,7 @@
             },
 
             success: function(data, status) {
-                $('#allBootloaderVersions').load(document.URL + ' #allBootloaderVersions');
+                $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
             },
             error: function(data) {
                 BootstrapDialog.show({
@@ -429,10 +424,10 @@
         })
     }
 
-    function setVersionAsMain(version_id) {
+    function setVersionAsMain(program_id, version_id) {
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.typeOfBoard_versionScheme(typeOfBoard.id,"")' + version_id,
+            url: '/c_program/default/mark/' + program_id + "/" + version_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),
@@ -440,7 +435,7 @@
             },
 
             success: function(data, status) {
-                $('#allCProgramsVersions').load(document.URL + ' #allCProgramsVersions');
+                $('#allCProgramsVersionsWrapper').load(document.URL + ' #allCProgramsVersions');
             },
 
             error: function(data) {
@@ -477,7 +472,7 @@
 
                 $("#newBootLoaderForm input[type=text]").val("");
                 $("#newBootLoaderModal").css("display", "none");
-                $('#allBootloaderVersions').load(document.URL + ' #allBootloaderVersions');
+                $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
 
             },
             error: function(data) {
@@ -502,7 +497,7 @@
         model_data = $("#newCProgramForm").serializeObject();
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.c_program_create()',
+            url: '@routes.Controller_CompilationLibraries.c_program_createDefault()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -516,7 +511,7 @@
 
                 $("#newBootLoaderForm input[type=text]").val("");
                 $("#newCProgramModal").css("display", "none");
-                $('#firmware_summary').load(document.URL + ' #firmware_summary');
+                $('#firmware_summary_wrapper').load(document.URL + ' #firmware_summary');
 
             },
             error: function(data) {
@@ -594,7 +589,7 @@
 
                 $("#newCProgramVersionForm input[type=text]").val("");
                 $("#newCProgramVersionModal").css("display", "none");
-                $('#allCProgramsVersions').load(document.URL + ' #allCProgramsVersions');
+                $('#allCProgramsVersionsWrapper').load(document.URL + ' #allCProgramsVersions');
 
             },
             error: function(data) {
@@ -636,7 +631,7 @@
             success: function(data, status) {
 
                 $("#newFileModal").css("display", "none");
-                $('#allBootloaderVersions').load(document.URL + ' #allBootloaderVersions');
+                $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
 
                 BootstrapDialog.show({
                     message: "SUCCESS",

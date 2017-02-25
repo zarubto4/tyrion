@@ -61,15 +61,13 @@ public class Model_CProgram extends Model {
     @JsonProperty  @Transient public String type_of_board_name()   { return type_of_board == null ? null : type_of_board.name;}
 
 
-    @JsonProperty @Transient public List<Swagger_C_Program_Version_Short_Detail> program_versions() {
+    @JsonProperty public List<Swagger_C_Program_Version_Short_Detail> program_versions() {
 
         List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
 
         for(Model_VersionObject version : getVersion_objects()){
             versions.add(version.get_short_c_program_version());
         }
-
-        //if(first_default_version_object != null) versions.add(first_default_version_object.get_short_c_program_version());
 
         return versions;
     }
@@ -124,11 +122,11 @@ public class Model_CProgram extends Model {
 
 /* Private Documentation Class -------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public List<Model_VersionObject> getVersion_objects() {
+    @JsonIgnore public List<Model_VersionObject> getVersion_objects() {
         return Model_VersionObject.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList();
     }
 
-    @JsonIgnore @Transient public List<Model_VersionObject> getVersion_objects_all_For_Admin() {
+    @JsonIgnore public List<Model_VersionObject> getVersion_objects_all_For_Admin() {
         return Model_VersionObject.find.where().eq("c_program.id", id).order().desc("date_of_create").findList();
     }
 

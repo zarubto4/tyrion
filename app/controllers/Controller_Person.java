@@ -97,21 +97,15 @@ public class Controller_Person extends Controller {
                 String link = Server.tyrion_serverAddress + "/person/mail_authentication/" + validationToken.authToken;
 
                 try {
-                            new EmailTool()
-                            .addEmptyLineSpace()
-                            .startParagraph("13")
-                            .addText("Email verification is needed to complete your registration.")
-                            .endParagraph()
-                            .addEmptyLineSpace()
-                            .addSeparatorLine()
-                            .addEmptyLineSpace()
-                            .addLink(link,"Verify your email address","18")
-                            .addEmptyLineSpace()
-                            .sendEmail(validationToken.personEmail, "Email Verification");
+
+                    new EmailTool()
+                            .text("Email verification is needed to complete your registration.")
+                            .divider()
+                            .link("Verify your email address",link)
+                            .send(validationToken.personEmail, "Email Verification");
 
                 } catch (Exception e) {
                     logger.error("Sending mail -> critical error", e);
-                    e.printStackTrace();
                 }
 
             }else{

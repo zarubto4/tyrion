@@ -1,4 +1,4 @@
-package utilities.schedules_activities;
+package utilities.scheduler.schedules_activities;
 
 import models.loggy.Model_RequestLog;
 import org.quartz.Job;
@@ -56,7 +56,6 @@ public class Request_Stats_Update implements Job {
                     logger.info("Request_Stats_Update:: log_upload_thread:: no requests");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 logger.error("Request_Stats_Update:: log_upload_thread:: error in thread");
             }
 

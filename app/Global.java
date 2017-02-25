@@ -6,6 +6,7 @@ import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.request_counter.RequestCounter;
+import utilities.scheduler.CustomScheduler;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -69,9 +70,9 @@ public class Global extends GlobalSettings {
             try {
 
                 logger.warn("You have developer version - System removes CRON task from your RAM");
-                Server.scheduler.clear();
+                CustomScheduler.stopScheduler();
 
-            } catch (SchedulerException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
