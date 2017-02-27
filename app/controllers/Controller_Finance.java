@@ -30,6 +30,8 @@ import utilities.swagger.outboundClass.Swagged_Applicable_Product;
 import utilities.swagger.outboundClass.Swagger_GoPay_Url;
 import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -480,6 +482,8 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+
+
     public Result get_products_tariffs(){
         try{
 
@@ -578,6 +582,12 @@ public class Controller_Finance extends Controller {
                         if(help.company_authorized_email == null)   return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
                         if(help.company_authorized_phone == null)   return GlobalResult.result_BadRequest("company_authorized_phone is required with this tariff");
                         if(help.company_web == null)                return GlobalResult.result_BadRequest("company_web is required with this tariff");
+
+                        try {
+                            new URL(help.company_web);
+                        } catch (MalformedURLException malformedURLException) {
+                            return GlobalResult.result_BadRequest("company_web invalid value");
+                        }
 
                         if(help.vat_number != null) {
                             payment_details.company_vat_number = help.vat_number;
@@ -687,7 +697,7 @@ public class Controller_Finance extends Controller {
                 invoice.save();
 
                 Model_Invoice test = Model_Invoice.find.byId(invoice.id);
-                logger.error("Financial_Controller:: product_create::  test: " + Json.toJson(test));
+                logger.debug("Financial_Controller:: product_create:: " + Json.toJson(test));
 
 
                 logger.debug("Financial_Controller:: product_create::  Creating Proforma in fakturoid");

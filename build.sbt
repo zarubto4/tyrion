@@ -34,7 +34,7 @@ libraryDependencies ++= Seq(
   "commons-collections" % "commons-collections" % "3.2.1",
 
   "org.quartz-scheduler" % "quartz" % "2.2.3",
-
+  "org.ehcache" % "ehcache-clustered" % "3.2.0",
   "com.github.nkzawa" % "socket.io-client" % "0.1.2",
 
   "com.novocode" % "junit-interface" % "0.11",
@@ -43,10 +43,9 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
 
   "org.jsmpp" % "jsmpp" % "2.3.0",
-
+  cache,
   javaJdbc,
   filters,
-  cache,
   javaWs
 )
 

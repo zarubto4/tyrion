@@ -45,7 +45,7 @@ public class GoPay_Controller  extends Controller {
 
             payment.setItems(invoice.invoice_items);
             payment.order_number = invoice.invoice_number;
-            payment.currency = Currency.USD;
+            payment.currency = Currency.CZK;
             payment.order_description = payment_description;
 
             GoPay_Payer payer = new GoPay_Payer();
@@ -172,7 +172,7 @@ public class GoPay_Controller  extends Controller {
             product.remaining_credit += invoice.total_price();
             product.update();
 
-            return redirect("localhost:8890/paid/success/" + gopay_id);
+            return redirect(Server.becki_mainUrl + "/paid/success/" + gopay_id);
         }
 
 // PRIVATE METHOTD services #####################################################################################################

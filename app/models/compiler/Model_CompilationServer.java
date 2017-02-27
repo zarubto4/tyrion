@@ -40,6 +40,7 @@ public class Model_CompilationServer extends Model {
                       @Id @ApiModelProperty(required = true)     public String unique_identificator;
      @Column(unique=true) @ApiModelProperty(required = true)     public String personal_server_name;
                           @JsonIgnore                            public String hash_certificate;
+    
 
     @ApiModelProperty(required = true, readOnly = true) @Column(unique=true)    public String server_url; // TODO - Tohle změnit na server_url  // Může být i IP adresa
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -109,7 +110,8 @@ public class Model_CompilationServer extends Model {
             if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Make_compilation:: Incoming Json from Compilation Server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Make_compilation();}
 
             WS_Make_compilation compilation = form.get();
-            compilation.interface_code = compilation_request.get("interface_code").toString();
+
+            if(compilation_request.has("interface_code")) compilation.interface_code = compilation_request.get("interface_code").toString();
 
             if(compilation.buildUrl != null) compilation.status = "success";
 

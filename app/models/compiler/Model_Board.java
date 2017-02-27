@@ -47,6 +47,61 @@ public class Model_Board extends Model {
 
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
+/* CACHE  -------------------------------------------------------------------------------------------------------------*/
+    /**
+    public void set_cache(){
+        try {
+
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            String text = "This is some text";
+
+            md.update(text.getBytes("UTF-8")); // Change this to "UTF-16" if needed
+            byte[] digest = md.digest();
+
+            final String hashed = Hashing.sha256()
+                    .hashString("your input", StandardCharsets.UTF_8)
+                    .toString();
+
+        }catch (NoSuchAlgorithmException e){
+
+        }catch (UnsupportedEncodingException e){
+
+        }
+
+        CacheManagerBuilder<PersistentCacheManager> cacheManagerBuilderAutoCreate = CacheManagerBuilder.newCacheManagerBuilder()
+                .with(ClusteringServiceConfigurationBuilder.cluster(URI.create("terracotta://localhost:9510/my-application"))
+                        .autoCreate()
+                        .resourcePool("resource-pool", 32, MemoryUnit.MB, "primary-server-resource"));
+
+        final PersistentCacheManager cacheManager1 = cacheManagerBuilderAutoCreate.build(false);
+        cacheManager1.init();
+
+        CacheConfiguration<Long, String> cacheConfigDedicated = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, String.class,
+                ResourcePoolsBuilder.newResourcePoolsBuilder()
+                        .with(ClusteredResourcePoolBuilder.clusteredDedicated("primary-server-resource", 8, MemoryUnit.MB)))
+                .add(ClusteredStoreConfigurationBuilder.withConsistency(Consistency.STRONG))
+                .build();
+
+        Cache<Long, String> cacheDedicated = cacheManager1.createCache("my-dedicated-cache", cacheConfigDedicated);
+
+        CacheManagerBuilder<PersistentCacheManager> cacheManagerBuilderExpecting = CacheManagerBuilder.newCacheManagerBuilder()
+                .with(ClusteringServiceConfigurationBuilder.cluster(URI.create("terracotta://localhost:9510/my-application"))
+                        .expecting()
+                        .resourcePool("resource-pool", 32, MemoryUnit.MB, "primary-server-resource"));
+
+        final PersistentCacheManager cacheManager2 = cacheManagerBuilderExpecting.build(false);
+        cacheManager2.init();
+
+        CacheConfiguration<Long, String> cacheConfigUnspecified = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, String.class,
+                ResourcePoolsBuilder.newResourcePoolsBuilder()
+                        .with(ClusteredResourcePoolBuilder.clustered()))
+                .add(ClusteredStoreConfigurationBuilder.withConsistency(Consistency.STRONG))
+                .build();
+
+        Cache<Long, String> cacheUnspecified = cacheManager2.createCache("my-dedicated-cache", cacheConfigUnspecified);
+    }
+    */
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                    @Id @ApiModelProperty(required = true)   public String id;                   // Full_Id procesoru přiřazené Garfieldem
@@ -111,48 +166,56 @@ public class Model_Board extends Model {
         logger.debug("Model_Board:: status:: Check Status" + this.id);
 
         // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
-        Model_HomerInstance instance =  Model_HomerInstance.find.where().disjunction()
-                .add( Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", id) )
-                .add( Expr.eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", id) )
-                .findUnique();
-
+        Model_HomerInstance instance =  get_instance();
 
         Swagger_Board_Status board_status = new Swagger_Board_Status();
         board_status.status = is_online() ? Board_Status.online : Board_Status.offline;
         if(project == null) board_status.where = Board_Type_of_connection.connected_to_server_unregistered;
 
-        // Stavy Desky--------------------
 
-        // 1) Není známo kam se deska připojila a nemá instanci
-        if(get_instance() == null && get_connected_server() == null){
-
-            board_status.status = Board_Status.not_yet_first_connected;
-
-        // 2) Je známo kam se deska připojila a nemá instanci - Takže třeba když jí uživatel vyndal z krabičky nahrál na ní něco
-        }else if(get_instance() == null && get_connected_server() != null){
-
-            logger.debug("Model_Board:: status:: Check Status:: ");
-            board_status.where = Board_Type_of_connection.connected_to_byzance;
-            board_status.server_name = connected_server.personal_server_name;
-            board_status.homer_server_id = connected_server.unique_identificator;
-            board_status.server_online_status = connected_server.server_is_online();
+        // Stavy Desky--------------------------------------------------------------------------------------------------
 
 
         // 3) Je ve Virtuální instanci
-        } else if(instance != null) {
+        if(instance != null) {
 
             board_status.where = Board_Type_of_connection.in_person_instance;
-            board_status.instance_id = get_instance().blocko_instance_name;
-            board_status.instance_online_status = get_instance().instance_online();
-            if( instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
-            if( instance.getB_program() != null) board_status.b_program_name = instance.getB_program().name;
+            board_status.instance_id = instance.blocko_instance_name;
+            board_status.instance_online_status = instance.instance_online();
+            if (instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
+            if (instance.getB_program() != null) board_status.b_program_name = instance.getB_program().name;
 
-            if(instance.actual_instance != null ) board_status.b_program_version_id = instance.actual_instance.version_object.id ;
-            if(instance.actual_instance != null ) board_status.b_program_version_name = instance.actual_instance.version_object.version_name;
+            if (instance.actual_instance != null)
+                board_status.b_program_version_id = instance.actual_instance.version_object.id;
+            if (instance.actual_instance != null)
+                board_status.b_program_version_name = instance.actual_instance.version_object.version_name;
 
+            board_status.server_name = instance.cloud_homer_server.personal_server_name;
+            board_status.homer_server_id = instance.cloud_homer_server.unique_identificator;
+            board_status.server_online_status = instance.cloud_homer_server.server_is_online();
+        }else {
+
+            // 1) Není známo kam se deska připojila a nemá instanci
+            if(get_instance() == null && get_connected_server() == null) {
+
+                board_status.status = Board_Status.not_yet_first_connected;
+                // 2) Je známo kam se deska připojila a nemá instanci - Takže třeba když jí uživatel vyndal z krabičky nahrál na ní něco
+            }
+
+            if(get_instance()  == null && get_connected_server() != null) {
+
+                logger.debug("Model_Board:: status:: Check Status:: ");
+                board_status.where = Board_Type_of_connection.connected_to_byzance;
+                board_status.server_name = connected_server.personal_server_name;
+                board_status.homer_server_id = connected_server.unique_identificator;
+                board_status.server_online_status = connected_server.server_is_online();
+
+            }
+
+        }
 
         // 4) Je ve virtuální instanci
-        } else if( get_virtual_instance() != null ){
+        if( get_virtual_instance() != null ){
             board_status.where = Board_Type_of_connection.under_project_virtual_instance;
             board_status.server_name = get_virtual_instance().cloud_homer_server.personal_server_name;
             board_status.homer_server_id = get_virtual_instance().cloud_homer_server.unique_identificator;
@@ -222,6 +285,9 @@ public class Model_Board extends Model {
         swagger_board_short_detail.edit_permission = edit_permission();
         swagger_board_short_detail.delete_permission = delete_permission();
         swagger_board_short_detail.update_permission = update_permission();
+
+
+
 
         return swagger_board_short_detail;
 

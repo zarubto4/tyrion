@@ -442,7 +442,7 @@ public class Model_HomerServer extends Model{
     }
 
     @JsonIgnore @Transient  public void is_disconnect(){
-        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " +  Controller_WebSocket.homer_servers.get(unique_identificator));
+        logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " + unique_identificator);
         // TODO nějaký Alarm když se to stane??
     }
 
