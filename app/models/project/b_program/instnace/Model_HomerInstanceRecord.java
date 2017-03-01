@@ -55,12 +55,13 @@ public class Model_HomerInstanceRecord extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String instance_record_id()      {  return this.id;}
 
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_BProgramHwGroup> hardware_group()               {  return version_object.b_program_hw_groups;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_MProjectProgramSnapShot> m_project_snapshop()    {  return version_object.b_program_version_snapshots;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_MProjectProgramSnapShot> m_project_snapshot()    {  return version_object.b_program_version_snapshots;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String status()    {
 
         if(planed_when.getTime() > new Date().getTime()) return "furure";
         if(actual_running_instance != null) return "now";
         else return "history";
+        
     }
 
 

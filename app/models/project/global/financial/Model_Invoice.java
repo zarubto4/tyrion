@@ -53,7 +53,7 @@ public class Model_Invoice extends Model {
 
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
-    public String pdf_link()  {  return facturoid_pdf_url != null ?  Server.tyrion_serverAddress + "/product/invoice/pdf/" + id : null; }
+    public String pdf_link()  {  return facturoid_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/" + id : null; }
 
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")

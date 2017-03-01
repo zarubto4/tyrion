@@ -1358,6 +1358,8 @@ public class Controller_ProgramingPackage extends Controller {
                     group.main_board_pair.board.virtual_instance_under_project = group.main_board_pair.board.project.private_instance;
                     group.main_board_pair.board.update();
 
+                    group.main_board_pair.board.project.private_instance.add_Yoda_to_instance(group.main_board_pair.board_id());
+
                 }
             }
 

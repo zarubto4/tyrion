@@ -85,9 +85,11 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return cloud_homer_server.server_is_online();}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
+
         if(actual_instance != null) {
             return "ws://" + cloud_homer_server.server_url + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
         }
+
         return null;
     }
 
@@ -326,25 +328,6 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  void remove_board_from_virtual_instance(Model_Board board){
-        try{
-
-            board.virtual_instance_under_project = null;
-            board.update();
-
-            List<Model_Board> boards = getBoards_in_virtual_instance();
-
-
-            if(boards.isEmpty()){
-                logger.debug("Model_HomerInstance:: remove_board_from_virtual_instance:: Virtual instance is empty - removing instance from server");
-                this.remove_instance_from_server();
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
     @JsonIgnore @Transient public  WS_Ping_instance ping() {
         try{
 
@@ -410,6 +393,35 @@ public class Model_HomerInstance extends Model {
 
             final Form<WS_Remove_yoda_from_instance> form = Form.form(WS_Remove_yoda_from_instance.class).bind(node);
             if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_yoda_from_instance();}
+
+            return form.get();
+
+        }catch (TimeoutException e){
+            return new WS_Remove_yoda_from_instance();
+        }catch (Exception e){
+            logger.error("Model_HomerServer:: remove_Yoda_from_instance:: Error:: ", e);
+            return new WS_Remove_yoda_from_instance();
+        }
+    }
+
+
+    @JsonIgnore @Transient public  WS_Remove_yoda_from_instance remove_Yoda_from_instance(Model_Board yoda) {
+        try{
+
+            JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_yoda_from_instance().make_request(this, yoda.id), 1000*3, 0, 4);
+
+            final Form<WS_Remove_yoda_from_instance> form = Form.form(WS_Remove_yoda_from_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_yoda_from_instance();}
+
+
+            if(yoda.virtual_instance_under_project != null){
+                Model_HomerInstance virtual_instance_under_project = yoda.virtual_instance_under_project;
+                yoda.virtual_instance_under_project = null;
+                yoda.update();
+
+                virtual_instance_under_project.refresh();
+                if(virtual_instance_under_project.boards_in_virtual_instance.isEmpty()) virtual_instance_under_project.remove_instance_from_server();
+            }
 
             return form.get();
 
@@ -557,7 +569,7 @@ public class Model_HomerInstance extends Model {
 
                             //1. Pokud už běží v jiné instanci mimo vlastní dočasnou instnaci
                             if (yoda.virtual_instance_under_project != null) {
-                                yoda.virtual_instance_under_project.remove_board_from_virtual_instance(yoda);
+                                yoda.virtual_instance_under_project.remove_Yoda_from_instance(yoda);
                             }
                         }
                     }

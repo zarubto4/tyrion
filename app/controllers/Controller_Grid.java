@@ -752,7 +752,7 @@ public class Controller_Grid extends Controller {
                 o.b_program_description = instnace_record.main_instance_history.b_program_description();
 
                 o.instance_record_id = instnace_record.id;
-                o.snapshots = instnace_record.m_project_snapshop();
+                o.snapshots = instnace_record.m_project_snapshot();
 
                 result.add(o);
             }
