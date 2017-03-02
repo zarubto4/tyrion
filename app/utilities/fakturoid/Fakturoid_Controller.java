@@ -244,10 +244,10 @@ public class Fakturoid_Controller extends Controller {
 
             new Email()
                     .text("Dear customer,")
-                    .text("Please find an enclosed invoice for the services you ordered. " + Calendar.getInstance().get(Calendar.MONTH))
+                    .text("Here is your invoice number: " + invoice.invoice_number)
                     .text("In case of questions, please contact our financial department." + Email.newLine() + "Have a nice day.")
                     .attachmentPDF(invoice.invoice_number + ".pdf", body)
-                    .send( email , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + ". Problems with payment" );
+                    .send( email , "Invoice from Byzance :-)" );
 
 
         }catch (Exception e){

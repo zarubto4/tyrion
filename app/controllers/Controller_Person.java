@@ -820,6 +820,8 @@ public class Controller_Person extends Controller {
 
                         JsonNode body = responsePromise.get(10000).asJson();
 
+                        logger.debug("Controller_Person:: person_validateProperty:: vat_number:: " + body.toString());
+
                         if (body.get("valid").asBoolean()) {
 
                             validation.valid = true;

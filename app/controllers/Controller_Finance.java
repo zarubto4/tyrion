@@ -1255,6 +1255,8 @@ public class Controller_Finance extends Controller {
             if(help.mail == null || help.mail.length() < 1) email = invoice.product.payment_details.invoice_email;
             else email = help.mail;
 
+            System.out.println("Email na který přeposílám fakturu je:: " + email);
+
             Fakturoid_Controller.send_invoice_to_Email(invoice, email);
 
             return GlobalResult.result_ok();
