@@ -1216,6 +1216,17 @@ public class Controller_Finance extends Controller {
             protocols = "https",
             code = 200
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Resend_Email",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values - values in Json is not requierd"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
@@ -1227,27 +1238,26 @@ public class Controller_Finance extends Controller {
         try{
 
             // Vytvoření pomocného Objektu
-            final Form<Swagger_Tariff_User_Details_Edit> form = Form.form(Swagger_Tariff_User_Details_Edit.class).bindFromRequest();
+            final Form<Swagger_Resend_Email> form = Form.form(Swagger_Resend_Email.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Tariff_User_Details_Edit help = form.get();
-
-
-
-            //TODO
+            Swagger_Resend_Email help = form.get();
 
 
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
             if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
-
             if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
 
 
-            byte[] pdf_in_array = Fakturoid_Controller.download_PDF_invoice(invoice);
+            // Email na který se faktura zašle
+            String email = null;
 
+            if(help.mail == null || help.mail.length() < 1) email = invoice.product.payment_details.invoice_email;
+            else email = help.mail;
 
+            Fakturoid_Controller.send_invoice_to_Email(invoice, email);
 
-            return GlobalResult.result_ok(Json.toJson(help));
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -1258,7 +1268,7 @@ public class Controller_Finance extends Controller {
 
 
 
-    // TODO
+    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result send_remainder_to_custumer(String invoice_id){
         try{
 

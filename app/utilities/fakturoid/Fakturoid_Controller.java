@@ -262,6 +262,49 @@ public class Fakturoid_Controller extends Controller {
         }
     }
 
+    public static  void send_invoice_to_Email(Model_Invoice invoice, String email){
+
+        try{
+
+            byte[] body = Fakturoid_Controller.download_PDF_invoice(invoice);
+
+            String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
+            new EmailTool()
+                    .addEmptyLineSpace()
+
+                    .startParagraph("13")
+                    .addText("Hello,")
+                    .endParagraph()
+
+                    .startParagraph("11")
+                    .addText("We have problems with payment services fo actual month. ")
+                    .addText("Log in and check your credit parameters. " +
+                            "Your services will be supported by a further 30 days after the time expires. " +
+                            "Please contact us immediately if something is not clear to you.")
+                    .addEmptyLineSpace()
+
+                    .startParagraph("11")
+                    .addText("I attachment you have invoice.")
+                    .endParagraph()
+
+                    .startParagraph("11")
+                    .addText("Best regard, Byzance Team")
+                    .endParagraph()
+
+
+                    .addEmptyLineSpace()
+                    .endParagraph()
+
+                    .addAttachment_PDF(invoice.invoice_number + ".pdf", body)
+                    .sendEmail( email , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + ". Problems with payment" );
+
+
+        }catch (Exception e){
+            logger.error("Fakturoid_Controller:: send_Invoice_to_Email:: Error while sending invoice", e);
+        }
+    }
+
     public static String create_subject_in_fakturoid(Model_Product product){
         ObjectNode request = Json.newObject();
 
