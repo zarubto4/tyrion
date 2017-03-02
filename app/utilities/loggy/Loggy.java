@@ -131,7 +131,6 @@ public class Loggy{
         descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
         descriptionBuilder.append("\n");
 
-        descriptionBuilder.append("    Error:: \n" + exception.getMessage());
         descriptionBuilder.append("\n");
         descriptionBuilder.append("    Stack trace: \n");
         for (StackTraceElement element : Thread.currentThread().getStackTrace()) {    // formátování stack trace

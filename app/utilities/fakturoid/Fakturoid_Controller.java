@@ -242,7 +242,7 @@ public class Fakturoid_Controller extends Controller {
 
             String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-            new EmailTool()
+            new Email()
                     .text("Dear customer,")
                     .text("Please find an enclosed invoice for the services you ordered. " + Calendar.getInstance().get(Calendar.MONTH))
                     .text("In case of questions, please contact our financial department." + Email.newLine() + "Have a nice day.")
