@@ -26,7 +26,6 @@ import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
 import models.project.m_program.Model_MProject;
 import models.project.m_program.Model_MProjectProgramSnapShot;
-import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -34,7 +33,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
-import utilities.emails.EmailTool;
+import utilities.emails.Email;
 import utilities.enums.Approval_state;
 import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.enums.Participant_status;
@@ -53,7 +52,6 @@ import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -61,8 +59,6 @@ import java.util.List;
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured_API.class)
 public class Controller_ProgramingPackage extends Controller {
-
-    @Inject MailerClient mailerClient;
 
 // Loger  ##############################################################################################################
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -418,22 +414,12 @@ public class Controller_ProgramingPackage extends Controller {
 
                 // Odeslání emailu s linkem pro registraci
                 try {
-                             new EmailTool()
-                            .addEmptyLineSpace()
-                            .startParagraph("13")
-                            .addText("User ")
-                            .addBoldText(Controller_Security.getPerson().full_name)
-                            .addText(" invites you to collaborate on the project ")
-                            .addBoldText(project.name + ". ")
-                            .addText("If you would like to participate in it, please click on the link below and register yourself. ")
-                            .endParagraph()
-                            .addEmptyLineSpace()
-                            .addSeparatorLine()
-                            .addEmptyLineSpace()
-                            .addLink(link,"Register here and collaborate","18")
-                            .addEmptyLineSpace()
-                            .sendEmail(mail, "Invitation to Collaborate" );
 
+                    new Email()
+                            .text("User " + Email.bold(Controller_Security.getPerson().full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
+                            .divider()
+                            .link("Register here and collaborate",link)
+                            .send(mail, "Invitation to Collaborate");
 
                 } catch (Exception e) {
                     logger.error ("Sending mail -> critical error", e);
@@ -2887,18 +2873,10 @@ public class Controller_ProgramingPackage extends Controller {
 
             // Odeslání emailu s důvodem
             try {
-                new EmailTool()
-                        .addEmptyLineSpace()
-                        .startParagraph("13")
-                        .addText("Version of Block " + blockoBlockVersion.blocko_block.name + ": ")
-                        .addBoldText(blockoBlockVersion.version_name)
-                        .addText(" was not approved for this reason: ")
-                        .endParagraph()
-                        .startParagraph("13")
-                        .addText( help.reason)
-                        .endParagraph()
-                        .addEmptyLineSpace()
-                        .sendEmail(blockoBlockVersion.blocko_block.author.mail, "Version of Block disapproved" );
+                new Email()
+                        .text("Version of Block " + blockoBlockVersion.blocko_block.name + ": " + Email.bold(blockoBlockVersion.version_name) + " was not approved for this reason: ")
+                        .text(help.reason)
+                        .send(blockoBlockVersion.blocko_block.author.mail, "Version of Block disapproved" );
 
             } catch (Exception e) {
                 logger.error ("Sending mail -> critical error", e);
@@ -2963,18 +2941,10 @@ public class Controller_ProgramingPackage extends Controller {
 
                 // Odeslání emailu
                 try {
-                    new EmailTool()
-                            .addEmptyLineSpace()
-                            .startParagraph("13")
-                            .addText("Version of Block " + blockoBlockVersion.blocko_block.name + ": ")
-                            .addBoldText(blockoBlockVersion.version_name)
-                            .addText(" was edited before publishing for this reason: ")
-                            .endParagraph()
-                            .startParagraph("13")
-                            .addText( help.reason)
-                            .endParagraph()
-                            .addEmptyLineSpace()
-                            .sendEmail(blockoBlockVersion.blocko_block.author.mail, "Version of Block edited" );
+                    new Email()
+                            .text("Version of Block " + blockoBlockVersion.blocko_block.name + ": " + Email.bold(blockoBlockVersion.version_name) + " was edited before publishing for this reason: ")
+                            .text(help.reason)
+                            .send(blockoBlockVersion.blocko_block.author.mail, "Version of Block edited" );
 
                 } catch (Exception e) {
                     logger.error ("Sending mail -> critical error", e);

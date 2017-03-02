@@ -16,7 +16,7 @@ import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
-import utilities.emails.EmailTool;
+import utilities.emails.Email;
 import utilities.enums.Currency;
 import utilities.enums.Payment_status;
 import utilities.fakturoid.helps_objects.Fakturoid_Invoice;
@@ -202,32 +202,23 @@ public class Fakturoid_Controller extends Controller {
 
             logger.debug("Trying send PDF Invoice to User Email");
 
+            byte[] body = download_PDF_invoice(invoice);
 
-                byte[] body = download_PDF_invoice(invoice);
+            if(body.length < 1){
+                logger.warn("Incoming File from Facturoid is empty!");
+                return;
+            }
 
-                if(body.length < 1){
-                    logger.warn("Incoming File from Facturoid is empty!");
-                    return;
-                }
+            logger.debug("PDF with invoice was successfully downloaded from Facturoid");
 
-                logger.debug("PDF with invoice was successfully downloaded from Facturoid");
+            String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-                String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-
-                        new EmailTool()
-                        .addEmptyLineSpace()
-                        .startParagraph("14")
-                        .addText("Dear customer,")
-                        .endParagraph()
-                        .startParagraph("13")
-                        .addText("Please find enclosed an invoice for the services you order." + Calendar.getInstance().get(Calendar.MONTH) )
-                        .endParagraph()
-                        .startParagraph("10")
-                        .addText("In case of questions, please contact our financial department.")
-                        .addText("Have a nice day")
-                        .addEmptyLineSpace()
-                        .addAttachment_PDF(invoice.invoice_number + ".pdf", body)
-                        .sendEmail( invoice.product.payment_details.invoice_email != null ? invoice.product.payment_details.invoice_email : invoice.product.payment_details.person.mail  , "Invoice " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] );
+            new Email()
+                    .text("Dear customer,")
+                    .text("Please find an enclosed invoice for the services you ordered. " + Calendar.getInstance().get(Calendar.MONTH))
+                    .text("In case of questions, please contact our financial department." + Email.newLine() + "Have a nice day.")
+                    .attachmentPDF(invoice.invoice_number + ".pdf", body)
+                    .send( invoice.product.payment_details.invoice_email != null ? invoice.product.payment_details.invoice_email : invoice.product.payment_details.person.mail  , "Invoice " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] );
 
 
                 logger.debug("Email was successfully sanded");
@@ -247,34 +238,14 @@ public class Fakturoid_Controller extends Controller {
 
             String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-                     new EmailTool()
-                    .addEmptyLineSpace()
-
-                    .startParagraph("13")
-                    .addText("Hello,")
-                    .endParagraph()
-
-                    .startParagraph("11")
-                    .addText("We have problems with payment services fo actual month. ")
-                    .addText("Log in and check your credit parameters. " +
-                            "Your services will be supported by a further 30 days after the time expires. " +
-                            "Please contact us immediately if something is not clear to you.")
-                    .addEmptyLineSpace()
-
-                    .startParagraph("11")
-                    .addText("I attachment you have invoice.")
-                    .endParagraph()
-
-                    .startParagraph("11")
-                    .addText("Best regard, Byzance Team")
-                    .endParagraph()
-
-
-                    .addEmptyLineSpace()
-                    .endParagraph()
-
-                    .addAttachment_PDF(invoice.invoice_number + ".pdf", body)
-                    .sendEmail( invoice.product.payment_details.invoice_email != null ? invoice.product.payment_details.invoice_email : invoice.product.payment_details.person.mail , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + ". Problems with payment" );
+            new Email()
+                    .text("Hello,")
+                    .text("We have problems with payment of your services on this month. Log in and check your credit parameters. " +
+                            "Your services will be supported for 30 days after expiry. Please contact us immediately if something is unclear.")
+                    .text("See the attached invoice.")
+                    .text("Best regards, Byzance Team")
+                    .attachmentPDF(invoice.invoice_number + ".pdf", body)
+                    .send( invoice.product.payment_details.invoice_email != null ? invoice.product.payment_details.invoice_email : invoice.product.payment_details.person.mail , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + ". Problems with payment" );
 
 
         }catch (Exception e){

@@ -1,12 +1,13 @@
 @import models.compiler.Model_TypeOfBoard
+@import models.compiler.Model_ImportLibrary
 
 <section class="content-header">
-  <h1> C Program editor - nefunkční! </h1>
+  <h1> Public Firmware Code </h1>
   <ol class="breadcrumb">
     <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
     <li class="active"><i class="fa fa-share"></i> Server Management </li>
     <li class="active"><i class="fa fa-wrench"></i> C Program Management </li>
-    <li><a href="@routes.Controller_Dashboard.public_code()"><i class="fa fa-wrench"></i> Public Firmware Code </a></li>
+    <li class="active"><i class="fa fa-wrench"></i> Public Firmware Code </li>
   </ol>
 </section>
 
@@ -28,12 +29,6 @@
             <label>Description</label>
             <input id="newCProgramDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
-          <select class="form-control select2" style="width: 100%; margin-top: 10px;" name="tag">
-            <option selected="selected" disabled>Choose tag</option>
-
-          </select>
-          <label>Long Description(markdown)</label>
-          <textarea style="width: 100%;" id="newCProgramLongDescription" rows="5" name="long_description"></textarea>
         </form>
         <div id="newCProgramModalMessage" style="display: none"><p class="text-red"></p></div>
       </div>
@@ -42,9 +37,7 @@
         <button class="btn btn-success" type="button" onclick="newCProgram()">Save</button>
       </div>
     </div>
-      <!-- /.modal-content -->
   </div>
-    <!-- /.modal-dialog -->
 </div>
 <div id="editCProgramModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCProgramModalTitle">
   <div class="modal-dialog" role="document">
@@ -62,14 +55,6 @@
             <label>Description</label>
             <input id="editCProgramDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
-          <select id="editSelectTag" class="form-control select2" style="width: 48%; margin-top: 10px; float: left;" name="tag">
-
-          </select>
-          <select id="editSelectState" class="form-control select2" style="width: 48%; margin-top: 10px; float: right;" name="state">
-
-          </select>
-          <label>Long Description(markdown)</label>
-          <textarea style="width: 100%;" id="editCProgramLongDescription" rows="15" name="long_description"></textarea>
         </form>
         <div id="editCProgramModalMessage" style="display: none"><p class="text-red"></p></div>
       </div>
@@ -78,9 +63,7 @@
         <button class="btn btn-success" type="button" onclick="editCProgram()">Save</button>
       </div>
     </div>
-      <!-- /.modal-content -->
   </div>
-    <!-- /.modal-dialog -->
 </div>
 <div id="newCProgramVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newCProgramVersionModalTitle">
   <div class="modal-dialog" role="document">
@@ -106,15 +89,13 @@
         <button class="btn btn-success" type="button" onclick="newCProgramVersion()">Save</button>
       </div>
     </div>
-      <!-- /.modal-content -->
   </div>
-    <!-- /.modal-dialog -->
 </div>
 <div id="editCProgramVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCProgramVersionModalTitle">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 id="editCProgramVersionModalTitle" class="modal-title">New CProgram</h4>
+        <h4 id="editCProgramVersionModalTitle" class="modal-title">Edit Version</h4>
       </div>
       <div class="modal-body">
         <form id="editCProgramVersion">
@@ -134,56 +115,49 @@
         <button class="btn btn-success" type="button" onclick="editCProgramVersion()">Save</button>
       </div>
     </div>
-      <!-- /.modal-content -->
   </div>
-    <!-- /.modal-dialog -->
 </div>
-<div id="newFileModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newFileModalTitle">
+<div id="newUserFileModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newUserFileModalTitle">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 id="newFileModalTitle" class="modal-title">New File</h4>
+        <h4 id="newUserFileModalTitle" class="modal-title">New File</h4>
       </div>
       <div class="modal-body">
-        <form id="newFile">
+        <form id="newUserFile">
           <label>Name</label>
-          <p class="text-red">Specify the full path, place every file or folder in some "c_program" root directory (example: "c_program/folder/file.cpp)</p>
-          <input id="newFileName" placeholder="Name" style="display: block" type="text" name="file_name" >
+          <input id="newUserFileName" placeholder="Specify full path (e.g. component/folder/file.c)" style="display: block" type="text" name="file_name" >
         </form>
-        <div id="newFileModalMessage" style="display: none"><p class="text-red"></p></div>
+        <div id="newUserFileModalMessage" style="display: none"><p class="text-red"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
-        <button class="btn btn-success" type="button" onclick="newFile()">Create</button>
+        <button class="btn btn-success" type="button" onclick="newUserFile()">Create</button>
       </div>
     </div>
-      <!-- /.modal-content -->
   </div>
-    <!-- /.modal-dialog -->
 </div>
-
-<div id="newExampleModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newExampleModalTitle">
+<div id="newLibraryModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newLibraryModalTitle">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 id="newExampleModalTitle" class="modal-title">New Example</h4>
+        <h4 id="newLibraryModalTitle" class="modal-title">Import Library</h4>
       </div>
       <div class="modal-body">
-        <form id="newExample">
-          <div style="float: left; width: 30%;">
-            <label>Name</label>
-            <input id="newExampleName" placeholder="Name" style="display: block" type="text" name="version_name" >
-          </div>
-          <div style="width: 100%;">
-            <label>Description</label>
-            <input id="newExampleDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
-          </div>
+        <form id="newLibrary">
+          <label>Library</label>
+          <select id="selectLibrary" class="form-control select2" style="width: 100%;">
+            <option selected="selected" disabled>Choose Library</option>
+            @for(library <- Model_ImportLibrary.find.all()){
+              <option value="@library.last_version().version_id">@library.name</option>
+            }
+          </select>
         </form>
-        <div id="newExampleModalMessage" style="display: none"><p class="text-red"></p></div>
+        <div id="newLibraryModalMessage" style="display: none"><p class="text-red"></p></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
-        <button class="btn btn-success" type="button" onclick="newExample()">Create</button>
+        <button class="btn btn-success" type="button" onclick="importLibrary()">Import</button>
       </div>
     </div>
   </div>
@@ -209,7 +183,7 @@
         </div>
         <div class="box-header with-border">
           <select id="selectCProgram" class="form-control select2" style="width: 100%;">
-            <option selected="selected" disabled>Choose C Program</option>
+            <option selected="selected" disabled>Choose Type of Board first(above)</option>
           </select>
         </div>
         <div class="box-header with-border">
@@ -222,18 +196,8 @@
           </div>
         </div>
         <div class="box-header with-border">
-          <div style="display: inline-block; width: 48%; ">
-            <label>Tag</label>
-            <input id="openedCProgramTag" style="display: block; width: 100%;" type="text" readonly>
-          </div>
-          <div style="width: 48%; display: inline-block; float: right">
-            <label>State</label>
-            <input id="openedCProgramState" style="display: block; width: 100%;" type="text" readonly>
-          </div>
           <label>Description</label>
-          <input  style="width: 100%;" id="openedCProgramDescription" readonly type="text">
-          <label>Long Description(markdown)</label>
-          <div style="width: 100%; height: 250px; border: solid black 1px; overflow: scroll; padding: 5px;" id="openedCProgramLongDescription"></div>
+          <textarea style="width: 100%;" id="openedCProgramDescription" readonly rows="3"></textarea>
         </div>
         <div class="box-header with-border">
           <select id="selectVersion" class="form-control select2" style="width: 100%;">
@@ -249,27 +213,51 @@
         </div>
         <div class="box-body">
           <label>Description</label>
-          <input style="width: 100%;" id="openedCProgramVersionDescription" readonly type="text">
+          <textarea style="width: 100%;" id="openedCProgramVersionDescription" readonly rows="3"></textarea>
         </div>
         <div class="box-footer">
-                </div>
+          <button id="saveVersionButton" disabled class="btn btn-success pull-right disabled" type="button" style="margin-right: 10px;" onclick="saveCProgramVersion()">Save as new Version</button>
+        </div>
       </div>
 
     </div>
     <div class="col-md-3">
       <div class="box">
         <div class="box-header with-border">
-          <h3 class="box-title">Files</h3>
-          <button id="newFileButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newFileModal" title="New File"><i class="fa fa-plus"></i></button>
+          <h3 class="box-title">Main</h3>
+          <button id="newMainButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newFileModal" title="New File"><i class="fa fa-plus"></i></button>
         </div>
         <div class="box-body">
-          <div class="nav nav-sidebar" id="files">
-                    </div>
+          <div class="nav nav-sidebar" id="main">
+          </div>
         </div>
         <div class="box-footer">
-                </div>
+        </div>
       </div>
-      
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">User Files</h3>
+          <button id="newUserFileButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newUserFileModal" title="New User File"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="box-body">
+          <div class="nav nav-sidebar" id="user_files">
+          </div>
+        </div>
+        <div class="box-footer">
+        </div>
+      </div>
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Library Files</h3>
+          <button id="newLibraryButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newLibraryModal" title="New Library"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="box-body">
+          <div class="nav nav-sidebar" id="library_files">
+          </div>
+        </div>
+        <div class="box-footer">
+        </div>
+      </div>
     </div>
     <div class="col-md-5">
       <div class="box">
@@ -278,14 +266,13 @@
         </div>
         <div class="box-body">
           <div id="editor">public int main() {
-            int x = 0;
-            return x;
-            }</div>
+    int x = 0;
+    return x;
+}</div>
         </div>
         <div class="box-footer">
           <p class="pull-left" id="file_name"></p>
           <button id="saveFileButton" disabled class="btn btn-success pull-right disabled" type="button" onclick="saveFile()">Save</button>
-          <button id="saveExampleButton" disabled class="btn btn-success pull-right disabled" type="button" style="margin-right: 10px;" onclick="saveExample()">Save example</button>
         </div>
       </div>
     </div>
@@ -297,17 +284,13 @@
 
         $.ajaxSetup({ cache: false });
 
-        var fileContents = [];
-        var exampleContents = [];
         var openedCProgram = {};
         var openedVersion = {};
         var openedFile = {};
-        var openedExample = {};
+        var libraries = [];
+        var libraryFiles = [];
 
-        var converter = new showdown.Converter();
-
-        function makeId()
-        {
+        function makeId(){
           var text = "";
           var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -319,18 +302,34 @@
 
         function makeJson(data){
 
-          var tree = {};
+          var tree = [];
+          var root = 0;
 
-          function fillTree(content, steps, x) {
+          function fillTree(content, steps, x, type) {
             var current = null,
                     existing = null,
                     i = 0;
             for (var y = 0; y < steps.length; y++) {
+
               if (y == 0) {
-                if (!tree.children || typeof tree.children == 'undefined') {
-                  tree = {text: steps[y], leaf: false, children: []};
+
+                if (!tree[root] || !tree[root].children || typeof tree[root].children == 'undefined') {
+                  tree[root] = {text: steps[y], leaf: false, children: [], type: type};
                 }
-                current = tree.children;
+
+                for (var z = 0; z < tree.length; z++) {
+                  if (tree[z].text !== steps[y] && z == (tree.length - 1)){
+                    tree.push({text: steps[y], leaf: false, children: [], type: type});
+                    root = z + 1;
+                    break;
+                  }
+                  if (tree[z].text === steps[y]){
+                    root = z;
+                    break;
+                  }
+                }
+
+                current = tree[root].children;
               } else {
                 existing = null;
                 for (i = 0; i < current.length; i++) {
@@ -347,12 +346,16 @@
                 }
               }
             }
-            current.push({text: content, leaf: true, order: x})
+            current.push({text: content, leaf: true, order: x, type: type})
           }
 
           for (x = 0; x < data.length; x++) {
             steps = data[x].file_name.split('/');
-            fillTree(data[x].content, steps, x)
+            if (typeof data[x].content == "undefined"){
+              fillTree(data[x].code, steps, x, "user_file");
+            }else {
+              fillTree(data[x].content, steps, x, "library_file");
+            }
           }
 
           return tree;
@@ -370,13 +373,16 @@
                       "<div class='panel-heading' style='padding: 5px 10px;'>" +
                       "<h4 class='panel-title'>" +
                       "<a onclick=\"" +
-                      "openFile(" + t.children[0].order + ");" +
+                      "openFile(" + t.children[0].type + "," + t.children[0].order + ");" +
                       "\">";
 
               content += t.text;
 
-              content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeFile(" + t.children[0].order + ")' title='Remove File'><i class='fa fa-times'></i></button></h4></div>" +
-                      "<div id='collapse" + t.text + "' class='panel-collapse collapse'>" +
+              content += "</a>";
+              if (t.children[0].type == "user_file"){
+                content += "<button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeFile(" + t.children[0].order + ")' title='Remove File' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button>";
+              }
+              content += "</h4></div><div id='collapse" + t.text + "' class='panel-collapse collapse'>" +
                       "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
             } else {
               var randomId = makeId();
@@ -385,8 +391,13 @@
                       "<div class='panel panel-default'>" +
                       "<div class='panel-heading' style='padding: 5px 10px;'>" +
                       "<h4 class='panel-title'>" +
-                      "<a style='display:block;' data-toggle='collapse' data-parent='#" + t.text + randomId + "' href='#collapse" + t.text + randomId + "'>" + t.text + "</a></h4></div>" +
-                      "<div id='collapse" + t.text + randomId + "' class='panel-collapse collapse'>" +
+                      "<a data-toggle='collapse' data-parent='#" + t.text + randomId + "' href='#collapse" + t.text + randomId + "'>" + t.text + "</a>";
+
+              if(typeof t.type != "undefined" && t.type == "library_file"){
+                content += "<button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeLibrary(" + t.children[0].order + ")' title='Remove Library' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button>";
+              }
+
+              content += "</h4></div><div id='collapse" + t.text + randomId + "' class='panel-collapse collapse'>" +
                       "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
             }
             $.each(t.children, function (k, v) {
@@ -398,6 +409,30 @@
           content += "</ul>";
 
           return content;
+        }
+
+        function makeStructure(trees){
+
+          var content = "";
+
+          $.each(trees, function (k, v) {
+            content += makeTree(v)
+          });
+
+          return content;
+        }
+
+        function structureMain() {
+          return "<ul style='list-style-type: none; margin: 0; padding: 0;'>" +
+                  "<li style='margin: 0; padding: 0;'>" +
+                  "<div class='panel-group' style='margin: 5px 0;' id='main'>" +
+                  "<div class='panel panel-default'>" +
+                  "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                  "<h4 class='panel-title'>" +
+                  "<a onclick=\"openMain();\">main</a></h4></div>" +
+                  "<div id='collapseMain' class='panel-collapse collapse'>" +
+                  "<div class='panel-body' style='padding: 0 5px 0 10px;'>" +
+                  "</div></div></div></div></li></ul>";
         }
 
         function fillSelectCProgram(json) {
@@ -439,7 +474,7 @@
             error:function(e) {
               alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
-          })
+          });
         }
 
         function getCProgramVersion(id){
@@ -451,7 +486,8 @@
             },
             dataType: 'json',
             success:function(json){
-              openVersion(json);
+
+              openVersion(convertVersion(json));
             },
             error:function(e) {
               alert(JSON.stringify(JSON.parse(e.responseText).message));
@@ -459,19 +495,36 @@
           })
         }
 
+        function getLibraryVersion(id){
+          $.ajax({
+            url: '/library/version/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
 
-        function openFile(order){
+              openVersion(convertVersion(json));
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
 
-          $('#file_name').text(fileContents[order].file_name);
+        function convertVersion(json){
 
-          openedFile = fileContents[order];
+          var temp = {
+            id: json.version_object.id,
+            version_name: json.version_object.version_name,
+            version_description: json.version_object.version_description,
+            main: json.main,
+            user_files: json.user_files,
+            library_files: json.library_files
+          };
 
-          var content = fileContents[order].content;
-
-          editor.setValue(content, 1);
-
-          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
-          $('#saveExampleButton').prop('disabled', true).addClass('disabled');
+          return temp;
         }
 
         function disableButtonGroup(id, state) {
@@ -484,7 +537,6 @@
         }
 
         function newCProgram(){
-          model_data = $("#newCProgram").serializeObject();
           $.ajax({
             url: '@routes.Controller_CompilationLibraries.c_program_create()',
             type: 'POST',
@@ -493,13 +545,12 @@
               "X-AUTH-TOKEN":getCookie("authToken"),
               "Content-Type":"application/json"
             },
-            data: JSON.stringify(model_data),
+            data: JSON.stringify($("#newCProgram").serializeObject()),
             dataType: 'json',
             success:function(json){
               $("#newCProgram input[type=text]").val("");
               $("#newCProgramModal").modal('hide');
               $("#newCProgramModalMessage").css("display", "none");
-              $("#newCProgramLongDescription").text("");
               $("#selectCProgram option:selected").removeAttr('selected');
               $("#selectCProgram").prepend("<option onclick=\"getCProgram('" + json.id + "')\">" + json.name + "</option>");
               $("#selectCProgram option:first").attr('selected','selected');
@@ -514,6 +565,17 @@
         }
 
         function newCProgramVersion(){
+          model_data = $("#newCProgramVersion").serializeObject();
+          openedVersion = {
+            id: null,
+            version_name: model_data.version_name,
+            version_description: model_data.version_description,
+            main:"",
+            user_files:[],
+            library_files:[] };
+        }
+
+        function saveCProgramVersion(){
           model_data = $("#newCProgramVersion").serializeObject();
           $.ajax({
             url: '/c_program/version/' + openedCProgram.id,
@@ -532,7 +594,7 @@
               $("#selectVersion option:selected").removeAttr('selected');
               $("#selectVersion").prepend("<option onclick=\"getCProgramVersion('" + json.version_id + "')\">" + json.version_name + "</option>");
               $("#selectVersion option:first").attr('selected','selected');
-              openVersion(json);
+              openVersion(convertVersion(json));
             },
             error:function(e) {
               $("#newCProgramVersionModalMessage").css("display", "block");
@@ -572,7 +634,7 @@
         function editCProgramVersion(){
           model_data = $("#editCProgramVersion").serializeObject();
           $.ajax({
-            url: '/c_program/version/' + openedVersion.version_id,
+            url: '/c_program/version/edit/' + openedVersion.id,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -585,7 +647,9 @@
               $("#editCProgramVersion input[type=text]").val("");
               $("#editCProgramVersionModal").modal('hide');
               $("#editCProgramVersionModalMessage").css("display", "none");
-              openVersion(json);
+              openedVersion.version_name = json.version_name;
+              openedVersion.version_description = json.version_description;
+              openVersion(openedVersion);
             },
             error:function(e) {
               $("#editCProgramVersionModalMessage").css("display", "block");
@@ -629,64 +693,84 @@
           })
         }
 
-        function newFile(){
-          openedFile = {file_name: $('#newFileName').val(), content: ''};
+        function newUserFile(){
+          openedFile = {file_name: $('#newUserFileName').val(), code: ''};
           $('#file_name').text(openedFile.file_name);
           editor.setValue("// your new file - " + openedFile.file_name,1);
-          $("#newFileModal").modal('hide');
-          $('#newFileName').val("");
+          $("#newUserFileModal").modal('hide');
+          $('#newUserFileName').val("");
 
           $('#saveFileButton').prop('disabled', false).removeClass('disabled');
-          $('#saveExampleButton').prop('disabled', true).addClass('disabled');
+        }
+
+        function importLibrary(){
+
+          $.ajax({
+            url: '/library/version/' + $('#selectLibrary').val(),
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+
+              $.each(json.library_files, function (k, v) {
+                openedVersion.library_files.push(v);
+              });
+
+              updateFiles("library_file",openedVersion.library_files);
+              $("#newLibraryModal").modal('hide');
+            },
+            error:function(e) {
+              $("#newLibraryModalMessage").css("display", "block");
+              $("#newLibraryModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          });
+        }
+
+        function retrieveLibraryFiles(){
+
+          $.each(libraries, function(k, v) {
+
+            $.each(v.library_files, function(key, value) {
+
+              libraryFiles.push(value)
+            });
+          });
+
+          updateFiles("library_file", libraryFiles);
         }
 
         function saveFile(){
+          if (typeof openedFile.code != "undefined"){
+            openedFile.code = editor.getValue();
+            openedVersion.user_files.push(openedFile);
 
-          var sendFile = {library_files:[]};
-          openedFile.content = editor.getValue();
-          sendFile.library_files[0] = openedFile;
-
-          $.ajax({
-            url: '/c_program/version/upload_file/' + openedVersion.version_id,
-            type: 'PUT',
-            contentType: 'application/json',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
-            },
-            data: JSON.stringify(sendFile),
-            dataType: 'json',
-            success:function(json){
-              openVersion(json);
-            },
-            error:function(e) {
-              alert(JSON.stringify(JSON.parse(e.responseText).message));
-            }
-          })
+          }else {
+            openedFile = {file_name: $('#newLibraryFileName').val(), code: editor.getValue()};
+            openedVersion.user_files.push(openedFile);
+          }
+          updateFiles("user_file", openedVersion.user_files);
         }
 
-        function removeFile(count){
+        function removeFile(type,order){
 
-          var sendFile = {library_files:[]};
-          sendFile.library_files[0] = fileContents[count];
+          switch (type){
+            case "user_file" : {
 
-          $.ajax({
-            url: '/c_program/version/remove_file/' + openedVersion.version_id,
-            type: 'PUT',
-            contentType: 'application/json',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
-            },
-            data: JSON.stringify(sendFile),
-            dataType: 'json',
-            success:function(json){
-              openVersion(json);
-            },
-            error:function(e) {
-              alert(JSON.stringify(JSON.parse(e.responseText).message));
+              openedVersion.user_files.splice(order,1);
+              updateFiles(type, openedVersion.user_files);
+
+              break;
             }
-          })
+            case "library_file" : {
+
+              openedVersion.library_files.splice(order,1);
+              updateFiles(type, openedVersion.library_files);
+
+              break;
+            }
+          }
         }
 
         function openCProgram(json) {
@@ -694,14 +778,19 @@
           disableButtonGroup("#c_program_btn_group", false);
 
           $("#openedCProgramName").text(json.name);
-          $("#openedCProgramDescription").val(json.description);
+          $("#openedCProgramDescription").text(json.description);
 
           openedCProgram = json;
 
-          $('#files').html("");
+          $('#main').html("");
+          $('#user_files').html("");
+          $('#library_files').html("");
           $('#selectVersion').html("");
 
-          $('#newFileButton').prop('disabled', true).addClass('disabled');
+          $('#newMainButton').prop('disabled', true).addClass('disabled');
+          $('#newUserFileButton').prop('disabled', true).addClass('disabled');
+          $('#newLibraryButton').prop('disabled', true).addClass('disabled');
+          $('#saveVersionButton').prop('disabled', true).addClass('disabled');
 
           closeFile();
 
@@ -715,14 +804,12 @@
 
           if(json.program_versions[0] != null) {
 
-            //$("#selectVersion option:first").attr('selected','selected');
+            $("#selectVersion option:first").attr('selected','selected').click();
 
-            //openVersion(json.program_versions[0]);
           }else {
-            $("#selectVersion").html("");
-            $("#selectVersion").append("<option>No versions here!</option>");
+            $("#selectVersion").html("<option>No versions here!</option>");
             $("#openedCProgramVersionName").text("");
-            $("#openedCProgramVersionDescription").val("");
+            $("#openedCProgramVersionDescription").text("");
             disableButtonGroup("#c_program_version_btn_group", true);
           }
         }
@@ -732,56 +819,93 @@
           openedVersion = json;
 
           $("#openedCProgramVersionName").text(openedVersion.version_name);
-          $("#openedCProgramVersionDescription").val(openedVersion.version_description);
+          $("#openedCProgramVersionDescription").text(openedVersion.version_description);
 
           disableButtonGroup("#c_program_version_btn_group", false);
-          $('#newFileButton').prop('disabled', false).removeClass('disabled');
+          $('#newUserFileButton').prop('disabled', false).removeClass('disabled');
+          $('#newLibraryButton').prop('disabled', false).removeClass('disabled');
+          $('#saveVersionButton').prop('disabled', false).removeClass('disabled');
 
           closeFile();
 
-          $('#files').html("");
-
-          if (json.c_program_files.length > 0) {
-
-            fileContents = json.c_program_files;
-
-            $('#files').append(makeTree(makeJson(fileContents)));
+          if (json.main != null) {
+            $('#main').html(structureMain());
           }else{
-            $('#files').append("<p>No files here! Hit the plus button to add o new one.</p>");
+            $('#main').html("<p>Main is missing! Hit the plus button to add a new one.</p>");
+            $('#newMainButton').prop('disabled', false).removeClass('disabled');
           }
 
-          if (json.examples.length > 0) {
+          if (json.user_files.length > 0) {
 
-            exampleContents = json.examples;
-
-
-
-            $.each(exampleContents, function (k, v) {
-
-              var content = "";
-
-              content += "<ul style='list-style-type: none; padding: 0;'><li style='margin: 0; padding: 0;'>" +
-                      "<div class='panel-group' style='margin: 5px 0;'>" +
-                      "<div class='panel panel-default'>" +
-                      "<div class='panel-heading' style='padding: 5px 10px;'>" +
-                      "<h4 class='panel-title'>" +
-                      "<a onclick=\"" +
-                      "openExample(" + k + ");" +
-                      "\">";
-              content += v.name;
-
-              content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeExample(" + k + ")' title='Remove Example'><i class='fa fa-times'></i></button></h4></div>" +
-                      "<div class='panel-collapse collapse'>" +
-                      "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
-              content += "</div></div></div></div></li></ul>";
-
-              $('#examples').append(content);
-            });
-
+            updateFiles("user_files", json.user_files);
 
           }else{
-            $('#examples').append("<p>No examples here! Hit the plus button to add o new one.</p>");
+            $('#user_files').html("<p>No files here! Hit the plus button to add a new one.</p>");
           }
+
+          if (json.library_files.length > 0) {
+
+            $.when(
+              $.each(json.library_files, function(k, v) {
+                $.ajax({
+                  url: '/library/version/' + v,
+                  type: 'GET',
+                  headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken")
+                  },
+                  dataType: 'json',
+                  success:function (json) {
+                    libraries.push(json)
+                  }
+                })
+              })
+            ).then(retrieveLibraryFiles(), alert("fail"));
+
+            updateFiles("library_files", json.library_files);
+
+          }else{
+            $('#library_files').html("<p>No files here! Hit the plus button to add one.</p>");
+          }
+        }
+
+        function openMain() {
+          $('#file_name').text("main");
+
+          openedFile = {main:openedVersion.main};
+
+          editor.setValue(openedFile.main, 1);
+
+          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+        }
+
+        function openFile(type, order){
+
+          var content = "";
+
+          switch (type){
+            case "user_file" : {
+              $('#file_name').text(openedVersion.user_files[order].file_name);
+
+              openedFile = openedVersion.user_files[order];
+
+              content = openedVersion.user_files[order].code;
+
+              break;
+            }
+            case "library_file" : {
+              $('#file_name').text(openedVersion.library_files[order].file_name);
+
+              openedFile = openedVersion.library_files[order];
+
+              content = openedVersion.library_files[order].content;
+
+              break;
+            }
+          }
+
+          editor.setValue(content, 1);
+
+          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
         }
 
         function fillEditVersionForm() {
@@ -792,84 +916,31 @@
         function fillEditCProgramForm() {
           $("#editCProgramName").val(openedCProgram.name);
           $("#editCProgramDescription").val(openedCProgram.description);
-          $("#editCProgramLongDescription").val(openedCProgram.long_description);
-          $("#editSelectTag option[value=" + openedCProgram.tag + "]").attr('selected','selected');
-          $("#editSelectState option[value=" + openedCProgram.state + "]").attr('selected','selected');
         }
 
         function closeFile() {
           $('#saveFileButton').prop('disabled', true).addClass('disabled');
-          $('#saveExampleButton').prop('disabled', true).addClass('disabled');
 
           $('#file_name').text("");
           editor.setValue("");
         }
 
-        function newExample(){
-          openedExample = {version_name: $('#newExampleName').val(), version_description: $('#newExampleDescription').val(), main: ''};
-          $('#file_name').text(openedExample.version_name);
-          editor.setValue("// your new example - " + openedExample.version_name,1);
-          $("#newExampleModal").modal('hide');
-          $('#newExampleName').val("");
-          $('#newExampleDescription').val("");
+        function updateFiles(type, files) {
 
-          $('#saveFileButton').prop('disabled', true).addClass('disabled');
-          $('#saveExampleButton').prop('disabled', false).removeClass('disabled');
-        }
+          switch (type){
+            case "user_file" : {
 
-        function openExample(order){
+              $('#user_files').html(makeStructure(makeJson(files)));
 
-          $('#file_name').text(exampleContents[order].name);
-
-          openedExample.version_name = exampleContents[order].name;
-          openedExample.version_description = exampleContents[order].description;
-
-          var content = exampleContents[order].main;
-
-          editor.setValue(content, 1);
-
-          $('#saveFileButton').prop('disabled', true).addClass('disabled');
-          $('#saveExampleButton').prop('disabled', false).removeClass('disabled');
-        }
-
-        function saveExample(){
-
-          openedExample.main = editor.getValue();
-
-          $.ajax({
-            url: '/c_program/version/upload_example/' + openedVersion.version_id,
-            type: 'POST',
-            contentType: 'application/json',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
-            },
-            data: JSON.stringify(openedExample),
-            dataType: 'json',
-            success:function(json){
-              openVersion(json);
-            },
-            error:function(e) {
-              alert(JSON.stringify(JSON.parse(e.responseText).message));
+              break;
             }
-          })
-        }
+            case "library_file" : {
 
-        function removeExample(count){
+              $('#library_files').html(makeStructure(makeJson(files)));
 
-          $.ajax({
-            url: '/c_program/version/remove_example/' + exampleContents[count].id,
-            type: 'DELETE',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken")
-            },
-            dataType: 'json',
-            success:function(json){
-              openVersion(json);
-            },
-            error:function(e) {
-              alert(JSON.stringify(JSON.parse(e.responseText).message));
+              break;
             }
-          })
+          }
         }
+
 </script>

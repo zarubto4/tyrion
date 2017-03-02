@@ -17,7 +17,7 @@ import play.data.Form;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.*;
-import utilities.emails.EmailTool;
+import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.hardware_updater.Master_Updater;
 import utilities.loggy.Loggy;
@@ -856,32 +856,17 @@ public class Controller_CompilationLibraries extends Controller {
                 // Admin to schválil bez dalších keců
                 if((help.reason == null || help.reason.length() < 4) ){
                     try {
-                        new EmailTool()
-                                .addEmptyLineSpace()
-                                .startParagraph("13")
-                                    .addText("Thank you for publishing your program!")
-                                    .nextLine()
-                                .endParagraph()
-                                .startParagraph("11")
-                                    .addBoldText("C Program Name: ").addText(c_program_old.name).nextLine()
-                                    .addBoldText("C Program Description: ").addText(c_program_old.description).nextLine().nextLine()
-                                    .addBoldText("Version Name: ").addText(version_old.version_name).nextLine()
-                                    .addBoldText("Version Description: ").addText(version_old.version_description)
-                                .endParagraph()
 
-                                .addSeparatorLine()
-
-                                .startParagraph("11")
-                                     .addText("We will publish it as soon as possible. But we also had to change something or eventually renamed something")
-                                .endParagraph()
-
-                                .startParagraph("11")
-                                    .addBoldText("Thanks!").nextLine()
-                                    .addBoldText(Controller_Security.getPerson().full_name).nextLine()
-                                .endParagraph()
-                                .addEmptyLineSpace()
-                                .sendEmail(version_old.c_program.project.product.payment_details.person.mail, "Publish of your program" );
-
+                        new Email()
+                                .text("Thank you for publishing your program!")
+                                .text(  Email.bold("C Program Name: ") +        c_program_old.name + Email.newLine() +
+                                        Email.bold("C Program Description: ") + c_program_old.name + Email.newLine() +
+                                        Email.bold("Version Name: ") +          c_program_old.name + Email.newLine() +
+                                        Email.bold("Version Description: ") +   c_program_old.name + Email.newLine() )
+                                .divider()
+                                .text("We will publish it as soon as possible.")
+                                .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.getPerson().full_name)
+                                .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.error ("Sending mail -> critical error", e);
@@ -893,42 +878,18 @@ public class Controller_CompilationLibraries extends Controller {
                 }else {
 
                     try {
-                        new EmailTool()
-                                .addEmptyLineSpace()
-                                .startParagraph("13")
-                                    .addText("Thank you for publishing your program!")
-                                    .nextLine()
-                                .endParagraph()
-                                .startParagraph("11")
-                                    .addBoldText("C Program Name: ").addText(c_program_old.name).nextLine()
-                                    .addBoldText("C Program Description: ").addText(c_program_old.description).nextLine().nextLine()
-                                    .addBoldText("Version Name: ").addText(version_old.version_name).nextLine()
-                                    .addBoldText("Version Description: ").addText(version_old.version_description)
-                                .endParagraph()
 
-                                .addSeparatorLine()
-
-                                .startParagraph("11")
-                                    .addText("We will publish it as soon as possible. But we also had to change something or eventually renamed that for some reason.")
-                                .endParagraph()
-
-
-                                .startParagraph("13")
-                                    .addBoldText("Reason: ")
-                                .endParagraph()
-                                .startParagraph("11")
-                                    .addText( help.reason)
-                                .endParagraph()
-
-                                .addEmptyLineSpace()
-
-                                .startParagraph("11")
-                                    .addBoldText("Thanks!").nextLine()
-                                    .addBoldText(Controller_Security.getPerson().full_name).nextLine()
-                                .endParagraph()
-                                .addEmptyLineSpace()
-                                .sendEmail(version_old.c_program.project.product.payment_details.person.mail, "Publish of your program" );
-
+                        new Email()
+                                .text("Thank you for publishing your program!")
+                                .text(  Email.bold("C Program Name: ") +        c_program_old.name + Email.newLine() +
+                                        Email.bold("C Program Description: ") + c_program_old.name + Email.newLine() +
+                                        Email.bold("Version Name: ") +          c_program_old.name + Email.newLine() +
+                                        Email.bold("Version Description: ") +   c_program_old.name + Email.newLine() )
+                                .divider()
+                                .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
+                                .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
+                                .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.getPerson().full_name)
+                                .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.error ("Sending mail -> critical error", e);
@@ -939,49 +900,23 @@ public class Controller_CompilationLibraries extends Controller {
             }else {
 
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
-                 version_old.approval_state = Approval_state.approved;
+                 version_old.approval_state = Approval_state.disapproved;
                  version_old.update();
 
                 try {
-                    new EmailTool()
-                            .addEmptyLineSpace()
-                            .startParagraph("13")
-                                .addText("First! Thank you for publishing your program!")
-                                .nextLine()
-                            .endParagraph()
 
-                            .startParagraph("11")
-                                .addBoldText("C Program Name: ").addText(c_program_old.name).nextLine()
-                                .addBoldText("C Program Description: ").addText(c_program_old.description).nextLine().nextLine()
-                                .addBoldText("Version Name: ").addText(version_old.version_name).nextLine()
-                                .addBoldText("Version Description: ").addText(version_old.version_description)
-                            .endParagraph()
-
-                            .addSeparatorLine()
-
-                            .startParagraph("11")
-                                .addText("But we found a few problems, why we do not do public. But do not worry and do not give up!").nextLine()
-                                .addText("We have for you a reason what to fix. So you can try it again").nextLine()
-                                .addText("We are incredibly grateful.").nextLine()
-                            .endParagraph()
-
-
-                            .startParagraph("13")
-                                .addBoldText("Reason: ")
-                            .endParagraph()
-                            .startParagraph("11")
-                                .addText( help.reason)
-                            .endParagraph()
-
-                            .addEmptyLineSpace()
-
-                            .startParagraph("11")
-                                .addBoldText("Thanks!").nextLine()
-                                .addBoldText(Controller_Security.getPerson().full_name).nextLine()
-                            .endParagraph()
-                            .addEmptyLineSpace()
-                            .sendEmail(version_old.c_program.project.product.payment_details.person.mail, "Publish of your program" );
-
+                    new Email()
+                            .text("First! Thank you for publishing your program!")
+                            .text(  Email.bold("C Program Name: ") +        c_program_old.name + Email.newLine() +
+                                    Email.bold("C Program Description: ") + c_program_old.name + Email.newLine() +
+                                    Email.bold("Version Name: ") +          c_program_old.name + Email.newLine() +
+                                    Email.bold("Version Description: ") +   c_program_old.name + Email.newLine() )
+                            .divider()
+                            .text("We are sorry, but we found some problems in your program, so we did not publish it. But do not worry and do not give up! " +
+                                    "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
+                            .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
+                            .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.getPerson().full_name)
+                            .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                 } catch (Exception e) {
                     logger.error ("Sending mail -> critical error", e);

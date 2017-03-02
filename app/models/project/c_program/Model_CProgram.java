@@ -16,10 +16,9 @@ import play.libs.Json;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_C_program_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_Example_Short_Detail;
+import utilities.swagger.documentationClass.Swagger_C_program_New;
+import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
+import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -152,30 +151,7 @@ public class Model_CProgram extends Model {
 
                 c_program_versions.main = version_new.main;
                 c_program_versions.user_files = version_new.user_files;
-
-                for (String lib_id : version_new.library_files) {
-
-                    Model_VersionObject v = Model_VersionObject.find.byId(lib_id);
-                    if (v == null || v.library == null) break;
-                    if (!v.files.isEmpty()) {
-                        for (Model_FileRecord f : v.files) {
-
-                            JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
-
-                            Form<Swagger_C_Program_Version_New.Library_File> lib_form = Form.form(Swagger_C_Program_Version_New.Library_File.class).bind(j);
-                            if (lib_form.hasErrors()) break;
-
-                            Swagger_C_Program_Version_New.Library_File lib_file = lib_form.get();
-
-                            for (Swagger_C_Program_Version_New.User_File user_file : c_program_versions.user_files) {
-
-                                if (lib_file.file_name.equals(user_file.file_name)) break;
-                                if (!c_program_versions.library_files.contains(lib_file)) c_program_versions.library_files.add(lib_file);
-
-                            }
-                        }
-                    }
-                }
+                c_program_versions.library_files = version_new.library_files;
             }
 
             if (version_object.c_compilation != null) {

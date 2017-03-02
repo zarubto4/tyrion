@@ -154,7 +154,7 @@
             <div class="modal-body">
                 <form id="newFile">
                     <label>Name</label>
-                    <p class="text-red">Specify the full path, place every file or folder in some "library" root directory (example: "library/folder/file.cpp)</p>
+                    <p class="text-red">Specify the full path (e.g. "library/folder/file.cpp")</p>
                     <input id="newFileName" placeholder="Name" style="display: block" type="text" name="file_name" >
                 </form>
                 <div id="newFileModalMessage" style="display: none"><p class="text-red"></p></div>
@@ -337,18 +337,34 @@
 
         function makeJson(data){
 
-            var tree = {};
+            var tree = [];
+            var root = 0;
 
             function fillTree(content, steps, x) {
                 var current = null,
                         existing = null,
                         i = 0;
                 for (var y = 0; y < steps.length; y++) {
+
                     if (y == 0) {
-                        if (!tree.children || typeof tree.children == 'undefined') {
-                            tree = {text: steps[y], leaf: false, children: []};
+
+                        if (!tree[root] || !tree[root].children || typeof tree[root].children == 'undefined') {
+                            tree[root] = {text: steps[y], leaf: false, children: []};
                         }
-                        current = tree.children;
+
+                        for (var z = 0; z < tree.length; z++) {
+                            if (tree[z].text !== steps[y] && z == (tree.length - 1)){
+                                tree.push({text: steps[y], leaf: false, children: []});
+                                root = z + 1;
+                                break;
+                            }
+                            if (tree[z].text === steps[y]){
+                                root = z;
+                                break;
+                            }
+                        }
+
+                        current = tree[root].children;
                     } else {
                         existing = null;
                         for (i = 0; i < current.length; i++) {
@@ -393,7 +409,7 @@
 
                     content += t.text;
 
-                    content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeFile(" + t.children[0].order + ")' title='Remove File'><i class='fa fa-times'></i></button></h4></div>" +
+                    content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeFile(" + t.children[0].order + ")' title='Remove File' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button></h4></div>" +
                             "<div id='collapse" + t.text + "' class='panel-collapse collapse'>" +
                             "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
                 } else {
@@ -414,6 +430,17 @@
             }
 
             content += "</ul>";
+
+            return content;
+        }
+
+        function makeStructure(trees){
+
+            var content = "";
+
+            $.each(trees, function (k, v) {
+                content += makeTree(v)
+            });
 
             return content;
         }
@@ -744,7 +771,7 @@
 
                 fileContents = json.library_files;
 
-                $('#files').append(makeTree(makeJson(fileContents)));
+                $('#files').append(makeStructure(makeJson(fileContents)));
             }else{
                 $('#files').append("<p>No files here! Hit the plus button to add o new one.</p>");
             }
