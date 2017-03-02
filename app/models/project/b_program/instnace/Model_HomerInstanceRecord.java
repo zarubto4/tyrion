@@ -61,7 +61,7 @@ public class Model_HomerInstanceRecord extends Model {
         if(planed_when.getTime() > new Date().getTime()) return "furure";
         if(actual_running_instance != null) return "now";
         else return "history";
-        
+
     }
 
 
