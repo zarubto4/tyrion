@@ -1,20 +1,15 @@
-package utilities.schedules_activities;
+package utilities.scheduler.schedules_activities;
 
-import com.google.inject.Inject;
 import models.compiler.Model_FileRecord;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.Application;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Date;
 
 public class Log_Azure_Upload implements Job {
-
-    @Inject
-    Application application;
 
     public Log_Azure_Upload(){ /** do nothing */ }
 
@@ -33,9 +28,9 @@ public class Log_Azure_Upload implements Job {
             try {
                 logger.info("Independent Thread in Log_Azure_Upload now working");
 
-                File file = application.getFile("/logs/all.log");
+                File file = new File(System.getProperty("user.dir") + "/app/logs/all.log");
 
-                PrintWriter writer = new PrintWriter(new File(application.path() + "/logs/all.log"));
+                PrintWriter writer = new PrintWriter(new File(System.getProperty("user.dir") + "/app/logs/all.log"));
                 writer.close();
 
                 String file_name = new Date().toString();

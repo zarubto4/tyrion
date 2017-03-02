@@ -1,8 +1,12 @@
 package utilities.request_counter;
 
+import models.loggy.Model_RequestLog;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security;
 import utilities.loggy.Loggy;
+import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 
 import java.util.HashMap;
@@ -28,9 +32,28 @@ public class RequestCounter extends Controller{
         }
     }
 
+    @Security.Authenticated(Secured_Admin.class)
     public Result get_request_stats() {
 
         try {
+
+            return GlobalResult.result_ok(Json.toJson(Model_RequestLog.find.order().desc("count").findList()));
+
+        } catch (Exception e) {
+
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result reset_request_stats() {
+
+        try {
+
+            for (Model_RequestLog log : Model_RequestLog.find.all()){
+
+                log.delete();
+            }
 
             return GlobalResult.result_ok();
 

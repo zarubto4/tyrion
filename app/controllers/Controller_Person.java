@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.compiler.Model_FileRecord;
 import models.person.*;
-import play.api.libs.mailer.MailerClient;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -15,7 +14,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
-import utilities.emails.EmailTool;
+import utilities.emails.Email;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
@@ -31,7 +30,6 @@ import java.util.UUID;
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
 public class Controller_Person extends Controller {
 
-    @Inject MailerClient mailerClient;
     @Inject Controller_ProgramingPackage controllerProgramingPackage;
     @Inject WSClient ws;
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -97,21 +95,15 @@ public class Controller_Person extends Controller {
                 String link = Server.tyrion_serverAddress + "/person/mail_authentication/" + validationToken.authToken;
 
                 try {
-                            new EmailTool()
-                            .addEmptyLineSpace()
-                            .startParagraph("13")
-                            .addText("Email verification is needed to complete your registration.")
-                            .endParagraph()
-                            .addEmptyLineSpace()
-                            .addSeparatorLine()
-                            .addEmptyLineSpace()
-                            .addLink(link,"Verify your email address","18")
-                            .addEmptyLineSpace()
-                            .sendEmail(validationToken.personEmail, "Email Verification");
+
+                    new Email()
+                            .text("Email verification is needed to complete your registration.")
+                            .divider()
+                            .link("Verify your email address",link)
+                            .send(validationToken.personEmail, "Email Verification");
 
                 } catch (Exception e) {
                     logger.error("Sending mail -> critical error", e);
-                    e.printStackTrace();
                 }
 
             }else{
@@ -196,17 +188,12 @@ public class Controller_Person extends Controller {
             String link = Server.tyrion_serverAddress + "/person/mail_authentication/" + validationToken.authToken;
 
             try {
-                new EmailTool()
-                        .addEmptyLineSpace()
-                        .startParagraph("13")
-                        .addText("Email verification is needed to complete your registration.")
-                        .endParagraph()
-                        .addEmptyLineSpace()
-                        .addSeparatorLine()
-                        .addEmptyLineSpace()
-                        .addLink(link,"Verify your email address","18")
-                        .addEmptyLineSpace()
-                        .sendEmail(validationToken.personEmail, "Email Verification");
+
+                new Email()
+                        .text("Email verification is needed to complete your registration.")
+                        .divider()
+                        .link("Verify your email address",link)
+                        .send(validationToken.personEmail, "Email Verification");
 
             } catch (Exception e) {
                 logger.error("Sending mail -> critical error", e);
@@ -275,19 +262,12 @@ public class Controller_Person extends Controller {
                 link =Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
             }
             try {
-                        new EmailTool()
-                        .addEmptyLineSpace()
-                        .startParagraph("13")
-                        .addText("Password reset was requested for this email.")
-                        .endParagraph()
-                        .addEmptyLineSpace()
-                        .addSeparatorLine()
-                        .addEmptyLineSpace()
-                        .addLink(link,"Reset your password","18")
-                        .addEmptyLineSpace()
-                        .sendEmail(help.mail,"Password Reset" );
 
-
+                new Email()
+                        .text("Password reset was requested for this email.")
+                        .divider()
+                        .link("Reset your password",link)
+                        .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
                 logger.error ("Sending mail -> critical error", e);
@@ -359,17 +339,13 @@ public class Controller_Person extends Controller {
             passwordRecoveryToken.delete();
 
             try {
-                        new EmailTool()
-                        .addEmptyLineSpace()
-                        .startParagraph("13")
-                        .addText("Password was changed for your account.")
-                        .endParagraph()
-                        .addEmptyLineSpace()
-                        .sendEmail(help.mail, "Password Reset");
+
+                new Email()
+                        .text("Password was changed for your account.")
+                        .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
                 logger.error ("Sending mail -> critical error", e);
-                e.printStackTrace();
             }
 
             return GlobalResult.result_ok("Password was changed successfully");
@@ -961,20 +937,13 @@ public class Controller_Person extends Controller {
             // Odeslání emailu
             try {
 
-                new EmailTool()
-                        .addEmptyLineSpace()
-                        .startParagraph("13")
-                        .addText(text)
-                        .endParagraph()
-                        .startParagraph("13")
-                        .addText("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password there, because it was probably stolen.")
-                        .endParagraph()
-                        .addEmptyLineSpace()
-                        .addSeparatorLine()
-                        .addEmptyLineSpace()
-                        .addLink(link, "Authorize change", "18")
-                        .addEmptyLineSpace()
-                        .sendEmail(Controller_Security.getPerson().mail, subject);
+                new Email()
+                        .text(text)
+                        .divider()
+                        .text("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password there, because it was probably stolen.")
+                        .divider()
+                        .link("Authorize change",link)
+                        .send(Controller_Security.getPerson().mail, subject);
 
             } catch (Exception e) {
                 logger.error ("Sending mail -> critical error", e);
@@ -1027,17 +996,11 @@ public class Controller_Person extends Controller {
 
                     // Odeslání emailu
                     try {
-                        new EmailTool()
-                                .addEmptyLineSpace()
-                                .startParagraph("13")
-                                .addText("Email verification is needed to complete your email change.")
-                                .endParagraph()
-                                .addEmptyLineSpace()
-                                .addSeparatorLine()
-                                .addEmptyLineSpace()
-                                .addLink(link,"Verify your email address","18")
-                                .addEmptyLineSpace()
-                                .sendEmail(validationToken.personEmail, "Email Verification");
+                        new Email()
+                                .text("Email verification is needed to complete your registration.")
+                                .divider()
+                                .link("Verify your email address",link)
+                                .send(validationToken.personEmail, "Email Verification");
 
                     } catch (Exception e) {
                         logger.error("Sending mail -> critical error", e);

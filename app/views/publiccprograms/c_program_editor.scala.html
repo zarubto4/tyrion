@@ -1,0 +1,946 @@
+@import models.compiler.Model_TypeOfBoard
+@import models.compiler.Model_ImportLibrary
+
+<section class="content-header">
+  <h1> Public Firmware Code </h1>
+  <ol class="breadcrumb">
+    <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+    <li class="active"><i class="fa fa-share"></i> Server Management </li>
+    <li class="active"><i class="fa fa-wrench"></i> C Program Management </li>
+    <li class="active"><i class="fa fa-wrench"></i> Public Firmware Code </li>
+  </ol>
+</section>
+
+@*/*/*  Modals ---------------------------------------------------------------------------------------------   */*/*@
+
+<div id="newCProgramModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newCProgramModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="newCProgramModalTitle" class="modal-title">New CProgram</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newCProgram">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="newCProgramName" placeholder="Name" style="display: block" type="text" name="name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="newCProgramDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
+          </div>
+        </form>
+        <div id="newCProgramModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="newCProgram()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="editCProgramModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCProgramModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="editCProgramModalTitle" class="modal-title">Edit CProgram</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editCProgram">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="editCProgramName" placeholder="Name" style="display: block" type="text" name="name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="editCProgramDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
+          </div>
+        </form>
+        <div id="editCProgramModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="editCProgram()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="newCProgramVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newCProgramVersionModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="newCProgramVersionModalTitle" class="modal-title">New CProgram</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newCProgramVersion">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="newCProgramVersionName" placeholder="Name" style="display: block" type="text" name="version_name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="newCProgramVersionDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+          </div>
+        </form>
+        <div id="newCProgramVersionModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="newCProgramVersion()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="editCProgramVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCProgramVersionModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="editCProgramVersionModalTitle" class="modal-title">Edit Version</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editCProgramVersion">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="editCProgramVersionName" placeholder="Name" style="display: block" type="text" name="version_name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="editCProgramVersionDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+          </div>
+        </form>
+        <div id="editCProgramVersionModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="editCProgramVersion()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="newUserFileModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newUserFileModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="newUserFileModalTitle" class="modal-title">New File</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newUserFile">
+          <label>Name</label>
+          <input id="newUserFileName" placeholder="Specify full path (e.g. component/folder/file.c)" style="display: block" type="text" name="file_name" >
+        </form>
+        <div id="newUserFileModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="newUserFile()">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="newLibraryModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newLibraryModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="newLibraryModalTitle" class="modal-title">Import Library</h4>
+      </div>
+      <div class="modal-body">
+        <form id="newLibrary">
+          <label>Library</label>
+          <select id="selectLibrary" class="form-control select2" style="width: 100%;">
+            <option selected="selected" disabled>Choose Library</option>
+            @for(library <- Model_ImportLibrary.find.all()){
+              <option value="@library.last_version().version_id">@library.name</option>
+            }
+          </select>
+        </form>
+        <div id="newLibraryModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="importLibrary()">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@*/*/*  Content ---------------------------------------------------------------------------------------------   */*/*@
+
+<section class="content">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">CProgram</h3>
+          <button class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newCProgramModal" title="New CProgram"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="box-header with-border">
+          <select id="selectTypeOfBoard" class="form-control select2" style="width: 100%;">
+            <option selected="selected" disabled>Choose Type of Board</option>
+            @for(typeOfBoard <- Model_TypeOfBoard.find.all()){
+              <option onclick="getCProgramsByType('@typeOfBoard.id')">@typeOfBoard.name</option>
+            }
+          </select>
+        </div>
+        <div class="box-header with-border">
+          <select id="selectCProgram" class="form-control select2" style="width: 100%;">
+            <option selected="selected" disabled>Choose Type of Board first(above)</option>
+          </select>
+        </div>
+        <div class="box-header with-border">
+          <h3 class="box-title pull-left">Selected CProgram:  </h3>
+          <h3 id="openedCProgramName" class="box-title text-bold">-</h3>
+          <div id="c_program_btn_group" class="btn-group pull-right">
+            <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="removeCProgram()" title="Remove CProgram"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info disabled" disabled type="button" data-toggle="modal" data-target="#editCProgramModal" onclick="fillEditCProgramForm()" title="Edit CProgram"><i class="fa fa-edit"></i></button>
+            <button class="btn btn-xs btn-success disabled" disabled type="button" data-toggle="modal" data-target="#newCProgramVersionModal" title="New Version"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <div class="box-header with-border">
+          <label>Description</label>
+          <textarea style="width: 100%;" id="openedCProgramDescription" readonly rows="3"></textarea>
+        </div>
+        <div class="box-header with-border">
+          <select id="selectVersion" class="form-control select2" style="width: 100%;">
+          </select>
+        </div>
+        <div class="box-header with-border">
+          <h3 class="box-title pull-left">Selected Version:  </h3>
+          <h3 id="openedCProgramVersionName" class="box-title text-bold">-</h3>
+          <div id="c_program_version_btn_group" class="btn-group pull-right">
+            <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="removeCProgramVersion()" title="Remove CProgram Version"><i class="fa fa-times"></i></button>
+            <button class="btn btn-xs btn-info disabled" disabled type="button" data-toggle="modal" data-target="#editCProgramVersionModal" onclick="fillEditVersionForm()" title="Edit CProgram Version"><i class="fa fa-edit"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+          <label>Description</label>
+          <textarea style="width: 100%;" id="openedCProgramVersionDescription" readonly rows="3"></textarea>
+        </div>
+        <div class="box-footer">
+          <button id="saveVersionButton" disabled class="btn btn-success pull-right disabled" type="button" style="margin-right: 10px;" onclick="saveCProgramVersion()">Save as new Version</button>
+        </div>
+      </div>
+
+    </div>
+    <div class="col-md-3">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Main</h3>
+          <button id="newMainButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newFileModal" title="New File"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="box-body">
+          <div class="nav nav-sidebar" id="main">
+          </div>
+        </div>
+        <div class="box-footer">
+        </div>
+      </div>
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">User Files</h3>
+          <button id="newUserFileButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newUserFileModal" title="New User File"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="box-body">
+          <div class="nav nav-sidebar" id="user_files">
+          </div>
+        </div>
+        <div class="box-footer">
+        </div>
+      </div>
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Library Files</h3>
+          <button id="newLibraryButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newLibraryModal" title="New Library"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="box-body">
+          <div class="nav nav-sidebar" id="library_files">
+          </div>
+        </div>
+        <div class="box-footer">
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Code Editor</h3>
+        </div>
+        <div class="box-body">
+          <div id="editor">public int main() {
+    int x = 0;
+    return x;
+}</div>
+        </div>
+        <div class="box-footer">
+          <p class="pull-left" id="file_name"></p>
+          <button id="saveFileButton" disabled class="btn btn-success pull-right disabled" type="button" onclick="saveFile()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+
+        $.ajaxSetup({ cache: false });
+
+        var openedCProgram = {};
+        var openedVersion = {};
+        var openedFile = {};
+        var libraries = [];
+        var libraryFiles = [];
+
+        function makeId(){
+          var text = "";
+          var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+          for( var i=0; i < 5; i++ )
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+          return text;
+        }
+
+        function makeJson(data){
+
+          var tree = [];
+          var root = 0;
+
+          function fillTree(content, steps, x, type) {
+            var current = null,
+                    existing = null,
+                    i = 0;
+            for (var y = 0; y < steps.length; y++) {
+
+              if (y == 0) {
+
+                if (!tree[root] || !tree[root].children || typeof tree[root].children == 'undefined') {
+                  tree[root] = {text: steps[y], leaf: false, children: [], type: type};
+                }
+
+                for (var z = 0; z < tree.length; z++) {
+                  if (tree[z].text !== steps[y] && z == (tree.length - 1)){
+                    tree.push({text: steps[y], leaf: false, children: [], type: type});
+                    root = z + 1;
+                    break;
+                  }
+                  if (tree[z].text === steps[y]){
+                    root = z;
+                    break;
+                  }
+                }
+
+                current = tree[root].children;
+              } else {
+                existing = null;
+                for (i = 0; i < current.length; i++) {
+                  if (current[i].text === steps[y]) {
+                    existing = current[i];
+                    break;
+                  }
+                }
+                if (existing) {
+                  current = existing.children;
+                } else {
+                  current.push({text: steps[y], leaf: false, children: []});
+                  current = current[current.length - 1].children;
+                }
+              }
+            }
+            current.push({text: content, leaf: true, order: x, type: type})
+          }
+
+          for (x = 0; x < data.length; x++) {
+            steps = data[x].file_name.split('/');
+            if (typeof data[x].content == "undefined"){
+              fillTree(data[x].code, steps, x, "user_file");
+            }else {
+              fillTree(data[x].content, steps, x, "library_file");
+            }
+          }
+
+          return tree;
+        }
+
+        function makeTree(t) {
+
+          var content = "<ul style='list-style-type: none; margin: 0; padding: 0;'>";
+
+          if (t.leaf != true) {
+            if (t.children.length == 1 && t.children[0].leaf == true) {
+              content += "<li style='margin: 0; padding: 0;'>" +
+                      "<div class='panel-group' style='margin: 5px 0;' id='" + t.text + "'>" +
+                      "<div class='panel panel-default'>" +
+                      "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                      "<h4 class='panel-title'>" +
+                      "<a onclick=\"" +
+                      "openFile(" + t.children[0].type + "," + t.children[0].order + ");" +
+                      "\">";
+
+              content += t.text;
+
+              content += "</a>";
+              if (t.children[0].type == "user_file"){
+                content += "<button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeFile(" + t.children[0].order + ")' title='Remove File' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button>";
+              }
+              content += "</h4></div><div id='collapse" + t.text + "' class='panel-collapse collapse'>" +
+                      "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+            } else {
+              var randomId = makeId();
+              content += "<li style='margin: 0; padding: 0;'>" +
+                      "<div class='panel-group' style='margin: 5px 0;' id='" + t.text + "'>" +
+                      "<div class='panel panel-default'>" +
+                      "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                      "<h4 class='panel-title'>" +
+                      "<a data-toggle='collapse' data-parent='#" + t.text + randomId + "' href='#collapse" + t.text + randomId + "'>" + t.text + "</a>";
+
+              if(typeof t.type != "undefined" && t.type == "library_file"){
+                content += "<button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeLibrary(" + t.children[0].order + ")' title='Remove Library' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button>";
+              }
+
+              content += "</h4></div><div id='collapse" + t.text + randomId + "' class='panel-collapse collapse'>" +
+                      "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+            }
+            $.each(t.children, function (k, v) {
+              content += makeTree(v);
+            });
+            content += "</div></div></div></div></li>";
+          }
+
+          content += "</ul>";
+
+          return content;
+        }
+
+        function makeStructure(trees){
+
+          var content = "";
+
+          $.each(trees, function (k, v) {
+            content += makeTree(v)
+          });
+
+          return content;
+        }
+
+        function structureMain() {
+          return "<ul style='list-style-type: none; margin: 0; padding: 0;'>" +
+                  "<li style='margin: 0; padding: 0;'>" +
+                  "<div class='panel-group' style='margin: 5px 0;' id='main'>" +
+                  "<div class='panel panel-default'>" +
+                  "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                  "<h4 class='panel-title'>" +
+                  "<a onclick=\"openMain();\">main</a></h4></div>" +
+                  "<div id='collapseMain' class='panel-collapse collapse'>" +
+                  "<div class='panel-body' style='padding: 0 5px 0 10px;'>" +
+                  "</div></div></div></div></li></ul>";
+        }
+
+        function fillSelectCProgram(json) {
+          $('#selectCProgram').html("");
+          $('#selectCProgram').append("<option selected=\"selected\" disabled>Choose C Program</option>");
+          $.each(json, function (k, v) {
+            $('#selectCProgram').append("<option onclick=\"getCProgram('" + v.id + "')\">" + v.name + "</option>");
+          });
+        }
+
+        function getCProgramsByType(id){
+          $.ajax({
+            url: '/c_program/public/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              fillSelectCProgram(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function getCProgram(id){
+          $.ajax({
+            url: '/c_program/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              openCProgram(json);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          });
+        }
+
+        function getCProgramVersion(id){
+          $.ajax({
+            url: '/c_program/version/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+
+              openVersion(convertVersion(json));
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function getLibraryVersion(id){
+          $.ajax({
+            url: '/library/version/' + id,
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+
+              openVersion(convertVersion(json));
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function convertVersion(json){
+
+          var temp = {
+            id: json.version_object.id,
+            version_name: json.version_object.version_name,
+            version_description: json.version_object.version_description,
+            main: json.main,
+            user_files: json.user_files,
+            library_files: json.library_files
+          };
+
+          return temp;
+        }
+
+        function disableButtonGroup(id, state) {
+          $(id + ' button').prop('disabled', state);
+          if(state){
+            $(id + ' button').addClass('disabled');
+          }else {
+            $(id + ' button').removeClass('disabled');
+          }
+        }
+
+        function newCProgram(){
+          $.ajax({
+            url: '@routes.Controller_CompilationLibraries.c_program_create()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify($("#newCProgram").serializeObject()),
+            dataType: 'json',
+            success:function(json){
+              $("#newCProgram input[type=text]").val("");
+              $("#newCProgramModal").modal('hide');
+              $("#newCProgramModalMessage").css("display", "none");
+              $("#selectCProgram option:selected").removeAttr('selected');
+              $("#selectCProgram").prepend("<option onclick=\"getCProgram('" + json.id + "')\">" + json.name + "</option>");
+              $("#selectCProgram option:first").attr('selected','selected');
+              openCProgram(json);
+            },
+            error:function(e) {
+              $("#newCProgramModalMessage").css("display", "block");
+              $("#newCProgramModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newCProgramModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          })
+        }
+
+        function newCProgramVersion(){
+          model_data = $("#newCProgramVersion").serializeObject();
+          openedVersion = {
+            id: null,
+            version_name: model_data.version_name,
+            version_description: model_data.version_description,
+            main:"",
+            user_files:[],
+            library_files:[] };
+        }
+
+        function saveCProgramVersion(){
+          model_data = $("#newCProgramVersion").serializeObject();
+          $.ajax({
+            url: '/c_program/version/' + openedCProgram.id,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#newCProgramVersion input[type=text]").val("");
+              $("#newCProgramVersionModal").modal('hide');
+              $("#newCProgramVersionModalMessage").css("display", "none");
+              $("#selectVersion option:selected").removeAttr('selected');
+              $("#selectVersion").prepend("<option onclick=\"getCProgramVersion('" + json.version_id + "')\">" + json.version_name + "</option>");
+              $("#selectVersion option:first").attr('selected','selected');
+              openVersion(convertVersion(json));
+            },
+            error:function(e) {
+              $("#newCProgramVersionModalMessage").css("display", "block");
+              $("#newCProgramVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#newCProgramVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          })
+        }
+
+        function editCProgram(){
+          model_data = $("#editCProgram").serializeObject();
+          $.ajax({
+            url: '/c_program/' + openedCProgram.id,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#editCProgram input[type=text]").val("");
+              $("#editCProgramModal").modal('hide');
+              $("#editCProgramModalMessage").css("display", "none");
+              $("#editCProgramLongDescription").text("");
+              openCProgram(json);
+            },
+            error:function(e) {
+              $("#editCProgramModalMessage").css("display", "block");
+              $("#editCProgramModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editCProgramModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          })
+        }
+
+        function editCProgramVersion(){
+          model_data = $("#editCProgramVersion").serializeObject();
+          $.ajax({
+            url: '/c_program/version/edit/' + openedVersion.id,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(json){
+              $("#editCProgramVersion input[type=text]").val("");
+              $("#editCProgramVersionModal").modal('hide');
+              $("#editCProgramVersionModalMessage").css("display", "none");
+              openedVersion.version_name = json.version_name;
+              openedVersion.version_description = json.version_description;
+              openVersion(openedVersion);
+            },
+            error:function(e) {
+              $("#editCProgramVersionModalMessage").css("display", "block");
+              $("#editCProgramVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editCProgramVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          })
+        }
+
+        function removeCProgram(){
+          $.ajax({
+            url: '/c_program/' + openedCProgram.id,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              window.location.reload();
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function removeCProgramVersion(){
+          $.ajax({
+            url: '/c_program/version/' + openedVersion.version_id,
+            type: 'DELETE',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+              openCProgram(openedCProgram);
+            },
+            error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+          })
+        }
+
+        function newUserFile(){
+          openedFile = {file_name: $('#newUserFileName').val(), code: ''};
+          $('#file_name').text(openedFile.file_name);
+          editor.setValue("// your new file - " + openedFile.file_name,1);
+          $("#newUserFileModal").modal('hide');
+          $('#newUserFileName').val("");
+
+          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+        }
+
+        function importLibrary(){
+
+          $.ajax({
+            url: '/library/version/' + $('#selectLibrary').val(),
+            type: 'GET',
+            headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+
+              $.each(json.library_files, function (k, v) {
+                openedVersion.library_files.push(v);
+              });
+
+              updateFiles("library_file",openedVersion.library_files);
+              $("#newLibraryModal").modal('hide');
+            },
+            error:function(e) {
+              $("#newLibraryModalMessage").css("display", "block");
+              $("#newLibraryModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+          });
+        }
+
+        function retrieveLibraryFiles(){
+
+          $.each(libraries, function(k, v) {
+
+            $.each(v.library_files, function(key, value) {
+
+              libraryFiles.push(value)
+            });
+          });
+
+          updateFiles("library_file", libraryFiles);
+        }
+
+        function saveFile(){
+          if (typeof openedFile.code != "undefined"){
+            openedFile.code = editor.getValue();
+            openedVersion.user_files.push(openedFile);
+
+          }else {
+            openedFile = {file_name: $('#newLibraryFileName').val(), code: editor.getValue()};
+            openedVersion.user_files.push(openedFile);
+          }
+          updateFiles("user_file", openedVersion.user_files);
+        }
+
+        function removeFile(type,order){
+
+          switch (type){
+            case "user_file" : {
+
+              openedVersion.user_files.splice(order,1);
+              updateFiles(type, openedVersion.user_files);
+
+              break;
+            }
+            case "library_file" : {
+
+              openedVersion.library_files.splice(order,1);
+              updateFiles(type, openedVersion.library_files);
+
+              break;
+            }
+          }
+        }
+
+        function openCProgram(json) {
+
+          disableButtonGroup("#c_program_btn_group", false);
+
+          $("#openedCProgramName").text(json.name);
+          $("#openedCProgramDescription").text(json.description);
+
+          openedCProgram = json;
+
+          $('#main').html("");
+          $('#user_files').html("");
+          $('#library_files').html("");
+          $('#selectVersion').html("");
+
+          $('#newMainButton').prop('disabled', true).addClass('disabled');
+          $('#newUserFileButton').prop('disabled', true).addClass('disabled');
+          $('#newLibraryButton').prop('disabled', true).addClass('disabled');
+          $('#saveVersionButton').prop('disabled', true).addClass('disabled');
+
+          closeFile();
+
+          $.each(openedCProgram.program_versions, function (k, v) {
+            if(k == 0){
+              $('#selectVersion').append("<option selected='selected' onclick=\"getCProgramVersion('" + v.version_id + "')\">" + v.version_name + "</option>");
+            }else {
+              $('#selectVersion').append("<option onclick=\"getCProgramVersion('" + v.version_id + "')\">" + v.version_name + "</option>");
+            }
+          });
+
+          if(json.program_versions[0] != null) {
+
+            $("#selectVersion option:first").attr('selected','selected').click();
+
+          }else {
+            $("#selectVersion").html("<option>No versions here!</option>");
+            $("#openedCProgramVersionName").text("");
+            $("#openedCProgramVersionDescription").text("");
+            disableButtonGroup("#c_program_version_btn_group", true);
+          }
+        }
+
+        function openVersion(json) {
+
+          openedVersion = json;
+
+          $("#openedCProgramVersionName").text(openedVersion.version_name);
+          $("#openedCProgramVersionDescription").text(openedVersion.version_description);
+
+          disableButtonGroup("#c_program_version_btn_group", false);
+          $('#newUserFileButton').prop('disabled', false).removeClass('disabled');
+          $('#newLibraryButton').prop('disabled', false).removeClass('disabled');
+          $('#saveVersionButton').prop('disabled', false).removeClass('disabled');
+
+          closeFile();
+
+          if (json.main != null) {
+            $('#main').html(structureMain());
+          }else{
+            $('#main').html("<p>Main is missing! Hit the plus button to add a new one.</p>");
+            $('#newMainButton').prop('disabled', false).removeClass('disabled');
+          }
+
+          if (json.user_files.length > 0) {
+
+            updateFiles("user_files", json.user_files);
+
+          }else{
+            $('#user_files').html("<p>No files here! Hit the plus button to add a new one.</p>");
+          }
+
+          if (json.library_files.length > 0) {
+
+            $.when(
+              $.each(json.library_files, function(k, v) {
+                $.ajax({
+                  url: '/library/version/' + v,
+                  type: 'GET',
+                  headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken")
+                  },
+                  dataType: 'json',
+                  success:function (json) {
+                    libraries.push(json)
+                  }
+                })
+              })
+            ).then(retrieveLibraryFiles(), alert("fail"));
+
+            updateFiles("library_files", json.library_files);
+
+          }else{
+            $('#library_files').html("<p>No files here! Hit the plus button to add one.</p>");
+          }
+        }
+
+        function openMain() {
+          $('#file_name').text("main");
+
+          openedFile = {main:openedVersion.main};
+
+          editor.setValue(openedFile.main, 1);
+
+          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+        }
+
+        function openFile(type, order){
+
+          var content = "";
+
+          switch (type){
+            case "user_file" : {
+              $('#file_name').text(openedVersion.user_files[order].file_name);
+
+              openedFile = openedVersion.user_files[order];
+
+              content = openedVersion.user_files[order].code;
+
+              break;
+            }
+            case "library_file" : {
+              $('#file_name').text(openedVersion.library_files[order].file_name);
+
+              openedFile = openedVersion.library_files[order];
+
+              content = openedVersion.library_files[order].content;
+
+              break;
+            }
+          }
+
+          editor.setValue(content, 1);
+
+          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+        }
+
+        function fillEditVersionForm() {
+          $("#editCProgramVersionName").val(openedVersion.version_name);
+          $("#editCProgramVersionDescription").val(openedVersion.version_description);
+        }
+
+        function fillEditCProgramForm() {
+          $("#editCProgramName").val(openedCProgram.name);
+          $("#editCProgramDescription").val(openedCProgram.description);
+        }
+
+        function closeFile() {
+          $('#saveFileButton').prop('disabled', true).addClass('disabled');
+
+          $('#file_name').text("");
+          editor.setValue("");
+        }
+
+        function updateFiles(type, files) {
+
+          switch (type){
+            case "user_file" : {
+
+              $('#user_files').html(makeStructure(makeJson(files)));
+
+              break;
+            }
+            case "library_file" : {
+
+              $('#library_files').html(makeStructure(makeJson(files)));
+
+              break;
+            }
+          }
+        }
+
+</script>

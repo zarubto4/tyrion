@@ -1,4 +1,4 @@
-package utilities.schedules_activities;
+package utilities.scheduler.schedules_activities;
 
 
 import models.notification.Model_Notification;

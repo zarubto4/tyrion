@@ -142,11 +142,9 @@ public class Model_VersionObject extends Model {
 
             Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bind(json);
             if(form.hasErrors()) return null;
-
             Swagger_Library_File_Load lib_form = form.get();
 
-            for (Swagger_ImportLibrary_Version_New.Library_File library_file : lib_form.library_files)
-            help.library_files.add(library_file);
+            help.library_files.addAll(lib_form.library_files);
         }
 
         return help;

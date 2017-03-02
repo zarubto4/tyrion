@@ -23,7 +23,6 @@ libraryDependencies ++= Seq(
   "io.swagger"        %% "swagger-scala-module"       % "1.0.2",
 
   "com.github.scribejava" % "scribejava-apis" % "2.1.0",
-  "com.typesafe.play" %% "play-mailer" % "4.0.0-M1",
 
   "commons-codec" % "commons-codec" % "1.9",
   "com.cedarsoftware" % "json-io" % "4.4.0",
@@ -42,10 +41,11 @@ libraryDependencies ++= Seq(
   "junit" % "junit" % "4.12" ,
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
 
-  "org.jsmpp" % "jsmpp" % "2.3.0",
-  cache,
+  "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.7",
+
   javaJdbc,
   filters,
+  cache,
   javaWs
 )
 

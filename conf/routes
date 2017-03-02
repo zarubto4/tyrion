@@ -288,6 +288,8 @@ PUT             /c_program/list/:page_number                                    
 PUT             /c_program/:c_program_id                                        @controllers.Controller_CompilationLibraries.c_program_update(c_program_id)
 DELETE          /c_program/:c_program_id                                        @controllers.Controller_CompilationLibraries.c_program_delete(c_program_id)
 
+GET             /c_program/public/:type_of_board_id                             @controllers.Controller_CompilationLibraries.c_program_getPublicByType(type_of_board_id)
+
 POST            /c_program/version/create/:c_program_id                         @controllers.Controller_CompilationLibraries.c_programVersion_create(c_program_id)
 PUT             /c_program/version/edit/:version_id                             @controllers.Controller_CompilationLibraries.c_programVersion_update(version_id)
 
@@ -296,6 +298,8 @@ GET             /c_program/version/:version_id                                  
 POST            /c_program/version/compile                                      @controllers.Controller_CompilationLibraries.compile_C_Program_code()
 PUT             /c_program/version/compile/:version_id                          @controllers.Controller_CompilationLibraries.compile_C_Program_version(version_id)
 
+POST            /c_program/default/scheme                                       @controllers.Controller_CompilationLibraries.c_program_createDefault()
+PUT             /c_program/default/mark/:c_program_id/:version_id               @controllers.Controller_CompilationLibraries.c_program_markScheme(c_program_id,version_id)
 
 GET             /c_program/version/public/list/:page_number                     @controllers.Controller_CompilationLibraries.c_program_getPublicList(page_number: Int)
 
@@ -318,7 +322,7 @@ PUT             /library/version/:version_id                                    
 DELETE          /library/version/:version_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_delete(version_id)
 
 PUT             /library/version/upload_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadFile(version_id)
-PUT             /library/version/remove_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadFile(version_id)
+PUT             /library/version/remove_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_removeFile(version_id)
 
 POST            /library/version/upload_example/:version_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadExample(version_id)
 DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_removeExample(example_id)
@@ -362,7 +366,6 @@ PUT             /typeOfBoard/:type_of_board_id                                  
 DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_delete(type_of_board_id)
 GET             /typeOfBoard/all                                                @controllers.Controller_CompilationLibraries.typeOfBoard_getAll()
 GET             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_get(type_of_board_id)
-PUT             /typeOfBoard/mark/c_version/:type_of_board_id/:version_id       @controllers.Controller_CompilationLibraries.typeOfBoard_versionScheme(type_of_board_id,version_id)
 
 #Bootloader
 POST            /bootloader/:type_of_board_id                                   @controllers.Controller_CompilationLibraries.boot_loader_create(type_of_board_id)
@@ -476,6 +479,9 @@ GET             /admin/websocket/instance_detail/:instance_id   @controllers.Con
 GET             /admin/show_readme                              @controllers.Controller_Dashboard.show_readme()
 GET             /admin/show_diff_on_Api/                        @controllers.Controller_Dashboard.show_diff_on_Api(old_api: String?="",new_api: String?="")
 
+GET             /admin/request_stats                            @utilities.request_counter.RequestCounter.get_request_stats()
+DELETE          /admin/request_stats                            @utilities.request_counter.RequestCounter.reset_request_stats()
+
 # Admin - Hardware
 GET             /admin/board_settings                           @controllers.Controller_Dashboard.basic_board_management()
 GET             /admin/board_summary                            @controllers.Controller_Dashboard.board_summary()
@@ -501,6 +507,7 @@ GET             /admin/blocko_management                        @controllers.Con
 GET             /admin/grid_public                              @controllers.Controller_Dashboard.grid_public()
 GET             /admin/grid_management                          @controllers.Controller_Dashboard.grid_management()
 GET             /admin/public_code                              @controllers.Controller_Dashboard.public_code()
+GET             /admin/public_code_management                   @controllers.Controller_Dashboard.public_code_management()
 GET             /admin/libraries                                @controllers.Controller_Dashboard.libraries()
 GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_approve_procedure()
 

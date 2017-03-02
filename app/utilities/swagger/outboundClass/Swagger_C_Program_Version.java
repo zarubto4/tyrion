@@ -6,7 +6,9 @@ import models.compiler.Model_VersionObject;
 import models.project.c_program.Model_CCompilation;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
+import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Json Model for Version of C_program",
@@ -25,10 +27,10 @@ public class Swagger_C_Program_Version {
     public String main;
 
    @ApiModelProperty(required = false, readOnly = true )
-    public List<Swagger_C_Program_Version_New.User_File>  user_files;
+    public List<Swagger_C_Program_Version_New.User_File>  user_files = new ArrayList<>();
 
     @ApiModelProperty(required = false, readOnly = true )
-    public List<Swagger_C_Program_Version_New.Library_File> library_files;
+    public List<String> library_files = new ArrayList<>();
 
 
     @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + Model_CCompilation.virtual_input_output_docu)

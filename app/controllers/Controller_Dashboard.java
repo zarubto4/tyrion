@@ -47,6 +47,7 @@ import views.html.helpdesk_tool.product_detail;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
 import views.html.publiccprograms.approvalprocedurecprogram;
+import views.html.publiccprograms.c_program_editor;
 import views.html.publiccprograms.libraries;
 import views.html.publiccprograms.publiccode;
 import views.html.super_general.login;
@@ -558,6 +559,19 @@ public class Controller_Dashboard extends Controller {
             return return_page(public_code_content);
 
         }catch (Exception e){
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result public_code_management(){
+        try {
+
+            Html public_code_content = c_program_editor.render();
+            return return_page(public_code_content);
+
+        }catch (Exception e){
+            e.printStackTrace();
             return ok();
         }
     }

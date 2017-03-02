@@ -1,4 +1,4 @@
-package utilities.schedules_activities;
+package utilities.scheduler.schedules_activities;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_WebSocket;
@@ -32,10 +32,10 @@ public class Compilation_Checker implements Job {
         @Override
         public void run() {
             try {
-            logger.info("Compilation_Checker:: run:: Independent Thread in Compilation_Checker now working");
+                logger.info("Compilation_Checker:: run:: Independent Thread in Compilation_Checker now working");
 
-            Long before_5_minutes = new Date().getTime() - (5 * 60 * 1000);
-            Date created = new Date(before_5_minutes);
+                Long before_5_minutes = new Date().getTime() - (5 * 60 * 1000);
+                Date created = new Date(before_5_minutes);
 
                 // Zarážka pro
                 if( !Controller_WebSocket.compiler_cloud_servers.isEmpty()) {

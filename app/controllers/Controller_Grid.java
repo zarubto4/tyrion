@@ -19,7 +19,7 @@ import models.project.m_program.Model_MProject;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
-import utilities.emails.EmailTool;
+import utilities.emails.Email;
 import utilities.enums.Approval_state;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
@@ -1965,18 +1965,11 @@ public class Controller_Grid extends Controller {
 
             // Odeslání emailu s důvodem
             try {
-                new EmailTool()
-                        .addEmptyLineSpace()
-                        .startParagraph("13")
-                        .addText("Version of Widget " + gridWidgetVersion.grid_widget.name + ": ")
-                        .addBoldText(gridWidgetVersion.version_name)
-                        .addText(" was not approved for this reason: ")
-                        .endParagraph()
-                        .startParagraph("13")
-                        .addText( help.reason)
-                        .endParagraph()
-                        .addEmptyLineSpace()
-                        .sendEmail(gridWidgetVersion.grid_widget.author.mail, "Version of Widget disapproved" );
+
+                new Email()
+                        .text("Version of Widget " + gridWidgetVersion.grid_widget.name + ": " + Email.bold(gridWidgetVersion.version_name) + " was not approved for this reason: ")
+                        .text(help.reason)
+                        .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget disapproved" );
 
             } catch (Exception e) {
                 logger.error ("Sending mail -> critical error", e);
@@ -2041,18 +2034,11 @@ public class Controller_Grid extends Controller {
 
                 // Odeslání emailu
                 try {
-                    new EmailTool()
-                            .addEmptyLineSpace()
-                            .startParagraph("13")
-                            .addText("Version of Widget " + gridWidgetVersion.grid_widget.name + ": ")
-                            .addBoldText(gridWidgetVersion.version_name)
-                            .addText(" was edited before publishing for this reason: ")
-                            .endParagraph()
-                            .startParagraph("13")
-                            .addText( help.reason)
-                            .endParagraph()
-                            .addEmptyLineSpace()
-                            .sendEmail(gridWidgetVersion.grid_widget.author.mail, "Version of Widget edited" );
+
+                    new Email()
+                            .text("Version of Widget " + gridWidgetVersion.grid_widget.name + ": " + Email.bold(gridWidgetVersion.version_name) + " was edited before publishing for this reason: ")
+                            .text(help.reason)
+                            .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget edited");
 
                 } catch (Exception e) {
                     logger.error ("Sending mail -> critical error", e);
