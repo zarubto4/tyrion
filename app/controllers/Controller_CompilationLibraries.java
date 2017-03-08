@@ -2838,7 +2838,6 @@ public class Controller_CompilationLibraries extends Controller {
                 list.add(board.get_short_board_for_fast_upload());
             }
 
-            
 
             // Vrácení upravenéh objektu
             return GlobalResult.result_ok(Json.toJson(list));

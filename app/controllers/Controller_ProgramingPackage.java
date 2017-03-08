@@ -49,6 +49,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
+import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
 
@@ -1337,34 +1338,14 @@ public class Controller_ProgramingPackage extends Controller {
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.forbidden_Permission();
 
-            if(homer_instance.actual_instance != null && !homer_instance.actual_instance.hardware_group().isEmpty()){
 
-                for(Model_BProgramHwGroup group : homer_instance.actual_instance.hardware_group()){
-
-                    group.main_board_pair.board.virtual_instance_under_project = group.main_board_pair.board.project.private_instance;
-                    group.main_board_pair.board.update();
-
-                    group.main_board_pair.board.project.private_instance.add_Yoda_to_instance(group.main_board_pair.board_id());
-
-                }
+            if(homer_instance.actual_instance == null){
+                return GlobalResult.result_BadRequest("Instance not running");
             }
-
-            Model_HomerInstanceRecord record =  homer_instance.actual_instance;
-            record.running_to = new Date();
-            record.actual_running_instance = null;
-
-            homer_instance.actual_instance = null;
-
-            record.update();
-            homer_instance.update();
-
-
-
-            homer_instance.actual_instance = null;
-            homer_instance.update();
 
 
             WS_Destroy_instance result = homer_instance.remove_instance_from_server();
+
 
             return GlobalResult.result_ok();
 
@@ -1375,7 +1356,7 @@ public class Controller_ProgramingPackage extends Controller {
 
     @ApiOperation(value = "get Instance by Project ID",
             tags = {"Instance"},
-            notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instnace schema yet",
+            notes = "get list of instances details under project id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1387,7 +1368,7 @@ public class Controller_ProgramingPackage extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Model_HomerInstance.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Swagger_Instance_Short_Detail.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
@@ -1402,8 +1383,13 @@ public class Controller_ProgramingPackage extends Controller {
                                      .eq("b_program.project.id", project_id)
                                      .findList();
 
+            List<Swagger_Instance_Short_Detail> list = new ArrayList<>();
 
-            return GlobalResult.result_ok(Json.toJson(instances));
+            for(Model_HomerInstance instance : instances){
+                list.add(instance.get_instance_short_detail());
+            }
+
+            return GlobalResult.result_ok(Json.toJson(list));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

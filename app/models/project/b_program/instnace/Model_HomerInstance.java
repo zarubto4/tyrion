@@ -19,7 +19,6 @@ import models.project.b_program.Model_BPair;
 import models.project.b_program.Model_BProgram;
 import models.project.b_program.Model_BProgramHwGroup;
 import models.project.b_program.servers.Model_HomerServer;
-import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
@@ -106,6 +105,7 @@ public class Model_HomerInstance extends Model {
         help.server_name = cloud_homer_server.unique_identificator;
         help.server_id = cloud_homer_server.unique_identificator;
         help.instance_is_online = online_state();
+        help.server_is_online = server_is_online();
         return help;
     }
 
@@ -149,6 +149,7 @@ public class Model_HomerInstance extends Model {
                 .setText(" from Blocko program ")
                 .setObject(Model_BProgram.class, this.actual_instance.version_object.b_program.id, this.actual_instance.version_object.b_program.name + ".", this.actual_instance.version_object.b_program.project_id())
                 .send(Controller_Security.getPerson());
+
     }
 
     @JsonIgnore @Transient
@@ -512,12 +513,27 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient public  WS_Destroy_instance remove_instance_from_server() {
         try{
 
-            if(!instance_online())return new WS_Destroy_instance();
+            if(!actual_instance.hardware_group().isEmpty()){
+
+                for(Model_BProgramHwGroup group : actual_instance.hardware_group()){
+
+                    remove_Yoda_from_instance(group.main_board_pair.board.id);
+
+                    group.main_board_pair.board.virtual_instance_under_project = group.main_board_pair.board.project.private_instance;
+                    group.main_board_pair.board.update();
+
+                    group.main_board_pair.board.project.private_instance.add_Yoda_to_instance(group.main_board_pair.board_id());
+
+                }
+            }
+
+            if(!instance_online()) return new WS_Destroy_instance();
 
             // Vytvořím Instanci
             WS_Destroy_instance result_instance  = this.cloud_homer_server.remove_instance(this.blocko_instance_name);
 
             if(this.actual_instance != null) {
+                this.actual_instance.running_to = new Date();
                 this.actual_instance.actual_running_instance = null;
                 this.actual_instance.update();
             }
@@ -577,7 +593,7 @@ public class Model_HomerInstance extends Model {
 
                         // Ověřím připojený server
                     if (!Controller_WebSocket.homer_servers.containsKey(instance.cloud_homer_server.unique_identificator)) {
-                        logger.error("Server je offline!! Instanci nenahraji - Nahraji ji as soon as possible!!");
+                        logger.warn("Server je offline!! Upload instance will be as soon as possible!!");
                         return;
                     }
 
@@ -588,7 +604,7 @@ public class Model_HomerInstance extends Model {
                         instance.update_instance_to_actual_instance_record();
 
                     } catch (Exception e) {
-                        logger.error("Error while upload_Record_immediately tried uploud Instance Record to Homer", e);
+                        logger.error("Error while upload_Record_immediately tried upload Instance Record to Homer", e);
                     }
 
                 }catch (Exception e){
@@ -617,6 +633,7 @@ public class Model_HomerInstance extends Model {
             }
 
             if(!instance_online()){
+
                 // Vytvořím Instanci
                 WS_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
                 if(!result_instance.status.equals("success")){
@@ -628,6 +645,7 @@ public class Model_HomerInstance extends Model {
                     response.errorCode =  result_instance.errorCode;
                     return response;
                 }
+
             }
 
 
@@ -637,7 +655,9 @@ public class Model_HomerInstance extends Model {
 
             // Nahraju Blocko Program
             WS_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
+
             if(!result_blocko_program.status.equals("success")){
+
                 logger.error("Model_HomerServer:: update_instance_to_actual_instance_record:: upload_blocko_program() Failed:: Error:: " + result_blocko_program.error + " ErrorCode:: " + result_blocko_program.errorCode);
 
                 WS_Update_instance_to_actual_instance_record response = new  WS_Update_instance_to_actual_instance_record();
@@ -645,9 +665,11 @@ public class Model_HomerInstance extends Model {
                 response.error =  result_blocko_program.error;
                 response.errorCode =  result_blocko_program.errorCode;
                 return response;
+
             }
 
-            this.check_hardware_c_program_state();
+            actual_instance.create_actualization_request();
+            cloud_homer_server.get_server_webSocket_connection().check_update_for_hw_under_homer_ws.add_new_Procedure(this.get_summary_information());
 
             WS_Update_instance_to_actual_instance_record response = new WS_Update_instance_to_actual_instance_record();
             response.status = "success";
@@ -687,7 +709,7 @@ public class Model_HomerInstance extends Model {
 
 
                 // Seznam - který by na instanci měl běžet!
-                List<Model_BProgramHwGroup> hardware_groups = Model_BProgramHwGroup.find.where().eq("b_program_version_groups.b_program.instance.actual_instance.id", actual_instance.id).findList();
+                List<Model_BProgramHwGroup> hardware_groups = Model_BProgramHwGroup.find.where().eq("b_program_version_groups.id", actual_instance.version_object.id).findList();
 
                 // Zkontroluji HW který aktálně v instanci vysí
                 WS_Get_Hardware_list summary_information = this.get_hardware_list();
@@ -769,22 +791,36 @@ public class Model_HomerInstance extends Model {
 
                 List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
 
+                System.out.println("Budu procházet Grupu k ADD");
+
                 for (Model_BProgramHwGroup b_program_hw_group : hardware_groups) {
+
+                    System.out.println("b_program_hw_group:: " + b_program_hw_group.id);
+
 
                     if (b_program_hw_group.main_board_pair != null) {
 
+                        System.out.println("b_program_hw_group:: Main Board " + b_program_hw_group.main_board_pair.board.personal_description);
+
                         // Neobsahuje Yodu - Tak vytvořím skupinu s Yodou a devicama
                         if(!yodas_id_on_instance.contains(b_program_hw_group.main_board_pair.board_id())) {
+
+                            System.out.println("Instance Neobsahuje Yodu - takže vytvořím skupinu s Yodou " + b_program_hw_group.main_board_pair.board.personal_description);
+
                             Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
                             group.yodaId = b_program_hw_group.main_board_pair.board.id;
 
                             for (Model_BPair pair : b_program_hw_group.device_board_pairs) {
+                                System.out.println("Instance Neobsahuje Yodu - takže vytvořím skupinu s Yodou a ještě přidám device pod Yodu:: " + pair.board.personal_description);
                                 group.devicesId.add(pair.board.id);
                             }
 
                             hw_groups.add(group);
+                            System.out.println("Cyklus opakuji ");
                             continue;
                         }
+
+                        System.out.println("Instance Yodu už má");
 
                         // Obsahuje Yodu - takže kontroluji ještě Devices
                         List<String> devices_id_under_yoda = new ArrayList<>();
@@ -929,21 +965,6 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-
-    @JsonIgnore  @Transient public void check_hardware_c_program_state(){
-
-        logger.debug("Check check_hardware_c_program_state");
-
-        // Mohu nahrávat instanci která nemusí mít vůbec žádný update hardwaru a tak je zbytečné vytvářet objekt
-        if(actual_instance.procedures.size() > 0){
-            logger.debug("Sending new Actualization procedure to Master Updater");
-            for(Model_ActualizationProcedure procedure : actual_instance.procedures) Master_Updater.add_new_Procedure(procedure);
-        }else {
-            logger.debug("No new Actualization procedure for Master Procedure");
-        }
-
-
-    }
 
     @JsonIgnore @Transient public  void check_hardware(Model_Board board, WS_AbstractMessageBoard report){
 
