@@ -29,6 +29,13 @@
             <label>Description</label>
             <input id="newCProgramDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
           </div>
+          <label>Type of Board</label>
+          <select id="selectType" class="form-control select2" style="width: 100%;">
+            <option selected="selected" disabled>Choose Type of Board</option>
+            @for(type_of_board <- Model_TypeOfBoard.find.all()){
+              <option value="@type_of_board.id">@type_of_board.name</option>
+            }
+          </select>
         </form>
         <div id="newCProgramModalMessage" style="display: none"><p class="text-red"></p></div>
       </div>
@@ -117,6 +124,32 @@
     </div>
   </div>
 </div>
+<div id="saveCProgramVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveCProgramVersionModalTitle">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="saveCProgramVersionModalTitle" class="modal-title">New Version</h4>
+      </div>
+      <div class="modal-body">
+        <form id="saveCProgramVersion">
+          <div style="float: left; width: 30%;">
+            <label>Name</label>
+            <input id="saveCProgramVersionName" placeholder="Name" style="display: block" type="text" name="version_name" >
+          </div>
+          <div style="width: 100%;">
+            <label>Description</label>
+            <input id="saveCProgramVersionDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+          </div>
+        </form>
+        <div id="saveCProgramVersionModalMessage" style="display: none"><p class="text-red"></p></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+        <button class="btn btn-success" type="button" onclick="saveCProgramVersion()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="newUserFileModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newUserFileModalTitle">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -126,7 +159,7 @@
       <div class="modal-body">
         <form id="newUserFile">
           <label>Name</label>
-          <input id="newUserFileName" placeholder="Specify full path (e.g. component/folder/file.c)" style="display: block" type="text" name="file_name" >
+          <input id="newUserFileName" placeholder="Specify full path (e.g. component/folder/file.c)" style="display: block; width: 100%;" type="text" name="file_name" >
         </form>
         <div id="newUserFileModalMessage" style="display: none"><p class="text-red"></p></div>
       </div>
@@ -212,11 +245,13 @@
           </div>
         </div>
         <div class="box-body">
+          <label>Compilation Status</label>
+          <textarea style="width: 100%;" id="openedCProgramVersionCompilationStatus" readonly rows="1"></textarea>
           <label>Description</label>
           <textarea style="width: 100%;" id="openedCProgramVersionDescription" readonly rows="3"></textarea>
         </div>
         <div class="box-footer">
-          <button id="saveVersionButton" disabled class="btn btn-success pull-right disabled" type="button" style="margin-right: 10px;" onclick="saveCProgramVersion()">Save as new Version</button>
+          <button id="saveVersionButton" disabled class="btn btn-success pull-right disabled" type="button" data-toggle="modal" data-target="#saveCProgramVersionModal" style="margin-right: 10px;" onclick="fillNewCProgramVersionForm()">Save as new Version</button>
         </div>
       </div>
 
@@ -225,7 +260,7 @@
       <div class="box">
         <div class="box-header with-border">
           <h3 class="box-title">Main</h3>
-          <button id="newMainButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newFileModal" title="New File"><i class="fa fa-plus"></i></button>
+          <button id="newMainButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" onclick="newMain()" title="Add Main"><i class="fa fa-plus"></i></button>
         </div>
         <div class="box-body">
           <div class="nav nav-sidebar" id="main">
@@ -346,7 +381,9 @@
                 }
               }
             }
-            current.push({text: content, leaf: true, order: x, type: type})
+            if (current.length === 0){
+              current.push({text: content, leaf: true, order: x, type: type})
+            }
           }
 
           for (x = 0; x < data.length; x++) {
@@ -361,7 +398,7 @@
           return tree;
         }
 
-        function makeTree(t) {
+        function makeTree(library, t) {
 
           var content = "<ul style='list-style-type: none; margin: 0; padding: 0;'>";
 
@@ -373,7 +410,7 @@
                       "<div class='panel-heading' style='padding: 5px 10px;'>" +
                       "<h4 class='panel-title'>" +
                       "<a onclick=\"" +
-                      "openFile(" + t.children[0].type + "," + t.children[0].order + ");" +
+                      "openFile('" + t.children[0].type + "'," + t.children[0].order + ");" +
                       "\">";
 
               content += t.text;
@@ -394,14 +431,14 @@
                       "<a data-toggle='collapse' data-parent='#" + t.text + randomId + "' href='#collapse" + t.text + randomId + "'>" + t.text + "</a>";
 
               if(typeof t.type != "undefined" && t.type == "library_file"){
-                content += "<button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeLibrary(" + t.children[0].order + ")' title='Remove Library' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button>";
+                content += "<button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeLibrary(" + library + ")' title='Remove Library' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button>";
               }
 
               content += "</h4></div><div id='collapse" + t.text + randomId + "' class='panel-collapse collapse'>" +
                       "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
             }
             $.each(t.children, function (k, v) {
-              content += makeTree(v);
+              content += makeTree(k, v);
             });
             content += "</div></div></div></div></li>";
           }
@@ -416,14 +453,15 @@
           var content = "";
 
           $.each(trees, function (k, v) {
-            content += makeTree(v)
+            content += makeTree(k, v)
           });
 
           return content;
         }
 
         function structureMain() {
-          return "<ul style='list-style-type: none; margin: 0; padding: 0;'>" +
+
+          $('#main').html("<ul style='list-style-type: none; margin: 0; padding: 0;'>" +
                   "<li style='margin: 0; padding: 0;'>" +
                   "<div class='panel-group' style='margin: 5px 0;' id='main'>" +
                   "<div class='panel panel-default'>" +
@@ -432,12 +470,11 @@
                   "<a onclick=\"openMain();\">main</a></h4></div>" +
                   "<div id='collapseMain' class='panel-collapse collapse'>" +
                   "<div class='panel-body' style='padding: 0 5px 0 10px;'>" +
-                  "</div></div></div></div></li></ul>";
+                  "</div></div></div></div></li></ul>");
         }
 
         function fillSelectCProgram(json) {
-          $('#selectCProgram').html("");
-          $('#selectCProgram').append("<option selected=\"selected\" disabled>Choose C Program</option>");
+          $('#selectCProgram').html("<option selected=\"selected\" disabled>Choose C Program</option>");
           $.each(json, function (k, v) {
             $('#selectCProgram').append("<option onclick=\"getCProgram('" + v.id + "')\">" + v.name + "</option>");
           });
@@ -453,6 +490,11 @@
             dataType: 'json',
             success:function(json){
               fillSelectCProgram(json);
+              openedCProgram = {};
+              openedVersion = {};
+              openedFile = {};
+              libraryFiles = [];
+              libraries = [];
             },
             error:function(e) {
               alert(JSON.stringify(JSON.parse(e.responseText).message));
@@ -495,36 +537,17 @@
           })
         }
 
-        function getLibraryVersion(id){
-          $.ajax({
-            url: '/library/version/' + id,
-            type: 'GET',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken")
-            },
-            dataType: 'json',
-            success:function(json){
-
-              openVersion(convertVersion(json));
-            },
-            error:function(e) {
-              alert(JSON.stringify(JSON.parse(e.responseText).message));
-            }
-          })
-        }
-
         function convertVersion(json){
 
-          var temp = {
+          return {
             id: json.version_object.id,
             version_name: json.version_object.version_name,
             version_description: json.version_object.version_description,
+            status: json.status,
             main: json.main,
             user_files: json.user_files,
             library_files: json.library_files
           };
-
-          return temp;
         }
 
         function disableButtonGroup(id, state) {
@@ -570,36 +593,47 @@
             id: null,
             version_name: model_data.version_name,
             version_description: model_data.version_description,
-            main:"",
+            main: null,
             user_files:[],
-            library_files:[] };
+            library_files:[]
+          };
+
+          $("#newCProgramVersionModal").modal('hide');
+          $("#newCProgramVersion input[type=text]").val("");
+
+          openVersion(openedVersion);
         }
 
         function saveCProgramVersion(){
-          model_data = $("#newCProgramVersion").serializeObject();
+
+          var temp = $("#saveCProgramVersion").serializeObject();
+
+          openedVersion.version_name = temp.version_name;
+          openedVersion.version_description = temp.version_description;
+
           $.ajax({
-            url: '/c_program/version/' + openedCProgram.id,
+            url: '/c_program/version/create/' + openedCProgram.id,
             type: 'POST',
             contentType: 'application/json',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
               "Content-Type":"application/json"
             },
-            data: JSON.stringify(model_data),
+            data: JSON.stringify(openedVersion),
             dataType: 'json',
             success:function(json){
-              $("#newCProgramVersion input[type=text]").val("");
-              $("#newCProgramVersionModal").modal('hide');
-              $("#newCProgramVersionModalMessage").css("display", "none");
-              $("#selectVersion option:selected").removeAttr('selected');
-              $("#selectVersion").prepend("<option onclick=\"getCProgramVersion('" + json.version_id + "')\">" + json.version_name + "</option>");
-              $("#selectVersion option:first").attr('selected','selected');
               openVersion(convertVersion(json));
+              $("#selectVersion option:selected").removeAttr('selected');
+              $("#selectVersion").prepend("<option onclick=\"getCProgramVersion('" + openedVersion.id + "')\">" + openedVersion.version_name + "</option>");
+              $("#selectVersion option:first").attr('selected','selected');
+              $("#saveCProgramVersion input[type=text]").val("");
+              $("#saveCProgramVersionModal").modal('hide');
+              $("#saveCProgramVersionModalMessage").css("display", "none");
+
             },
             error:function(e) {
-              $("#newCProgramVersionModalMessage").css("display", "block");
-              $("#newCProgramVersionModalMessage p").text(JSON.parse(e.responseText).message);
-              $("#newCProgramVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+              $("#saveCProgramVersionModalMessage").css("display", "block");
+              $("#saveCProgramVersionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           })
         }
@@ -678,13 +712,19 @@
 
         function removeCProgramVersion(){
           $.ajax({
-            url: '/c_program/version/' + openedVersion.version_id,
+            url: '/c_program/version/' + openedVersion.id,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
             },
             dataType: 'json',
             success:function(json){
+              $.each(openedCProgram.program_versions, function (k, v) {
+                if(v.version_id === openedVersion.id){
+                  openedCProgram.program_versions.splice(k,1);
+                  return false;
+                }
+              });
               openCProgram(openedCProgram);
             },
             error:function(e) {
@@ -714,11 +754,15 @@
             dataType: 'json',
             success:function(json){
 
+              libraries.push(json);
+
+              openedVersion.library_files.push(json.version_id);
+
               $.each(json.library_files, function (k, v) {
-                openedVersion.library_files.push(v);
+                libraryFiles.push(v);
               });
 
-              updateFiles("library_file",openedVersion.library_files);
+              updateFiles("library_file",libraryFiles);
               $("#newLibraryModal").modal('hide');
             },
             error:function(e) {
@@ -726,6 +770,19 @@
               $("#newLibraryModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
           });
+        }
+
+        function removeLibrary(order){
+
+          openedVersion.library_files.splice(openedVersion.library_files.indexOf(libraries[order].version_id),1);
+
+          $.each(libraries[order].library_files, function (k, v) {
+            libraryFiles.splice(libraryFiles.indexOf(v),1);
+          });
+
+          libraries.splice(order,1);
+
+          updateFiles("library_file",libraryFiles);
         }
 
         function retrieveLibraryFiles(){
@@ -744,33 +801,40 @@
         function saveFile(){
           if (typeof openedFile.code != "undefined"){
             openedFile.code = editor.getValue();
-            openedVersion.user_files.push(openedFile);
+            $.each(openedVersion.user_files,function (k, v) {
+              if(openedFile.file_name === v.file_name){
+                openedVersion.user_files[k].code = openedFile.code;
+                return false;
+              } else if (k == openedVersion.user_files.length - 1){
+                openedVersion.user_files.push(openedFile);
+              }
+            });
 
-          }else {
-            openedFile = {file_name: $('#newLibraryFileName').val(), code: editor.getValue()};
-            openedVersion.user_files.push(openedFile);
+          }else if (typeof openedFile.content != "undefined"){
+            openedFile = {file_name: $('#file_name').text(), code: editor.getValue()};
+            $.each(openedVersion.user_files,function (k, v) {
+              if(openedFile.file_name === v.file_name){
+                openedVersion.user_files[k].code = openedFile.code;
+                return false;
+              } else if (k == openedVersion.user_files.length - 1){
+                openedVersion.user_files.push(openedFile);
+              }
+            });
+
+          }else if (typeof openedFile.main != "undefined"){
+            openedFile.main = editor.getValue();
+            openedVersion.main = openedFile.main;
+            structureMain();
+            $('#newMainButton').prop('disabled', true).addClass('disabled');
+            return;
           }
           updateFiles("user_file", openedVersion.user_files);
         }
 
-        function removeFile(type,order){
+        function removeFile(order){
 
-          switch (type){
-            case "user_file" : {
-
-              openedVersion.user_files.splice(order,1);
-              updateFiles(type, openedVersion.user_files);
-
-              break;
-            }
-            case "library_file" : {
-
-              openedVersion.library_files.splice(order,1);
-              updateFiles(type, openedVersion.library_files);
-
-              break;
-            }
-          }
+          openedVersion.user_files.splice(order,1);
+          updateFiles("user_file", openedVersion.user_files);
         }
 
         function openCProgram(json) {
@@ -781,6 +845,9 @@
           $("#openedCProgramDescription").text(json.description);
 
           openedCProgram = json;
+          openedVersion = {};
+          libraryFiles = [];
+          libraries = [];
 
           $('#main').html("");
           $('#user_files').html("");
@@ -817,9 +884,13 @@
         function openVersion(json) {
 
           openedVersion = json;
+          openedFile = {};
+          libraryFiles = [];
+          libraries = [];
 
           $("#openedCProgramVersionName").text(openedVersion.version_name);
           $("#openedCProgramVersionDescription").text(openedVersion.version_description);
+          $("#openedCProgramVersionCompilationStatus").text(openedVersion.status);
 
           disableButtonGroup("#c_program_version_btn_group", false);
           $('#newUserFileButton').prop('disabled', false).removeClass('disabled');
@@ -828,8 +899,8 @@
 
           closeFile();
 
-          if (json.main != null) {
-            $('#main').html(structureMain());
+          if (json.main != null && json.main != "") {
+            structureMain();
           }else{
             $('#main').html("<p>Main is missing! Hit the plus button to add a new one.</p>");
             $('#newMainButton').prop('disabled', false).removeClass('disabled');
@@ -837,7 +908,7 @@
 
           if (json.user_files.length > 0) {
 
-            updateFiles("user_files", json.user_files);
+            updateFiles("user_file", json.user_files);
 
           }else{
             $('#user_files').html("<p>No files here! Hit the plus button to add a new one.</p>");
@@ -845,27 +916,39 @@
 
           if (json.library_files.length > 0) {
 
-            $.when(
-              $.each(json.library_files, function(k, v) {
-                $.ajax({
-                  url: '/library/version/' + v,
-                  type: 'GET',
-                  headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken")
-                  },
-                  dataType: 'json',
-                  success:function (json) {
-                    libraries.push(json)
-                  }
-                })
-              })
-            ).then(retrieveLibraryFiles(), alert("fail"));
+            var getLibraries = [];
+            $.each(json.library_files, function(k, v) {
+              getLibraries.push($.ajax({
+                url: '/library/version/' + v,
+                type: 'GET',
+                headers: {
+                  "X-AUTH-TOKEN":getCookie("authToken")
+                },
+                dataType: 'json',
+                success: function (json) {
+                  libraries.push(json)
+                }
+              }));
+            });
 
-            updateFiles("library_files", json.library_files);
+            $.when.apply($, getLibraries).done(function () {
+              retrieveLibraryFiles()
+            });
+
 
           }else{
-            $('#library_files').html("<p>No files here! Hit the plus button to add one.</p>");
+            $('#library_files').html("<p>No libraries here! Hit the plus button to add one.</p>");
           }
+        }
+
+        function newMain() {
+          $('#file_name').text("main");
+
+          openedFile = {main:""};
+
+          editor.setValue("// This is a main function of your program", 1);
+
+          $('#saveFileButton').prop('disabled', false).removeClass('disabled');
         }
 
         function openMain() {
@@ -893,11 +976,11 @@
               break;
             }
             case "library_file" : {
-              $('#file_name').text(openedVersion.library_files[order].file_name);
+              $('#file_name').text(libraryFiles[order].file_name);
 
-              openedFile = openedVersion.library_files[order];
+              openedFile = libraryFiles[order];
 
-              content = openedVersion.library_files[order].content;
+              content = openedFile.content;
 
               break;
             }
@@ -916,6 +999,11 @@
         function fillEditCProgramForm() {
           $("#editCProgramName").val(openedCProgram.name);
           $("#editCProgramDescription").val(openedCProgram.description);
+        }
+
+        function fillNewCProgramVersionForm(){
+          $("#saveCProgramVersionName").val(openedVersion.version_name);
+          $("#saveCProgramVersionDescription").val(openedVersion.version_description);
         }
 
         function closeFile() {

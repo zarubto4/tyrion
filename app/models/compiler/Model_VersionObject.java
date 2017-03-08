@@ -2,6 +2,7 @@ package models.compiler;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
@@ -57,7 +58,7 @@ public class Model_VersionObject extends Model {
                                                                     @ApiModelProperty(required = true) public String version_name;
                              @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true) public String version_description;
 
-    @ManyToOne(fetch = FetchType.LAZY) @ApiModelProperty(required = false, value = "can be empty!")    public Model_Person author;
+                                                        @ManyToOne(fetch = FetchType.LAZY) @JsonIgnore public Model_Person author;
 
 
                                                                                            @JsonIgnore public boolean public_version;  // Používá se u Gridu, u C_programů atd..
@@ -121,6 +122,11 @@ public class Model_VersionObject extends Model {
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty
+    public Swagger_Person_Short_Detail author(){
+        return this.author.get_short_person();
+    }
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -279,7 +285,7 @@ public class Model_VersionObject extends Model {
         Swagger_C_Program_Version_Update code_file = form.get();
 
 
-        List<Swagger_C_Program_Version_New.Library_File> library_files = new ArrayList<>();
+        List<Swagger_ImportLibrary_Version_New.Library_File> library_files = new ArrayList<>();
 
         for (String lib_id : code_file.library_files) {
 
@@ -306,7 +312,7 @@ public class Model_VersionObject extends Model {
 
                     JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
 
-                    Form<Swagger_C_Program_Version_New.Library_File> lib_form = Form.form(Swagger_C_Program_Version_New.Library_File.class).bind(j);
+                    Form<Swagger_Library_File_Load> lib_form = Form.form(Swagger_Library_File_Load.class).bind(j);
                     if (lib_form.hasErrors()){
 
                         ObjectNode result = Json.newObject();
@@ -315,14 +321,18 @@ public class Model_VersionObject extends Model {
                         result.put("error_code", 400);
                         return result;
                     }
+                    Swagger_Library_File_Load lib_help = lib_form.get();
 
-                    Swagger_C_Program_Version_New.Library_File lib_file = lib_form.get();
+                    for (Swagger_ImportLibrary_Version_New.Library_File lib_file : lib_help.library_files){
+                        for (Swagger_C_Program_Version_Update.User_File user_file : code_file.user_files){
 
-                    for (Swagger_C_Program_Version_Update.User_File user_file : code_file.user_files){
+                            if (!library_files.contains(lib_file)) library_files.add(lib_file);
 
-                        if (lib_file.file_name.equals(user_file.file_name))break;
-                        if (!library_files.contains(lib_file)) library_files.add(lib_file);
-
+                            if (lib_file.file_name.equals(user_file.file_name)){
+                                if (library_files.contains(lib_file)) library_files.remove(lib_file);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -330,7 +340,7 @@ public class Model_VersionObject extends Model {
 
         ObjectNode includes = Json.newObject();
 
-        for(Swagger_C_Program_Version_New.Library_File file_lib : library_files){
+        for(Swagger_ImportLibrary_Version_New.Library_File file_lib : library_files){
             includes.put(file_lib.file_name , file_lib.content);
         }
 

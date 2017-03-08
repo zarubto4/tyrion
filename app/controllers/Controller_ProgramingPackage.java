@@ -1926,13 +1926,10 @@ public class Controller_ProgramingPackage extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfBlock_New help = form.get();
 
-            if(Model_TypeOfBlock.find.where().isNull("project").eq("name",help.name).findUnique() != null)
-                return GlobalResult.result_BadRequest("Type of Block with this name already exists, type a new one.");
-
             // Vytvoření objektu
             Model_TypeOfBlock typeOfBlock = new Model_TypeOfBlock();
             typeOfBlock.description = help.description;
-            typeOfBlock.name                = help.name;
+            typeOfBlock.name        = help.name;
 
             // Nejedná se o privátní Typ Bločku
             if(help.project_id != null){
@@ -1945,6 +1942,9 @@ public class Controller_ProgramingPackage extends Controller {
                 // Úprava objektu
                 typeOfBlock.project = project;
 
+            }else {
+                if(Model_TypeOfBlock.get_publicByName(help.name) != null)
+                    return GlobalResult.result_BadRequest("Type of Block with this name already exists, type a new one.");
             }
 
             // Kontrola oprávnění těsně před uložením podle standardu
@@ -1990,7 +1990,7 @@ public class Controller_ProgramingPackage extends Controller {
         try {
 
             // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.find.byId(type_of_block_id);
+            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
             // Kontrola oprávnění
@@ -2047,7 +2047,7 @@ public class Controller_ProgramingPackage extends Controller {
             Swagger_TypeOfBlock_New help = form.get();
 
             // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.find.byId(type_of_block_id);
+            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
             // Kontrola oprávnění
@@ -2104,7 +2104,7 @@ public class Controller_ProgramingPackage extends Controller {
         try{
 
             // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.find.byId(type_of_block_id);
+            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
             if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
             // Kontrola oprávnění
@@ -2139,8 +2139,7 @@ public class Controller_ProgramingPackage extends Controller {
         try {
 
             // Získání seznamu
-            List<Model_TypeOfBlock> typeOfBlocks = Model_TypeOfBlock.find.where().isNull("project").findList();
-            typeOfBlocks.addAll( Model_TypeOfBlock.find.where().eq("project.participants.person.id", Controller_Security.getPerson().id ).findList() );
+            List<Model_TypeOfBlock> typeOfBlocks = Model_TypeOfBlock.get_all();
 
             // Kontrola oprávnění
             for(Model_TypeOfBlock typeOfBlock :typeOfBlocks ) if(! typeOfBlock.read_permission())  return GlobalResult.forbidden_Permission();
@@ -2262,12 +2261,13 @@ public class Controller_ProgramingPackage extends Controller {
            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
            Swagger_BlockoBlock_New help = form.get();
 
-           if(Model_BlockoBlock.find.where().isNull("type_of_block.project").eq("name", help.name).findUnique()!= null)
-               return GlobalResult.result_BadRequest("BlockoBlock with this name already exists, type a new one.");
-
            // Kontrola objektu
-           Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.find.byId( help.type_of_block_id);
+           Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId( help.type_of_block_id);
            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
+
+           if (typeOfBlock.project == null && Model_BlockoBlock.get_publicByName(help.name) != null){
+               return GlobalResult.result_BadRequest("BlockoBlock with this name already exists, type a new one.");
+           }
 
            // Vytvoření objektu
            Model_BlockoBlock blockoBlock = new Model_BlockoBlock();
@@ -2284,14 +2284,14 @@ public class Controller_ProgramingPackage extends Controller {
            blockoBlock.save();
 
            // Získání šablony
-           Model_BlockoBlockVersion scheme = Model_BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+           Model_BlockoBlockVersion scheme = Model_BlockoBlockVersion.get_scheme();
 
            // Kontrola objektu
            if(scheme == null) return GlobalResult.created( Json.toJson(blockoBlock) );
 
            // Vytvoření objektu první verze
            Model_BlockoBlockVersion blockoBlockVersion = new Model_BlockoBlockVersion();
-           blockoBlockVersion.version_name = "0.0.1";
+           blockoBlockVersion.version_name = "0.0.0";
            blockoBlockVersion.version_description = "This is a first version of block.";
            blockoBlockVersion.approval_state = Approval_state.approved;
            blockoBlockVersion.design_json = scheme.design_json;
@@ -2349,7 +2349,7 @@ public class Controller_ProgramingPackage extends Controller {
                 Swagger_BlockoBlock_New help = form.get();
 
                 // Kontrola objektu
-                Model_BlockoBlock blockoBlock = Model_BlockoBlock.find.byId(blocko_block_id);
+                Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
                 if (blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
                 // Kontrola oprávnění
@@ -2360,7 +2360,7 @@ public class Controller_ProgramingPackage extends Controller {
                 blockoBlock.name        = help.name;
 
                 // Kontrola objektu
-                Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.find.byId(  help.type_of_block_id);
+                Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(  help.type_of_block_id);
                 if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
 
                 // Úprava objektu
@@ -2405,7 +2405,7 @@ public class Controller_ProgramingPackage extends Controller {
     public Result blockoBlockVersion_get(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
                 // Kontrola objektu
-                Model_BlockoBlockVersion blocko_version = Model_BlockoBlockVersion.find.byId(blocko_block_version_id);
+                Model_BlockoBlockVersion blocko_version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
                 if(blocko_version == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
                 // Kontrola oprávnění
@@ -2446,7 +2446,7 @@ public class Controller_ProgramingPackage extends Controller {
     public Result blockoBlock_get(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
             // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.find.byId(blocko_block_id);
+            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
             // Kontrola oprávnění
@@ -2543,7 +2543,7 @@ public class Controller_ProgramingPackage extends Controller {
         try {
 
             // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.find.byId(blocko_block_id);
+            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
             // Kontrola oprávnění
@@ -2584,7 +2584,7 @@ public class Controller_ProgramingPackage extends Controller {
         try {
 
             // Kontrola objektu
-            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.find.byId(blocko_block_version_id);
+            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
             if(version == null) return GlobalResult.notFoundObject("BlockoBlockVersion blocko_block_version_id not found");
 
             // Kontrola oprávnění
@@ -2648,7 +2648,7 @@ public class Controller_ProgramingPackage extends Controller {
             if(help.version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.find.byId(blocko_block_id);
+            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.notFoundObject("blockoBlock not found");
 
             // Vytvoření objektu
@@ -2721,7 +2721,7 @@ public class Controller_ProgramingPackage extends Controller {
             if(help.version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.find.byId(blocko_block_version_id);
+            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
             if(version == null) return GlobalResult.notFoundObject("blocko_block_version_id not found");
 
             // Úprava objektu
@@ -2777,7 +2777,7 @@ public class Controller_ProgramingPackage extends Controller {
         try {
 
             // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.find.byId(blocko_block_id);
+            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
             if (blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
             // Kontrola oprávnění
@@ -2818,7 +2818,7 @@ public class Controller_ProgramingPackage extends Controller {
         try{
 
             // Kontrola objektu
-            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.find.byId(blocko_block_version_id);
+            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
             if(blockoBlockVersion == null) return GlobalResult.notFoundObject("BlockoBlockVersion blocko_block_version_id not found");
 
             // Kontrola orávnění
@@ -2850,7 +2850,7 @@ public class Controller_ProgramingPackage extends Controller {
             Swagger_BlockoObject_Approval help = form.get();
 
             // Kontrola objektu
-            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.find.byId(help.object_id);
+            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_byId(help.object_id);
             if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
 
             // Změna stavu schválení
@@ -2894,11 +2894,11 @@ public class Controller_ProgramingPackage extends Controller {
             if(help.blocko_block_version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockoBlockVersion privateBlockoBlockVersion = Model_BlockoBlockVersion.find.byId(help.object_id);
+            Model_BlockoBlockVersion privateBlockoBlockVersion = Model_BlockoBlockVersion.get_byId(help.object_id);
             if (privateBlockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
 
             // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
+            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(help.blocko_block_type_of_block_id);
             if (typeOfBlock == null) return GlobalResult.notFoundObject("type_of_block not found");
 
             // Vytvoření objektu
@@ -2960,7 +2960,7 @@ public class Controller_ProgramingPackage extends Controller {
             Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
 
             // Kontrola objektu
-            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_scheme();
             if (blockoBlockVersion == null) return GlobalResult.notFoundObject("Scheme not found");
 
             // Úprava objektu
@@ -2983,7 +2983,7 @@ public class Controller_ProgramingPackage extends Controller {
         try {
 
             // Kontrola objektu
-            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_scheme();
             if (blockoBlockVersion == null) return GlobalResult.notFoundObject("Scheme not found");
 
             // Vytvoření výsledku
@@ -3003,7 +3003,7 @@ public class Controller_ProgramingPackage extends Controller {
 
         try {
 
-            Model_BlockoBlockVersion scheme = Model_BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            Model_BlockoBlockVersion scheme = Model_BlockoBlockVersion.get_scheme();
             if (scheme != null) return GlobalResult.result_BadRequest("Scheme already exists.");
 
             // Získání JSON

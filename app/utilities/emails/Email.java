@@ -52,6 +52,10 @@ public class Email {
 
         try {
             MandrillMessageStatus[] messageStatusReports = mandrillApi.messages().sendTemplate("byzance-transactional", null ,message, false);
+            logger.info("Email:: send():: status:" + messageStatusReports[0].getStatus());
+            if (messageStatusReports[0].getRejectReason() != null){
+                logger.info("Email:: send():: reject_reason:" + messageStatusReports[0].getRejectReason());
+            }
         } catch (IOException e){
 
             logger.error("EmailTool:: send():: IOException", e);

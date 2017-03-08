@@ -74,7 +74,8 @@ public class Model_BlockoBlock extends Model {
         return list;
     }
 
-    @Transient @JsonIgnore public Swagger_Blocko_Block_Short_Detail get_blocko_block_short_detail(){
+    @Transient @JsonIgnore
+    public Swagger_Blocko_Block_Short_Detail get_blocko_block_short_detail(){
 
         Swagger_Blocko_Block_Short_Detail help = new Swagger_Blocko_Block_Short_Detail();
         help.id = id;
@@ -95,9 +96,21 @@ public class Model_BlockoBlock extends Model {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_BlockoBlock.find.byId(this.id) == null) break;
+            if (get_byId(this.id) == null) break;
         }
         super.save();
+    }
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_BlockoBlock get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_BlockoBlock get_publicByName(String name) {
+        return find.where().isNull("type_of_block.project").eq("name", name).findUnique();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -124,7 +137,7 @@ public class Model_BlockoBlock extends Model {
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_BlockoBlock> find = new Finder<>(Model_BlockoBlock.class);
+    private static Model.Finder<String,Model_BlockoBlock> find = new Finder<>(Model_BlockoBlock.class);
 
 
 }

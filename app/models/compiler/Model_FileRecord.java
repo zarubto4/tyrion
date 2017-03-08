@@ -138,7 +138,7 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_Version(File file, String file_name, String file_path, Model_VersionObject version_object) throws Exception{
 
-        logger.debug("Azure load: "+ file_path + version_object.get_path() + "/" + file_name);
+        logger.debug("Azure upload: "+ file_path + version_object.get_path() + "/" + file_name);
 
 
         int slash = file_path.indexOf("/");
@@ -171,7 +171,7 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_File(File file, String file_name, String file_path) throws Exception{
 
-        logger.debug("Azure load: "+ file_path);
+        logger.debug("Azure upload: "+ file_path);
 
         String container_name = file_path.substring(0,file_path.indexOf("/"));
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);

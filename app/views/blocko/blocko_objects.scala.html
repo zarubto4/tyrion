@@ -1,5 +1,5 @@
-@import models.blocko.{Model_BlockoBlockVersion, Model_TypeOfBlock}
-@import utilities.enums.Approval_state
+@import models.blocko.Model_BlockoBlockVersion
+@import models.blocko.Model_TypeOfBlock
 
 <section class="content-header">
   <h1> Blocko object approving </h1>
@@ -32,7 +32,7 @@
             <label style="color: #2e6da4">Type of Block:</label>
             <select style="display: block" name="blocko_block_type_of_block_id" id="blocko_block_type_of_block_id">
               <option selected disabled >Please choose type of block</option>
-              @for(typeOfBlock <- Model_TypeOfBlock.find.where().isNull("project").findList()) {
+              @for(typeOfBlock <- Model_TypeOfBlock.get_public()) {
                 <option value="@typeOfBlock.id">@typeOfBlock.name</option>
               }
             </select>
@@ -121,7 +121,7 @@
                     <label style="color: #2e6da4">Type of Block:</label>
                     <select style="display: block" id="approve_blocko_block_type_of_block_id">
                         <option selected disabled >Please choose type of block</option>
-                        @for(typeOfBlock <- Model_TypeOfBlock.find.where().isNull("project").findList()) {
+                        @for(typeOfBlock <- Model_TypeOfBlock.get_public()) {
                             <option value="@typeOfBlock.id">@typeOfBlock.name</option>
                         }
                     </select>
@@ -176,7 +176,7 @@
                             <th>Edit</th>
                             <th>Decision</th>
                         </tr>
-                        @for(blockoBlockVersion <- Model_BlockoBlockVersion.find.where().eq("approval_state",Approval_state.pending).findList()) {
+                        @for(blockoBlockVersion <- Model_BlockoBlockVersion.get_pending()) {
                             <tr>
                                 <td>@blockoBlockVersion.blocko_block.name</td>
                                 <td>@blockoBlockVersion.blocko_block.description</td>

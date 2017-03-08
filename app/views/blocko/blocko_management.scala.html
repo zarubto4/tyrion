@@ -1,4 +1,5 @@
-@import models.blocko.{Model_BlockoBlockVersion, Model_TypeOfBlock}
+@import models.blocko.Model_BlockoBlockVersion
+@import models.blocko.Model_TypeOfBlock
 @import utilities.Server
 
 
@@ -159,7 +160,7 @@
           <label>Type of Block</label>
           <select style="display: block;" name="type_of_block_id">
             <option id="current_type_of_block" selected value=""></option>
-          @for(typeOfBlock <- Model_TypeOfBlock.find.where().isNull("project").findList()) {
+          @for(typeOfBlock <- Model_TypeOfBlock.get_public()) {
             <option value="@typeOfBlock.id">@typeOfBlock.name</option>
           }
           </select>
@@ -268,7 +269,7 @@
           <table id="allTypesOfBlocks" class="table table-bordered">
             <thead><tr><th>Types of Block</th></tr></thead>
             <tbody>
-            @for(typeOfBlock <- Model_TypeOfBlock.find.where().isNull("project").findList()) {
+            @for(typeOfBlock <- Model_TypeOfBlock.get_public()) {
               <tr>
                 <td><button class="btn btn-block btn-info" type="button" onclick="openTypeOfBlock('@typeOfBlock.id')">@typeOfBlock.name</button></td>
               </tr>
@@ -334,7 +335,7 @@
             <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteBlockoBlockVersion(document.getElementById('version_info_id').textContent)"><i class="fa fa-times"></i></button>
             <button class="btn btn-xs btn-info disabled" disabled type="button" onclick="$('#editBlockoBlockVersionModal').css('display','block'); $('#editBlockoBlockVersionButton').val(document.getElementById('version_info_id').textContent);  $('#edit_blocko_version_name').val(document.getElementById('blocko_version_name').value); $('#edit_blocko_version_description').val(document.getElementById('blocko_version_description').value);"><i class="fa fa-edit"></i></button>
           </div>
-          @if(Model_BlockoBlockVersion.find.where().eq("version_name", "version_scheme").findUnique() == null){
+          @if(Model_BlockoBlockVersion.get_scheme() == null){
             <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" data-toggle="modal" data-target="#newVersionSchemeModal">Create scheme</button>
           }else {
             <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="showVersionScheme()">Version scheme</button>
