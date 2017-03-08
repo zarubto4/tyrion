@@ -328,9 +328,9 @@ POST            /library/version/upload_example/:version_id                     
 DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_removeExample(example_id)
 
 #Actualization
-GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_CompilationLibraries.board_get_for_fat_upload(project_id)
+GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_CompilationLibraries.board_get_for_fast_upload(project_id)
 PUT             /c_program/version/upload                                       @controllers.Controller_CompilationLibraries.uploadCompilationToBoard()
-#POST            /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
+#POST            /admin_binary/:instance_id/:board_id/:build_id/:command        @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
 #Processor
 POST            /processor                                                      @controllers.Controller_CompilationLibraries.processor_create()

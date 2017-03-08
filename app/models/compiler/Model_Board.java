@@ -23,6 +23,7 @@ import play.libs.Json;
 import utilities.enums.*;
 import utilities.hardware_updater.Actualization_procedure;
 import utilities.hardware_updater.Master_Updater;
+import utilities.swagger.documentationClass.Swagger_Board_for_fast_upload_detail;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
@@ -287,10 +288,23 @@ public class Model_Board extends Model {
         swagger_board_short_detail.update_permission = update_permission();
 
 
-
-
         return swagger_board_short_detail;
 
+    }
+
+    @Transient @JsonIgnore public Swagger_Board_for_fast_upload_detail get_short_board_for_fast_upload(){
+
+        Swagger_Board_for_fast_upload_detail board_for_fast_upload_detail = new Swagger_Board_for_fast_upload_detail();
+        board_for_fast_upload_detail.id = id;
+        board_for_fast_upload_detail.personal_description = personal_description;
+
+        if(virtual_instance_under_project != null) board_for_fast_upload_detail.collision = Board_update_collision.NO_COLLISION;
+        else                                             board_for_fast_upload_detail.collision = Board_update_collision.ALREADY_IN_INSTANCE;
+
+        board_for_fast_upload_detail.type_of_board_id = type_of_board_id();
+        board_for_fast_upload_detail.type_of_board_name = type_of_board_name();
+
+        return board_for_fast_upload_detail;
     }
 
     @Transient @JsonIgnore public Model_HomerServer get_connected_server(){

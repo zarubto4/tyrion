@@ -2812,14 +2812,14 @@ public class Controller_CompilationLibraries extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_Short_Detail.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_for_fast_upload_detail.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_get_for_fat_upload(@ApiParam(required = true)  String project_id){
+    public Result board_get_for_fast_upload(@ApiParam(required = true)  String project_id){
         try {
 
             // Kotrola objektu
@@ -2832,13 +2832,13 @@ public class Controller_CompilationLibraries extends Controller {
             // Vyhledání seznamu desek na které lze nahrát firmware - okamžitě
             List<Model_Board> boards = Model_Board.find.where().eq("type_of_board.connectible_to_internet", true).isNotNull("virtual_instance_under_project").findList();
 
-            List<Swagger_Board_Short_Detail> list = new ArrayList<>();
+            List<Swagger_Board_for_fast_upload_detail> list = new ArrayList<>();
 
             for(Model_Board board : boards ){
-
-                list.add(board.get_short_board());
-
+                list.add(board.get_short_board_for_fast_upload());
             }
+
+            
 
             // Vrácení upravenéh objektu
             return GlobalResult.result_ok(Json.toJson(list));

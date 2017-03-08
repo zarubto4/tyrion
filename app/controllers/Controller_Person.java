@@ -777,13 +777,19 @@ public class Controller_Person extends Controller {
     public  Result person_validateProperty(){
         try{
 
+            logger.debug("Příchoí JSON PRO OVĚŘENÍ JE "+  request().body().toString());
+
             final Form<Swagger_Entity_Validation_In> form = Form.form(Swagger_Entity_Validation_In.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Entity_Validation_In help = form.get();
 
+            logger.debug("Příchoí JSON PRO OVĚŘENÍ JE " + help.toString());
+
             Swagger_Entity_Validation_Out validation = new Swagger_Entity_Validation_Out();
 
+
             switch (help.key){
+
                 case "mail":{
                     if(Model_Person.find.where().ieq("mail", help.value).findUnique() == null ){
 
@@ -797,7 +803,7 @@ public class Controller_Person extends Controller {
                     break;
                 }
 
-                case "nick_name":{
+                case "nick_name" : {
                     if(Model_Person.find.where().ieq("nick_name", help.value).findUnique() == null ){
 
                         validation.valid = true;
@@ -809,18 +815,31 @@ public class Controller_Person extends Controller {
 
                     break;
                 }
+
                 case "vat_number":{
 
                     try {
 
-                        F.Promise<WSResponse> responsePromise = ws.url("https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
+                        logger.debug("Controller_Person:: person_validateProperty:: Link:: " + "http://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
+
+
+                        F.Promise<WSResponse> responsePromise = ws.url("http://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
                                 .setHeader("Accept", "application/json")
-                                .setRequestTimeout(10000)
                                 .get();
 
-                        JsonNode body = responsePromise.get(10000).asJson();
 
-                        logger.debug("Controller_Person:: person_validateProperty:: vat_number:: " + body.toString());
+
+                        WSResponse wsResponse = responsePromise.get(10000);
+
+                        logger.debug("Controller_Person:: person_validateProperty:: http request:: " + wsResponse.getStatus());
+
+
+                        logger.debug("Controller_Person:: person_validateProperty:: vat_number:: " + wsResponse.getBody());
+
+
+
+
+                        JsonNode body = responsePromise.get(1000).asJson();
 
                         if (body.get("valid").asBoolean()) {
 
