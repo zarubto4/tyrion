@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.project.b_program.instnace.Model_HomerInstance;
 import play.libs.Json;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageBoard;
 import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageInstance;
 
 import javax.validation.Valid;
@@ -20,6 +21,38 @@ public class WS_Get_summary_information  extends WS_AbstractMessageInstance {
     public List<WS_Yoda_connected> masterDeviceList = new ArrayList<>();
 
 
+    // Pomocné metody
+    @JsonIgnore
+    public boolean deviceIsOnline(String device_id){
+
+        WS_AbstractMessageBoard device = getDeviceStats(device_id);
+
+        if (device == null ) {
+            return false;
+        }
+
+        return device.online_status;
+    }
+
+    @JsonIgnore
+    public WS_AbstractMessageBoard getDeviceStats(String device_id){
+
+        for(WS_Yoda_connected yoda : masterDeviceList){
+
+            if(yoda.deviceId.equals(device_id)) return yoda;
+
+            for(WS_Device_connected device : yoda.deviceList){
+                if(device.deviceId.equals(device_id)) return device;
+            }
+        }
+
+        return null;
+    }
+
+
+ //-----------------------------------------------------------------------------------
+
+
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance) {
 
@@ -31,4 +64,5 @@ public class WS_Get_summary_information  extends WS_AbstractMessageInstance {
 
         return request;
     }
+
 }

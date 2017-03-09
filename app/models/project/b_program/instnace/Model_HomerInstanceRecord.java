@@ -16,6 +16,7 @@ import utilities.enums.Actual_procedure_State;
 import utilities.enums.C_ProgramUpdater_State;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.Master_Updater;
+import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -115,20 +116,21 @@ public class Model_HomerInstanceRecord extends Model {
 
 
     @JsonIgnore @Transient
-    public void create_actualization_request() {
+    public void create_actualization_request(WS_Get_summary_information summary_information ) {
         try {
 
-            logger.error("Model_HomerInstanceRecord:: create_actualization_request byl zavolán na Instance Record:: "  + id);
+            logger.debug("Model_HomerInstanceRecord:: create_actualization_request byl zavolán na Instance Record:: "  + id);
 
-            if(!getProcedures().isEmpty() || version_object.b_program_hw_groups.isEmpty()) return;
 
             // Projedu seznam HW - podle skupin instancí jak jsou poskládané podle Yody
             for(Model_BProgramHwGroup group : version_object.b_program_hw_groups) {
 
                 List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
 
+                //1) Nejdříve Main Boad
+                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Main Board Id " + group.main_board_pair.board.id);
+                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Kontroluji a popřípadě maži předchozí procedury na overwritten");
 
-                // Nejdříve Main Boad
                 List<Model_CProgramUpdatePlan> old_plans_main_board = Model_CProgramUpdatePlan.find.where()
                         .eq("firmware_type", Firmware_type.FIRMWARE.name())
                         .eq("board.id", group.main_board_pair.board.id).where()
@@ -141,7 +143,7 @@ public class Model_HomerInstanceRecord extends Model {
                         .endJunction()
                         .findList();
 
-                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board that must be override: " + old_plans_main_board.size());
+                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
 
                 for (Model_CProgramUpdatePlan old_plan : old_plans_main_board) {
                     logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Old plan for override under B_Program in Cloud: " + old_plan.id);
@@ -152,22 +154,41 @@ public class Model_HomerInstanceRecord extends Model {
 
                 // ID C_programu aktuálního != požadovanému -> zařadím do aktualizační procedury!
                 if(group.main_board_pair.board.actual_c_program_version == null || !group.main_board_pair.c_program_version_id().equals(group.main_board_pair.board.actual_c_program_version.id)){
-                    // Zrušit aktualizace předchozích!!
-                    // TODO
-
                     Model_CProgramUpdatePlan plan_master_board = new Model_CProgramUpdatePlan();
                     plan_master_board.board = group.main_board_pair.board;
                     plan_master_board.firmware_type = Firmware_type.FIRMWARE;
-                    plan_master_board.state = C_ProgramUpdater_State.not_start_yet;
+
+                    // Zkontroluji jestli je online a co má za verzi - Protože bych mohl proceduru hned označit za vykonanou
+                    if(summary_information.deviceIsOnline(group.main_board_pair.board.id)){
+                      logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Board Id:: " + group.main_board_pair.board.id + " is online");
+                      logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Required Firmware id:: " + group.main_board_pair.c_program_version.c_compilation.firmware_build_id);
+                      logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Actual Firmware id:: "   + summary_information.getDeviceStats(group.main_board_pair.board.id ).firmware_build_id);
+
+                      // Verze se rovnají a není třeba proceduru na Homerovi vykonávat - označí se jako hotoá
+                      if(group.main_board_pair.c_program_version.c_compilation.firmware_build_id.equals(summary_information.getDeviceStats(group.main_board_pair.board.id ).firmware_build_id)){
+
+                          logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Firmware is already on board! - C_ProgramUpdater_State is Complete");
+                          plan_master_board.state = C_ProgramUpdater_State.complete;
+
+                      }else {
+                          plan_master_board.state = C_ProgramUpdater_State.not_start_yet;
+                      }
+
+                    }else {
+                        logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
+                        plan_master_board.state = C_ProgramUpdater_State.not_start_yet;
+                    }
+
                     plan_master_board.c_program_version_for_update = group.main_board_pair.c_program_version;
                     updates.add(plan_master_board);
                 }
 
 
 
-                // Device
+                //2) Device
                 for (Model_BPair pair : group.device_board_pairs) {
 
+                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Device Board Id " + pair.board_id() + " Under Master Device " + group.main_board_pair.board.id);
                     // Tady chci zrušit všechny předchozí procedury vázající se na seznam příchozího hardwaru!
 
                     //1. Najdu předchozí procedury, které nejsou nějakým způsobem ukončené

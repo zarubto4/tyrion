@@ -668,8 +668,11 @@ public class Model_HomerInstance extends Model {
 
             }
 
-            actual_instance.create_actualization_request();
-            cloud_homer_server.get_server_webSocket_connection().check_update_for_hw_under_homer_ws.add_new_Procedure(this.get_summary_information());
+            WS_Get_summary_information summary_information = this.get_summary_information();
+
+            actual_instance.create_actualization_request(summary_information);
+
+            cloud_homer_server.get_server_webSocket_connection().check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
 
             WS_Update_instance_to_actual_instance_record response = new WS_Update_instance_to_actual_instance_record();
             response.status = "success";
@@ -891,7 +894,9 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  boolean online_state(){
+    @JsonIgnore @Transient public boolean online_state(){
+
+        // TODO - Stav!!!!!
         return this.cloud_homer_server.is_instance_exist(this.blocko_instance_name);
     }
 
