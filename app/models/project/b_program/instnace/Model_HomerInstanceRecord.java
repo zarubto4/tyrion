@@ -160,7 +160,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                     // Zkontroluji jestli je online a co má za verzi - Protože bych mohl proceduru hned označit za vykonanou
                     if(summary_information.deviceIsOnline(group.main_board_pair.board.id)){
-                      logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Board Id:: " + group.main_board_pair.board.id + " is online");
+                      logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Main Board Id:: " + group.main_board_pair.board.id + " is online");
                       logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Required Firmware id:: " + group.main_board_pair.c_program_version.c_compilation.firmware_build_id);
                       logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Actual Firmware id:: "   + summary_information.getDeviceStats(group.main_board_pair.board.id ).firmware_build_id);
 
@@ -223,7 +223,27 @@ public class Model_HomerInstanceRecord extends Model {
                         Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
                         plan.board = pair.board;
                         plan.firmware_type = Firmware_type.FIRMWARE;
-                        plan.state = C_ProgramUpdater_State.not_start_yet;
+
+                        if(summary_information.deviceIsOnline(group.main_board_pair.board.id)){
+                            logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Device Board Id:: " + pair.board.id + " is online");
+                            logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Required Firmware id:: " + pair.c_program_version.c_compilation.firmware_build_id);
+                            logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Actual Firmware id:: "   + summary_information.getDeviceStats(pair.board.id ).firmware_build_id);
+
+                            // Verze se rovnají a není třeba proceduru na Homerovi vykonávat - označí se jako hotoá
+                            if(group.main_board_pair.c_program_version.c_compilation.firmware_build_id.equals(summary_information.getDeviceStats(group.main_board_pair.board.id ).firmware_build_id)){
+
+                                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Firmware is already on board! - C_ProgramUpdater_State is Complete");
+                                plan.state = C_ProgramUpdater_State.complete;
+
+                            }else {
+                                plan.state = C_ProgramUpdater_State.not_start_yet;
+                            }
+
+                        }else {
+                            logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
+                            plan.state = C_ProgramUpdater_State.not_start_yet;
+                        }
+                        
                         plan.c_program_version_for_update = pair.c_program_version;
                         updates.add(plan);
 
