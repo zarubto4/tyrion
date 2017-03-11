@@ -2961,11 +2961,9 @@ public class Controller_CompilationLibraries extends Controller {
 
             // If contains confirms
             if(help.active != null){
-                Boolean isActive = help.active.equals("true");
-                query.where().eq("isActive", isActive);
+                query.where().eq("is_active", help.active.equals("true"));
             }
 
-            // From date
             if(help.projects != null){
                 query.where().in("projects.id", help.projects);
             }
@@ -2976,6 +2974,16 @@ public class Controller_CompilationLibraries extends Controller {
 
             if(help.processors != null){
                 query.where().in("type_of_board.processor.id", help.processors);
+            }
+
+            // From date
+            if(help.start_time != null){
+                query.where().ge("date_of_create", help.start_time);
+            }
+
+            // To date
+            if(help.end_time != null){
+                query.where().le("date_of_create", help.end_time);
             }
 
             // Vytvářím seznam podle stránky

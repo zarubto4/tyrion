@@ -32,7 +32,7 @@ public class Model_ChangePropertyToken extends Model {
 
         while (true) { // I need Unique Value
             this.change_property_token = UUID.randomUUID().toString();
-            if (Model_TypeOfWidget.find.byId(this.change_property_token) == null) break;
+            if (find.byId(this.change_property_token) == null) break;
         }
         super.save();
     }
@@ -49,6 +49,6 @@ public class Model_ChangePropertyToken extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String,Model_ChangePropertyToken> find = new Finder<>(Model_ChangePropertyToken.class);
+    public static Model.Finder<String,Model_ChangePropertyToken> find = new Finder<>(Model_ChangePropertyToken.class);
 
 }

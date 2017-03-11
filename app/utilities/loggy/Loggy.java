@@ -93,7 +93,7 @@ public class Loggy{
 
 
         error(id, summary, description);
-        return GlobalResult.result_InternalServerError(summary);
+        return GlobalResult.result_InternalServerError(summary + "\n" + exception.getMessage());
     }
 
     public static Result result_internalServerError(String problem, Http.Request request) {
