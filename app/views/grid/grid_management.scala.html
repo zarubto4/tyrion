@@ -160,7 +160,7 @@
           <label>Type of Widget</label>
           <select style="display: block;" name="type_of_widget_id">
             <option id="current_type_of_widget" selected value=""></option>
-          @for(typeOfWidget <- Model_TypeOfWidget.find.where().isNull("project").findList()) {
+          @for(typeOfWidget <- Model_TypeOfWidget.get_public()) {
             <option value="@typeOfWidget.id">@typeOfWidget.name</option>
           }
           </select>
@@ -269,7 +269,7 @@
           <table id="allTypesOfWidgets" class="table table-bordered">
             <thead><tr><th>Types of Widget</th></tr></thead>
             <tbody>
-            @for(typeOfWidget <- Model_TypeOfWidget.find.where().isNull("project").findList()) {
+            @for(typeOfWidget <- Model_TypeOfWidget.get_public()) {
               <tr>
                 <td><button class="btn btn-block btn-info" type="button" onclick="openTypeOfWidget('@typeOfWidget.id')">@typeOfWidget.name</button></td>
               </tr>
@@ -335,7 +335,7 @@
             <button class="btn btn-xs btn-danger disabled" disabled type="button" onclick="deleteGridWidgetVersion(document.getElementById('version_info_id').textContent)"><i class="fa fa-times"></i></button>
             <button class="btn btn-xs btn-info disabled" disabled type="button" ata-toggle="modal" data-target="#editGridWidgetVersionModal" onclick="$('#editGridWidgetVersionButton').val(document.getElementById('version_info_id').textContent);  $('#edit_grid_version_name').val(document.getElementById('grid_version_name').value); $('#edit_grid_version_description').val(document.getElementById('grid_version_description').value);"><i class="fa fa-edit"></i></button>
           </div>
-          @if(Model_GridWidgetVersion.find.where().eq("version_name", "version_scheme").findUnique() == null){
+          @if(Model_GridWidgetVersion.get_scheme() == null){
             <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" data-toggle="modal" data-target="#newVersionSchemeModal">Create scheme</button>
           }else {
             <button id="schemeButton" class="btn btn-primary btn-xs pull-right" style="margin-right: 10px;" type="button" onclick="showVersionScheme()">Version scheme</button>

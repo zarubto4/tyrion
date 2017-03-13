@@ -33,7 +33,7 @@
             <label style="color: #2e6da4">Type of Widget:</label>
             <select style="display: block" name="grid_widget_type_of_widget_id" id="grid_widget_type_of_widget_id">
               <option selected disabled >Please choose type of block</option>
-              @for(typeOfWidget <- Model_TypeOfWidget.find.where().isNull("project").findList()) {
+              @for(typeOfWidget <- Model_TypeOfWidget.get_public()) {
                 <option value="@typeOfWidget.id">@typeOfWidget.name</option>
               }
             </select>
@@ -122,7 +122,7 @@
                     <label style="color: #2e6da4">Type of Widget:</label>
                     <select style="display: block" id="approve_grid_widget_type_of_widget_id">
                         <option selected disabled >Please choose type of block</option>
-                        @for(typeOfWidget <- Model_TypeOfWidget.find.where().isNull("project").findList()) {
+                        @for(typeOfWidget <- Model_TypeOfWidget.get_public()) {
                             <option value="@typeOfWidget.id">@typeOfWidget.name</option>
                         }
                     </select>
@@ -177,7 +177,7 @@
                             <th>Edit</th>
                             <th>Decision</th>
                         </tr>
-                        @for(gridWidgetVersion <- Model_GridWidgetVersion.find.where().eq("approval_state",Approval_state.pending).findList()) {
+                        @for(gridWidgetVersion <- Model_GridWidgetVersion.get_pending()) {
                             <tr>
                                 <td>@gridWidgetVersion.grid_widget.name</td>
                                 <td>@gridWidgetVersion.grid_widget.description</td>

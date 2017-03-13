@@ -13,6 +13,7 @@ import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -51,7 +52,7 @@ public class Model_BlockoBlockVersion extends Model {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_BlockoBlockVersion.find.byId(this.id) == null) break;
+            if (get_byId(this.id) == null) break;
         }
         super.save();
     }
@@ -68,6 +69,23 @@ public class Model_BlockoBlockVersion extends Model {
         help.author = this.author.get_short_person();
 
         return help;
+    }
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_BlockoBlockVersion get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_BlockoBlockVersion get_scheme() {
+        return find.where().eq("version_name", "version_scheme").findUnique();
+    }
+
+    @JsonIgnore
+    public static List<Model_BlockoBlockVersion> get_pending() {
+        return find.where().eq("approval_state",Approval_state.pending).findList();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -91,6 +109,6 @@ public class Model_BlockoBlockVersion extends Model {
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_BlockoBlockVersion> find = new Finder<>(Model_BlockoBlockVersion.class);
+    private static Model.Finder<String,Model_BlockoBlockVersion> find = new Finder<>(Model_BlockoBlockVersion.class);
 
 }

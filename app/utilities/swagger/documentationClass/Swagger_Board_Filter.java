@@ -3,6 +3,7 @@ package utilities.swagger.documentationClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Date;
 import java.util.List;
 
 @ApiModel(description = "Json Model for Filtering Boards",
@@ -24,6 +25,12 @@ public class Swagger_Board_Filter {
 
     @ApiModelProperty(value = "List of processor.id", required = false)
     public List<String> processors;
+
+    @ApiModelProperty(value = "Unix in millis - date_of_create - start_time", required = false)
+    public Date start_time;
+
+    @ApiModelProperty(value = "Unix in millis - date_of_create - end_time", required = false)
+    public Date end_time;
 
     @ApiModelProperty(value = "page_number from 1 to N ", required = false)
     public int page_number;

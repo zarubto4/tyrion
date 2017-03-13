@@ -1,13 +1,6 @@
-@import models.compiler.Model_Processor
+@import models.compiler.Model_TypeOfBoard
 @import models.compiler.Model_Producer
-@import models.compiler.Model_TypeOfBoard
-@import utilities.Server
-@import models.compiler.Model_BootLoader
-@import models.compiler.Model_Board
-@import models.compiler.Model_TypeOfBoard
-@import models.compiler.Model_VersionObject
-@import com.avaje.ebean.Expr
-@import utilities.enums.Compile_Status
+@import models.compiler.Model_Processor
 
 <section class="content-header">
     <h1> Board Summary </h1>
@@ -19,44 +12,98 @@
 </section>
 
 <section class="content">
+
+    <div id="newBoardModal" style="display: none;" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Create new Board</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="newBoardForm">
+
+                        <div class="form-group">
+                            <label>Processor ID</label>
+                            <input type="text" class="form-control" name="hardware_unique_id">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Type of Board</label>
+                            <div class="form-group">
+                                <select name="type_of_board_id" class="form-control">
+                                @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
+                                    <option value="@type_of_board.id" name="type_of_board_id"> @type_of_board.name </option>
+                                }
+                                </select>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBoardModal').css('display','none')">Close</button>
+                    <button id="newCProgramButton" value="" class="btn btn-primary" type="button" onclick="createNewBoard()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Bootlooder summary</h3>
+                    <h3 class="box-title">Filter settings</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <td><button class="btn btn-block btn-info" type="button" onclick="showNewBoard()">New Board</button></td>
+                            <button class="btn btn-block btn-info" type="button" onclick="showNewBoard()">New Board</button>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
                 <div class="box-body">
                     <form id="boardFilterForm">
 
-                        <table id="filterTable" class="table table-bordered">
+                        <table id="filterTable" class="table table-condensed no-padding no-margin">
 
                             <tr>
-                                <th>Type of Board</th>
-                                <th>Dates</th>
-                                <th>Parameters</th>
+                                <th class="col-md-2">Type of Board</th>
+                                <th class="col-md-2">Producer</th>
+                                <th class="col-md-2">Processor</th>
+                                <th class="col-md-1">Date (D-M-YY)</th>
+                                <th class="col-md-1">Parameters</th>
                                 <th>By Something</th>
                             </tr>
 
                             <tr>
                                 <td>
-                                    <div class="form-group">
-                                        <label>Select Multiple values</label>
-                                        <select multiple name="type_of_board_ids[]" class="form-control">
-                                            @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
-                                                <option value="@type_of_board.id"> @type_of_board.name </option>
-                                            }
+                                    <div>
+                                        <select id="selectTypeOfBoard" name="type_of_board_ids[]" class="form-control" multiple>
+                                        @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
+                                            <option value="@type_of_board.id"> @type_of_board.name </option>
+                                        }
                                         </select>
                                     </div>
                                 </td>
-
+                                <td>
+                                    <div>
+                                        <select id="selectProducer" name="producers[]" class="form-control" multiple>
+                                        @for(producer <- Model_Producer.find.all() ) {
+                                            <option value="@producer.id"> @producer.name </option>
+                                        }
+                                        </select>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <select id="selectProcessor" name="processors[]" class="form-control" multiple>
+                                        @for(processor <- Model_Processor.find.all() ) {
+                                            <option value="@processor.id"> @processor.processor_name </option>
+                                        }
+                                        </select>
+                                    </div>
+                                </td>
                                 <td>
                                     <div class="input-group">
-                                        <button type="button" class="btn btn-default pull-right" id="daterange-btn">
+                                        <button name="date" type="button" class="btn btn-default pull-right" id="daterange-btn">
                                             <span>
                                                 <i class="fa fa-calendar"></i>Date
                                             </span>
@@ -68,21 +115,9 @@
                                 <td>
                                     <div class="checkbox">
                                         <label>
-                                            <input type="checkbox"> TODO 1
+                                            <input id="active" type="checkbox"> Active
                                         </label>
                                     </div>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox"> TODO 2
-                                        </label>
-                                    </div>
-
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox"> TODO 3
-                                        </label>
-                                    </div>
-
                                 </td>
 
                                 <td></td>
@@ -91,20 +126,16 @@
                     </form>
                 </div>
                 <div class="box-footer">
-                    <button class="btn btn-block btn-warning" type="button" onclick="show_filterValues()">Filter</button>
+                    <button class="btn pull-right btn-warning" type="button" onclick="show_filterValues()">Filter</button>
                 </div>
             </div>
         </div>
     </div>
-</section>
-
-
-<section class="content">
     <div class="row">
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Bootlooder summary</h3>
+                    <h3 class="box-title">Board summary</h3>
                 </div>
                 <div class="box-body">
 
@@ -114,50 +145,49 @@
 
                 </div>
                 <div class="box-footer">
-        </div>
+                    <div class="dataTables_paginate paging_simple_numbers" id="all_table_paginate" style="text-align: center;">
+                        <ul class="pagination" id="pagination" style="margin: 10px;">
+                            <li class="paginate_button previous disabled" id="all_table_previous">
+                                Zero pages!
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 
-<div id="newBoardModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Create new Board</h4>
-            </div>
-            <div class="modal-body">
-                <form id="newBoardForm">
-
-                    <div class="form-group">
-                        <label>Processor ID</label>
-                        <input type="text" class="form-control" name="hardware_unique_id">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Type of Board</label>
-                        <div class="form-group">
-                            <select name="type_of_board_id" class="form-control">
-                            @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
-                                <option value="@type_of_board.id" name="type_of_board_id"> @type_of_board.name </option>
-                            }
-                            </select>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBoardModal').css('display','none')">Close</button>
-                <button id="newCProgramButton" value="" class="btn btn-primary" type="button" onclick="createNewBoard()">Create</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 <script>
+
+    var start_time;
+    var end_time;
+    var active = "indeterminate";
+    var page = 1;
+
+    $("#active").prop("indeterminate", true);
+
+    $("#active").click(function () {
+
+        switch (active){
+            case 'indeterminate' : {
+                active = "true";
+                $("#active").prop("indeterminate", false).prop("checked", "checked");
+                break;
+            }
+            case 'true' : {
+                active = "false";
+                $("#active").prop("indeterminate", false).removeAttr("checked");
+                break;
+            }
+            case 'false' : {
+                active = "indeterminate";
+                $("#active").prop("indeterminate", true).removeAttr("checked");
+                break;
+            }
+        }
+    });
 
      function showNewBoard(){
          $("#newBoardModal").css("display","block");
@@ -207,10 +237,77 @@
          })
      }
 
+     function makePagination(pages) {
+
+         var content = "";
+
+         if (page == 1){
+             content += "<li class='paginate_button previous disabled' id='all_table_next'><a>Previous</a></li>";
+         } else {
+             content += "<li class='paginate_button previous' id='all_table_next'><a onclick=\"pageCall('previous',null)\">Previous</a></li>";
+         }
+
+         $.each(pages, function (k, v) {
+             if (v == page){
+                 content += "<li class='paginate_button active'><a onclick=\"pageCall('normal'," + v + ")\">" + v + "</a></li>";
+             } else {
+                 content += "<li class='paginate_button'><a onclick=\"pageCall('normal'," + v + ")\">" + v + "</a></li>";
+             }
+         });
+
+         if (page == pages.length){
+             content += "<li class='paginate_button next disabled' id='all_table_next'><a>Next</a></li>";
+         } else {
+             content += "<li class='paginate_button next' id='all_table_next'><a onclick=\"pageCall('next',null)\">Next</a></li>";
+         }
+
+         $("#pagination").html(content);
+
+         if (page == 1){
+             $("#all_table_previous").prop("disabled", "disabled").addClass("disabled");
+         }
+
+         if (page == (pages.length + 1)){
+             $("#all_table_next").prop("disabled", "disabled").addClass("disabled");
+         }
+     }
+
+     function pageCall(type, number) {
+         switch (type){
+             case 'normal':{
+                 page = number;
+                 break;
+             }
+             case 'previous':{
+                 page--;
+                 break;
+             }
+             case 'next':{
+                 page++;
+                 break;
+             }
+         }
+
+         show_filterValues();
+     }
 
      function show_filterValues() {
 
-         model_data = $("#boardFilterForm").serializeObject();
+         var model_data = $("#boardFilterForm").serializeObject();
+
+         if (typeof start_time != "undefined"){
+             model_data.start_time = new Date(start_time);
+         }
+
+         if (typeof end_time != "undefined"){
+             model_data.end_time = new Date(end_time);
+         }
+
+         if (active != "indeterminate"){
+             model_data.active = active;
+         }
+
+         model_data.page_number = page;
 
          $.ajax({
 
@@ -226,6 +323,7 @@
 
              success: function(json) {
                  showBoards(json);
+                 makePagination(json.pages)
              },
 
              error: function(data) {
@@ -287,7 +385,7 @@
              }
 
              content += "<td>" + v.backup_mode +"</td>";
-             content += "<td>" + v.date_of_create +"</td>";
+             content += "<td>" + new Date(v.date_of_create).toISOString().slice(0, 19) +"</td>";
 
              if(content.main_board == true){
                  content += "<td>" + v.wifi_mac_address + "</td>";
@@ -312,58 +410,49 @@
 
   $(function () {
 
-      //Date range picker
-      $('#reservation').daterangepicker();
-      //Date range picker with time picker
-      $('#reservationtime').daterangepicker({timePicker: true, timePickerIncrement: 30, format: 'MM/DD/YYYY h:mm A'});
+      $('#selectTypeOfBoard').select2({
+          placeholder: "Select multiple",
+          allowClear: false
+      });
+
+      $('#selectProducer').select2({
+          placeholder: "Select multiple",
+          allowClear: false
+      });
+
+      $('#selectProcessor').select2({
+          placeholder: "Select multiple",
+          allowClear: false
+      });
+
       //Date range as a button
       $('#daterange-btn').daterangepicker(
               {
                   ranges: {
-                      'Today': [moment(), moment()],
-                      'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                      'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                      'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                      'Today': [moment().startOf('day'), moment().endOf('day')],
+                      'Till Today': [moment().subtract(40, 'years').startOf('day'), moment().endOf('day')],
+                      'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+                      'Last 7 Days': [moment().subtract(6, 'days').startOf('day'), moment().endOf('day')],
+                      'Last 30 Days': [moment().subtract(29, 'days').startOf('day'), moment().endOf('day')],
                       'This Month': [moment().startOf('month'), moment().endOf('month')],
                       'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                   },
-                  startDate: moment().subtract(29, 'days'),
-                  endDate: moment()
+                  startDate: moment().subtract(40, 'years').startOf('day'),
+                  endDate: moment().endOf('day')
               },
               function (start, end) {
-                  $('#daterange-btn span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+                  start_time = new Date(start.toString()).getTime();
+                  end_time = new Date(end.toString()).getTime();
+                  console.log(start_time + " - " + end_time);
+                  if (start.format('D-M-YY') == end.format('D-M-YY')){
+                      $('#daterange-btn span').html(start.format('D-M-YY'));
+                  } else {
+                      $('#daterange-btn span').html(start.format('D-M-YY') + ' - ' + end.format('D-M-YY'));
+                  }
+
               }
       );
 
-      //Date picker
-      $('#datepicker').datepicker({
-          autoclose: true
-      });
-
-      //iCheck for checkbox and radio inputs
-      $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
-          checkboxClass: 'icheckbox_minimal-blue',
-          radioClass: 'iradio_minimal-blue'
-      });
-      //Red color scheme for iCheck
-      $('input[type="checkbox"].minimal-red, input[type="radio"].minimal-red').iCheck({
-          checkboxClass: 'icheckbox_minimal-red',
-          radioClass: 'iradio_minimal-red'
-      });
-      //Flat red color scheme for iCheck
-      $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
-          checkboxClass: 'icheckbox_flat-green',
-          radioClass: 'iradio_flat-green'
-      });
-
-      //Colorpicker
-      $(".my-colorpicker1").colorpicker();
-      //color picker with addon
-      $(".my-colorpicker2").colorpicker();
-
-      //Timepicker
-      $(".timepicker").timepicker({
-          showInputs: false
-      });
+      show_filterValues();
   });
 </script>

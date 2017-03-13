@@ -44,7 +44,7 @@ public class Model_TypeOfBlock extends Model {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_TypeOfBlock.find.byId(this.id) == null) break;
+            if (get_byId(this.id) == null) break;
         }
         super.save();
     }
@@ -63,6 +63,32 @@ public class Model_TypeOfBlock extends Model {
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
         return help;
+    }
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_TypeOfBlock get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static List<Model_TypeOfBlock> get_all() {
+
+        List<Model_TypeOfBlock> typeOfBlocks = find.where().isNull("project").findList();
+        typeOfBlocks.addAll( find.where().eq("project.participants.person.id", Controller_Security.getPerson().id ).findList() );
+
+        return typeOfBlocks;
+    }
+
+    @JsonIgnore
+    public static Model_TypeOfBlock get_publicByName(String name) {
+        return find.where().isNull("project").eq("name",name).findUnique();
+    }
+
+    @JsonIgnore
+    public static List<Model_TypeOfBlock> get_public() {
+        return find.where().isNull("project").findList();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -88,6 +114,6 @@ public class Model_TypeOfBlock extends Model {
     public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_TypeOfBlock> find = new Finder<>(Model_TypeOfBlock.class);
+    private static Model.Finder<String,Model_TypeOfBlock> find = new Finder<>(Model_TypeOfBlock.class);
 
 }

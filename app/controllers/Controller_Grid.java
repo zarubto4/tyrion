@@ -1016,7 +1016,7 @@ public class Controller_Grid extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfWidget_New help = form.get();
 
-            if(Model_TypeOfWidget.find.where().isNull("project").eq("name",help.name).findUnique() != null)
+            if(Model_TypeOfWidget.get_publicByName(help.name) != null)
                 return GlobalResult.result_BadRequest("Type of Widget with this name already exists, type a new one.");
 
             // Vytvoření objektu
@@ -1081,7 +1081,7 @@ public class Controller_Grid extends Controller {
         try {
 
             // Kontrola objektu
-            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.find.byId(type_of_widget_id);
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
             if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
 
             // Kontrola oprávnění
@@ -1139,7 +1139,7 @@ public class Controller_Grid extends Controller {
             Swagger_TypeOfWidget_New help = form.get();
 
             // Kontrola objektu
-            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.find.byId(type_of_widget_id);
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
             if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
 
             // Kontrola oprávnění
@@ -1197,7 +1197,7 @@ public class Controller_Grid extends Controller {
         try{
 
             // Kontrola objektu
-            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.find.byId(type_of_widget_id);
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
             if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
 
             // Kontrola oprávnění
@@ -1233,8 +1233,7 @@ public class Controller_Grid extends Controller {
         try {
 
             // Získání seznamu
-            List<Model_TypeOfWidget> typeOfWidgets = Model_TypeOfWidget.find.where().isNull("project").findList();
-            typeOfWidgets.addAll( Model_TypeOfWidget.find.where().eq("project.participants.person.id", Controller_Security.getPerson().id ).findList() );
+            List<Model_TypeOfWidget> typeOfWidgets = Model_TypeOfWidget.get_all();
 
             // Kontrola oprávnění
             for(Model_TypeOfWidget typeOfWidget :typeOfWidgets ) if(! typeOfWidget.read_permission())  return GlobalResult.forbidden_Permission();
@@ -1359,11 +1358,11 @@ public class Controller_Grid extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_GridWidget_New help = form.get();
 
-            if(Model_GridWidget.find.where().isNull("type_of_widget.project").eq("name", help.name).findUnique()!= null)
+            if(Model_GridWidget.get_publicByName(help.name)!= null)
                 return GlobalResult.result_BadRequest("GridWidget with this name already exists, type a new one.");
 
             // Kontrola objektu
-            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.find.byId( help.type_of_widget_id);
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId( help.type_of_widget_id);
             if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
 
             // Vytvoření objektu
@@ -1381,7 +1380,7 @@ public class Controller_Grid extends Controller {
             gridWidget.save();
 
             // Získání šablony
-            Model_GridWidgetVersion scheme = Model_GridWidgetVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            Model_GridWidgetVersion scheme = Model_GridWidgetVersion.get_scheme();
 
             // Kontrola objektu
             if(scheme == null) return GlobalResult.created( Json.toJson(gridWidget) );
@@ -1447,7 +1446,7 @@ public class Controller_Grid extends Controller {
             Swagger_GridWidget_New help = form.get();
 
             // Kontrola objektu
-            Model_GridWidget gridWidget = Model_GridWidget.find.byId(grid_widget_id);
+            Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
             if (gridWidget == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
@@ -1458,7 +1457,7 @@ public class Controller_Grid extends Controller {
             gridWidget.name                = help.name;
 
             // Kontrola objektu
-            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.find.byId(  help.type_of_widget_id);
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(  help.type_of_widget_id);
             if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
 
             // Úprava objektu
@@ -1504,14 +1503,14 @@ public class Controller_Grid extends Controller {
     public Result gridWidgetVersion_get(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
         try {
             // Kontrola objektu
-            Model_GridWidgetVersion blocko_version = Model_GridWidgetVersion.find.byId(grid_widget_version_id);
-            if(blocko_version == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
+            Model_GridWidgetVersion version = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
+            if(version == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
-            if (! blocko_version.read_permission() ) return GlobalResult.forbidden_Permission("You have no permission to get that");
+            if (!version.read_permission() ) return GlobalResult.forbidden_Permission("You have no permission to get that");
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blocko_version));
+            return GlobalResult.result_ok(Json.toJson(version));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -1546,7 +1545,7 @@ public class Controller_Grid extends Controller {
     public Result gridWidget_get(@ApiParam(value = "grid_widget_id String path",   required = true) String grid_widget_id){
         try {
             // Kontrola objektu
-            Model_GridWidget gridWidget = Model_GridWidget.find.byId(grid_widget_id);
+            Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
             if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
@@ -1645,7 +1644,7 @@ public class Controller_Grid extends Controller {
         try {
 
             // Kontrola objektu
-            Model_GridWidget gridWidget = Model_GridWidget.find.byId(grid_widget_id);
+            Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
             if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
@@ -1687,7 +1686,7 @@ public class Controller_Grid extends Controller {
         try {
 
             // Kontrola objektu
-            Model_GridWidgetVersion version = Model_GridWidgetVersion.find.byId(grid_widget_version_id);
+            Model_GridWidgetVersion version = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
             if(version == null) return GlobalResult.notFoundObject("GridWidgetVersion grid_widget_version_id not found");
 
             // Kontrola oprávnění
@@ -1752,7 +1751,7 @@ public class Controller_Grid extends Controller {
             if(help.version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_GridWidget gridWidget = Model_GridWidget.find.byId(grid_widget_id);
+            Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
             if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget not found");
 
             // Vytvoření objektu
@@ -1826,7 +1825,7 @@ public class Controller_Grid extends Controller {
             if(help.version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_GridWidgetVersion version = Model_GridWidgetVersion.find.byId(grid_widget_version_id);
+            Model_GridWidgetVersion version = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
             if(version == null) return GlobalResult.notFoundObject("grid_widget_version_id not found");
 
             // Úprava objektu
@@ -1883,7 +1882,7 @@ public class Controller_Grid extends Controller {
         try {
 
             // Kontrola objektu
-            Model_GridWidget gridWidget = Model_GridWidget.find.byId(grid_widget_id);
+            Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
             if (gridWidget == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
@@ -1925,7 +1924,7 @@ public class Controller_Grid extends Controller {
         try{
 
             // Kontrola objektu
-            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.find.byId(grid_widget_version_id);
+            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
             if(gridWidgetVersion == null) return GlobalResult.notFoundObject("GridWidgetVersion grid_widget_version_id not found");
 
             // Kontrola orávnění
@@ -1957,7 +1956,7 @@ public class Controller_Grid extends Controller {
             Swagger_GridObject_Approval help = form.get();
 
             // Kontrola objektu
-            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.find.byId(help.object_id);
+            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_byId(help.object_id);
             if (gridWidgetVersion == null) return GlobalResult.notFoundObject("grid_widget_version not found");
 
             // Změna stavu schválení
@@ -2002,11 +2001,11 @@ public class Controller_Grid extends Controller {
             if(help.grid_widget_version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_GridWidgetVersion privateGridWidgetVersion = Model_GridWidgetVersion.find.byId(help.object_id);
+            Model_GridWidgetVersion privateGridWidgetVersion = Model_GridWidgetVersion.get_byId(help.object_id);
             if (privateGridWidgetVersion == null) return GlobalResult.notFoundObject("grid_widget_version not found");
 
             // Kontrola objektu
-            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.find.byId(help.grid_widget_type_of_widget_id);
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(help.grid_widget_type_of_widget_id);
             if (typeOfWidget == null) return GlobalResult.notFoundObject("type_of_widget not found");
 
             // Vytvoření objektu
@@ -2069,7 +2068,7 @@ public class Controller_Grid extends Controller {
             Swagger_GridWidgetVersion_Scheme_Edit help = form.get();
 
             // Kontrola objektu
-            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_scheme();
             if (gridWidgetVersion == null) return GlobalResult.notFoundObject("Scheme not found");
 
             // Úprava objektu
@@ -2092,7 +2091,7 @@ public class Controller_Grid extends Controller {
         try {
 
             // Kontrola objektu
-            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_scheme();
             if (gridWidgetVersion == null) return GlobalResult.notFoundObject("Scheme not found");
 
             // Vytvoření výsledku
@@ -2112,7 +2111,7 @@ public class Controller_Grid extends Controller {
 
         try {
 
-            Model_GridWidgetVersion scheme = Model_GridWidgetVersion.find.where().eq("version_name", "version_scheme").findUnique();
+            Model_GridWidgetVersion scheme = Model_GridWidgetVersion.get_scheme();
             if (scheme != null) return GlobalResult.result_BadRequest("Scheme already exists.");
 
             // Získání JSON

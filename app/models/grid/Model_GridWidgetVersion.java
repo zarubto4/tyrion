@@ -13,6 +13,7 @@ import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -70,6 +71,23 @@ public class Model_GridWidgetVersion extends Model{
         return help;
     }
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_GridWidgetVersion get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_GridWidgetVersion get_scheme() {
+        return find.where().eq("version_name", "version_scheme").findUnique();
+    }
+
+    @JsonIgnore
+    public static List<Model_GridWidgetVersion> get_pending() {
+        return find.where().eq("approval_state",Approval_state.pending).findList();
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -91,6 +109,6 @@ public class Model_GridWidgetVersion extends Model{
     public enum permissions{GridWidgetVersion_create, GridWidgetVersion_read, GridWidgetVersion_edit, GridWidgetVersion_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_GridWidgetVersion> find = new Finder<>(Model_GridWidgetVersion.class);
+    private static Model.Finder<String,Model_GridWidgetVersion> find = new Finder<>(Model_GridWidgetVersion.class);
 
 }
