@@ -545,7 +545,7 @@ public class Controller_Finance extends Controller {
 
             logger.debug("Financial_Controller:: product_create:: On Tariff:: " +  tariff.tariff_name);
 
-            if(Model_Product.find.where().eq("product_individual_name", help.product_individual_name).eq("payment_details.person.id", Controller_Security.getPerson().id).findRowCount() > 0) return GlobalResult.result_BadRequest("You cannot use same Product name twice!");
+            if(Model_Product.get_byNameAndOwner(help.product_individual_name) != null) return GlobalResult.result_BadRequest("You cannot use same Product name twice!");
 
 
             Model_Product product = new Model_Product();
@@ -770,7 +770,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            List<Model_Product> products = Model_Product.find.where().eq("payment_details.person.id", Controller_Security.getPerson().id).findList();
+            List<Model_Product> products = Model_Product.get_byOwner(Controller_Security.getPerson().id);
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(products));
@@ -798,7 +798,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            Model_Product product = Model_Product.find.byId(product_id);
+            Model_Product product = Model_Product.get_byId(product_id);
             if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
 
             // Kontorla oprávnění
@@ -834,7 +834,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            Model_Product product = Model_Product.find.byId(product_id);
+            Model_Product product = Model_Product.get_byId(product_id);
             if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
 
             // Kontorla oprávnění
@@ -861,7 +861,7 @@ public class Controller_Finance extends Controller {
             // URČENO POUZE PRO ADMINISTRÁTORY S OPRÁVNĚNÍM MAZAT!
 
             // Kontrola objektu
-            Model_Product product = Model_Product.find.byId(product_id);
+            Model_Product product = Model_Product.get_byId(product_id);
             if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
 
             // Kontorla oprávnění
@@ -976,7 +976,7 @@ public class Controller_Finance extends Controller {
             Swagger_Tariff_User_Edit help = form.get();
 
             // Kontrola Objektu
-            Model_Product product = Model_Product.find.byId(product_id);
+            Model_Product product = Model_Product.get_byId(product_id);
             if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
 
             // Oprávnění operace
@@ -1115,7 +1115,7 @@ public class Controller_Finance extends Controller {
             // Slouží k získání možností pod jaký produkt lze vytvořit nějaký projekt
 
             // Vyhledání všech objektů, které se týkají přihlášeného uživatele
-            List<Model_Product> list = Model_Product.find.where().eq("active",true).eq("payment_details.person.id", Controller_Security.getPerson().id).select("id").select("product_individual_name").select("general_tariff.tariff_name").findList();
+            List<Model_Product> list = Model_Product.get_applicableByOwner(Controller_Security.getPerson().id);
 
             List<Swagged_Applicable_Product> products = new ArrayList<>();
 
@@ -1154,7 +1154,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            Model_Product product = Model_Product.find.byId(product_id);
+            Model_Product product = Model_Product.get_byId(product_id);
             if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
 
             // Oprávnění operace

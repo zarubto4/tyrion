@@ -147,7 +147,7 @@ public class Model_Product extends Model {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_Product.find.byId(this.id) == null) break;
+            if (get_byId(this.id) == null) break;
         }
 
         super.save();
@@ -213,6 +213,32 @@ public class Model_Product extends Model {
 
     public static Model.Finder<String,Model_Product> find = new Finder<>(Model_Product.class);
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Product get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_Product get_byNameAndOwner(String name) {
+        return find.where().eq("product_individual_name", name).eq("payment_details.person.id", Controller_Security.getPerson().id).findUnique();
+    }
+
+    @JsonIgnore
+    public static Model_Product get_byInvoice(String invoice_id) {
+        return find.where().eq("invoices.id", invoice_id).findUnique();
+    }
+
+    @JsonIgnore
+    public static List<Model_Product> get_byOwner(String owner_id) {
+        return find.where().eq("payment_details.person.id", owner_id).findList();
+    }
+
+    @JsonIgnore
+    public static List<Model_Product> get_applicableByOwner(String owner_id) {
+        return find.where().eq("active",true).eq("payment_details.person.id", owner_id).select("id").select("product_individual_name").select("general_tariff.tariff_name").findList();
+    }
 }
 
 

@@ -71,23 +71,6 @@ public class Model_BlockoBlockVersion extends Model {
         return help;
     }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public static Model_BlockoBlockVersion get_byId(String id) {
-        return find.byId(id);
-    }
-
-    @JsonIgnore
-    public static Model_BlockoBlockVersion get_scheme() {
-        return find.where().eq("version_name", "version_scheme").findUnique();
-    }
-
-    @JsonIgnore
-    public static List<Model_BlockoBlockVersion> get_pending() {
-        return find.where().eq("approval_state",Approval_state.pending).findList();
-    }
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -109,6 +92,23 @@ public class Model_BlockoBlockVersion extends Model {
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
+
     private static Model.Finder<String,Model_BlockoBlockVersion> find = new Finder<>(Model_BlockoBlockVersion.class);
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_BlockoBlockVersion get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_BlockoBlockVersion get_scheme() {
+        return find.where().eq("version_name", "version_scheme").findUnique();
+    }
+
+    @JsonIgnore
+    public static List<Model_BlockoBlockVersion> get_pending() {
+        return find.where().eq("approval_state",Approval_state.pending).findList();
+    }
 }

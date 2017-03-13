@@ -51,32 +51,6 @@ public class Model_TypeOfWidget extends Model{
         super.save();
     }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public static Model_TypeOfWidget get_byId(String id) {
-        return find.byId(id);
-    }
-
-    @JsonIgnore
-    public static List<Model_TypeOfWidget> get_all() {
-
-        List<Model_TypeOfWidget> typeOfWidgets = find.where().isNull("project").findList();
-        typeOfWidgets.addAll( find.where().eq("project.participants.person.id", Controller_Security.getPerson().id ).findList() );
-
-        return typeOfWidgets;
-    }
-
-    @JsonIgnore
-    public static Model_TypeOfWidget get_publicByName(String name) {
-        return find.where().isNull("project").eq("name",name).findUnique();
-    }
-
-    @JsonIgnore
-    public static List<Model_TypeOfWidget> get_public() {
-        return find.where().isNull("project").findList();
-    }
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
@@ -116,5 +90,32 @@ public class Model_TypeOfWidget extends Model{
     public enum permissions{TypeOfWidget_create, TypeOfWidget_read, TypeOfWidget_edit , TypeOfWidget_delete, TypeOfWidget_update}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     private static Model.Finder<String,Model_TypeOfWidget> find = new Finder<>(Model_TypeOfWidget.class);
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_TypeOfWidget get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static List<Model_TypeOfWidget> get_all() {
+
+        List<Model_TypeOfWidget> typeOfWidgets = find.where().isNull("project").findList();
+        typeOfWidgets.addAll( find.where().eq("project.participants.person.id", Controller_Security.getPerson().id ).findList() );
+
+        return typeOfWidgets;
+    }
+
+    @JsonIgnore
+    public static Model_TypeOfWidget get_publicByName(String name) {
+        return find.where().isNull("project").eq("name",name).findUnique();
+    }
+
+    @JsonIgnore
+    public static List<Model_TypeOfWidget> get_public() {
+        return find.where().isNull("project").findList();
+    }
 }

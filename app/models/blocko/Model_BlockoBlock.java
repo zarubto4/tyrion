@@ -101,18 +101,6 @@ public class Model_BlockoBlock extends Model {
         super.save();
     }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public static Model_BlockoBlock get_byId(String id) {
-        return find.byId(id);
-    }
-
-    @JsonIgnore
-    public static Model_BlockoBlock get_publicByName(String name) {
-        return find.where().isNull("type_of_block.project").eq("name", name).findUnique();
-    }
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -137,7 +125,18 @@ public class Model_BlockoBlock extends Model {
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
+
     private static Model.Finder<String,Model_BlockoBlock> find = new Finder<>(Model_BlockoBlock.class);
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public static Model_BlockoBlock get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_BlockoBlock get_publicByName(String name) {
+        return find.where().isNull("type_of_block.project").eq("name", name).findUnique();
+    }
 }
