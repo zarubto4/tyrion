@@ -200,23 +200,29 @@ public class Controller_WebSocket extends Controller {
             if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
             if(compiler_cloud_servers.containsKey(unique_identificator)) {
-                logger.warn("Controller_WebSocket:: compilator_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
 
-                WS_CompilerServer ws_compilerServer = (WS_CompilerServer) compiler_cloud_servers.get(unique_identificator);
-                WS_Ping_compilation_server result = ws_compilerServer.server.ping();
-                if(!result.status.equals("success")){
-                    logger.warn("Controller_WebSocket:: compilator_server_connection:: Ping Failed - Tyrion remove previous connection");
-                    if(homer_servers.containsKey(unique_identificator)){
-                        homer_servers.get(unique_identificator).onClose();
+                try {
+                    logger.warn("Controller_WebSocket:: compilator_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
+
+                    WS_CompilerServer ws_compilerServer = (WS_CompilerServer) compiler_cloud_servers.get(unique_identificator);
+                    WS_Ping_compilation_server result = ws_compilerServer.server.ping();
+                    if (!result.status.equals("success")) {
+                        logger.warn("Controller_WebSocket:: compilator_server_connection:: Ping Failed - Tyrion remove previous connection");
+                        if (homer_servers.containsKey(unique_identificator)) {
+                            homer_servers.get(unique_identificator).onClose();
+                        }
+                        return null;
                     }
-                    return null;
+
+                    logger.warn("Controller_WebSocket:: compilator_server_connection:: Server is already connected and working!! Its prohibited connected to Tyrion with same unique name");
+                    return WebSocket.reject(forbidden("Server side error - already connected"));
+
+                }catch (NullPointerException e){
+
+                    logger.warn("Controller_WebSocket:: compilator_server_connection:: Ping Failed - Tyrion remove previous connection");
+                    if(homer_servers.containsKey(unique_identificator)) homer_servers.get(unique_identificator).onClose();
+
                 }
-
-                logger.warn("Controller_WebSocket:: compilator_server_connection:: Server is already connected and working!! Its prohibited connected to Tyrion with same unique name");
-                return WebSocket.reject(forbidden("Server side error - already connected"));
-
-
-
             }
 
             // Inicializuji Websocket pro Homera

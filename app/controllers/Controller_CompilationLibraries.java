@@ -2880,7 +2880,7 @@ public class Controller_CompilationLibraries extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_update(@ApiParam(required = true)  String board_id){
+    public Result board_update_description(@ApiParam(required = true)  String board_id){
         try {
 
             // Zpracování Json
@@ -2900,6 +2900,82 @@ public class Controller_CompilationLibraries extends Controller {
 
             // Uprava objektu v databázi
             board.update();
+
+            // Vrácení upravenéh objektu
+            return GlobalResult.result_ok(Json.toJson(board));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    @ApiOperation(value = "update Board - update Backup settiong",
+            tags = { "Board"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Board.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Board_edit"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Backup_settings",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_update_backup(@ApiParam(required = true)  String board_id){
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Board_Backup_settings> form = Form.form(Swagger_Board_Backup_settings.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Board_Backup_settings help = form.get();
+
+            // Kotrola objektu
+            Model_Board board = Model_Board.find.byId(board_id);
+            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+
+            // Kontrola oprávnění
+            if(!board.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            // Uprava desky
+            if(help.autobackup) {
+
+                board.actual_backup_c_program_version = null;
+                board.backup_mode = true;
+                board.update();
+
+            }else {
+
+                Model_VersionObject actual_backup_c_program_version = Model_VersionObject.find.byId(help.c_program_version_id);
+                if(actual_backup_c_program_version == null) return GlobalResult.notFoundObject("actual_backup_c_program_version id not found");
+
+                if(actual_backup_c_program_version.c_program == null) return GlobalResult.notFoundObject("Version is not for C Program");
+                if(actual_backup_c_program_version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) return GlobalResult.notFoundObject("Version is not compiled or restored!");
+
+                board.actual_backup_c_program_version = actual_backup_c_program_version;
+                board.update();
+            }
 
             // Vrácení upravenéh objektu
             return GlobalResult.result_ok(Json.toJson(board));

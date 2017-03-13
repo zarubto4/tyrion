@@ -1,6 +1,5 @@
 package models.project.b_program.instnace;
 
-import com.avaje.ebean.Expr;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,13 +18,15 @@ import models.project.b_program.Model_BPair;
 import models.project.b_program.Model_BProgram;
 import models.project.b_program.Model_BProgramHwGroup;
 import models.project.b_program.servers.Model_HomerServer;
-import models.project.c_program.actualization.Model_CProgramUpdatePlan;
+import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
 import models.project.m_program.Model_GridTerminal;
 import play.data.Form;
 import play.i18n.Lang;
-import utilities.enums.*;
+import utilities.enums.Notification_importance;
+import utilities.enums.Notification_level;
+import utilities.enums.Type_of_command;
 import utilities.hardware_updater.Master_Updater;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
@@ -33,7 +34,6 @@ import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.WebSCType;
-import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageBoard;
 import utilities.web_socket.message_objects.homer_instance.Help_object.YodaOnlyHardwareIdList;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
@@ -86,7 +86,7 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
 
         if(actual_instance != null) {
-            return "ws://" + cloud_homer_server.server_url + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+            return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
         }
 
         return null;
@@ -654,6 +654,7 @@ public class Model_HomerInstance extends Model {
 
 
             // Nahraju Blocko Program
+            logger.debug("Model_HomerInstance:: update_instance_to_actual_instance_record:: Upload Blocko Program");
             WS_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
 
             if(!result_blocko_program.status.equals("success")){
@@ -668,11 +669,28 @@ public class Model_HomerInstance extends Model {
 
             }
 
+            logger.debug("Model_HomerInstance:: update_instance_to_actual_instance_record:: Get Summary Information From Instance");
             WS_Get_summary_information summary_information = this.get_summary_information();
 
+            logger.debug("Model_HomerInstance:: update_instance_to_actual_instance_record:: Vytvářím Aktualizační procedury");
             actual_instance.create_actualization_request(summary_information);
 
-            cloud_homer_server.get_server_webSocket_connection().check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
+            logger.debug("Model_HomerInstance:: update_instance_to_actual_instance_record:: Add new Procedures");
+
+            // Z historických důvodů nepodporováno
+            // cloud_homer_server.get_server_webSocket_connection().check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
+
+
+            System.out.println("------------------------------------------");
+
+
+            actual_instance.refresh();
+            for(Model_ActualizationProcedure procedure : actual_instance.procedures) {
+                System.out.println("Procedure:: Id:: " + procedure.id + " state:: " + procedure.state);
+                Master_Updater.add_new_Procedure(procedure);
+            }
+
+
 
             WS_Update_instance_to_actual_instance_record response = new WS_Update_instance_to_actual_instance_record();
             response.status = "success";
@@ -970,75 +988,6 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-
-    @JsonIgnore @Transient public  void check_hardware(Model_Board board, WS_AbstractMessageBoard report){
-
-        if(!virtual_instance) {
-            logger.debug("Homer_Instance_Record:: check_hardware:: Found one actualization procedure on ", board.id);
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.where()
-                    .eq("board.id", board.id)
-                    .eq("actualization_procedure.homer_instance_record.id", actual_instance.id)
-                    .disjunction()
-                        .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
-                    .endJunction().findUnique();
-
-            if (plan.firmware_type == Firmware_type.FIRMWARE) {
-
-                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
-
-                // Mám shodu oproti očekávánemů
-                if (plan.c_program_version_for_update.c_compilation.firmware_build_id.equals(report.firmware_build_id)) {
-
-                    plan.state = C_ProgramUpdater_State.complete;
-                    plan.update();
-
-                } else {
-
-                    plan.state = C_ProgramUpdater_State.in_progress;
-                    plan.update();
-
-                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
-
-                }
-
-            } else if (plan.firmware_type == Firmware_type.BOOTLOADER) {
-
-                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
-
-                // Mám shodu oproti očekávánemů
-                if (plan.binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
-
-                    plan.state = C_ProgramUpdater_State.complete;
-                    plan.update();
-
-                } else {
-
-                    plan.state = C_ProgramUpdater_State.in_progress;
-                    plan.update();
-
-                    Master_Updater.add_new_Procedure(plan.actualization_procedure);
-                }
-
-            } else if (plan.firmware_type == Firmware_type.BACKUP) {
-
-                logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
-
-                plan.state = C_ProgramUpdater_State.complete;
-                plan.update();
-            }
-
-        }
-        else {
-
-            System.out.println("Virutální instanci update zatím nepodporujeme!!!");
-
-        }
-
-    }
 
     // TOKEN verification
     @JsonIgnore @Transient public  void cloud_verification_token_GRID(WS_Grid_token_verification help){

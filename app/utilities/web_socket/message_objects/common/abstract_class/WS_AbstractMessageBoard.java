@@ -18,6 +18,8 @@ public abstract class WS_AbstractMessageBoard {
     public String interface_name;
     public String state;
 
+    public boolean autobackup = false;
+
     public boolean save;
     public String short_id;
     public int count;

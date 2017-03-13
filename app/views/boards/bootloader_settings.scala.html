@@ -64,7 +64,7 @@
                             <td>@if( boot_loader.file != null ){
                                      @boot_loader.file.id
                                 }else{
-                                    <button class="btn btn-block btn-danger" type="button" onclick="uploadBootLoaderFileModal(@boot_loader.id)">Upload file</button>
+                                    <button class="btn btn-block btn-danger" type="button" onclick="uploadBootLoaderFileModal('@boot_loader.id')">Upload file</button>
                                 }
                             </td>
 
@@ -73,7 +73,7 @@
                                     <p class="lead text-green">(ITS Main)</p>
                                 }
                                 @if(boot_loader.main_type_of_board == null && boot_loader.type_of_board != null && boot_loader.file != null){
-                                    <button class="btn btn-block btn-warning" type="button" onclick="setBootLoaderAsMain(@boot_loader.id)">SET as Main</button>
+                                    <button class="btn btn-block btn-warning" type="button" onclick="setBootLoaderAsMain('@boot_loader.id')">SET as Main</button>
                                 }
                                 @if(boot_loader.file == null){
                                     <p class="text-red">-----------</p>

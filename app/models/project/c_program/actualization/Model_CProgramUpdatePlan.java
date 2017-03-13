@@ -144,7 +144,7 @@ public class Model_CProgramUpdatePlan extends Model {
     @JsonIgnore @Override
     public void save() {
 
-        this.state = C_ProgramUpdater_State.not_start_yet;
+        if(this.state == null) this.state = C_ProgramUpdater_State.not_start_yet;
         this.date_of_create = new Date();
 
         while (true) { // I need Unique Value

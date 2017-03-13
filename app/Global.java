@@ -1,5 +1,4 @@
 import controllers.Controller_WebSocket;
-import org.quartz.SchedulerException;
 import play.Application;
 import play.GlobalSettings;
 import play.mvc.Action;
@@ -102,7 +101,7 @@ public class Global extends GlobalSettings {
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
 
-        //logger.debug(request.path());
+        logger.debug(request.path());
 
         RequestCounter.count(actionMethod.getName());
 

@@ -6,6 +6,8 @@ import models.compiler.Model_Board;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import utilities.hardware_updater.Actualization_Task;
+import utilities.hardware_updater.Actualization_procedure;
+import utilities.hardware_updater.helper_objects.Target_pair;
 import utilities.independent_threads.Check_update_for_hw_under_homer_ws;
 import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.independent_threads.SynchronizeHomerServer;
@@ -225,8 +227,22 @@ public class WS_HomerServer extends WebSCType{
 
                         if(task.instance != null){
 
+                            System.out.println("Odesílám Task:: ");
 
                             WS_Update_device_firmware result = Model_Board.update_devices_firmware(task.instance, task.procedures);
+
+
+
+                            for(Actualization_procedure procedure : task.procedures){
+                                System.out.println("Procedure K updatu:: id" + procedure.actualizationProcedureId);
+
+                                for(Target_pair pair : procedure.targetPairs) {
+                                    System.out.println("Procedure K updatu:: Target id:: " + pair.targetId);
+                                }
+                            }
+
+
+
 
                             task_list.remove(task);
                         }

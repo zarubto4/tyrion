@@ -166,7 +166,6 @@ GET            /product/user_applicable                                         
 PUT            /product/details/:payment_details_id                                         @controllers.Controller_Finance.edit_payment_details(payment_details_id: Long)
 PUT            /product/general/:product_id                                                 @controllers.Controller_Finance.edit_general_product_details(product_id)
 
-
 #GoPay
 GET            /go_pay/notification_url                                                     @utilities.goPay.GoPay_Controller.call_back_Notification(id: Long)
 GET            /go_pay/return_url                                                           @utilities.goPay.GoPay_Controller.call_back_Return_Url(id: Long)
@@ -193,7 +192,6 @@ PUT            /project/shareProject/:project_id                                
 PUT            /project/unshareProject/:project_id                                          @controllers.Controller_ProgramingPackage.project_removeParticipant(project_id)
 PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.Controller_ProgramingPackage.project_addParticipant(invitation_id, decision: Boolean)
 PUT            /project/change_participant_state/:project_id                                @controllers.Controller_ProgramingPackage.project_changeParticipantStatus(project_id)
-DELETE         /project/deleteInvitation/:invitation_id                                     @controllers.Controller_ProgramingPackage.project_deleteInvitation(invitation_id)
 
 #Program
 POST           /b_program/:project_id                                                       @controllers.Controller_ProgramingPackage.new_b_Program(project_id)
@@ -211,7 +209,7 @@ DELETE         /b_program/version/:version_id                                   
 
 GET            /instance/project/:project_id                            @controllers.Controller_ProgramingPackage.get_b_program_instance_under_project(project_id)
 GET            /instance/get/:instance_id                               @controllers.Controller_ProgramingPackage.get_b_program_instance(instance_id)
-GET            /instance_record/get/:instance_record_id                     @controllers.Controller_ProgramingPackage.get_b_program_instance_record(instance_record_id)
+GET            /instance_record/get/:instance_record_id                 @controllers.Controller_ProgramingPackage.get_b_program_instance_record(instance_record_id)
 
 PUT            /instance/command/:instance_id/:target_id/:command       @controllers.Controller_ProgramingPackage.send_command_to_instance(instance_id, target_id, command)
 PUT            /instance/program/:instance_id                           @controllers.Controller_ProgramingPackage.update_blocko_code_in_instance_with_code(instance_id)
@@ -330,7 +328,7 @@ DELETE          /library/version/remove_example/:example_id                     
 #Actualization
 GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_CompilationLibraries.board_get_for_fast_upload(project_id)
 PUT             /c_program/version/upload                                       @controllers.Controller_CompilationLibraries.uploadCompilationToBoard()
-#POST            /admin_binary/:instance_id/:board_id/:build_id/:command        @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
+#POST           /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
 #Processor
 POST            /processor                                                      @controllers.Controller_CompilationLibraries.processor_create()
@@ -341,7 +339,8 @@ DELETE          /processor/:processor_id                                        
 
 #Board
 POST            /board                                                          @controllers.Controller_CompilationLibraries.board_create()
-PUT             /board/userDescription/:type_of_board_id                        @controllers.Controller_CompilationLibraries.board_update(type_of_board_id)
+PUT             /board/userDescription/:board_id                                @controllers.Controller_CompilationLibraries.board_update_description(board_id)
+PUT             /board/backup/:board_id                                         @controllers.Controller_CompilationLibraries.board_update_backup(board_id)
 
 PUT             /board/filter                                                   @controllers.Controller_CompilationLibraries.board_getByFilter()
 GET             /board/check/:hash_for_adding                                   @controllers.Controller_CompilationLibraries.board_check(hash_for_adding)

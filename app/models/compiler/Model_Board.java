@@ -28,6 +28,7 @@ import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
 import utilities.web_socket.WS_HomerServer;
+import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageBoard;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Is_device_connected;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Unregistred_device_connected;
@@ -151,6 +152,15 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_id()         { return       project == null ? null : project.id; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_name()       { return       project == null ? null : project.name; }
 
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_version_name()     { return  actual_boot_loader == null ? null : actual_boot_loader.name; }
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_id()               { return  actual_boot_loader == null ? null : actual_boot_loader.id;}
+
+    @JsonProperty  @Transient @ApiModelProperty(required = false) public String avaible_bootloader_version_name()   { if(!type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return null; else  return type_of_board.main_boot_loader.name; }
+    @JsonProperty  @Transient @ApiModelProperty(required = false) public String avaible_bootloader_id()             { if(!type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return null; else  return type_of_board.main_boot_loader.id; }
+
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date_firmware()        { return  (c_program_update_plans == null);    }
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){ return  (type_of_board.main_boot_loader == null || actual_boot_loader == null) ? true : !this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id);}
+
     @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
 
         List<Swagger_C_Program_Update_plan_Short_Detail> plans = new ArrayList<>();
@@ -269,9 +279,6 @@ public class Model_Board extends Model {
 
     }
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date_firmware()        { return  (c_program_update_plans == null);    }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){ return  (type_of_board.main_boot_loader == null || actual_boot_loader == null) ? true : !this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id);}
-
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -298,8 +305,8 @@ public class Model_Board extends Model {
         board_for_fast_upload_detail.id = id;
         board_for_fast_upload_detail.personal_description = personal_description;
 
-        if(virtual_instance_under_project != null) board_for_fast_upload_detail.collision = Board_update_collision.NO_COLLISION;
-        else                                             board_for_fast_upload_detail.collision = Board_update_collision.ALREADY_IN_INSTANCE;
+        if(this.get_instance().virtual_instance) board_for_fast_upload_detail.collision = Board_update_collision.NO_COLLISION;
+        else                                     board_for_fast_upload_detail.collision = Board_update_collision.ALREADY_IN_INSTANCE;
 
         board_for_fast_upload_detail.type_of_board_id = type_of_board_id();
         board_for_fast_upload_detail.type_of_board_name = type_of_board_name();
@@ -403,7 +410,7 @@ public class Model_Board extends Model {
             logger.debug("Board:: master_device_Connected:: Board connected to Blocko cloud_blocko_server:: ", help.deviceId);
 
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
-            Model_Board.hardware_firmware_state_check(master_device, help);
+            Model_Board.hardware_firmware_state_check(server, master_device, help);
 
         }catch (Exception e){
             logger.error("Board:: master_device_Connected:: ERROR::", e);
@@ -412,6 +419,8 @@ public class Model_Board extends Model {
 
     @JsonIgnore @Transient  public static void master_device_Disconnected(WS_Yoda_disconnected help){
         try {
+
+            // TODO Chache
 
         }catch (Exception e){
             logger.error("Board:: master_device_Disconnected:: ERROR:: ", e);
@@ -424,18 +433,12 @@ public class Model_Board extends Model {
             Model_Board device = Model_Board.find.byId(help.deviceId);
 
             if(device == null){
-                logger.warn("WARN! WARN! WARN! WARN!");
-                logger.warn("Unregistered Hardware connected to Blocko cloud_blocko_server - " + server.identifikator);
-                logger.warn("Unregistered Hardware: " +  help.deviceId);
-                logger.warn("WARN! WARN! WARN! WARN!");
+                logger.error("Board:: master_device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
+                logger.error("Board:: master_device_Connected:: Unregistered Hardware:: ",  help.deviceId);
                 return;
             }
 
-            if(!device.is_active ){
-                device.is_active = true;
-                device.update();
-            }
-
+            Model_Board.hardware_firmware_state_check( server, device, help);
             // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
            //  Model_Board.hardware_connected(device, help);
 
@@ -446,7 +449,9 @@ public class Model_Board extends Model {
 
     @JsonIgnore @Transient  public static void device_Disconnected(WS_Device_disconnected help){
         try {
-            //TODO
+
+            //TODO Chache
+
         }catch (Exception e){
             logger.error("Board:: device_Disconnected:: ERROR:: ", e);
         }
@@ -533,15 +538,16 @@ public class Model_Board extends Model {
     }
 
     // Kontrola up_to_date harwaru
-    @JsonIgnore @Transient  public static void hardware_firmware_state_check(Model_Board board, WS_Yoda_connected report) {
+    @JsonIgnore @Transient  public static void hardware_firmware_state_check(WS_HomerServer server, Model_Board board, WS_AbstractMessageBoard report) {
         try {
+
             logger.debug("Model_Board:: hardware_firmware_state_check:: Summary information of connected master board: ", board.id);
 
-            System.out.println("Kontrola Yody:: ");
-            System.out.println("Kontrola Yody Id:: " + report.deviceId);
+            System.out.println("Kontrola Board:: ");
+            System.out.println("Kontrola Board Id:: " + board.id);
             System.out.println("Aktuální firmware_id dle HW:: " + report.firmware_build_id);
 
-            if (board.actual_c_program_version == null) System.out.println("Aktuální firmware_id dle DB není znám :: " + report.firmware_build_id);
+            if (board.actual_c_program_version == null) System.out.println("Aktuální firmware_id dle DB není znám - ještě není žádný vypálen :( ");
             else System.out.println("Aktuální firmware_id dle DB:: " + board.actual_c_program_version.id);
 
             if (board.actual_boot_loader == null) System.out.println("Aktuální bootlader_id dle DB není znám :: " + report.bootloader_build_id);
@@ -568,11 +574,11 @@ public class Model_Board extends Model {
                 List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where()
                         .eq("board.id", board.id)
                         .disjunction()
-                        .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                            .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                            .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                            .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                            .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                            .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
                         .endJunction().order().desc("date_of_create").findList();
 
                 if(plans.size() > 1){
@@ -587,6 +593,7 @@ public class Model_Board extends Model {
                 if (plans.get(0).firmware_type == Firmware_type.FIRMWARE) {
 
                     logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+
 
                     // Mám shodu oproti očekávánemů
                     if(plans.get(0).board.actual_c_program_version != null ){
@@ -638,18 +645,32 @@ public class Model_Board extends Model {
                     plans.get(0).update();
                 }
 
-                board.get_instance().check_hardware(board, report);
+
             } else {
                 logger.debug("No actualization plan found for Master Device: " + board.id);
             }
 
-
             board.notification_board_connect();
+
+            if(report instanceof WS_Yoda_connected){
+
+                WS_Yoda_connected ws_yoda_connected = (WS_Yoda_connected) report;
+                for(WS_Device_connected ws_device_connected : ws_yoda_connected.deviceList){
+                    device_Connected(server, ws_device_connected);
+                }
+            }
+
 
         }catch (Exception e){
             e.printStackTrace();
         }
     }
+
+
+
+
+
+
 
     @JsonIgnore @Transient public static WS_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, List<Actualization_procedure> procedures){
 

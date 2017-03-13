@@ -1,9 +1,11 @@
 package utilities.swagger.documentationClass;
 
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModel;
 import play.data.validation.Constraints;
 
+@ApiModel(description = "",
+        value = "BlockoObject_Approve_withChanges")
 public class Swagger_BlockoObject_Approve_withChanges {
 
     @Constraints.Required

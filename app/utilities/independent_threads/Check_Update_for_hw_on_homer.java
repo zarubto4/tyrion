@@ -104,7 +104,8 @@ public class Check_Update_for_hw_on_homer extends Thread {
                 logger.error("Check_Update_for_hw_on_homer:: unknow Device!!! ");
             }
 
-            Model_Board.hardware_firmware_state_check(yoda, yoda_connected);
+            System.out.print("Zasílám ke kontrole Yoda Device State:: ");
+            Model_Board.hardware_firmware_state_check(homer_server, yoda, yoda_connected);
 
         }
 

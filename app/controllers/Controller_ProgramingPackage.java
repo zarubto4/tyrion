@@ -53,6 +53,7 @@ import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -409,7 +410,7 @@ public class Controller_ProgramingPackage extends Controller {
                     invitation.save();
                 }
 
-                String link =Server.becki_mainUrl + "/" +  Server.becki_invitationToCollaborate + mail.replace("@","%40");
+                String link =Server.becki_mainUrl + "/" +  Server.becki_invitationToCollaborate + URLEncoder.encode(mail, "UTF-8");
 
                 // Odeslání emailu s linkem pro registraci
                 try {
@@ -623,6 +624,17 @@ public class Controller_ProgramingPackage extends Controller {
                     list.add(person);
             }
 
+            List<Model_Invitation> invitations = new ArrayList<>();
+
+            for (String mail : help.persons_mail){
+
+                Model_Invitation invitation = Model_Invitation.find.where().eq("mail",mail).eq("project.id", project_id).findUnique();
+                if(invitation != null)
+                    invitations.add(invitation);
+            }
+
+
+
             for (Model_Person person : list) {
                 Model_ProjectParticipant participant = Model_ProjectParticipant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique();
                 if (participant != null) {
@@ -630,6 +642,10 @@ public class Controller_ProgramingPackage extends Controller {
                     // Úprava objektu
                     participant.delete();
                 }
+            }
+
+            for (Model_Invitation invitation : invitations) {
+                invitation.delete();
             }
 
             // Obnovení v DB
@@ -643,38 +659,6 @@ public class Controller_ProgramingPackage extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete Invitation into Project",
-            tags = {"Project"},
-            notes = "Deletes invitation into the Project, also deletes notification about this invitation.",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                                 response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result project_deleteInvitation(@ApiParam(value = "invitation_id String path", required = true)  String invitation_id){
-        try {
-
-            Model_Invitation invitation = Model_Invitation.find.where().eq("owner.id", Controller_Security.getPerson().id).eq("id", invitation_id).findUnique();
-            if(invitation == null) return GlobalResult.notFoundObject("Invitation does not exist");
-
-            Model_Notification notification = null;
-            if(invitation.notification_id != null)
-                notification = Model_Notification.find.byId(invitation.notification_id);
-            if(notification != null) notification.delete();
-
-            invitation.delete();
-
-            return GlobalResult.result_ok("Invitation successfully deleted.");
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
 
 
@@ -1270,9 +1254,6 @@ public class Controller_ProgramingPackage extends Controller {
 
             // Kontrola oprávnění
             if (! b_program.update_permission() ) return GlobalResult.forbidden_Permission();
-
-
-            //if(b_program.instance.actual_instance != null && b_program.instance.actual_instance.version_object.id.equals(version_object.id)) return GlobalResult.result_BadRequest("This Version is already in Cloud!");
 
             Model_HomerInstanceRecord record = new Model_HomerInstanceRecord();
             record.main_instance_history = b_program.instance;

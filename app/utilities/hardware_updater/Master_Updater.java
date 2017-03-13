@@ -8,6 +8,7 @@ import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import play.libs.Json;
+import utilities.enums.Actual_procedure_State;
 import utilities.enums.C_ProgramUpdater_State;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.helper_objects.Target_pair;
@@ -42,7 +43,7 @@ public class Master_Updater{
 
         logger.trace("Master_Updater:: start_thread_box:: new incoming procedure");
 
-        procedures.add(procedure.id);
+        procedures.add(procedure);
 
         if(comprimator_thread.getState() == Thread.State.TIMED_WAITING) {
             logger.trace("Master_Updater:: start_thread_box::  wait for interrupt!");
@@ -52,7 +53,7 @@ public class Master_Updater{
 
 // ** Comprimator Thread -----------------------------------------------------------------------------------------------
 
-   public static List<String> procedures = new ArrayList<>();
+   public static List<Model_ActualizationProcedure> procedures = new ArrayList<>();
 
     static Thread comprimator_thread = new Thread() {
 
@@ -118,12 +119,32 @@ public class Master_Updater{
 
 
 
-    public void actualization_update_procedure(String procedure_id){
+    private void actualization_update_procedure(Model_ActualizationProcedure procedure){
+
+
+        if(procedure.state == Actual_procedure_State.complete || procedure.state == Actual_procedure_State.successful_complete ){
+            logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " is done");
+            return;
+        }
+
+        if(procedure.state == Actual_procedure_State.in_progress){
+            logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " already in progress");
+            return;
+        }
+
+
+        logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " state::  " + procedure.state);
+
 
         Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
         ActualizationStructure structure = new ActualizationStructure();
 
-        List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where().eq("actualization_procedure.id", procedure_id).findList();
+        List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where().eq("actualization_procedure.id", procedure.id)
+                .disjunction()
+                    .ne("state", C_ProgramUpdater_State.complete)
+                    .ne("state", C_ProgramUpdater_State.in_progress)
+                .endJunction()
+                .findList();
 
            for (Model_CProgramUpdatePlan plan : plans) {
                try {
@@ -131,6 +152,8 @@ public class Master_Updater{
                    logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: " + Json.toJson(plan));
                    logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: ID:: " + plan.id);
                    logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: Board ID:: " +  plan.board.id);
+                   logger.error("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: Status:: " +  plan.state);
+
 
                    Model_Board board  = plan.board;
 
@@ -256,13 +279,13 @@ public class Master_Updater{
 
             for(Program program : instance.programs.values()){
 
-                Actualization_procedure procedure = new Actualization_procedure();
-                procedure.actualizationProcedureId = procedure_id;
-                procedure.file_record = program.file_record;
-                procedure.firmwareType = program.firmware_type;
-                procedure.targetPairs.addAll(program.target_pairs);
+                Actualization_procedure actualization_procedure= new Actualization_procedure();
+                actualization_procedure.actualizationProcedureId = procedure.id;
+                actualization_procedure.file_record = program.file_record;
+                actualization_procedure.firmwareType = program.firmware_type;
+                actualization_procedure.targetPairs.addAll(program.target_pairs);
 
-                task.procedures.add(procedure);
+                task.procedures.add(actualization_procedure);
             }
 
             instance.instance.cloud_homer_server.add_task(task);

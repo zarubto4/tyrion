@@ -69,7 +69,6 @@ public class Model_ActualizationProcedure extends Model {
     public void save() {
 
         date_of_create = new Date();
-        state = Actual_procedure_State.not_start_yet;
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
