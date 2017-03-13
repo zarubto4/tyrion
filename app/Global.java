@@ -5,6 +5,7 @@ import play.GlobalSettings;
 import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
+import utilities.cache.Server_Cache;
 import utilities.request_counter.RequestCounter;
 import utilities.scheduler.CustomScheduler;
 
@@ -44,6 +45,10 @@ public class Global extends GlobalSettings {
            logger.warn("Starting all scheduler threads");
            Server.startScheduling_procedures();
 
+           //7
+           logger.warn("Initializing the cache layer");
+           Server.init_cache();
+
            logger.warn("Creating Administrator");
            Server.set_Developer_objects();
     //****************************************************************************************************************************
@@ -64,7 +69,8 @@ public class Global extends GlobalSettings {
         logger.warn("Disconnecting all Compilation Servers");
         Controller_WebSocket.disconnect_all_Compilation_Servers();
 
-
+        logger.warn("Closing cache layer");
+        Server_Cache.stopCache();
 
         if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")){
             try {

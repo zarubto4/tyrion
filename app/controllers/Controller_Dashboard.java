@@ -655,7 +655,7 @@ public class Controller_Dashboard extends Controller {
     public Result product_detail(String id){
         try {
 
-            Model_Product product = Model_Product.find.byId(id);
+            Model_Product product = Model_Product.get_byId(id);
             if (product == null) return GlobalResult.notFoundObject("Project not found");
 
             Html product_detail_content = product_detail.render(product);

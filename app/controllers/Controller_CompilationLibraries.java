@@ -661,7 +661,7 @@ public class Controller_CompilationLibraries extends Controller {
             if(!c_program.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Vyhledání PRoduct pro získání kontejneru
-            Model_Product product = Model_Product.find.where().eq("projects.c_programs.id", c_program_id).findUnique();
+            //Model_Product product = Model_Product.find.where().eq("projects.c_programs.id", c_program_id).findUnique();
 
 
             // Smazání objektu

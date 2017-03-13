@@ -100,7 +100,7 @@ public class Controller_ProgramingPackage extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Project_New help = form.get();
 
-            Model_Product product = Model_Product.find.byId(help.product_id);
+            Model_Product product = Model_Product.get_byId(help.product_id);
             if(product == null){return GlobalResult.notFoundObject("Product not found");}
             if(!product.create_new_project()) return GlobalResult.result_BadRequest(product.create_new_project_if_not());
 

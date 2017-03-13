@@ -33,6 +33,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
+import utilities.cache.Server_Cache;
 import utilities.hardware_updater.Master_Updater;
 import utilities.notifications.Notification_Handler;
 import utilities.scheduler.CustomScheduler;
@@ -437,6 +438,17 @@ public class Server {
 
         }catch (Exception e){
            logger.error("Scheduler_Exception", e);
+        }
+
+    }
+
+    public static void init_cache() {
+        try {
+
+            Server_Cache.initCache();
+
+        }catch (Exception e){
+            logger.error("Cache_Exception", e);
         }
 
     }

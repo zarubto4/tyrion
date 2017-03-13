@@ -224,7 +224,7 @@ public class Model_Notification extends Model {
     public List<Swagger_Notification_Button> buttons(){
         try {
 
-            if(buttons != null || buttons.size() < 1 || buttons_string != null || !buttons_string.equals("[]") ){
+            if((buttons == null || buttons.size() < 1) && buttons_string != null ){
                 buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
             }
             return buttons;

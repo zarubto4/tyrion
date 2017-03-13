@@ -54,6 +54,13 @@ public class Model_ExampleModelName extends Model{
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_ExampleModelName> find = new Model.Finder<>(Model_ExampleModelName.class);
 
+    private static Model.Finder<String,Model_ExampleModelName> find = new Model.Finder<>(Model_ExampleModelName.class);
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_ExampleModelName get_byId(String id) {
+        return find.byId(id);
+    }
 }

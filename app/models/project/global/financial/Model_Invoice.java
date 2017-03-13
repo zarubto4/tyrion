@@ -119,7 +119,7 @@ public class Model_Invoice extends Model {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_Product.find.byId(this.id) == null) break;
+            if (find.byId(this.id) == null) break;
         }
 
         super.save();

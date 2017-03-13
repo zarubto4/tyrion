@@ -125,7 +125,7 @@
                         </tr>
 
 
-                        @for( product <- Model_Product.find.where().eq("payment_details.person.id", person.id).findList() ) {
+                        @for( product <- Model_Product.get_byOwner(person.id)) {
 
                             <tr>
                                 <td> @product.product_individual_name</td>
@@ -230,7 +230,7 @@
                     <label>Product</label>
                     <select style="display: block;" name="product_id">
                         <option selected disabled>Select Product</option>
-                        @for(product <- Model_Product.find.where().eq("payment_details.person.id", person.id).findList()) {
+                        @for(product <- Model_Product.get_byOwner(person.id)) {
                             <option value="@product.id">@product.product_individual_name</option>
                         }
                     </select>
