@@ -8,7 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.compiler.Model_Board;
+import models.compiler.Model_VersionObject;
 import models.person.Model_Person;
+import models.project.b_program.Model_BProgram;
+import models.project.c_program.Model_CProgram;
+import models.project.global.Model_Project;
 import play.libs.Json;
 import utilities.enums.*;
 import utilities.notifications.Notification_Handler;
@@ -151,6 +156,81 @@ public class Model_Notification extends Model {
         element.bold       = bold;
         element.italic     = italic;
         element.underline  = underline;
+
+        array.add(element);
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Model_Notification setObject(Object object){
+
+        Swagger_Notification_Element element = new Swagger_Notification_Element();
+        element.type       = Notification_type.object;
+        element.color      = "black";
+
+        String class_name = object.getClass().getSimpleName().replaceAll("Swagger_","").replaceAll("Model_","");
+
+        switch (class_name){
+            case "Person" : {
+                element.name = class_name;
+                element.text = ((Model_Person)object).full_name;
+                element.id = ((Model_Person)object).id;
+                break;
+            }
+            case "Project" : {
+                element.name = class_name;
+                element.text = ((Model_Project)object).name;
+                element.id = ((Model_Project)object).id;
+                break;
+            }
+            case "Board" : {
+                Model_Board board = (Model_Board)object;
+                element.name = class_name;
+                element.id = board.id;
+                element.text = board.personal_description;
+                element.project_id = board.project != null ? board.project.id : null;
+                break;
+            }
+            case "CProgram" : {
+                Model_CProgram cProgram = (Model_CProgram)object;
+                element.name = class_name;
+                element.id = cProgram.id;
+                element.text = cProgram.name;
+                element.project_id = cProgram.project != null ? cProgram.project.id : null;
+                break;
+            }
+            case "BProgram" : {
+                Model_BProgram bProgram = (Model_BProgram)object;
+                element.name = class_name;
+                element.id = bProgram.id;
+                element.text = bProgram.name;
+                element.project_id = bProgram.project != null ? bProgram.project.id : null;
+                break;
+            }
+            case "VersionObject" : {
+
+                Model_VersionObject versionObject = (Model_VersionObject)object;
+
+                element.id = versionObject.id;
+
+                if (versionObject.c_program != null){
+
+                    element.name = "C_Program_Version";
+                    element.text = versionObject.version_name;
+                    element.program_id = versionObject.c_program.id;
+                    element.project_id = versionObject.c_program.project != null ? versionObject.c_program.project.id : null;
+
+                } else if (versionObject.b_program != null){
+
+                    element.name = "B_Program_Version";
+                    element.text = versionObject.version_name;
+                    element.program_id = versionObject.b_program.id;
+                    element.project_id = versionObject.b_program.project != null ? versionObject.b_program.project.id : null;
+                }
+
+                break;
+            }
+        }
 
         array.add(element);
         return this;

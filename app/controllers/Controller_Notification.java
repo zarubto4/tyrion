@@ -97,11 +97,11 @@ public class Controller_Notification extends Controller {
 
         Model_Project project = Model_Project.find.where().eq("participants.person.id", person.id).eq("name", "První velkolepý projekt").findUnique();
         if (project != null) {
-          notification.setObject(Model_Project.class, project.id, project.name + " ", project.id);
+          notification.setObject(project);
 
           if (!project.boards.isEmpty()){
             Model_Board board = project.boards.get(0);
-            notification.setObject(Model_Board.class, board.id, board.personal_description + " ", project.id);
+            notification.setObject(board);
           }
 
           Model_CProgram cProgram;
@@ -115,10 +115,14 @@ public class Controller_Notification extends Controller {
             cProgram.name                  = "Test notification c program";
             cProgram.description           = "random text sd asds dasda ";
             cProgram.date_of_create        = new Date();
+            cProgram.project               = project;
             cProgram.save();
+            cProgram.refresh();
+
+            logger.info("Setting new C Program");
           }
 
-          notification.setObject(Model_CProgram.class, cProgram.id, cProgram.name + " ", project.id);
+          notification.setObject(cProgram);
 
           Model_VersionObject version_object;
           if (cProgram.getVersion_objects().isEmpty()){
@@ -131,12 +135,15 @@ public class Controller_Notification extends Controller {
             version_object.c_program           = cProgram;
             version_object.public_version      = false;
             version_object.save();
+            version_object.refresh();
+
+            logger.info("Setting new C Program Version");
 
           } else {
             version_object = cProgram.getVersion_objects().get(0);
           }
 
-          notification.setObject(Swagger_C_Program_Version.class, version_object.id, version_object.version_name + " ", project.id);
+          notification.setObject(version_object);
 
           Model_BProgram bProgram;
           if (!project.b_programs.isEmpty()){
@@ -150,12 +157,15 @@ public class Controller_Notification extends Controller {
             bProgram.date_of_create        = new Date();
             bProgram.project = project;
             bProgram.save();
+            bProgram.refresh();
+
+            logger.info("Setting new B Program");
           }
 
-          notification.setObject(Model_BProgram.class, bProgram.id, bProgram.name + " ", project.id);
+          notification.setObject(bProgram);
 
           Model_VersionObject b_version_object;
-          if (cProgram.getVersion_objects().isEmpty()){
+          if (bProgram.getVersion_objects().isEmpty()){
 
             b_version_object = new Model_VersionObject();
             b_version_object.version_name        = "Test notification b version";
@@ -164,12 +174,15 @@ public class Controller_Notification extends Controller {
             b_version_object.date_of_create      = new Date();
             b_version_object.b_program           = bProgram;
             b_version_object.save();
+            b_version_object.refresh();
+
+            logger.info("Setting new B Program Version");
 
           } else {
-            b_version_object = cProgram.getVersion_objects().get(0);
+            b_version_object = bProgram.getVersion_objects().get(0);
           }
 
-          notification.setObject(Swagger_B_Program_Version.class, b_version_object.id, b_version_object.version_name + " ", project.id);
+          notification.setObject(b_version_object);
         }
 
 
