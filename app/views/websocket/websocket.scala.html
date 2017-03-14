@@ -1,7 +1,7 @@
 @import models.compiler.Model_CompilationServer
 @import models.person.Model_Person
 @import models.project.b_program.servers.Model_HomerServer
-@import utilities.web_socket.{WS_Becki_Website, WS_HomerServer, WS_CompilerServer}
+@import utilities.web_socket.WS_Becki_Website
 @(becki_Terminal: List[WS_Becki_Website])
 
 <section class="content-header">
@@ -11,9 +11,63 @@
         <li class="active"><i class="fa fa-heart"></i> Websocket connections </li>
     </ol>
 </section>
-<script type="text/javascript" src="@routes.Controller_Dashboard.javascriptRoutes"></script>
 
 <section class="content">
+
+    <div id="testNotificationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="testNotificationModalTitle">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 id="testNotificationModalTitle" class="modal-title">Send test notification</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="testNotification">
+                        <table class="table table-condensed no-border no-margin no-padding">
+                            <tr>
+                                <td width="25%">
+                                    <select style="width:100%;" name="level" id="level">
+                                        <option value="info">info</option>
+                                        <option value="success">success</option>
+                                        <option value="warning">warning</option>
+                                        <option value="error">error</option>
+                                    </select>
+                                </td>
+                                <td width="25%">
+                                    <select style="width:100%;" name="importance" id="importance">
+                                        <option value="low">low</option>
+                                        <option value="normal">normal</option>
+                                        <option value="high">high</option>
+                                    </select>
+                                </td>
+                                <td width="25%">
+                                    <select style="width:100%;" name="type" id="type">
+                                        <option value="1">All objects</option>
+                                        <option value="2">Object and long text</option>
+                                        <option value="3">Short text and link</option>
+                                        <option value="4">Object and link</option>
+                                    </select>
+                                </td>
+                                <td width="25%">
+                                    <select style="width:100%;" name="buttons" id="buttons">
+                                        <option value="0">none</option>
+                                        <option value="1">OK button</option>
+                                        <option value="2">YES & NO buttons</option>
+                                        <option value="3">YES, NO, CLOSE</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                    <div id="testNotificationModalMessage" style="display: none"><p class="text-red"></p></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                    <button class="btn btn-success" type="button" onclick="test_notification()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-xs-12">
             <div class="box">
@@ -38,7 +92,6 @@
                         <tr>
                             <th>Person email</th>
                             <th colspan="2" >Connection instances</th>
-                            <th class="col-xs-1" >Test notification</th>
                         </tr>
 
                         @for( x <- becki_Terminal){
@@ -46,37 +99,7 @@
                                 <tr>
                                     <th rowspan="@(x.all_person_Connections.size()+2)"> @(Model_Person.find.byId( x.identifikator ).mail )</th>
                                     <th>instances</th>
-                                    <th></th>
-
-                                    <th rowspan="@(x.all_person_Connections.size()+2)">
-
-                                        <form id="testNotification">
-                                            <select style="margin-top: 10px;" name="level" id="level">
-                                                <option value="info">info</option>
-                                                <option value="success">success</option>
-                                                <option value="warning">warning</option>
-                                                <option value="error">error</option>
-                                            </select>
-                                            <select style="margin-top: 10px;" name="importance" id="importance">
-                                                <option value="low">low</option>
-                                                <option value="normal">normal</option>
-                                                <option value="high">high</option>
-                                            </select>
-                                            <select style="margin-top: 10px; width: 100%;" name="type" id="type">
-                                                <option value="1">All objects</option>
-                                                <option value="2">Object and long text</option>
-                                                <option value="3">Short text and link</option>
-                                                <option value="4">Object and link</option>
-                                            </select>
-                                            <select style="margin-top: 10px; width: 100%;" name="buttons" id="buttons">
-                                                <option value="0">none</option>
-                                                <option value="1">OK button</option>
-                                                <option value="2">YES & NO buttons</option>
-                                                <option value="3">YES, NO, CLOSE</option>
-                                            </select>
-                                            <input style="margin-top: 10px;" type="button" onclick="test_notification('@(Model_Person.find.byId( x.identifikator ).mail )')" class="btn btn-block btn-primary btn-xs" value="Send">
-                                        </form>
-                                    </th>
+                                    <th><button data-toggle="modal" data-target="#testNotificationModal" onclick="email = '@Model_Person.find.byId( x.identifikator ).mail'; " class="btn btn-block btn-primary btn-xs">Test notification</button></th>
                                 </tr>
 
 
@@ -239,6 +262,8 @@
 <script>
         $.ajaxSetup({ cache: false });
 
+        var email = "";
+
         function ping_becki(id, token){
             $.ajax({
                 url: '/admin/becki/ping/' + id + '/' + token,
@@ -277,15 +302,17 @@
                 }
             })}
 
-        function test_notification(mail){
+        function test_notification(){
             model_data = $("#testNotification").serializeObject();
+            model_data.mail = email;
             $.ajax({
-                url: '@routes.Controller_Notification.test_notifications("")' + mail,
+                url: '@routes.Controller_Notification.test_notifications()',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(model_data),
                 dataType: 'json',
                 success:function(e){
+                    $('#testNotificationModal').modal('hide');
                 },
                 error:function(json){
                     alert(json.responseText);

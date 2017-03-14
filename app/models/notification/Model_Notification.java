@@ -127,7 +127,7 @@ public class Model_Notification extends Model {
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type     = Notification_type.object;
-        element.name    = object.getSimpleName().replaceAll("Swagger_","");
+        element.name    = object.getSimpleName().replaceAll("Swagger_","").replaceAll("Model_","");
         element.id       = id;
         element.text    = text;
         element.project_id = project_id;
@@ -142,7 +142,7 @@ public class Model_Notification extends Model {
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
         element.type       = Notification_type.object;
-        element.name       = object.getSimpleName().replaceAll("Swagger_","");
+        element.name       = object.getSimpleName().replaceAll("Swagger_","").replaceAll("Model_","");
         element.id         = id;
         element.text       = text;
         element.project_id = project_id;
