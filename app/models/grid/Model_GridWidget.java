@@ -126,6 +126,6 @@ public class Model_GridWidget extends Model{
 
     @JsonIgnore
     public static Model_GridWidget get_publicByName(String name) {
-        return find.where().isNull("type_of_block.project").eq("name", name).findUnique();
+        return find.where().isNull("type_of_widget.project").eq("name", name).findUnique();
     }
 }

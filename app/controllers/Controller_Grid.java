@@ -1358,12 +1358,13 @@ public class Controller_Grid extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_GridWidget_New help = form.get();
 
-            if(Model_GridWidget.get_publicByName(help.name)!= null)
-                return GlobalResult.result_BadRequest("GridWidget with this name already exists, type a new one.");
-
             // Kontrola objektu
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId( help.type_of_widget_id);
             if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
+
+            if (typeOfWidget.project == null && Model_GridWidget.get_publicByName(help.name) != null){
+                return GlobalResult.result_BadRequest("GridWidget with this name already exists, type a new one.");
+            }
 
             // Vytvoření objektu
             Model_GridWidget gridWidget = new Model_GridWidget();
