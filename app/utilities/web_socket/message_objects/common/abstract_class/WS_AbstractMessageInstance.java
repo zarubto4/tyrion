@@ -1,7 +1,7 @@
 package utilities.web_socket.message_objects.common.abstract_class;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import models.project.b_program.instnace.Model_HomerInstance;
+import models.Model_HomerInstance;
 
 import javax.persistence.Transient;
 

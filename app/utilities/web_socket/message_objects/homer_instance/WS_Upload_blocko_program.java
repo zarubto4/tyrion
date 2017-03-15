@@ -2,8 +2,8 @@ package utilities.web_socket.message_objects.homer_instance;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.compiler.Model_FileRecord;
-import models.project.b_program.instnace.Model_HomerInstance;
+import models.Model_FileRecord;
+import models.Model_HomerInstance;
 import play.libs.Json;
 import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageInstance;
 

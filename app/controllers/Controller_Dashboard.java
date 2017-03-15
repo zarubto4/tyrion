@@ -1,19 +1,18 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.Api;
-import models.compiler.Model_Board;
-import models.compiler.Model_CompilationServer;
-import models.compiler.Model_TypeOfBoard;
-import models.person.Model_Person;
-import models.person.Model_SecurityRole;
-import models.project.b_program.instnace.Model_HomerInstance;
-import models.project.b_program.servers.Model_HomerServer;
-import models.project.global.Model_Product;
-import models.project.global.Model_Project;
-import models.project.global.financial.Model_GeneralTariff;
-import models.project.global.financial.Model_GeneralTariffExtensions;
+import models.Model_Board;
+import models.Model_CompilationServer;
+import models.Model_TypeOfBoard;
+import models.Model_Person;
+import models.Model_SecurityRole;
+import models.Model_HomerInstance;
+import models.Model_HomerServer;
+import models.Model_Product;
+import models.Model_Project;
+import models.Model_GeneralTariff;
+import models.Model_GeneralTariffExtensions;
 import org.pegdown.PegDownProcessor;
 import play.Application;
 import play.Routes;
@@ -98,24 +97,24 @@ public class Controller_Dashboard extends Controller {
         response().setContentType("text/javascript");
         return ok(
                 Routes.javascriptRouter("jsRoutes",
-                        controllers.routes.javascript.Controller_CompilationLibraries.typeOfBoard_create(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.typeOfBoard_get(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.typeOfBoard_update(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.typeOfBoard_delete(),
+                        controllers.routes.javascript.Controller_Board.typeOfBoard_create(),
+                        controllers.routes.javascript.Controller_Board.typeOfBoard_get(),
+                        controllers.routes.javascript.Controller_Board.typeOfBoard_update(),
+                        controllers.routes.javascript.Controller_Board.typeOfBoard_delete(),
 
-                        controllers.routes.javascript.Controller_CompilationLibraries.processor_create(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.processor_get(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.processor_getAll(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.processor_update(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.processor_delete(),
+                        controllers.routes.javascript.Controller_Board.processor_create(),
+                        controllers.routes.javascript.Controller_Board.processor_get(),
+                        controllers.routes.javascript.Controller_Board.processor_getAll(),
+                        controllers.routes.javascript.Controller_Board.processor_update(),
+                        controllers.routes.javascript.Controller_Board.processor_delete(),
 
-                        controllers.routes.javascript.Controller_CompilationLibraries.new_Producer(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.edit_Producer(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.get_Producers(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.get_Producer(),
-                        controllers.routes.javascript.Controller_CompilationLibraries.delete_Producer(),
+                        controllers.routes.javascript.Controller_Board.new_Producer(),
+                        controllers.routes.javascript.Controller_Board.edit_Producer(),
+                        controllers.routes.javascript.Controller_Board.get_Producers(),
+                        controllers.routes.javascript.Controller_Board.get_Producer(),
+                        controllers.routes.javascript.Controller_Board.delete_Producer(),
 
-                        controllers.routes.javascript.Controller_ProgramingPackage.ping_instance()
+                        controllers.routes.javascript.Controller_Blocko.ping_instance()
                 )
         );
     }

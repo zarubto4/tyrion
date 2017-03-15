@@ -2,8 +2,8 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.person.Model_Permission;
-import models.person.Model_SecurityRole;
+import models.Model_Permission;
+import models.Model_SecurityRole;
 
 import java.util.List;
 

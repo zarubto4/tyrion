@@ -1,7 +1,7 @@
 package utilities.scheduler.schedules_activities;
 
 
-import models.person.Model_FloatingPersonToken;
+import models.Model_FloatingPersonToken;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

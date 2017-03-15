@@ -1,5 +1,5 @@
-@import models.compiler.Model_TypeOfBoard
-@import models.compiler.Model_ImportLibrary
+@import models.Model_TypeOfBoard
+@import models.Model_ImportLibrary
 
 <section class="content-header">
   <h1> Public Firmware Code </h1>
@@ -561,7 +561,7 @@
 
         function newCProgram(){
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.c_program_create()',
+            url: '@routes.Controller_Code.c_program_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {

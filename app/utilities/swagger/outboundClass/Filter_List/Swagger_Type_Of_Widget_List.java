@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.grid.Model_TypeOfWidget;
+import models.Model_TypeOfWidget;
 import utilities.swagger.outboundClass.Swagger_TypeOfWidget_Short_Detail;
 
 import java.util.ArrayList;

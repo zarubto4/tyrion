@@ -2,9 +2,9 @@ package utilities.web_socket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
-import models.compiler.Model_Board;
-import models.project.b_program.instnace.Model_HomerInstance;
-import models.project.b_program.servers.Model_HomerServer;
+import models.Model_Board;
+import models.Model_HomerInstance;
+import models.Model_HomerServer;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.hardware_updater.Actualization_procedure;
 import utilities.hardware_updater.helper_objects.Target_pair;

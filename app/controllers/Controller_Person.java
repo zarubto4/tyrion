@@ -2,8 +2,7 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
-import models.compiler.Model_FileRecord;
-import models.person.*;
+import models.*;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -30,7 +29,8 @@ import java.util.UUID;
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
 public class Controller_Person extends Controller {
 
-    @Inject Controller_ProgramingPackage controllerProgramingPackage;
+    @Inject
+    Controller_Project controllerProgramingPackage;
     @Inject WSClient ws;
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 

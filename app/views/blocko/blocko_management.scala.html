@@ -1,5 +1,5 @@
-@import models.blocko.Model_BlockoBlockVersion
-@import models.blocko.Model_TypeOfBlock
+@import models.Model_BlockoBlockVersion
+@import models.Model_TypeOfBlock
 @import utilities.Server
 
 
@@ -371,7 +371,7 @@
         function newTypeOfBlock(){
           model_data = $("#newTypeOfBlock").serializeObject();
           $.ajax({
-            url: '@routes.Controller_ProgramingPackage.typeOfBlock_create()',
+            url: '@routes.Controller_Blocko.typeOfBlock_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -396,7 +396,7 @@
         function newBlockoBlock(){
           model_data = $("#newBlockoBlock").serializeObject();
           $.ajax({
-            url: '@routes.Controller_ProgramingPackage.blockoBlock_create()',
+            url: '@routes.Controller_Blocko.blockoBlock_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -703,7 +703,7 @@
 
         function showVersionScheme(){
           $.ajax({
-            url: '@routes.Controller_ProgramingPackage.blockoBlockVersion_getScheme()',
+            url: '@routes.Controller_Blocko.blockoBlockVersion_getScheme()',
             type: 'GET',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -722,7 +722,7 @@
         function editVersionScheme(){
           model_data = $("#editVersionScheme").serializeObject();
           $.ajax({
-            url: '@routes.Controller_ProgramingPackage.blockoBlockVersion_editScheme()',
+            url: '@routes.Controller_Blocko.blockoBlockVersion_editScheme()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -746,7 +746,7 @@
         function createVersionScheme(){
           model_data = $("#newVersionScheme").serializeObject();
           $.ajax({
-            url: '@routes.Controller_ProgramingPackage.blockoBlockVersion_createScheme()',
+            url: '@routes.Controller_Blocko.blockoBlockVersion_createScheme()',
             type: 'POST',
             contentType: 'application/json',
             headers: {

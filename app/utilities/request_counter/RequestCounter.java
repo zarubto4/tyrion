@@ -1,6 +1,6 @@
 package utilities.request_counter;
 
-import models.loggy.Model_RequestLog;
+import models.Model_RequestLog;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -37,7 +37,7 @@ public class RequestCounter extends Controller{
 
         try {
 
-            return GlobalResult.result_ok(Json.toJson(Model_RequestLog.find.order().desc("count").findList()));
+            return GlobalResult.result_ok(Json.toJson(Model_RequestLog.find.order().desc("call_count").findList()));
 
         } catch (Exception e) {
 

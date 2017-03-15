@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.b_program.instnace.Model_HomerInstance;
+import models.Model_HomerInstance;
 
 import java.util.ArrayList;
 import java.util.List;

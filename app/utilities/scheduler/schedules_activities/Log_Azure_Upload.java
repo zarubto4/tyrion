@@ -1,6 +1,6 @@
 package utilities.scheduler.schedules_activities;
 
-import models.compiler.Model_FileRecord;
+import models.Model_FileRecord;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

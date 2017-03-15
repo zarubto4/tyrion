@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
-import models.person.Model_Person;
+import models.Model_Person;
 
 import javax.persistence.*;
 

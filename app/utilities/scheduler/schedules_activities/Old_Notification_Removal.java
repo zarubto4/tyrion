@@ -1,7 +1,7 @@
 package utilities.scheduler.schedules_activities;
 
 
-import models.notification.Model_Notification;
+import models.Model_Notification;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

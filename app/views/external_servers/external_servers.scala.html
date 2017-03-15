@@ -1,6 +1,6 @@
 
-@import models.compiler.Model_CompilationServer
-@import models.project.b_program.servers.Model_HomerServer
+@import models.Model_CompilationServer
+@import models.Model_HomerServer
 @import utilities.enums.CLoud_Homer_Server_Type
 @import utilities.Server
 
@@ -413,7 +413,7 @@
 function newCompilationServer(){
     model_data = $("#newCompilationServer").serializeObject();
     $.ajax({
-        url: '@routes.Controller_CompilationLibraries.create_Compilation_Server()',
+        url: '@routes.Controller_Board.create_Compilation_Server()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -446,7 +446,7 @@ function editCompilationServer(id){
     model_data = $("#editCompilationServer").serializeObject();
 
     $.ajax({
-        url: '@routes.Controller_CompilationLibraries.edit_Compilation_Server("")' + id,
+        url: '@routes.Controller_Board.edit_Compilation_Server("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -478,7 +478,7 @@ function editCompilationServer(id){
 function deleteCompilationServer(id){
 
     $.ajax({
-        url: '@routes.Controller_CompilationLibraries.delete_Compilation_Server("")' + id,
+        url: '@routes.Controller_Board.delete_Compilation_Server("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),
@@ -523,7 +523,7 @@ function showCreateFormCompilationServer(){
 function newHomerServer(){
     model_data = $("#newHomerServer").serializeObject();
     $.ajax({
-        url: '@routes.Controller_ProgramingPackage.create_Homer_Server()',
+        url: '@routes.Controller_Blocko.create_Homer_Server()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -556,7 +556,7 @@ function editHomerServer(id){
     model_data = $("#editHomerServer").serializeObject();
 
     $.ajax({
-        url: '@routes.Controller_ProgramingPackage.edit_Homer_Server("")' + id,
+        url: '@routes.Controller_Blocko.edit_Homer_Server("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -588,7 +588,7 @@ function editHomerServer(id){
 function deleteHomerServer(id){
 
     $.ajax({
-        url: '@routes.Controller_ProgramingPackage.delete_Homer_Server("")' + id,
+        url: '@routes.Controller_Blocko.delete_Homer_Server("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),

@@ -1,8 +1,8 @@
 package controllers;
 
 import io.swagger.annotations.*;
-import models.project.c_program.actualization.Model_ActualizationProcedure;
-import models.project.global.Model_Project;
+import models.Model_ActualizationProcedure;
+import models.Model_Project;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;

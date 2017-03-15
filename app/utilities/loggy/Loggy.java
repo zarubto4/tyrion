@@ -4,7 +4,7 @@ import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import controllers.Controller_Security;
-import models.loggy.Model_LoggyError;
+import models.Model_LoggyError;
 import play.Configuration;
 import play.Play;
 import play.libs.F;

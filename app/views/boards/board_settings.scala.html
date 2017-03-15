@@ -1,6 +1,6 @@
-@import models.compiler.Model_Processor
-@import models.compiler.Model_Producer
-@import models.compiler.Model_TypeOfBoard
+@import models.Model_Processor
+@import models.Model_Producer
+@import models.Model_TypeOfBoard
 
 
 <section class="content-header">
@@ -345,7 +345,7 @@
         function newTypeOfBoard(){
           model_data = $("#newTypeOfBoardForm").serializeObject();
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.typeOfBoard_create()',
+            url: '@routes.Controller_Board.typeOfBoard_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -378,7 +378,7 @@
           model_data = $("#editTypeOfBoard").serializeObject();
 
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.typeOfBoard_update("")' + id ,
+            url: '@routes.Controller_Board.typeOfBoard_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -410,7 +410,7 @@
         function deleteTypeOfBoard(id){
 
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.typeOfBoard_delete("")' + id ,
+            url: '@routes.Controller_Board.typeOfBoard_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -456,7 +456,7 @@
           model_data = $("#newProcessorForm").serializeObject();
 
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.processor_create()',
+            url: '@routes.Controller_Board.processor_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -490,7 +490,7 @@
           model_data = $("#editProcessor").serializeObject();
 
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.processor_update("")' + id ,
+            url: '@routes.Controller_Board.processor_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -523,7 +523,7 @@
         function deleteProcessor(id){
 
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.processor_delete("")' + id ,
+            url: '@routes.Controller_Board.processor_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),
@@ -566,7 +566,7 @@
         function newProducer(){
           model_data = $("#newProducerForm").serializeObject();
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.new_Producer()',
+            url: '@routes.Controller_Board.new_Producer()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -598,7 +598,7 @@
           model_data = $("#editProducer").serializeObject();
 
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.edit_Producer("")' + id ,
+            url: '@routes.Controller_Board.edit_Producer("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -630,7 +630,7 @@
         function deleteProducer(id){
 
           $.ajax({
-            url: '@routes.Controller_CompilationLibraries.delete_Producer("")' + id ,
+            url: '@routes.Controller_Board.delete_Producer("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),

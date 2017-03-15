@@ -1,6 +1,4 @@
-@import models.project.b_program.instnace.Model_HomerInstance
-@import models.project.b_program.servers.Model_HomerServer
-@import utilities.enums.Type_of_command
+@import models.Model_HomerServer
 @import utilities.enums.Homer_Instance_Type
 
 @(homer_server: Model_HomerServer)
@@ -189,7 +187,7 @@
              model_data = $("#addTemporaryInstanceForm").serializeObject();
 
              $.ajax({
-                 url: '@routes.Controller_ProgramingPackage.instance_add_temporary_instance()',
+                 url: '@routes.Controller_Blocko.instance_add_temporary_instance()',
                  type: 'PUT',
                  contentType: 'application/json',
                  headers: {
@@ -278,7 +276,7 @@
 
          function disconnect_instance(instance_id){
              $.ajax({
-                 url: '@routes.Controller_ProgramingPackage.instance_shut_down("")' + instance_id,
+                 url: '@routes.Controller_Blocko.instance_shut_down("")' + instance_id,
                  type: 'GET',
 
                  headers: {
@@ -378,7 +376,7 @@
 
                 $.ajax({
 
-                    url: '@routes.Controller_ProgramingPackage.get_b_program_instance_by_filter()',
+                    url: '@routes.Controller_Blocko.get_b_program_instance_by_filter()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {

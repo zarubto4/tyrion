@@ -1,4 +1,4 @@
-@import models.project.global.Model_Project
+@import models.Model_Project
 @import utilities.Server
 
 @(project: Model_Project)
@@ -458,7 +458,7 @@
                 model_data = $("#newProject").serializeObject();
 
                 $.ajax({
-                    url: '@routes.Controller_ProgramingPackage.project_create()' ,
+                    url: '@routes.Controller_Project.project_create()' ,
                     type: 'POST',
                     contentType: 'application/json',
                     headers: {
@@ -482,7 +482,7 @@
             function deleteProject(id){
 
                 $.ajax({
-                    url: '@routes.Controller_ProgramingPackage.project_delete("")' + id  ,
+                    url: '@routes.Controller_Project.project_delete("")' + id  ,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")

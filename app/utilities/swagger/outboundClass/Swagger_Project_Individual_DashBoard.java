@@ -1,7 +1,7 @@
 package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
-import models.project.global.Model_Project;
+import models.Model_Project;
 
 import java.util.ArrayList;
 import java.util.List;

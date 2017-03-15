@@ -2,7 +2,7 @@ package utilities.scheduler.schedules_activities;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_WebSocket;
-import models.compiler.Model_VersionObject;
+import models.Model_VersionObject;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

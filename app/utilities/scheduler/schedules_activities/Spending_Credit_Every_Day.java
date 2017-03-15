@@ -1,10 +1,10 @@
 package utilities.scheduler.schedules_activities;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import models.project.global.Model_Product;
-import models.project.global.financial.Model_GeneralTariffExtensions;
-import models.project.global.financial.Model_Invoice;
-import models.project.global.financial.Model_InvoiceItem;
+import models.Model_Product;
+import models.Model_GeneralTariffExtensions;
+import models.Model_Invoice;
+import models.Model_InvoiceItem;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

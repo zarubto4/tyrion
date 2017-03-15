@@ -1,5 +1,5 @@
-@import models.blocko.Model_BlockoBlockVersion
-@import models.blocko.Model_TypeOfBlock
+@import models.Model_BlockoBlockVersion
+@import models.Model_TypeOfBlock
 
 <section class="content-header">
   <h1> Blocko object approving </h1>
@@ -212,7 +212,7 @@
           model_data = {"object_id": id,
                         "reason": reason};
           $.ajax({
-            url: '@routes.Controller_ProgramingPackage.blockoDisapprove()',
+            url: '@routes.Controller_Blocko.blockoDisapprove()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -259,7 +259,7 @@
                 };
             }
           $.ajax({
-            url: '@routes.Controller_ProgramingPackage.blockoApproval()' ,
+            url: '@routes.Controller_Blocko.blockoApproval()' ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {

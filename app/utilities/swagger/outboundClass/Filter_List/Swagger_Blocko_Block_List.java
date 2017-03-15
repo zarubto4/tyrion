@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.blocko.Model_BlockoBlock;
+import models.Model_BlockoBlock;
 import utilities.swagger.outboundClass.Swagger_Blocko_Block_Filter_Detail;
 
 import java.util.ArrayList;

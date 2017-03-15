@@ -2,9 +2,7 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
-import models.person.Model_Person;
-import models.project.global.Model_Product;
-import models.project.global.financial.*;
+import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;

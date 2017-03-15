@@ -1,9 +1,9 @@
 package controllers;
 
 import io.swagger.annotations.*;
-import models.person.Model_Person;
-import models.person.Model_Permission;
-import models.person.Model_SecurityRole;
+import models.Model_Person;
+import models.Model_Permission;
+import models.Model_SecurityRole;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;

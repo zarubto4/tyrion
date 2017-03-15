@@ -183,86 +183,86 @@ PUT             /invoice/send_remainder/:invoice_id                             
 DELETE          /invoice/:invoice_id                                                        @controllers.Controller_Finance.invoice_remove(invoice_id)
 
 #Project
-POST           /project                                                                     @controllers.Controller_ProgramingPackage.project_create()
-PUT            /project/:project_id                                                         @controllers.Controller_ProgramingPackage.project_update(project_id)
-GET            /project/:project_id                                                         @controllers.Controller_ProgramingPackage.project_get(project_id)
-GET            /project                                                                     @controllers.Controller_ProgramingPackage.project_getByUser
-DELETE         /project/:project_id                                                         @controllers.Controller_ProgramingPackage.project_delete(project_id)
-PUT            /project/shareProject/:project_id                                            @controllers.Controller_ProgramingPackage.project_invite(project_id)
-PUT            /project/unshareProject/:project_id                                          @controllers.Controller_ProgramingPackage.project_removeParticipant(project_id)
-PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.Controller_ProgramingPackage.project_addParticipant(invitation_id, decision: Boolean)
-PUT            /project/change_participant_state/:project_id                                @controllers.Controller_ProgramingPackage.project_changeParticipantStatus(project_id)
+POST           /project                                                                     @controllers.Controller_Project.project_create()
+PUT            /project/:project_id                                                         @controllers.Controller_Project.project_update(project_id)
+GET            /project/:project_id                                                         @controllers.Controller_Project.project_get(project_id)
+GET            /project                                                                     @controllers.Controller_Project.project_getByUser
+DELETE         /project/:project_id                                                         @controllers.Controller_Project.project_delete(project_id)
+PUT            /project/shareProject/:project_id                                            @controllers.Controller_Project.project_invite(project_id)
+PUT            /project/unshareProject/:project_id                                          @controllers.Controller_Project.project_removeParticipant(project_id)
+PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.Controller_Project.project_addParticipant(invitation_id, decision: Boolean)
+PUT            /project/change_participant_state/:project_id                                @controllers.Controller_Project.project_changeParticipantStatus(project_id)
 
 #Program
-POST           /b_program/:project_id                                                       @controllers.Controller_ProgramingPackage.new_b_Program(project_id)
-GET            /b_program/:b_program_id                                                     @controllers.Controller_ProgramingPackage.get_b_Program(b_program_id)
-PUT            /b_program/:b_program_id                                                     @controllers.Controller_ProgramingPackage.edit_b_Program(b_program_id)
-DELETE         /b_program/:b_program_id                                                     @controllers.Controller_ProgramingPackage.remove_b_Program(b_program_id)
-PUT            /b_program/list/:page_number                                                 @controllers.Controller_ProgramingPackage.get_b_Program_by_Filter(page_number:Int )
+POST           /b_program/:project_id                                                       @controllers.Controller_Blocko.new_b_Program(project_id)
+GET            /b_program/:b_program_id                                                     @controllers.Controller_Blocko.get_b_Program(b_program_id)
+PUT            /b_program/:b_program_id                                                     @controllers.Controller_Blocko.edit_b_Program(b_program_id)
+DELETE         /b_program/:b_program_id                                                     @controllers.Controller_Blocko.remove_b_Program(b_program_id)
+PUT            /b_program/list/:page_number                                                 @controllers.Controller_Blocko.get_b_Program_by_Filter(page_number:Int )
         
-PUT            /b_program/version/:b_program_id                                             @controllers.Controller_ProgramingPackage.update_b_program_new_version(b_program_id)
-GET            /b_program/version/:version_id                                               @controllers.Controller_ProgramingPackage.get_b_Program_version(version_id)
-DELETE         /b_program/version/:version_id                                               @controllers.Controller_ProgramingPackage.remove_b_Program_version(version_id)
+PUT            /b_program/version/:b_program_id                                             @controllers.Controller_Blocko.update_b_program_new_version(b_program_id)
+GET            /b_program/version/:version_id                                               @controllers.Controller_Blocko.get_b_Program_version(version_id)
+DELETE         /b_program/version/:version_id                                               @controllers.Controller_Blocko.remove_b_Program_version(version_id)
 
 #Instance
 
 
-GET            /instance/project/:project_id                            @controllers.Controller_ProgramingPackage.get_b_program_instance_under_project(project_id)
-GET            /instance/get/:instance_id                               @controllers.Controller_ProgramingPackage.get_b_program_instance(instance_id)
-PUT            /instance/filter                                         @controllers.Controller_ProgramingPackage.get_b_program_instance_by_filter()
-GET            /instance_record/get/:instance_record_id                 @controllers.Controller_ProgramingPackage.get_b_program_instance_record(instance_record_id)
+GET            /instance/project/:project_id                            @controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
+GET            /instance/get/:instance_id                               @controllers.Controller_Blocko.get_b_program_instance(instance_id)
+PUT            /instance/filter                                         @controllers.Controller_Blocko.get_b_program_instance_by_filter()
+GET            /instance_record/get/:instance_record_id                 @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
 
-PUT            /instance/command/:instance_id/:target_id/:command       @controllers.Controller_ProgramingPackage.send_command_to_instance(instance_id, target_id, command)
-PUT            /instance/program/:instance_id                           @controllers.Controller_ProgramingPackage.update_blocko_code_in_instance_with_code(instance_id)
-PUT            /instance/ping/:instance_id                              @controllers.Controller_ProgramingPackage.ping_instance(instance_id)
-PUT            /instance/temporary_instance                             @controllers.Controller_ProgramingPackage.instance_add_temporary_instance()
-PUT            /instance/add_yoda/:instance_id/:yoda_id                 @controllers.Controller_ProgramingPackage.instance_add_yoda(instance_id, yoda_id)
-PUT            /instance/remove_yoda/:instance_id/:yoda_id              @controllers.Controller_ProgramingPackage.instance_remove_yoda(instance_id, yoda_id)
-PUT            /instance/add_device/:instance_id/:yoda_id/:device_id    @controllers.Controller_ProgramingPackage.instance_add_device(instance_id, yoda_id, device_id)
-PUT            /instance/remove_device/:instance_id/:yoda_id/:device_id @controllers.Controller_ProgramingPackage.instance_remove_device(instance_id, yoda_id, device_id)
-PUT            /instance/uploadToCloud/:version_id                      @controllers.Controller_ProgramingPackage.upload_b_Program_ToCloud(version_id)
-PUT            /instance/shut_down/:instance_name                       @controllers.Controller_ProgramingPackage.instance_shut_down(instance_name)
+PUT            /instance/command/:instance_id/:target_id/:command       @controllers.Controller_Blocko.send_command_to_instance(instance_id, target_id, command)
+PUT            /instance/program/:instance_id                           @controllers.Controller_Blocko.update_blocko_code_in_instance_with_code(instance_id)
+PUT            /instance/ping/:instance_id                              @controllers.Controller_Blocko.ping_instance(instance_id)
+PUT            /instance/temporary_instance                             @controllers.Controller_Blocko.instance_add_temporary_instance()
+PUT            /instance/add_yoda/:instance_id/:yoda_id                 @controllers.Controller_Blocko.instance_add_yoda(instance_id, yoda_id)
+PUT            /instance/remove_yoda/:instance_id/:yoda_id              @controllers.Controller_Blocko.instance_remove_yoda(instance_id, yoda_id)
+PUT            /instance/add_device/:instance_id/:yoda_id/:device_id    @controllers.Controller_Blocko.instance_add_device(instance_id, yoda_id, device_id)
+PUT            /instance/remove_device/:instance_id/:yoda_id/:device_id @controllers.Controller_Blocko.instance_remove_device(instance_id, yoda_id, device_id)
+PUT            /instance/uploadToCloud/:version_id                      @controllers.Controller_Blocko.upload_b_Program_ToCloud(version_id)
+PUT            /instance/shut_down/:instance_name                       @controllers.Controller_Blocko.instance_shut_down(instance_name)
 
 
 #Blocks
-POST           /blockoBlock                                                         @controllers.Controller_ProgramingPackage.blockoBlock_create()
-PUT            /blockoBlock/:blocko_block_id                                        @controllers.Controller_ProgramingPackage.blockoBlock_update(blocko_block_id)
-GET            /blockoBlock/:blocko_block_id                                        @controllers.Controller_ProgramingPackage.blockoBlock_get(blocko_block_id)
-DELETE         /blockoBlock/:blocko_block_id                                        @controllers.Controller_ProgramingPackage.blockoBlock_delete(blocko_block_id)
-PUT            /blockoBlock/list/:page_number                                       @controllers.Controller_ProgramingPackage.blockoBlock_getByFilter(page_number:Int )
+POST           /blockoBlock                                                         @controllers.Controller_Blocko.blockoBlock_create()
+PUT            /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_update(blocko_block_id)
+GET            /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_get(blocko_block_id)
+DELETE         /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_delete(blocko_block_id)
+PUT            /blockoBlock/list/:page_number                                       @controllers.Controller_Blocko.blockoBlock_getByFilter(page_number:Int )
 
-POST           /blockoBlock/version/:blocko_block_id                                @controllers.Controller_ProgramingPackage.blockoBlockVersion_create(blocko_block_id)
-PUT            /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_ProgramingPackage.blockoBlockVersion_update(blocko_block_version_id)
-PUT            /blockoBlock/version/make_public/:blocko_block_version_id            @controllers.Controller_ProgramingPackage.blockoBlockVersion_makePublic(blocko_block_version_id)
-GET            /blockoBlock/version/all/:blocko_block_id                            @controllers.Controller_ProgramingPackage.blockoBlockVersion_getAll(blocko_block_id)
-GET            /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_ProgramingPackage.blockoBlockVersion_get(blocko_block_version_id)
-DELETE         /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_ProgramingPackage.blockoBlockVersion_delete(blocko_block_version_id)
+POST           /blockoBlock/version/:blocko_block_id                                @controllers.Controller_Blocko.blockoBlockVersion_create(blocko_block_id)
+PUT            /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_Blocko.blockoBlockVersion_update(blocko_block_version_id)
+PUT            /blockoBlock/version/make_public/:blocko_block_version_id            @controllers.Controller_Blocko.blockoBlockVersion_makePublic(blocko_block_version_id)
+GET            /blockoBlock/version/all/:blocko_block_id                            @controllers.Controller_Blocko.blockoBlockVersion_getAll(blocko_block_id)
+GET            /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_Blocko.blockoBlockVersion_get(blocko_block_version_id)
+DELETE         /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_Blocko.blockoBlockVersion_delete(blocko_block_version_id)
 
-POST           /blockoBlock/scheme/version                                          @controllers.Controller_ProgramingPackage.blockoBlockVersion_createScheme()
-GET            /blockoBlock/scheme/version                                          @controllers.Controller_ProgramingPackage.blockoBlockVersion_getScheme()
-PUT            /blockoBlock/scheme/version                                          @controllers.Controller_ProgramingPackage.blockoBlockVersion_editScheme()
+POST           /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_createScheme()
+GET            /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_getScheme()
+PUT            /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_editScheme()
 
 #TypeOfBlocko
-POST           /typeOfBlock                                                         @controllers.Controller_ProgramingPackage.typeOfBlock_create()
-GET            /typeOfBlock                                                         @controllers.Controller_ProgramingPackage.typeOfBlock_getAll
-PUT            /typeOfBlock/list/:page_number                                       @controllers.Controller_ProgramingPackage.typeOfBlock_getByFilter(page_number: Int)
-GET            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_ProgramingPackage.typeOfBlock_get(type_of_block_id)
-PUT            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_ProgramingPackage.typeOfBlock_update(type_of_block_id)
-DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.Controller_ProgramingPackage.typeOfBlock_delete(type_of_block_id)
+POST           /typeOfBlock                                                         @controllers.Controller_Blocko.typeOfBlock_create()
+GET            /typeOfBlock                                                         @controllers.Controller_Blocko.typeOfBlock_getAll
+PUT            /typeOfBlock/list/:page_number                                       @controllers.Controller_Blocko.typeOfBlock_getByFilter(page_number: Int)
+GET            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_get(type_of_block_id)
+PUT            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_update(type_of_block_id)
+DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_delete(type_of_block_id)
 
 
 #BLocko Server
-POST            /blocko_server                                                      @controllers.Controller_ProgramingPackage.create_Homer_Server()
-PUT             /blocko_server/:server_id                                           @controllers.Controller_ProgramingPackage.edit_Homer_Server(server_id)
-GET             /blocko_server                                                      @controllers.Controller_ProgramingPackage.get_All_Homer_Server()
-DELETE          /blocko_server/:server_id                                           @controllers.Controller_ProgramingPackage.delete_Homer_Server(server_id)
+POST            /blocko_server                                                      @controllers.Controller_Blocko.create_Homer_Server()
+PUT             /blocko_server/:server_id                                           @controllers.Controller_Blocko.edit_Homer_Server(server_id)
+GET             /blocko_server                                                      @controllers.Controller_Blocko.get_All_Homer_Server()
+DELETE          /blocko_server/:server_id                                           @controllers.Controller_Blocko.delete_Homer_Server(server_id)
 
 #Blocko General
-PUT             /blocko/disapprove                                                  @controllers.Controller_ProgramingPackage.blockoDisapprove()
-PUT             /blocko/approval                                                    @controllers.Controller_ProgramingPackage.blockoApproval()
+PUT             /blocko/disapprove                                                  @controllers.Controller_Blocko.blockoDisapprove()
+PUT             /blocko/approval                                                    @controllers.Controller_Blocko.blockoApproval()
 
 #Board on Project
-GET             /blocko/all_details/:project_id                                     @controllers.Controller_CompilationLibraries.board_allDetailsForBlocko(project_id)
+GET             /blocko/all_details/:project_id                                     @controllers.Controller_Board.board_allDetailsForBlocko(project_id)
 
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
@@ -280,108 +280,108 @@ GET             /actualization_procedure/:actualization_procedure_id        @con
 ################################################################################################################################################################################
 
 #C_Program
-POST            /c_program                                                      @controllers.Controller_CompilationLibraries.c_program_create()
-GET             /c_program/:c_program_id                                        @controllers.Controller_CompilationLibraries.c_program_get(c_program_id)
-PUT             /c_program/list/:page_number                                    @controllers.Controller_CompilationLibraries.c_program_getByFilter(page_number: Int)
+POST            /c_program                                                      @controllers.Controller_Code.c_program_create()
+GET             /c_program/:c_program_id                                        @controllers.Controller_Code.c_program_get(c_program_id)
+PUT             /c_program/list/:page_number                                    @controllers.Controller_Code.c_program_getByFilter(page_number: Int)
 
-PUT             /c_program/:c_program_id                                        @controllers.Controller_CompilationLibraries.c_program_update(c_program_id)
-DELETE          /c_program/:c_program_id                                        @controllers.Controller_CompilationLibraries.c_program_delete(c_program_id)
+PUT             /c_program/:c_program_id                                        @controllers.Controller_Code.c_program_update(c_program_id)
+DELETE          /c_program/:c_program_id                                        @controllers.Controller_Code.c_program_delete(c_program_id)
 
-GET             /c_program/public/:type_of_board_id                             @controllers.Controller_CompilationLibraries.c_program_getPublicByType(type_of_board_id)
+GET             /c_program/public/:type_of_board_id                             @controllers.Controller_Code.c_program_getPublicByType(type_of_board_id)
 
-POST            /c_program/version/create/:c_program_id                         @controllers.Controller_CompilationLibraries.c_programVersion_create(c_program_id)
-PUT             /c_program/version/edit/:version_id                             @controllers.Controller_CompilationLibraries.c_programVersion_update(version_id)
+POST            /c_program/version/create/:c_program_id                         @controllers.Controller_Code.c_programVersion_create(c_program_id)
+PUT             /c_program/version/edit/:version_id                             @controllers.Controller_Code.c_programVersion_update(version_id)
 
-DELETE          /c_program/version/:version_id                                  @controllers.Controller_CompilationLibraries.c_programVersion_delete(version_id)
-GET             /c_program/version/:version_id                                  @controllers.Controller_CompilationLibraries.c_programVersion_get(version_id)
-POST            /c_program/version/compile                                      @controllers.Controller_CompilationLibraries.compile_C_Program_code()
-PUT             /c_program/version/compile/:version_id                          @controllers.Controller_CompilationLibraries.compile_C_Program_version(version_id)
+DELETE          /c_program/version/:version_id                                  @controllers.Controller_Code.c_programVersion_delete(version_id)
+GET             /c_program/version/:version_id                                  @controllers.Controller_Code.c_programVersion_get(version_id)
+POST            /c_program/version/compile                                      @controllers.Controller_Board.compile_C_Program_code()
+PUT             /c_program/version/compile/:version_id                          @controllers.Controller_Board.compile_C_Program_version(version_id)
 
-POST            /c_program/default/scheme                                       @controllers.Controller_CompilationLibraries.c_program_createDefault()
-PUT             /c_program/default/mark/:c_program_id/:version_id               @controllers.Controller_CompilationLibraries.c_program_markScheme(c_program_id,version_id)
+POST            /c_program/default/scheme                                       @controllers.Controller_Code.c_program_createDefault()
+PUT             /c_program/default/mark/:c_program_id/:version_id               @controllers.Controller_Code.c_program_markScheme(c_program_id,version_id)
 
-GET             /c_program/version/public/list/:page_number                     @controllers.Controller_CompilationLibraries.c_program_getPublicList(page_number: Int)
+GET             /c_program/version/public/list/:page_number                     @controllers.Controller_Code.c_program_getPublicList(page_number: Int)
 
 #C_Program/Public
-GET             /c_program/version_for_decision/:version_id                     @controllers.Controller_CompilationLibraries.get_version_for_decision(version_id)
-PUT             /c_program/version_for_aprove/approve_decision                  @controllers.Controller_CompilationLibraries.approve_decision()
-PUT             /c_program/version/make_public/:version_id                      @controllers.Controller_CompilationLibraries.c_programVersion_makePublic(version_id)
+GET             /c_program/version_for_decision/:version_id                     @controllers.Controller_Code.get_version_for_decision(version_id)
+PUT             /c_program/version_for_aprove/approve_decision                  @controllers.Controller_Code.approve_decision()
+PUT             /c_program/version/make_public/:version_id                      @controllers.Controller_Code.c_programVersion_makePublic(version_id)
 
 #Libraries
-POST            /library                                                        @controllers.Controller_CompilationLibraries.importLibrary_create()
-GET             /library                                                        @controllers.Controller_CompilationLibraries.importLibrary_getAll()
-GET             /library/:library_id                                            @controllers.Controller_CompilationLibraries.importLibrary_get(library_id)
-PUT             /library/:library_id                                            @controllers.Controller_CompilationLibraries.importLibrary_update(library_id)
-PUT             /library/list/:page_number                                      @controllers.Controller_CompilationLibraries.importLibrary_getByFilter(page_number: Int)
-DELETE          /library/:library_id                                            @controllers.Controller_CompilationLibraries.importLibrary_delete(library_id)
+POST            /library                                                        @controllers.Controller_Library.importLibrary_create()
+GET             /library                                                        @controllers.Controller_Library.importLibrary_getAll()
+GET             /library/:library_id                                            @controllers.Controller_Library.importLibrary_get(library_id)
+PUT             /library/:library_id                                            @controllers.Controller_Library.importLibrary_update(library_id)
+PUT             /library/list/:page_number                                      @controllers.Controller_Library.importLibrary_getByFilter(page_number: Int)
+DELETE          /library/:library_id                                            @controllers.Controller_Library.importLibrary_delete(library_id)
 
-POST            /library/version/:library_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_create(library_id)
-GET             /library/version/:version_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_get(version_id)
-PUT             /library/version/:version_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_update(version_id)
-DELETE          /library/version/:version_id                                    @controllers.Controller_CompilationLibraries.importLibraryVersion_delete(version_id)
+POST            /library/version/:library_id                                    @controllers.Controller_Library.importLibraryVersion_create(library_id)
+GET             /library/version/:version_id                                    @controllers.Controller_Library.importLibraryVersion_get(version_id)
+PUT             /library/version/:version_id                                    @controllers.Controller_Library.importLibraryVersion_update(version_id)
+DELETE          /library/version/:version_id                                    @controllers.Controller_Library.importLibraryVersion_delete(version_id)
 
-PUT             /library/version/upload_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadFile(version_id)
-PUT             /library/version/remove_file/:version_id                        @controllers.Controller_CompilationLibraries.importLibraryVersion_removeFile(version_id)
+PUT             /library/version/upload_file/:version_id                        @controllers.Controller_Library.importLibraryVersion_uploadFile(version_id)
+PUT             /library/version/remove_file/:version_id                        @controllers.Controller_Library.importLibraryVersion_removeFile(version_id)
 
-POST            /library/version/upload_example/:version_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_uploadExample(version_id)
-DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_CompilationLibraries.importLibraryVersion_removeExample(example_id)
+POST            /library/version/upload_example/:version_id                     @controllers.Controller_Library.importLibraryVersion_uploadExample(version_id)
+DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_Library.importLibraryVersion_removeExample(example_id)
 
 #Actualization
-GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_CompilationLibraries.board_get_for_fast_upload(project_id)
-PUT             /c_program/version/upload                                       @controllers.Controller_CompilationLibraries.uploadCompilationToBoard()
+GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_Board.board_get_for_fast_upload(project_id)
+PUT             /c_program/version/upload                                       @controllers.Controller_Board.uploadCompilationToBoard()
 #POST           /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
 #Processor
-POST            /processor                                                      @controllers.Controller_CompilationLibraries.processor_create()
-GET             /processor/:processor_id                                        @controllers.Controller_CompilationLibraries.processor_get(processor_id)
-GET             /processor                                                      @controllers.Controller_CompilationLibraries.processor_getAll()
-PUT             /processor/:processor_id                                        @controllers.Controller_CompilationLibraries.processor_update(processor_id)
-DELETE          /processor/:processor_id                                        @controllers.Controller_CompilationLibraries.processor_delete(processor_id)
+POST            /processor                                                      @controllers.Controller_Board.processor_create()
+GET             /processor/:processor_id                                        @controllers.Controller_Board.processor_get(processor_id)
+GET             /processor                                                      @controllers.Controller_Board.processor_getAll()
+PUT             /processor/:processor_id                                        @controllers.Controller_Board.processor_update(processor_id)
+DELETE          /processor/:processor_id                                        @controllers.Controller_Board.processor_delete(processor_id)
 
 #Board
-POST            /board                                                          @controllers.Controller_CompilationLibraries.board_create()
-PUT             /board/userDescription/:board_id                                @controllers.Controller_CompilationLibraries.board_update_description(board_id)
-PUT             /board/backup/:board_id                                         @controllers.Controller_CompilationLibraries.board_update_backup(board_id)
+POST            /board                                                          @controllers.Controller_Board.board_create()
+PUT             /board/userDescription/:board_id                                @controllers.Controller_Board.board_update_description(board_id)
+PUT             /board/backup/:board_id                                         @controllers.Controller_Board.board_update_backup(board_id)
 
-PUT             /board/filter                                                   @controllers.Controller_CompilationLibraries.board_getByFilter()
-GET             /board/check/:hash_for_adding                                   @controllers.Controller_CompilationLibraries.board_check(hash_for_adding)
-GET             /board/:board_id                                                @controllers.Controller_CompilationLibraries.board_get(board_id)
-DELETE          /board/deactivateBoard/:board_id                                @controllers.Controller_CompilationLibraries.board_deactivate(board_id)
-PUT             /board/:hash_for_adding/:project_id                             @controllers.Controller_CompilationLibraries.board_connectProject(hash_for_adding, project_id)
-DELETE          /board/:board_id                                                @controllers.Controller_CompilationLibraries.board_disconnectProject(board_id)
+PUT             /board/filter                                                   @controllers.Controller_Board.board_getByFilter()
+GET             /board/check/:hash_for_adding                                   @controllers.Controller_Board.board_check(hash_for_adding)
+GET             /board/:board_id                                                @controllers.Controller_Board.board_get(board_id)
+DELETE          /board/deactivateBoard/:board_id                                @controllers.Controller_Board.board_deactivate(board_id)
+PUT             /board/:hash_for_adding/:project_id                             @controllers.Controller_Board.board_connectProject(hash_for_adding, project_id)
+DELETE          /board/:board_id                                                @controllers.Controller_Board.board_disconnectProject(board_id)
 
 
 #Producer
-POST            /producer                                                       @controllers.Controller_CompilationLibraries.new_Producer()
-PUT             /producer/:producer_id                                          @controllers.Controller_CompilationLibraries.edit_Producer(producer_id)
-GET             /producer/all                                                   @controllers.Controller_CompilationLibraries.get_Producers()
-GET             /producer/:producer_id                                          @controllers.Controller_CompilationLibraries.get_Producer(producer_id)
-DELETE          /producer/:producer_id                                          @controllers.Controller_CompilationLibraries.delete_Producer(producer_id)
+POST            /producer                                                       @controllers.Controller_Board.new_Producer()
+PUT             /producer/:producer_id                                          @controllers.Controller_Board.edit_Producer(producer_id)
+GET             /producer/all                                                   @controllers.Controller_Board.get_Producers()
+GET             /producer/:producer_id                                          @controllers.Controller_Board.get_Producer(producer_id)
+DELETE          /producer/:producer_id                                          @controllers.Controller_Board.delete_Producer(producer_id)
 
 #TypeOfBoard
-POST            /typeOfBoard                                                    @controllers.Controller_CompilationLibraries.typeOfBoard_create()
-PUT             /typeOfBoard/picture_up/:type_of_board_id                       @controllers.Controller_CompilationLibraries.typeOfBoard_uploadPicture(type_of_board_id)
-PUT             /typeOfBoard/picture_remove/:type_of_board_id                   @controllers.Controller_CompilationLibraries.typeOfBoard_removePicture(type_of_board_id)
-PUT             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_update(type_of_board_id)
-DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_delete(type_of_board_id)
-GET             /typeOfBoard/all                                                @controllers.Controller_CompilationLibraries.typeOfBoard_getAll()
-GET             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_CompilationLibraries.typeOfBoard_get(type_of_board_id)
+POST            /typeOfBoard                                                    @controllers.Controller_Board.typeOfBoard_create()
+PUT             /typeOfBoard/picture_up/:type_of_board_id                       @controllers.Controller_Board.typeOfBoard_uploadPicture(type_of_board_id)
+PUT             /typeOfBoard/picture_remove/:type_of_board_id                   @controllers.Controller_Board.typeOfBoard_removePicture(type_of_board_id)
+PUT             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_Board.typeOfBoard_update(type_of_board_id)
+DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.Controller_Board.typeOfBoard_delete(type_of_board_id)
+GET             /typeOfBoard/all                                                @controllers.Controller_Board.typeOfBoard_getAll()
+GET             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_Board.typeOfBoard_get(type_of_board_id)
 
 #Bootloader
-POST            /bootloader/:type_of_board_id                                   @controllers.Controller_CompilationLibraries.boot_loader_create(type_of_board_id)
-PUT             /bootloader/file/:boot_loader_id                                @controllers.Controller_CompilationLibraries.boot_loader_upload_file(boot_loader_id)
-PUT             /bootloader/mark/bootloader/:boot_loader_id                     @controllers.Controller_CompilationLibraries.boot_loader_mark_as_main(boot_loader_id)
-PUT             /bootloader/update_device_list                                  @controllers.Controller_CompilationLibraries.boot_loader_manual_update()
+POST            /bootloader/:type_of_board_id                                   @controllers.Controller_Board.boot_loader_create(type_of_board_id)
+PUT             /bootloader/file/:boot_loader_id                                @controllers.Controller_Board.boot_loader_upload_file(boot_loader_id)
+PUT             /bootloader/mark/bootloader/:boot_loader_id                     @controllers.Controller_Board.boot_loader_mark_as_main(boot_loader_id)
+PUT             /bootloader/update_device_list                                  @controllers.Controller_Board.boot_loader_manual_update()
 
 #File // Skryto ve swaggeru
-GET             /file/fileRecord/:file_record_id                                @controllers.Controller_CompilationLibraries.fileRecord(file_record_id)
+GET             /file/fileRecord/:file_record_id                                @controllers.Controller_Board.fileRecord(file_record_id)
 
 
 #Compilation Server
-POST            /compilation_server                                             @controllers.Controller_CompilationLibraries.create_Compilation_Server()
-PUT             /compilation_server/:server_id                                  @controllers.Controller_CompilationLibraries.edit_Compilation_Server(server_id)
-GET             /compilation_server                                             @controllers.Controller_CompilationLibraries.get_All_Compilation_Server()
-DELETE          /compilation_server/:server_id                                  @controllers.Controller_CompilationLibraries.delete_Compilation_Server(server_id)
+POST            /compilation_server                                             @controllers.Controller_Board.create_Compilation_Server()
+PUT             /compilation_server/:server_id                                  @controllers.Controller_Board.edit_Compilation_Server(server_id)
+GET             /compilation_server                                             @controllers.Controller_Board.get_All_Compilation_Server()
+DELETE          /compilation_server/:server_id                                  @controllers.Controller_Board.delete_Compilation_Server(server_id)
 
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################

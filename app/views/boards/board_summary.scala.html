@@ -1,6 +1,6 @@
-@import models.compiler.Model_TypeOfBoard
-@import models.compiler.Model_Producer
-@import models.compiler.Model_Processor
+@import models.Model_TypeOfBoard
+@import models.Model_Producer
+@import models.Model_Processor
 
 <section class="content-header">
     <h1> Board Summary </h1>
@@ -197,7 +197,7 @@
          model_data = $("#newBoardForm").serializeObject();
 
          $.ajax({
-             url: '@routes.Controller_CompilationLibraries.board_create()',
+             url: '@routes.Controller_Board.board_create()',
              type: 'POST',
              contentType: 'application/json',
              headers: {
@@ -310,7 +310,7 @@
 
          $.ajax({
 
-             url: '@routes.Controller_CompilationLibraries.board_getByFilter()',
+             url: '@routes.Controller_Board.board_getByFilter()',
              type: 'PUT',
              contentType: 'application/json',
              headers: {

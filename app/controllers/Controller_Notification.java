@@ -3,13 +3,13 @@ package controllers;
 import com.avaje.ebean.Query;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
-import models.compiler.Model_Board;
-import models.compiler.Model_VersionObject;
-import models.notification.Model_Notification;
-import models.person.Model_Person;
-import models.project.b_program.Model_BProgram;
-import models.project.c_program.Model_CProgram;
-import models.project.global.Model_Project;
+import models.Model_Board;
+import models.Model_VersionObject;
+import models.Model_Notification;
+import models.Model_Person;
+import models.Model_BProgram;
+import models.Model_CProgram;
+import models.Model_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -23,13 +23,10 @@ import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
 import utilities.swagger.documentationClass.Swagger_Notification_Test;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
 import java.util.Date;
 import java.util.List;
@@ -38,7 +35,7 @@ import java.util.List;
 public class Controller_Notification extends Controller {
 
   @Inject
-  Controller_ProgramingPackage controllerProgramingPackage;
+  Controller_Project controllerProgramingPackage;
 
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -54,9 +51,9 @@ public class Controller_Notification extends Controller {
 
     Model_Notification notification = new Model_Notification(Notification_importance.normal, Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")
-                                    .setObject(Swagger_B_Program_Version_New.class, version_object.id, version_object.version_name, version_object.b_program.project_id() )
+                                    .setObject(version_object)
                                     .setText("from Blocko program")
-                                    .setObject(Model_BProgram.class, version_object.b_program.id, version_object.b_program.name, version_object.b_program.project_id() )
+                                    .setObject(version_object.b_program)
                                     .setText("with Critical unknown Error, Probably some bug.");
 
     //send_notification(person, notification);
@@ -89,7 +86,7 @@ public class Controller_Notification extends Controller {
       case "1":{
         notification = new Model_Notification(imp, lvl)
                 .setText("Test object: ")
-                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setObject(person)
                 .setText(" test bold text: ")
                 .setBoldText("bold text ")
                 .setText("test link: ")
@@ -191,7 +188,7 @@ public class Controller_Notification extends Controller {
       case "2":{
         notification = new Model_Notification(imp, lvl)
                 .setText("Test object and long text: ")
-                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setObject(person)
                 .setText(" test text: Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ");
         break;}
       case "3":{
@@ -202,14 +199,14 @@ public class Controller_Notification extends Controller {
       case "4": {
         notification = new Model_Notification(imp, lvl)
                 .setText("Test object and link: ")
-                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setObject(person)
                 .setText(" test link: ")
                 .setLink("Yes","#");
         break;}
       default:{
         notification = new Model_Notification(imp, lvl)
                 .setText("Test object: ")
-                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setObject(person)
                 .setText(" test bold text: ")
                 .setBoldText("bold text ")
                 .setText("test link: ")

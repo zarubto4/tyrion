@@ -2,9 +2,9 @@ package utilities.web_socket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.notification.Model_Notification;
-import models.person.Model_Person;
-import models.project.b_program.servers.Model_HomerServer;
+import models.Model_Notification;
+import models.Model_Person;
+import models.Model_HomerServer;
 import play.libs.Json;
 import play.mvc.WebSocket;
 

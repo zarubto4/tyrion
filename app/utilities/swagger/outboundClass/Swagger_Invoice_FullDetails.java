@@ -1,8 +1,8 @@
 package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
-import models.project.global.financial.Model_Invoice;
-import models.project.global.financial.Model_InvoiceItem;
+import models.Model_Invoice;
+import models.Model_InvoiceItem;
 
 import java.util.List;
 
