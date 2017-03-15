@@ -146,9 +146,9 @@ public class Model_HomerInstance extends Model {
         new Model_Notification(Notification_importance.low,  Notification_level.info)
                 .setText("Server started creating new Blocko Instance of Blocko Version ")
                 .setText(this.actual_instance.version_object.b_program.name + " ", "black", true, false, false)
-                .setObject(Swagger_B_Program_Version.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id() )
+                .setObject(this.actual_instance.version_object)
                 .setText(" from Blocko program ")
-                .setObject(Model_BProgram.class, this.actual_instance.version_object.b_program.id, this.actual_instance.version_object.b_program.name + ".", this.actual_instance.version_object.b_program.project_id())
+                .setObject(this.actual_instance.version_object.b_program)
                 .send(Controller_Security.getPerson());
 
     }
@@ -158,9 +158,9 @@ public class Model_HomerInstance extends Model {
 
         new Model_Notification(Notification_importance.low, Notification_level.success)
                 .setText("Server successfully created the instance of Blocko Version ")
-                .setObject(Swagger_B_Program_Version.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id() )
+                .setObject(this.actual_instance.version_object)
                 .setText(" from Blocko program ")
-                .setObject(Model_BProgram.class, this.actual_instance.version_object.b_program.id, this.actual_instance.version_object.b_program.name + ".", this.actual_instance.version_object.b_program.project_id())
+                .setObject(this.actual_instance.version_object.b_program)
                 .send(Controller_Security.getPerson());
     }
 
@@ -175,9 +175,9 @@ public class Model_HomerInstance extends Model {
                 .setText(this.b_program.name, "black", true, false, false)
                 .setText("for reason: ")
                 .setText(reason + " ", "black", true, false, false)
-                .setObject(Swagger_B_Program_Version.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.b_program.project_id() )
+                .setObject(this.actual_instance.version_object)
                 .setText(" from Blocko program ")
-                .setObject(Model_BProgram.class, this.b_program.id, this.b_program.name, this.b_program.project_id() )
+                .setObject(this.b_program)
                 .setText(". Server will try to do that as soon as possible.")
                 .send(Controller_Security.getPerson()); // TODO jestli bude uživatel přihlášen, když se notifikace odesílá
     }
@@ -191,7 +191,7 @@ public class Model_HomerInstance extends Model {
 
         new Model_Notification(Notification_importance.low, Notification_level.info)
                 .setText("New actualization task was added to Task Queue on Version ")
-                .setObject(Swagger_B_Program_Version_New.class, this.actual_instance.version_object.id, this.actual_instance.version_object.version_name, this.actual_instance.version_object.b_program.project_id())
+                .setObject(this.actual_instance.version_object)
                 .send(receivers);
 
     }

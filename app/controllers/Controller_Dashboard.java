@@ -115,7 +115,7 @@ public class Controller_Dashboard extends Controller {
                         controllers.routes.javascript.Controller_CompilationLibraries.get_Producer(),
                         controllers.routes.javascript.Controller_CompilationLibraries.delete_Producer(),
 
-                        controllers.routes.javascript.Controller_ProgramingPackage.ping_instance()
+                        controllers.routes.javascript.Controller_Blocko.ping_instance()
                 )
         );
     }

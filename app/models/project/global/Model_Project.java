@@ -108,9 +108,9 @@ public class Model_Project extends Model {
 
         new Model_Notification(Notification_importance.normal, Notification_level.info)
                 .setText("User ")
-                .setObject(Model_Person.class, owner.id, owner.full_name, null, "black", false, true, false, false)
+                .setObject(owner)
                 .setText(" invited you into the project ")
-                .setObject(Model_Project.class, this.id, this.name, this.id, "black", false, true, false, false)
+                .setObject(this)
                 .setText(". Do you accept the invitation?")
                 .setButton(Notification_action.accept_project_invitation, invitation.id, "green", "Yes", false, false, false)
                 .setButton(Notification_action.reject_project_invitation, invitation.id, "red", "No", false, false, false)
@@ -124,9 +124,9 @@ public class Model_Project extends Model {
 
         new Model_Notification(Notification_importance.normal, Notification_level.info)
                 .setText("User ")
-                .setObject(Model_Person.class, person.id, person.full_name, null, "black", false, true, false, false)
+                .setObject(person)
                 .setText(" did not accept your invitation to the project ")
-                .setObject(Model_Project.class, this.id, this.name, this.id, "black", false, true, false, false)
+                .setObject(this)
                 .setText(".")
                 .send(owner);
     }
@@ -138,9 +138,9 @@ public class Model_Project extends Model {
 
         new Model_Notification(Notification_importance.normal, Notification_level.info)
                 .setText("User ")
-                .setObject(Model_Person.class, person.id, person.full_name, null, "black", false, true, false, false)
+                .setObject(person)
                 .setText(" accepted your invitation to the project ")
-                .setObject(Model_Project.class, this.id, this.name, this.id, "black", false, true, false, false)
+                .setObject(this)
                 .setText(".")
                 .send(owner);
     }
@@ -152,10 +152,10 @@ public class Model_Project extends Model {
 
         new Model_Notification(Notification_importance.normal, Notification_level.info)
                 .setText("User ")
-                .setObject(Model_Person.class, person.id, person.full_name, null, "black", false, true, false, false)
+                .setObject(person)
                 .setText(" changed your status in project ")
-                .setObject(Model_Project.class, this.id, this.name, this.id, "black", false, true, false, false)
-                .setText(" to " + participant.state.name() + ". You have different person_permissions now.")
+                .setObject(this)
+                .setText(" to " + participant.state.name() + ". You have different permissions now.")
                 .send(participant.person);
     }
 

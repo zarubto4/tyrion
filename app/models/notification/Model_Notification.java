@@ -128,40 +128,6 @@ public class Model_Notification extends Model {
     }
 
     @JsonIgnore @Transient
-    public Model_Notification setObject(Class object , String id , String text, String project_id){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.object;
-        element.name    = object.getSimpleName().replaceAll("Swagger_","").replaceAll("Model_","");
-        element.id       = id;
-        element.text    = text;
-        element.project_id = project_id;
-        element.color      = "black";
-
-        array.add(element);
-        return this;
-    }
-
-    @JsonIgnore @Transient
-    public Model_Notification setObject(Class object , String id , String text, String project_id, String color, boolean button, boolean bold, boolean italic, boolean underline){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type       = Notification_type.object;
-        element.name       = object.getSimpleName().replaceAll("Swagger_","").replaceAll("Model_","");
-        element.id         = id;
-        element.text       = text;
-        element.project_id = project_id;
-        element.color      = color;
-        element.button     = button;
-        element.bold       = bold;
-        element.italic     = italic;
-        element.underline  = underline;
-
-        array.add(element);
-        return this;
-    }
-
-    @JsonIgnore @Transient
     public Model_Notification setObject(Object object){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();

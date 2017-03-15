@@ -54,9 +54,9 @@ public class Controller_Notification extends Controller {
 
     Model_Notification notification = new Model_Notification(Notification_importance.normal, Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")
-                                    .setObject(Swagger_B_Program_Version_New.class, version_object.id, version_object.version_name, version_object.b_program.project_id() )
+                                    .setObject(version_object)
                                     .setText("from Blocko program")
-                                    .setObject(Model_BProgram.class, version_object.b_program.id, version_object.b_program.name, version_object.b_program.project_id() )
+                                    .setObject(version_object.b_program)
                                     .setText("with Critical unknown Error, Probably some bug.");
 
     //send_notification(person, notification);
@@ -89,7 +89,7 @@ public class Controller_Notification extends Controller {
       case "1":{
         notification = new Model_Notification(imp, lvl)
                 .setText("Test object: ")
-                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setObject(person)
                 .setText(" test bold text: ")
                 .setBoldText("bold text ")
                 .setText("test link: ")
@@ -191,7 +191,7 @@ public class Controller_Notification extends Controller {
       case "2":{
         notification = new Model_Notification(imp, lvl)
                 .setText("Test object and long text: ")
-                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setObject(person)
                 .setText(" test text: Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ");
         break;}
       case "3":{
@@ -202,14 +202,14 @@ public class Controller_Notification extends Controller {
       case "4": {
         notification = new Model_Notification(imp, lvl)
                 .setText("Test object and link: ")
-                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setObject(person)
                 .setText(" test link: ")
                 .setLink("Yes","#");
         break;}
       default:{
         notification = new Model_Notification(imp, lvl)
                 .setText("Test object: ")
-                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setObject(person)
                 .setText(" test bold text: ")
                 .setBoldText("bold text ")
                 .setText("test link: ")
