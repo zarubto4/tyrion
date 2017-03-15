@@ -9,7 +9,6 @@ import io.swagger.annotations.*;
 import models.compiler.*;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.c_program.Model_CProgram;
-import models.project.global.Model_Product;
 import models.project.global.Model_Project;
 import play.data.Form;
 import play.libs.Json;
@@ -2571,8 +2570,6 @@ public class Controller_CompilationLibraries extends Controller {
             Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
             if(type_of_board == null) return GlobalResult.notFoundObject("Type_of_board_not_found");
 
-            if(!help.control_identificator()) return GlobalResult.result_BadRequest("Version format is not correct (255.255.255)");
-
             if(Model_BootLoader.find.where().eq("version_identificator", help.version_identificator ).eq("type_of_board.id", type_of_board.id).findUnique() != null) return GlobalResult.result_BadRequest("Version format is not unique!");
 
             Model_BootLoader boot_loader = new Model_BootLoader();
@@ -2686,14 +2683,30 @@ public class Controller_CompilationLibraries extends Controller {
             List<Model_Board> boards = Model_Board.find.where().in("id", help.device_ids).findList();
             if(boards.isEmpty()) return GlobalResult.notFoundObject("Board not found");
 
-            Model_BootLoader bootLoader = Model_BootLoader.find.byId(help.bootloader_id);
-            if(bootLoader == null) return  GlobalResult.notFoundObject("BootLoader not found");
+            if(help.bootloader_id != null) {
 
-            for(Model_Board board : boards) {
-                if (!board.read_permission()) return GlobalResult.forbidden_Permission();
+                Model_BootLoader bootLoader = Model_BootLoader.find.byId(help.bootloader_id);
+                if (bootLoader == null) return GlobalResult.notFoundObject("BootLoader not found");
+
+                for(Model_Board board : boards) {
+                    if (!board.read_permission()) return GlobalResult.forbidden_Permission();
+                }
+
+                Model_Board.update_bootloader(boards, bootLoader);
+
+            }else {
+
+                for(Model_Board board : boards) {
+                    if (!board.read_permission()) return GlobalResult.forbidden_Permission();
+                }
+
+                Model_Board.update_bootloader(boards, null);
             }
 
-            Model_Board.update_bootloader(boards,bootLoader);
+
+
+
+
 
             // Vracím Json
             return GlobalResult.result_ok();

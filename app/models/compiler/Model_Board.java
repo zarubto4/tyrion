@@ -159,8 +159,12 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = false) public String avaible_bootloader_version_name()   { if(!type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return null; else  return type_of_board.main_boot_loader.name; }
     @JsonProperty  @Transient @ApiModelProperty(required = false) public String avaible_bootloader_id()             { if(!type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return null; else  return type_of_board.main_boot_loader.id; }
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean up_to_date_firmware()        { return  (c_program_update_plans == null);    }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){ return  (type_of_board.main_boot_loader == null || actual_boot_loader == null) ? true : !this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id);}
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){
+
+       if(type_of_board.main_boot_loader == null || actual_boot_loader == null) return true;
+       return (!this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id));
+
+    }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
 
@@ -291,10 +295,12 @@ public class Model_Board extends Model {
         swagger_board_short_detail.type_of_board_id = type_of_board_id();
         swagger_board_short_detail.type_of_board_name = type_of_board_name();
 
-        swagger_board_short_detail.edit_permission = edit_permission();
+        swagger_board_short_detail.edit_permission   = edit_permission();
         swagger_board_short_detail.delete_permission = delete_permission();
         swagger_board_short_detail.update_permission = update_permission();
 
+        swagger_board_short_detail.update_boot_loader_required = update_boot_loader_required();
+        swagger_board_short_detail.board_online_status = is_online();
 
         return swagger_board_short_detail;
 
@@ -803,6 +809,7 @@ public class Model_Board extends Model {
 
 
     @JsonIgnore @Transient   public static void update_bootloader(List<Model_Board> board_for_update, Model_BootLoader boot_loader){
+        // Attention!! Value  boot_loader can be null - in this case - system will used
 
         Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
         procedure.state = Actual_procedure_State.not_start_yet;
@@ -829,11 +836,34 @@ public class Model_Board extends Model {
                 cProgramUpdatePlan.update();
             }
 
+            Model_BootLoader boot_loader_for_using = null;
+
+            if(boot_loader != null){
+
+                boot_loader_for_using = boot_loader;
+
+            } else {
+
+                boot_loader_for_using = Model_BootLoader.find.where().eq("main_type_of_board.boards.id", board.id).findUnique();
+
+            }
+
             Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
             plan.board = board;
             plan.firmware_type = Firmware_type.BOOTLOADER;
             plan.actualization_procedure = procedure;
-            plan.bootloader = boot_loader;
+
+            if(boot_loader_for_using == null){
+
+                 plan.state =C_ProgramUpdater_State.bin_file_not_found;
+
+            }else {
+
+                plan.bootloader = boot_loader_for_using;
+                plan.state = C_ProgramUpdater_State.not_start_yet;
+
+            }
+
             plan.save();
         }
 
