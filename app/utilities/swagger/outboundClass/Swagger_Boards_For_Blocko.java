@@ -2,11 +2,11 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Model_TypeOfBoard;
-import models.compiler.Model_VersionObject;
-import models.project.c_program.Model_CProgram;
-import models.project.m_program.Model_MProgram;
-import models.project.m_program.Model_MProject;
+import models.Model_TypeOfBoard;
+import models.Model_VersionObject;
+import models.Model_CProgram;
+import models.Model_MProgram;
+import models.Model_MProject;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
-@import models.compiler.Model_BootLoader
-@import models.compiler.Model_TypeOfBoard
-@import models.compiler.Model_VersionObject
+@import models.Model_BootLoader
+@import models.Model_TypeOfBoard
+@import models.Model_VersionObject
 @import com.avaje.ebean.Expr
 @import utilities.enums.Compile_Status
 
@@ -398,7 +398,7 @@
     function setBootLoaderAsMain(boot_loader_id) {
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.boot_loader_mark_as_main("")' + boot_loader_id,
+            url: '@routes.Controller_Board.boot_loader_mark_as_main("")' + boot_loader_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken"),
@@ -458,7 +458,7 @@
         model_data = $("#newBootLoaderForm").serializeObject();
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.boot_loader_create(typeOfBoard.id)',
+            url: '@routes.Controller_Board.boot_loader_create(typeOfBoard.id)',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -618,7 +618,7 @@
         formData.append('file', file);
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.boot_loader_upload_file("")' + boot_loader_id ,
+            url: '@routes.Controller_Board.boot_loader_upload_file("")' + boot_loader_id ,
             type: 'PUT',
             processData: false, // tell jQuery not to process the data
             contentType: false, // tell jQuery not to set contentType
@@ -678,7 +678,7 @@
         var model_data = new FormData($("#pictureForm")[0]);
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.typeOfBoard_uploadPicture(typeOfBoard.id)',
+            url: '@routes.Controller_Board.typeOfBoard_uploadPicture(typeOfBoard.id)',
             type: 'PUT',
             contentType: false,
             processData: false,
@@ -713,7 +713,7 @@
 
     function removePicture() {
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.typeOfBoard_removePicture(typeOfBoard.id)',
+            url: '@routes.Controller_Board.typeOfBoard_removePicture(typeOfBoard.id)',
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN": getCookie("authToken")

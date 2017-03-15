@@ -1,8 +1,8 @@
 package utilities.scheduler.schedules_activities;
 
 
-import models.person.Model_Person;
-import models.person.Model_ValidationToken;
+import models.Model_Person;
+import models.Model_ValidationToken;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

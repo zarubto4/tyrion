@@ -1,6 +1,6 @@
 package utilities.request_counter;
 
-import models.loggy.Model_RequestLog;
+import models.Model_RequestLog;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;

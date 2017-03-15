@@ -1,5 +1,5 @@
-@import models.compiler.Model_Board
-@import models.project.c_program.actualization.Model_CProgramUpdatePlan
+@import models.Model_Board
+@import models.Model_CProgramUpdatePlan
 @import utilities.enums.Firmware_type
 
 @(board: Model_Board)
@@ -310,7 +310,7 @@
 
 
                 $.ajax({
-                    url: '@routes.Controller_CompilationLibraries.boot_loader_manual_update()',
+                    url: '@routes.Controller_Board.boot_loader_manual_update()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {

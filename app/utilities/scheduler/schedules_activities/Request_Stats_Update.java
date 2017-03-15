@@ -1,6 +1,6 @@
 package utilities.scheduler.schedules_activities;
 
-import models.loggy.Model_RequestLog;
+import models.Model_RequestLog;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

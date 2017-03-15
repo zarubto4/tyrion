@@ -1,8 +1,8 @@
 package utilities.independent_threads;
 
-import models.compiler.Model_Board;
-import models.project.b_program.instnace.Model_HomerInstance;
-import models.project.b_program.servers.Model_HomerServer;
+import models.Model_Board;
+import models.Model_HomerInstance;
+import models.Model_HomerServer;
 import utilities.enums.Homer_Instance_Type;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;

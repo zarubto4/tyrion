@@ -1,8 +1,5 @@
-@import models.compiler.Model_Board
-@import models.person.Model_Person
-@import models.project.global.Model_Product
-@import models.project.global.Model_Project
-@import models.project.global.financial.{Model_Invoice, Model_InvoiceItem}
+@import models.Model_Person
+@import models.Model_Product
 @import utilities.Server
 
 @(person: Model_Person)
@@ -366,7 +363,7 @@
                 model_data = $("#newProject").serializeObject();
 
                 $.ajax({
-                    url: '@routes.Controller_ProgramingPackage.project_create()' ,
+                    url: '@routes.Controller_Project.project_create()' ,
                     type: 'POST',
                     contentType: 'application/json',
                     headers: {
@@ -390,7 +387,7 @@
             function deleteProject(id){
 
                 $.ajax({
-                    url: '@routes.Controller_ProgramingPackage.project_delete("")' + id  ,
+                    url: '@routes.Controller_Project.project_delete("")' + id  ,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")

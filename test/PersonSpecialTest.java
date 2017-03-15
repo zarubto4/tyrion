@@ -1,10 +1,10 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.routes;
 import junit.framework.TestCase;
-import models.person.Model_ChangePropertyToken;
-import models.person.Model_FloatingPersonToken;
-import models.person.Model_PasswordRecoveryToken;
-import models.person.Model_Person;
+import models.Model_ChangePropertyToken;
+import models.Model_FloatingPersonToken;
+import models.Model_PasswordRecoveryToken;
+import models.Model_Person;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;

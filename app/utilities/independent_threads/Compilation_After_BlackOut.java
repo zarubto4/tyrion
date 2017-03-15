@@ -2,8 +2,8 @@ package utilities.independent_threads;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_WebSocket;
-import models.compiler.Model_CompilationServer;
-import models.compiler.Model_VersionObject;
+import models.Model_CompilationServer;
+import models.Model_VersionObject;
 import utilities.enums.Compile_Status;
 
 import java.util.ArrayList;

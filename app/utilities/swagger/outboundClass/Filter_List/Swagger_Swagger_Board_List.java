@@ -4,7 +4,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Model_TypeOfBoard;
+import models.Model_TypeOfBoard;
 
 import java.util.ArrayList;
 import java.util.List;

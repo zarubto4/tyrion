@@ -2,11 +2,10 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.compiler.Model_VersionObject;
-import models.project.c_program.Model_CCompilation;
+import models.Model_VersionObject;
+import models.Model_CCompilation;
 import utilities.enums.Compile_Status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
-import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,7 @@
 package utilities.independent_threads;
 
-import models.project.b_program.instnace.Model_HomerInstance;
-import models.project.b_program.servers.Model_HomerServer;
+import models.Model_HomerInstance;
+import models.Model_HomerServer;
 import utilities.enums.Homer_Instance_Type;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.message_objects.homer_instance.WS_Update_device_summary_collection;

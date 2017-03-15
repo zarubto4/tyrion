@@ -1,6 +1,6 @@
 package utilities.login_entities;
 
-import models.person.Model_Person;
+import models.Model_Person;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;

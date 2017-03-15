@@ -2,9 +2,9 @@ package utilities.notifications;
 
 
 import controllers.Controller_WebSocket;
-import models.notification.Model_Notification;
-import models.person.Model_Invitation;
-import models.person.Model_Person;
+import models.Model_Notification;
+import models.Model_Invitation;
+import models.Model_Person;
 import utilities.enums.Notification_action;
 import utilities.enums.Notification_importance;
 import utilities.web_socket.WS_Becki_Website;

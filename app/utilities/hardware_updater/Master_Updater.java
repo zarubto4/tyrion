@@ -2,11 +2,11 @@ package utilities.hardware_updater;
 
 import com.avaje.ebean.Expr;
 import controllers.Controller_WebSocket;
-import models.compiler.Model_Board;
-import models.compiler.Model_FileRecord;
-import models.project.b_program.instnace.Model_HomerInstance;
-import models.project.c_program.actualization.Model_ActualizationProcedure;
-import models.project.c_program.actualization.Model_CProgramUpdatePlan;
+import models.Model_Board;
+import models.Model_FileRecord;
+import models.Model_HomerInstance;
+import models.Model_ActualizationProcedure;
+import models.Model_CProgramUpdatePlan;
 import play.libs.Json;
 import utilities.enums.Actual_procedure_State;
 import utilities.enums.C_ProgramUpdater_State;

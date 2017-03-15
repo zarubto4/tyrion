@@ -2,7 +2,7 @@ package utilities.goPay.helps_objects;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import models.project.global.financial.Model_InvoiceItem;
+import models.Model_InvoiceItem;
 import utilities.Server;
 import utilities.enums.Currency;
 

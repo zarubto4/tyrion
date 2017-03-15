@@ -1,9 +1,9 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.routes;
 import junit.framework.TestCase;
-import models.person.Model_Person;
-import models.project.global.Model_Product;
-import models.project.global.financial.Model_GeneralTariff;
+import models.Model_Person;
+import models.Model_Product;
+import models.Model_GeneralTariff;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;

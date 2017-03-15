@@ -3,13 +3,13 @@ package controllers;
 import com.avaje.ebean.Query;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
-import models.compiler.Model_Board;
-import models.compiler.Model_VersionObject;
-import models.notification.Model_Notification;
-import models.person.Model_Person;
-import models.project.b_program.Model_BProgram;
-import models.project.c_program.Model_CProgram;
-import models.project.global.Model_Project;
+import models.Model_Board;
+import models.Model_VersionObject;
+import models.Model_Notification;
+import models.Model_Person;
+import models.Model_BProgram;
+import models.Model_CProgram;
+import models.Model_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -23,13 +23,10 @@ import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
 import utilities.swagger.documentationClass.Swagger_Notification_Test;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
 import java.util.Date;
 import java.util.List;
@@ -38,7 +35,7 @@ import java.util.List;
 public class Controller_Notification extends Controller {
 
   @Inject
-  Controller_ProgramingPackage controllerProgramingPackage;
+  Controller_Project controllerProgramingPackage;
 
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");

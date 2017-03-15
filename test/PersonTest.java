@@ -1,8 +1,8 @@
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.routes;
 import junit.framework.TestCase;
-import models.person.Model_Person;
-import models.person.Model_ValidationToken;
+import models.Model_Person;
+import models.Model_ValidationToken;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;

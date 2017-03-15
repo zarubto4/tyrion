@@ -1,7 +1,7 @@
 package utilities.fakturoid.helps_objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import models.project.global.financial.Model_InvoiceItem;
+import models.Model_InvoiceItem;
 import utilities.enums.Currency;
 
 import java.util.List;

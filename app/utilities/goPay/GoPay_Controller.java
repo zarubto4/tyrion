@@ -2,9 +2,9 @@ package utilities.goPay;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.Api;
-import models.project.global.Model_Product;
-import models.project.global.financial.Model_Invoice;
-import models.project.global.financial.Model_PaymentDetails;
+import models.Model_Product;
+import models.Model_Invoice;
+import models.Model_PaymentDetails;
 import play.api.Play;
 import play.libs.F;
 import play.libs.Json;

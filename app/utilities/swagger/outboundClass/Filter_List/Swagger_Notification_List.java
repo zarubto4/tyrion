@@ -5,7 +5,7 @@ import com.avaje.ebean.Query;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.notification.Model_Notification;
+import models.Model_Notification;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,8 +1,8 @@
 package utilities.cache;
 
-import models.person.Model_FloatingPersonToken;
-import models.person.Model_Person;
-import models.project.global.Model_Project;
+import models.Model_FloatingPersonToken;
+import models.Model_Person;
+import models.Model_Project;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;

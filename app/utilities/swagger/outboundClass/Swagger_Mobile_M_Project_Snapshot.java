@@ -2,7 +2,7 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.project.m_program.Model_MProjectProgramSnapShot;
+import models.Model_MProjectProgramSnapShot;
 
 import java.util.List;
 

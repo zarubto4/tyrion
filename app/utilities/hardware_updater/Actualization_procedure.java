@@ -2,7 +2,7 @@ package utilities.hardware_updater;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import models.compiler.Model_FileRecord;
+import models.Model_FileRecord;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.helper_objects.Target_pair;
 

@@ -1,4 +1,4 @@
-@import models.compiler.Model_ImportLibrary
+@import models.Model_ImportLibrary
 @import utilities.enums.Library_tag
 @import utilities.enums.Library_state
 <section class="content-header">
@@ -506,7 +506,7 @@
         function newLibrary(){
             model_data = $("#newLibrary").serializeObject();
             $.ajax({
-                url: '@routes.Controller_CompilationLibraries.importLibrary_create()',
+                url: '@routes.Controller_Library.importLibrary_create()',
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {

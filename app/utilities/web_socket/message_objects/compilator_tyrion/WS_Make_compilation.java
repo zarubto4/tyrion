@@ -2,8 +2,8 @@ package utilities.web_socket.message_objects.compilator_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.compiler.Model_CompilationServer;
-import models.compiler.Model_TypeOfBoard;
+import models.Model_CompilationServer;
+import models.Model_TypeOfBoard;
 import play.libs.Json;
 import utilities.swagger.outboundClass.Swagger_Compilation_Build_Error;
 import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessage;

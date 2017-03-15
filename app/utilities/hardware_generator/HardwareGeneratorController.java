@@ -1,8 +1,8 @@
 package utilities.hardware_generator;
 
 import io.swagger.annotations.*;
-import models.compiler.*;
-import models.project.b_program.servers.Model_HomerServer;
+import models.*;
+import models.Model_HomerServer;
 import play.Configuration;
 import play.data.Form;
 import play.libs.Json;
