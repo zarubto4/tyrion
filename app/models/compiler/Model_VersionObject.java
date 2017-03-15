@@ -513,7 +513,7 @@ public class Model_VersionObject extends Model {
 
         new Model_Notification(Notification_importance.low, Notification_level.info)
                 .setText("Server starts compilation of Version ")
-                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name + ".", this.c_program.project_id(), "black", false, true, false, false)
+                .setObject(this)
                 .send(Controller_Security.getPerson());
     }
 
@@ -522,7 +522,7 @@ public class Model_VersionObject extends Model {
 
         new Model_Notification(Notification_importance.low, Notification_level.success)
                 .setText("Compilation of Version ")
-                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setObject(this)
                 .setText("was successful.")
                 .send(Controller_Security.getPerson());
     }
@@ -531,8 +531,8 @@ public class Model_VersionObject extends Model {
     public void notification_compilation_unsuccessful_warn(String reason){
 
         new Model_Notification(Notification_importance.normal,  Notification_level.warning)
-                .setText("Compilation of Version")
-                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setText("Compilation of Version ")
+                .setObject(this)
                 .setText("was unsuccessful, for reason:")
                 .setText(reason, "black", true, false, false)
                 .send(Controller_Security.getPerson());
@@ -543,7 +543,7 @@ public class Model_VersionObject extends Model {
 
         new Model_Notification(Notification_importance.normal, Notification_level.error)
                 .setText( "Compilation of Version")
-                .setObject(Swagger_B_Program_Version.class, this.id, this.version_name, this.c_program.project_id(), "black", false, true, false, false)
+                .setObject(this)
                 .setText("with critical Error:")
                 .setText(result, "black", true, false, false)
                 .send(Controller_Security.getPerson());
@@ -554,9 +554,9 @@ public class Model_VersionObject extends Model {
 
         new Model_Notification(Notification_importance.low, Notification_level.info)
                 .setText("New actualization task was added to Task Queue on Version ")
-                .setObject(Swagger_C_Program_Version.class, this.id, this.version_name, this.c_program.project_id() )
+                .setObject(this)
                 .setText(" from Program ")
-                .setObject(Model_CProgram.class, this.c_program.id, this.c_program.name, this.c_program.project_id())
+                .setObject(this.c_program)
                 .send(Controller_Security.getPerson());
     }
 

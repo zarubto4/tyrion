@@ -1085,7 +1085,7 @@
               var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
 
               $.ajax({
-                  url: '@routes.Controller_ProgramingPackage.instance_add_yoda( instance.blocko_instance_name, "")' + master_device_id,
+                  url: '@routes.Controller_Blocko.instance_add_yoda( instance.blocko_instance_name, "")' + master_device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken")
@@ -1115,7 +1115,7 @@
           function removeMasterDevice(id){
 
               $.ajax({
-                  url: '@routes.Controller_ProgramingPackage.instance_remove_yoda( instance.blocko_instance_name, "" )' + id,
+                  url: '@routes.Controller_Blocko.instance_remove_yoda( instance.blocko_instance_name, "" )' + id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken")
@@ -1152,7 +1152,7 @@
 
 
               $.ajax({
-                  url: '@routes.Controller_ProgramingPackage.update_blocko_code_in_instance_with_code("")' + instanceId,
+                  url: '@routes.Controller_Blocko.update_blocko_code_in_instance_with_code("")' + instanceId,
                   type: 'PUT',
                   contentType: 'application/json',
                   headers: {

@@ -157,7 +157,7 @@
              model_data = $("#addTemporaryInstanceForm").serializeObject();
 
              $.ajax({
-                 url: '@routes.Controller_ProgramingPackage.instance_add_temporary_instance()',
+                 url: '@routes.Controller_Blocko.instance_add_temporary_instance()',
                  type: 'PUT',
                  contentType: 'application/json',
                  headers: {
@@ -246,7 +246,7 @@
 
          function disconnect_instance(instance_id){
              $.ajax({
-                 url: '@routes.Controller_ProgramingPackage.instance_shut_down("")' + instance_id,
+                 url: '@routes.Controller_Blocko.instance_shut_down("")' + instance_id,
                  type: 'GET',
 
                  headers: {

@@ -801,7 +801,7 @@ public class Model_Board extends Model {
 
         new Model_Notification(Notification_importance.low, Notification_level.info)
                 .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
-                .setObject(Model_Board.class, this.id, this.id, this.project_id(), "black", false, true, false, false)
+                .setObject(this)
                 .setText("is connected.", "black", false, false, false)
                 .send(receivers);
     }
@@ -814,9 +814,9 @@ public class Model_Board extends Model {
             receivers.add(participant.person);
 
         new Model_Notification(Notification_importance.low, Notification_level.info)
-                .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
-                .setObject(Model_Board.class, this.id, this.id, this.project_id(), "black", false, true, false, false)
-                .setText("is disconnected.", "black", false, false, false)
+                .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : "" ))
+                .setObject(this)
+                .setText("is disconnected.")
                 .send(receivers);
     }
 
@@ -825,7 +825,7 @@ public class Model_Board extends Model {
 
         new Model_Notification(Notification_importance.low, Notification_level.info)
                 .setText("New actualization task was added to Task Queue on ")
-                .setObject(Model_Board.class, this.id, "board", this.project_id())
+                .setObject(this)
                 .setText(" with user File ") // TODO ? asi dodělat soubor ?
                 .send(Controller_Security.getPerson());
     }
