@@ -6,9 +6,9 @@
 # Home page
 
 #CORS
-OPTIONS        /*all                                        @controllers.Controller_Security.optionLink(all)
+OPTIONS           /*all                                        @controllers.Controller_Security.optionLink(all)
 
-POST              /test                                     @controllers.Controller_Wiky.test1()
+POST              /test                                        @controllers.Controller_Wiky.test1()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
@@ -250,16 +250,15 @@ GET            /typeOfBlock/:type_of_block_id                                   
 PUT            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_update(type_of_block_id)
 DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_delete(type_of_block_id)
 
-
-#BLocko Server
-POST            /blocko_server                                                      @controllers.Controller_Blocko.create_Homer_Server()
-PUT             /blocko_server/:server_id                                           @controllers.Controller_Blocko.edit_Homer_Server(server_id)
-GET             /blocko_server                                                      @controllers.Controller_Blocko.get_All_Homer_Server()
-DELETE          /blocko_server/:server_id                                           @controllers.Controller_Blocko.delete_Homer_Server(server_id)
-
 #Blocko General
 PUT             /blocko/disapprove                                                  @controllers.Controller_Blocko.blockoDisapprove()
 PUT             /blocko/approval                                                    @controllers.Controller_Blocko.blockoApproval()
+
+#Homer Server
+POST            /homer_server                                                      @controllers.Controller_ExternalServer.create_Homer_Server()
+PUT             /homer_server/:server_id                                           @controllers.Controller_ExternalServer.edit_Homer_Server(server_id)
+GET             /homer_server                                                      @controllers.Controller_ExternalServer.get_All_Homer_Server()
+DELETE          /homer_server/:server_id                                           @controllers.Controller_ExternalServer.delete_Homer_Server(server_id)
 
 #Board on Project
 GET             /blocko/all_details/:project_id                                     @controllers.Controller_Board.board_allDetailsForBlocko(project_id)

@@ -523,7 +523,7 @@ function showCreateFormCompilationServer(){
 function newHomerServer(){
     model_data = $("#newHomerServer").serializeObject();
     $.ajax({
-        url: '@routes.Controller_Blocko.create_Homer_Server()',
+        url: '@routes.Controller_ExternalServer.create_Homer_Server()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -556,7 +556,7 @@ function editHomerServer(id){
     model_data = $("#editHomerServer").serializeObject();
 
     $.ajax({
-        url: '@routes.Controller_Blocko.edit_Homer_Server("")' + id,
+        url: '@routes.Controller_ExternalServer.edit_Homer_Server("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -588,7 +588,7 @@ function editHomerServer(id){
 function deleteHomerServer(id){
 
     $.ajax({
-        url: '@routes.Controller_Blocko.delete_Homer_Server("")' + id,
+        url: '@routes.Controller_ExternalServer.delete_Homer_Server("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),

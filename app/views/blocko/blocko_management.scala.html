@@ -420,7 +420,7 @@
         function newBlockoBlockVersion(id){
           model_data = $("#newBlockoBlockVersion").serializeObject();
           $.ajax({
-            url: '@Server.tyrion_serverAddress' + '/blockoBlock/version/' + id,
+            url: '@routes.Controller_Blocko.blockoBlockVersion_create("")' + id,
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -447,7 +447,7 @@
           model_data = $("#editTypeOfBlock").serializeObject();
 
           $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/typeOfBlock/" + id ,
+            url: '@routes.Controller_Blocko.typeOfBlock_update("")'+ id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -489,7 +489,7 @@
           model_data = $("#editBlockoBlock").serializeObject();
 
           $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/blockoBlock/" + id ,
+            url: '@routes.Controller_Blocko.blockoBlock_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -516,7 +516,7 @@
           model_data = $("#editBlockoBlockVersion").serializeObject();
 
           $.ajax({
-            url: "@Server.tyrion_serverAddress" + "/blockoBlock/version/" + id ,
+            url: '@routes.Controller_Blocko.blockoBlockVersion_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -541,7 +541,7 @@
         function deleteTypeOfBlock(id){
 
           $.ajax({
-            url: " @Server.tyrion_serverAddress" + "/typeOfBlock/" + id ,
+            url:  '@routes.Controller_Blocko.typeOfBlock_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -566,7 +566,7 @@
         function deleteBlockoBlock(id){
 
           $.ajax({
-            url: " @Server.tyrion_serverAddress" + "/blockoBlock/" + id ,
+            url: '@routes.Controller_Blocko.blockoBlock_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -583,7 +583,7 @@
         function deleteBlockoBlockVersion(id){
 
           $.ajax({
-            url: " @Server.tyrion_serverAddress" + "/blockoBlock/version/" + id ,
+            url: '@routes.Controller_Blocko.blockoBlockVersion_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -608,7 +608,7 @@
 
         function openTypeOfBlock(id){
           $.ajax({
-            url: '@Server.tyrion_serverAddress' + '/typeOfBlock/' + id,
+            url: '@routes.Controller_Blocko.typeOfBlock_get("")' + id,
             type: 'GET',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -640,7 +640,7 @@
 
         function openBlockoBlock(id){
           $.ajax({
-            url: '@Server.tyrion_serverAddress' + '/blockoBlock/' + id,
+            url: '@routes.Controller_Blocko.blockoBlock_get("")' + id,
             type: 'GET',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -670,7 +670,7 @@
         function openBlockoBlockVersion(id){
           $("#blockoBlockVersion").css("display","block");
           $.ajax({
-            url: '@Server.tyrion_serverAddress' + '/blockoBlock/version/' + id,
+            url:  '@routes.Controller_Blocko.blockoBlockVersion_get("")' + id,
             type: 'GET',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
