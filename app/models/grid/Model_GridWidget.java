@@ -90,18 +90,6 @@ public class Model_GridWidget extends Model{
         super.save();
     }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public static Model_GridWidget get_byId(String id) {
-        return find.byId(id);
-    }
-
-    @JsonIgnore
-    public static Model_GridWidget get_publicByName(String name) {
-        return find.where().isNull("type_of_block.project").eq("name", name).findUnique();
-    }
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -125,8 +113,19 @@ public class Model_GridWidget extends Model{
 
     public enum permissions{GridWidget_create, GridWidget_read, GridWidget_edit, GridWidget_delete}
 
-    /* FINDER -------------------------------------------------------------------------------------------------------------*/
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     private static Model.Finder<String,Model_GridWidget> find = new Finder<>(Model_GridWidget.class);
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public static Model_GridWidget get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_GridWidget get_publicByName(String name) {
+        return find.where().isNull("type_of_widget.project").eq("name", name).findUnique();
+    }
 }

@@ -27,13 +27,12 @@ libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.9",
   "com.cedarsoftware" % "json-io" % "4.4.0",
   "org.pegdown" % "pegdown" % "1.6.0",
-  "net.sf.ehcache" % "ehcache" % "2.10.2",
   "com.microsoft.azure" % "adal4j" % "1.1.3",
   "com.google.guava" % "guava" % "19.0",
   "commons-collections" % "commons-collections" % "3.2.1",
 
   "org.quartz-scheduler" % "quartz" % "2.2.3",
-  "org.ehcache" % "ehcache-clustered" % "3.2.0",
+  "org.ehcache" % "ehcache-clustered" % "3.3.0",
   "com.github.nkzawa" % "socket.io-client" % "0.1.2",
 
   "com.novocode" % "junit-interface" % "0.11",
@@ -45,7 +44,6 @@ libraryDependencies ++= Seq(
 
   javaJdbc,
   filters,
-  cache,
   javaWs
 )
 

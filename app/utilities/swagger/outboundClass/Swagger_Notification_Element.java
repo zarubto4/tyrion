@@ -27,4 +27,5 @@ public class Swagger_Notification_Element {
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String color    = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String id       = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String project_id = null;
+    @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String program_id = null;
 }

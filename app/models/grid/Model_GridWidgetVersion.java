@@ -71,23 +71,6 @@ public class Model_GridWidgetVersion extends Model{
         return help;
     }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public static Model_GridWidgetVersion get_byId(String id) {
-        return find.byId(id);
-    }
-
-    @JsonIgnore
-    public static Model_GridWidgetVersion get_scheme() {
-        return find.where().eq("version_name", "version_scheme").findUnique();
-    }
-
-    @JsonIgnore
-    public static List<Model_GridWidgetVersion> get_pending() {
-        return find.where().eq("approval_state",Approval_state.pending).findList();
-    }
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -109,6 +92,23 @@ public class Model_GridWidgetVersion extends Model{
     public enum permissions{GridWidgetVersion_create, GridWidgetVersion_read, GridWidgetVersion_edit, GridWidgetVersion_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
+
     private static Model.Finder<String,Model_GridWidgetVersion> find = new Finder<>(Model_GridWidgetVersion.class);
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_GridWidgetVersion get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_GridWidgetVersion get_scheme() {
+        return find.where().eq("version_name", "version_scheme").findUnique();
+    }
+
+    @JsonIgnore
+    public static List<Model_GridWidgetVersion> get_pending() {
+        return find.where().eq("approval_state",Approval_state.pending).findList();
+    }
 }

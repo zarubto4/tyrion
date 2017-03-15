@@ -65,6 +65,32 @@ public class Model_TypeOfBlock extends Model {
         return help;
     }
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+    // Floating shared documentation for Swagger
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read TypeOfBlock on this Project ( You get ids of list of TypeOfBLocks in object \"project\" in json)  - Or you need static/dynamic permission key";
+    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create TypeOfBlock on this Project - Or you need static/dynamic permission key if user want create public TypeOfBlock";
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient                                      public boolean create_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.getPerson().has_permission("TypeOfBlock_create");}
+    @JsonIgnore @Transient                                      public boolean read_permission()    {return (project == null) || (project != null && project.read_permission())   || Controller_Security.getPerson().has_permission("TypeOfBlock_read");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.getPerson().has_permission("TypeOfBlock_update");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {return                      (project != null && project.edit_permission())   || Controller_Security.getPerson().has_permission("TypeOfBlock_edit");}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.getPerson().has_permission("TypeOfBlock_delete");}
+
+    public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+
+    private static Model.Finder<String,Model_TypeOfBlock> find = new Finder<>(Model_TypeOfBlock.class);
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -90,30 +116,4 @@ public class Model_TypeOfBlock extends Model {
     public static List<Model_TypeOfBlock> get_public() {
         return find.where().isNull("project").findList();
     }
-
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
-/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
-
-/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
-    // Floating shared documentation for Swagger
-    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read TypeOfBlock on this Project ( You get ids of list of TypeOfBLocks in object \"project\" in json)  - Or you need static/dynamic permission key";
-    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create TypeOfBlock on this Project - Or you need static/dynamic permission key if user want create public TypeOfBlock";
-
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient                                      public boolean create_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.getPerson().has_permission("TypeOfBlock_create");}
-    @JsonIgnore @Transient                                      public boolean read_permission()    {return (project == null) || (project != null && project.read_permission())   || Controller_Security.getPerson().has_permission("TypeOfBlock_read");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.getPerson().has_permission("TypeOfBlock_update");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {return                      (project != null && project.edit_permission())   || Controller_Security.getPerson().has_permission("TypeOfBlock_edit");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.getPerson().has_permission("TypeOfBlock_delete");}
-
-    public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
-
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
-    private static Model.Finder<String,Model_TypeOfBlock> find = new Finder<>(Model_TypeOfBlock.class);
-
 }

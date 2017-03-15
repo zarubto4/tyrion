@@ -3,10 +3,13 @@ package controllers;
 import com.avaje.ebean.Query;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
+import models.compiler.Model_Board;
 import models.compiler.Model_VersionObject;
 import models.notification.Model_Notification;
 import models.person.Model_Person;
 import models.project.b_program.Model_BProgram;
+import models.project.c_program.Model_CProgram;
+import models.project.global.Model_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -25,7 +28,10 @@ import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
 import utilities.swagger.documentationClass.Swagger_Notification_Test;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
+import utilities.swagger.outboundClass.Swagger_B_Program_Version;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 
+import java.util.Date;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -82,12 +88,105 @@ public class Controller_Notification extends Controller {
     switch (type){
       case "1":{
         notification = new Model_Notification(imp, lvl)
-              .setText("Test object: ")
-              .setObject(Model_Person.class, person.id, person.full_name, null)
-              .setText(" test bold text: ")
-              .setBoldText("bold text ")
-              .setText("test link: ")
-              .setLink("TestLink","#");
+                .setText("Test object: ")
+                .setObject(Model_Person.class, person.id, person.full_name, null)
+                .setText(" test bold text: ")
+                .setBoldText("bold text ")
+                .setText("test link: ")
+                .setLink("TestLink ","#");
+
+        Model_Project project = Model_Project.find.where().eq("participants.person.id", person.id).eq("name", "První velkolepý projekt").findUnique();
+        if (project != null) {
+          notification.setObject(project);
+
+          if (!project.boards.isEmpty()){
+            Model_Board board = project.boards.get(0);
+            notification.setObject(board);
+          }
+
+          Model_CProgram cProgram;
+          if (!project.c_programs.isEmpty()){
+
+            cProgram = project.c_programs.get(0);
+
+          } else {
+
+            cProgram = new Model_CProgram();
+            cProgram.name                  = "Test notification c program";
+            cProgram.description           = "random text sd asds dasda ";
+            cProgram.date_of_create        = new Date();
+            cProgram.project               = project;
+            cProgram.save();
+            cProgram.refresh();
+
+            logger.info("Setting new C Program");
+          }
+
+          notification.setObject(cProgram);
+
+          Model_VersionObject version_object;
+          if (cProgram.getVersion_objects().isEmpty()){
+
+            version_object = new Model_VersionObject();
+            version_object.version_name        = "Test notification c version";
+            version_object.version_description = "random text sd asds dasda";
+            version_object.author              = person;
+            version_object.date_of_create      = new Date();
+            version_object.c_program           = cProgram;
+            version_object.public_version      = false;
+            version_object.save();
+            version_object.refresh();
+
+            logger.info("Setting new C Program Version");
+
+          } else {
+            version_object = cProgram.getVersion_objects().get(0);
+          }
+
+          notification.setObject(version_object);
+
+          Model_BProgram bProgram;
+          if (!project.b_programs.isEmpty()){
+            bProgram = project.b_programs.get(0);
+
+          } else {
+
+            bProgram = new Model_BProgram();
+            bProgram.name                  = "Test notification b program";
+            bProgram.description           = "random text sd asds dasda ";
+            bProgram.date_of_create        = new Date();
+            bProgram.project = project;
+            bProgram.save();
+            bProgram.refresh();
+
+            logger.info("Setting new B Program");
+          }
+
+          notification.setObject(bProgram);
+
+          Model_VersionObject b_version_object;
+          if (bProgram.getVersion_objects().isEmpty()){
+
+            b_version_object = new Model_VersionObject();
+            b_version_object.version_name        = "Test notification b version";
+            b_version_object.version_description = "random text sd asds dasda";
+            b_version_object.author              = person;
+            b_version_object.date_of_create      = new Date();
+            b_version_object.b_program           = bProgram;
+            b_version_object.save();
+            b_version_object.refresh();
+
+            logger.info("Setting new B Program Version");
+
+          } else {
+            b_version_object = bProgram.getVersion_objects().get(0);
+          }
+
+          notification.setObject(b_version_object);
+        }
+
+
+
         break;}
       case "2":{
         notification = new Model_Notification(imp, lvl)
@@ -285,17 +384,17 @@ public class Controller_Notification extends Controller {
     }
   }
 
-  public Result test_notifications(String mail){
+  public Result test_notifications(){
     try {
 
       final Form<Swagger_Notification_Test> form = Form.form(Swagger_Notification_Test.class).bindFromRequest();
       if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
       Swagger_Notification_Test help = form.get();
 
-      Model_Person person = Model_Person.find.where().eq("mail", mail).findUnique();
+      Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
       if (person == null) return GlobalResult.notFoundObject("Person not found");
 
-      Controller_Notification.test_notification(person, help.level, help.importance, help.type, help.buttons);
+      test_notification(person, help.level, help.importance, help.type, help.buttons);
       return GlobalResult.result_ok();
 
     }catch (Exception e){

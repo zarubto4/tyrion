@@ -57,8 +57,7 @@ public class Spending_Credit_Every_Day implements Job {
         logger.info("Time: " + new Date().toString() );
 
         int total =  Model_Product.find.where().lt("date_of_create", time_16_hours_back)
-                            .disjunction()
-                                .isNotNull("extensions.price_in_usd")
+                            .isNotNull("extensions.price_in_usd")
                             .findRowCount();
 
         if (total != 0) {
@@ -72,9 +71,7 @@ public class Spending_Credit_Every_Day implements Job {
                 logger.info("Spending_Credit_Every_Day:: procedure for page " + (page + 1) + " from " + page_total);
 
                 List<Model_Product> products = Model_Product.find.where()
-                        .disjunction()
                         .isNotNull("extensions.price_in_usd")
-                        .endJunction()
                         .lt("date_of_create", time_16_hours_back)
                         .order("date_of_create")
                         .findPagedList(page, 25)

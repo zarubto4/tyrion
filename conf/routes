@@ -47,7 +47,7 @@ PUT             /notification/confirm/:notification_id      @controllers.Control
 
 PUT             /notification/read                          @controllers.Controller_Notification.mark_as_read_notification()
 
-POST            /notification/test/:mail                    @controllers.Controller_Notification.test_notifications(mail)
+POST            /notification/test                          @controllers.Controller_Notification.test_notifications()
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################

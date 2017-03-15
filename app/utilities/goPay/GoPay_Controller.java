@@ -151,7 +151,7 @@ public class GoPay_Controller  extends Controller {
                 return redirect(Server.becki_mainUrl + "/financial/"+ invoice.getProduct().id + "/paid/success/" + invoice.id);
             }
 
-            Model_Product product = Model_Product.find.where().eq("invoices.id", invoice.id).findUnique();
+            Model_Product product = Model_Product.get_byInvoice(invoice.id);
 
             // Smazat proformu
             logger.debug("Removing proforma from Fakturoid");
