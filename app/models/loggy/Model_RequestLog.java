@@ -21,7 +21,7 @@ public class Model_RequestLog extends Model{
 
                         @Id public String id;
     @Column(unique = true)  public String request;
-                            public Long count;
+                            public Long call_count;
 
                 @JsonIgnore public Date date_of_create;
 

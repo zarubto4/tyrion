@@ -497,7 +497,7 @@
         model_data = $("#newCProgramForm").serializeObject();
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.c_program_createDefault()',
+            url: '@routes.Controller_Code.c_program_createDefault()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -536,7 +536,7 @@
         model_data = $("#editCProgramForm").serializeObject();
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.c_program_update("")' + c_program_id,
+            url: '@routes.Controller_Code.c_program_update("")' + c_program_id,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -575,7 +575,7 @@
         model_data = $("#newCProgramVersionForm").serializeObject();
 
         $.ajax({
-            url: '@routes.Controller_CompilationLibraries.c_programVersion_create("")' + c_program_id ,
+            url: '@routes.Controller_Code.c_programVersion_create("")' + c_program_id ,
             type: 'POST',
             contentType: 'application/json',
             headers: {

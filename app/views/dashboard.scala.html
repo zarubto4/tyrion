@@ -158,7 +158,7 @@
         var labels = [];
 
         $.each(data, function (k, v) {
-            values[k] = v.count;
+            values[k] = v.call_count;
             labels[k] = v.request;
         });
 

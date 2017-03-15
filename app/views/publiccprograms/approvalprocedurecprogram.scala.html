@@ -1,6 +1,5 @@
 @import utilities.enums.Approval_state
-@import models.compiler.{Model_TypeOfBoard, Model_VersionObject}
-@import models.project.c_program.Model_CProgram
+@import models.compiler.Model_VersionObject
 @import utilities.Server
 
 <section class="content-header">
@@ -175,7 +174,7 @@
                 "reason" :              document.getElementById('edit_code_reason').value
             };
             $.ajax({
-                url: '@routes.Controller_CompilationLibraries.approve_decision()' ,
+                url: '@routes.Controller_Code.approve_decision()' ,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -213,7 +212,7 @@
                 "reason" :              document.getElementById('edit_code_reason').value
             };
             $.ajax({
-                url: '@routes.Controller_CompilationLibraries.approve_decision()' ,
+                url: '@routes.Controller_Code.approve_decision()' ,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -233,7 +232,7 @@
 
         function showEditForm(id){
             $.ajax({
-                url: '@routes.Controller_CompilationLibraries.get_version_for_decision("")' + id,
+                url: '@routes.Controller_Code.get_version_for_decision("")' + id,
                 type: 'GET',
                 headers: {
                     "X-AUTH-TOKEN":getCookie("authToken")

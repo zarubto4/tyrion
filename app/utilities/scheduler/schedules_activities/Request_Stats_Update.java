@@ -37,13 +37,13 @@ public class Request_Stats_Update implements Job {
 
                             log = new Model_RequestLog();
                             log.request = entry.getKey();
-                            log.count = entry.getValue();
+                            log.call_count = entry.getValue();
 
                             log.save();
 
                         }else {
 
-                            log.count += entry.getValue();
+                            log.call_count += entry.getValue();
 
                             log.update();
                         }

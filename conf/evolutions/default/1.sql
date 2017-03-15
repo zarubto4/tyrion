@@ -589,7 +589,7 @@ create table model_project_participant (
 create table model_request_log (
   id                        varchar(255) not null,
   request                   varchar(255),
-  count                     bigint,
+  call_count                bigint,
   date_of_create            timestamp,
   constraint uq_model_request_log_request unique (request),
   constraint pk_model_request_log primary key (id))

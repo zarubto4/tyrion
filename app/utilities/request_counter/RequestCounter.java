@@ -37,7 +37,7 @@ public class RequestCounter extends Controller{
 
         try {
 
-            return GlobalResult.result_ok(Json.toJson(Model_RequestLog.find.order().desc("count").findList()));
+            return GlobalResult.result_ok(Json.toJson(Model_RequestLog.find.order().desc("call_count").findList()));
 
         } catch (Exception e) {
 
