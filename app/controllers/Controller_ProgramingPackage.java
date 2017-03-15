@@ -34,19 +34,14 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.Email;
-import utilities.enums.Approval_state;
-import utilities.enums.CLoud_Homer_Server_Type;
-import utilities.enums.Participant_status;
-import utilities.enums.Type_of_command;
+import utilities.enums.*;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
+import utilities.swagger.outboundClass.Filter_List.*;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
@@ -1410,7 +1405,76 @@ public class Controller_ProgramingPackage extends Controller {
             return GlobalResult.result_ok(Json.toJson(instance));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    @ApiOperation(value = "get Instance with filter parameters",
+            tags = { "Instance"},
+            notes = "Get List of Instances. Acording by permission - system return only Instance from project, where is user owner or" +
+                    " all Instances if user have static Permission key",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Board_read"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Instance_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Instance_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_b_program_instance_by_filter(){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Instance_Filter> form = Form.form(Swagger_Instance_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Instance_Filter help = form.get();
+
+            // Tvorba parametru dotazu
+            Query<Model_HomerInstance> query = Ebean.find(Model_HomerInstance.class);
+
+            // If Json contains TypeOfBoards list of id's
+            if(!help.instance_types.isEmpty() ){
+                query.where().in("instance_type", help.instance_types);
+            }
+
+            if(help.project_id != null ){
+                query.where().eq("project.id", help.project_id);
+            }
+
+
+            if(!help.server_unique_names.isEmpty()){
+                query.where().in("cloud_homer_server.unique_identificator", help.server_unique_names);
+            }
+
+            // Vytvářím seznam podle stránky
+            Swagger_Instance_List result = new Swagger_Instance_List(query, help.page_number);
+
+            // Vracím seznam
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        } catch (Exception e) {
+
             return Loggy.result_internalServerError(e, request());
         }
     }
@@ -1442,7 +1506,6 @@ public class Controller_ProgramingPackage extends Controller {
             return GlobalResult.result_ok(Json.toJson(instance));
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

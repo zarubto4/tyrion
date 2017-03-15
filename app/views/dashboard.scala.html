@@ -54,13 +54,16 @@
                 } else {
                     class="small-box bg-red"
                 }><div class="inner">
-            <h3>@x.personal_server_name
-                @if(!x.server_is_online()){  <small style="color: white">(Offline)</small>  }
-            </h3>
+            <h3>@x.personal_server_name</h3>
             <p></p>
-            <p> @if(x.server_is_online()){
-                Instances: @x.get_homer_server_number_of_instance().value
-            }</p>
+            <p>
+                @if(x.server_is_online()) {
+                    Instances: @x.get_homer_server_number_of_instance().value
+                }
+                <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  x.unique_identificator )' >
+                    <button class="btn btn-block btn-info btn-xs">All Instancies</button>
+                </a>
+            </p>
              </div><div class="icon"><i class="ion fa-cloud_blocko_server"></i></div> </div>
         </div>
     }
@@ -80,9 +83,7 @@
             } else {
                 class="small-box bg-red"
                 }><div class="inner">
-            <h3>@x.personal_server_name
-                @if(!x.server_is_online()){ <small style="color: white">(Offline)</small> }
-            </h3>
+            <h3>@x.personal_server_name</h3>
             <p></p>
         </div><div class="icon"><i class="ion fa-cloud_blocko_server"></i></div> </div>
         </div>

@@ -14,6 +14,7 @@ import models.person.Model_Person;
 import models.project.b_program.Model_BPair;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
+import models.project.c_program.actualization.Model_ActualizationProcedure;
 import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Project;
 import models.project.global.Model_ProjectParticipant;
@@ -305,8 +306,23 @@ public class Model_Board extends Model {
         board_for_fast_upload_detail.id = id;
         board_for_fast_upload_detail.personal_description = personal_description;
 
-        if(this.get_instance().virtual_instance) board_for_fast_upload_detail.collision = Board_update_collision.NO_COLLISION;
-        else                                     board_for_fast_upload_detail.collision = Board_update_collision.ALREADY_IN_INSTANCE;
+        System.out.println("Board " + id );
+
+        if(this.get_instance() == null){
+
+            System.out.println("Board nemá instanci " );
+            board_for_fast_upload_detail.collision = Board_update_collision.NO_COLLISION;
+
+        }else {
+
+            System.out.println("Aktuální instance == " + this.get_instance().blocko_instance_name);
+            System.out.println("Aktuální instance typ " + this.get_instance().instance_type);
+
+
+            if(this.get_instance().instance_type == Homer_Instance_Type.VIRTUAL) board_for_fast_upload_detail.collision = Board_update_collision.NO_COLLISION;
+            else                                     board_for_fast_upload_detail.collision = Board_update_collision.ALREADY_IN_INSTANCE;
+
+        }
 
         board_for_fast_upload_detail.type_of_board_id = type_of_board_id();
         board_for_fast_upload_detail.type_of_board_name = type_of_board_name();
@@ -455,6 +471,37 @@ public class Model_Board extends Model {
         }catch (Exception e){
             logger.error("Board:: device_Disconnected:: ERROR:: ", e);
         }
+    }
+
+    @JsonIgnore @Transient public static void unregistred_device_connected(WS_HomerServer homer_server, WS_Unregistred_device_connected report) {
+        logger.debug("Model_Board:: unregistred_device_connected:: " + report.deviceId);
+
+        Model_Board board = Model_Board.find.byId(report.deviceId);
+        if(board == null){
+            logger.warn("Unknown device tries to connect:: " + report.deviceId);
+            return;
+        }
+
+        if(board.project == null){
+            logger.debug("Model_Board:: unregistred_device_connected is registed under server:: " + homer_server.identifikator + " Server name:: " + homer_server.server.personal_server_name);
+            board.connected_server =  homer_server.server;
+            board.is_active = true;
+            board.update();
+            return;
+        }
+
+
+        if(board.project != null){
+            // Kontrola zda virtuální instance Projektu má stejný server jako je deska teď - Kdyžtak desku přeregistruji jinam!
+            if(board.get_instance() != null){
+                logger.warn("Board without own instance! " + report.deviceId);
+                return;
+            }
+            if(!board.get_instance().cloud_homer_server.unique_identificator.equals(homer_server.server.unique_identificator)){
+                board.device_change_server(board.get_instance().cloud_homer_server);
+            }
+        }
+
     }
 
     @JsonIgnore @Transient public static void update_report_from_homer(WS_Update_device_firmware report){
@@ -624,7 +671,7 @@ public class Model_Board extends Model {
                     logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
 
                     // Mám shodu oproti očekávánemů
-                    if (plans.get(0).binary_file.boot_loader.version_identificator.equals(report.bootloader_build_id)) {
+                    if (plans.get(0).bootloader.version_identificator.equals(report.bootloader_build_id)) {
 
                         plans.get(0).state = C_ProgramUpdater_State.complete;
                         plans.get(0).update();
@@ -666,12 +713,6 @@ public class Model_Board extends Model {
         }
     }
 
-
-
-
-
-
-
     @JsonIgnore @Transient public static WS_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, List<Actualization_procedure> procedures){
 
         try {
@@ -688,36 +729,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static void unregistred_device_connected(WS_HomerServer homer_server, WS_Unregistred_device_connected report) {
-        logger.debug("Model_Board:: unregistred_device_connected:: " + report.deviceId);
 
-        Model_Board board = Model_Board.find.byId(report.deviceId);
-        if(board == null){
-            logger.warn("Unknown device tries to connect:: " + report.deviceId);
-            return;
-        }
-
-        if(board.project == null){
-            logger.debug("Model_Board:: unregistred_device_connected is registed under server:: " + homer_server.identifikator + " Server name:: " + homer_server.server.personal_server_name);
-            board.connected_server =  homer_server.server;
-            board.is_active = true;
-            board.update();
-            return;
-        }
-
-
-        if(board.project != null){
-            // Kontrola zda virtuální instance Projektu má stejný server jako je deska teď - Kdyžtak desku přeregistruji jinam!
-            if(board.get_instance() != null){
-                logger.warn("Board without own instance! " + report.deviceId);
-                return;
-            }
-            if(!board.get_instance().cloud_homer_server.unique_identificator.equals(homer_server.server.unique_identificator)){
-                board.device_change_server(board.get_instance().cloud_homer_server);
-            }
-        }
-
-    }
 
 
     @JsonIgnore @Transient  public void device_change_server(Model_HomerServer homerServer){
@@ -790,10 +802,93 @@ public class Model_Board extends Model {
     }
 
 
+    @JsonIgnore @Transient   public static void update_bootloader(List<Model_Board> board_for_update, Model_BootLoader boot_loader){
+
+        Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+        procedure.state = Actual_procedure_State.not_start_yet;
+        procedure.save();
+
+        for(Model_Board board : board_for_update)
+        {
+            List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
+                    .find
+                    .where()
+                    .eq("firmware_type", Firmware_type.BOOTLOADER)
+                    .disjunction()
+                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .endJunction()
+                    .eq("board.id", board.id).findList();
+
+            for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
+                cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
+                cProgramUpdatePlan.date_of_finish = new Date();
+                cProgramUpdatePlan.update();
+            }
+
+            Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
+            plan.board = board;
+            plan.firmware_type = Firmware_type.BOOTLOADER;
+            plan.actualization_procedure = procedure;
+            plan.bootloader = boot_loader;
+            plan.save();
+        }
+
+        procedure.refresh();
+        Master_Updater.add_new_Procedure(procedure);
+    }
+
+    @JsonIgnore @Transient   public static void update_firmware(List<Model_Board> board_for_update, Model_VersionObject c_program_version){
+
+        Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+        procedure.state = Actual_procedure_State.not_start_yet;
+        procedure.save();
+
+        for(Model_Board board : board_for_update)
+        {
+            List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
+                    .find
+
+                    .where()
+                    .eq("firmware_type", Firmware_type.FIRMWARE)
+                    .disjunction()
+                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .endJunction()
+                    .eq("board.id", board.id).findList();
+
+            for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
+                cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
+                cProgramUpdatePlan.date_of_finish = new Date();
+                cProgramUpdatePlan.update();
+            }
+
+            Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
+            plan.board = board;
+            plan.firmware_type = Firmware_type.FIRMWARE;
+            plan.actualization_procedure = procedure;
+            plan.c_program_version_for_update = c_program_version;
+            plan.save();
+        }
+
+        procedure.refresh();
+
+        Master_Updater.add_new_Procedure(procedure);
+    }
+
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void notification_board_connect(){
+
+        if(project == null) return;
 
         List<Model_Person> receivers = new ArrayList<>();
         for (Model_ProjectParticipant participant : this.project.participants)

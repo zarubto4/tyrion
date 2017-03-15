@@ -308,7 +308,8 @@ create table model_grid_widget_version (
 create table model_homer_instance (
   blocko_instance_name      varchar(255) not null,
   cloud_homer_server_unique_identificator varchar(255),
-  virtual_instance          boolean,
+  instance_type             varchar(10),
+  constraint ck_model_homer_instance_instance_type check (instance_type in ('INDIVIDUAL','VIRTUAL')),
   constraint pk_model_homer_instance primary key (blocko_instance_name))
 ;
 

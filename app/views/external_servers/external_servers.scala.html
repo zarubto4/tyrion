@@ -217,6 +217,7 @@
                             <th>Server address</th>
                             <th>Online</th>
                             <th>Type</th>
+                            <th>Instancies</th>
                             <th>EDIT</th>
 
                         </tr>
@@ -231,6 +232,11 @@
                                 }else{
                                     <td><span class="label label-danger">Offline</span></td>
                                 }
+                                <td>
+                                    <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  homer_server.unique_identificator )' >
+                                        <button class="btn btn-block btn-info btn-xs">All Instancies</button>
+                                    </a>
+                                </td>
                                 <td>@homer_server.server_type</td>
                                 <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
                             </tr>
@@ -280,6 +286,7 @@
                                     <th>Hash Certificate</th>
                                     <th>Server address</th>
                                     <th>Online</th>
+                                    <th>Instancies</th>
                                     <th>EDIT</th>
                                 </tr>
 
@@ -294,6 +301,11 @@
                                         }else{
                                             <td><span class="label label-danger">Offline</span></td>
                                         }
+                                        <td>
+                                            <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  homer_server.unique_identificator )' >
+                                                <button class="btn btn-block btn-info btn-xs">All Instancies</button>
+                                            </a>
+                                        </td>
                                         <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
                                     </tr>
                                 }
@@ -313,6 +325,7 @@
                                         <th>Hash Certificate</th>
                                         <th>Server address</th>
                                         <th>Online</th>
+                                        <th>Instancies</th>
                                         <th>EDIT</th>
                                     </tr>
 
@@ -327,6 +340,11 @@
                                             }else{
                                                 <td><span class="label label-danger">Offline</span></td>
                                             }
+                                            <td>
+                                                <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  homer_server.unique_identificator )' >
+                                                    <button class="btn btn-block btn-info btn-xs">All Instancies</button>
+                                                </a>
+                                            </td>
                                             <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
                                            </tr>
                                     }
@@ -347,6 +365,7 @@
                                         <th>Hash Certificate</th>
                                         <th>Server address</th>
                                         <th>Online</th>
+                                        <th>Instancies</th>
                                         <th>EDIT</th>
                                         <th>DELETE</th>
                                     </tr>
@@ -362,6 +381,11 @@
                                             }else{
                                                 <td><span class="label label-danger">Offline</span></td>
                                             }
+                                            <td>
+                                                <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  homer_server.unique_identificator )' >
+                                                    <button class="btn btn-block btn-info btn-xs">All Instancies</button>
+                                                </a>
+                                            </td>
                                             <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' )">Edit</button></td>
                                             <td><button class="btn btn-block btn-danger" type="button" onclick="deleteHomerServer(@homer_server.unique_identificator)">Delete</button></td>
                                         </tr>

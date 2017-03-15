@@ -209,6 +209,7 @@ DELETE         /b_program/version/:version_id                                   
 
 GET            /instance/project/:project_id                            @controllers.Controller_ProgramingPackage.get_b_program_instance_under_project(project_id)
 GET            /instance/get/:instance_id                               @controllers.Controller_ProgramingPackage.get_b_program_instance(instance_id)
+PUT            /instance/filter                                         @controllers.Controller_ProgramingPackage.get_b_program_instance_by_filter()
 GET            /instance_record/get/:instance_record_id                 @controllers.Controller_ProgramingPackage.get_b_program_instance_record(instance_record_id)
 
 PUT            /instance/command/:instance_id/:target_id/:command       @controllers.Controller_ProgramingPackage.send_command_to_instance(instance_id, target_id, command)
@@ -370,9 +371,7 @@ GET             /typeOfBoard/:type_of_board_id                                  
 POST            /bootloader/:type_of_board_id                                   @controllers.Controller_CompilationLibraries.boot_loader_create(type_of_board_id)
 PUT             /bootloader/file/:boot_loader_id                                @controllers.Controller_CompilationLibraries.boot_loader_upload_file(boot_loader_id)
 PUT             /bootloader/mark/bootloader/:boot_loader_id                     @controllers.Controller_CompilationLibraries.boot_loader_mark_as_main(boot_loader_id)
-
-
-PUT             /bootloader/update_device_list/:instance_id                     @controllers.Controller_CompilationLibraries.boot_loader_update_instance(instance_id)
+PUT             /bootloader/update_device_list                                  @controllers.Controller_CompilationLibraries.boot_loader_manual_update()
 
 #File // Skryto ve swaggeru
 GET             /file/fileRecord/:file_record_id                                @controllers.Controller_CompilationLibraries.fileRecord(file_record_id)
@@ -484,6 +483,7 @@ DELETE          /admin/request_stats                            @utilities.reque
 # Admin - Hardware
 GET             /admin/board_settings                           @controllers.Controller_Dashboard.basic_board_management()
 GET             /admin/board_summary                            @controllers.Controller_Dashboard.board_summary()
+GET             /admin/board_detail/:board_id                   @controllers.Controller_Dashboard.board_detail(board_id)
 GET             /admin/mac_adress_generator                     @controllers.Controller_Dashboard.mac_adress_generator()
 GET             /admin/bootloader_settings/:type_of_board_id    @controllers.Controller_Dashboard.bootloader_management(type_of_board_id)
 

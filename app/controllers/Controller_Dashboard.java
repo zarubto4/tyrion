@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.Api;
+import models.compiler.Model_Board;
 import models.compiler.Model_CompilationServer;
 import models.compiler.Model_TypeOfBoard;
 import models.person.Model_Person;
@@ -35,6 +36,7 @@ import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
 import views.html.boards.board_settings;
 import views.html.boards.board_summary;
+import views.html.boards.board_detail;
 import views.html.boards.bootloader_settings;
 import views.html.demo_data.demo_data_main;
 import views.html.external_servers.external_servers;
@@ -443,6 +445,19 @@ public class Controller_Dashboard extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result board_detail(String board_id){
+        try {
+
+            Html content = board_detail.render(Model_Board.find.byId(board_id));
+            return return_page ( content );
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
 
     @Security.Authenticated(Secured_Admin.class)
     public Result bootloader_management(String type_of_board_id){

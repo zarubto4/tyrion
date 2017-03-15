@@ -1,6 +1,7 @@
 @import models.project.b_program.instnace.Model_HomerInstance
 @import models.project.b_program.servers.Model_HomerServer
 @import utilities.enums.Type_of_command
+@import utilities.enums.Homer_Instance_Type
 
 @(homer_server: Model_HomerServer)
 
@@ -17,104 +18,107 @@
 <section class="content">
 
     <div class="row">
-        <div class="col-xs-12">
+        <div class="col-md-12">
             <div class="box">
-
-                <div class="box-header">
-                    <h3 class="box-title">Connected Homers (PC/RPI..)</h3>
+                <div class="box-header with-border">
+                    <h3 class="box-title">Filter settings</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button id="addDeviceButton" value="" class="btn btn-success" type="button" onclick="showAddTemporaryInstance()">ADD TEMPORARY INSTANCE</button>
+                                <button id="addDeviceButton" value="" class="btn btn-success" type="button" onclick="showAddTemporaryInstance()">ADD TEMPORARY INSTANCE</button>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
+                <div class="box-body">
+                    <form id="instanceFilterForm">
 
-                <div class="box-body table-responsive no-padding">
-                    <table id="homer_table" class="table table-bordered">
+                        <table id="filterTable" class="table table-condensed no-padding no-margin">
 
-                        <tr>
-                            <th>Instance ID</th>
-                            <th>Segment</th>
-                            <th>Required Status</th>
-                            <th>Actual Status</th>
-                            <th>Open Details</th>
-                            <th>Get Status</th>
-                            <th>Disconnect</th>
-                        </tr>
-
-
-                        @for( x <- Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", homer_server.unique_identificator).findList()){
                             <tr>
-
-                                <td>
-                                    @if(x.virtual_instance){
-                                        <p class="small text-red"> @x.blocko_instance_name</p>
-                                    }else{
-                                        <p class="small text-green"> @x.blocko_instance_name</p>
-                                    }
-                                </td>
-
-
-                                <td>
-                                    @if(x.virtual_instance){
-                                       Project ID: @x.project.id
-                                    }else{
-                                      B_Program ID: @x.b_program_id()
-                                    }
-                                </td>
-
-                                <td>
-                                @if(x.virtual_instance){
-                                   @if(x.getBoards_in_virtual_instance().isEmpty()){
-                                           <p class="small text-gray">no</p>
-                                   }else{
-                                       <p class="small text-red">yes</p>
-                                   }
-                                }else{
-                                    @if(x.actual_instance != null){
-                                        <p class="small text-red">yes</p>
-                                    }else{
-                                        <p class="small text-gray">no</p>
-                                    }
-                                }
-                                </td>
-
-
-                                <td>
-                                    @if(!x.instance_online()){
-                                        <p class= "text-red"> offline </p>
-                                    }else{
-                                        <p class= "text-green"> online </p>
-                                    }
-                                </td>
-
-
-                                <td align="center">
-                                    <a href='@routes.Controller_Dashboard.show_instance_detail( x.blocko_instance_name )' >
-                                        <button class="btn btn-block btn-info btn-xs">Details</button>
-                                    </a>
-                                </td>
-
-                                <td align="center">
-                                    <button onclick="ping_instance('@x.blocko_instance_name', '@Type_of_command.COMMAND_PING_INSTANCE.get_command')" class="btn btn-block btn-info btn-xs">Ping</button>
-                                </td>
-
-                                <td align="center">
-                                    <button onclick="disconnect_instance('@x.blocko_instance_name', '@Type_of_command.COMMAND_DISCONNECT_INSTANCE.get_command' )" class="btn btn-block btn-danger btn-xs">Disconnect</button>
-                                </td>
-
+                                <th class="col-md-2">Type of Instance</th>
+                                <th class="col-md-3">Servers</th>
+                                <th class="col-md-1">Date (D-M-YY)</th>
+                                <th>By Something</th>
                             </tr>
-                        }
+
+                            <tr>
+                                <td>
+                                    <div>
+                                        <select id="selectTypeOfInstance" name="instance_types[]" class="form-control" multiple>
+                                            <option value="@Homer_Instance_Type.VIRTUAL"> Virtual </option>
+                                            <option value="@Homer_Instance_Type.INDIVIDUAL"> Individual </option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <select id="selectServers" name="server_unique_names[]" class="form-control" multiple>
+                                            <option selected="selected" value="@homer_server.unique_identificator"> @homer_server.personal_server_name ( @homer_server.unique_identificator )</option>
+
+                                            @for(server <- Model_HomerServer.find.all() ) {
+                                                <option value="@server.unique_identificator"> @server.personal_server_name ( @server.unique_identificator )</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="input-group">
+                                        <button name="date" type="button" class="btn btn-default pull-right" id="daterange-btn">
+                                            <span>
+                                                <i class="fa fa-calendar"></i>Date
+                                            </span>
+                                            <i class="fa fa-caret-down"></i>
+                                        </button>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="active" type="checkbox"> Active
+                                        </label>
+                                    </div>
+                                </td>
+
+                                <td></td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div class="box-footer">
+                    <button class="btn pull-right btn-warning" type="button" onclick="show_filterValues()">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Instaces summary</h3>
+                </div>
+                <div class="box-body table-responsive no-padding">
+
+                    <table id="instance_table" class="table table-bordered">
 
                     </table>
+
                 </div><!-- /.box-body -->
-
-
+                <div class="box-footer">
+                    <div class="dataTables_paginate paging_simple_numbers" id="all_table_paginate" style="text-align: center;">
+                        <ul class="pagination" id="pagination" style="margin: 10px;">
+                            <li class="paginate_button previous disabled" id="all_table_previous">
+                                Zero pages!
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div><!-- /.box -->
         </div>
     </div>
-
 </section>
+
+
 
 
  <!-- /. MODALS---------------------------------------------------------------------------------------------------------->
@@ -147,6 +151,34 @@
 
 
     <script>
+
+            var start_time;
+            var end_time;
+            var active = "indeterminate";
+            var page = 1;
+
+            $("#active").prop("indeterminate", true);
+
+            $("#active").click(function () {
+
+                switch (active){
+                    case 'indeterminate' : {
+                        active = "true";
+                        $("#active").prop("indeterminate", false).prop("checked", "checked");
+                        break;
+                    }
+                    case 'true' : {
+                        active = "false";
+                        $("#active").prop("indeterminate", false).removeAttr("checked");
+                        break;
+                    }
+                    case 'false' : {
+                        active = "indeterminate";
+                        $("#active").prop("indeterminate", true).removeAttr("checked");
+                        break;
+                    }
+                }
+            });
 
          function showAddTemporaryInstance(){
              $("#addTemporaryInstanceModal").css("display","block");
@@ -283,5 +315,186 @@
              })}
 
 
+
+            function makePagination(pages) {
+
+                var content = "";
+
+                if (page == 1){
+                    content += "<li class='paginate_button previous disabled' id='all_table_next'><a>Previous</a></li>";
+                } else {
+                    content += "<li class='paginate_button previous' id='all_table_next'><a onclick=\"pageCall('previous',null)\">Previous</a></li>";
+                }
+
+                $.each(pages, function (k, v) {
+                    if (v == page){
+                        content += "<li class='paginate_button active'><a onclick=\"pageCall('normal'," + v + ")\">" + v + "</a></li>";
+                    } else {
+                        content += "<li class='paginate_button'><a onclick=\"pageCall('normal'," + v + ")\">" + v + "</a></li>";
+                    }
+                });
+
+                if (page == pages.length){
+                    content += "<li class='paginate_button next disabled' id='all_table_next'><a>Next</a></li>";
+                } else {
+                    content += "<li class='paginate_button next' id='all_table_next'><a onclick=\"pageCall('next',null)\">Next</a></li>";
+                }
+
+                $("#pagination").html(content);
+
+                if (page == 1){
+                    $("#all_table_previous").prop("disabled", "disabled").addClass("disabled");
+                }
+
+                if (page == (pages.length + 1)){
+                    $("#all_table_next").prop("disabled", "disabled").addClass("disabled");
+                }
+            }
+
+            function pageCall(type, number) {
+                switch (type){
+                    case 'normal':{
+                        page = number;
+                        break;
+                    }
+                    case 'previous':{
+                        page--;
+                        break;
+                    }
+                    case 'next':{
+                        page++;
+                        break;
+                    }
+                }
+
+                show_filterValues();
+            }
+
+            function show_filterValues() {
+
+                var model_data = $("#instanceFilterForm").serializeObject();
+
+                model_data.page_number = page;
+
+                $.ajax({
+
+                    url: '@routes.Controller_ProgramingPackage.get_b_program_instance_by_filter()',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: JSON.stringify(model_data),
+                    dataType: 'json',
+
+                    success: function(json) {
+                        showInstances(json);
+                        makePagination(json.pages)
+                    },
+
+                    error: function(data) {
+                        BootstrapDialog.show({
+                            message: syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself) {
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    }
+                })
+            }
+
+            function showInstances(json) {
+
+                instancies = json;
+
+                var content = "";
+
+                $('#instance_table').html(""); // Vyprázdnění tabulky
+
+                content +="<tr>";
+                content +="<th>Instance ID</th>";
+                content +="<th>Type</th>";
+                content +="<th>Required Status</th>";
+
+                content +="<th>Actual Status</th>";
+                content +="<th>Open Details</th>";
+                content +="<th>Get Status</th>";
+                content +="<th>Disconnect</th>";
+
+                content +="</tr>";
+
+                $.each(instancies.content, function (k, v) {
+                    content += "<tr>";
+                    content += "<td>" + v.blocko_instance_name +"</td>";
+                    content += "<td>" + v.instance_type +"</td>";
+                    content += "<td>" + v.personal_description +"</td>";
+
+                    if(v.instance_online == true){
+                        content += "<td><span class=\"label label-success\">Online</span></td>";
+                    }else{
+                        content += "<td><span class=\"label label-danger\">Offline</span></td>";
+                    }
+
+                    content += "<td><a href=\"" + '@routes.Controller_Dashboard.show_instance_detail("")' + v.blocko_instance_name + "\"><button class=\"btn btn-block btn-info btn-xs\">Details</button></a></td>";
+                    content += "<td> Edit </td>";
+                    content += "<td> Disconect </td>";
+                    content += "</tr>";
+
+                });
+
+                $('#instance_table').append(content);
+
+            }
+
+
+
+            $(function () {
+
+                $('#selectTypeOfInstance').select2({
+                    placeholder: "Select multiple",
+                    allowClear: false
+                });
+
+                $('#selectServers').select2({
+                    placeholder: "Select multiple",
+                    allowClear: false
+                });
+
+                //Date range as a button
+                $('#daterange-btn').daterangepicker(
+                        {
+                            ranges: {
+                                'Today': [moment().startOf('day'), moment().endOf('day')],
+                                'Till Today': [moment().subtract(40, 'years').startOf('day'), moment().endOf('day')],
+                                'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+                                'Last 7 Days': [moment().subtract(6, 'days').startOf('day'), moment().endOf('day')],
+                                'Last 30 Days': [moment().subtract(29, 'days').startOf('day'), moment().endOf('day')],
+                                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                            },
+                            startDate: moment().subtract(40, 'years').startOf('day'),
+                            endDate: moment().endOf('day')
+                        },
+                        function (start, end) {
+                            start_time = new Date(start.toString()).getTime();
+                            end_time = new Date(end.toString()).getTime();
+                            console.log(start_time + " - " + end_time);
+                            if (start.format('D-M-YY') == end.format('D-M-YY')){
+                                $('#daterange-btn span').html(start.format('D-M-YY'));
+                            } else {
+                                $('#daterange-btn span').html(start.format('D-M-YY') + ' - ' + end.format('D-M-YY'));
+                            }
+
+                        }
+                );
+
+                show_filterValues();
+            });
 
     </script>

@@ -1,7 +1,6 @@
 package controllers;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Expr;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,8 +9,6 @@ import io.swagger.annotations.*;
 import models.compiler.*;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.c_program.Model_CProgram;
-import models.project.c_program.actualization.Model_ActualizationProcedure;
-import models.project.c_program.actualization.Model_CProgramUpdatePlan;
 import models.project.global.Model_Product;
 import models.project.global.Model_Project;
 import play.data.Form;
@@ -19,8 +16,10 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.*;
 import utilities.emails.Email;
-import utilities.enums.*;
-import utilities.hardware_updater.Master_Updater;
+import utilities.enums.Approval_state;
+import utilities.enums.Compile_Status;
+import utilities.enums.Library_state;
+import utilities.enums.Registration_Board_status;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
@@ -1496,40 +1495,8 @@ public class Controller_CompilationLibraries extends Controller {
                     board_for_update.add(board);
             }
 
-            Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
-            procedure.save();
-
-            for(Model_Board board : board_for_update)
-            {
-                List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
-                                                    .find
-                                                    .where()
-                                                        .disjunction()
-                                                            .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                                                            .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                                                            .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                                                            .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                                                            .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
-                                                        .endJunction()
-                                                    .eq("board.id", board.id).findList();
-
-                for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
-                    cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
-                    cProgramUpdatePlan.date_of_finish = new Date();
-                    cProgramUpdatePlan.update();
-                }
-
-                Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
-                plan.board = board;
-                plan.firmware_type = Firmware_type.FIRMWARE;
-                plan.actualization_procedure = procedure;
-                plan.c_program_version_for_update = c_program_version;
-                plan.save();
-            }
-
-            procedure.refresh();
-
-            Master_Updater.add_new_Procedure(procedure);
+            // TODO toto by mohlo být v samostatném vlákně
+            Model_Board.update_firmware(board_for_update, c_program_version);
 
             // Vracím odpověď
             return GlobalResult.result_ok();
@@ -2707,17 +2674,26 @@ public class Controller_CompilationLibraries extends Controller {
     }
 
     @ApiOperation(value = "Update bootloader on device list", hidden = true)
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result boot_loader_update_instance(String instance_id){
+    public Result boot_loader_manual_update(){
         try {
 
-            Model_HomerInstance instance = Model_HomerInstance.find.byId(instance_id);
-            if(instance == null) return GlobalResult.notFoundObject("Instance not found");
+            // Zpracování Json
+            final Form<Swagger_Board_Bootloader_Update > form = Form.form(Swagger_Board_Bootloader_Update.class).bindFromRequest();
+            if(form.hasErrors()){return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Board_Bootloader_Update help = form.get();
 
-            if(instance.actual_instance == null) return GlobalResult.notFoundObject("Instance not found");
 
-             instance.actual_instance.add_new_actualization_request_bootloader();
+            List<Model_Board> boards = Model_Board.find.where().in("id", help.device_ids).findList();
+            if(boards.isEmpty()) return GlobalResult.notFoundObject("Board not found");
 
+            Model_BootLoader bootLoader = Model_BootLoader.find.byId(help.bootloader_id);
+            if(bootLoader == null) return  GlobalResult.notFoundObject("BootLoader not found");
+
+            for(Model_Board board : boards) {
+                if (!board.read_permission()) return GlobalResult.forbidden_Permission();
+            }
+
+            Model_Board.update_bootloader(boards,bootLoader);
 
             // Vracím Json
             return GlobalResult.result_ok();
@@ -2830,7 +2806,7 @@ public class Controller_CompilationLibraries extends Controller {
             if(!project.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Vyhledání seznamu desek na které lze nahrát firmware - okamžitě
-            List<Model_Board> boards = Model_Board.find.where().eq("type_of_board.connectible_to_internet", true).isNotNull("virtual_instance_under_project").findList();
+            List<Model_Board> boards = Model_Board.find.where().eq("type_of_board.connectible_to_internet", true).eq("project.id", project_id).findList();
 
             List<Swagger_Board_for_fast_upload_detail> list = new ArrayList<>();
 

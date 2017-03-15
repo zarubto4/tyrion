@@ -152,7 +152,7 @@ public class Master_Updater{
                    logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: " + Json.toJson(plan));
                    logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: ID:: " + plan.id);
                    logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: Board ID:: " +  plan.board.id);
-                   logger.error("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: Status:: " +  plan.state);
+                   logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: Status:: " +  plan.state);
 
 
                    Model_Board board  = plan.board;
@@ -210,7 +210,7 @@ public class Master_Updater{
                   Model_FileRecord file_record = null;
 
 
-                  if(plan.c_program_version_for_update != null) {
+                  if(plan.firmware_type == Firmware_type.FIRMWARE) {
                             program_identificator = "firmware_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
 
                             if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
@@ -226,10 +226,12 @@ public class Master_Updater{
                                 continue;
                             }
 
-                  } else if(plan.firmware_type == Firmware_type.BOOTLOADER) {
-                            program_identificator = "boot_loader_" + plan.binary_file.boot_loader.version_identificator;
-                            file_record = plan.binary_file;
+                  }else if(plan.firmware_type == Firmware_type.BOOTLOADER) {
 
+                            program_identificator = "boot_loader_" + plan.bootloader.version_identificator;
+                            file_record = plan.bootloader.file;
+
+                  // Update vlastního firmwaru
                   }else if(plan.binary_file != null) {
                             program_identificator = "f" + plan.binary_file.id;
                             file_record = plan.binary_file;

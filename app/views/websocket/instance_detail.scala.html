@@ -1,5 +1,6 @@
 @import utilities.enums.Firmware_type
 @import utilities.enums.Type_of_command
+@import utilities.enums.Homer_Instance_Type
 @import models.compiler.Model_Board
 @import models.compiler.Model_BootLoader
 @import models.project.b_program.instnace.Model_HomerInstance
@@ -26,7 +27,7 @@
 
                     <p class="text-muted text-center"> @instance.blocko_instance_name</p>
 
-                        @if(instance.virtual_instance) {
+                        @if(instance.instance_type == Homer_Instance_Type.VIRTUAL) {
                             <p class="text-orange text-center"> Virtual Instance </p>
                         } else {
                             <p class="text-green text-center"> Standard </p>
@@ -35,7 +36,7 @@
                     <ul class="list-group list-group-unbordered">
                         <li class="list-group-item">
                             <b>Owner</b> <a class="pull-right">
-                                @if(instance.virtual_instance){
+                                @if(instance.instance_type == Homer_Instance_Type.VIRTUAL){
                                     <p class="text-red text-center"> Byzance Developer </p>
                                 }else{
                                     <p class="text-green text-center"> User </p>
@@ -102,7 +103,7 @@
                             <div class="box box-primary">
                                 <div class="box-body table-responsive no-padding">
                                     <div class="box-header">
-                                        <h3 class="box-title"> Yoda: @x.main_board_pair.board.id Name: @x.main_board_pair.board.personal_description </h3>
+                                        <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.personal_description </h3>
                                         <h3 class="box-title">
 
                                         @if( x.main_board_pair.board.is_online()  == true){
@@ -118,16 +119,16 @@
                                         <div class="pull-right">
                                             <div class="btn-group">
 
-                                                @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.main_board_pair.id.toString()  ).findUnique() != null){
-                                                    @if(Model_Board.find.byId( x.main_board_pair.id.toString() ).update_boot_loader_required()) {
-                                                        <a  onclick="updateBootLoader('@x.main_board_pair.id.toString()')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
-                                                    }else {
-                                                        <p class="lead text-green">(Actual)</p>
-                                                        <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
+                                                    @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.main_board_pair.id.toString()  ).findUnique() != null){
+                                                        @if(Model_Board.find.byId( x.main_board_pair.id.toString() ).update_boot_loader_required()) {
+                                                            <a  onclick="updateBootLoader('@x.main_board_pair.id.toString()')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
+                                                        }else {
+                                                            <p class="lead text-green">(Actual)</p>
+                                                            <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
+                                                        }
+                                                    }else{
+                                                        <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b> Missing bootloader</b></a>
                                                     }
-                                                }else{
-                                                    <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
-                                                }
 
                                             <a onclick="executeCommand('@x.main_board_pair.id.toString() ','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
 
@@ -157,7 +158,7 @@
                                         @for(b_pair <- x.device_board_pairs) {
 
                                             <tr>
-                                                <td> @b_pair.board.id</td>
+                                                <td> <a href='@routes.Controller_Dashboard.board_detail("")@b_pair.board.id' > @b_pair.board.id</a>  </td>
                                                 <td> @b_pair.board.type_of_board.name</td>
                                                 <td> @b_pair.board.personal_description</td>
 
@@ -201,7 +202,7 @@
                     <div class="box box-primary">
                         <div class="box-body table-responsive no-padding">
                             <div class="box-header">
-                                <h3 class="box-title"> Yoda: @x.id </h3>
+                                <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.id ' > @x.id </a>  </h3>
                                 <div class="pull-right">
                                     <div class="btn-group">
 
@@ -260,7 +261,7 @@
                             @for(x <- instance.actual_instance.hardware_group()) {
                                 <tr>
                                     <td>@x.main_board_pair.board.type_of_board.name</td>
-                                    <td>@x.main_board_pair.board.id</td>
+                                    <td>  <a href='@routes.Controller_Dashboard.board_detail("")@x.main_board_pair.board.id' > @x.main_board_pair.board.id </a>  </td>
                                     <td>@if(x.main_board_pair.board.actual_c_program_version != null) {
                                         @x.main_board_pair.board.actual_c_program_version.id
                                     } else {
@@ -813,54 +814,7 @@
                 })
             }
 
-            function updateBootLoader(){
 
-
-                $.ajax({
-                    url: '@routes.Controller_CompilationLibraries.boot_loader_update_instance(instance.blocko_instance_name)',
-                    type: 'PUT',
-                    contentType: 'application/json',
-                    headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
-                        "Content-Type":"application/json"
-                    },
-                    data: obj,
-                    dataType: 'json',
-
-                    success:function(data, status){
-                        console.log(data);
-                        console.log(status);
-                        BootstrapDialog.show({
-                            message:  syntaxHighlight(data),
-
-                            buttons: [{
-                                label: 'Close',
-                                action: function(dialogItself){
-                                    dialogItself.close();
-                                }
-                            }]
-
-                        });
-                    },
-                    error:function(data) {
-                        console.log(data);
-
-                        BootstrapDialog.show({
-                            message:  syntaxHighlight(data),
-                            type: BootstrapDialog.TYPE_DANGER,
-                            buttons: [{
-                                label: 'Close',
-                                action: function(dialogItself){
-                                    dialogItself.close();
-                                }
-                            }]
-
-                        });
-                    }
-
-
-                })
-            }
 
 
             function executeCommand(target_id, command){

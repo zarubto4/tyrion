@@ -18,10 +18,7 @@ import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import models.project.c_program.Model_CProgram;
 import models.project.m_program.Model_MProject;
-import utilities.enums.Notification_action;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
-import utilities.enums.Participant_status;
+import utilities.enums.*;
 import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
@@ -178,11 +175,10 @@ public class Model_Project extends Model {
         }
 
         Model_HomerInstance instance = new Model_HomerInstance();
-        instance.virtual_instance = true;
+        instance.instance_type = Homer_Instance_Type.VIRTUAL;
 
         // Máme Privátní server pod projektem  // TODO - Doplnit možnost registrace přímo na privátní server
         if(12 > 19){
-
 
             // TODO
 

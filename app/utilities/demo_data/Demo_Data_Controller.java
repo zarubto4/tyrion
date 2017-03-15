@@ -12,9 +12,7 @@ import models.project.global.financial.Model_GeneralTariff;
 import models.project.global.financial.Model_GeneralTariffExtensions;
 import models.project.global.financial.Model_GeneralTariffLabel;
 import models.project.global.financial.Model_PaymentDetails;
-import org.apache.commons.io.IOUtils;
 import play.Application;
-import play.Play;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -138,9 +136,6 @@ public class Demo_Data_Controller extends Controller {
             processor_3.speed = 3000;
             processor_3.save();
 
-
-            byte[] bootloader_content = IOUtils.toByteArray(Play.application().resourceAsStream("/demo_data/demo_bootloader.bin"));
-
             // Nastavím Type of Boards - YODA
             Model_TypeOfBoard typeOfBoard_1 = new Model_TypeOfBoard();
             typeOfBoard_1.name = "Yoda G2";
@@ -153,23 +148,6 @@ public class Demo_Data_Controller extends Controller {
             typeOfBoard_1.save();
 
 
-            Model_BootLoader boot_loader_1 = new Model_BootLoader();
-            boot_loader_1.name = "BootLoader Test Yoda G2";
-            boot_loader_1.version_identificator = "1.2.41";
-            boot_loader_1.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
-            boot_loader_1.date_of_create = new Date();
-            boot_loader_1.type_of_board = typeOfBoard_1;
-            boot_loader_1.main_type_of_board = typeOfBoard_1;
-            boot_loader_1.save();
-
-
-            Model_FileRecord filerecord_1 = Model_FileRecord.create_Binary_file(boot_loader_1.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(bootloader_content), "bootloader.bin");
-            boot_loader_1.file = filerecord_1;
-            filerecord_1.boot_loader = boot_loader_1;
-            filerecord_1.update();
-            boot_loader_1.update();
-
-
             Model_TypeOfBoard typeOfBoard_2 = new Model_TypeOfBoard();
             typeOfBoard_2.name = "Wireless G2";
             typeOfBoard_2.description = " Wireless kit second generation";
@@ -179,22 +157,6 @@ public class Demo_Data_Controller extends Controller {
             typeOfBoard_2.producer = producer;
             typeOfBoard_2.connectible_to_internet = false;
             typeOfBoard_2.save();
-
-            Model_BootLoader boot_loader_2 = new Model_BootLoader();
-            boot_loader_2.name = "BootLoader Test Wireless G2";
-            boot_loader_2.version_identificator = "1.0.12";
-            boot_loader_2.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
-            boot_loader_2.date_of_create = new Date();
-            boot_loader_2.type_of_board = typeOfBoard_2;
-            boot_loader_2.main_type_of_board = typeOfBoard_2;
-            boot_loader_2.save();
-
-
-            Model_FileRecord filerecord_2 = Model_FileRecord.create_Binary_file(boot_loader_2.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(bootloader_content), "bootloader.bin");
-            boot_loader_2.file = filerecord_2;
-            filerecord_2.boot_loader = boot_loader_2;
-            filerecord_2.update();
-            boot_loader_2.update();
 
 
             Model_TypeOfBoard typeOfBoard_3 = new Model_TypeOfBoard();
@@ -207,22 +169,6 @@ public class Demo_Data_Controller extends Controller {
             typeOfBoard_3.connectible_to_internet = false;
             typeOfBoard_3.save();
 
-            Model_BootLoader boot_loader_3 = new Model_BootLoader();
-            boot_loader_3.name = "BootLoader Test Wireless G2";
-            boot_loader_3.version_identificator = "9.10.1";
-            boot_loader_3.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
-            boot_loader_3.date_of_create = new Date();
-            boot_loader_3.type_of_board = typeOfBoard_3;
-            boot_loader_3.main_type_of_board = typeOfBoard_3;
-            boot_loader_3.save();
-
-
-            Model_FileRecord filerecord_3 = Model_FileRecord.create_Binary_file(boot_loader_3.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(bootloader_content), "bootloader.bin");
-            boot_loader_3.file = filerecord_3;
-            filerecord_3.boot_loader = boot_loader_3;
-            filerecord_3.update();
-            boot_loader_3.update();
-
 
             Model_TypeOfBoard typeOfBoard_4 = new Model_TypeOfBoard();
             typeOfBoard_4.name = "Quad BUS HUB G1";
@@ -233,23 +179,6 @@ public class Demo_Data_Controller extends Controller {
             typeOfBoard_4.producer = producer;
             typeOfBoard_4.connectible_to_internet = false;
             typeOfBoard_4.save();
-
-
-            Model_BootLoader boot_loader_4 = new Model_BootLoader();
-            boot_loader_4.name = "BootLoader Test Wireless G2";
-            boot_loader_4.version_identificator = "8.0.1";
-            boot_loader_4.description = " V žádném případě nevypalujte tento bootloader do HW - není aktuální a asi to není ani bootloader!!!";
-            boot_loader_4.date_of_create = new Date();
-            boot_loader_4.type_of_board = typeOfBoard_4;
-            boot_loader_4.main_type_of_board = typeOfBoard_4;
-            boot_loader_4.save();
-
-
-            Model_FileRecord filerecord_4 = Model_FileRecord.create_Binary_file(boot_loader_4.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(bootloader_content), "bootloader.bin");
-            boot_loader_4.file = filerecord_4;
-            filerecord_4.boot_loader = boot_loader_4;
-            filerecord_4.update();
-            boot_loader_4.update();
 
 
             return GlobalResult.result_ok();

@@ -24,6 +24,7 @@ import models.project.global.Model_ProjectParticipant;
 import models.project.m_program.Model_GridTerminal;
 import play.data.Form;
 import play.i18n.Lang;
+import utilities.enums.Homer_Instance_Type;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.enums.Type_of_command;
@@ -64,8 +65,8 @@ public class Model_HomerInstance extends Model {
 
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
+                                                                                                                        public Homer_Instance_Type instance_type;
 
-    @JsonIgnore                                                                                                         public boolean virtual_instance; // Pokud je vázaná na project (na držení fiktivního HW)
     @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)            public Model_Project project;
 
 
@@ -74,9 +75,9 @@ public class Model_HomerInstance extends Model {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return this.getB_program().id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return this.getB_program().name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return this.getB_program().description;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return  ( instance_type != Homer_Instance_Type.VIRTUAL) ? this.getB_program().id           : null;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return  ( instance_type != Homer_Instance_Type.VIRTUAL) ? this.getB_program().name         : null;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return  ( instance_type != Homer_Instance_Type.VIRTUAL) ? this.getB_program().description  : null;}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.personal_server_name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.unique_identificator;}
@@ -485,7 +486,7 @@ public class Model_HomerInstance extends Model {
             this.update_device_summary_collection();
 
 
-            if(virtual_instance){
+            if(instance_type == Homer_Instance_Type.VIRTUAL){
 
                 WS_Update_device_summary_collection ws_update_device_summary_collection = new WS_Update_device_summary_collection();
                 ws_update_device_summary_collection.status = "success";
@@ -875,7 +876,7 @@ public class Model_HomerInstance extends Model {
                 }
 
                 // Virutální instance - kontrola Yodů kteřá tam mají být a kteří ne!
-            }else if(virtual_instance) {
+            }else if(instance_type == Homer_Instance_Type.VIRTUAL) {
 
                 List<String> board_id_on_instance = new ArrayList<>();
 

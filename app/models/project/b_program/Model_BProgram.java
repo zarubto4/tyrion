@@ -11,6 +11,7 @@ import models.compiler.Model_VersionObject;
 import models.project.b_program.instnace.Model_HomerInstance;
 import models.project.b_program.servers.Model_HomerServer;
 import models.project.global.Model_Project;
+import utilities.enums.Homer_Instance_Type;
 import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_B_Program_State;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
@@ -153,6 +154,7 @@ public class Model_BProgram extends Model {
         if(instance == null){
 
             Model_HomerInstance instance = new Model_HomerInstance();
+            instance.instance_type = Homer_Instance_Type.INDIVIDUAL;
             instance.cloud_homer_server = Model_HomerServer.get_destination_server();
             instance.save();
             this.instance = instance;

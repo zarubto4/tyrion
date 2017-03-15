@@ -1,0 +1,361 @@
+@import models.compiler.Model_Board
+@import models.project.c_program.actualization.Model_CProgramUpdatePlan
+@import utilities.enums.Firmware_type
+
+@(board: Model_Board)
+
+<section class="content-header">
+    <h1> Board Summary </h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-share"></i> Server Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> Board Description </li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+
+                    <div class="col-md-6">
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Basic Information</h3>
+                            </div>
+                            <div class="box-body">
+
+
+                                <table  class="table table-bordered">
+
+                                    <tr>
+                                        <td class="col-md-4">Board ID</td>
+                                        <td class="col-md-8">@board.id</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Type of Board</td>
+                                        <td class="col-md-8">@board.type_of_board.name</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Hash for Adding</td>
+                                        <td class="col-md-8">@board.hash_for_adding</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Mac Address</td>
+                                        <td class="col-md-8">@board.mac_address</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Wifi mac Address</td>
+                                        <td class="col-md-8">@board.wifi_mac_address</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Generation Description</td>
+                                        <td class="col-md-8">@board.generationDescription</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Project Id</td>
+                                        <td class="col-md-8">@if(board.project != null ){
+                                            @board.project.id
+                                        }</td>
+                                    </tr>
+
+                                </table>
+
+                            </div>
+                            <div class="box-footer">
+                            </div>
+                        </div>
+
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Basic Information</h3>
+                            </div>
+                            <div class="box-body">
+
+
+                                <table  class="table table-bordered">
+
+                                    <tr>
+                                        <td class="col-md-4">Active </td>
+                                        <td class="col-md-8">@board.is_active</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Online</td>
+                                        @if(board.is_online() == true){
+                                            <td> <span class="label label-success">Online</span></td>
+                                        }else{
+                                            <td><span class="label label-danger">Offline</span></td>
+                                        }
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Backup mode</td>
+                                        <td class="col-md-8">@board.backup_mode</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Date of create</td>
+                                        <td class="col-md-8">@board.date_of_create</td>
+                                    </tr>
+
+                                </table>
+
+                            </div>
+                            <div class="box-footer">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Basic Information</h3>
+                            </div>
+                            <div class="box-body" >
+
+                                <table  class="table table-bordered">
+                                    <tr>
+                                        <td class="col-md-4">Actual Firmware ID</td>
+                                        <td class="col-md-8">@if(board.actual_c_program_version != null) {
+                                            @board.actual_c_program_version.id
+                                        }</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Actual Firmware Name</td>
+                                        <td class="col-md-8">@if(board.actual_c_program_version != null) {
+                                            @board.actual_c_program_version.version_name
+                                        }</td>
+                                    </tr>
+                                </table>
+
+                                <table  class="table table-bordered">
+                                    <tr>
+                                        <td class="col-md-4">Actual Backup ID</td>
+                                        <td class="col-md-8">@if(board.actual_backup_c_program_version != null) {
+                                            @board.actual_backup_c_program_version.id
+                                        }</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Actual Backup Name</td>
+                                        <td class="col-md-8">  @if(board.actual_backup_c_program_version != null) {
+                                            @board.actual_backup_c_program_version.version_name
+                                        }</td>
+                                    </tr>
+                                </table>
+
+
+                                <table  class="table table-bordered">
+                                    <tr>
+                                        <td class="col-md-4">Actual Bootloader ID</td>
+                                        <td class="col-md-8"> @if(board.actual_boot_loader != null) {
+                                                @board.actual_boot_loader.version_identificator
+                                            }
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Actual Bootloader Name</td>
+                                        <td class="col-md-8"> @if(board.actual_boot_loader != null) {
+                                            @board.actual_boot_loader.name
+                                        }
+                                        </td>
+                                    </tr>
+
+                                    @if(board.update_boot_loader_required()) {
+
+                                        <tr>
+                                            <td class="col-md-4">Required update Bootloader</td>
+                                            <td class="col-md-8">
+                                                <button class="btn btn-block btn-danger" type="button" onclick="updateBootLoader('@board.id')">Manual Update</button>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="col-md-4">Actual Default by Type of Board</td>
+                                            <td class="col-md-8"> @board.type_of_board.main_boot_loader.id</td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="col-md-4">Actual Default by Type of Board</td>
+                                            <td class="col-md-8"> @board.type_of_board.main_boot_loader.version_identificator</td>
+                                        </tr>
+
+                                    }
+
+                                </table>
+
+                            </div>
+                            <div class="box-footer">
+                            </div>
+                        </div>
+                        <div class="box">
+
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Updates</h3>
+                            </div>
+
+                            <div class="box-body" >
+
+                                <table  class="table table-bordered">
+                                    <tr>
+                                        <td class="col-md-4">Required Firmware ID</td>
+                                        <td class="col-md-8">@if(board.actual_c_program_version != null) {
+                                            @board.actual_c_program_version.id
+                                        }</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Actual Firmware Name</td>
+                                        <td class="col-md-8">@if(board.actual_c_program_version != null) {
+                                            @board.actual_c_program_version.version_name
+                                        }</td>
+                                    </tr>
+
+                                </table>
+
+                            </div>
+                            <div class="box-footer">
+                            </div>
+                        </div>
+                    </div>
+
+                <div class="col-md-12">
+
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">Basic Information</h3>
+                        </div>
+                        <div class="box-body">
+
+
+                            <table id="allProcedures" c class="table table-bordered">
+
+                                <tr>
+                                    <th>Id </th>
+                                    <th>Date of create </th>
+                                    <th>Date of finish  </th>
+                                    <th>Firmware Type </th>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>State</th>
+                                </tr>
+
+                                @for(update <- Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).findList()) {
+
+                                    <tr>
+                                        <td>@update.id</td>
+                                        <td>@update.date_of_create</td>
+                                        <td>@update.date_of_finish</td>
+                                        <td>@update.firmware_type</td>
+
+                                        @if(update.firmware_type == Firmware_type.FIRMWARE){
+                                            <td>@update.c_program_version_for_update.id</td>
+                                            <td>@update.c_program_version_for_update.version_name</td>
+                                        }
+
+                                        @if(update.firmware_type == Firmware_type.BOOTLOADER){
+                                            <td>@update.bootloader.id</td>
+                                            <td>@update.bootloader.version_identificator</td>
+                                        }
+
+                                        @if(update.firmware_type == Firmware_type.BACKUP){
+                                            <td>@update.c_program_version_for_update.id</td>
+                                            <td>@update.c_program_version_for_update.version_name</td>
+                                        }
+
+
+                                        @if(update.errorCode != null) {
+                                            <td>@update.state + (ErrorCode: @update.errorCode )</td>
+                                        }else{
+                                            <td>@update.state</td>
+                                        }
+                                    </tr>
+
+                                }
+
+                            </table>
+
+                        </div>
+                        <div class="box-footer">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <script>
+
+            function updateBootLoader(deviceId){
+
+                var json = {
+                    bootloader_id:'@board.type_of_board.main_boot_loader.id',
+                    device_ids:[deviceId]
+                };
+
+
+                console.log(JSON.stringify(json));
+
+
+                $.ajax({
+                    url: '@routes.Controller_CompilationLibraries.boot_loader_manual_update()',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: JSON.stringify(json),
+                    dataType: 'json',
+
+                    success:function(data, status){
+
+                        $('#allProcedures').load(document.URL +  ' #allProcedures');
+
+                        console.log(data);
+                        console.log(status);
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    },
+                    error:function(data) {
+                        console.log(data);
+
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    }
+
+
+                })
+            }
+
+    </script>
