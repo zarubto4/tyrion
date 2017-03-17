@@ -530,24 +530,36 @@ public class Model_Board extends Model {
                         plan.date_of_finish = new Date();
                         plan.update();
 
+                        logger.debug("Model_Board:: Update_report_from_homer:: FirmwareType check");
+
                         if(firmware_type == Firmware_type.FIRMWARE){
+
+                            logger.debug("Model_Board:: Update_report_from_homer:: Firmware");
+
                             board.actual_c_program_version = plan.c_program_version_for_update;
                             board.update();
                             continue;
                         }
 
                         if(firmware_type == Firmware_type.BACKUP){
+
+                            logger.debug("Model_Board:: Update_report_from_homer:: BACKUP");
+
                             board.actual_backup_c_program_version = plan.c_program_version_for_update;
+                            board.backup_mode = false;
                             board.update();
                             continue;
                         }
 
                         if(firmware_type == Firmware_type.BOOTLOADER){
 
+                            logger.debug("Model_Board:: Update_report_from_homer:: Bootloader");
                             board.actual_boot_loader = plan.bootloader;
                             board.update();
                             continue;
                         }
+
+                        logger.error("Model_Board:: Update_report_from_homer:: ERROR: Its not Firmware, BACKUP or Bootloader!!! ");
 
                     }
 
@@ -909,8 +921,18 @@ public class Model_Board extends Model {
         procedure.state = Actual_procedure_State.not_start_yet;
         procedure.save();
 
-        for(Model_BPair b_pair : board_for_update)
-        {
+        if(board_for_update.isEmpty()){
+            logger.error("Model_Board:: update_backup:: Array is empty::");
+            procedure.state = Actual_procedure_State.complete_with_error;
+            procedure.update();
+            return;
+        }
+
+        List<Model_CProgramUpdatePlan> plans = new ArrayList<>();
+
+        for(Model_BPair b_pair : board_for_update) {
+
+
             List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
                     .find
                     .where()
@@ -936,9 +958,11 @@ public class Model_Board extends Model {
             plan.actualization_procedure = procedure;
             plan.c_program_version_for_update = b_pair.c_program_version;
             plan.save();
+            plans.add(plan);
         }
 
-        procedure.refresh();
+        procedure.updates.addAll(plans);
+        procedure.update();
 
         Master_Updater.add_new_Procedure(procedure);
     }

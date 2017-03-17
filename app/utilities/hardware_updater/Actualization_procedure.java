@@ -15,6 +15,9 @@ public class Actualization_procedure {
     @JsonProperty public List<Target_pair> targetPairs = new ArrayList<>();
 
     @JsonIgnore   public Model_FileRecord file_record;
+    @JsonProperty   public String name;
+    @JsonProperty   public String version;
+
 
     @JsonProperty public Firmware_type firmwareType;
     @JsonProperty  public  String actualizationProcedureId;

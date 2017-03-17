@@ -113,6 +113,7 @@ public class Master_Updater{
         public String program_identificator;
         public Firmware_type firmware_type;
         public Model_FileRecord file_record;
+        public String name;
 
         public List<Target_pair> target_pairs = new ArrayList<>();
     }
@@ -133,6 +134,15 @@ public class Master_Updater{
         }
 
 
+        if(procedure.updates.isEmpty()){
+
+            procedure.state = Actual_procedure_State.complete_with_error;
+            procedure.update();
+            logger.error("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " is empty and not set to any updates!!!");
+            return;
+        }
+
+
         logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " state::  " + procedure.state);
 
 
@@ -145,6 +155,11 @@ public class Master_Updater{
                     .ne("state", C_ProgramUpdater_State.in_progress)
                 .endJunction()
                 .findList();
+
+            if(plans.isEmpty()){
+                logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " all updates is done or in progress");
+                return;
+            }
 
            for (Model_CProgramUpdatePlan plan : plans) {
                try {
@@ -208,14 +223,17 @@ public class Master_Updater{
 
                   String program_identificator = null;
                   Model_FileRecord file_record = null;
-
+                  String name = null;
+                  String version = null;
 
                   if(plan.firmware_type == Firmware_type.FIRMWARE) {
                             program_identificator = "firmware_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
 
                             if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
-                                logger.debug("Master_Updater:: actualization_update_procedure:: User create own C_program and cloud_blocko_server has bin file of that");
+                                logger.debug("Master_Updater:: actualization_update_procedure for Firmware:: User create own C_program and cloud_blocko_server has bin file of that");
                                 file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
+                                name = plan.c_program_version_for_update.c_program.name;
+                                version =   plan.c_program_version_for_update.version_name;
                             }
                             else{
                                 logger.error("..........V Blob serveru nebyla - musí se vytvořit");
@@ -226,10 +244,31 @@ public class Master_Updater{
                                 continue;
                             }
 
-                  }else if(plan.firmware_type == Firmware_type.BOOTLOADER) {
+                  }if(plan.firmware_type == Firmware_type.BACKUP) {
+
+                       program_identificator = "backup_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
+
+                       if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
+                           logger.debug("Master_Updater:: actualization_update_procedure for Backup:: User create own C_program and cloud_blocko_server has bin file of that");
+                           file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
+                           name = plan.c_program_version_for_update.c_program.name;
+                           version =   plan.c_program_version_for_update.version_name;
+                       }
+                       else{
+                           logger.error("..........V Blob serveru nebyla - musí se vytvořit");
+                           logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
+                           logger.error("..........Tato procedura chybí!");
+                           plan.state = C_ProgramUpdater_State.bin_file_not_found;
+                           plan.update();
+                           continue;
+                       }
+
+                   }else if(plan.firmware_type == Firmware_type.BOOTLOADER) {
 
                             program_identificator = "boot_loader_" + plan.bootloader.version_identificator;
                             file_record = plan.bootloader.file;
+                            name = plan.bootloader.name;
+                            version = plan.bootloader.version_identificator;
 
                   // Update vlastního firmwaru
                   }else if(plan.binary_file != null) {
@@ -252,7 +291,8 @@ public class Master_Updater{
                       program.program_identificator = program_identificator;
                       program.firmware_type  = plan.firmware_type;
                       program.file_record = file_record;
-
+                      program.name = name;
+                      program.name = version;
                       structure.instances.get(homer_instance.blocko_instance_name).programs.put(program_identificator, program);
 
                   }

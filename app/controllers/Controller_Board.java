@@ -2006,7 +2006,7 @@ public class Controller_Board extends Controller {
 
                 // Uprava desky
                 Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_backup_pair.c_program_version_id);
-                if (c_program_version == null) return GlobalResult.notFoundObject("Board board_id not found");
+                if (c_program_version == null) return GlobalResult.notFoundObject("Version_Object c_program_version_id not found");
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
                 if (c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");

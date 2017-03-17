@@ -1,5 +1,6 @@
 @import models.Model_Board
 @import models.Model_CProgramUpdatePlan
+@import models.Model_CProgram
 @import utilities.enums.Firmware_type
 
 @(board: Model_Board)
@@ -12,13 +13,15 @@
         <li class="active"><i class="fa fa-wrench"></i> Board Description </li>
     </ol>
 </section>
-
+<br>
+<div></div>
+<br>
 <section class="content">
     <div class="row">
         <div class="col-md-12">
             <div class="box">
 
-                    <div class="col-md-6">
+                     <div class="col-md-6">
                         <div class="box">
                             <div class="box-header with-border">
                                 <h3 class="box-title">Basic Information</h3>
@@ -31,6 +34,11 @@
                                     <tr>
                                         <td class="col-md-4">Board ID</td>
                                         <td class="col-md-8">@board.id</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">Personal Description</td>
+                                        <td class="col-md-8">@board.personal_description</td>
                                     </tr>
 
                                     <tr>
@@ -120,7 +128,7 @@
 
                     </div>
 
-                    <div class="col-md-6">
+                     <div class="col-md-6">
                         <div class="box">
                             <div class="box-header with-border">
                                 <h3 class="box-title">Basic Information</h3>
@@ -147,24 +155,91 @@
 
                                 <br>
 
-                                <table  class="table table-bordered">
 
-                                    <tr>
-                                        <td class="col-md-4">Actual Backup ID</td>
-                                        <td class="col-md-8">@if(board.actual_backup_c_program_version != null) {
-                                            @board.actual_backup_c_program_version.id
-                                        }</td>
-                                    </tr>
+                            </div>
+                            <div class="box-footer">
+                            </div>
+                        </div>
+                    </div>
 
-                                    <tr>
-                                        <td class="col-md-4">Actual Backup Name</td>
-                                        <td class="col-md-8">  @if(board.actual_backup_c_program_version != null) {
-                                            @board.actual_backup_c_program_version.version_name
-                                        }</td>
-                                    </tr>
+                     <div class="col-md-6">
+                         <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Backup Information </h3>
+                            </div>
+                           <div class="box-body" >
+
+                               <table  class="table table-bordered">
+
+                                           <tr>
+                                               <td class="col-md-4">Actual Backup ID</td>
+                                               <td class="col-md-8">@if(board.actual_backup_c_program_version != null) {
+                                                   @board.actual_backup_c_program_version.id
+                                               }</td>
+                                           </tr>
+
+                                           <tr>
+                                               <td class="col-md-4">Actual Backup Name</td>
+                                               <td class="col-md-8">
+                                               @if(board.actual_backup_c_program_version != null) {
+                                                   @board.actual_backup_c_program_version.version_name
+                                               }
+                                               </td>
+                                           </tr>
+
+
+                                            <tr>
+                                                <td colspan="2">
+                                                    Backup is set for AutoBackup. You can set Backup to static Backup Version.
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td class="col-md-4">
+                                                    C Program
+                                                </td>
+                                                <td class="col-md-8">
+                                                    <div>
+                                                        <select onchange="selectCProgram(this.value); this.selectedindex = -1" id="selectProgram" name="c_program_id" class="form-control">
+                                                                <option selected="selected" disabled>Choose Type of Board</option>
+                                                                @for(c_program <- Model_CProgram.find.where().eq("project.id", board.project_id()).eq("type_of_board.id", board.type_of_board.id).findList()) {
+                                                                    <option onclick="selectCProgram('@c_program.id')" value="@c_program.id" > @c_program.name </option>
+                                                                }
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            <try>
+                                                <td class="col-md-4"> Version </td>
+                                                <td class="col-md-8">
+                                                    <div>
+                                                        <select id="selectCProgramVersion" name="c_program_version_id" class="form-control">
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                            </try>
+                                            <tr>
+                                                <td class="col-md-4"> Uploud Immidietly </td>
+                                                <td>
+                                                    <button class="btn btn-block btn-warning" type="button" onclick="updateBackup()">Upload</button>
+                                                </td>
+                                            </tr>
+
                                 </table>
+                           </div>
+                             <div class="box-footer">
+                             </div>
+                         </div>
+                     </div>
 
-                                <br>
+                     <div class="col-md-6">
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Bootloader Information</h3>
+                            </div>
+                            <div class="box-body" >
+
 
                                 <table  class="table table-bordered">
                                     <tr>
@@ -201,9 +276,7 @@
                                                     @board.type_of_board.main_boot_loader.id
 
                                                 }else{
-
                                                     Main Not Yet Set!
-
                                                 }
 
                                             </td>
@@ -218,47 +291,12 @@
                                                     @board.type_of_board.main_boot_loader.version_identificator
 
                                                 }else{
-
                                                     Main Not Yet Set!
-
                                                 }
                                             </td>
                                         </tr>
 
                                     }
-
-                                </table>
-
-                            </div>
-                            <div class="box-footer">
-                            </div>
-                        </div>
-                        <div class="box">
-
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Updates</h3>
-                            </div>
-
-                            <div class="box-body" >
-
-                                <table  class="table table-bordered">
-                                    <tr>
-                                        <td class="col-md-4">Required Firmware ID</td>
-                                        <td class="col-md-8">
-                                            @if(board.actual_c_program_version != null) {
-                                               @board.actual_c_program_version.id
-                                            }
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="col-md-4">Actual Firmware Name</td>
-                                        <td class="col-md-8">
-                                            @if(board.actual_c_program_version != null) {
-                                                @board.actual_c_program_version.version_name
-                                            }
-                                        </td>
-                                    </tr>
 
                                 </table>
 
@@ -385,6 +423,108 @@
                 })
             }
 
+            function updateBackup(){
+
+                var element = document.getElementById("selectCProgramVersion");
+                var c_program_version_id = element.options[element.selectedIndex].value;
+                var target_id = '@board.id';
+
+                var json = {
+                    board_id:target_id,
+                    c_program_version_id:c_program_version_id
+                };
+
+                var array = {
+                    board_backup_pair_list:[json]
+                };
+
+                $.ajax({
+                    url: '@routes.Controller_Board.board_set_backup_c_program_version()',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: JSON.stringify(array),
+                    dataType: 'json',
+
+                    success: function(json) {
+                        location.reload();
+                    },
+
+                    error:function(data) {
+                        console.log(data);
+
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    }
+
+
+                })
+            }
+
+            function selectCProgram(c_program_id){
+
+                $.ajax({
+                    url: '@routes.Controller_Code.c_program_get("")' + c_program_id,
+                    type: 'GET',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: "{}",
+                    dataType: 'json',
+
+                    success: function(json) {
+                        showVersions(json);
+                    },
+
+                    error:function(data) {
+                        console.log(data);
+
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    }
+                })
+            }
+
+            function showVersions(json) {
+
+                console.log("ShowVersion:: " + json);
+                $('#selectCProgramVersion').html("");
+
+                $.each(json.program_versions, function (k, v) {
+
+                    console.log("Version:: " + v.id);
+
+                    if(k == 0){
+                        $('#selectCProgramVersion').append("<option  selected='selected' value=\"" + v.version_id + "\">" + v.version_name + "</option>");
+                    }else {
+                        $('#selectCProgramVersion').append("<option value=\"" + v.version_id + "\">" + v.version_name + "</option>");
+                    }
+                });
+
+            }
 
             function updateBootLoader(deviceId){
 
