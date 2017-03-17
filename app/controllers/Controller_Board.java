@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.*;
-import models.Model_HomerInstance;
-import models.Model_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
@@ -22,6 +20,7 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
 import utilities.swagger.outboundClass.*;
 import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
+import utilities.web_socket.message_objects.homer_instance.WS_Board_set_autobackup;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -431,46 +430,49 @@ public class Controller_Board extends Controller {
             Swagger_UploadBinaryFileToBoard help = form.get();
 
 
-            // Ověření objektu
-            Model_VersionObject c_program_version = Model_VersionObject.find.byId(help.version_id);
-            if(c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            List<Model_BPair> b_pairs = new ArrayList<>();
 
-            // Zkontroluji oprávnění
-            if(! c_program_version.c_program.read_permission())  return GlobalResult.forbidden_Permission();
+            if(help.board_pairs.isEmpty()) return GlobalResult.badRequest("List is Empty");
 
-            //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+            for(Swagger_UploadBinaryFileToBoard.Board_pair board_update_pair : help.board_pairs) {
 
-            //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
+                // Ověření objektu
+                Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_update_pair.c_program_version_id);
+                if (c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
 
-            // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-            if(c_program_version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+                //Zkontroluji validitu Verze zda sedí k C_Programu
+                if (c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
 
-            //Zkontroluji zda byla verze už zkompilována
-            if(!c_program_version.c_compilation.status.name().equals(Compile_Status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
+                // Zkontroluji oprávnění
+                if (!c_program_version.c_program.read_permission()) return GlobalResult.forbidden_Permission();
 
-            String typeOfBoard_id = c_program_version.c_program.type_of_board_id();
+                //Zkontroluji validitu Verze zda sedí k C_Programu
+                if (c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
 
-            // Vyhledání objektů
-            List<Model_Board> board_from_request = Model_Board.find.where().idIn(help.board_ids).findList();
-            if (board_from_request.size() == 0) return GlobalResult.result_BadRequest("0 device is available. Does not exist or is decommissioned.");
+                // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
+                if (c_program_version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
 
+                //Zkontroluji zda byla verze už zkompilována
+                if (!c_program_version.c_compilation.status.name().equals(Compile_Status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
 
-            System.out.println("Kolik jsem jich našel:: " +  board_from_request.size());
+                // Kotrola objektu
+                Model_Board board = Model_Board.find.byId(board_update_pair.board_id);
+                if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
 
-            // Vyseparované desky nad který lze provádět nějaké operace
-            List<Model_Board> board_for_update = new ArrayList<>();
-
-            // Kontrola oprávnění
-            for (Model_Board board : board_from_request) {
                 // Kontrola oprávnění
-                if (board.update_permission() && board.type_of_board_id().equals(typeOfBoard_id))
-                    board_for_update.add(board);
+                if (!board.edit_permission()) return GlobalResult.forbidden_Permission();
+
+
+                Model_BPair b_pair = new Model_BPair();
+                b_pair.board = board;
+                b_pair.c_program_version = c_program_version;
+
+                b_pairs.add(b_pair);
+
             }
 
-            // TODO toto by mohlo být v samostatném vlákně
-            Model_Board.update_firmware(board_for_update, c_program_version);
+
+            Model_Board.update_firmware(b_pairs);
 
             // Vracím odpověď
             return GlobalResult.result_ok();
@@ -1679,10 +1681,6 @@ public class Controller_Board extends Controller {
             }
 
 
-
-
-
-
             // Vracím Json
             return GlobalResult.result_ok();
 
@@ -1907,7 +1905,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_update_backup(@ApiParam(required = true)  String board_id){
+    public Result board_update_backup(){
         try {
 
             // Zpracování Json
@@ -1915,34 +1913,128 @@ public class Controller_Board extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_Backup_settings help = form.get();
 
-            // Kotrola objektu
-            Model_Board board = Model_Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+            if( help.board_backup_pair_list.isEmpty()) return GlobalResult.notFoundObject("List is Empty");
 
-            // Kontrola oprávnění
-            if(!board.edit_permission()) return GlobalResult.forbidden_Permission();
+            for(Swagger_Board_Backup_settings.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
 
-            // Uprava desky
-            if(help.autobackup) {
+                // Kotrola objektu
+                Model_Board board = Model_Board.find.byId(board_backup_pair.board_id);
+                if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
 
-                board.actual_backup_c_program_version = null;
-                board.backup_mode = true;
-                board.update();
+                // Kontrola oprávnění
+                if (!board.edit_permission()) return GlobalResult.forbidden_Permission();
 
-            }else {
+                // Uprava desky
 
-                Model_VersionObject actual_backup_c_program_version = Model_VersionObject.find.byId(help.c_program_version_id);
-                if(actual_backup_c_program_version == null) return GlobalResult.notFoundObject("actual_backup_c_program_version id not found");
 
-                if(actual_backup_c_program_version.c_program == null) return GlobalResult.notFoundObject("Version is not for C Program");
-                if(actual_backup_c_program_version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) return GlobalResult.notFoundObject("Version is not compiled or restored!");
+                logger.debug("Controller_Board:: board_update_backup:: Board has own Static Backup - Removing static backup procedure required");
 
-                board.actual_backup_c_program_version = actual_backup_c_program_version;
-                board.update();
+                WS_Board_set_autobackup result =  Model_Board.set_auto_backup(board);
+                if(result.status.equals("success")){
+
+                    board.actual_backup_c_program_version = null;
+                    board.backup_mode = true;
+                    board.save();
+
+                }else {
+                    logger.warn("Controller_Board:: board_update_backup:: Something is wrong in message:: Error:: " + result.error + " ErrorCode:: " + result.errorCode);
+                }
+
+
+
             }
 
             // Vrácení upravenéh objektu
-            return GlobalResult.result_ok(Json.toJson(board));
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "update Board - update Backup settiong",
+            tags = { "Board"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Board.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Board_edit"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Backup_settings",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result  board_set_backup_c_program_version(){
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Board_SetBackup> form = Form.form(Swagger_Board_SetBackup.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Board_SetBackup help = form.get();
+
+            List<Model_BPair> board_pairs = new ArrayList<>();
+
+            for(Swagger_Board_SetBackup.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
+
+                // Kotrola objektu
+                Model_Board board = Model_Board.find.byId(board_backup_pair.board_id);
+                if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+
+                // Kontrola oprávnění
+                if (!board.edit_permission()) return GlobalResult.forbidden_Permission();
+
+                // Uprava desky
+                Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_backup_pair.c_program_version_id);
+                if (c_program_version == null) return GlobalResult.notFoundObject("Board board_id not found");
+
+                //Zkontroluji validitu Verze zda sedí k C_Programu
+                if (c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+
+                // Zkontroluji oprávnění
+                if (!c_program_version.c_program.read_permission()) return GlobalResult.forbidden_Permission();
+
+                //Zkontroluji validitu Verze zda sedí k C_Programu
+                if (c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
+
+                // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
+                if (c_program_version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+
+                //Zkontroluji zda byla verze už zkompilována
+                if (!c_program_version.c_compilation.status.name().equals(Compile_Status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
+
+                Model_BPair b_pair = new Model_BPair();
+                b_pair.board = board;
+                b_pair.c_program_version = c_program_version;
+
+                board_pairs.add(b_pair);
+
+            }
+
+            Model_Board.update_backup(board_pairs);
+
+            // Vrácení upravenéh objektu
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());

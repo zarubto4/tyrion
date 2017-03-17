@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 
 @Entity
@@ -862,17 +863,16 @@ public class Model_Board extends Model {
         Master_Updater.add_new_Procedure(procedure);
     }
 
-    @JsonIgnore @Transient   public static void update_firmware(List<Model_Board> board_for_update, Model_VersionObject c_program_version){
+    @JsonIgnore @Transient public static void update_firmware(List<Model_BPair> board_for_update){
 
         Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
         procedure.state = Actual_procedure_State.not_start_yet;
         procedure.save();
 
-        for(Model_Board board : board_for_update)
-        {
+        for(Model_BPair b_pair : board_for_update){
+
             List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
                     .find
-
                     .where()
                     .eq("firmware_type", Firmware_type.FIRMWARE)
                     .disjunction()
@@ -882,7 +882,7 @@ public class Model_Board extends Model {
                     .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
                     .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
                     .endJunction()
-                    .eq("board.id", board.id).findList();
+                    .eq("board.id", b_pair.board.id).findList();
 
             for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
                 cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
@@ -891,10 +891,10 @@ public class Model_Board extends Model {
             }
 
             Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
-            plan.board = board;
+            plan.board =  b_pair.board;
             plan.firmware_type = Firmware_type.FIRMWARE;
             plan.actualization_procedure = procedure;
-            plan.c_program_version_for_update = c_program_version;
+            plan.c_program_version_for_update = b_pair.c_program_version;
             plan.save();
         }
 
@@ -903,6 +903,79 @@ public class Model_Board extends Model {
         Master_Updater.add_new_Procedure(procedure);
     }
 
+    @JsonIgnore @Transient  public static void update_backup(List<Model_BPair> board_for_update){
+
+        Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+        procedure.state = Actual_procedure_State.not_start_yet;
+        procedure.save();
+
+        for(Model_BPair b_pair : board_for_update)
+        {
+            List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
+                    .find
+                    .where()
+                    .eq("firmware_type", Firmware_type.BACKUP)
+                    .disjunction()
+                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
+                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .endJunction()
+                    .eq("board.id", b_pair.board.id).findList();
+
+            for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
+                cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
+                cProgramUpdatePlan.date_of_finish = new Date();
+                cProgramUpdatePlan.update();
+            }
+
+            Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
+            plan.board = b_pair.board;
+            plan.firmware_type = Firmware_type.BACKUP;
+            plan.actualization_procedure = procedure;
+            plan.c_program_version_for_update = b_pair.c_program_version;
+            plan.save();
+        }
+
+        procedure.refresh();
+
+        Master_Updater.add_new_Procedure(procedure);
+    }
+
+    @JsonIgnore @Transient  public static WS_Board_set_autobackup set_auto_backup(Model_Board board_for_update){
+        try{
+
+            Model_HomerInstance instance = board_for_update.get_instance();
+            if(instance == null) {
+                logger.error("Model_Board:: set_auto_backup:: on DeviceId:: " + board_for_update.id + " has not own instance");
+
+                WS_Board_set_autobackup result = new WS_Board_set_autobackup();
+                return result;
+            }
+
+            if(!instance.instance_online()){
+                logger.error("Model_Board:: set_auto_backup:: instanceId:: " + instance.blocko_instance_name + " is offline");
+
+                WS_Board_set_autobackup result = new WS_Board_set_autobackup();
+                return result;
+            }
+
+            JsonNode node =  instance.send_to_instance().write_with_confirmation(new WS_Board_set_autobackup().make_request(instance, board_for_update), 1000*3, 0, 4);
+
+            final Form<WS_Board_set_autobackup> form = Form.form(WS_Board_set_autobackup.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Board_set_autobackup();}
+
+            return form.get();
+
+        }catch (TimeoutException e){
+            return new WS_Board_set_autobackup();
+        }catch (Exception e){
+            logger.error("Model_Board:: set_auto_backup:: Error:: ", e);
+            return new WS_Board_set_autobackup();
+        }
+
+    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

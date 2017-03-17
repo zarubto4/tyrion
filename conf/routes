@@ -340,7 +340,8 @@ DELETE          /processor/:processor_id                                        
 #Board
 POST            /board                                                          @controllers.Controller_Board.board_create()
 PUT             /board/userDescription/:board_id                                @controllers.Controller_Board.board_update_description(board_id)
-PUT             /board/backup/:board_id                                         @controllers.Controller_Board.board_update_backup(board_id)
+PUT             /board/backup_mode                                              @controllers.Controller_Board.board_update_backup()
+PUT             /board/backup_set                                               @controllers.Controller_Board.board_set_backup_c_program_version()
 
 PUT             /board/filter                                                   @controllers.Controller_Board.board_getByFilter()
 GET             /board/check/:hash_for_adding                                   @controllers.Controller_Board.board_check(hash_for_adding)

@@ -97,7 +97,13 @@
 
                                     <tr>
                                         <td class="col-md-4">Backup mode</td>
-                                        <td class="col-md-8">@board.backup_mode</td>
+                                        <td class="col-md-8">
+                                            @if(board.backup_mode == false){
+                                                <button id="set_backup_mode" class="btn btn-block btn-success" type="button"  onclick="backup_mode('@board.id',true)">Turn ON Backup Mode (Now is off)</button>
+                                            }else{
+                                                Autobeckup is on. Uploud Static Backup for change
+                                            }
+                                        </td>
                                     </tr>
 
                                     <tr>
@@ -131,13 +137,18 @@
 
                                     <tr>
                                         <td class="col-md-4">Actual Firmware Name</td>
-                                        <td class="col-md-8">@if(board.actual_c_program_version != null) {
-                                            @board.actual_c_program_version.version_name
-                                        }</td>
+                                        <td class="col-md-8">
+                                            @if(board.actual_c_program_version != null) {
+                                                @board.actual_c_program_version.version_name
+                                            }
+                                        </td>
                                     </tr>
                                 </table>
 
+                                <br>
+
                                 <table  class="table table-bordered">
+
                                     <tr>
                                         <td class="col-md-4">Actual Backup ID</td>
                                         <td class="col-md-8">@if(board.actual_backup_c_program_version != null) {
@@ -153,6 +164,7 @@
                                     </tr>
                                 </table>
 
+                                <br>
 
                                 <table  class="table table-bordered">
                                     <tr>
@@ -182,12 +194,35 @@
 
                                         <tr>
                                             <td class="col-md-4">Actual Default by Type of Board</td>
-                                            <td class="col-md-8"> @board.type_of_board.main_boot_loader.id</td>
+                                            <td class="col-md-8">
+
+                                                @if(board.type_of_board.main_boot_loader != null){
+
+                                                    @board.type_of_board.main_boot_loader.id
+
+                                                }else{
+
+                                                    Main Not Yet Set!
+
+                                                }
+
+                                            </td>
                                         </tr>
 
                                         <tr>
                                             <td class="col-md-4">Actual Default by Type of Board</td>
-                                            <td class="col-md-8"> @board.type_of_board.main_boot_loader.version_identificator</td>
+                                            <td class="col-md-8">
+
+                                                @if(board.type_of_board.main_boot_loader != null){
+
+                                                    @board.type_of_board.main_boot_loader.version_identificator
+
+                                                }else{
+
+                                                    Main Not Yet Set!
+
+                                                }
+                                            </td>
                                         </tr>
 
                                     }
@@ -209,16 +244,20 @@
                                 <table  class="table table-bordered">
                                     <tr>
                                         <td class="col-md-4">Required Firmware ID</td>
-                                        <td class="col-md-8">@if(board.actual_c_program_version != null) {
-                                            @board.actual_c_program_version.id
-                                        }</td>
+                                        <td class="col-md-8">
+                                            @if(board.actual_c_program_version != null) {
+                                               @board.actual_c_program_version.id
+                                            }
+                                        </td>
                                     </tr>
 
                                     <tr>
                                         <td class="col-md-4">Actual Firmware Name</td>
-                                        <td class="col-md-8">@if(board.actual_c_program_version != null) {
-                                            @board.actual_c_program_version.version_name
-                                        }</td>
+                                        <td class="col-md-8">
+                                            @if(board.actual_c_program_version != null) {
+                                                @board.actual_c_program_version.version_name
+                                            }
+                                        </td>
                                     </tr>
 
                                 </table>
@@ -238,7 +277,7 @@
                         <div class="box-body">
 
 
-                            <table id="allProcedures" c class="table table-bordered">
+                            <table id="allProcedures" class="table table-bordered">
 
                                 <tr>
                                     <th>Id </th>
@@ -298,16 +337,62 @@
 
     <script>
 
-            function updateBootLoader(deviceId){
+
+            function backup_mode(target_id, type){
 
                 var json = {
-                    bootloader_id:'@board.type_of_board.main_boot_loader.id',
-                    device_ids:[deviceId]
+                     board_id:target_id,
+                     backup_mode:type
+                };
+
+                var array = {
+                    board_backup_pair_list:[json]
                 };
 
 
-                console.log(JSON.stringify(json));
+                $.ajax({
+                    url: '@routes.Controller_Board.board_update_backup()',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    headers: {
+                        "X-AUTH-TOKEN":getCookie("authToken"),
+                        "Content-Type":"application/json"
+                    },
+                    data: JSON.stringify(array),
+                    dataType: 'json',
 
+                    success:function(data, status){
+                        location.reload();
+                    },
+
+                    error:function(data) {
+                        console.log(data);
+
+                        BootstrapDialog.show({
+                            message:  syntaxHighlight(data),
+                            type: BootstrapDialog.TYPE_DANGER,
+                            buttons: [{
+                                label: 'Close',
+                                action: function(dialogItself){
+                                    dialogItself.close();
+                                }
+                            }]
+
+                        });
+                    }
+
+
+                })
+            }
+
+
+            function updateBootLoader(deviceId){
+
+                var json = {
+                    device_ids:[deviceId]
+                };
+
+                console.log(JSON.stringify(json));
 
                 $.ajax({
                     url: '@routes.Controller_Board.boot_loader_manual_update()',

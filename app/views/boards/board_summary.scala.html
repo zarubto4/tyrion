@@ -350,7 +350,7 @@
          $('#AllTable').html(""); // Vyprázdnění tabulky
 
          content +="<tr>";
-         content +="<th>Processor ID</th>";
+         content +="<th>Board ID</th>";
          content +="<th>Hash for adding</th>";
          content +="<th>Personal Description</th>";
 
@@ -360,14 +360,15 @@
          content +="<th>Date</th>";
          content +="<th>Wifi Mac</th>";
          content +="<th>Mac Adress</th>";
-         content +="<th>Edit</th>";
          content +="</tr>";
 
 
 
          $.each(boards.content, function (k, v) {
              content += "<tr>";
-             content += "<td>" + v.id +"</td>";
+
+             content += "<td><a href=\"" + '@routes.Controller_Dashboard.board_detail("")' + v.id + "\">" + v.id + "</a></td>";
+
              content += "<td>" + v.hash_for_adding +"</td>";
              content += "<td>" + v.personal_description +"</td>";
 
@@ -394,8 +395,6 @@
                  content += "<td>No Internet</td>";
              }
 
-
-             content += "<td> Edit </td>";
              content += "</tr>";
 
          });

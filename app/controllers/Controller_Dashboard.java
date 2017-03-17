@@ -288,9 +288,8 @@ public class Controller_Dashboard extends Controller {
 
                 if (ws.all_person_Connections.containsKey(token)){
 
-                     // JsonNode result = Controller_WebSocket.becki_ping((WS_Becki_Single_Connection) ws.all_person_Connections.get(token));
-                    //return GlobalResult.result_ok(result);
                     return GlobalResult.result_ok();
+
                 }else {
 
                     ObjectNode result = Json.newObject();
@@ -449,7 +448,7 @@ public class Controller_Dashboard extends Controller {
     public Result board_detail(String board_id){
         try {
 
-            Html content = board_detail.render(Model_Board.find.byId(board_id));
+            Html content = board_detail.render( Model_Board.find.byId(board_id) );
             return return_page ( content );
 
         }catch (Exception e){
