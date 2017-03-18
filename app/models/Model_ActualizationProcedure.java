@@ -7,8 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Actual_procedure_State;
-import utilities.enums.C_ProgramUpdater_State;
+import utilities.enums.Enum_Update_group_procedure_state;
+import utilities.enums.Enum_CProgram_updater_state;
+import utilities.enums.Enum_Update_type_of_update;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class Model_ActualizationProcedure extends Model {
 
                                                                                                 @Id public String id; // Vlastní id je přidělováno
 
-    @ApiModelProperty(required = true, value = "Find description on Model Actual_procedure_State")  public Actual_procedure_State state;
+    @ApiModelProperty(required = true, value = "Find description on Model Actual_procedure_State")  public Enum_Update_group_procedure_state state;
 
                                                     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerInstanceRecord homer_instance_record;
 
@@ -40,9 +41,11 @@ public class Model_ActualizationProcedure extends Model {
     @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_planing;
     @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_finish;
 
+    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Enum_Update_type_of_update type_of_update;   // Typ updatu pro případné rozhodování úrovně notifikací směrem k uživatelovi
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true ) public Actual_procedure_State state (){
+    @JsonProperty @Transient @ApiModelProperty(required = true ) public Enum_Update_group_procedure_state state (){
         return state;
     }
 
@@ -54,7 +57,7 @@ public class Model_ActualizationProcedure extends Model {
 
         int complete = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
-                .eq("state", C_ProgramUpdater_State.complete)
+                .eq("state", Enum_CProgram_updater_state.complete)
                 .findRowCount();
 
         return all + "/" + complete;
@@ -91,57 +94,57 @@ public class Model_ActualizationProcedure extends Model {
 
         int complete = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
-                .eq("state", C_ProgramUpdater_State.complete)
+                .eq("state", Enum_CProgram_updater_state.complete)
                 .findRowCount();
 
         if( ( ( complete ) * 1.0 / all ) == 1.0 ){
             date_of_finish = new Date();
-            state = Actual_procedure_State.successful_complete;
+            state = Enum_Update_group_procedure_state.successful_complete;
             this.update();
             return;
         }
 
         int canceled = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
-                .eq("state",C_ProgramUpdater_State.canceled)
+                .eq("state", Enum_CProgram_updater_state.canceled)
                 .findRowCount();
 
 
         int override = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
-                .eq("state",C_ProgramUpdater_State.overwritten)
+                .eq("state", Enum_CProgram_updater_state.overwritten)
                 .findRowCount();
 
         if( ( ( complete + canceled + override) * 1.0 / all ) == 1.0 ){
             date_of_finish = new Date();
-            state = Actual_procedure_State.complete;
+            state = Enum_Update_group_procedure_state.complete;
             this.update();
             return;
         }
 
         int in_progress = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
-                .eq("state",C_ProgramUpdater_State.in_progress)
+                .eq("state", Enum_CProgram_updater_state.in_progress)
                 .findRowCount();
 
         if(in_progress != 0){
-            state = Actual_procedure_State.in_progress;
+            state = Enum_Update_group_procedure_state.in_progress;
             this.update();
         }
 
         int critical_error = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
-                .eq("state",C_ProgramUpdater_State.critical_error)
+                .eq("state", Enum_CProgram_updater_state.critical_error)
                 .findRowCount();
 
         int not_updated = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id).where()
-                .eq("state",C_ProgramUpdater_State.not_updated)
+                .eq("state", Enum_CProgram_updater_state.not_updated)
                 .findRowCount();
 
         if( ( (critical_error + override + canceled + complete  + not_updated) * 1.0 / all ) == 1.0 ){
             date_of_finish = new Date();
-            state = Actual_procedure_State.complete_with_error;
+            state = Enum_Update_group_procedure_state.complete_with_error;
             this.update();
             return;
         }
@@ -154,17 +157,17 @@ public class Model_ActualizationProcedure extends Model {
        List<Model_CProgramUpdatePlan> list = Model_CProgramUpdatePlan.find.where()
                                             .eq("actualization_procedure.id",id).where()
                                                 .disjunction()
-                                                    .add(Expr.eq("state",C_ProgramUpdater_State.homer_server_is_offline       ))
-                                                    .add(Expr.eq("state",C_ProgramUpdater_State.instance_inaccessible))
+                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline       ))
+                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
                                                     .add(Expr.isNull("state"))
                                             .findList();
 
        for(Model_CProgramUpdatePlan plan : list) {
-           plan.state = C_ProgramUpdater_State.canceled;
+           plan.state = Enum_CProgram_updater_state.canceled;
            plan.update();
        }
 
-        state = Actual_procedure_State.canceled;
+        state = Enum_Update_group_procedure_state.canceled;
         this.update();
     }
 

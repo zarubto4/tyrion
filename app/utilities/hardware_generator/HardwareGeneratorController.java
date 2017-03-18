@@ -10,7 +10,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.Burning_state;
-import utilities.enums.CLoud_Homer_Server_Type;
+import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.NetSource;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_Admin;
@@ -164,11 +164,11 @@ public class HardwareGeneratorController extends Controller {
             if(typeOfBoard.connectible_to_internet) {
 
                 // Najdu backup_server
-                Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.backup_server).findUnique();
+                Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.backup_server).findUnique();
                 if (backup_server == null) return GlobalResult.notFoundObject("Backup server not found!!!");
 
                 // Najdu Main_server
-                Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.main_server).findUnique();
+                Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
                 if (main_server == null) return GlobalResult.notFoundObject("Main server not found!!!");
 
                 // Najdu Firmware

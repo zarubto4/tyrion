@@ -4,7 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Compile_Status;
+import utilities.enums.Enum_Compile_status;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -25,7 +25,7 @@ public class Model_CCompilation extends Model {
     @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
                                    @JoinColumn(name="c_compilation_version") public Model_VersionObject version_object;
 
-                                                                @JsonIgnore  public Compile_Status status; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
+                                                                @JsonIgnore  public Enum_Compile_status status; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
 
     @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")                public String virtual_input_output;
                                                             @JsonIgnore   @Column(columnDefinition = "TEXT")                public String c_comp_build_url;

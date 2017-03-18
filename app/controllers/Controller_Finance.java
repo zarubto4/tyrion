@@ -9,7 +9,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.enums.Currency;
+import utilities.enums.Enum_Currency;
 import utilities.enums.Payment_method;
 import utilities.enums.Payment_mode;
 import utilities.enums.Payment_status;
@@ -684,7 +684,7 @@ public class Controller_Finance extends Controller {
                 invoice_item_1.unit_price = product.general_tariff.price_in_usd;
                 invoice_item_1.quantity = (long) 1;
                 invoice_item_1.unit_name = "Currency";
-                invoice_item_1.currency = Currency.USD;
+                invoice_item_1.currency = Enum_Currency.USD;
 
                 invoice.invoice_items.add(invoice_item_1);
                 invoice.method = product.method;

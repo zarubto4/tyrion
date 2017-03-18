@@ -8,8 +8,9 @@ import models.Model_HomerInstance;
 import models.Model_ActualizationProcedure;
 import models.Model_CProgramUpdatePlan;
 import play.libs.Json;
-import utilities.enums.Actual_procedure_State;
-import utilities.enums.C_ProgramUpdater_State;
+import utilities.enums.Enum_Update_group_procedure_state;
+import utilities.enums.Enum_CProgram_updater_state;
+import utilities.enums.Enum_Update_type_of_update;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.helper_objects.Target_pair;
 
@@ -114,6 +115,7 @@ public class Master_Updater{
         public Firmware_type firmware_type;
         public Model_FileRecord file_record;
         public String name;
+        public Enum_Update_type_of_update type_of_update;
 
         public List<Target_pair> target_pairs = new ArrayList<>();
     }
@@ -123,12 +125,12 @@ public class Master_Updater{
     private void actualization_update_procedure(Model_ActualizationProcedure procedure){
 
 
-        if(procedure.state == Actual_procedure_State.complete || procedure.state == Actual_procedure_State.successful_complete ){
+        if(procedure.state == Enum_Update_group_procedure_state.complete || procedure.state == Enum_Update_group_procedure_state.successful_complete ){
             logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " is done");
             return;
         }
 
-        if(procedure.state == Actual_procedure_State.in_progress){
+        if(procedure.state == Enum_Update_group_procedure_state.in_progress){
             logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " already in progress");
             return;
         }
@@ -136,7 +138,7 @@ public class Master_Updater{
 
         if(procedure.updates.isEmpty()){
 
-            procedure.state = Actual_procedure_State.complete_with_error;
+            procedure.state = Enum_Update_group_procedure_state.complete_with_error;
             procedure.update();
             logger.error("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " is empty and not set to any updates!!!");
             return;
@@ -151,8 +153,10 @@ public class Master_Updater{
 
         List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where().eq("actualization_procedure.id", procedure.id)
                 .disjunction()
-                    .ne("state", C_ProgramUpdater_State.complete)
-                    .ne("state", C_ProgramUpdater_State.in_progress)
+                    .eq("state", Enum_CProgram_updater_state.not_start_yet)
+                    .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                    .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
+                    .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
                 .endJunction()
                 .findList();
 
@@ -184,7 +188,7 @@ public class Master_Updater{
 
                    if (homer_instance == null) {
                        logger.error("Master_Updater:: actualization_update_procedure:: Device has not own instance!");
-                       plan.state = C_ProgramUpdater_State.instance_inaccessible;
+                       plan.state = Enum_CProgram_updater_state.instance_inaccessible;
                        plan.update();
                        continue;
                    }
@@ -199,14 +203,14 @@ public class Master_Updater{
 
                    if(! Controller_WebSocket.homer_servers.containsKey( homer_instance.cloud_homer_server.unique_identificator )){
                       logger.warn("Master_Updater:: actualization_update_procedure:: Server is offline. Putting off the task for later ");
-                      plan.state = C_ProgramUpdater_State.homer_server_is_offline;
+                      plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
                       plan.update();
                       continue;
                    }
 
                    if (!homer_instance.instance_online()) {
                         logger.warn("Master_Updater:: actualization_update_procedure:: Homer is offline. Putting off the task for later ");
-                        plan.state = C_ProgramUpdater_State.instance_inaccessible;
+                        plan.state = Enum_CProgram_updater_state.instance_inaccessible;
                         plan.update();
                         continue;
                    }
@@ -226,7 +230,9 @@ public class Master_Updater{
                   String name = null;
                   String version = null;
 
+
                   if(plan.firmware_type == Firmware_type.FIRMWARE) {
+
                             program_identificator = "firmware_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
 
                             if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
@@ -239,7 +245,7 @@ public class Master_Updater{
                                 logger.error("..........V Blob serveru nebyla - musí se vytvořit");
                                 logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
                                 logger.error("..........Tato procedura chybí!");
-                                plan.state = C_ProgramUpdater_State.bin_file_not_found;
+                                plan.state = Enum_CProgram_updater_state.bin_file_not_found;
                                 plan.update();
                                 continue;
                             }
@@ -258,7 +264,7 @@ public class Master_Updater{
                            logger.error("..........V Blob serveru nebyla - musí se vytvořit");
                            logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
                            logger.error("..........Tato procedura chybí!");
-                           plan.state = C_ProgramUpdater_State.bin_file_not_found;
+                           plan.state = Enum_CProgram_updater_state.bin_file_not_found;
                            plan.update();
                            continue;
                        }
@@ -288,6 +294,7 @@ public class Master_Updater{
                   if(!structure.instances.get(homer_instance.blocko_instance_name).programs.containsKey(program_identificator)){
 
                       Program program = new Program();
+                      program.type_of_update = plan.actualization_procedure.type_of_update;
                       program.program_identificator = program_identificator;
                       program.firmware_type  = plan.firmware_type;
                       program.file_record = file_record;
@@ -303,12 +310,12 @@ public class Master_Updater{
 
                    structure.instances.get(homer_instance.blocko_instance_name).programs.get(program_identificator).target_pairs.add(pair);
 
-                   plan.state = C_ProgramUpdater_State.in_progress;
+                   plan.state = Enum_CProgram_updater_state.in_progress;
                    plan.update();
 
                }catch(Exception e) {
                    logger.error("Master_Updater:: actualization_update_procedure:: Error:: ", e);
-                   plan.state = C_ProgramUpdater_State.critical_error;
+                   plan.state = Enum_CProgram_updater_state.critical_error;
                    plan.update();
                    break;
                }
@@ -322,6 +329,7 @@ public class Master_Updater{
             for(Program program : instance.programs.values()){
 
                 Actualization_procedure actualization_procedure= new Actualization_procedure();
+                actualization_procedure.typeOfUpdate = program.type_of_update;
                 actualization_procedure.actualizationProcedureId = procedure.id;
                 actualization_procedure.file_record = program.file_record;
                 actualization_procedure.firmwareType = program.firmware_type;

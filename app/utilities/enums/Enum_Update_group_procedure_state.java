@@ -3,7 +3,7 @@ package utilities.enums;
 import com.avaje.ebean.annotation.EnumValue;
 import io.swagger.annotations.ApiModelProperty;
 
-public enum Actual_procedure_State {
+public enum Enum_Update_group_procedure_state {
 
     @ApiModelProperty(value = " State where all inner procedures was absolutely successful" )
     @EnumValue("successful_complete")

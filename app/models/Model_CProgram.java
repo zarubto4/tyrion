@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.libs.Json;
-import utilities.enums.Compile_Status;
+import utilities.enums.Enum_Compile_status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.outboundClass.*;
@@ -130,7 +130,7 @@ public class Model_CProgram extends Model {
 
             Swagger_C_Program_Version c_program_versions = new Swagger_C_Program_Version();
 
-            c_program_versions.status = version_object.c_compilation != null ? version_object.c_compilation.status : Compile_Status.undefined;
+            c_program_versions.status = version_object.c_compilation != null ? version_object.c_compilation.status : Enum_Compile_status.undefined;
             c_program_versions.version_object = version_object;
             c_program_versions.remove_permission = delete_permission();
             c_program_versions.edit_permission   = edit_permission();

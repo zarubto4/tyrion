@@ -16,7 +16,7 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.enums.Approval_state;
-import utilities.enums.Compile_Status;
+import utilities.enums.Enum_Compile_status;
 import utilities.enums.Notification_importance;
 import utilities.enums.Notification_level;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
@@ -236,7 +236,7 @@ public class Model_VersionObject extends Model {
             this.update();
         }
 
-        c_compilation.status = Compile_Status.compilation_in_progress;
+        c_compilation.status = Enum_Compile_status.compilation_in_progress;
         c_compilation.update();
 
         Model_FileRecord file = Model_FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", id).findUnique();
@@ -244,7 +244,7 @@ public class Model_VersionObject extends Model {
 
             logger.error("Version Object:: compile_program_procedure:: File not found!!! - Version is not compilable!");
 
-            c_compilation.status = Compile_Status.file_with_code_not_found;
+            c_compilation.status = Enum_Compile_status.file_with_code_not_found;
             c_compilation.update();
 
             ObjectNode result = Json.newObject();
@@ -261,7 +261,7 @@ public class Model_VersionObject extends Model {
         if(form.hasErrors()){
 
             logger.error("Version Object:: compile_program_procedure:: File found but json is not parsable!!! - Version!");
-            c_compilation.status = Compile_Status.json_code_is_broken;
+            c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
 
             ObjectNode result = Json.newObject();
@@ -346,7 +346,7 @@ public class Model_VersionObject extends Model {
 
             logger.warn("Version Object:: compile_program_procedure:: Server is offline!!!");
 
-            c_compilation.status = Compile_Status.server_was_offline;
+            c_compilation.status = Enum_Compile_status.server_was_offline;
             c_compilation.update();
 
             ObjectNode result = Json.newObject();
@@ -367,7 +367,7 @@ public class Model_VersionObject extends Model {
 
             logger.trace("Version Object:: compile_program_procedure:: compilation contains user Errors");
 
-            c_compilation.status = Compile_Status.compiled_with_code_errors;
+            c_compilation.status = Enum_Compile_status.compiled_with_code_errors;
             c_compilation.update();
 
             return (ObjectNode) Json.toJson( compilation.buildErrors );
@@ -377,7 +377,7 @@ public class Model_VersionObject extends Model {
 
             logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
 
-            c_compilation.status = Compile_Status.json_code_is_broken;
+            c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
 
             ObjectNode result = Json.newObject();
@@ -392,7 +392,7 @@ public class Model_VersionObject extends Model {
             logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
 
 
-            c_compilation.status = Compile_Status.compilation_server_error;
+            c_compilation.status = Enum_Compile_status.compilation_server_error;
             c_compilation.update();
 
             ObjectNode result = Json.newObject();
@@ -430,7 +430,7 @@ public class Model_VersionObject extends Model {
                 c_compilation.bin_compilation_file = Model_FileRecord.create_Binary_file(c_compilation.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(body), "compilation.bin");
 
                 logger.trace("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
-                c_compilation.status = Compile_Status.successfully_compiled_and_restored;
+                c_compilation.status = Enum_Compile_status.successfully_compiled_and_restored;
                 c_compilation.c_comp_build_url = compilation.buildUrl;
                 c_compilation.firmware_build_id = compilation.buildId;
                 c_compilation.virtual_input_output = compilation.interface_code;
@@ -442,7 +442,7 @@ public class Model_VersionObject extends Model {
             }catch (ConnectException e){
 
                 logger.error("Version Object:: compile_program_procedure:: Compilation Server is probably offline on URL:: " + compilation.buildUrl );
-                c_compilation.status = Compile_Status.successfully_compiled_not_restored;
+                c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
 
                 ObjectNode result = Json.newObject();
@@ -456,7 +456,7 @@ public class Model_VersionObject extends Model {
 
                 logger.error("Version Object:: compile_program_procedure:: FileExistsException - Body is empty");
 
-                c_compilation.status = Compile_Status.successfully_compiled_not_restored;
+                c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
 
                 ObjectNode result = Json.newObject();
@@ -470,7 +470,7 @@ public class Model_VersionObject extends Model {
 
                 e.printStackTrace();
 
-                c_compilation.status = Compile_Status.compilation_server_error;
+                c_compilation.status = Enum_Compile_status.compilation_server_error;
                 c_compilation.update();
 
                 ObjectNode result = Json.newObject();
@@ -482,7 +482,7 @@ public class Model_VersionObject extends Model {
 
         }
 
-        c_compilation.status = Compile_Status.undefined;
+        c_compilation.status = Enum_Compile_status.undefined;
         c_compilation.update();
 
         ObjectNode result = Json.newObject();

@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "States of update plan for each board are: ")
-public enum C_ProgramUpdater_State {
+public enum Enum_CProgram_updater_state {
 
     // Stav kdy je procedura považována za trvale ukončenou!
     @ApiModelProperty(value = " State where procedure was absolutely successful" ) @EnumValue("complete")  complete,

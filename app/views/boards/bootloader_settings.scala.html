@@ -2,7 +2,7 @@
 @import models.Model_TypeOfBoard
 @import models.Model_VersionObject
 @import com.avaje.ebean.Expr
-@import utilities.enums.Compile_Status
+@import utilities.enums.Enum_Compile_status
 
 @(typeOfBoard: Model_TypeOfBoard)
 
@@ -146,7 +146,7 @@
                                 <td>@version.version_name</td>
                                 <td>@version.version_description</td>
                                 <td>
-                                    @if(version.c_compilation.status == Compile_Status.successfully_compiled_and_restored){
+                                    @if(version.c_compilation.status == Enum_Compile_status.successfully_compiled_and_restored){
                                         <p class="text-green">Yes</p>
                                     }else{
                                         <p class="text-red">NO!!!!</p>
@@ -156,10 +156,10 @@
                                     @if(typeOfBoard.version_scheme != null && typeOfBoard.version_scheme.default_main_version != null && typeOfBoard.version_scheme.default_main_version.id == version.id) {
                                         <p class="lead text-green">(ITS Main)</p>
                                     }
-                                    @if(version.default_program == null && (version.c_compilation.status == Compile_Status.successfully_compiled_and_restored)){
+                                    @if(version.default_program == null && (version.c_compilation.status == Enum_Compile_status.successfully_compiled_and_restored)){
                                         <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('@typeOfBoard.version_scheme.id','@version.id')" > SET as Main </button>
                                     }
-                                    @if(version.default_program == null && (version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) ){
+                                    @if(version.default_program == null && (version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) ){
                                         <p class="text-red"> @version.c_compilation.status</p>
                                     }
                                 </td>

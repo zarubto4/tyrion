@@ -28,7 +28,6 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.emails.Email;
 import utilities.enums.Approval_state;
-import utilities.enums.CLoud_Homer_Server_Type;
 import utilities.enums.Type_of_command;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;

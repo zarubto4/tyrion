@@ -13,7 +13,7 @@ import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
-import utilities.enums.Currency;
+import utilities.enums.Enum_Currency;
 import utilities.enums.Payment_mode;
 import utilities.enums.Recurrence_cycle;
 import utilities.fakturoid.Fakturoid_Controller;
@@ -45,7 +45,7 @@ public class GoPay_Controller  extends Controller {
 
             payment.setItems(invoice.invoice_items);
             payment.order_number = invoice.invoice_number;
-            payment.currency = Currency.CZK;
+            payment.currency = Enum_Currency.CZK;
             payment.order_description = payment_description;
 
             GoPay_Payer payer = new GoPay_Payer();

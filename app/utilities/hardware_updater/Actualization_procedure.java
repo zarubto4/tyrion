@@ -3,6 +3,7 @@ package utilities.hardware_updater;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import models.Model_FileRecord;
+import utilities.enums.Enum_Update_type_of_update;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.helper_objects.Target_pair;
 
@@ -15,12 +16,13 @@ public class Actualization_procedure {
     @JsonProperty public List<Target_pair> targetPairs = new ArrayList<>();
 
     @JsonIgnore   public Model_FileRecord file_record;
-    @JsonProperty   public String name;
-    @JsonProperty   public String version;
+    @JsonProperty public String name;
+    @JsonProperty public String version;
 
 
     @JsonProperty public Firmware_type firmwareType;
-    @JsonProperty  public  String actualizationProcedureId;
+    @JsonProperty public Enum_Update_type_of_update typeOfUpdate;
+    @JsonProperty public  String actualizationProcedureId;
 
     @JsonProperty
     public String program(){

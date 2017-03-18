@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.C_ProgramUpdater_State;
+import utilities.enums.Enum_CProgram_updater_state;
 import utilities.enums.Firmware_type;
 
 import java.util.Date;
@@ -19,7 +19,7 @@ public class Swagger_C_Program_Update_plan_Short_Detail {
     public Date date_of_finish;
 
     public Firmware_type firmware_type;
-    public C_ProgramUpdater_State state;
+    public Enum_CProgram_updater_state state;
 
     // Pouze Pokud se update týká Firmwaru nebo Backupu
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = true, value = "only if Firmware_type is firmware or backup", readOnly = true) public String c_program_id;

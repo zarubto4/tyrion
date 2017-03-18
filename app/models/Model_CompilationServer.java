@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
-import utilities.enums.Compile_Status;
+import utilities.enums.Enum_Compile_status;
 import utilities.independent_threads.Compilation_After_BlackOut;
 import utilities.web_socket.SendMessage;
 import utilities.web_socket.WS_CompilerServer;
@@ -154,7 +154,7 @@ public class Model_CompilationServer extends Model {
 
         // a) ověřím zda existuje vůbec něco, co by mělo smysl kompilovat
 
-        Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Compile_Status.server_was_offline.name()).order().desc("date_of_create").setMaxRows(1).findUnique();
+        Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Enum_Compile_status.server_was_offline.name()).order().desc("date_of_create").setMaxRows(1).findUnique();
         if(version_object == null){
             logger.debug("Model_CompilationServer:: check_after_connection:: 0 c_program versions for compilations");
             return;

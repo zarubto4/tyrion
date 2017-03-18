@@ -1,8 +1,8 @@
 
 @import models.Model_CompilationServer
 @import models.Model_HomerServer
-@import utilities.enums.CLoud_Homer_Server_Type
 @import utilities.Server
+@import utilities.enums.Enum_Cloud_HomerServer_type
 
 <section class="content-header">
     <h1> External Servers </h1>
@@ -222,7 +222,7 @@
 
                         </tr>
 
-                        @for(homer_server <- Model_HomerServer.find.where.disjunction().eq("server_type",CLoud_Homer_Server_Type.backup_server).eq("server_type",CLoud_Homer_Server_Type.main_server).endJunction().findList() ) {
+                        @for(homer_server <- Model_HomerServer.find.where.disjunction().eq("server_type",Enum_Cloud_HomerServer_type.backup_server).eq("server_type",Enum_Cloud_HomerServer_type.main_server).endJunction().findList() ) {
                             <tr>
                                 <td>@homer_server.personal_server_name</td>
                                 <td>@homer_server.unique_identificator</td>
@@ -290,7 +290,7 @@
                                     <th>EDIT</th>
                                 </tr>
 
-                                @for(homer_server <- Model_HomerServer.find.where().eq("server_type",CLoud_Homer_Server_Type.public_server).findList()) {
+                                @for(homer_server <- Model_HomerServer.find.where().eq("server_type",Enum_Cloud_HomerServer_type.public_server).findList()) {
                                     <tr>
                                         <td>@homer_server.personal_server_name</td>
                                         <td>@homer_server.unique_identificator</td>
@@ -329,7 +329,7 @@
                                         <th>EDIT</th>
                                     </tr>
 
-                                    @for(homer_server <- Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.private_server).findList()) {
+                                    @for(homer_server <- Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.private_server).findList()) {
                                         <tr>
                                             <td>@homer_server.personal_server_name</td>
                                             <td>@homer_server.unique_identificator</td>
@@ -370,7 +370,7 @@
                                         <th>DELETE</th>
                                     </tr>
 
-                                    @for(homer_server <- Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.test_server).findList()) {
+                                    @for(homer_server <- Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.test_server).findList()) {
                                         <tr>
                                             <td>@homer_server.personal_server_name</td>
                                             <td>@homer_server.unique_identificator</td>

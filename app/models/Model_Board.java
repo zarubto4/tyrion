@@ -247,10 +247,10 @@ public class Model_Board extends Model {
         List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.where()
                 .eq("firmware_type", Firmware_type.FIRMWARE)
                 .disjunction()
-                    .eq("state",C_ProgramUpdater_State.in_progress)
-                    .eq("state",C_ProgramUpdater_State.waiting_for_device)
-                    .eq("state",C_ProgramUpdater_State.homer_server_is_offline)
-                    .eq("state",C_ProgramUpdater_State.instance_inaccessible)
+                    .eq("state", Enum_CProgram_updater_state.in_progress)
+                    .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                    .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                    .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
                 .endJunction()
                 .eq("board.id", id).order().asc("actualization_procedure.date_of_create").findList();
 
@@ -261,10 +261,10 @@ public class Model_Board extends Model {
         List<Model_CProgramUpdatePlan> c_backup_program_plans = Model_CProgramUpdatePlan.find.where()
                 .eq("firmware_type", Firmware_type.BACKUP)
                 .disjunction()
-                .eq("state",C_ProgramUpdater_State.in_progress)
-                .eq("state",C_ProgramUpdater_State.waiting_for_device)
-                .eq("state",C_ProgramUpdater_State.homer_server_is_offline)
-                .eq("state",C_ProgramUpdater_State.instance_inaccessible)
+                .eq("state", Enum_CProgram_updater_state.in_progress)
+                .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
                 .endJunction()
                 .eq("board.id", id).order().asc("date_of_create").findList();
 
@@ -526,7 +526,7 @@ public class Model_Board extends Model {
 
 
                     if(status == Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE){
-                        plan.state = C_ProgramUpdater_State.complete;
+                        plan.state = Enum_CProgram_updater_state.complete;
                         plan.date_of_finish = new Date();
                         plan.update();
 
@@ -564,13 +564,13 @@ public class Model_Board extends Model {
                     }
 
                     if(status == Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || status == Hardware_update_state_from_Homer.YODA_WAS_OFFLINE){
-                        plan.state = C_ProgramUpdater_State.waiting_for_device;
+                        plan.state = Enum_CProgram_updater_state.waiting_for_device;
                         plan.update();
                         continue;
                     }
 
                     if(status == Hardware_update_state_from_Homer.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION){
-                        plan.state = C_ProgramUpdater_State.not_updated;
+                        plan.state = Enum_CProgram_updater_state.not_updated;
                         plan.date_of_finish = new Date();
                         plan.update();
                         continue;
@@ -578,7 +578,7 @@ public class Model_Board extends Model {
 
                     // Na závěr vše ostatní je chyba
 
-                    plan.state = C_ProgramUpdater_State.critical_error;
+                    plan.state = Enum_CProgram_updater_state.critical_error;
                     plan.error = updateDeviceInformation_device.error;
                     plan.errorCode = updateDeviceInformation_device.errorCode;
                     plan.date_of_finish = new Date();
@@ -614,11 +614,11 @@ public class Model_Board extends Model {
             // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
 
             Integer plans_count = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).disjunction()
-                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                     .endJunction().findRowCount();
 
 
@@ -631,16 +631,16 @@ public class Model_Board extends Model {
                 List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where()
                         .eq("board.id", board.id)
                         .disjunction()
-                            .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                            .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                            .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                            .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                            .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                         .endJunction().order().desc("date_of_create").findList();
 
                 if(plans.size() > 1){
                     for(int i = 1; i < plans.size(); i++) {
-                        plans.get(i).state = C_ProgramUpdater_State.overwritten;
+                        plans.get(i).state = Enum_CProgram_updater_state.overwritten;
                         plans.get(i).update();
                     }
                 }
@@ -657,11 +657,11 @@ public class Model_Board extends Model {
 
                         // Verze se rovnají
                         if (plans.get(0).board.actual_c_program_version.c_compilation.firmware_build_id.equals(plans.get(0).c_program_version_for_update.c_compilation.firmware_build_id) ) {
-                            plans.get(0).state = C_ProgramUpdater_State.complete;
+                            plans.get(0).state = Enum_CProgram_updater_state.complete;
                             plans.get(0).update();
                         }else {
 
-                            plans.get(0).state = C_ProgramUpdater_State.in_progress;
+                            plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                             plans.get(0).update();
                             Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
                         }
@@ -669,7 +669,7 @@ public class Model_Board extends Model {
                     }else {
 
                         logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware - Hardware has Un-databased Value");
-                        plans.get(0).state = C_ProgramUpdater_State.in_progress;
+                        plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                         plans.get(0).update();
 
                         Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
@@ -683,12 +683,12 @@ public class Model_Board extends Model {
                     // Mám shodu oproti očekávánemů
                     if (plans.get(0).bootloader.version_identificator.equals(report.bootloader_build_id)) {
 
-                        plans.get(0).state = C_ProgramUpdater_State.complete;
+                        plans.get(0).state = Enum_CProgram_updater_state.complete;
                         plans.get(0).update();
 
                     } else {
 
-                        plans.get(0).state = C_ProgramUpdater_State.in_progress;
+                        plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                         plans.get(0).update();
 
                         Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
@@ -698,7 +698,7 @@ public class Model_Board extends Model {
 
                     logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
 
-                    plans.get(0).state = C_ProgramUpdater_State.complete;
+                    plans.get(0).state = Enum_CProgram_updater_state.complete;
                     plans.get(0).update();
                 }
 
@@ -812,11 +812,12 @@ public class Model_Board extends Model {
     }
 
 
-    @JsonIgnore @Transient   public static void update_bootloader(List<Model_Board> board_for_update, Model_BootLoader boot_loader){
+    @JsonIgnore @Transient public static void update_bootloader(Enum_Update_type_of_update type_of_update, List<Model_Board> board_for_update, Model_BootLoader boot_loader){
         // Attention!! Value  boot_loader can be null - in this case - system will used
 
         Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
-        procedure.state = Actual_procedure_State.not_start_yet;
+        procedure.state = Enum_Update_group_procedure_state.not_start_yet;
+        procedure.type_of_update = type_of_update;
         procedure.save();
 
         for(Model_Board board : board_for_update)
@@ -826,16 +827,16 @@ public class Model_Board extends Model {
                     .where()
                     .eq("firmware_type", Firmware_type.BOOTLOADER)
                     .disjunction()
-                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                     .endJunction()
                     .eq("board.id", board.id).findList();
 
             for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
-                cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
+                cProgramUpdatePlan.state = Enum_CProgram_updater_state.overwritten;
                 cProgramUpdatePlan.date_of_finish = new Date();
                 cProgramUpdatePlan.update();
             }
@@ -854,17 +855,18 @@ public class Model_Board extends Model {
 
             Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
             plan.board = board;
+
             plan.firmware_type = Firmware_type.BOOTLOADER;
             plan.actualization_procedure = procedure;
 
             if(boot_loader_for_using == null){
 
-                 plan.state =C_ProgramUpdater_State.bin_file_not_found;
+                plan.state = Enum_CProgram_updater_state.bin_file_not_found;
 
             }else {
 
                 plan.bootloader = boot_loader_for_using;
-                plan.state = C_ProgramUpdater_State.not_start_yet;
+                plan.state = Enum_CProgram_updater_state.not_start_yet;
 
             }
 
@@ -875,10 +877,11 @@ public class Model_Board extends Model {
         Master_Updater.add_new_Procedure(procedure);
     }
 
-    @JsonIgnore @Transient public static void update_firmware(List<Model_BPair> board_for_update){
+    @JsonIgnore @Transient public static void update_firmware(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
 
         Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
-        procedure.state = Actual_procedure_State.not_start_yet;
+        procedure.state = Enum_Update_group_procedure_state.not_start_yet;
+        procedure.type_of_update = type_of_update;
         procedure.save();
 
         for(Model_BPair b_pair : board_for_update){
@@ -888,16 +891,16 @@ public class Model_Board extends Model {
                     .where()
                     .eq("firmware_type", Firmware_type.FIRMWARE)
                     .disjunction()
-                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                     .endJunction()
                     .eq("board.id", b_pair.board.id).findList();
 
             for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
-                cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
+                cProgramUpdatePlan.state = Enum_CProgram_updater_state.overwritten;
                 cProgramUpdatePlan.date_of_finish = new Date();
                 cProgramUpdatePlan.update();
             }
@@ -906,7 +909,19 @@ public class Model_Board extends Model {
             plan.board =  b_pair.board;
             plan.firmware_type = Firmware_type.FIRMWARE;
             plan.actualization_procedure = procedure;
-            plan.c_program_version_for_update = b_pair.c_program_version;
+
+
+            if( b_pair.c_program_version == null){
+
+                plan.state = Enum_CProgram_updater_state.bin_file_not_found;
+
+            }else {
+
+                plan.c_program_version_for_update = b_pair.c_program_version;
+                plan.state = Enum_CProgram_updater_state.not_start_yet;
+
+            }
+
             plan.save();
         }
 
@@ -915,15 +930,16 @@ public class Model_Board extends Model {
         Master_Updater.add_new_Procedure(procedure);
     }
 
-    @JsonIgnore @Transient  public static void update_backup(List<Model_BPair> board_for_update){
+    @JsonIgnore @Transient  public static void update_backup(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
 
         Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
-        procedure.state = Actual_procedure_State.not_start_yet;
+        procedure.state = Enum_Update_group_procedure_state.not_start_yet;
+        procedure.type_of_update = type_of_update;
         procedure.save();
 
         if(board_for_update.isEmpty()){
             logger.error("Model_Board:: update_backup:: Array is empty::");
-            procedure.state = Actual_procedure_State.complete_with_error;
+            procedure.state = Enum_Update_group_procedure_state.complete_with_error;
             procedure.update();
             return;
         }
@@ -938,16 +954,16 @@ public class Model_Board extends Model {
                     .where()
                     .eq("firmware_type", Firmware_type.BACKUP)
                     .disjunction()
-                    .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.in_progress))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                    .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                     .endJunction()
                     .eq("board.id", b_pair.board.id).findList();
 
             for(Model_CProgramUpdatePlan cProgramUpdatePlan: procedures_for_overriding) {
-                cProgramUpdatePlan.state = C_ProgramUpdater_State.overwritten;
+                cProgramUpdatePlan.state = Enum_CProgram_updater_state.overwritten;
                 cProgramUpdatePlan.date_of_finish = new Date();
                 cProgramUpdatePlan.update();
             }
@@ -956,7 +972,19 @@ public class Model_Board extends Model {
             plan.board = b_pair.board;
             plan.firmware_type = Firmware_type.BACKUP;
             plan.actualization_procedure = procedure;
-            plan.c_program_version_for_update = b_pair.c_program_version;
+
+            if( b_pair.c_program_version == null){
+
+                plan.state = Enum_CProgram_updater_state.bin_file_not_found;
+
+            }else {
+
+                plan.c_program_version_for_update = b_pair.c_program_version;
+                plan.state = Enum_CProgram_updater_state.not_start_yet;
+
+            }
+
+
             plan.save();
             plans.add(plan);
         }

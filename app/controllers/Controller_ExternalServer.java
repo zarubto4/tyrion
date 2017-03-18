@@ -8,7 +8,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.enums.CLoud_Homer_Server_Type;
+import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
@@ -70,7 +70,7 @@ public class Controller_ExternalServer extends Controller {
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
             server.personal_server_name = help.personal_server_name;
-            server.server_type = CLoud_Homer_Server_Type.public_server;
+            server.server_type = Enum_Cloud_HomerServer_type.public_server;
 
             // Kontrola oprávnění
             if(!server.create_permission()) return GlobalResult.forbidden_Permission();

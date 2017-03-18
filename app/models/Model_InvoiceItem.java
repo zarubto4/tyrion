@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Currency;
+import utilities.enums.Enum_Currency;
 
 import javax.persistence.*;
 
@@ -27,7 +27,7 @@ public class Model_InvoiceItem extends Model {
                                                                          public String unit_name; // Piece,
                                                                          public Double unit_price; // Cena / Musí být public - zasílá se do fakturoidu
 
-    @Enumerated(EnumType.STRING)   @ApiModelProperty(required = true)    public Currency currency;
+    @Enumerated(EnumType.STRING)   @ApiModelProperty(required = true)    public Enum_Currency currency;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 

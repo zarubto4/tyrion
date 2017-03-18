@@ -1,7 +1,7 @@
 package utilities.goPay.helps_objects;
 
 import models.Model_InvoiceItem;
-import utilities.enums.Currency;
+import utilities.enums.Enum_Currency;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 public class GoPay_Recurrence {
 
     public Long amount;
-    public Currency currency;
+    public Enum_Currency currency;
     public String order_number;
     public String order_description;
     public List<GoPay_Items> items = new ArrayList<>();

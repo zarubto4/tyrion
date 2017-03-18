@@ -6,8 +6,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.enums.Enum_CProgram_updater_state;
+import utilities.enums.Enum_Update_type_of_update;
 import utilities.enums.Firmware_type;
-import utilities.enums.C_ProgramUpdater_State;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
 
 import javax.persistence.*;
@@ -32,22 +33,19 @@ public class Model_CProgramUpdatePlan extends Model {
 
                                                        @JsonIgnore @ManyToOne() public Model_ActualizationProcedure actualization_procedure;
 
-    @ApiModelProperty(required = true, value = "UNIX time in ms",
-            example = "1466163478925")                                          public Date date_of_create;
-    @ApiModelProperty(required = true, value = "can be empty, which means that the procedure is not done yet. " +
-                                               "UNIX time in ms",
-            example = "1466163478925")                                          public Date date_of_finish;
+    @ApiModelProperty(required = true, value = "UNIX time in ms", example = "1466163478925")   public Date date_of_create;
+    @ApiModelProperty(required = true, value = "UNIX time in ms", example = "1466163478925")   public Date date_of_finish;
 
 
-              @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                   public Model_Board board; // Deska k aktualizaci
-              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Firmware_type firmware_type;
+              @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                   public Model_Board board;                           // Deska k aktualizaci
+              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Firmware_type firmware_type;                 // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_VersionObject c_program_version_for_update; // C_program k aktualizaci
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;   // Když nahrávám Firmware
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_FileRecord binary_file;  // Soubor, když firmware nahrává uživatel sám mimo flow
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_FileRecord binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
-    @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public C_ProgramUpdater_State state;
+    @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public Enum_CProgram_updater_state state;
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer errorCode;
@@ -140,7 +138,7 @@ public class Model_CProgramUpdatePlan extends Model {
     @JsonIgnore @Override
     public void save() {
 
-        if(this.state == null) this.state = C_ProgramUpdater_State.not_start_yet;
+        if(this.state == null) this.state = Enum_CProgram_updater_state.not_start_yet;
         this.date_of_create = new Date();
 
         while (true) { // I need Unique Value

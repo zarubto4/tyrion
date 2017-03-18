@@ -23,7 +23,9 @@ create table model_actualization_procedure (
   date_of_create            timestamp,
   date_of_planing           timestamp,
   date_of_finish            timestamp,
+  type_of_update            varchar(41),
   constraint ck_model_actualization_procedure_state check (state in ('complete_with_error','canceled','in_progress','successful_complete','complete','not_start_yet')),
+  constraint ck_model_actualization_procedure_type_of_update check (type_of_update in ('AUTOMATICALLY_BY_USER_ALWAYS_UP_TO_DATE','AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE','MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME','MANUALLY_BY_USER','MANUALLY_BY_USER_BLOCKO_GROUP')),
   constraint pk_model_actualization_procedure primary key (id))
 ;
 

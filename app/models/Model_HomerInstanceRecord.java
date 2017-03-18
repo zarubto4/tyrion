@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Actual_procedure_State;
-import utilities.enums.C_ProgramUpdater_State;
+import utilities.enums.Enum_Update_group_procedure_state;
+import utilities.enums.Enum_CProgram_updater_state;
 import utilities.enums.Firmware_type;
 import utilities.hardware_updater.Master_Updater;
 import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
@@ -129,10 +129,10 @@ public class Model_HomerInstanceRecord extends Model {
                         .eq("firmware_type", Firmware_type.FIRMWARE.name())
                         .eq("board.id", group.main_board_pair.board.id).where()
                         .disjunction()
-                        .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                        .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                         .add(Expr.isNull("state"))
                         .endJunction()
                         .findList();
@@ -141,7 +141,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                 for (Model_CProgramUpdatePlan old_plan : old_plans_main_board) {
                     logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Old plan for override under B_Program in Cloud: " + old_plan.id);
-                    old_plan.state = C_ProgramUpdater_State.overwritten;
+                    old_plan.state = Enum_CProgram_updater_state.overwritten;
                     old_plan.date_of_finish = new Date();
                     old_plan.update();
                 }
@@ -160,15 +160,15 @@ public class Model_HomerInstanceRecord extends Model {
                     if(group.main_board_pair.c_program_version.c_compilation.firmware_build_id.equals(summary_information.getDeviceStats(group.main_board_pair.board.id ).firmware_build_id)){
 
                         logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Firmware is already on board! - C_ProgramUpdater_State is Complete");
-                        plan_master_board.state = C_ProgramUpdater_State.complete;
+                        plan_master_board.state = Enum_CProgram_updater_state.complete;
 
                     }else {
-                        plan_master_board.state = C_ProgramUpdater_State.not_start_yet;
+                        plan_master_board.state = Enum_CProgram_updater_state.not_start_yet;
                     }
 
                 }else {
                     logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
-                    plan_master_board.state = C_ProgramUpdater_State.not_start_yet;
+                    plan_master_board.state = Enum_CProgram_updater_state.not_start_yet;
                 }
 
                 plan_master_board.c_program_version_for_update = group.main_board_pair.c_program_version;
@@ -189,10 +189,10 @@ public class Model_HomerInstanceRecord extends Model {
                             .eq("firmware_type", Firmware_type.FIRMWARE.name())
                             .eq("board.id", pair.board.id).where()
                             .disjunction()
-                                 .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                                 .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                                 .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                                 .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                                 .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                                 .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                                 .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                                 .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                                  .add(Expr.isNull("state"))
                             .endJunction()
                             .findList();
@@ -203,7 +203,7 @@ public class Model_HomerInstanceRecord extends Model {
                     //3. Neukončené procedury ukončím
                     for (Model_CProgramUpdatePlan old_plan : old_plans) {
                         logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
-                        old_plan.state = C_ProgramUpdater_State.overwritten;
+                        old_plan.state = Enum_CProgram_updater_state.overwritten;
                         old_plan.date_of_finish = new Date();
                         old_plan.update();
                     }
@@ -229,20 +229,20 @@ public class Model_HomerInstanceRecord extends Model {
                                 if (group.main_board_pair.c_program_version.c_compilation.firmware_build_id.equals(summary_information.getDeviceStats(group.main_board_pair.board.id).firmware_build_id)) {
 
                                     logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Firmware is already on board! - C_ProgramUpdater_State is Complete");
-                                    plan.state = C_ProgramUpdater_State.complete;
+                                    plan.state = Enum_CProgram_updater_state.complete;
 
                                 } else {
-                                    plan.state = C_ProgramUpdater_State.not_start_yet;
+                                    plan.state = Enum_CProgram_updater_state.not_start_yet;
                                 }
 
                             }catch (NullPointerException e){
                                 logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Some parameter missing");
-                                plan.state = C_ProgramUpdater_State.not_start_yet;
+                                plan.state = Enum_CProgram_updater_state.not_start_yet;
                             }
 
                         }else {
                             logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
-                            plan.state = C_ProgramUpdater_State.not_start_yet;
+                            plan.state = Enum_CProgram_updater_state.not_start_yet;
                         }
 
                         plan.c_program_version_for_update = pair.c_program_version;
@@ -269,9 +269,9 @@ public class Model_HomerInstanceRecord extends Model {
 
                         logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Checking Model_CProgramUpdatePlan id:: " + plan_update.state);
 
-                        if(plan_update.state != C_ProgramUpdater_State.complete && procedure.state == null) {
+                        if(plan_update.state != Enum_CProgram_updater_state.complete && procedure.state == null) {
                             logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Set procedure to not_start_yet");
-                            procedure.state = Actual_procedure_State.not_start_yet;
+                            procedure.state = Enum_Update_group_procedure_state.not_start_yet;
                             procedure.update();
                         }
 
@@ -282,7 +282,7 @@ public class Model_HomerInstanceRecord extends Model {
                     if(procedure.state == null) {
                         logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Set procedure to successful_complete");
                         procedure.refresh();
-                        procedure.state = Actual_procedure_State.successful_complete;
+                        procedure.state = Enum_Update_group_procedure_state.successful_complete;
                         procedure.update();
                     }
 
@@ -304,7 +304,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                 Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
                 procedure.date_of_create = new Date();
-                procedure.state = Actual_procedure_State.not_start_yet;
+                procedure.state = Enum_Update_group_procedure_state.not_start_yet;
                 procedure.homer_instance_record = this;
 
                 // ID C_programu aktuálního != požadovanému -> zařadím do aktualizační procedury!
@@ -313,7 +313,7 @@ public class Model_HomerInstanceRecord extends Model {
                     Model_CProgramUpdatePlan plan_master_board = new Model_CProgramUpdatePlan();
                     plan_master_board.board = group.main_board_pair.board;
                     plan_master_board.firmware_type = Firmware_type.BOOTLOADER;
-                    plan_master_board.state = C_ProgramUpdater_State.not_start_yet;
+                    plan_master_board.state = Enum_CProgram_updater_state.not_start_yet;
                     plan_master_board.bootloader = group.main_board_pair.board.type_of_board.main_boot_loader;
                     procedure.updates.add(plan_master_board);
 
@@ -327,10 +327,10 @@ public class Model_HomerInstanceRecord extends Model {
                             .eq("board.id", pair.board.id).where()
                             .eq("firmware_type", Firmware_type.BOOTLOADER.name())
                             .disjunction()
-                            .add(Expr.eq("state", C_ProgramUpdater_State.not_start_yet))
-                            .add(Expr.eq("state", C_ProgramUpdater_State.waiting_for_device))
-                            .add(Expr.eq("state", C_ProgramUpdater_State.instance_inaccessible))
-                            .add(Expr.eq("state", C_ProgramUpdater_State.homer_server_is_offline))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                            .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                             .add(Expr.isNull("state"))
                             .endJunction()
                             .findList();
@@ -341,7 +341,7 @@ public class Model_HomerInstanceRecord extends Model {
                     //3. Neukončené procedury ukončím
                     for (Model_CProgramUpdatePlan old_plan : old_plans) {
                         logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
-                        old_plan.state = C_ProgramUpdater_State.overwritten;
+                        old_plan.state = Enum_CProgram_updater_state.overwritten;
                         old_plan.update();
                     }
 
@@ -353,7 +353,7 @@ public class Model_HomerInstanceRecord extends Model {
                         Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
                         plan.board = pair.board;
                         plan.firmware_type = Firmware_type.BOOTLOADER;
-                        plan.state = C_ProgramUpdater_State.not_start_yet;
+                        plan.state = Enum_CProgram_updater_state.not_start_yet;
                         plan.c_program_version_for_update = pair.c_program_version;
                         plan.actualization_procedure = procedure;
                         procedure.updates.add(plan);

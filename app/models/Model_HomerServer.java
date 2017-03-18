@@ -13,7 +13,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.Http;
 import utilities.Server;
-import utilities.enums.CLoud_Homer_Server_Type;
+import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Log_Level;
 import utilities.enums.Where_logged_tag;
 import utilities.hardware_updater.Actualization_Task;
@@ -54,7 +54,7 @@ public class Model_HomerServer extends Model{
 
     @ApiModelProperty(required = true, readOnly = true)         public String server_url;  // Může být i IP adresa
 
-                                        @JsonIgnore             public CLoud_Homer_Server_Type server_type;  // Určující typ serveru
+                                        @JsonIgnore             public Enum_Cloud_HomerServer_type server_type;  // Určující typ serveru
                                                                 public Date time_stamp_configuration;
 
                                                                 public Integer days_in_archive;
@@ -117,14 +117,14 @@ public class Model_HomerServer extends Model{
 
         if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")) {
 
-            return Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.test_server).setMaxRows(1).findUnique();
+            return Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.test_server).setMaxRows(1).findUnique();
 
         }else {
 
             String wining_server_id = null;
             Integer count = null;
 
-            for (Object server_id :  Model_HomerServer.find.where().eq("server_type", CLoud_Homer_Server_Type.public_server).findIds()) {
+            for (Object server_id :  Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findIds()) {
 
 
                 Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", server_id).findRowCount();

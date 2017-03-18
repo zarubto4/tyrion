@@ -4,7 +4,7 @@ package utilities.goPay.helps_objects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import models.Model_InvoiceItem;
 import utilities.Server;
-import utilities.enums.Currency;
+import utilities.enums.Enum_Currency;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class GoPay_Payment {
     public GoPay_Target target = new GoPay_Target();
 
     public long  amount = 0;
-    public Currency currency;
+    public Enum_Currency currency;
     public String order_number;
 
     public String order_description;

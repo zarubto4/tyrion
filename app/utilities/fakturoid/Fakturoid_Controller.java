@@ -17,7 +17,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
 import utilities.emails.Email;
-import utilities.enums.Currency;
+import utilities.enums.Enum_Currency;
 import utilities.enums.Payment_status;
 import utilities.fakturoid.helps_objects.Fakturoid_Invoice;
 import utilities.loggy.Loggy;
@@ -80,7 +80,7 @@ public class Fakturoid_Controller extends Controller {
         Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
         fakturoid_invoice.custom_id         = product.id;
         fakturoid_invoice.client_name       = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
-        fakturoid_invoice.currency          = Currency.USD;
+        fakturoid_invoice.currency          = Enum_Currency.USD;
         fakturoid_invoice.lines             = invoice.getInvoice_items();
         fakturoid_invoice.proforma          = true;
         fakturoid_invoice.partial_proforma  = true;
@@ -156,7 +156,7 @@ public class Fakturoid_Controller extends Controller {
         Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
         fakturoid_invoice.custom_id         = product.id;
         fakturoid_invoice.client_name       = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
-        fakturoid_invoice.currency          = Currency.USD;
+        fakturoid_invoice.currency          = Enum_Currency.USD;
         fakturoid_invoice.lines             = invoice.invoice_items;
         fakturoid_invoice.proforma          = false;
         fakturoid_invoice.partial_proforma  = false;

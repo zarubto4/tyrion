@@ -327,7 +327,7 @@
                                     <th>State</th>
                                 </tr>
 
-                                @for(update <- Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).findList()) {
+                                @for(update <- Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).order().desc("date_of_create").findList()) {
 
                                     <tr>
                                         <td>@update.id</td>
@@ -336,18 +336,33 @@
                                         <td>@update.firmware_type</td>
 
                                         @if(update.firmware_type == Firmware_type.FIRMWARE){
-                                            <td>@update.c_program_version_for_update.id</td>
-                                            <td>@update.c_program_version_for_update.version_name</td>
+                                            @if(update.c_program_version_for_update != null) {
+                                                <td>@update.c_program_version_for_update.id</td>
+                                                <td>@update.c_program_version_for_update.version_name</td>
+                                            }else{
+                                                <td>Null</td>
+                                                <td>Null</td>
+                                            }
                                         }
 
                                         @if(update.firmware_type == Firmware_type.BOOTLOADER){
-                                            <td>@update.bootloader.id</td>
-                                            <td>@update.bootloader.version_identificator</td>
+                                            @if(update.bootloader != null) {
+                                                <td>@update.bootloader.id</td>
+                                                <td>@update.bootloader.version_identificator</td>
+                                            }else{
+                                                <td>Null</td>
+                                                <td>Null</td>
+                                            }
                                         }
 
                                         @if(update.firmware_type == Firmware_type.BACKUP){
-                                            <td>@update.c_program_version_for_update.id</td>
-                                            <td>@update.c_program_version_for_update.version_name</td>
+                                            @if(update.c_program_version_for_update != null) {
+                                                <td>@update.c_program_version_for_update.id</td>
+                                                <td>@update.c_program_version_for_update.version_name</td>
+                                            }else{
+                                                <td>Null</td>
+                                                <td>Null</td>
+                                            }
                                         }
 
 

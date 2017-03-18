@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_VersionObject;
 import models.Model_CCompilation;
-import utilities.enums.Compile_Status;
+import utilities.enums.Enum_Compile_status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class Swagger_C_Program_Version {
 
 
     @ApiModelProperty(required = true, readOnly = true)
-    public Compile_Status status;
+    public Enum_Compile_status status;
 
     @ApiModelProperty(required = false, readOnly = true )
     public String main;

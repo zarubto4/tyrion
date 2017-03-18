@@ -2,7 +2,7 @@ package utilities.enums;
 
 import com.avaje.ebean.annotation.EnumValue;
 
-public enum  CLoud_Homer_Server_Type {
+public enum Enum_Cloud_HomerServer_type {
 
     @EnumValue("public_server")   public_server,
     @EnumValue("private_server")  private_server,

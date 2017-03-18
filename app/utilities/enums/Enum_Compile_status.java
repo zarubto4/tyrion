@@ -2,7 +2,7 @@ package utilities.enums;
 
 import com.avaje.ebean.annotation.EnumValue;
 
-public enum Compile_Status {
+public enum Enum_Compile_status {
 
     @EnumValue("compilation_in_progress")               compilation_in_progress,            // Compilace probíhá - aby se zajistilo že nebude provedeno nic dvakrát!!
     @EnumValue("file_with_code_not_found")              file_with_code_not_found,           // Nebyl nalezen json soubor kde je uložený kod!!

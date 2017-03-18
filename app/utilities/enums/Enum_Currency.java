@@ -2,7 +2,7 @@ package utilities.enums;
 
 import com.avaje.ebean.annotation.EnumValue;
 
-public enum Currency {
+public enum Enum_Currency {
 
     @EnumValue("czk") CZK(203),
     @EnumValue("eur") EUR(978),
@@ -14,7 +14,7 @@ public enum Currency {
 
     private Integer numericalCode;
 
-    private Currency(Integer numericalCode) {
+    private Enum_Currency(Integer numericalCode) {
         this.numericalCode = numericalCode;
     }
 

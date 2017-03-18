@@ -16,7 +16,7 @@ import play.Application;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.enums.CLoud_Homer_Server_Type;
+import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Participant_status;
 import utilities.enums.Payment_method;
 import utilities.enums.Payment_mode;
@@ -358,7 +358,7 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_1.mqtt_password = "pass";
             cloud_server_1.mqtt_username = "user";
             cloud_server_1.webView_port = 8501;
-            cloud_server_1.server_type = CLoud_Homer_Server_Type.main_server;
+            cloud_server_1.server_type = Enum_Cloud_HomerServer_type.main_server;
             cloud_server_1.save();
 
             Model_HomerServer cloud_server_2 = new Model_HomerServer();
@@ -369,7 +369,7 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_2.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
             cloud_server_2.webView_port = 8501;
-            cloud_server_2.server_type = CLoud_Homer_Server_Type.backup_server;
+            cloud_server_2.server_type = Enum_Cloud_HomerServer_type.backup_server;
             cloud_server_2.save();
 
 
@@ -381,7 +381,7 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_3.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
             cloud_server_3.webView_port = 8501;
-            cloud_server_3.server_type = CLoud_Homer_Server_Type.public_server;
+            cloud_server_3.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_3.save();
 
             Model_HomerServer cloud_server_4 = new Model_HomerServer();
@@ -392,7 +392,7 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_4.mqtt_password = "pass";
             cloud_server_4.mqtt_username = "user";
             cloud_server_4.webView_port = 8501;
-            cloud_server_4.server_type = CLoud_Homer_Server_Type.public_server;
+            cloud_server_4.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_4.save();
 
             // Testovací server
@@ -406,7 +406,7 @@ public class Demo_Data_Controller extends Controller {
             cloud_server_5.mqtt_password = "pass";
             cloud_server_5.mqtt_username = "User";
             cloud_server_5.webView_port = 8501;
-            cloud_server_5.server_type = CLoud_Homer_Server_Type.test_server;
+            cloud_server_5.server_type = Enum_Cloud_HomerServer_type.test_server;
             cloud_server_5.save();
 
             // Nastavím kompilační servery

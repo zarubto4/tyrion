@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_WebSocket;
 import models.Model_CompilationServer;
 import models.Model_VersionObject;
-import utilities.enums.Compile_Status;
+import utilities.enums.Enum_Compile_status;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,12 +75,12 @@ public class Compilation_After_BlackOut {
                             break;
                         }
 
-                        Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Compile_Status.server_was_offline.name()).order().desc("date_of_create").setMaxRows(1).findUnique();
+                        Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Enum_Compile_status.server_was_offline.name()).order().desc("date_of_create").setMaxRows(1).findUnique();
                         if(version_object == null){
                             break;
                         }
                         logger.debug("Compilation_After_BlackOut:: run:: " + thread_name + " starting compilation");
-                        version_object.c_compilation.status = Compile_Status.compilation_in_progress;
+                        version_object.c_compilation.status = Enum_Compile_status.compilation_in_progress;
                         version_object.c_compilation.update();
 
                         // Výsledek se kterým se dále nic neděje

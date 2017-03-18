@@ -9,7 +9,8 @@ import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
-import utilities.enums.Compile_Status;
+import utilities.enums.Enum_Compile_status;
+import utilities.enums.Enum_Update_type_of_update;
 import utilities.enums.Registration_Board_status;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
@@ -450,10 +451,10 @@ public class Controller_Board extends Controller {
                 if (c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
 
                 // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-                if (c_program_version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+                if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
 
                 //Zkontroluji zda byla verze už zkompilována
-                if (!c_program_version.c_compilation.status.name().equals(Compile_Status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
+                if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
 
                 // Kotrola objektu
                 Model_Board board = Model_Board.find.byId(board_update_pair.board_id);
@@ -472,7 +473,7 @@ public class Controller_Board extends Controller {
             }
 
 
-            Model_Board.update_firmware(b_pairs);
+            Model_Board.update_firmware(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
 
             // Vracím odpověď
             return GlobalResult.result_ok();
@@ -1669,7 +1670,7 @@ public class Controller_Board extends Controller {
                     if (!board.read_permission()) return GlobalResult.forbidden_Permission();
                 }
 
-                Model_Board.update_bootloader(boards, bootLoader);
+                Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards, bootLoader);
 
             }else {
 
@@ -1677,7 +1678,7 @@ public class Controller_Board extends Controller {
                     if (!board.read_permission()) return GlobalResult.forbidden_Permission();
                 }
 
-                Model_Board.update_bootloader(boards, null);
+                Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards, null);
             }
 
 
@@ -2018,10 +2019,10 @@ public class Controller_Board extends Controller {
                 if (c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
 
                 // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-                if (c_program_version.c_compilation.status != Compile_Status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+                if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
 
                 //Zkontroluji zda byla verze už zkompilována
-                if (!c_program_version.c_compilation.status.name().equals(Compile_Status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
+                if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
 
                 Model_BPair b_pair = new Model_BPair();
                 b_pair.board = board;
@@ -2031,7 +2032,7 @@ public class Controller_Board extends Controller {
 
             }
 
-            Model_Board.update_backup(board_pairs);
+            Model_Board.update_backup(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, board_pairs);
 
             // Vrácení upravenéh objektu
             return GlobalResult.result_ok();

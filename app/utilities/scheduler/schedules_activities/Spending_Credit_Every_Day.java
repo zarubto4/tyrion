@@ -14,7 +14,7 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
-import utilities.enums.Currency;
+import utilities.enums.Enum_Currency;
 import utilities.enums.Payment_method;
 import utilities.enums.Payment_status;
 import utilities.fakturoid.Fakturoid_Controller;
@@ -234,7 +234,7 @@ public class Spending_Credit_Every_Day implements Job {
             invoice_item_1.unit_price = product.general_tariff.price_in_usd;
             invoice_item_1.quantity = (long) 1;
             invoice_item_1.unit_name = "Currency";
-            invoice_item_1.currency = Currency.USD;
+            invoice_item_1.currency = Enum_Currency.USD;
 
             invoice.invoice_items.add(invoice_item_1);
             invoice.proforma = true;
@@ -253,7 +253,7 @@ public class Spending_Credit_Every_Day implements Job {
             logger.debug("Creating GoPay_Recurrence");
             GoPay_Recurrence recurrence = new GoPay_Recurrence();
             recurrence.amount = Math.round(product.general_tariff.price_in_usd*100);
-            recurrence.currency = Currency.USD;
+            recurrence.currency = Enum_Currency.USD;
             recurrence.setItems(invoice.invoice_items);
             recurrence.order_number  = invoice.invoice_number;
             recurrence.order_description =  "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
