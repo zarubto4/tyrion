@@ -105,48 +105,6 @@ PUT            /secure/role/:role_id                                       @cont
 
 GET            /secure/person/system_acces/:person_id                      @controllers.Controller_Permission.get_System_Acces(person_id)
 
-### OVERFLOW ############ OVERFLOW ############### OVERFLOW ################ OVERFLOW ################# OVERFLOW ###############################################################
-################################################################################################################################################################################
-
-POST           /overflow/post                                            @controllers.Controller_Overflow.new_Post()
-GET            /overflow/post/:post_id                                   @controllers.Controller_Overflow.get_Post(post_id)
-DELETE         /overflow/post/:post_id                                   @controllers.Controller_Overflow.delete_Post(post_id)
-PUT            /overflow/post/:post_id                                   @controllers.Controller_Overflow.edit_Post(post_id)
-POST           /overflow/filter/:page_number                             @controllers.Controller_Overflow.get_Post_ByFilter(page_number:Int)
-
-POST           /overflow/typeOfPost                                      @controllers.Controller_Overflow.new_TypeOfPost()
-GET            /overflow/typeOfPost/all                                  @controllers.Controller_Overflow.get_TypeOfPost_all()
-GET            /overflow/typeOfPost/:type_of_post_id                     @controllers.Controller_Overflow.get_TypeOfPost(type_of_post_id)
-PUT            /overflow/typeOfPost/:type_of_post_id                     @controllers.Controller_Overflow.edit_TypeOfPost(type_of_post_id)
-DELETE         /overflow/typeOfPost/:type_of_post_id                     @controllers.Controller_Overflow.delete_TypeOfPost(type_of_post_id)
-
-POST           /overflow/typeOfConfirm                                   @controllers.Controller_Overflow.new_TypeOfConfirms()
-PUT            /overflow/typeOfConfirm/:type_of_confirm_id               @controllers.Controller_Overflow.edit_TypeOfConfirms(type_of_confirm_id)
-GET            /overflow/typeOfConfirm/all                               @controllers.Controller_Overflow.get_TypeOfConfirms_all()
-GET            /overflow/typeOfConfirm/:type_of_confirm_id               @controllers.Controller_Overflow.get_TypeOfConfirms(type_of_confirm_id)
-DELETE         /overflow/typeOfConfirm/:type_of_confirm_id               @controllers.Controller_Overflow.delete_TypeOfConfirms(type_of_confirm_id)
-
-PUT            /overflow/typeOfConfirm/:post_id/:type_of_confirm_id      @controllers.Controller_Overflow.set_TypeOfConfirm_to_Post(post_id, type_of_confirm_id)
-DELETE         /overflow/typeOfConfirm/:post_id/:type_of_confirm_id      @controllers.Controller_Overflow.remove_TypeOfConfirm_to_Post(post_id, type_of_confirm_id)
-
-
-POST           /overflow/comment/:post_id                                @controllers.Controller_Overflow.addComment(post_id)
-PUT            /overflow/comment/:post_id                                @controllers.Controller_Overflow.edit_Comment_or_Answer(post_id)
-
-POST           /overflow/answer/:post_id                                 @controllers.Controller_Overflow.addAnswer(post_id)
-PUT            /overflow/answer/:post_id                                 @controllers.Controller_Overflow.edit_Comment_or_Answer(post_id)
-
-
-PUT            /overflow/likePlus/:post_id                               @controllers.Controller_Overflow.likePlus(post_id)
-PUT            /overflow/likeMinus/:post_id                              @controllers.Controller_Overflow.likeMinus(post_id)
-POST           /overflow/link/:question_post_id/:answer_post_id          @controllers.Controller_Overflow.linkWithPreviousAnswer(question_post_id, answer_post_id)
-DELETE         /overflow/link/:linked_post_id                            @controllers.Controller_Overflow.unlinkWithPreviousAnswer(linked_post_id)
-
-
-PUT            /overflow/hashTag/:post_id/:hashTag                       @controllers.Controller_Overflow.add_HashTag_to_Post(post_id,hashTag)
-DELETE         /overflow/hashTag/:post_id/:hashTag                       @controllers.Controller_Overflow.remove_HashTag_from_Post(post_id,hashTag)
-
-
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
 
@@ -327,7 +285,7 @@ POST            /library/version/upload_example/:version_id                     
 DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_Library.importLibraryVersion_removeExample(example_id)
 
 #Actualization
-GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_Board.board_get_for_fast_upload(project_id)
+GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_Board.board_getForFastUpload(project_id)
 PUT             /c_program/version/upload                                       @controllers.Controller_Board.uploadCompilationToBoard()
 #POST           /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
@@ -340,8 +298,8 @@ DELETE          /processor/:processor_id                                        
 
 #Board
 POST            /board                                                          @controllers.Controller_Board.board_create()
-PUT             /board/userDescription/:board_id                                @controllers.Controller_Board.board_update_description(board_id)
-PUT             /board/backup/:board_id                                         @controllers.Controller_Board.board_update_backup(board_id)
+PUT             /board/userDescription/:board_id                                @controllers.Controller_Board.board_updateDescription(board_id)
+PUT             /board/backup/:board_id                                         @controllers.Controller_Board.board_updateBackup(board_id)
 
 PUT             /board/filter                                                   @controllers.Controller_Board.board_getByFilter()
 GET             /board/check/:hash_for_adding                                   @controllers.Controller_Board.board_check(hash_for_adding)
@@ -352,11 +310,11 @@ DELETE          /board/:board_id                                                
 
 
 #Producer
-POST            /producer                                                       @controllers.Controller_Board.new_Producer()
-PUT             /producer/:producer_id                                          @controllers.Controller_Board.edit_Producer(producer_id)
-GET             /producer/all                                                   @controllers.Controller_Board.get_Producers()
-GET             /producer/:producer_id                                          @controllers.Controller_Board.get_Producer(producer_id)
-DELETE          /producer/:producer_id                                          @controllers.Controller_Board.delete_Producer(producer_id)
+POST            /producer                                                       @controllers.Controller_Board.producer_create()
+PUT             /producer/:producer_id                                          @controllers.Controller_Board.producer_update(producer_id)
+GET             /producer/all                                                   @controllers.Controller_Board.producer_getAll()
+GET             /producer/:producer_id                                          @controllers.Controller_Board.producer_get(producer_id)
+DELETE          /producer/:producer_id                                          @controllers.Controller_Board.producer_delete(producer_id)
 
 #TypeOfBoard
 POST            /typeOfBoard                                                    @controllers.Controller_Board.typeOfBoard_create()
@@ -368,13 +326,13 @@ GET             /typeOfBoard/all                                                
 GET             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_Board.typeOfBoard_get(type_of_board_id)
 
 #Bootloader
-POST            /bootloader/:type_of_board_id                                   @controllers.Controller_Board.boot_loader_create(type_of_board_id)
-PUT             /bootloader/file/:boot_loader_id                                @controllers.Controller_Board.boot_loader_upload_file(boot_loader_id)
-PUT             /bootloader/mark/bootloader/:boot_loader_id                     @controllers.Controller_Board.boot_loader_mark_as_main(boot_loader_id)
-PUT             /bootloader/update_device_list                                  @controllers.Controller_Board.boot_loader_manual_update()
+POST            /bootloader/:type_of_board_id                                   @controllers.Controller_Board.bootLoader_create(type_of_board_id)
+PUT             /bootloader/file/:boot_loader_id                                @controllers.Controller_Board.bootLoader_uploadFile(boot_loader_id)
+PUT             /bootloader/mark/bootloader/:boot_loader_id                     @controllers.Controller_Board.bootLoader_markAsMain(boot_loader_id)
+PUT             /bootloader/update_device_list                                  @controllers.Controller_Board.bootLoader_manualUpdate()
 
 #File // Skryto ve swaggeru
-GET             /file/fileRecord/:file_record_id                                @controllers.Controller_Board.fileRecord(file_record_id)
+GET             /file/fileRecord/:file_record_id                                @controllers.Controller_Board.fileRecord_get(file_record_id)
 
 
 #Compilation Server

@@ -39,8 +39,6 @@ public class Loggy{
 
     public static Result result_internalServerError(Exception exception, Http.Request request) {
 
-       //logger.error("Error:: ", exception);
-
         String id;
 
         while (true) { // I need Unique Value
@@ -48,55 +46,45 @@ public class Loggy{
             if (Model_LoggyError.find.byId(id) == null) break;
         }
 
-        StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
-        StringBuilder descriptionBuilder = new StringBuilder();     // stavění obsahu
 
-        summaryBuilder.append("Internal Server Error - ");
-        summaryBuilder.append(exception.getClass().getName()+" - ");
-        summaryBuilder.append(request.method()+" ");
-        summaryBuilder.append(request.path());
+        StringBuilder description = new StringBuilder();     // stavění obsahu
 
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Exception type: " +exception.getClass().getName());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Exception message: " +exception.getMessage());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Time: " + new Date().toString());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Request Type: " + request.method());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Request Path: " + request.path());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Unique Identificator: " + id);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Tyrion version: " + Server.server_version);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Tyrion mode: " + Server.server_mode);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
-        descriptionBuilder.append("\n");
+        String summary = "Internal Server Error - " + exception.getClass().getName() + " - " + request.method() + " " + request.path();
 
-        descriptionBuilder.append("    Stack trace: \n");
+        description.append("\n");
+        description.append("    Exception type: " + exception.getClass().getName());
+        description.append("\n");
+        description.append("    Exception message: " +exception.getMessage());
+        description.append("\n");
+        description.append("    Time: " + new Date().toString());
+        description.append("\n");
+        description.append("    Request Type: " + request.method());
+        description.append("\n");
+        description.append("    Request Path: " + request.path());
+        description.append("\n");
+        description.append("    Unique Identifier: " + id);
+        description.append("\n");
+        description.append("    Tyrion version: " + Server.server_version);
+        description.append("\n");
+        description.append("    Tyrion mode: " + Server.server_mode);
+        description.append("\n");
+        description.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
+        description.append("\n");
+
+        description.append("    Stack trace: \n");
         for (StackTraceElement element : exception.getStackTrace()) {    // formátování stack trace
-            descriptionBuilder.append("        " + element);
-            descriptionBuilder.append("\n");
+            description.append("        ");
+            description.append(element);
+            description.append("\n");
         }
-        descriptionBuilder.append("\n");    // random whitespace
-        descriptionBuilder.append("\n");
+        description.append("\n");
 
-        descriptionBuilder.append("    Error:: \n" + exception.getMessage());
-        descriptionBuilder.append("\n");
+        error(id, summary, description.toString());
 
-        String summary = summaryBuilder.toString();
-        String description = descriptionBuilder.toString();
-
-
-
-        error(id, summary, description);
         return GlobalResult.result_InternalServerError(summary + "\n" + exception.getMessage());
     }
 
-    public static Result result_internalServerError(String problem, Http.Request request) {
+    public static void internalServerError(String origin, Exception exception){
 
         String id;
 
@@ -105,103 +93,39 @@ public class Loggy{
             if (Model_LoggyError.find.byId(id) == null) break;
         }
 
-        StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
-        StringBuilder descriptionBuilder = new StringBuilder();     // stavění obsahu
+        StringBuilder description = new StringBuilder();     // stavění obsahu
 
-        summaryBuilder.append("Internal Server Error - ");
-        summaryBuilder.append(problem+" - ");
-        summaryBuilder.append(request.method()+" ");
-        summaryBuilder.append(request.path());
+        String summary = "Internal Server Error - " + origin + " - " + exception.getClass().getName();
 
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Exception type: " + problem );
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Time: " + new Date().toString());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Request Type: " + request.method());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Request Path: " + request.path());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Unique Identificator: " + id);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Tyrion version: " + Server.server_version);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Tyrion mode: " + Server.server_mode);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
-        descriptionBuilder.append("\n");
+        description.append("\n");
+        description.append("    Exception type: " + exception.getClass().getName());
+        description.append("\n");
+        description.append("    Time: " + new Date().toString());
+        description.append("\n");
+        description.append("    Unique Identifier: " + id);
+        description.append("\n");
+        description.append("    Tyrion version: " + Server.server_version);
+        description.append("\n");
+        description.append("    Tyrion mode: " + Server.server_mode);
+        description.append("\n");
+        description.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "non user request error"));
+        description.append("\n");
 
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Stack trace: \n");
+        description.append("    Stack trace: \n");
         for (StackTraceElement element : Thread.currentThread().getStackTrace()) {    // formátování stack trace
-            descriptionBuilder.append("        " + element);
-            descriptionBuilder.append("\n");
+            description.append("        ");
+            description.append(element);
+            description.append("\n");
         }
-        descriptionBuilder.append("\n");    // random whitespace
-        descriptionBuilder.append("\n");
+        description.append("\n");    // random whitespace
 
-        String summary = summaryBuilder.toString();
-        String description = descriptionBuilder.toString();
-
-        error(id, summary, description);
-        return GlobalResult.result_InternalServerError(summary);
-    }
-
-    public static void error(String problem, Exception exception){
-
-        String id;
-
-        while (true) { // I need Unique Value
-            id = UUID.randomUUID().toString();
-            if (Model_LoggyError.find.byId(id) == null) break;
-        }
-
-        StringBuilder summaryBuilder = new StringBuilder();         // stavění nadpisu
-        StringBuilder descriptionBuilder = new StringBuilder();     // stavění obsahu
-
-        summaryBuilder.append("Internal Server Error - ");
-        summaryBuilder.append(exception.getClass().getName()+" - ");
-        summaryBuilder.append("Exception description from code: " + problem);
-
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Exception type: " +exception.getClass().getName());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Time: " + new Date().toString());
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Unique Identificator: " + id);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Tyrion version: " + Server.server_version);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    Tyrion mode: " + Server.server_mode);
-        descriptionBuilder.append("\n");
-        descriptionBuilder.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
-        descriptionBuilder.append("\n");
-
-        descriptionBuilder.append("    Stack trace: \n");
-        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {    // formátování stack trace
-            descriptionBuilder.append("        " + element);
-            descriptionBuilder.append("\n");
-        }
-        descriptionBuilder.append("\n");    // random whitespace
-        descriptionBuilder.append("\n");
-
-        String summary = summaryBuilder.toString();
-        String description = descriptionBuilder.toString();
-
-        error(id, summary, description);
-    }
-
-    public static void error(String summary, String description) {
-        String id;
-        while (true) { // I need Unique Value
-            id = UUID.randomUUID().toString();
-            if (Model_LoggyError.find.byId(id) == null) break;
-        }
-        error(id, summary, description);
+        error(id, summary, description.toString());
     }
 
     private static void error(String id, String summary, String description) {
-        logger.error(summary+"\n"+description); // zapíšu do souboru
+
+        logger.error(summary + "\n" + description); // zapíšu do souboru
+
         Model_LoggyError error = new Model_LoggyError(id, summary, description); // zapíšu do databáze
         error.save();
     }

@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.*;
-import models.Model_HomerInstance;
-import models.Model_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
@@ -925,7 +923,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result fileRecord(@ApiParam(value = "file_record_id String query", required = true)  String file_record_id){
+    public Result fileRecord_get(@ApiParam(value = "file_record_id String query", required = true)  String file_record_id){
         try {
 
             // Kontrola validity objektu
@@ -941,8 +939,6 @@ public class Controller_Board extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-///###################################################################################################################*/
 
 ///###################################################################################################################*/
 
@@ -978,7 +974,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result new_Producer() {
+    public Result producer_create() {
         try {
 
             // Zpracování Json
@@ -1039,7 +1035,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Producer(@ApiParam(required = true) String producer_id) {
+    public Result producer_update(@ApiParam(required = true) String producer_id) {
         try {
 
             // Zpracování Json
@@ -1089,7 +1085,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Producers() {
+    public Result producer_getAll() {
         try {
 
             // Získání seznamu
@@ -1123,7 +1119,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Producer(@ApiParam(required = true)  String producer_id) {
+    public Result producer_get(@ApiParam(required = true)  String producer_id) {
         try {
 
             // Kontrola objektu
@@ -1160,7 +1156,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Producer(@ApiParam(required = true) String producer_id) {
+    public Result producer_delete(@ApiParam(required = true) String producer_id) {
         try {
 
             // Kontrola objektu
@@ -1534,7 +1530,7 @@ public class Controller_Board extends Controller {
     @ApiOperation(value = "new_boot_loader", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result boot_loader_create(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id) {
+    public Result bootLoader_create(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id) {
         try {
 
             // Zpracování Json
@@ -1570,7 +1566,7 @@ public class Controller_Board extends Controller {
 
     @ApiOperation(value = "Uploud bootloader file", hidden = true)
     @BodyParser.Of(BodyParser.MultipartFormData.class)
-    public Result boot_loader_upload_file(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+    public Result bootLoader_uploadFile(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
@@ -1616,7 +1612,7 @@ public class Controller_Board extends Controller {
 
     @ApiOperation(value = "Mark as main", hidden = true)
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result boot_loader_mark_as_main(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+    public Result bootLoader_markAsMain(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
@@ -1648,7 +1644,7 @@ public class Controller_Board extends Controller {
     }
 
     @ApiOperation(value = "Update bootloader on device list", hidden = true)
-    public Result boot_loader_manual_update(){
+    public Result bootLoader_manualUpdate(){
         try {
 
             // Zpracování Json
@@ -1769,7 +1765,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_get_for_fast_upload(@ApiParam(required = true)  String project_id){
+    public Result board_getForFastUpload(@ApiParam(required = true)  String project_id){
         try {
 
             // Kotrola objektu
@@ -1830,7 +1826,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_update_description(@ApiParam(required = true)  String board_id){
+    public Result board_updateDescription(@ApiParam(required = true)  String board_id){
         try {
 
             // Zpracování Json
@@ -1858,7 +1854,6 @@ public class Controller_Board extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "update Board - update Backup settiong",
             tags = { "Board"},
@@ -1893,7 +1888,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_update_backup(@ApiParam(required = true)  String board_id){
+    public Result board_updateBackup(@ApiParam(required = true)  String board_id){
         try {
 
             // Zpracování Json
@@ -2157,6 +2152,7 @@ public class Controller_Board extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
     @ApiOperation(value = "connect Board with Project",
             tags = { "Board"},
             notes = "This Api is used by Users for connection of Board with their Project",
@@ -2326,6 +2322,4 @@ public class Controller_Board extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
-
-    // LIBRARIES #######################################################################################################
 }

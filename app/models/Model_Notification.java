@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.enums.*;
-import utilities.notifications.Notification_Handler;
+import utilities.notifications.NotificationHandler;
 import utilities.swagger.outboundClass.Swagger_Notification_Button;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
 
@@ -334,14 +334,14 @@ public class Model_Notification extends Model {
     public void send(List<Model_Person> receivers){
         this.receivers = new ArrayList<>();
         this.receivers = receivers;
-        Notification_Handler.add_to_queue(this);
+        NotificationHandler.addToQueue(this);
     }
 
     @JsonIgnore @Transient
     public void send(Model_Person person){
         this.receivers = new ArrayList<>();
         this.receivers.add(person);
-        Notification_Handler.add_to_queue(this);
+        NotificationHandler.addToQueue(this);
     }
 
     // Pro opětovné odeslání, když už notifikace obsahuje person
@@ -350,7 +350,7 @@ public class Model_Notification extends Model {
         try {
             this.receivers = new ArrayList<>();
             this.receivers.add(this.person);
-            Notification_Handler.add_to_queue(this);
+            NotificationHandler.addToQueue(this);
         }catch (NullPointerException npe){
             logger.error("Method probably misused, use this method only when you resend notifications. If notification contains person.");
         }

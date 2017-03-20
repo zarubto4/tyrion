@@ -103,7 +103,7 @@ public class Controller_Person extends Controller {
                             .send(validationToken.personEmail, "Email Verification");
 
                 } catch (Exception e) {
-                    logger.error("Sending mail -> critical error", e);
+                    Loggy.internalServerError("Controller_Person:: person_create()::", e);
                 }
 
             }else{
@@ -196,8 +196,7 @@ public class Controller_Person extends Controller {
                         .send(validationToken.personEmail, "Email Verification");
 
             } catch (Exception e) {
-                logger.error("Sending mail -> critical error", e);
-                e.printStackTrace();
+                Loggy.internalServerError("Controller_Person:: person_authenticationSendEmail()::", e);
             }
 
             return GlobalResult.result_ok();
@@ -270,8 +269,7 @@ public class Controller_Person extends Controller {
                         .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
-                logger.error ("Sending mail -> critical error", e);
-                e.printStackTrace();
+                Loggy.internalServerError("Controller_Person:: person_passwordRecoverySendEmail()::", e);
             }
             return GlobalResult.result_ok();
         }catch (Exception e) {
@@ -345,7 +343,7 @@ public class Controller_Person extends Controller {
                         .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
-                logger.error ("Sending mail -> critical error", e);
+                Loggy.internalServerError("Controller_Person:: person_passwordRecovery()::", e);
             }
 
             return GlobalResult.result_ok("Password was changed successfully");
@@ -852,7 +850,7 @@ public class Controller_Person extends Controller {
                             return GlobalResult.result_ok(Json.toJson(validation));
                         }
                     }catch (Exception e){
-                        e.printStackTrace();
+                        Loggy.internalServerError("Controller_Person:: person_validateProperty()::", e);
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";
                     }
@@ -897,20 +895,22 @@ public class Controller_Person extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result person_changeLoginProperty(){
 
-        // Získání JSON
-        final Form<Swagger_Person_ChangeProperty> form = Form.form(Swagger_Person_ChangeProperty.class).bindFromRequest();
-        if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-        Swagger_Person_ChangeProperty help = form.get();
-
-        if(Model_ChangePropertyToken.find.where().eq("person.id", Controller_Security.getPerson().id).findUnique() != null)
-            return GlobalResult.result_BadRequest("You can request only one change at this time.");
-
-        // Proměnné mailu
-        String subject;
-        String text;
-        String link;
-
         try {
+
+            // Získání JSON
+            final Form<Swagger_Person_ChangeProperty> form = Form.form(Swagger_Person_ChangeProperty.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Person_ChangeProperty help = form.get();
+
+            if(Model_ChangePropertyToken.find.where().eq("person.id", Controller_Security.getPerson().id).findUnique() != null)
+                return GlobalResult.result_BadRequest("You can request only one change at this time.");
+
+            // Proměnné mailu
+            String subject;
+            String text;
+            String link;
+
+
 
             switch (help.property){
 
@@ -967,8 +967,7 @@ public class Controller_Person extends Controller {
                         .send(Controller_Security.getPerson().mail, subject);
 
             } catch (Exception e) {
-                logger.error ("Sending mail -> critical error", e);
-                e.printStackTrace();
+                Loggy.internalServerError("Controller_Person:: person_changeLoginProperty()::", e);
             }
 
             return GlobalResult.result_ok("Change was requested. You must authorize the change in next 4 hours via your email. Authorization email was sent.");
@@ -1024,8 +1023,7 @@ public class Controller_Person extends Controller {
                                 .send(validationToken.personEmail, "Email Verification");
 
                     } catch (Exception e) {
-                        logger.error("Sending mail -> critical error", e);
-                        e.printStackTrace();
+                        Loggy.internalServerError("Controller_Person:: person_authorizePropertyChange()::", e);
                     }
                     break;
                 }
@@ -1084,7 +1082,7 @@ public class Controller_Person extends Controller {
 
 
 
-            if(help.file.equals("") || help.file == null ){
+            if(help.file == null || help.file.equals("")){
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
                 person.azure_picture_link = "";
@@ -1132,7 +1130,6 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok("Picture successfully uploaded");
         }catch (Exception e){
-            e.printStackTrace();
             return Loggy.result_internalServerError(e, request());
         }
     }

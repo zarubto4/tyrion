@@ -566,7 +566,7 @@
         function newProducer(){
           model_data = $("#newProducerForm").serializeObject();
           $.ajax({
-            url: '@routes.Controller_Board.new_Producer()',
+            url: '@routes.Controller_Board.producer_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -598,7 +598,7 @@
           model_data = $("#editProducer").serializeObject();
 
           $.ajax({
-            url: '@routes.Controller_Board.edit_Producer("")' + id ,
+            url: '@routes.Controller_Board.producer_update("")' + id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -630,7 +630,7 @@
         function deleteProducer(id){
 
           $.ajax({
-            url: '@routes.Controller_Board.delete_Producer("")' + id ,
+            url: '@routes.Controller_Board.producer_delete("")' + id ,
             type: 'DELETE',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken"),

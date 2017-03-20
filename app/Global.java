@@ -5,6 +5,7 @@ import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.cache.Server_Cache;
+import utilities.loggy.Loggy;
 import utilities.request_counter.RequestCounter;
 import utilities.scheduler.CustomScheduler;
 
@@ -14,67 +15,68 @@ import java.util.Date;
 
 public class Global extends GlobalSettings {
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     @Override
     public void onStart(Application app) {
        try {
 
+           logger.warn("Global:: onStart: Starting the server on {}", new Date());
+
            //1
-           logger.warn("Setting global values");
-           Server.set_Server_address();
+           logger.warn("Global:: onStart: Setting global values");
+           Server.setServerValues();
 
            //2
-           logger.warn("Setting system Permission");
+           logger.warn("Global:: onStart: Setting system Permission");
            Server.setPermission();
 
            //3
-           logger.warn("Setting logback configuration");
-           Server.set_Logback();
+           logger.warn("Global:: onStart: Setting logback configuration");
+           Server.setLogback();
 
            //4
-           logger.warn("Setting Directory for Files");
+           logger.warn("Global:: onStart: Setting Directory for Files");
            Server.setDirectory();
 
            //5
-           logger.warn("Starting threads");
+           logger.warn("Global:: onStart: Starting threads");
            Server.startThreads();
 
            //6
-           logger.warn("Starting all scheduler threads");
-           Server.startScheduling_procedures();
+           logger.warn("Global:: onStart: Starting all scheduler threads");
+           Server.startSchedulingProcedures();
 
            //7
-           logger.warn("Initializing the cache layer");
-           Server.init_cache();
+           logger.warn("Global:: onStart: Initializing the cache layer");
+           Server.initCache();
 
-           logger.warn("Creating Administrator");
-           Server.set_Developer_objects();
-    //****************************************************************************************************************************
+           logger.warn("Global:: onStart: Creating Administrator");
+           Server.setAdministrator();
 
        }catch (Exception e){
-          logger.error( "Server Start Exception - Global Settings",e);
+           Loggy.internalServerError("Global:: onStart:",e);
        }
     }
 
     @Override
     public void onStop(Application app){
 
-        logger.warn("Restarting Server - Time: " + new Date());
+        logger.warn("Global:: onStop: Shutting down the server on {}", new Date());
 
-        logger.warn("Disconnecting all Blocko Servers");
+        logger.warn("Global:: onStop: Disconnecting all Blocko Servers");
         Controller_WebSocket.disconnect_all_Blocko_Servers();
 
-        logger.warn("Disconnecting all Compilation Servers");
+        logger.warn("Global:: onStop: Disconnecting all Compilation Servers");
         Controller_WebSocket.disconnect_all_Compilation_Servers();
 
-        logger.warn("Closing cache layer");
+        logger.warn("Global:: onStop: Closing cache layer");
         Server_Cache.stopCache();
 
         if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")){
             try {
 
-                logger.warn("You have developer version - System removes CRON task from your RAM");
+                logger.warn("Global:: onStop: You have developer version - System removes CRON task from your RAM");
                 CustomScheduler.stopScheduler();
 
             } catch (Exception e) {
