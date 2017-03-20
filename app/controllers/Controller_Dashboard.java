@@ -111,11 +111,11 @@ public class Controller_Dashboard extends Controller {
                         controllers.routes.javascript.Controller_Board.processor_update(),
                         controllers.routes.javascript.Controller_Board.processor_delete(),
 
-                        controllers.routes.javascript.Controller_Board.new_Producer(),
-                        controllers.routes.javascript.Controller_Board.edit_Producer(),
-                        controllers.routes.javascript.Controller_Board.get_Producers(),
-                        controllers.routes.javascript.Controller_Board.get_Producer(),
-                        controllers.routes.javascript.Controller_Board.delete_Producer(),
+                        controllers.routes.javascript.Controller_Board.producer_create(),
+                        controllers.routes.javascript.Controller_Board.producer_update(),
+                        controllers.routes.javascript.Controller_Board.producer_getAll(),
+                        controllers.routes.javascript.Controller_Board.producer_get(),
+                        controllers.routes.javascript.Controller_Board.producer_delete(),
 
                         controllers.routes.javascript.Controller_Blocko.ping_instance()
                 )

@@ -7,76 +7,76 @@ import models.Model_Invitation;
 import models.Model_Person;
 import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
+import utilities.loggy.Loggy;
 import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-public class Notification_Handler {
+public class NotificationHandler {
 
-    protected Notification_Handler() {/* Exists only to defeat instantiation.*/}
+    protected NotificationHandler() {/* Exists only to defeat instantiation.*/}
 
     // Logger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public static List<Model_Notification> notifications = new ArrayList<>();
 
-    public static void start_notification_thread(){
-        logger.debug("Notification Handler will be started");
+    public static void startNotificationThread(){
+        logger.info("NotificationHandler:: startNotificationThread: starting");
         if(!send_notification_thread.isAlive()) send_notification_thread.start();
     }
 
-    public static void add_to_queue(Model_Notification notification){
+    public static void addToQueue(Model_Notification notification){
 
-        logger.debug("Notification - new incoming procedure");
+        logger.info("NotificationHandler:: addToQueue: adding notification to queue");
 
         notifications.add(notification);
 
         if(send_notification_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.debug("Thread is sleeping - wait for interrupt!");
+            logger.debug("NotificationHandler:: addToQueue: thread is sleeping, waiting for interruption!");
             send_notification_thread.interrupt();
         }
     }
 
-    static Thread send_notification_thread = new Thread() {
+    private static Thread send_notification_thread = new Thread() {
 
         @Override
         public void run() {
 
 
-            logger.info("Independent Thread in Notification Handler now working") ;
+            logger.info("NotificationHandler:: send_notification_thread: concurrent thread started on {}", new Date()) ;
 
             while(true){
                 try{
 
                     if(!notifications.isEmpty()) {
 
-                        logger.debug("Notification Handler Thread is running. Tasks to solve: " + notifications.size() );
+                        logger.debug("NotificationHandler:: send_notification_thread: sending {} notifications ", notifications.size());
 
                         Model_Notification notification = notifications.get(0);
 
-                        new Notification_Handler().send_notification( notification , notification.receivers );
+                        new NotificationHandler().sendNotification( notification , notification.receivers );
                         notifications.remove( notification );
 
-                    }
+                    } else {
 
-                    else{
-                        logger.debug("Notification Handler Thread has no other tasks. Going to sleep!");
+                        logger.debug("NotificationHandler:: send_notification_thread: no notifications, thread is going to sleep");
                         sleep(500000000);
                     }
-
-
-
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    logger.error("Notification Handler Error", e);
+                    Loggy.internalServerError("NotificationHandler:: send_notification_thread:", e);
                 }
             }
         }
     };
 
-    public void send_notification(Model_Notification notification, List<Model_Person> receivers){
+    private void sendNotification(Model_Notification notification, List<Model_Person> receivers){
+
+        logger.info("NotificationHandler:: sendNotification: sending notification");
 
         for (Model_Person person : receivers) {
 
@@ -94,7 +94,7 @@ public class Notification_Handler {
                         invitation.update();
                     }
                 }catch (Exception e){
-                    logger.error("Notification Handler Error: Cannot find project invitation about which is this notification.");
+                    Loggy.internalServerError("NotificationHandler:: sendNotification:", e);
                 }
             }
 

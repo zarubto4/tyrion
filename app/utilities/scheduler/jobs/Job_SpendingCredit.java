@@ -1,4 +1,4 @@
-package utilities.scheduler.schedules_activities;
+package utilities.scheduler.jobs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import models.Model_Product;
@@ -24,95 +24,91 @@ import utilities.goPay.helps_objects.GoPay_Recurrence;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class Spending_Credit_Every_Day implements Job {
+public class Job_SpendingCredit implements Job {
 
+    public Job_SpendingCredit(){}
 
-    public Spending_Credit_Every_Day(){ /** do nothing */ }
-    static play.Logger.ALogger logger = play.Logger.of("CRON-Spending_Credit_Every_Day");
-
+    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Spending_Credit_Every_Day:: Starting with CRON procedure");
-        logger.info("Spending_Credit_Every_Day:: Time:" + new Date().toString() );
+        logger.info("Job_SpendingCredit:: execute: Executing Job_SpendingCredit");
 
-        filter_do();
-
-
+        if(!spend_credit_thread.isAlive()) spend_credit_thread.start();
     }
 
+    private Thread spend_credit_thread = new Thread(){
 
-    /**
-     * Filter slouží k hledání těch produktů, kde by mělo dojít ke stržení kreditu
-     * Kredit se strhává u všech produktů, starších než 16 hodin (Aby někdo před půlnocí nezaložil produkt a hned se mu nestrhla raketa) 
-     * 
-     */
-    public void filter_do(){
+        @Override
+        public void run() {
 
-        logger.info("Spending_Credit_Every_Day:: filter_do");
-        Calendar now = Calendar.getInstance();
-        Date time_16_hours_back = new Date(now.getTimeInMillis() - 16*60*60*1000);
+            logger.debug("Job_SpendingCredit:: spend_credit_thread: concurrent thread started on {}", new Date());
 
-        logger.info("Time: " + new Date().toString() );
+            Date created = new Date(new Date().getTime() - TimeUnit.HOURS.toMillis(16));
 
-        int total =  Model_Product.find.where().lt("date_of_create", time_16_hours_back)
+            int total =  Model_Product.find.where().lt("date_of_create", created)
+                    .isNotNull("extensions.price_in_usd")
+                    .findRowCount();
+
+            if (total != 0) {
+
+                int page_total = total / 25;
+
+                if (total % 25 > 0) page_total++;
+
+                for (int page = 0; page <= page_total - 1; page++) {
+
+                    logger.debug("Job_SpendingCredit:: spend_credit_thread: procedure for page {} from {}", (page + 1), page_total);
+
+                    /*
+                     * Filter slouží k hledání těch produktů, kde by mělo dojít ke stržení kreditu
+                     * Kredit se strhává u všech produktů, starších než 16 hodin (Aby někdo před půlnocí nezaložil produkt a hned se mu nestrhla raketa)
+                     *
+                     */
+                    List<Model_Product> products = Model_Product.find.where()
                             .isNotNull("extensions.price_in_usd")
-                            .findRowCount();
+                            .lt("date_of_create", created)
+                            .order("date_of_create")
+                            .findPagedList(page, 25)
+                            .getList();
 
-        if (total != 0) {
-
-            int page_total = total / 25;
-
-            if (total % 25 > 0) page_total++;
-
-            for (int page = 0; page <= page_total - 1; page++) {
-
-                logger.info("Spending_Credit_Every_Day:: procedure for page " + (page + 1) + " from " + page_total);
-
-                List<Model_Product> products = Model_Product.find.where()
-                        .isNotNull("extensions.price_in_usd")
-                        .lt("date_of_create", time_16_hours_back)
-                        .order("date_of_create")
-                        .findPagedList(page, 25)
-                        .getList();
-
-
-                for (Model_Product product : products) {
-                    this.spending_credit(product);
+                    products.forEach(Job_SpendingCredit::spending_credit);
                 }
-
             }
+
+            logger.debug("Job_SpendingCredit:: spend_credit_thread: thread stopped on {}", new Date());
         }
-    }
+    };
 
     /**
      * Vezmou se všechny připojené Extensions sečte se jejich cena a odečte se z účtu. Pak se IFem porovná co sá má dít dál.
      */
-    public void spending_credit(Model_Product product){
+    private static void spending_credit(Model_Product product){
 
-        logger.info("Spending_Credit_Every_Day:: Product ID: " + product.id );
+        logger.info("Job_SpendingCredit:: spending_credit: Product ID: ", product.id );
         double total_spending = 0.0;
 
         for(Model_GeneralTariffExtensions extension : product.extensions){
                 total_spending += extension.price_in_usd;
         }
 
-        logger.debug("Spending_Credit_Every_Day:: Product ID: " +product.id + " total spending: " + total_spending );
-        logger.debug("Spending_Credit_Every_Day:: Product ID: " +product.id + " state before: " + product.remaining_credit );
+        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: {} total spending: {}", product.id, total_spending);
+        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: " + product.id + " state before: " + product.remaining_credit );
         product.remaining_credit -= total_spending;
         product.update();
 
-        logger.debug("Spending_Credit_Every_Day:: Product ID: " +product.id + " actual state: " + product.remaining_credit );
+        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: " + product.id + " actual state: " + product.remaining_credit );
 
 
         // Režim bankovního převodu - vše musí být ve výrazném přehstihnu
         if(product.method == Enum_Payment_method.bank_transfer) {
 
-            logger.debug("Spending_Credit_Every_Day:: Product ID:: " +product.id + " bank transfer");
+            logger.debug("Job_SpendingCredit:: spending_credit: Product ID:: " +product.id + " bank transfer");
 
             if(product.remaining_credit < 0 && ((-product.remaining_credit)*20 > total_spending) ){
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: bank transfer::" +product.id + " The account is in the minus 20 times the average spending");
+                logger.warn("Job_SpendingCredit:: spending_credit: Product ID:: bank transfer::" +product.id + " The account is in the minus 20 times the average spending");
                 // Pošlu notifikaci a Email
 
                 // Zablokuji účet
@@ -120,7 +116,7 @@ public class Spending_Credit_Every_Day implements Job {
             }
 
             if(product.remaining_credit < 0){
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: bank transfer:: " +product.id + " The account is in the minus");
+                logger.warn("Job_SpendingCredit:: spending_credit: Product ID:: bank transfer:: " +product.id + " The account is in the minus");
                 // Pošlu notifikaci a Email
 
                 return;
@@ -340,9 +336,4 @@ public class Spending_Credit_Every_Day implements Job {
 
         }
     }
-
-
-
-
-
 }

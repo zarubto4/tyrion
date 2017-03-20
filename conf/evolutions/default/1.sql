@@ -3,19 +3,6 @@
 
 # --- !Ups
 
-create table hash_tag (
-  post_hash_tag_id          varchar(255) not null,
-  constraint pk_hash_tag primary key (post_hash_tag_id))
-;
-
-create table linked_post (
-  link_id                   varchar(255) not null,
-  author_id                 varchar(255),
-  answer_id                 varchar(255),
-  question_id               varchar(255),
-  constraint pk_linked_post primary key (link_id))
-;
-
 create table model_actualization_procedure (
   id                        varchar(255) not null,
   state                     varchar(19),
@@ -665,47 +652,6 @@ create table model_version_object (
   constraint pk_model_version_object primary key (id))
 ;
 
-create table post (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  likes                     integer,
-  date_of_create            timestamp,
-  deleted                   boolean,
-  updated                   boolean,
-  views                     integer,
-  text_of_post              TEXT,
-  post_parent_comment_id    varchar(255),
-  post_parent_answer_id     varchar(255),
-  type_id                   varchar(255),
-  author_id                 varchar(255),
-  constraint pk_post primary key (id))
-;
-
-create table property_of_post (
-  property_of_post_id       varchar(255) not null,
-  constraint pk_property_of_post primary key (property_of_post_id))
-;
-
-create table type_of_confirms (
-  id                        varchar(255) not null,
-  type                      varchar(255),
-  color                     varchar(255),
-  size                      integer,
-  constraint pk_type_of_confirms primary key (id))
-;
-
-create table type_of_post (
-  id                        varchar(255) not null,
-  type                      varchar(255),
-  constraint pk_type_of_post primary key (id))
-;
-
-
-create table hash_tag_post (
-  hash_tag_post_hash_tag_id      varchar(255) not null,
-  post_id                        varchar(255) not null,
-  constraint pk_hash_tag_post primary key (hash_tag_post_hash_tag_id, post_id))
-;
 
 create table GeneralTariffExt_model_product (
   GeneralTariffExt_id            varchar(255) not null,
@@ -729,12 +675,6 @@ create table m_project_program_snapshots (
   model_mproject_program_snap_shot_id varchar(40) not null,
   model_version_object_id        varchar(255) not null,
   constraint pk_m_project_program_snapshots primary key (model_mproject_program_snap_shot_id, model_version_object_id))
-;
-
-create table model_person_post (
-  model_person_id                varchar(255) not null,
-  post_id                        varchar(255) not null,
-  constraint pk_model_person_post primary key (model_person_id, post_id))
 ;
 
 create table model_person_model_security_role (
@@ -766,208 +706,170 @@ create table model_version_object_model_bprog (
   model_bprogram_hw_group_id     varchar(40) not null,
   constraint pk_model_version_object_model_bprog primary key (model_version_object_id, model_bprogram_hw_group_id))
 ;
-
-create table property_of_post_post (
-  property_of_post_property_of_post_id varchar(255) not null,
-  post_id                        varchar(255) not null,
-  constraint pk_property_of_post_post primary key (property_of_post_property_of_post_id, post_id))
-;
-
-create table type_of_confirms_post (
-  type_of_confirms_id            varchar(255) not null,
-  post_id                        varchar(255) not null,
-  constraint pk_type_of_confirms_post primary key (type_of_confirms_id, post_id))
-;
-create sequence linked_post_seq;
-
 create sequence model_invoice_item_seq;
 
 create sequence model_payment_details_seq;
 
-create sequence post_seq;
-
-create sequence type_of_confirms_seq;
-
-create sequence type_of_post_seq;
-
-alter table linked_post add constraint fk_linked_post_author_1 foreign key (author_id) references model_person (id);
-create index ix_linked_post_author_1 on linked_post (author_id);
-alter table linked_post add constraint fk_linked_post_answer_2 foreign key (answer_id) references post (id);
-create index ix_linked_post_answer_2 on linked_post (answer_id);
-alter table linked_post add constraint fk_linked_post_question_3 foreign key (question_id) references post (id);
-create index ix_linked_post_question_3 on linked_post (question_id);
-alter table model_actualization_procedure add constraint fk_model_actualization_procedu_4 foreign key (homer_instance_record_id) references model_homer_instance_record (id);
-create index ix_model_actualization_procedu_4 on model_actualization_procedure (homer_instance_record_id);
-alter table model_bpair add constraint fk_model_bpair_c_program_versi_5 foreign key (c_program_version_id) references model_version_object (id);
-create index ix_model_bpair_c_program_versi_5 on model_bpair (c_program_version_id);
-alter table model_bpair add constraint fk_model_bpair_board_6 foreign key (board_id) references model_board (id);
-create index ix_model_bpair_board_6 on model_bpair (board_id);
-alter table model_bpair add constraint fk_model_bpair_device_board_pa_7 foreign key (device_board_pair_id) references model_bprogram_hw_group (id);
-create index ix_model_bpair_device_board_pa_7 on model_bpair (device_board_pair_id);
-alter table model_bpair add constraint fk_model_bpair_main_board_pair_8 foreign key (main_board_pair_id) references model_bprogram_hw_group (id);
-create index ix_model_bpair_main_board_pair_8 on model_bpair (main_board_pair_id);
-alter table model_bprogram add constraint fk_model_bprogram_instance_9 foreign key (instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-create index ix_model_bprogram_instance_9 on model_bprogram (instance_blocko_instance_name);
-alter table model_bprogram add constraint fk_model_bprogram_project_10 foreign key (project_id) references model_project (id);
-create index ix_model_bprogram_project_10 on model_bprogram (project_id);
-alter table model_blocko_block add constraint fk_model_blocko_block_author_11 foreign key (author_id) references model_person (id);
-create index ix_model_blocko_block_author_11 on model_blocko_block (author_id);
-alter table model_blocko_block add constraint fk_model_blocko_block_type_of_12 foreign key (type_of_block_id) references model_type_of_block (id);
-create index ix_model_blocko_block_type_of_12 on model_blocko_block (type_of_block_id);
-alter table model_blocko_block add constraint fk_model_blocko_block_produce_13 foreign key (producer_id) references model_producer (id);
-create index ix_model_blocko_block_produce_13 on model_blocko_block (producer_id);
-alter table model_blocko_block_version add constraint fk_model_blocko_block_version_14 foreign key (author_id) references model_person (id);
-create index ix_model_blocko_block_version_14 on model_blocko_block_version (author_id);
-alter table model_blocko_block_version add constraint fk_model_blocko_block_version_15 foreign key (blocko_block_id) references model_blocko_block (id);
-create index ix_model_blocko_block_version_15 on model_blocko_block_version (blocko_block_id);
-alter table model_board add constraint fk_model_board_type_of_board_16 foreign key (type_of_board_id) references model_type_of_board (id);
-create index ix_model_board_type_of_board_16 on model_board (type_of_board_id);
-alter table model_board add constraint fk_model_board_project_17 foreign key (project_id) references model_project (id);
-create index ix_model_board_project_17 on model_board (project_id);
-alter table model_board add constraint fk_model_board_actual_c_progr_18 foreign key (actual_c_program_version_id) references model_version_object (id);
-create index ix_model_board_actual_c_progr_18 on model_board (actual_c_program_version_id);
-alter table model_board add constraint fk_model_board_actual_backup__19 foreign key (actual_backup_c_program_version_id) references model_version_object (id);
-create index ix_model_board_actual_backup__19 on model_board (actual_backup_c_program_version_id);
-alter table model_board add constraint fk_model_board_actual_boot_lo_20 foreign key (actual_boot_loader_id) references model_boot_loader (id);
-create index ix_model_board_actual_boot_lo_20 on model_board (actual_boot_loader_id);
-alter table model_board add constraint fk_model_board_virtual_instan_21 foreign key (virtual_instance_under_project_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-create index ix_model_board_virtual_instan_21 on model_board (virtual_instance_under_project_blocko_instance_name);
-alter table model_board add constraint fk_model_board_connected_serv_22 foreign key (connected_server_unique_identificator) references model_homer_server (unique_identificator);
-create index ix_model_board_connected_serv_22 on model_board (connected_server_unique_identificator);
-alter table model_boot_loader add constraint fk_model_boot_loader_type_of__23 foreign key (type_of_board_id) references model_type_of_board (id);
-create index ix_model_boot_loader_type_of__23 on model_boot_loader (type_of_board_id);
-alter table model_boot_loader add constraint fk_model_boot_loader_main_typ_24 foreign key (main_type_of_board_id) references model_type_of_board (id);
-create index ix_model_boot_loader_main_typ_24 on model_boot_loader (main_type_of_board_id);
-alter table model_ccompilation add constraint fk_model_ccompilation_version_25 foreign key (c_compilation_version) references model_version_object (id);
-create index ix_model_ccompilation_version_25 on model_ccompilation (c_compilation_version);
-alter table model_ccompilation add constraint fk_model_ccompilation_bin_com_26 foreign key (bin_compilation_file_id) references model_file_record (id);
-create index ix_model_ccompilation_bin_com_26 on model_ccompilation (bin_compilation_file_id);
-alter table model_cprogram add constraint fk_model_cprogram_project_27 foreign key (project_id) references model_project (id);
-create index ix_model_cprogram_project_27 on model_cprogram (project_id);
-alter table model_cprogram add constraint fk_model_cprogram_type_of_boa_28 foreign key (type_of_board_id) references model_type_of_board (id);
-create index ix_model_cprogram_type_of_boa_28 on model_cprogram (type_of_board_id);
-alter table model_cprogram add constraint fk_model_cprogram_type_of_boa_29 foreign key (type_of_board_default_id) references model_type_of_board (id);
-create index ix_model_cprogram_type_of_boa_29 on model_cprogram (type_of_board_default_id);
-alter table model_cprogram add constraint fk_model_cprogram_example_lib_30 foreign key (example_library_id) references model_version_object (id);
-create index ix_model_cprogram_example_lib_30 on model_cprogram (example_library_id);
-alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_31 foreign key (actualization_procedure_id) references model_actualization_procedure (id);
-create index ix_model_cprogram_update_plan_31 on model_cprogram_update_plan (actualization_procedure_id);
-alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_32 foreign key (board_id) references model_board (id);
-create index ix_model_cprogram_update_plan_32 on model_cprogram_update_plan (board_id);
-alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_33 foreign key (c_program_version_for_update_id) references model_version_object (id);
-create index ix_model_cprogram_update_plan_33 on model_cprogram_update_plan (c_program_version_for_update_id);
-alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_34 foreign key (bootloader_id) references model_boot_loader (id);
-create index ix_model_cprogram_update_plan_34 on model_cprogram_update_plan (bootloader_id);
-alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_35 foreign key (binary_file_id) references model_file_record (id);
-create index ix_model_cprogram_update_plan_35 on model_cprogram_update_plan (binary_file_id);
-alter table model_change_property_token add constraint fk_model_change_property_toke_36 foreign key (person_id) references model_person (id);
-create index ix_model_change_property_toke_36 on model_change_property_token (person_id);
-alter table model_file_record add constraint fk_model_file_record_boot_loa_37 foreign key (boot_loader_id) references model_boot_loader (id);
-create index ix_model_file_record_boot_loa_37 on model_file_record (boot_loader_id);
-alter table model_file_record add constraint fk_model_file_record_version__38 foreign key (version_object_id) references model_version_object (id);
-create index ix_model_file_record_version__38 on model_file_record (version_object_id);
-alter table model_floating_person_token add constraint fk_model_floating_person_toke_39 foreign key (person_id) references model_person (id);
-create index ix_model_floating_person_toke_39 on model_floating_person_token (person_id);
-alter table GeneralTariffExt add constraint fk_GeneralTariffExt_general_t_40 foreign key (general_tariff_included_id) references model_general_tariff (id);
-create index ix_GeneralTariffExt_general_t_40 on GeneralTariffExt (general_tariff_included_id);
-alter table GeneralTariffExt add constraint fk_GeneralTariffExt_general_t_41 foreign key (general_tariff_optional_id) references model_general_tariff (id);
-create index ix_GeneralTariffExt_general_t_41 on GeneralTariffExt (general_tariff_optional_id);
-alter table model_general_tariff_label add constraint fk_model_general_tariff_label_42 foreign key (general_tariff_id) references model_general_tariff (id);
-create index ix_model_general_tariff_label_42 on model_general_tariff_label (general_tariff_id);
-alter table model_general_tariff_label add constraint fk_model_general_tariff_label_43 foreign key (extensions_id) references GeneralTariffExt (id);
-create index ix_model_general_tariff_label_43 on model_general_tariff_label (extensions_id);
-alter table model_grid_terminal add constraint fk_model_grid_terminal_person_44 foreign key (person_id) references model_person (id);
-create index ix_model_grid_terminal_person_44 on model_grid_terminal (person_id);
-alter table model_grid_widget add constraint fk_model_grid_widget_author_45 foreign key (author_id) references model_person (id);
-create index ix_model_grid_widget_author_45 on model_grid_widget (author_id);
-alter table model_grid_widget add constraint fk_model_grid_widget_type_of__46 foreign key (type_of_widget_id) references model_type_of_widget (id);
-create index ix_model_grid_widget_type_of__46 on model_grid_widget (type_of_widget_id);
-alter table model_grid_widget add constraint fk_model_grid_widget_producer_47 foreign key (producer_id) references model_producer (id);
-create index ix_model_grid_widget_producer_47 on model_grid_widget (producer_id);
-alter table model_grid_widget_version add constraint fk_model_grid_widget_version__48 foreign key (author_id) references model_person (id);
-create index ix_model_grid_widget_version__48 on model_grid_widget_version (author_id);
-alter table model_grid_widget_version add constraint fk_model_grid_widget_version__49 foreign key (grid_widget_id) references model_grid_widget (id);
-create index ix_model_grid_widget_version__49 on model_grid_widget_version (grid_widget_id);
-alter table model_homer_instance add constraint fk_model_homer_instance_cloud_50 foreign key (cloud_homer_server_unique_identificator) references model_homer_server (unique_identificator);
-create index ix_model_homer_instance_cloud_50 on model_homer_instance (cloud_homer_server_unique_identificator);
-alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_51 foreign key (main_instance_history_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-create index ix_model_homer_instance_recor_51 on model_homer_instance_record (main_instance_history_blocko_instance_name);
-alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_52 foreign key (version_object_id) references model_version_object (id);
-create index ix_model_homer_instance_recor_52 on model_homer_instance_record (version_object_id);
-alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_53 foreign key (actual_running_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-create index ix_model_homer_instance_recor_53 on model_homer_instance_record (actual_running_instance_blocko_instance_name);
-alter table model_invitation add constraint fk_model_invitation_owner_54 foreign key (owner_id) references model_person (id);
-create index ix_model_invitation_owner_54 on model_invitation (owner_id);
-alter table model_invitation add constraint fk_model_invitation_project_55 foreign key (project_id) references model_project (id);
-create index ix_model_invitation_project_55 on model_invitation (project_id);
-alter table model_invoice add constraint fk_model_invoice_product_56 foreign key (product_id) references model_product (id);
-create index ix_model_invoice_product_56 on model_invoice (product_id);
-alter table model_invoice_item add constraint fk_model_invoice_item_invoice_57 foreign key (invoice_id) references model_invoice (id);
-create index ix_model_invoice_item_invoice_57 on model_invoice_item (invoice_id);
-alter table model_log add constraint fk_model_log_file_58 foreign key (file_id) references model_file_record (id);
-create index ix_model_log_file_58 on model_log (file_id);
-alter table model_mprogram add constraint fk_model_mprogram_m_project_59 foreign key (m_project_id) references model_mproject (id);
-create index ix_model_mprogram_m_project_59 on model_mprogram (m_project_id);
-alter table model_mproject add constraint fk_model_mproject_project_60 foreign key (project_id) references model_project (id);
-create index ix_model_mproject_project_60 on model_mproject (project_id);
-alter table model_mproject_program_snap_shot add constraint fk_model_mproject_program_sna_61 foreign key (m_project_id) references model_mproject (id);
-create index ix_model_mproject_program_sna_61 on model_mproject_program_snap_shot (m_project_id);
-alter table model_notification add constraint fk_model_notification_person_62 foreign key (person_id) references model_person (id);
-create index ix_model_notification_person_62 on model_notification (person_id);
-alter table model_password_recovery_token add constraint fk_model_password_recovery_to_63 foreign key (person_id) references model_person (id);
-create index ix_model_password_recovery_to_63 on model_password_recovery_token (person_id);
-alter table model_payment_details add constraint fk_model_payment_details_pers_64 foreign key (person_id) references model_person (id);
-create index ix_model_payment_details_pers_64 on model_payment_details (person_id);
-alter table model_payment_details add constraint fk_model_payment_details_prod_65 foreign key (productidpaymentdetails) references model_product (id);
-create index ix_model_payment_details_prod_65 on model_payment_details (productidpaymentdetails);
-alter table model_person add constraint fk_model_person_picture_66 foreign key (picture_id) references model_file_record (id);
-create index ix_model_person_picture_66 on model_person (picture_id);
-alter table model_product add constraint fk_model_product_general_tari_67 foreign key (general_tariff_id) references model_general_tariff (id);
-create index ix_model_product_general_tari_67 on model_product (general_tariff_id);
-alter table model_project add constraint fk_model_project_private_inst_68 foreign key (private_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-create index ix_model_project_private_inst_68 on model_project (private_instance_blocko_instance_name);
-alter table model_project add constraint fk_model_project_product_69 foreign key (product_id) references model_product (id);
-create index ix_model_project_product_69 on model_project (product_id);
-alter table model_project_participant add constraint fk_model_project_participant__70 foreign key (project_id) references model_project (id);
-create index ix_model_project_participant__70 on model_project_participant (project_id);
-alter table model_project_participant add constraint fk_model_project_participant__71 foreign key (person_id) references model_person (id);
-create index ix_model_project_participant__71 on model_project_participant (person_id);
-alter table model_type_of_block add constraint fk_model_type_of_block_projec_72 foreign key (project_id) references model_project (id);
-create index ix_model_type_of_block_projec_72 on model_type_of_block (project_id);
-alter table model_type_of_board add constraint fk_model_type_of_board_produc_73 foreign key (producer_id) references model_producer (id);
-create index ix_model_type_of_board_produc_73 on model_type_of_board (producer_id);
-alter table model_type_of_board add constraint fk_model_type_of_board_proces_74 foreign key (processor_id) references model_processor (id);
-create index ix_model_type_of_board_proces_74 on model_type_of_board (processor_id);
-alter table model_type_of_board add constraint fk_model_type_of_board_pictur_75 foreign key (picture_id) references model_file_record (id);
-create index ix_model_type_of_board_pictur_75 on model_type_of_board (picture_id);
-alter table model_type_of_widget add constraint fk_model_type_of_widget_proje_76 foreign key (project_id) references model_project (id);
-create index ix_model_type_of_widget_proje_76 on model_type_of_widget (project_id);
-alter table model_version_object add constraint fk_model_version_object_autho_77 foreign key (author_id) references model_person (id);
-create index ix_model_version_object_autho_77 on model_version_object (author_id);
-alter table model_version_object add constraint fk_model_version_object_libra_78 foreign key (library_id) references model_import_library (id);
-create index ix_model_version_object_libra_78 on model_version_object (library_id);
-alter table model_version_object add constraint fk_model_version_object_c_pro_79 foreign key (c_program_id) references model_cprogram (id);
-create index ix_model_version_object_c_pro_79 on model_version_object (c_program_id);
-alter table model_version_object add constraint fk_model_version_object_defau_80 foreign key (default_program_id) references model_cprogram (id);
-create index ix_model_version_object_defau_80 on model_version_object (default_program_id);
-alter table model_version_object add constraint fk_model_version_object_b_pro_81 foreign key (b_program_id) references model_bprogram (id);
-create index ix_model_version_object_b_pro_81 on model_version_object (b_program_id);
-alter table model_version_object add constraint fk_model_version_object_m_pro_82 foreign key (m_program_id) references model_mprogram (id);
-create index ix_model_version_object_m_pro_82 on model_version_object (m_program_id);
-alter table post add constraint fk_post_postParentComment_83 foreign key (post_parent_comment_id) references post (id);
-create index ix_post_postParentComment_83 on post (post_parent_comment_id);
-alter table post add constraint fk_post_postParentAnswer_84 foreign key (post_parent_answer_id) references post (id);
-create index ix_post_postParentAnswer_84 on post (post_parent_answer_id);
-alter table post add constraint fk_post_type_85 foreign key (type_id) references type_of_post (id);
-create index ix_post_type_85 on post (type_id);
-alter table post add constraint fk_post_author_86 foreign key (author_id) references model_person (id);
-create index ix_post_author_86 on post (author_id);
+alter table model_actualization_procedure add constraint fk_model_actualization_procedu_1 foreign key (homer_instance_record_id) references model_homer_instance_record (id);
+create index ix_model_actualization_procedu_1 on model_actualization_procedure (homer_instance_record_id);
+alter table model_bpair add constraint fk_model_bpair_c_program_versi_2 foreign key (c_program_version_id) references model_version_object (id);
+create index ix_model_bpair_c_program_versi_2 on model_bpair (c_program_version_id);
+alter table model_bpair add constraint fk_model_bpair_board_3 foreign key (board_id) references model_board (id);
+create index ix_model_bpair_board_3 on model_bpair (board_id);
+alter table model_bpair add constraint fk_model_bpair_device_board_pa_4 foreign key (device_board_pair_id) references model_bprogram_hw_group (id);
+create index ix_model_bpair_device_board_pa_4 on model_bpair (device_board_pair_id);
+alter table model_bpair add constraint fk_model_bpair_main_board_pair_5 foreign key (main_board_pair_id) references model_bprogram_hw_group (id);
+create index ix_model_bpair_main_board_pair_5 on model_bpair (main_board_pair_id);
+alter table model_bprogram add constraint fk_model_bprogram_instance_6 foreign key (instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+create index ix_model_bprogram_instance_6 on model_bprogram (instance_blocko_instance_name);
+alter table model_bprogram add constraint fk_model_bprogram_project_7 foreign key (project_id) references model_project (id);
+create index ix_model_bprogram_project_7 on model_bprogram (project_id);
+alter table model_blocko_block add constraint fk_model_blocko_block_author_8 foreign key (author_id) references model_person (id);
+create index ix_model_blocko_block_author_8 on model_blocko_block (author_id);
+alter table model_blocko_block add constraint fk_model_blocko_block_type_of__9 foreign key (type_of_block_id) references model_type_of_block (id);
+create index ix_model_blocko_block_type_of__9 on model_blocko_block (type_of_block_id);
+alter table model_blocko_block add constraint fk_model_blocko_block_produce_10 foreign key (producer_id) references model_producer (id);
+create index ix_model_blocko_block_produce_10 on model_blocko_block (producer_id);
+alter table model_blocko_block_version add constraint fk_model_blocko_block_version_11 foreign key (author_id) references model_person (id);
+create index ix_model_blocko_block_version_11 on model_blocko_block_version (author_id);
+alter table model_blocko_block_version add constraint fk_model_blocko_block_version_12 foreign key (blocko_block_id) references model_blocko_block (id);
+create index ix_model_blocko_block_version_12 on model_blocko_block_version (blocko_block_id);
+alter table model_board add constraint fk_model_board_type_of_board_13 foreign key (type_of_board_id) references model_type_of_board (id);
+create index ix_model_board_type_of_board_13 on model_board (type_of_board_id);
+alter table model_board add constraint fk_model_board_project_14 foreign key (project_id) references model_project (id);
+create index ix_model_board_project_14 on model_board (project_id);
+alter table model_board add constraint fk_model_board_actual_c_progr_15 foreign key (actual_c_program_version_id) references model_version_object (id);
+create index ix_model_board_actual_c_progr_15 on model_board (actual_c_program_version_id);
+alter table model_board add constraint fk_model_board_actual_backup__16 foreign key (actual_backup_c_program_version_id) references model_version_object (id);
+create index ix_model_board_actual_backup__16 on model_board (actual_backup_c_program_version_id);
+alter table model_board add constraint fk_model_board_actual_boot_lo_17 foreign key (actual_boot_loader_id) references model_boot_loader (id);
+create index ix_model_board_actual_boot_lo_17 on model_board (actual_boot_loader_id);
+alter table model_board add constraint fk_model_board_virtual_instan_18 foreign key (virtual_instance_under_project_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+create index ix_model_board_virtual_instan_18 on model_board (virtual_instance_under_project_blocko_instance_name);
+alter table model_board add constraint fk_model_board_connected_serv_19 foreign key (connected_server_unique_identificator) references model_homer_server (unique_identificator);
+create index ix_model_board_connected_serv_19 on model_board (connected_server_unique_identificator);
+alter table model_boot_loader add constraint fk_model_boot_loader_type_of__20 foreign key (type_of_board_id) references model_type_of_board (id);
+create index ix_model_boot_loader_type_of__20 on model_boot_loader (type_of_board_id);
+alter table model_boot_loader add constraint fk_model_boot_loader_main_typ_21 foreign key (main_type_of_board_id) references model_type_of_board (id);
+create index ix_model_boot_loader_main_typ_21 on model_boot_loader (main_type_of_board_id);
+alter table model_ccompilation add constraint fk_model_ccompilation_version_22 foreign key (c_compilation_version) references model_version_object (id);
+create index ix_model_ccompilation_version_22 on model_ccompilation (c_compilation_version);
+alter table model_ccompilation add constraint fk_model_ccompilation_bin_com_23 foreign key (bin_compilation_file_id) references model_file_record (id);
+create index ix_model_ccompilation_bin_com_23 on model_ccompilation (bin_compilation_file_id);
+alter table model_cprogram add constraint fk_model_cprogram_project_24 foreign key (project_id) references model_project (id);
+create index ix_model_cprogram_project_24 on model_cprogram (project_id);
+alter table model_cprogram add constraint fk_model_cprogram_type_of_boa_25 foreign key (type_of_board_id) references model_type_of_board (id);
+create index ix_model_cprogram_type_of_boa_25 on model_cprogram (type_of_board_id);
+alter table model_cprogram add constraint fk_model_cprogram_type_of_boa_26 foreign key (type_of_board_default_id) references model_type_of_board (id);
+create index ix_model_cprogram_type_of_boa_26 on model_cprogram (type_of_board_default_id);
+alter table model_cprogram add constraint fk_model_cprogram_example_lib_27 foreign key (example_library_id) references model_version_object (id);
+create index ix_model_cprogram_example_lib_27 on model_cprogram (example_library_id);
+alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_28 foreign key (actualization_procedure_id) references model_actualization_procedure (id);
+create index ix_model_cprogram_update_plan_28 on model_cprogram_update_plan (actualization_procedure_id);
+alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_29 foreign key (board_id) references model_board (id);
+create index ix_model_cprogram_update_plan_29 on model_cprogram_update_plan (board_id);
+alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_30 foreign key (c_program_version_for_update_id) references model_version_object (id);
+create index ix_model_cprogram_update_plan_30 on model_cprogram_update_plan (c_program_version_for_update_id);
+alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_31 foreign key (bootloader_id) references model_boot_loader (id);
+create index ix_model_cprogram_update_plan_31 on model_cprogram_update_plan (bootloader_id);
+alter table model_cprogram_update_plan add constraint fk_model_cprogram_update_plan_32 foreign key (binary_file_id) references model_file_record (id);
+create index ix_model_cprogram_update_plan_32 on model_cprogram_update_plan (binary_file_id);
+alter table model_change_property_token add constraint fk_model_change_property_toke_33 foreign key (person_id) references model_person (id);
+create index ix_model_change_property_toke_33 on model_change_property_token (person_id);
+alter table model_file_record add constraint fk_model_file_record_boot_loa_34 foreign key (boot_loader_id) references model_boot_loader (id);
+create index ix_model_file_record_boot_loa_34 on model_file_record (boot_loader_id);
+alter table model_file_record add constraint fk_model_file_record_version__35 foreign key (version_object_id) references model_version_object (id);
+create index ix_model_file_record_version__35 on model_file_record (version_object_id);
+alter table model_floating_person_token add constraint fk_model_floating_person_toke_36 foreign key (person_id) references model_person (id);
+create index ix_model_floating_person_toke_36 on model_floating_person_token (person_id);
+alter table GeneralTariffExt add constraint fk_GeneralTariffExt_general_t_37 foreign key (general_tariff_included_id) references model_general_tariff (id);
+create index ix_GeneralTariffExt_general_t_37 on GeneralTariffExt (general_tariff_included_id);
+alter table GeneralTariffExt add constraint fk_GeneralTariffExt_general_t_38 foreign key (general_tariff_optional_id) references model_general_tariff (id);
+create index ix_GeneralTariffExt_general_t_38 on GeneralTariffExt (general_tariff_optional_id);
+alter table model_general_tariff_label add constraint fk_model_general_tariff_label_39 foreign key (general_tariff_id) references model_general_tariff (id);
+create index ix_model_general_tariff_label_39 on model_general_tariff_label (general_tariff_id);
+alter table model_general_tariff_label add constraint fk_model_general_tariff_label_40 foreign key (extensions_id) references GeneralTariffExt (id);
+create index ix_model_general_tariff_label_40 on model_general_tariff_label (extensions_id);
+alter table model_grid_terminal add constraint fk_model_grid_terminal_person_41 foreign key (person_id) references model_person (id);
+create index ix_model_grid_terminal_person_41 on model_grid_terminal (person_id);
+alter table model_grid_widget add constraint fk_model_grid_widget_author_42 foreign key (author_id) references model_person (id);
+create index ix_model_grid_widget_author_42 on model_grid_widget (author_id);
+alter table model_grid_widget add constraint fk_model_grid_widget_type_of__43 foreign key (type_of_widget_id) references model_type_of_widget (id);
+create index ix_model_grid_widget_type_of__43 on model_grid_widget (type_of_widget_id);
+alter table model_grid_widget add constraint fk_model_grid_widget_producer_44 foreign key (producer_id) references model_producer (id);
+create index ix_model_grid_widget_producer_44 on model_grid_widget (producer_id);
+alter table model_grid_widget_version add constraint fk_model_grid_widget_version__45 foreign key (author_id) references model_person (id);
+create index ix_model_grid_widget_version__45 on model_grid_widget_version (author_id);
+alter table model_grid_widget_version add constraint fk_model_grid_widget_version__46 foreign key (grid_widget_id) references model_grid_widget (id);
+create index ix_model_grid_widget_version__46 on model_grid_widget_version (grid_widget_id);
+alter table model_homer_instance add constraint fk_model_homer_instance_cloud_47 foreign key (cloud_homer_server_unique_identificator) references model_homer_server (unique_identificator);
+create index ix_model_homer_instance_cloud_47 on model_homer_instance (cloud_homer_server_unique_identificator);
+alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_48 foreign key (main_instance_history_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+create index ix_model_homer_instance_recor_48 on model_homer_instance_record (main_instance_history_blocko_instance_name);
+alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_49 foreign key (version_object_id) references model_version_object (id);
+create index ix_model_homer_instance_recor_49 on model_homer_instance_record (version_object_id);
+alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_50 foreign key (actual_running_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+create index ix_model_homer_instance_recor_50 on model_homer_instance_record (actual_running_instance_blocko_instance_name);
+alter table model_invitation add constraint fk_model_invitation_owner_51 foreign key (owner_id) references model_person (id);
+create index ix_model_invitation_owner_51 on model_invitation (owner_id);
+alter table model_invitation add constraint fk_model_invitation_project_52 foreign key (project_id) references model_project (id);
+create index ix_model_invitation_project_52 on model_invitation (project_id);
+alter table model_invoice add constraint fk_model_invoice_product_53 foreign key (product_id) references model_product (id);
+create index ix_model_invoice_product_53 on model_invoice (product_id);
+alter table model_invoice_item add constraint fk_model_invoice_item_invoice_54 foreign key (invoice_id) references model_invoice (id);
+create index ix_model_invoice_item_invoice_54 on model_invoice_item (invoice_id);
+alter table model_log add constraint fk_model_log_file_55 foreign key (file_id) references model_file_record (id);
+create index ix_model_log_file_55 on model_log (file_id);
+alter table model_mprogram add constraint fk_model_mprogram_m_project_56 foreign key (m_project_id) references model_mproject (id);
+create index ix_model_mprogram_m_project_56 on model_mprogram (m_project_id);
+alter table model_mproject add constraint fk_model_mproject_project_57 foreign key (project_id) references model_project (id);
+create index ix_model_mproject_project_57 on model_mproject (project_id);
+alter table model_mproject_program_snap_shot add constraint fk_model_mproject_program_sna_58 foreign key (m_project_id) references model_mproject (id);
+create index ix_model_mproject_program_sna_58 on model_mproject_program_snap_shot (m_project_id);
+alter table model_notification add constraint fk_model_notification_person_59 foreign key (person_id) references model_person (id);
+create index ix_model_notification_person_59 on model_notification (person_id);
+alter table model_password_recovery_token add constraint fk_model_password_recovery_to_60 foreign key (person_id) references model_person (id);
+create index ix_model_password_recovery_to_60 on model_password_recovery_token (person_id);
+alter table model_payment_details add constraint fk_model_payment_details_pers_61 foreign key (person_id) references model_person (id);
+create index ix_model_payment_details_pers_61 on model_payment_details (person_id);
+alter table model_payment_details add constraint fk_model_payment_details_prod_62 foreign key (productidpaymentdetails) references model_product (id);
+create index ix_model_payment_details_prod_62 on model_payment_details (productidpaymentdetails);
+alter table model_person add constraint fk_model_person_picture_63 foreign key (picture_id) references model_file_record (id);
+create index ix_model_person_picture_63 on model_person (picture_id);
+alter table model_product add constraint fk_model_product_general_tari_64 foreign key (general_tariff_id) references model_general_tariff (id);
+create index ix_model_product_general_tari_64 on model_product (general_tariff_id);
+alter table model_project add constraint fk_model_project_private_inst_65 foreign key (private_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+create index ix_model_project_private_inst_65 on model_project (private_instance_blocko_instance_name);
+alter table model_project add constraint fk_model_project_product_66 foreign key (product_id) references model_product (id);
+create index ix_model_project_product_66 on model_project (product_id);
+alter table model_project_participant add constraint fk_model_project_participant__67 foreign key (project_id) references model_project (id);
+create index ix_model_project_participant__67 on model_project_participant (project_id);
+alter table model_project_participant add constraint fk_model_project_participant__68 foreign key (person_id) references model_person (id);
+create index ix_model_project_participant__68 on model_project_participant (person_id);
+alter table model_type_of_block add constraint fk_model_type_of_block_projec_69 foreign key (project_id) references model_project (id);
+create index ix_model_type_of_block_projec_69 on model_type_of_block (project_id);
+alter table model_type_of_board add constraint fk_model_type_of_board_produc_70 foreign key (producer_id) references model_producer (id);
+create index ix_model_type_of_board_produc_70 on model_type_of_board (producer_id);
+alter table model_type_of_board add constraint fk_model_type_of_board_proces_71 foreign key (processor_id) references model_processor (id);
+create index ix_model_type_of_board_proces_71 on model_type_of_board (processor_id);
+alter table model_type_of_board add constraint fk_model_type_of_board_pictur_72 foreign key (picture_id) references model_file_record (id);
+create index ix_model_type_of_board_pictur_72 on model_type_of_board (picture_id);
+alter table model_type_of_widget add constraint fk_model_type_of_widget_proje_73 foreign key (project_id) references model_project (id);
+create index ix_model_type_of_widget_proje_73 on model_type_of_widget (project_id);
+alter table model_version_object add constraint fk_model_version_object_autho_74 foreign key (author_id) references model_person (id);
+create index ix_model_version_object_autho_74 on model_version_object (author_id);
+alter table model_version_object add constraint fk_model_version_object_libra_75 foreign key (library_id) references model_import_library (id);
+create index ix_model_version_object_libra_75 on model_version_object (library_id);
+alter table model_version_object add constraint fk_model_version_object_c_pro_76 foreign key (c_program_id) references model_cprogram (id);
+create index ix_model_version_object_c_pro_76 on model_version_object (c_program_id);
+alter table model_version_object add constraint fk_model_version_object_defau_77 foreign key (default_program_id) references model_cprogram (id);
+create index ix_model_version_object_defau_77 on model_version_object (default_program_id);
+alter table model_version_object add constraint fk_model_version_object_b_pro_78 foreign key (b_program_id) references model_bprogram (id);
+create index ix_model_version_object_b_pro_78 on model_version_object (b_program_id);
+alter table model_version_object add constraint fk_model_version_object_m_pro_79 foreign key (m_program_id) references model_mprogram (id);
+create index ix_model_version_object_m_pro_79 on model_version_object (m_program_id);
 
 
-
-alter table hash_tag_post add constraint fk_hash_tag_post_hash_tag_01 foreign key (hash_tag_post_hash_tag_id) references hash_tag (post_hash_tag_id);
-
-alter table hash_tag_post add constraint fk_hash_tag_post_post_02 foreign key (post_id) references post (id);
 
 alter table GeneralTariffExt_model_product add constraint fk_GeneralTariffExt_model_pro_01 foreign key (GeneralTariffExt_id) references GeneralTariffExt (id);
 
@@ -984,10 +886,6 @@ alter table b_program_version_snapshots add constraint fk_b_program_version_snap
 alter table m_project_program_snapshots add constraint fk_m_project_program_snapshot_01 foreign key (model_mproject_program_snap_shot_id) references model_mproject_program_snap_shot (id);
 
 alter table m_project_program_snapshots add constraint fk_m_project_program_snapshot_02 foreign key (model_version_object_id) references model_version_object (id);
-
-alter table model_person_post add constraint fk_model_person_post_model_pe_01 foreign key (model_person_id) references model_person (id);
-
-alter table model_person_post add constraint fk_model_person_post_post_02 foreign key (post_id) references post (id);
 
 alter table model_person_model_security_role add constraint fk_model_person_model_securit_01 foreign key (model_person_id) references model_person (id);
 
@@ -1009,21 +907,7 @@ alter table model_version_object_model_bprog add constraint fk_model_version_obj
 
 alter table model_version_object_model_bprog add constraint fk_model_version_object_model_02 foreign key (model_bprogram_hw_group_id) references model_bprogram_hw_group (id);
 
-alter table property_of_post_post add constraint fk_property_of_post_post_prop_01 foreign key (property_of_post_property_of_post_id) references property_of_post (property_of_post_id);
-
-alter table property_of_post_post add constraint fk_property_of_post_post_post_02 foreign key (post_id) references post (id);
-
-alter table type_of_confirms_post add constraint fk_type_of_confirms_post_type_01 foreign key (type_of_confirms_id) references type_of_confirms (id);
-
-alter table type_of_confirms_post add constraint fk_type_of_confirms_post_post_02 foreign key (post_id) references post (id);
-
 # --- !Downs
-
-drop table if exists hash_tag cascade;
-
-drop table if exists hash_tag_post cascade;
-
-drop table if exists linked_post cascade;
 
 drop table if exists model_actualization_procedure cascade;
 
@@ -1119,8 +1003,6 @@ drop table if exists model_security_role_model_permis cascade;
 
 drop table if exists model_person cascade;
 
-drop table if exists model_person_post cascade;
-
 drop table if exists model_person_model_security_role cascade;
 
 drop table if exists model_processor cascade;
@@ -1149,27 +1031,7 @@ drop table if exists model_version_object cascade;
 
 drop table if exists model_c_program_library_version cascade;
 
-drop table if exists post cascade;
-
-drop table if exists property_of_post_post cascade;
-
-drop table if exists type_of_confirms_post cascade;
-
-drop table if exists property_of_post cascade;
-
-drop table if exists type_of_confirms cascade;
-
-drop table if exists type_of_post cascade;
-
-drop sequence if exists linked_post_seq;
-
 drop sequence if exists model_invoice_item_seq;
 
 drop sequence if exists model_payment_details_seq;
-
-drop sequence if exists post_seq;
-
-drop sequence if exists type_of_confirms_seq;
-
-drop sequence if exists type_of_post_seq;
 

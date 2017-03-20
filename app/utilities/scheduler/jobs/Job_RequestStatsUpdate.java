@@ -1,31 +1,36 @@
-package utilities.scheduler.schedules_activities;
+package utilities.scheduler.jobs;
 
 import models.Model_RequestLog;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import utilities.loggy.Loggy;
 import utilities.request_counter.RequestCounter;
 
+import java.util.Date;
 import java.util.Map.Entry;
 
-public class Request_Stats_Update implements Job {
+public class Job_RequestStatsUpdate implements Job {
 
-    public Request_Stats_Update(){ /** do nothing */ }
+    public Job_RequestStatsUpdate(){}
 
     // Logger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
+
+        logger.info("Job_RequestStatsUpdate:: execute: Executing Job_RequestStatsUpdate");
+
         if(!stats_update_thread.isAlive()) stats_update_thread.start();
     }
 
-    Thread stats_update_thread = new Thread() {
+    private Thread stats_update_thread = new Thread() {
 
         @Override
         public void run() {
 
             try {
-                logger.info("Request_Stats_Update:: log_upload_thread:: started");
+                logger.debug("Job_RequestStatsUpdate:: stats_update_thread: concurrent thread started on {}", new Date());
 
                 if (!RequestCounter.requests.isEmpty()) {
 
@@ -51,15 +56,15 @@ public class Request_Stats_Update implements Job {
 
                     RequestCounter.requests.clear();
 
-                    logger.info("Request_Stats_Update:: log_upload_thread:: log successfully uploaded");
+                    logger.debug("Job_RequestStatsUpdate:: stats_update_thread: logs successfully updated");
                 } else {
-                    logger.info("Request_Stats_Update:: log_upload_thread:: no requests");
+                    logger.debug("Job_RequestStatsUpdate:: stats_update_thread: no requests");
                 }
             } catch (Exception e) {
-                logger.error("Request_Stats_Update:: log_upload_thread:: error in thread");
+                Loggy.internalServerError("Job_RequestStatsUpdate:: stats_update_thread:", e);
             }
 
-            logger.info("Request_Stats_Update:: log_upload_thread:: stopped");
+            logger.debug("Job_RequestStatsUpdate:: stats_update_thread: thread stopped on {}", new Date());
         }
     };
 }

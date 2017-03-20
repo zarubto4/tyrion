@@ -1,4 +1,4 @@
-package utilities.scheduler.schedules_activities;
+package utilities.scheduler.jobs;
 
 
 import models.Model_Person;
@@ -6,43 +6,46 @@ import models.Model_ValidationToken;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import utilities.loggy.Loggy;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class Unauthenticated_Person_Removal implements Job {
+public class Job_UnauthenticatedPersonRemoval implements Job {
 
-    public Unauthenticated_Person_Removal(){ /** do nothing */ }
+    public Job_UnauthenticatedPersonRemoval(){}
 
     // Logger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
+
+        logger.info("execute: Executing Job_UnauthenticatedPersonRemoval");
+
         if(!remove_person_thread.isAlive()) remove_person_thread.start();
     }
 
-    Thread remove_person_thread = new Thread() {
+    private Thread remove_person_thread = new Thread() {
 
         @Override
         public void run() {
 
             try {
 
-                logger.info("Independent Thread in Unauthenticated_Person_Removal now working");
+                logger.debug("Job_UnauthenticatedPersonRemoval:: remove_person_thread: concurrent thread started on {}", new Date());
 
-                Long month = new Long("2592000000");
-                Long before_month = new Date().getTime() - month;
-                Date created = new Date(before_month);
+                Date created = new Date(new Date().getTime() - TimeUnit.DAYS.toMillis(30)); // before one month
 
                 while (true) {
 
                     List<Model_ValidationToken> tokens = Model_ValidationToken.find.where().lt("created", created).setMaxRows(100).findList();
                     if (tokens.isEmpty()) {
-                        logger.info("Unauthenticated_Person_Removal has no persons to remove");
+                        logger.debug("Job_UnauthenticatedPersonRemoval:: remove_person_thread: no persons to remove");
                         break;
                     }
 
-                    logger.info("CRON Task is removing unauthenticated persons (100 per cycle)");
+                    logger.debug("Job_UnauthenticatedPersonRemoval:: remove_person_thread: removing unauthenticated persons (100 per cycle)");
 
                     for (Model_ValidationToken token : tokens) {
                         Model_Person person = Model_Person.find.where().eq("mail", token.personEmail).findUnique();
@@ -52,10 +55,10 @@ public class Unauthenticated_Person_Removal implements Job {
                 }
 
             } catch (Exception e) {
-                logger.error("Error in Thread - Unauthenticated_Person_Removal");
+                Loggy.internalServerError("Job_UnauthenticatedPersonRemoval:: remove_person_thread:", e);
             }
 
-            logger.info("Independent Thread in Unauthenticated_Person_Removal stopped!");
+            logger.debug("Job_UnauthenticatedPersonRemoval:: remove_person_thread: thread stopped on {}", new Date());
         }
     };
 }

@@ -6,27 +6,12 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.*;
-import models.Model_GridWidget;
-import models.Model_GridWidgetVersion;
-import models.Model_TypeOfWidget;
-import models.overflow.*;
-import models.Model_FloatingPersonToken;
-import models.Model_Permission;
-import models.Model_Person;
-import models.Model_SecurityRole;
-import models.Model_BProgram;
-import models.Model_HomerServer;
-import models.Model_CProgram;
-import models.Model_Product;
-import models.Model_Project;
-import models.Model_MProgram;
-import models.Model_MProject;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
-import utilities.notifications.Notification_Handler;
+import utilities.notifications.NotificationHandler;
 import utilities.scheduler.CustomScheduler;
 
 import java.io.File;
@@ -92,9 +77,9 @@ public class Server {
     public static String  link_api_swagger;
 
 
-    static play.Logger.ALogger logger = play.Logger.of("Start-Procedures");
+    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    public static void set_Server_address() throws Exception{
+    public static void setServerValues() throws Exception{
 
         /**
          * 1)
@@ -112,155 +97,162 @@ public class Server {
         server_mode = Configuration.root().getString("Server.mode");
         server_version = Configuration.root().getString("api.version");
 
-
-        if(server_mode.equals("developer")) {
-
-            // Nastavení pro Tyrion Adresy
-            tyrion_serverAddress = "http://" + Configuration.root().getString("Server.localhost");
-            tyrion_webSocketAddress ="ws://" + Configuration.root().getString("Server.localhost");
-
-            // Nastavení pro Becki Adresy
-            becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.localhost.mainUrl");
-            becki_redirectOk                    = Configuration.root().getString("Becki.redirectOk");
-            becki_redirectFail                  = Configuration.root().getString("Becki.redirectFail");
-            becki_accountAuthorizedSuccessful   = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
-            becki_accountAuthorizedFailed       = Configuration.root().getString("Becki.accountAuthorizedFailed");
-            becki_passwordReset                 = Configuration.root().getString("Becki.passwordReset");
-            becki_invitationToCollaborate       = Configuration.root().getString("Becki.invitationToCollaborate");
-            becki_propertyChangeFailed          = Configuration.root().getString("Becki.propertyChangeFailed");
-
-            GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
-            GitHub_clientSecret                 = Configuration.root().getString("GitHub.localhost.clientSecret");
-            GitHub_url                          = Configuration.root().getString("GitHub.localhost.url");
-            GitHub_apiKey                       = Configuration.root().getString("GitHub.localhost.apiKey  ");
-
-            Facebook_callBack                   = tyrion_serverAddress + Configuration.root().getString("Facebook.localhost.callBack");
-            Facebook_clientSecret               = Configuration.root().getString("Facebook.localhost.clientSecret");
-            Facebook_url                        = Configuration.root().getString("Facebook.localhost.url");
-            Facebook_apiKey                     = Configuration.root().getString("Facebook.localhost.apiKey  ");
-
-            WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.localhost.callBack");
-            WordPress_clientSecret               = Configuration.root().getString("WordPress.localhost.clientSecret");
-            WordPress_url                        = Configuration.root().getString("WordPress.localhost.url");
-            WordPress_apiKey                     = Configuration.root().getString("WordPress.localhost.apiKey");
-
-            Fakturoid_apiKey                     = Configuration.root().getString("Fakturoid.apiKey");
-            Fakturoid_url                        = Configuration.root().getString("Fakturoid.url");
-            Fakturoid_user_agent                 = Configuration.root().getString("Fakturoid.userAgent");
-            Fakturoid_secret_combo               = Configuration.root().getString("Fakturoid.secret_combo");
-
-
-            GoPay_api_url                        = Configuration.root().getString("GOPay.localhost.api_url");
-            GoPay_client_id                      = Configuration.root().getString("GOPay.localhost.client_id");
-            GoPay_client_secret                  = Configuration.root().getString("GOPay.localhost.client_secret");
-            GoPay_go_id                          = Configuration.root().getLong("GOPay.localhost.go_id");
-
-            GoPay_return_url                     = Configuration.root().getString("GOPay.localhost.return_url");
-            GoPay_notification_url               = Configuration.root().getString("GOPay.localhost.notification_url");
-
-            azureLink                            = Configuration.root().getString("Azure.developer.azureLink");
-
-            link_api_swagger                     = "http://swagger.byzance.cz/?url="+ tyrion_serverAddress +"/api-docs";
-
-    } else if (server_mode.equals("production")) {
-
-            // Nastavení pro Tyrion Adresy
-            tyrion_serverAddress = "http://" + Configuration.root().getString("Server.production");
-            tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.production");
-
-            // Nastavení pro Becki Adresy
-            becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.production.mainUrl");
-            becki_redirectOk                    = Configuration.root().getString("Becki.redirectOk");
-            becki_redirectFail                  = Configuration.root().getString("Becki.redirectFail");
-            becki_accountAuthorizedSuccessful   = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
-            becki_accountAuthorizedFailed       = Configuration.root().getString("Becki.accountAuthorizedFailed");
-            becki_passwordReset                 = Configuration.root().getString("Becki.passwordReset ");
-            becki_invitationToCollaborate       = Configuration.root().getString("Becki.invitationToCollaborate");
-            becki_propertyChangeFailed          = Configuration.root().getString("Becki.propertyChangeFailed");
-
-            GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.production.callBack");
-            GitHub_clientSecret                 = Configuration.root().getString("GitHub.production.clientSecret");
-            GitHub_url                          = Configuration.root().getString("GitHub.production.url");
-            GitHub_apiKey                       = Configuration.root().getString("GitHub.production.apiKey  ");
-
-            Facebook_callBack                   = tyrion_serverAddress + Configuration.root().getString("Facebook.production.callBack");
-            Facebook_clientSecret               = Configuration.root().getString("Facebook.production.clientSecret");
-            Facebook_url                        = Configuration.root().getString("Facebook.production.url");
-            Facebook_apiKey                     = Configuration.root().getString("Facebook.production.apiKey  ");
-
-            WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.production.callBack");
-            WordPress_clientSecret               = Configuration.root().getString("WordPress.production.clientSecret");
-            WordPress_url                        = Configuration.root().getString("WordPress.production.url");
-            WordPress_apiKey                     = Configuration.root().getString("WordPress.production.apiKey");
-
-            Fakturoid_apiKey                     = Configuration.root().getString("Fakturoid.apiKey");
-            Fakturoid_url                        = Configuration.root().getString("Fakturoid.url");
-            Fakturoid_user_agent                 = Configuration.root().getString("Fakturoid.userAgent");
-            Fakturoid_secret_combo               = Configuration.root().getString("Fakturoid.secret_combo");
-
-
-            GoPay_api_url                        = Configuration.root().getString("GOPay.production.api_url");
-            GoPay_client_id                      = Configuration.root().getString("GOPay.production.client_id");
-            GoPay_client_secret                  = Configuration.root().getString("GOPay.production.client_secret");
-            GoPay_go_id                          = Configuration.root().getLong("GOPay.production.go_id");
-
-            GoPay_return_url                     = Configuration.root().getString("GOPay.production.return_url");
-            GoPay_notification_url               = Configuration.root().getString("GOPay.production.notification_url");
-
-            azureLink                            = Configuration.root().getString("Azure.production.azureLink");
-
-            link_api_swagger                     = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
-
-        } else if (server_mode.equals("stage")) {
+        switch (server_mode) {
+            case "developer" : {
 
                 // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress = "http://" +  Configuration.root().getString("Server.stage");
+                tyrion_serverAddress = "http://" + Configuration.root().getString("Server.localhost");
+                tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.localhost");
+
+                // Nastavení pro Becki Adresy
+                becki_mainUrl = "http://" + Configuration.root().getString("Becki.localhost.mainUrl");
+                becki_redirectOk = Configuration.root().getString("Becki.redirectOk");
+                becki_redirectFail = Configuration.root().getString("Becki.redirectFail");
+                becki_accountAuthorizedSuccessful = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
+                becki_accountAuthorizedFailed = Configuration.root().getString("Becki.accountAuthorizedFailed");
+                becki_passwordReset = Configuration.root().getString("Becki.passwordReset");
+                becki_invitationToCollaborate = Configuration.root().getString("Becki.invitationToCollaborate");
+                becki_propertyChangeFailed = Configuration.root().getString("Becki.propertyChangeFailed");
+
+                GitHub_callBack = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
+                GitHub_clientSecret = Configuration.root().getString("GitHub.localhost.clientSecret");
+                GitHub_url = Configuration.root().getString("GitHub.localhost.url");
+                GitHub_apiKey = Configuration.root().getString("GitHub.localhost.apiKey  ");
+
+                Facebook_callBack = tyrion_serverAddress + Configuration.root().getString("Facebook.localhost.callBack");
+                Facebook_clientSecret = Configuration.root().getString("Facebook.localhost.clientSecret");
+                Facebook_url = Configuration.root().getString("Facebook.localhost.url");
+                Facebook_apiKey = Configuration.root().getString("Facebook.localhost.apiKey  ");
+
+                WordPress_callBack = tyrion_serverAddress + Configuration.root().getString("WordPress.localhost.callBack");
+                WordPress_clientSecret = Configuration.root().getString("WordPress.localhost.clientSecret");
+                WordPress_url = Configuration.root().getString("WordPress.localhost.url");
+                WordPress_apiKey = Configuration.root().getString("WordPress.localhost.apiKey");
+
+                Fakturoid_apiKey = Configuration.root().getString("Fakturoid.apiKey");
+                Fakturoid_url = Configuration.root().getString("Fakturoid.url");
+                Fakturoid_user_agent = Configuration.root().getString("Fakturoid.userAgent");
+                Fakturoid_secret_combo = Configuration.root().getString("Fakturoid.secret_combo");
+
+
+                GoPay_api_url = Configuration.root().getString("GOPay.localhost.api_url");
+                GoPay_client_id = Configuration.root().getString("GOPay.localhost.client_id");
+                GoPay_client_secret = Configuration.root().getString("GOPay.localhost.client_secret");
+                GoPay_go_id = Configuration.root().getLong("GOPay.localhost.go_id");
+
+                GoPay_return_url = Configuration.root().getString("GOPay.localhost.return_url");
+                GoPay_notification_url = Configuration.root().getString("GOPay.localhost.notification_url");
+
+                azureLink = Configuration.root().getString("Azure.developer.azureLink");
+
+                link_api_swagger = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
+
+                break;
+            }
+            case "production" : {
+
+                // Nastavení pro Tyrion Adresy
+                tyrion_serverAddress = "http://" + Configuration.root().getString("Server.production");
+                tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.production");
+
+                // Nastavení pro Becki Adresy
+                becki_mainUrl = "http://" + Configuration.root().getString("Becki.production.mainUrl");
+                becki_redirectOk = Configuration.root().getString("Becki.redirectOk");
+                becki_redirectFail = Configuration.root().getString("Becki.redirectFail");
+                becki_accountAuthorizedSuccessful = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
+                becki_accountAuthorizedFailed = Configuration.root().getString("Becki.accountAuthorizedFailed");
+                becki_passwordReset = Configuration.root().getString("Becki.passwordReset ");
+                becki_invitationToCollaborate = Configuration.root().getString("Becki.invitationToCollaborate");
+                becki_propertyChangeFailed = Configuration.root().getString("Becki.propertyChangeFailed");
+
+                GitHub_callBack = tyrion_serverAddress + Configuration.root().getString("GitHub.production.callBack");
+                GitHub_clientSecret = Configuration.root().getString("GitHub.production.clientSecret");
+                GitHub_url = Configuration.root().getString("GitHub.production.url");
+                GitHub_apiKey = Configuration.root().getString("GitHub.production.apiKey  ");
+
+                Facebook_callBack = tyrion_serverAddress + Configuration.root().getString("Facebook.production.callBack");
+                Facebook_clientSecret = Configuration.root().getString("Facebook.production.clientSecret");
+                Facebook_url = Configuration.root().getString("Facebook.production.url");
+                Facebook_apiKey = Configuration.root().getString("Facebook.production.apiKey  ");
+
+                WordPress_callBack = tyrion_serverAddress + Configuration.root().getString("WordPress.production.callBack");
+                WordPress_clientSecret = Configuration.root().getString("WordPress.production.clientSecret");
+                WordPress_url = Configuration.root().getString("WordPress.production.url");
+                WordPress_apiKey = Configuration.root().getString("WordPress.production.apiKey");
+
+                Fakturoid_apiKey = Configuration.root().getString("Fakturoid.apiKey");
+                Fakturoid_url = Configuration.root().getString("Fakturoid.url");
+                Fakturoid_user_agent = Configuration.root().getString("Fakturoid.userAgent");
+                Fakturoid_secret_combo = Configuration.root().getString("Fakturoid.secret_combo");
+
+
+                GoPay_api_url = Configuration.root().getString("GOPay.production.api_url");
+                GoPay_client_id = Configuration.root().getString("GOPay.production.client_id");
+                GoPay_client_secret = Configuration.root().getString("GOPay.production.client_secret");
+                GoPay_go_id = Configuration.root().getLong("GOPay.production.go_id");
+
+                GoPay_return_url = Configuration.root().getString("GOPay.production.return_url");
+                GoPay_notification_url = Configuration.root().getString("GOPay.production.notification_url");
+
+                azureLink = Configuration.root().getString("Azure.production.azureLink");
+
+                link_api_swagger = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
+
+                break;
+            }
+            case "stage" : {
+
+                // Nastavení pro Tyrion Adresy
+                tyrion_serverAddress = "http://" + Configuration.root().getString("Server.stage");
                 tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.stage");
 
                 // Nastavení pro Becki Adresy
-                becki_mainUrl                       = "http://" + Configuration.root().getString("Becki.stage.mainUrl");
-                becki_redirectOk                    = Configuration.root().getString("Becki.redirectOk");
-                becki_redirectFail                  = Configuration.root().getString("Becki.redirectFail");
-                becki_accountAuthorizedSuccessful   = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
-                becki_accountAuthorizedFailed       = Configuration.root().getString("Becki.accountAuthorizedFailed");
-                becki_passwordReset                 = Configuration.root().getString("Becki.passwordReset ");
-                becki_invitationToCollaborate       = Configuration.root().getString("Becki.invitationToCollaborate");
-                becki_propertyChangeFailed          = Configuration.root().getString("Becki.propertyChangeFailed");
+                becki_mainUrl = "http://" + Configuration.root().getString("Becki.stage.mainUrl");
+                becki_redirectOk = Configuration.root().getString("Becki.redirectOk");
+                becki_redirectFail = Configuration.root().getString("Becki.redirectFail");
+                becki_accountAuthorizedSuccessful = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
+                becki_accountAuthorizedFailed = Configuration.root().getString("Becki.accountAuthorizedFailed");
+                becki_passwordReset = Configuration.root().getString("Becki.passwordReset ");
+                becki_invitationToCollaborate = Configuration.root().getString("Becki.invitationToCollaborate");
+                becki_propertyChangeFailed = Configuration.root().getString("Becki.propertyChangeFailed");
 
-                GitHub_callBack                     = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
-                GitHub_clientSecret                 = Configuration.root().getString("GitHub.stage.clientSecret");
-                GitHub_url                          = Configuration.root().getString("GitHub.stage.url");
-                GitHub_apiKey                       = Configuration.root().getString("GitHub.stage.apiKey  ");
+                GitHub_callBack = tyrion_serverAddress + Configuration.root().getString("GitHub.localhost.callBack");
+                GitHub_clientSecret = Configuration.root().getString("GitHub.stage.clientSecret");
+                GitHub_url = Configuration.root().getString("GitHub.stage.url");
+                GitHub_apiKey = Configuration.root().getString("GitHub.stage.apiKey  ");
 
-                Facebook_callBack                   = tyrion_serverAddress + Configuration.root().getString("Facebook.localhost.callBack");
-                Facebook_clientSecret               = Configuration.root().getString("Facebook.stage.clientSecret");
-                Facebook_url                        = Configuration.root().getString("Facebook.stage.url");
-                Facebook_apiKey                     = Configuration.root().getString("Facebook.stage.apiKey  ");
+                Facebook_callBack = tyrion_serverAddress + Configuration.root().getString("Facebook.localhost.callBack");
+                Facebook_clientSecret = Configuration.root().getString("Facebook.stage.clientSecret");
+                Facebook_url = Configuration.root().getString("Facebook.stage.url");
+                Facebook_apiKey = Configuration.root().getString("Facebook.stage.apiKey  ");
 
-                WordPress_callBack                   = tyrion_serverAddress + Configuration.root().getString("WordPress.localhost.callBack");
-                WordPress_clientSecret               = Configuration.root().getString("WordPress.localhost.clientSecret");
-                WordPress_url                        = Configuration.root().getString("WordPress.localhost.url");
-                WordPress_apiKey                     = Configuration.root().getString("WordPress.localhost.apiKey");
+                WordPress_callBack = tyrion_serverAddress + Configuration.root().getString("WordPress.localhost.callBack");
+                WordPress_clientSecret = Configuration.root().getString("WordPress.localhost.clientSecret");
+                WordPress_url = Configuration.root().getString("WordPress.localhost.url");
+                WordPress_apiKey = Configuration.root().getString("WordPress.localhost.apiKey");
 
-                Fakturoid_apiKey                     = Configuration.root().getString("Fakturoid.apiKey");
-                Fakturoid_url                        = Configuration.root().getString("Fakturoid.url");
-                Fakturoid_user_agent                 = Configuration.root().getString("Fakturoid.userAgent");
-                Fakturoid_secret_combo               = Configuration.root().getString("Fakturoid.secret_combo");
+                Fakturoid_apiKey = Configuration.root().getString("Fakturoid.apiKey");
+                Fakturoid_url = Configuration.root().getString("Fakturoid.url");
+                Fakturoid_user_agent = Configuration.root().getString("Fakturoid.userAgent");
+                Fakturoid_secret_combo = Configuration.root().getString("Fakturoid.secret_combo");
 
 
-                GoPay_api_url                        = Configuration.root().getString("GOPay.localhost.api_url");
-                GoPay_client_id                      = Configuration.root().getString("GOPay.localhost.client_id");
-                GoPay_client_secret                  = Configuration.root().getString("GOPay.localhost.client_secret");
-                GoPay_go_id                          = Configuration.root().getLong("GOPay.localhost.go_id");
+                GoPay_api_url = Configuration.root().getString("GOPay.localhost.api_url");
+                GoPay_client_id = Configuration.root().getString("GOPay.localhost.client_id");
+                GoPay_client_secret = Configuration.root().getString("GOPay.localhost.client_secret");
+                GoPay_go_id = Configuration.root().getLong("GOPay.localhost.go_id");
 
-                GoPay_return_url                     = Configuration.root().getString("GOPay.localhost.return_url");
-                GoPay_notification_url               = Configuration.root().getString("GOPay.localhost.notification_url");
+                GoPay_return_url = Configuration.root().getString("GOPay.localhost.return_url");
+                GoPay_notification_url = Configuration.root().getString("GOPay.localhost.notification_url");
 
-                azureLink                            = Configuration.root().getString("Azure.localhost.azureLink");
+                azureLink = Configuration.root().getString("Azure.localhost.azureLink");
 
-                link_api_swagger                     = "http://swagger.byzance.cz/?url="+ tyrion_serverAddress +"/api-docs";
+                link_api_swagger = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
+
+                break;
             }
-
+            default: throw new NullPointerException("Server mode is null or unknown");
+        }
         /**
          * 2)
          * Nastavení Azure připojení
@@ -278,7 +270,7 @@ public class Server {
     /**
      * Nastavení Administrátora vždy na startu pokud neexistuje!!!
      */
-    public static void set_Developer_objects(){
+    public static void setAdministrator(){
 
         // For Developing
         if(Model_SecurityRole.findByName("SuperAdmin") == null){
@@ -288,9 +280,10 @@ public class Server {
             role.save();
         }
 
-        if (Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null)
-        {
-            logger.warn("Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
+        if (Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null) {
+
+            logger.warn("Server:: setAdministrator: Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
+
             Model_Person person = new Model_Person();
             person.full_name = "Admin Byzance";
             person.mailValidated = true;
@@ -308,6 +301,9 @@ public class Server {
             floatingPersonToken.save();
 
         }else{
+
+            logger.warn("Server:: setAdministrator: admin is already created");
+
             // updatuji oprávnění
             Model_Person person = Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
             List<Model_Permission> personPermissions = Model_Permission.find.all();
@@ -322,7 +318,7 @@ public class Server {
     /**
      * Výběr nastavení Logbacku podle Server.developerMode
      */
-    public static void set_Logback() {
+    public static void setLogback() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         try {
@@ -367,13 +363,6 @@ public class Server {
                 for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());
                 for(Enum en : Model_BootLoader.permissions.values())              permissions.add(en.name());
 
-            // overflow
-                for(Enum en : Model_FloatingPersonToken.permissions.values())     permissions.add(en.name());
-                for(Enum en : LinkedPost.permissions.values())                    permissions.add(en.name());
-                for(Enum en : Post.permissions.values())                          permissions.add(en.name());
-                for(Enum en : PropertyOfPost.permissions.values())                permissions.add(en.name());
-                for(Enum en : TypeOfConfirms.permissions.values())                permissions.add(en.name());
-                for(Enum en : TypeOfPost.permissions.values())                    permissions.add(en.name());
             // person
                 for(Enum en : Model_FloatingPersonToken.permissions.values())     permissions.add(en.name());
                 for(Enum en : Model_Person.permissions.values())                  permissions.add(en.name());
@@ -418,28 +407,28 @@ public class Server {
         Utilities_HW_Updater_Master_thread_updater.start_thread_box();
 
         //1. Nastartovat notifikační vlákno
-        Notification_Handler.start_notification_thread();
+        NotificationHandler.startNotificationThread();
 
     }
 
-    public static void startScheduling_procedures() {
+    public static void startSchedulingProcedures() {
         try {
 
             CustomScheduler.startScheduler();
 
         }catch (Exception e){
-           logger.error("Scheduler_Exception", e);
+            Loggy.internalServerError("Server:: startSchedulingProcedures:", e);
         }
 
     }
 
-    public static void init_cache() {
+    public static void initCache() {
         try {
 
             Server_Cache.initCache();
 
         }catch (Exception e){
-            logger.error("Cache_Exception", e);
+            Loggy.internalServerError("Server:: initCache:", e);
         }
 
     }

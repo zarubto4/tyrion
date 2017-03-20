@@ -284,7 +284,7 @@ public class Controller_WebSocket extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            Loggy.error("Controller_WebSocket:: becki_website_connection:: Error:: ", e);
+            Loggy.internalServerError("Controller_WebSocket:: becki_website_connection:: Error:: ", e);
             return WebSocket.reject(forbidden("Server side error"));
         }
 
