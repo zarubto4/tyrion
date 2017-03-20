@@ -125,13 +125,13 @@ PUT            /product/details/:payment_details_id                             
 PUT            /product/general/:product_id                                                 @controllers.Controller_Finance.edit_general_product_details(product_id)
 
 #GoPay
-GET            /go_pay/notification_url                                                     @utilities.goPay.GoPay_Controller.call_back_Notification(id: Long)
-GET            /go_pay/return_url                                                           @utilities.goPay.GoPay_Controller.call_back_Return_Url(id: Long)
+GET            /go_pay/notification_url                                                     @utilities.goPay.Utilities_GoPay_Controller.call_back_Notification(id: Long)
+GET            /go_pay/return_url                                                           @utilities.goPay.Utilities_GoPay_Controller.call_back_Return_Url(id: Long)
 
 
 #Fakturoid
 GET             /invoice/get/:invoice_id                                                    @controllers.Controller_Finance.invoice_get(invoice_id)
-GET             /invoice/pdf/:invoice_id                                                    @utilities.fakturoid.Fakturoid_Controller.invoice_get_pdf(invoice_id)
+GET             /invoice/pdf/:invoice_id                                                    @utilities.fakturoid.Utilities_Fakturoid_Controller.invoice_get_pdf(invoice_id)
 POST            /invoice/reimbursement/:invoice_id                                          @controllers.Controller_Finance.pay_send_invoice(invoice_id)
 POST            /invoice/resend/:invoice_id                                                 @controllers.Controller_Finance.resend_invoice(invoice_id)
 
@@ -298,7 +298,8 @@ DELETE          /processor/:processor_id                                        
 #Board
 POST            /board                                                          @controllers.Controller_Board.board_create()
 PUT             /board/userDescription/:board_id                                @controllers.Controller_Board.board_updateDescription(board_id)
-PUT             /board/backup/:board_id                                         @controllers.Controller_Board.board_updateBackup(board_id)
+PUT             /board/backup                                                   @controllers.Controller_Board.board_updateBackup()
+PUT             /board/backup/set_version                                       @controllers.Controller_Board.board_setBackupCode()
 
 PUT             /board/filter                                                   @controllers.Controller_Board.board_getByFilter()
 GET             /board/check/:hash_for_adding                                   @controllers.Controller_Board.board_check(hash_for_adding)
@@ -413,13 +414,13 @@ GET            /api-docs/:version                           @utilities.swagger.s
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                 controllers.Assets.at(path="/public", file)
 GET           /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
-GET           /.well-known/acme-challenge/:file             @utilities.certificate.CertificateCheck.check(file)
+GET           /.well-known/acme-challenge/:file             @utilities.certificate.Utilities_CertificateCheck.check(file)
 
 ### HARDWARE - GENERATOR ############ HARDWARE - GENERATOR ############### HARDWARE - GENERATOR ################ HARDWARE - GENERATOR ###########################################
 ###################################################################################f#############################################################################################
 
-PUT             /admin/embedded_hardware/request                      @utilities.hardware_generator.HardwareGeneratorController.new_hardware_request()
-PUT             /admin/embedded_hardware/result                       @utilities.hardware_generator.HardwareGeneratorController.new_hardware_result()
+PUT             /admin/embedded_hardware/request                      @utilities.hardware_generator.Utilities_Hardware_generator_Controller.new_hardware_request()
+PUT             /admin/embedded_hardware/result                       @utilities.hardware_generator.Utilities_Hardware_generator_Controller.new_hardware_result()
 
 ### PUBLIC - ADMIN ############ PUBLIC  - ADMIN ############### PUBLIC  - ADMIN ################ PUBLIC  - ADMIN ################################################################
 ###################################################################################f#############################################################################################
@@ -474,14 +475,14 @@ GET             /admin/general_tariff_extension/:extension_id   @controllers.Con
 
 # Demo Data
 GET             /admin/demo_data                                @controllers.Controller_Dashboard.demo_data()
-PUT             /admin/demo_data/test                           @utilities.demo_data.Demo_Data_Controller.test()
-PUT             /admin/demo_data/all_for_becki                  @utilities.demo_data.Demo_Data_Controller.all_for_becki()
-PUT             /admin/demo_data/extendension_servers           @utilities.demo_data.Demo_Data_Controller.extendension_servers()
-PUT             /admin/demo_data/basic_tarifs                   @utilities.demo_data.Demo_Data_Controller.basic_tariffs()
-PUT             /admin/demo_data/producers                      @utilities.demo_data.Demo_Data_Controller.producers()
-PUT             /admin/demo_data/type_of_board                  @utilities.demo_data.Demo_Data_Controller.type_of_board()
-PUT             /admin/demo_data/test_boards                    @utilities.demo_data.Demo_Data_Controller.test_boards()
-PUT             /admin/demo_data/person                         @utilities.demo_data.Demo_Data_Controller.person_test_user()
+PUT             /admin/demo_data/test                           @utilities.demo_data.Utilities_Demo_data_Controller.test()
+PUT             /admin/demo_data/all_for_becki                  @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
+PUT             /admin/demo_data/extendension_servers           @utilities.demo_data.Utilities_Demo_data_Controller.extendension_servers()
+PUT             /admin/demo_data/basic_tarifs                   @utilities.demo_data.Utilities_Demo_data_Controller.basic_tariffs()
+PUT             /admin/demo_data/producers                      @utilities.demo_data.Utilities_Demo_data_Controller.producers()
+PUT             /admin/demo_data/type_of_board                  @utilities.demo_data.Utilities_Demo_data_Controller.type_of_board()
+PUT             /admin/demo_data/test_boards                    @utilities.demo_data.Utilities_Demo_data_Controller.test_boards()
+PUT             /admin/demo_data/person                         @utilities.demo_data.Utilities_Demo_data_Controller.person_test_user()
 
 GET             /admin/test                                     @controllers.Controller_Dashboard.test()
 

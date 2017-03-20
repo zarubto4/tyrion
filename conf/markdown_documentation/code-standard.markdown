@@ -103,5 +103,5 @@
         logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: removing old tokens (100 per cycle)");
 
         ...
- * Last level is **trace**. It is the most detailed level, for example it can log values of parameters of a method and so on, but we do not this level much.
+ * Last level is **trace**. It is the most detailed level, for example it can log values of parameters of a method and so on.
  * Remember that in well logged application, errors can be easily found, so it is **important**, but you should use your **own reason** where to place logs and how many of them, since because it could cause performance problems. If you get **confident** about some part of your code, you can even remove some logs or switch level.

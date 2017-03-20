@@ -24,16 +24,16 @@ public class Global extends GlobalSettings {
            logger.warn("Global:: onStart: Starting the server on {}", new Date());
 
            //1
+           logger.warn("Global:: onStart: Setting logback configuration");
+           Server.setLogback();
+
+           //2
            logger.warn("Global:: onStart: Setting global values");
            Server.setServerValues();
 
-           //2
+           //3
            logger.warn("Global:: onStart: Setting system Permission");
            Server.setPermission();
-
-           //3
-           logger.warn("Global:: onStart: Setting logback configuration");
-           Server.setLogback();
 
            //4
            logger.warn("Global:: onStart: Setting Directory for Files");

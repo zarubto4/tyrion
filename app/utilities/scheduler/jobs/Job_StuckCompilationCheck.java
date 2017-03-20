@@ -6,7 +6,7 @@ import models.Model_VersionObject;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import utilities.enums.Compile_Status;
+import utilities.enums.Enum_Compile_status;
 import utilities.loggy.Loggy;
 
 import java.util.Date;
@@ -43,8 +43,8 @@ public class Job_StuckCompilationCheck implements Job {
                         // Vyhledání všech, které je nutné projit
                         List<Model_VersionObject> version_objects = Model_VersionObject.find.where()
                                 .disjunction()
-                                .eq("c_compilation.status", Compile_Status.server_was_offline.name())
-                                .eq("c_compilation.status", Compile_Status.compilation_server_error.name())
+                                .eq("c_compilation.status", Enum_Compile_status.server_was_offline.name())
+                                .eq("c_compilation.status", Enum_Compile_status.compilation_server_error.name())
                                 .endJunction()
                                 .lt("date_of_create", created).order().desc("date_of_create").setMaxRows(100).findList();
 
@@ -65,7 +65,7 @@ public class Job_StuckCompilationCheck implements Job {
                             }
 
                             logger.debug("Job_StuckCompilationCheck:: compilation_check_thread: starting compilation of version {} with ID: {}", version_object.version_name, version_object.id);
-                            version_object.c_compilation.status = Compile_Status.compilation_in_progress;
+                            version_object.c_compilation.status = Enum_Compile_status.compilation_in_progress;
                             version_object.c_compilation.update();
 
                             // Výsledek se kterým se dále nic neděje

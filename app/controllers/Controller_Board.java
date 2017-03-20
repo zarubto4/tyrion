@@ -1983,7 +1983,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result  board_set_backup_c_program_version(){
+    public Result board_setBackupCode(){
         try {
 
             // Zpracování Json
