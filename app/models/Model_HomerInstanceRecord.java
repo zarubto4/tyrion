@@ -8,8 +8,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Update_group_procedure_state;
 import utilities.enums.Enum_CProgram_updater_state;
-import utilities.enums.Firmware_type;
-import utilities.hardware_updater.Master_Updater;
+import utilities.enums.Enum_Firmware_type;
+import utilities.hardware_updater.Utilities_Master_thread_updater;
 import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
 
 import javax.persistence.*;
@@ -126,7 +126,7 @@ public class Model_HomerInstanceRecord extends Model {
                 logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Kontroluji a popřípadě maži předchozí procedury na overwritten");
 
                 List<Model_CProgramUpdatePlan> old_plans_main_board = Model_CProgramUpdatePlan.find.where()
-                        .eq("firmware_type", Firmware_type.FIRMWARE.name())
+                        .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
                         .eq("board.id", group.main_board_pair.board.id).where()
                         .disjunction()
                         .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
@@ -148,7 +148,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                 Model_CProgramUpdatePlan plan_master_board = new Model_CProgramUpdatePlan();
                 plan_master_board.board = group.main_board_pair.board;
-                plan_master_board.firmware_type = Firmware_type.FIRMWARE;
+                plan_master_board.firmware_type = Enum_Firmware_type.FIRMWARE;
 
                 // Zkontroluji jestli je online a co má za verzi - Protože bych mohl proceduru hned označit za vykonanou
                 if(summary_information.deviceIsOnline(group.main_board_pair.board.id)){
@@ -186,7 +186,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                     //1. Najdu předchozí procedury, které nejsou nějakým způsobem ukončené
                     List<Model_CProgramUpdatePlan> old_plans = Model_CProgramUpdatePlan.find.where()
-                            .eq("firmware_type", Firmware_type.FIRMWARE.name())
+                            .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
                             .eq("board.id", pair.board.id).where()
                             .disjunction()
                                  .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
@@ -215,7 +215,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                         Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
                         plan.board = pair.board;
-                        plan.firmware_type = Firmware_type.FIRMWARE;
+                        plan.firmware_type = Enum_Firmware_type.FIRMWARE;
 
                         if(summary_information.deviceIsOnline(group.main_board_pair.board.id)){
 
@@ -312,7 +312,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                     Model_CProgramUpdatePlan plan_master_board = new Model_CProgramUpdatePlan();
                     plan_master_board.board = group.main_board_pair.board;
-                    plan_master_board.firmware_type = Firmware_type.BOOTLOADER;
+                    plan_master_board.firmware_type = Enum_Firmware_type.BOOTLOADER;
                     plan_master_board.state = Enum_CProgram_updater_state.not_start_yet;
                     plan_master_board.bootloader = group.main_board_pair.board.type_of_board.main_boot_loader;
                     procedure.updates.add(plan_master_board);
@@ -325,7 +325,7 @@ public class Model_HomerInstanceRecord extends Model {
                     //1. Najdu předchozí procedury, které nejsou nějakým způsobem ukončené
                     List<Model_CProgramUpdatePlan> old_plans = Model_CProgramUpdatePlan.find.where()
                             .eq("board.id", pair.board.id).where()
-                            .eq("firmware_type", Firmware_type.BOOTLOADER.name())
+                            .eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name())
                             .disjunction()
                             .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
                             .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
@@ -352,7 +352,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                         Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
                         plan.board = pair.board;
-                        plan.firmware_type = Firmware_type.BOOTLOADER;
+                        plan.firmware_type = Enum_Firmware_type.BOOTLOADER;
                         plan.state = Enum_CProgram_updater_state.not_start_yet;
                         plan.c_program_version_for_update = pair.c_program_version;
                         plan.actualization_procedure = procedure;
@@ -368,7 +368,7 @@ public class Model_HomerInstanceRecord extends Model {
                     procedure.save();
 
                     logger.debug("Sending new Actualization procedure to Master Updater");
-                    Master_Updater.add_new_Procedure(procedure);
+                    Utilities_Master_thread_updater.add_new_Procedure(procedure);
                 }
             }
 

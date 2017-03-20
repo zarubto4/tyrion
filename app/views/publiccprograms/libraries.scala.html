@@ -1,6 +1,5 @@
 @import models.Model_ImportLibrary
-@import utilities.enums.Library_tag
-@import utilities.enums.Library_state
+@import utilities.enums.{Enum_Library_state, Enum_Library_tag}
 <section class="content-header">
   <h1> Libraries </h1>
   <ol class="breadcrumb">
@@ -31,7 +30,7 @@
                     </div>
                     <select class="form-control select2" style="width: 100%; margin-top: 10px;" name="tag">
                         <option selected="selected" disabled>Choose tag</option>
-                        @for(tag <- Library_tag.values()){
+                        @for(tag <- Enum_Library_tag.values()){
                             <option value="@tag.name()">@tag.name()</option>
                         }
                     </select>
@@ -66,12 +65,12 @@
                         <input id="editLibraryDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
                     </div>
                     <select id="editSelectTag" class="form-control select2" style="width: 48%; margin-top: 10px; float: left;" name="tag">
-                        @for(tag <- Library_tag.values()){
+                        @for(tag <- Enum_Library_tag.values()){
                             <option value="@tag.name()">@tag.name()</option>
                         }
                     </select>
                     <select id="editSelectState" class="form-control select2" style="width: 48%; margin-top: 10px; float: right;" name="state">
-                        @for(state <- Library_state.values()){
+                        @for(state <- Enum_Library_state.values()){
                             <option value="@state.name()">@state.name()</option>
                         }
                     </select>

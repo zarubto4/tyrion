@@ -14,7 +14,7 @@ import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.Enum_Compile_status;
 import utilities.independent_threads.Compilation_After_BlackOut;
-import utilities.web_socket.SendMessage;
+import utilities.web_socket.WS_Send_message;
 import utilities.web_socket.WS_CompilerServer;
 import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
 import utilities.web_socket.message_objects.compilator_tyrion.WS_Ping_compilation_server;
@@ -99,7 +99,7 @@ public class Model_CompilationServer extends Model {
 
             logger.debug("Model_CompilationServer:: make_Compilation:: Start of compilation was successful - waiting for result");
 
-            SendMessage get_compilation = new SendMessage(null, null, "compilation_message", 1000 * 35, 0, 1);
+            WS_Send_message get_compilation = new WS_Send_message(null, null, "compilation_message", 1000 * 35, 0, 1);
             server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
 
             ObjectNode node = get_compilation.send_with_response();

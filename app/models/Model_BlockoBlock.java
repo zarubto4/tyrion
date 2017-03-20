@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Approval_state;
+import utilities.enums.Enum_Approval_state;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Blocko_Block_Short_Detail;
 
@@ -63,7 +63,7 @@ public class Model_BlockoBlock extends Model {
 
         for( Model_BlockoBlockVersion v : blocko_versions){
 
-            if((v.approval_state == Approval_state.approved)||(v.approval_state == Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.getPerson().id)))) {
+            if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.getPerson().id)))) {
 
                 list.add(v.get_short_blockoblock_version());
             }

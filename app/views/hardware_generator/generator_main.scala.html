@@ -1,8 +1,7 @@
-@import utilities.hardware_generator.HardwareGeneratorController
-@import models.Model_MacAddressRegisterRecord
+@@import models.Model_MacAddressRegisterRecord
 @import models.Model_TypeOfBoard
-
-<section class="content-header">
+@import utilities.hardware_generator.Utilities_Hardware_generator_Controller
+@ <section class="content-header">
     <h1>Mac Adress Generator API</h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
@@ -33,7 +32,7 @@
 
                     <div class="form-group">
                         <label style="">
-                                        Koupený rozsah Address: <b class="lead text-green">@HardwareGeneratorController.get_Range_From()</b> to <b class="lead text-red">@HardwareGeneratorController.get_Range_To()</b>
+                                        Koupený rozsah Address: <b class="lead text-green">@Utilities_Hardware_generator_Controller.get_Range_From()</b> to <b class="lead text-red">@Utilities_Hardware_generator_Controller.get_Range_To()</b>
                                     </label>
                     </div>
 
@@ -47,7 +46,7 @@
                         @for(type_of_board <- Model_TypeOfBoard.find.where().eq("connectible_to_internet", true).findList()){
                             <tr>
                                 <td> @type_of_board.name</td>
-                                <td> @HardwareGeneratorController.get_macAddress_type_of_board_from(type_of_board.target_name())</td>
+                                <td> @Utilities_Hardware_generator_Controller.get_macAddress_type_of_board_from(type_of_board.target_name())</td>
                                 <td></td>
                             </tr>
                         }

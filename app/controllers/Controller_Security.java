@@ -17,7 +17,7 @@ import play.libs.ws.WSRequest;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
-import utilities.enums.Where_logged_tag;
+import utilities.enums.Enum_Where_logged_tag;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Socials;
@@ -102,7 +102,7 @@ public class Controller_Security extends Controller {
 
             Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
             floatingPersonToken.person = person;
-            floatingPersonToken.where_logged  = Where_logged_tag.BECKI_WEBSITE;
+            floatingPersonToken.where_logged  = Enum_Where_logged_tag.BECKI_WEBSITE;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
@@ -452,7 +452,7 @@ public class Controller_Security extends Controller {
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("GitHub");
 
             floatingPersonToken.return_url = return_link.replace("/github/", "");
-            floatingPersonToken.where_logged = Where_logged_tag.BECKI_WEBSITE;
+            floatingPersonToken.where_logged = Enum_Where_logged_tag.BECKI_WEBSITE;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";

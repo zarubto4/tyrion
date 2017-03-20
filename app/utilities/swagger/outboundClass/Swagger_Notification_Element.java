@@ -3,7 +3,7 @@ package utilities.swagger.outboundClass;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Notification_type;
+import utilities.enums.Enum_Notification_type;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -14,7 +14,7 @@ public class Swagger_Notification_Element {
 
     public Swagger_Notification_Element(){}
 
-    @ApiModelProperty(required =  true)    @Enumerated(EnumType.STRING) public Notification_type type = null;
+    @ApiModelProperty(required =  true)    @Enumerated(EnumType.STRING) public Enum_Notification_type type = null;
     @ApiModelProperty(required =  false)@JsonInclude(JsonInclude.Include.NON_NULL) public String text = null;
 
     @ApiModelProperty(required =  true)                                 public boolean bold = false;

@@ -22,8 +22,8 @@ import models.Model_PaymentDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Controller;
-import utilities.enums.Participant_status;
-import utilities.enums.Payment_mode;
+import utilities.enums.Enum_Participant_status;
+import utilities.enums.Enum_Payment_mode;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -117,7 +117,7 @@ public class TestHelper extends Controller{
             product.general_tariff = Model_GeneralTariff.find.where().eq("identificator", "geek").findUnique();
             product.product_individual_name = UUID.randomUUID().toString();
             product.active = true;
-            product.mode = Payment_mode.free;
+            product.mode = Enum_Payment_mode.free;
             product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
 
             product.save();
@@ -174,7 +174,7 @@ public class TestHelper extends Controller{
             Model_ProjectParticipant participant = new Model_ProjectParticipant();
             participant.person = product.payment_details.person;
             participant.project = project;
-            participant.state = Participant_status.owner;
+            participant.state = Enum_Participant_status.owner;
 
             participant.save();
 
@@ -229,7 +229,7 @@ public class TestHelper extends Controller{
             Model_ProjectParticipant participant = new Model_ProjectParticipant();
             participant.person = person;
             participant.project = project;
-            participant.state = Participant_status.member;
+            participant.state = Enum_Participant_status.member;
 
             participant.save();
             project.refresh();

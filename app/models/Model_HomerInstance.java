@@ -11,15 +11,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
-import utilities.enums.Homer_Instance_Type;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
-import utilities.enums.Type_of_command;
-import utilities.hardware_updater.Master_Updater;
+import utilities.enums.Enum_Homer_instance_type;
+import utilities.enums.Enum_Notification_importance;
+import utilities.enums.Enum_Notification_level;
+import utilities.enums.Enum_type_of_command;
+import utilities.hardware_updater.Utilities_Master_thread_updater;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.WebSCType;
+import utilities.web_socket.WS_Interface_type;
 import utilities.web_socket.message_objects.homer_instance.Help_object.YodaOnlyHardwareIdList;
 import utilities.web_socket.message_objects.homer_instance.*;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
@@ -50,7 +50,7 @@ public class Model_HomerInstance extends Model {
 
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
-                                                                                                                        public Homer_Instance_Type instance_type;
+                                                                                                                        public Enum_Homer_instance_type instance_type;
 
     @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)            public Model_Project project;
 
@@ -60,9 +60,9 @@ public class Model_HomerInstance extends Model {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return  ( instance_type != Homer_Instance_Type.VIRTUAL) ? this.getB_program().id           : null;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return  ( instance_type != Homer_Instance_Type.VIRTUAL) ? this.getB_program().name         : null;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return  ( instance_type != Homer_Instance_Type.VIRTUAL) ? this.getB_program().description  : null;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().id           : null;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().name         : null;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().description  : null;}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.personal_server_name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.unique_identificator;}
@@ -128,7 +128,7 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public void notification_instance_start_upload(){
 
-        new Model_Notification(Notification_importance.low,  Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.low,  Enum_Notification_level.info)
                 .setText("Server started creating new Blocko Instance of Blocko Version ")
                 .setText(this.actual_instance.version_object.b_program.name + " ", "black", true, false, false)
                 .setObject(this.actual_instance.version_object)
@@ -141,7 +141,7 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public void notification_instance_successful_upload(){
 
-        new Model_Notification(Notification_importance.low, Notification_level.success)
+        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.success)
                 .setText("Server successfully created the instance of Blocko Version ")
                 .setObject(this.actual_instance.version_object)
                 .setText(" from Blocko program ")
@@ -153,7 +153,7 @@ public class Model_HomerInstance extends Model {
     public void notification_instance_unsuccessful_upload(String reason){
 
 
-        new Model_Notification(Notification_importance.normal, Notification_level.warning)
+        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.warning)
                 .setText("Server did not upload instance to cloud on Blocko Version ")
                 .setText(this.actual_instance.version_object.version_name, "black", true, false, false)
                 .setText(" from Blocko program ")
@@ -174,7 +174,7 @@ public class Model_HomerInstance extends Model {
         for (Model_ProjectParticipant participant : this.project.participants)
             receivers.add(participant.person);
 
-        new Model_Notification(Notification_importance.low, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("New actualization task was added to Task Queue on Version ")
                 .setObject(this.actual_instance.version_object)
                 .send(receivers);
@@ -295,7 +295,7 @@ public class Model_HomerInstance extends Model {
 
 
 
-    @JsonIgnore @Transient public  WebSCType send_to_instance(){ return Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator);}
+    @JsonIgnore @Transient public WS_Interface_type send_to_instance(){ return Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator);}
 
     @JsonIgnore @Transient public  WS_Instance_status get_instance_status(){
         try{
@@ -333,7 +333,7 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode devices_commands(String targetId, Type_of_command command) {
+    @JsonIgnore @Transient public  JsonNode devices_commands(String targetId, Enum_type_of_command command) {
         try{
 
            return send_to_instance().write_with_confirmation(new WS_Basic_command_for_device().make_request(this, targetId, command), 1000*10, 0, 4);
@@ -471,7 +471,7 @@ public class Model_HomerInstance extends Model {
             this.update_device_summary_collection();
 
 
-            if(instance_type == Homer_Instance_Type.VIRTUAL){
+            if(instance_type == Enum_Homer_instance_type.VIRTUAL){
 
                 WS_Update_device_summary_collection ws_update_device_summary_collection = new WS_Update_device_summary_collection();
                 ws_update_device_summary_collection.status = "success";
@@ -673,7 +673,7 @@ public class Model_HomerInstance extends Model {
             actual_instance.refresh();
             for(Model_ActualizationProcedure procedure : actual_instance.procedures) {
                 System.out.println("Procedure:: Id:: " + procedure.id + " state:: " + procedure.state);
-                Master_Updater.add_new_Procedure(procedure);
+                Utilities_Master_thread_updater.add_new_Procedure(procedure);
             }
 
 
@@ -861,7 +861,7 @@ public class Model_HomerInstance extends Model {
                 }
 
                 // Virutální instance - kontrola Yodů kteřá tam mají být a kteří ne!
-            }else if(instance_type == Homer_Instance_Type.VIRTUAL) {
+            }else if(instance_type == Enum_Homer_instance_type.VIRTUAL) {
 
                 List<String> board_id_on_instance = new ArrayList<>();
 

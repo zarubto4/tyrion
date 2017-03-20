@@ -11,7 +11,7 @@ import play.libs.Json;
 import play.mvc.*;
 import utilities.enums.Enum_Compile_status;
 import utilities.enums.Enum_Update_type_of_update;
-import utilities.enums.Registration_Board_status;
+import utilities.enums.Enum_Board_registration_status;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
@@ -2248,13 +2248,13 @@ public class Controller_Board extends Controller {
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
 
             if(board == null ){
-                status.status = Registration_Board_status.NOT_EXIST;
+                status.status = Enum_Board_registration_status.NOT_EXIST;
             }else if(board.project_id() == null){
-                status.status = Registration_Board_status.CAN_REGISTER;
+                status.status = Enum_Board_registration_status.CAN_REGISTER;
             }else if(board.project_id() != null && board.read_permission()){
-                status.status = Registration_Board_status.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
+                status.status = Enum_Board_registration_status.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
             }else{
-                status.status = Registration_Board_status.ALREADY_REGISTERED;
+                status.status = Enum_Board_registration_status.ALREADY_REGISTERED;
             }
 
 

@@ -134,13 +134,13 @@ public class Controller_Dashboard extends Controller {
 
         // Blocko
         Map<String, WS_HomerServer> blockoServerMap = new HashMap<>();
-        Map<String, WebSCType> map_blocko            =  Controller_WebSocket.homer_servers;
-        for (Map.Entry<String, WebSCType> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_HomerServer) entry.getValue());
+        Map<String, WS_Interface_type> map_blocko            =  Controller_WebSocket.homer_servers;
+        for (Map.Entry<String, WS_Interface_type> entry : map_blocko.entrySet()) blockoServerMap.put(entry.getKey(), (WS_HomerServer) entry.getValue());
 
         // Compilation
         Map<String, WS_CompilerServer> compilerServerMap = new HashMap<>();
-        Map<String, WebSCType> map_compile =  Controller_WebSocket.compiler_cloud_servers;
-        for (Map.Entry<String, WebSCType> entry : map_compile.entrySet()) compilerServerMap.put(entry.getKey(), (WS_CompilerServer) entry.getValue());
+        Map<String, WS_Interface_type> map_compile =  Controller_WebSocket.compiler_cloud_servers;
+        for (Map.Entry<String, WS_Interface_type> entry : map_compile.entrySet()) compilerServerMap.put(entry.getKey(), (WS_CompilerServer) entry.getValue());
 
         Html content_html = dashboard.render();
 

@@ -15,7 +15,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.enums.Library_state;
+import utilities.enums.Enum_Library_state;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
@@ -80,7 +80,7 @@ public class Controller_Library extends Controller {
             library.description = help.description;
             library.long_description = help.long_description;
             library.tag = help.tag;
-            library.state = Library_state.NEW;
+            library.state = Enum_Library_state.NEW;
 
             // Kontorluji oprávnění těsně před uložením
             if(!library.create_permission()) return GlobalResult.forbidden_Permission();

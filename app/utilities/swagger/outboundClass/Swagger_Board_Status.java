@@ -2,8 +2,8 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Board_Status;
-import utilities.enums.Board_Type_of_connection;
+import utilities.enums.Enum_Board_status;
+import utilities.enums.Enum_Board_type_of_connection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +23,10 @@ public class Swagger_Board_Status {
     public String instance_id;
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
-    public Board_Status status;
+    public Enum_Board_status status;
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
-    public Board_Type_of_connection where;
+    public Enum_Board_type_of_connection where;
 
     @ApiModelProperty(readOnly = true, required = true)
     public boolean server_online_status;

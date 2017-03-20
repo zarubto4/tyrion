@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Approval_state;
+import utilities.enums.Enum_Approval_state;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
@@ -27,7 +27,7 @@ public class Model_BlockoBlockVersion extends Model {
                                                         @Id @ApiModelProperty(required = true)    public String id;
                                                             @ApiModelProperty(required = true)    public String version_name;
                                                             @ApiModelProperty(required = true)    public String version_description;
-    @Enumerated(EnumType.STRING)                            @ApiModelProperty(required = true)    public Approval_state approval_state;
+    @Enumerated(EnumType.STRING)                            @ApiModelProperty(required = true)    public Enum_Approval_state approval_state;
 
                                                                         @JsonIgnore @ManyToOne    public Model_Person author;
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
@@ -108,6 +108,6 @@ public class Model_BlockoBlockVersion extends Model {
 
     @JsonIgnore
     public static List<Model_BlockoBlockVersion> get_pending() {
-        return find.where().eq("approval_state",Approval_state.pending).findList();
+        return find.where().eq("approval_state", Enum_Approval_state.pending).findList();
     }
 }

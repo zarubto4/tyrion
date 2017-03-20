@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Homer_Instance_Type;
+import utilities.enums.Enum_Homer_instance_type;
 import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_B_Program_State;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
@@ -149,7 +149,7 @@ public class Model_BProgram extends Model {
         if(instance == null){
 
             Model_HomerInstance instance = new Model_HomerInstance();
-            instance.instance_type = Homer_Instance_Type.INDIVIDUAL;
+            instance.instance_type = Enum_Homer_instance_type.INDIVIDUAL;
             instance.cloud_homer_server = Model_HomerServer.get_destination_server();
             instance.save();
             this.instance = instance;

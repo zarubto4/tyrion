@@ -10,7 +10,7 @@ import utilities.web_socket.message_objects.homer_tyrion.WS_Rejection_homer_serv
 import java.util.HashMap;
 import java.util.Map;
 
-public class WS_CompilerServer extends WebSCType{
+public class WS_CompilerServer extends WS_Interface_type {
 
     public String server_address;
     public Map<String, ObjectNode> compilation_results = new HashMap<>();
@@ -19,7 +19,7 @@ public class WS_CompilerServer extends WebSCType{
     public boolean security_token_confirm = true;
 
 
-    public WS_CompilerServer(Model_CompilationServer server, Map<String, WebSCType> compiler_cloud_servers) {
+    public WS_CompilerServer(Model_CompilationServer server, Map<String, WS_Interface_type> compiler_cloud_servers) {
         super();
         this.server_address = server.server_url;
         super.identifikator = server.unique_identificator;

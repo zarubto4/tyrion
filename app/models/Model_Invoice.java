@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
-import utilities.enums.Payment_method;
-import utilities.enums.Payment_status;
+import utilities.enums.Enum_Payment_method;
+import utilities.enums.Enum_Payment_status;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -44,8 +44,8 @@ public class Model_Invoice extends Model {
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)                       public Model_Product product;
 
-                                                        @JsonIgnore   @Enumerated(EnumType.STRING)  public Payment_status status;
-                                                        @JsonIgnore   @Enumerated(EnumType.STRING)  public Payment_method method;
+                                                        @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_status status;
+                                                        @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_method method;
 
 
 /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
@@ -57,8 +57,8 @@ public class Model_Invoice extends Model {
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
     public boolean require_payment()  {
-        return status.name().equals(Payment_status.sent.name())
-               || status.name().equals(Payment_status.created_waited.name()
+        return status.name().equals(Enum_Payment_status.sent.name())
+               || status.name().equals(Enum_Payment_status.created_waited.name()
         )  ;
     }
 

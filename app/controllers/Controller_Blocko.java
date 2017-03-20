@@ -27,8 +27,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.emails.Email;
-import utilities.enums.Approval_state;
-import utilities.enums.Type_of_command;
+import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_type_of_command;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
@@ -1075,7 +1075,7 @@ public class Controller_Blocko extends Controller{
             if (board == null) return GlobalResult.notFoundObject("Board targetId not found");
 
             // Kontrola objektu
-            Type_of_command command = Type_of_command.getTypeCommand(string_command);
+            Enum_type_of_command command = Enum_type_of_command.getTypeCommand(string_command);
             if(command == null) return GlobalResult.notFoundObject("Command not found!");
 
             // Kontrola objektu
@@ -1505,7 +1505,7 @@ public class Controller_Blocko extends Controller{
             Model_BlockoBlockVersion blockoBlockVersion = new Model_BlockoBlockVersion();
             blockoBlockVersion.version_name = "0.0.0";
             blockoBlockVersion.version_description = "This is a first version of block.";
-            blockoBlockVersion.approval_state = Approval_state.approved;
+            blockoBlockVersion.approval_state = Enum_Approval_state.approved;
             blockoBlockVersion.design_json = scheme.design_json;
             blockoBlockVersion.logic_json = scheme.logic_json;
             blockoBlockVersion.date_of_create = new Date();
@@ -2037,7 +2037,7 @@ public class Controller_Blocko extends Controller{
             if(!(blockoBlockVersion.edit_permission())) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            blockoBlockVersion.approval_state = Approval_state.pending;
+            blockoBlockVersion.approval_state = Enum_Approval_state.pending;
 
             // Uložení změn
             blockoBlockVersion.update();
@@ -2066,7 +2066,7 @@ public class Controller_Blocko extends Controller{
             if (blockoBlockVersion == null) return GlobalResult.notFoundObject("blocko_block_version not found");
 
             // Změna stavu schválení
-            blockoBlockVersion.approval_state = Approval_state.disapproved;
+            blockoBlockVersion.approval_state = Enum_Approval_state.disapproved;
 
             // Odeslání emailu s důvodem
             try {
@@ -2127,14 +2127,14 @@ public class Controller_Blocko extends Controller{
             blockoBlockVersion.version_description = help.blocko_block_version_description;
             blockoBlockVersion.design_json = help.blocko_block_design_json;
             blockoBlockVersion.logic_json = help.blocko_block_logic_json;
-            blockoBlockVersion.approval_state = Approval_state.approved;
+            blockoBlockVersion.approval_state = Enum_Approval_state.approved;
             blockoBlockVersion.blocko_block = blockoBlock;
             blockoBlockVersion.date_of_create = new Date();
             blockoBlockVersion.save();
 
             // Pokud jde o schválení po ediatci
             if(help.state.equals("edit")) {
-                privateBlockoBlockVersion.approval_state = Approval_state.edited;
+                privateBlockoBlockVersion.approval_state = Enum_Approval_state.edited;
 
                 // Odeslání emailu
                 try {
@@ -2148,7 +2148,7 @@ public class Controller_Blocko extends Controller{
                     e.printStackTrace();
                 }
             }
-            else privateBlockoBlockVersion.approval_state = Approval_state.approved;
+            else privateBlockoBlockVersion.approval_state = Enum_Approval_state.approved;
 
             // Uložení úprav
             privateBlockoBlockVersion.update();

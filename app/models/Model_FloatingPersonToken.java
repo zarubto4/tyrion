@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Where_logged_tag;
+import utilities.enums.Enum_Where_logged_tag;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -32,7 +32,7 @@ public class Model_FloatingPersonToken extends Model {
     value = "UNIX time in ms",
     example = "1466163478925")                              public Date   created;
 
-    @ApiModelProperty(required = true, value = "Record, where user make login")  public Where_logged_tag where_logged; // Záznam, kde došlo k přihlášení (Becki, Tyrion, Homer, Compilator
+    @ApiModelProperty(required = true, value = "Record, where user make login")  public Enum_Where_logged_tag where_logged; // Záznam, kde došlo k přihlášení (Becki, Tyrion, Homer, Compilator
 
     @ApiModelProperty(required = true,
     dataType = "integer", readOnly = true,

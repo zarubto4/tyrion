@@ -4,7 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
-import utilities.enums.Burning_state;
+import utilities.enums.Enum_Garfield_burning_state;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -29,7 +29,7 @@ public class Model_MacAddressRegisterRecord extends Model {
     @JsonIgnore  public String full_id;               // ID Procesoru - který zasla request
     @JsonIgnore  public String bootloader_id; // Verze Bootloaderu, který byl vypálen
     @JsonIgnore  public String firmware_version_id;   // Verze Firmwaru, který byl vypálen
-    @JsonIgnore  public Burning_state state;
+    @JsonIgnore  public Enum_Garfield_burning_state state;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 

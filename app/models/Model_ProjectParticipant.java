@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Participant_status;
+import utilities.enums.Enum_Participant_status;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -23,7 +23,7 @@ public class Model_ProjectParticipant extends Model{
                                                         @Id @JsonIgnore public String id;
                          @ManyToOne(fetch = FetchType.LAZY) @JsonIgnore public Model_Project project;
                                                  @ManyToOne @JsonIgnore public Model_Person person;
-        @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Participant_status state;
+        @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Participant_status state;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 

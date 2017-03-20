@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
-import utilities.hardware_updater.Master_Updater;
+import utilities.hardware_updater.Utilities_Master_thread_updater;
 import utilities.notifications.Notification_Handler;
 import utilities.scheduler.CustomScheduler;
 
@@ -415,7 +415,7 @@ public class Server {
     public static void startThreads() {
 
         //1. Nastartovat aktualizační vlákna
-        Master_Updater.start_thread_box();
+        Utilities_Master_thread_updater.start_thread_box();
 
         //1. Nastartovat notifikační vlákno
         Notification_Handler.start_notification_thread();

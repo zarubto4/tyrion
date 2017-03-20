@@ -13,8 +13,8 @@ import io.swagger.annotations.ApiModelProperty;
 import play.Configuration;
 import play.libs.Json;
 import utilities.Server;
-import utilities.enums.Payment_method;
-import utilities.enums.Payment_mode;
+import utilities.enums.Enum_Payment_method;
+import utilities.enums.Enum_Payment_mode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -35,8 +35,8 @@ public class Model_Product extends Model {
                                              @ApiModelProperty(required = true) public String product_individual_name;
 
     @JsonIgnore                              @ManyToOne(fetch = FetchType.LAZY) public Model_GeneralTariff general_tariff;
-    @JsonIgnore @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Payment_mode mode;
-    @JsonIgnore @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Payment_method method;
+    @JsonIgnore @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Payment_mode mode;
+    @JsonIgnore @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Payment_method method;
 
                                              @ApiModelProperty(required = true) public String subscription_id;
                                                                     @JsonIgnore public String fakturoid_subject_id; // ID účtu ve fakturoidu

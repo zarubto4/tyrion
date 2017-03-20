@@ -15,10 +15,10 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.enums.Enum_Currency;
-import utilities.enums.Payment_method;
-import utilities.enums.Payment_status;
-import utilities.fakturoid.Fakturoid_Controller;
-import utilities.goPay.GoPay_Controller;
+import utilities.enums.Enum_Payment_method;
+import utilities.enums.Enum_Payment_status;
+import utilities.fakturoid.Utilities_Fakturoid_Controller;
+import utilities.goPay.Utilities_GoPay_Controller;
 import utilities.goPay.helps_objects.GoPay_Recurrence;
 
 import java.util.Calendar;
@@ -107,7 +107,7 @@ public class Spending_Credit_Every_Day implements Job {
 
 
         // Režim bankovního převodu - vše musí být ve výrazném přehstihnu
-        if(product.method == Payment_method.bank_transfer) {
+        if(product.method == Enum_Payment_method.bank_transfer) {
 
             logger.debug("Spending_Credit_Every_Day:: Product ID:: " +product.id + " bank transfer");
 
@@ -150,7 +150,7 @@ public class Spending_Credit_Every_Day implements Job {
             logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " The financial reserves are sufficient. Just send a notification");
 
 
-        }else if(product.method == Payment_method.credit_card){
+        }else if(product.method == Enum_Payment_method.credit_card){
 
             logger.debug("Spending_Credit_Every_Day:: Product ID: " +product.id + " credit card");
 
@@ -169,7 +169,7 @@ public class Spending_Credit_Every_Day implements Job {
                 return;
             }
 
-            if(product.remaining_credit < 5 * total_spending && product.invoices().size() > 0 && product.invoices().get(0).status == Payment_status.created_waited){
+            if(product.remaining_credit < 5 * total_spending && product.invoices().size() > 0 && product.invoices().get(0).status == Enum_Payment_status.created_waited){
 
                 logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " Close to zero. Invoice created - but failed to pay the credit card before");
 
@@ -238,7 +238,7 @@ public class Spending_Credit_Every_Day implements Job {
 
             invoice.invoice_items.add(invoice_item_1);
             invoice.proforma = true;
-            invoice.status = Payment_status.sent;
+            invoice.status = Enum_Payment_status.sent;
             invoice.date_of_create = new Date();
             invoice.method = product.method;
 
@@ -247,7 +247,7 @@ public class Spending_Credit_Every_Day implements Job {
 
 
             logger.debug("Creating Invoice on Fakturoid");
-            Fakturoid_Controller.create_proforma(product, invoice);
+            Utilities_Fakturoid_Controller.create_proforma(product, invoice);
 
 
             logger.debug("Creating GoPay_Recurrence");
@@ -260,7 +260,7 @@ public class Spending_Credit_Every_Day implements Job {
 
             // Token
             logger.debug("Taking Token");
-            String local_token = GoPay_Controller.getToken();
+            String local_token = Utilities_GoPay_Controller.getToken();
 
             if(local_token == null) {
                 logger.error("Local Token is null!!!");
@@ -309,19 +309,19 @@ public class Spending_Credit_Every_Day implements Job {
                 invoice.gopay_order_number = json_response.get("order_number").asText();
 
                 logger.debug("Removing proforma from Fakturoid");
-                if( !Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  logger.error("Error Removing proforma from Fakturoid");
+                if( !Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  logger.error("Error Removing proforma from Fakturoid");
 
                 // Vytvořit fakturu
                 logger.debug("Creating invoice from proforma in Fakturoid");
-                Fakturoid_Controller.create_paid_invoice(product,invoice);
+                Utilities_Fakturoid_Controller.create_paid_invoice(product,invoice);
 
                 // Uhradit Fakturu
                 logger.debug("Changing state on Invoice to paid");
-                if(! Fakturoid_Controller.fakturoid_post("/invoices/"+  invoice.facturoid_invoice_id +  "/fire.json?event=pay")) logger.error("Faktura nebyla změněna na uhrazenou dojde tedy k inkonzistenntímu stavu");
+                if(! Utilities_Fakturoid_Controller.fakturoid_post("/invoices/"+  invoice.facturoid_invoice_id +  "/fire.json?event=pay")) logger.error("Faktura nebyla změněna na uhrazenou dojde tedy k inkonzistenntímu stavu");
                 invoice.proforma = false;
                 invoice.update();
 
-                Fakturoid_Controller.send_Invoice_to_Email(invoice);
+                Utilities_Fakturoid_Controller.send_Invoice_to_Email(invoice);
 
             }
             else if(response.getStatus() == 200) {
@@ -330,7 +330,7 @@ public class Spending_Credit_Every_Day implements Job {
                 logger.warn("Set a time limit protection for account");
                 logger.warn("Sending email with Proforma and with request for MONEY!!!! MONEY!!! ");
 
-                Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
+                Utilities_Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
             }
             else{
                 logger.error("Unknown Error");

@@ -10,11 +10,11 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.Enum_Currency;
-import utilities.enums.Payment_method;
-import utilities.enums.Payment_mode;
-import utilities.enums.Payment_status;
-import utilities.fakturoid.Fakturoid_Controller;
-import utilities.goPay.GoPay_Controller;
+import utilities.enums.Enum_Payment_method;
+import utilities.enums.Enum_Payment_mode;
+import utilities.enums.Enum_Payment_status;
+import utilities.fakturoid.Utilities_Fakturoid_Controller;
+import utilities.goPay.Utilities_GoPay_Controller;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.response.CoreResponse;
@@ -553,7 +553,7 @@ public class Controller_Finance extends Controller {
                 product.product_individual_name = help.product_individual_name;
                 product.active = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
 
-                product.mode = Payment_mode.free;
+                product.mode = Enum_Payment_mode.free;
 
                 Model_Person person = Controller_Security.getPerson();
 
@@ -615,10 +615,10 @@ public class Controller_Finance extends Controller {
 
                     if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
-                    if(help.payment_mode.equals( Payment_mode.free.name()))              product.mode = Payment_mode.free;
-                    else if(help.payment_mode.equals( Payment_mode.annual.name()))       product.mode = Payment_mode.annual;
-                    else if(help.payment_mode.equals( Payment_mode.monthly.name()))      product.mode = Payment_mode.monthly;
-                    else if(help.payment_mode.equals( Payment_mode.per_credit.name()))   product.mode = Payment_mode.per_credit;
+                    if(help.payment_mode.equals( Enum_Payment_mode.free.name()))              product.mode = Enum_Payment_mode.free;
+                    else if(help.payment_mode.equals( Enum_Payment_mode.annual.name()))       product.mode = Enum_Payment_mode.annual;
+                    else if(help.payment_mode.equals( Enum_Payment_mode.monthly.name()))      product.mode = Enum_Payment_mode.monthly;
+                    else if(help.payment_mode.equals( Enum_Payment_mode.per_credit.name()))   product.mode = Enum_Payment_mode.per_credit;
                     else { return GlobalResult.result_BadRequest("payment_mode is invalid. Use only (free, monthly, annual, per_credit)");}
 
                 }
@@ -630,9 +630,9 @@ public class Controller_Finance extends Controller {
 
                     if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
 
-                         if(help.payment_method.equals( Payment_method.bank_transfer.name()))  product.method = Payment_method.bank_transfer;
-                    else if(help.payment_method.equals( Payment_method.credit_card.name()))    product.method = Payment_method.credit_card;
-                    else if(help.payment_method.equals( Payment_method.free.name()))           product.method = Payment_method.free;
+                         if(help.payment_method.equals( Enum_Payment_method.bank_transfer.name()))  product.method = Enum_Payment_method.bank_transfer;
+                    else if(help.payment_method.equals( Enum_Payment_method.credit_card.name()))    product.method = Enum_Payment_method.credit_card;
+                    else if(help.payment_method.equals( Enum_Payment_method.free.name()))           product.method = Enum_Payment_method.free;
                     else { return GlobalResult.result_BadRequest("payment_method is invalid. Use only (bank_transfer, credit_card, free)");}
 
                 }
@@ -672,11 +672,11 @@ public class Controller_Finance extends Controller {
                 invoice.date_of_create = new Date();
                 invoice.proforma = true;
 
-                if(product.method == Payment_method.credit_card) {
-                    invoice.status = Payment_status.sent;
+                if(product.method == Enum_Payment_method.credit_card) {
+                    invoice.status = Enum_Payment_status.sent;
                 }
-                if(product.method == Payment_method.bank_transfer) {
-                    invoice.status = Payment_status.created_waited;
+                if(product.method == Enum_Payment_method.bank_transfer) {
+                    invoice.status = Enum_Payment_status.created_waited;
                 }
 
                 Model_InvoiceItem invoice_item_1 = new Model_InvoiceItem();
@@ -699,16 +699,16 @@ public class Controller_Finance extends Controller {
 
 
                 logger.debug("Financial_Controller:: product_create::  Creating Proforma in fakturoid");
-                Fakturoid_Controller.create_proforma(product, invoice);
+                Utilities_Fakturoid_Controller.create_proforma(product, invoice);
                 logger.debug("Financial_Controller:: product_create::  Proforma done");
 
 
-                if(product.method == Payment_method.credit_card){
+                if(product.method == Enum_Payment_method.credit_card){
 
                     logger.debug("Financial_Controller:: product_create::  User want pay it with credit card!");
 
                     logger.debug("Financial_Controller:: product_create::  Preparing for providing payment");
-                    JsonNode result = GoPay_Controller.provide_payment("First Payment", product, invoice);
+                    JsonNode result = Utilities_GoPay_Controller.provide_payment("First Payment", product, invoice);
 
 
                     if(result.has("id")){
@@ -897,13 +897,13 @@ public class Controller_Finance extends Controller {
             if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
 
             if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
-            if(!invoice.status.equals(Payment_status.sent)) return GlobalResult.result_BadRequest("Invoice is already paid");
+            if(!invoice.status.equals(Enum_Payment_status.sent)) return GlobalResult.result_BadRequest("Invoice is already paid");
 
 
             // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
 
 
-            JsonNode result = GoPay_Controller.provide_payment("First Payment", invoice.product, invoice);
+            JsonNode result = Utilities_GoPay_Controller.provide_payment("First Payment", invoice.product, invoice);
 
             if(result.has("id")){
 
@@ -1255,7 +1255,7 @@ public class Controller_Finance extends Controller {
 
             System.out.println("Email na který přeposílám fakturu je:: " + email);
 
-            Fakturoid_Controller.send_invoice_to_Email(invoice, email);
+            Utilities_Fakturoid_Controller.send_invoice_to_Email(invoice, email);
 
             return GlobalResult.result_ok();
 
@@ -1277,7 +1277,7 @@ public class Controller_Finance extends Controller {
             if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
 
             if(!invoice.send_reminder()) return GlobalResult.forbidden_Permission();
-            Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
+            Utilities_Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
 
             return GlobalResult.result_ok();
 

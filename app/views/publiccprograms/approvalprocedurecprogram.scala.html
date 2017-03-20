@@ -1,6 +1,6 @@
-@import utilities.enums.Approval_state
 @import models.Model_VersionObject
 @import utilities.Server
+@import utilities.enums.Enum_Approval_state
 
 <section class="content-header">
     <h1> Public code </h1>
@@ -132,7 +132,7 @@
                             <th>Code</th>
                             <th>Edit</th>
                         </tr>
-                        @for(version <- Model_VersionObject.find.where().isNotNull("c_program").eq("approval_state", Approval_state.pending ).findList()) {
+                        @for(version <- Model_VersionObject.find.where().isNotNull("c_program").eq("approval_state", Enum_Approval_state.pending ).findList()) {
                             <tr>
                                 <td>@version.id</td>
                                 <td>@version.version_name</td>

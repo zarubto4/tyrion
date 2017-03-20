@@ -33,8 +33,8 @@ public class Model_Notification extends Model {
 
                              @Id @ApiModelProperty(required = true) public String id;
 
-    @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Notification_level notification_level;   // Typ zprávy
-    @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Notification_importance notification_importance; // Důležitost (podbarvení zprávy)
+    @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_level notification_level;   // Typ zprávy
+    @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_importance notification_importance; // Důležitost (podbarvení zprávy)
 
                                 @Column(columnDefinition = "TEXT")  private String content_string;  // Obsah v podobě Json.toString().
                                 @Column(columnDefinition = "TEXT")  private String buttons_string;
@@ -60,13 +60,13 @@ public class Model_Notification extends Model {
     List<Swagger_Notification_Button> buttons = new ArrayList<>();
 
     @JsonIgnore @Transient
-    public Notification_state state;
+    public Enum_Notification_state state;
 
     @JsonIgnore @Transient
     public List<Model_Person> receivers = new ArrayList<>();
 
     @JsonIgnore
-    public Model_Notification(Notification_importance importance, Notification_level level, Model_Person person){
+    public Model_Notification(Enum_Notification_importance importance, Enum_Notification_level level, Model_Person person){
         this.notification_level = level;
         this.notification_importance = importance;
         this.person = person;
@@ -74,10 +74,10 @@ public class Model_Notification extends Model {
     }
 
     @JsonIgnore
-    public Model_Notification(Notification_importance importance, Notification_level level){
+    public Model_Notification(Enum_Notification_importance importance, Enum_Notification_level level){
         this.notification_level = level;
         this.notification_importance = importance;
-        this.state = Notification_state.created;
+        this.state = Enum_Notification_state.created;
         this.created = new Date();
     }
 
@@ -87,7 +87,7 @@ public class Model_Notification extends Model {
     public Model_Notification setText(String message){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.text;
+        element.type     = Enum_Notification_type.text;
         element.text     = message;
         element.color    = "black";
 
@@ -98,7 +98,7 @@ public class Model_Notification extends Model {
     public Model_Notification setText(String message, String color, boolean bold, boolean italic, boolean underline){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.text;
+        element.type     = Enum_Notification_type.text;
         element.text     = message;
         element.color    = color;
         element.bold     = bold;
@@ -113,7 +113,7 @@ public class Model_Notification extends Model {
     public Model_Notification setBoldText(String message){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Notification_type.text;
+        element.type     = Enum_Notification_type.text;
         element.text     = message;
         element.bold     = true;
 
@@ -125,7 +125,7 @@ public class Model_Notification extends Model {
     public Model_Notification setObject(Object object){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type       = Notification_type.object;
+        element.type       = Enum_Notification_type.object;
         element.color      = "black";
 
         String class_name = object.getClass().getSimpleName().replaceAll("Swagger_","").replaceAll("Model_","");
@@ -200,7 +200,7 @@ public class Model_Notification extends Model {
     public Model_Notification setLink(String text, String url, String color, boolean button, boolean bold, boolean italic, boolean underline){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type = Notification_type.link;
+        element.type = Enum_Notification_type.link;
         element.url  = url;
         element.text = text;
         element.color     = color;
@@ -217,7 +217,7 @@ public class Model_Notification extends Model {
     public Model_Notification setLink(String text, String url){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type = Notification_type.link;
+        element.type = Enum_Notification_type.link;
         element.url  = url;
         element.text = text;
 
@@ -226,7 +226,7 @@ public class Model_Notification extends Model {
     }
 
     @JsonIgnore @Transient
-    public Model_Notification setButton(Notification_action action, String payload, String color, String text, boolean bold, boolean italic, boolean underline){
+    public Model_Notification setButton(Enum_Notification_action action, String payload, String color, String text, boolean bold, boolean italic, boolean underline){
 
         this.confirmation_required = true;
 
@@ -292,7 +292,7 @@ public class Model_Notification extends Model {
     @Override
     public void delete(){
         try {
-            this.state = Notification_state.deleted;
+            this.state = Enum_Notification_state.deleted;
             this.send();
         } catch (Exception e) {
             e.printStackTrace();
@@ -326,7 +326,7 @@ public class Model_Notification extends Model {
         this.confirmed = true;
         this.was_read = true;
         this.update();
-        this.state = Notification_state.updated;
+        this.state = Enum_Notification_state.updated;
         this.send();
     }
 

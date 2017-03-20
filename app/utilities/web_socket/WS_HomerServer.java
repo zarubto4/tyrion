@@ -20,14 +20,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-public class WS_HomerServer extends WebSCType{
+public class WS_HomerServer extends WS_Interface_type {
 
     public Model_HomerServer server;
     public boolean security_token_confirm;
 
     public Check_update_for_hw_under_homer_ws check_update_for_hw_under_homer_ws = null;
 
-    public WS_HomerServer(Model_HomerServer server, Map<String, WebSCType> blocko_servers) {
+    public WS_HomerServer(Model_HomerServer server, Map<String, WS_Interface_type> blocko_servers) {
         super();
         super.identifikator = server != null ? server.unique_identificator : null;
         super.maps = blocko_servers;
@@ -143,7 +143,7 @@ public class WS_HomerServer extends WebSCType{
         }
     }
 
-    public WebSCType get_Super(){
+    public WS_Interface_type get_Super(){
         return super.webSCtype;
     }
 

@@ -20,7 +20,7 @@ import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
 import utilities.emails.Email;
-import utilities.enums.Approval_state;
+import utilities.enums.Enum_Approval_state;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
@@ -1390,7 +1390,7 @@ public class Controller_Grid extends Controller {
             Model_GridWidgetVersion gridWidgetVersion = new Model_GridWidgetVersion();
             gridWidgetVersion.version_name = "0.0.1";
             gridWidgetVersion.version_description = "This is a first version of widget.";
-            gridWidgetVersion.approval_state = Approval_state.approved;
+            gridWidgetVersion.approval_state = Enum_Approval_state.approved;
             gridWidgetVersion.design_json = scheme.design_json;
             gridWidgetVersion.logic_json = scheme.logic_json;
             gridWidgetVersion.date_of_create = new Date();
@@ -1932,7 +1932,7 @@ public class Controller_Grid extends Controller {
             if(!(gridWidgetVersion.edit_permission())) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            gridWidgetVersion.approval_state = Approval_state.pending;
+            gridWidgetVersion.approval_state = Enum_Approval_state.pending;
 
             // Uložení změn
             gridWidgetVersion.update();
@@ -1961,7 +1961,7 @@ public class Controller_Grid extends Controller {
             if (gridWidgetVersion == null) return GlobalResult.notFoundObject("grid_widget_version not found");
 
             // Změna stavu schválení
-            gridWidgetVersion.approval_state = Approval_state.disapproved;
+            gridWidgetVersion.approval_state = Enum_Approval_state.disapproved;
 
             // Odeslání emailu s důvodem
             try {
@@ -2023,14 +2023,14 @@ public class Controller_Grid extends Controller {
             gridWidgetVersion.version_description = help.grid_widget_version_description;
             gridWidgetVersion.design_json = help.grid_widget_design_json;
             gridWidgetVersion.logic_json = help.grid_widget_logic_json;
-            gridWidgetVersion.approval_state = Approval_state.approved;
+            gridWidgetVersion.approval_state = Enum_Approval_state.approved;
             gridWidgetVersion.grid_widget = gridWidget;
             gridWidgetVersion.date_of_create = new Date();
             gridWidgetVersion.save();
 
             // Pokud jde o schválení po ediatci
             if(help.state.equals("edit")) {
-                privateGridWidgetVersion.approval_state = Approval_state.edited;
+                privateGridWidgetVersion.approval_state = Enum_Approval_state.edited;
 
                 // Odeslání emailu
                 try {
@@ -2045,7 +2045,7 @@ public class Controller_Grid extends Controller {
                     e.printStackTrace();
                 }
             }
-            else privateGridWidgetVersion.approval_state = Approval_state.approved;
+            else privateGridWidgetVersion.approval_state = Enum_Approval_state.approved;
 
             // Uložení úprav
             privateGridWidgetVersion.update();

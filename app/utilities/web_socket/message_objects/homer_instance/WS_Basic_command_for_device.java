@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_HomerInstance;
 import play.libs.Json;
-import utilities.enums.Type_of_command;
+import utilities.enums.Enum_type_of_command;
 import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageInstance;
 
 public class WS_Basic_command_for_device extends WS_AbstractMessageInstance {
@@ -14,7 +14,7 @@ public class WS_Basic_command_for_device extends WS_AbstractMessageInstance {
     public static final String messageType = "basicCommand";
 
     @JsonIgnore
-    public ObjectNode make_request(Model_HomerInstance instance, String targetId, Type_of_command command) {
+    public ObjectNode make_request(Model_HomerInstance instance, String targetId, Enum_type_of_command command) {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();

@@ -39,13 +39,13 @@ public class Controller_WebSocket extends Controller {
     // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jednoduché čisté spojení a
     // několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
     // je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
-    public static Map<String, WebSCType> homer_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
+    public static Map<String, WS_Interface_type> homer_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
 
     // Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
-    public static Map<String, WebSCType> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
+    public static Map<String, WS_Interface_type> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
 
     // Becki (frontend) spojení na synchronizaci blocka atd.. - Podporován režim multipřihlášení.
-    public static Map<String, WebSCType> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
+    public static Map<String, WS_Interface_type> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
 
     public static TokenCache tokenCache = new TokenCache( (long) 5, (long) 500, 50000); // Tokeny pro ověření uživatele
 
@@ -295,7 +295,7 @@ public class Controller_WebSocket extends Controller {
 
 // Test & Control API ---------------------------------------------------------------------------------------------------------
 
-    public static void server_violently_terminate_terminal(WebSCType terminal){
+    public static void server_violently_terminate_terminal(WS_Interface_type terminal){
 
         terminal.write_without_confirmation(new WS_Tyrion_restart_echo().make_request());
 
@@ -308,7 +308,7 @@ public class Controller_WebSocket extends Controller {
 
         logger.warn("Controller_WebSocket:: disconnect_all_Blocko_Servers::  Trying to safely disconnect all Blocko Servers");
 
-        for (Map.Entry<String, WebSCType> entry :  Controller_WebSocket.homer_servers.entrySet())
+        for (Map.Entry<String, WS_Interface_type> entry :  Controller_WebSocket.homer_servers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }
@@ -318,7 +318,7 @@ public class Controller_WebSocket extends Controller {
 
         logger.warn("Controller_WebSocket:: disconnect_all_Blocko_Servers:: Trying to safety disconnect all Compilation Servers");
 
-        for (Map.Entry<String, WebSCType> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet())
+        for (Map.Entry<String, WS_Interface_type> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet())
         {
             server_violently_terminate_terminal(entry.getValue());
         }

@@ -1,5 +1,5 @@
 @import models.Model_HomerServer
-@import utilities.enums.Homer_Instance_Type
+@import utilities.enums.Enum_Homer_instance_type
 
 @(homer_server: Model_HomerServer)
 
@@ -42,8 +42,8 @@
                                 <td>
                                     <div>
                                         <select id="selectTypeOfInstance" name="instance_types[]" class="form-control" multiple>
-                                            <option value="@Homer_Instance_Type.VIRTUAL"> Virtual </option>
-                                            <option value="@Homer_Instance_Type.INDIVIDUAL"> Individual </option>
+                                            <option value="@Enum_Homer_instance_type.VIRTUAL"> Virtual </option>
+                                            <option value="@Enum_Homer_instance_type.INDIVIDUAL"> Individual </option>
                                         </select>
                                     </div>
                                 </td>

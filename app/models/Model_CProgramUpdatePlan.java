@@ -7,8 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_CProgram_updater_state;
-import utilities.enums.Enum_Update_type_of_update;
-import utilities.enums.Firmware_type;
+import utilities.enums.Enum_Firmware_type;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
 
 import javax.persistence.*;
@@ -38,7 +37,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
 
               @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                   public Model_Board board;                           // Deska k aktualizaci
-              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Firmware_type firmware_type;                 // Typ Firmwaru
+              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Enum_Firmware_type firmware_type;                 // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_VersionObject c_program_version_for_update; // C_program k aktualizaci
@@ -119,14 +118,14 @@ public class Model_CProgramUpdatePlan extends Model {
         detail.firmware_type = firmware_type;
         detail.state = state;
 
-        if(detail.firmware_type == Firmware_type.FIRMWARE || detail.firmware_type == Firmware_type.BACKUP){
+        if(detail.firmware_type == Enum_Firmware_type.FIRMWARE || detail.firmware_type == Enum_Firmware_type.BACKUP){
             detail.c_program_id               = c_program_version_for_update.c_program.id;
             detail.c_program_program_name     = c_program_version_for_update.c_program.name;
             detail.c_program_version_id       = c_program_version_for_update.id;
             detail.c_program_version_name     = c_program_version_for_update.version_name;
         }
 
-        if(detail.firmware_type == Firmware_type.BOOTLOADER ){
+        if(detail.firmware_type == Enum_Firmware_type.BOOTLOADER ){
             detail.bootloader_id           = bootloader.id;
             detail.bootloader_name         = bootloader.name;
             detail.version_identificator   = bootloader.version_identificator;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_CProgram_updater_state;
-import utilities.enums.Firmware_type;
+import utilities.enums.Enum_Firmware_type;
 
 import java.util.Date;
 
@@ -18,7 +18,7 @@ public class Swagger_C_Program_Update_plan_Short_Detail {
     public Date date_of_create;
     public Date date_of_finish;
 
-    public Firmware_type firmware_type;
+    public Enum_Firmware_type firmware_type;
     public Enum_CProgram_updater_state state;
 
     // Pouze Pokud se update týká Firmwaru nebo Backupu

@@ -15,10 +15,10 @@ import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
-import utilities.enums.Approval_state;
+import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
+import utilities.enums.Enum_Notification_importance;
+import utilities.enums.Enum_Notification_level;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
@@ -80,7 +80,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version")                                          public List<Model_Board>  c_program_version_backup_boards  = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
-                                                                                                   @JsonIgnore  public Approval_state approval_state; // Zda je program schválený veřejný program
+                                                                                                   @JsonIgnore  public Enum_Approval_state approval_state; // Zda je program schválený veřejný program
                                                                                          @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
     // B_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -499,7 +499,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @Transient
     public void notification_compilation_start(){
 
-        new Model_Notification(Notification_importance.low, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("Server starts compilation of Version ")
                 .setObject(this)
                 .send(Controller_Security.getPerson());
@@ -508,7 +508,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @Transient
     public void notification_compilation_success(){
 
-        new Model_Notification(Notification_importance.low, Notification_level.success)
+        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.success)
                 .setText("Compilation of Version ")
                 .setObject(this)
                 .setText("was successful.")
@@ -518,7 +518,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @Transient
     public void notification_compilation_unsuccessful_warn(String reason){
 
-        new Model_Notification(Notification_importance.normal,  Notification_level.warning)
+        new Model_Notification(Enum_Notification_importance.normal,  Enum_Notification_level.warning)
                 .setText("Compilation of Version ")
                 .setObject(this)
                 .setText("was unsuccessful, for reason:")
@@ -529,7 +529,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @Transient
     public void notification_compilation_unsuccessful_error(String result){
 
-        new Model_Notification(Notification_importance.normal, Notification_level.error)
+        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.error)
                 .setText( "Compilation of Version")
                 .setObject(this)
                 .setText("with critical Error:")
@@ -540,7 +540,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @Transient
     public void notification_new_actualization_request_on_version(){
 
-        new Model_Notification(Notification_importance.low, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("New actualization task was added to Task Queue on Version ")
                 .setObject(this)
                 .setText(" from Program ")

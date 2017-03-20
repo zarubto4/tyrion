@@ -75,7 +75,7 @@ public class Model_Project extends Model {
                 project_participant.person = person;
             }else project_participant.user_email = invitation.mail;
 
-            project_participant.state = Participant_status.invited;
+            project_participant.state = Enum_Participant_status.invited;
 
             project_participants.add(project_participant);
         }
@@ -95,14 +95,14 @@ public class Model_Project extends Model {
 
         Model_Person owner = Controller_Security.getPerson();
 
-        new Model_Notification(Notification_importance.normal, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.info)
                 .setText("User ")
                 .setObject(owner)
                 .setText(" invited you into the project ")
                 .setObject(this)
                 .setText(". Do you accept the invitation?")
-                .setButton(Notification_action.accept_project_invitation, invitation.id, "green", "Yes", false, false, false)
-                .setButton(Notification_action.reject_project_invitation, invitation.id, "red", "No", false, false, false)
+                .setButton(Enum_Notification_action.accept_project_invitation, invitation.id, "green", "Yes", false, false, false)
+                .setButton(Enum_Notification_action.reject_project_invitation, invitation.id, "red", "No", false, false, false)
                 .send(person);
     }
 
@@ -111,7 +111,7 @@ public class Model_Project extends Model {
 
         Model_Person person = Controller_Security.getPerson();
 
-        new Model_Notification(Notification_importance.normal, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.info)
                 .setText("User ")
                 .setObject(person)
                 .setText(" did not accept your invitation to the project ")
@@ -125,7 +125,7 @@ public class Model_Project extends Model {
 
         Model_Person person = Controller_Security.getPerson();
 
-        new Model_Notification(Notification_importance.normal, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.info)
                 .setText("User ")
                 .setObject(person)
                 .setText(" accepted your invitation to the project ")
@@ -139,7 +139,7 @@ public class Model_Project extends Model {
 
         Model_Person person = Controller_Security.getPerson();
 
-        new Model_Notification(Notification_importance.normal, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.info)
                 .setText("User ")
                 .setObject(person)
                 .setText(" changed your status in project ")
@@ -164,7 +164,7 @@ public class Model_Project extends Model {
         }
 
         Model_HomerInstance instance = new Model_HomerInstance();
-        instance.instance_type = Homer_Instance_Type.VIRTUAL;
+        instance.instance_type = Enum_Homer_instance_type.VIRTUAL;
 
         // Máme Privátní server pod projektem  // TODO - Doplnit možnost registrace přímo na privátní server
         if(12 > 19){
@@ -196,12 +196,12 @@ public class Model_Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()    {  return ( Model_Project.find.where().eq("participants.person.id", Controller_Security.getPerson().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_update");  }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean read_permission()      {  return ( Model_Project.find.where().eq("participants.person.id", Controller_Security.getPerson().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_read");}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean unshare_permission()   {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.getPerson().id).where().disjunction().add(Expr.eq("state", Participant_status.owner)).add(Expr.eq("state", Participant_status.admin)).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_unshare"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean share_permission ()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.getPerson().id).where().disjunction().add(Expr.eq("state", Participant_status.owner)).add(Expr.eq("state", Participant_status.admin)).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_share");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean admin_permission ()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.getPerson().id).where().disjunction().add(Expr.eq("state", Participant_status.owner)).add(Expr.eq("state", Participant_status.admin)).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_admin");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean unshare_permission()   {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.getPerson().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_unshare"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean share_permission ()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.getPerson().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_share");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean admin_permission ()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.getPerson().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_admin");   }
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()      {  return ( Model_Project.find.where().eq("participants.person.id", Controller_Security.getPerson().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_edit");    }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.getPerson().id).where().eq("state", Participant_status.owner).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_delete");  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.getPerson().id).where().eq("state", Enum_Participant_status.owner).findRowCount() > 0) || Controller_Security.getPerson().has_permission("Project_delete");  }
 
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin}
 

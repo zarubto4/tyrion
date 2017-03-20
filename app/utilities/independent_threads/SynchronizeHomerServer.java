@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.data.Form;
 import play.i18n.Lang;
-import utilities.enums.Log_Level;
+import utilities.enums.Enum_Log_level;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Get_homer_server_configuration;
 import utilities.web_socket.message_objects.homer_tyrion.WS_Set_homer_server_configuration;
@@ -60,7 +60,7 @@ public class SynchronizeHomerServer extends Thread {
 
                 homer_server.server.logging = help.logging;
                 homer_server.server.interactive = help.interactive;
-                homer_server.server.logLevel = Log_Level.fromString(help.logLevel);
+                homer_server.server.logLevel = Enum_Log_level.fromString(help.logLevel);
                 homer_server.server.update();
 
 

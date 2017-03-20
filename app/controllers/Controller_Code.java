@@ -17,7 +17,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.emails.Email;
-import utilities.enums.Approval_state;
+import utilities.enums.Enum_Approval_state;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
@@ -278,7 +278,7 @@ public class Controller_Code extends Controller{
 
             // Vytřídění objektů
             Query<Model_VersionObject> query = Ebean.find(Model_VersionObject.class);
-            query.where().isNotNull("c_program").eq("public_version", true).ne("approval_state", Approval_state.pending).ne("approval_state", Approval_state.disapproved);
+            query.where().isNotNull("c_program").eq("public_version", true).ne("approval_state", Enum_Approval_state.pending).ne("approval_state", Enum_Approval_state.disapproved);
 
             // Vytvoření výsledku a stránkování
             Swagger_C_Program_Version_Public_List result = new Swagger_C_Program_Version_Public_List(query,page_number);
@@ -735,14 +735,14 @@ public class Controller_Code extends Controller{
             if(version.c_program == null )return GlobalResult.notFoundObject("Version not found");
 
 
-            if(Model_VersionObject.find.where().eq("approval_state", Approval_state.pending.name())
+            if(Model_VersionObject.find.where().eq("approval_state", Enum_Approval_state.pending.name())
                     .eq("c_program.project.participants.person.id", Controller_Security.getPerson().id)
                     .findList().size() > 3) return GlobalResult.result_BadRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
 
             if(version.approval_state != null)  return GlobalResult.result_BadRequest("You cannot publish same program twice!");
 
             // Úprava objektu
-            version.approval_state = Approval_state.pending;
+            version.approval_state = Enum_Approval_state.pending;
 
             // Kontrola oprávnění
             if(!(version.c_program.edit_permission())) return GlobalResult.forbidden_Permission();
@@ -814,7 +814,7 @@ public class Controller_Code extends Controller{
             if(help.decision){
 
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
-                version_old.approval_state = Approval_state.approved;
+                version_old.approval_state = Enum_Approval_state.approved;
                 version_old.update();
 
                 Model_CProgram c_program = new Model_CProgram();
@@ -898,7 +898,7 @@ public class Controller_Code extends Controller{
             }else {
 
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
-                version_old.approval_state = Approval_state.disapproved;
+                version_old.approval_state = Enum_Approval_state.disapproved;
                 version_old.update();
 
                 try {

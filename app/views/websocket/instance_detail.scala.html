@@ -1,6 +1,4 @@
-@import utilities.enums.Firmware_type
-@import utilities.enums.Type_of_command
-@import utilities.enums.Homer_Instance_Type
+@import utilities.enums.{Enum_Firmware_type, Enum_Homer_instance_type, Enum_type_of_command}
 @import models.Model_Board
 @import models.Model_BootLoader
 @import models.Model_HomerInstance
@@ -27,7 +25,7 @@
 
                     <p class="text-muted text-center"> @instance.blocko_instance_name</p>
 
-                        @if(instance.instance_type == Homer_Instance_Type.VIRTUAL) {
+                        @if(instance.instance_type == Enum_Homer_instance_type.VIRTUAL) {
                             <p class="text-orange text-center"> Virtual Instance </p>
                         } else {
                             <p class="text-green text-center"> Standard </p>
@@ -36,7 +34,7 @@
                     <ul class="list-group list-group-unbordered">
                         <li class="list-group-item">
                             <b>Owner</b> <a class="pull-right">
-                                @if(instance.instance_type == Homer_Instance_Type.VIRTUAL){
+                                @if(instance.instance_type == Enum_Homer_instance_type.VIRTUAL){
                                     <p class="text-red text-center"> Byzance Developer </p>
                                 }else{
                                     <p class="text-green text-center"> User </p>
@@ -130,7 +128,7 @@
                                                         <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b> Missing bootloader</b></a>
                                                     }
 
-                                            <a onclick="executeCommand('@x.main_board_pair.id.toString() ','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
+                                            <a onclick="executeCommand('@x.main_board_pair.id.toString() ','@Enum_type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
 
                                                 @if(Model_Board.find.byId(x.main_board_pair.id.toString()) == null) {
                                                     <a onclick="showCommandDeviceModal('@x.main_board_pair.id.toString() ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
@@ -217,7 +215,7 @@
                                             <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
                                         }
 
-                                    <a onclick="executeCommand('@x.id ','@Type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
+                                    <a onclick="executeCommand('@x.id ','@Enum_type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
 
                                         @if(Model_Board.find.byId(x.id) == null) {
                                             <a onclick="showCommandDeviceModal('@x.id ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
@@ -353,12 +351,12 @@
                                         <td>@y.id</td>
                                         <td>@y.date_of_create</td>
                                         <td>@y.date_of_finish</td>
-                                        <td>@if(y.firmware_type == Firmware_type.FIRMWARE){
+                                        <td>@if(y.firmware_type == Enum_Firmware_type.FIRMWARE){
                                                  @y.c_program_version_for_update.id
-                                            }@if(y.firmware_type == Firmware_type.BOOTLOADER){
+                                            }@if(y.firmware_type == Enum_Firmware_type.BOOTLOADER){
                                                  @y.bootloader.id
                                             }
-                                            @if(y.firmware_type == Firmware_type.BACKUP){
+                                            @if(y.firmware_type == Enum_Firmware_type.BACKUP){
                                                 @y.c_program_version_for_update.id
                                             }
                                         </td>
@@ -526,63 +524,63 @@
 
                         <tr>
                              <td>
-                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_STATE.get_command')"> Get state info </button>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand( this.value ,'@Enum_type_of_command.INFO_STATE.get_command')"> Get state info </button>
                              </td>
                              <td>
-                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_DEVICE_COUNTER.get_command')"> Get Device Counter Info </button>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Enum_type_of_command.INFO_DEVICE_COUNTER.get_command')"> Get Device Counter Info </button>
                              </td>
                              <td>
-                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_INSTANCE_SUMMARY_INFO.get_command')"> Complete cummary information </button>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Enum_type_of_command.INFO_INSTANCE_SUMMARY_INFO.get_command')"> Complete cummary information </button>
                              </td>
                              <td>
-                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value,'@Type_of_command.COMMAND_PING_DEVICE.get_command')"> Ping Device</button>
+                                 <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value,'@Enum_type_of_command.COMMAND_PING_DEVICE.get_command')"> Ping Device</button>
                              </td>
                         </tr>
 
                         <tr>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_FIRMWARE.get_command')"> Get Firmware Version </button>
+                                <button type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand(  this.value ,'@Enum_type_of_command.INFO_FIRMWARE.get_command')"> Get Firmware Version </button>
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_WIFI_USERNAME.get_command')"> Get WIFI User Name </button><br>
-                                <button type="button" class="commandButton btn btn-success  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.COMMAND_WIFI_USERNAME.get_command')"> SET WIFI User Name </button>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Enum_type_of_command.INFO_WIFI_USERNAME.get_command')"> Get WIFI User Name </button><br>
+                                <button type="button" class="commandButton btn btn-success  btn-sm"  onclick="executeCommand(  this.value ,'@Enum_type_of_command.COMMAND_WIFI_USERNAME.get_command')"> SET WIFI User Name </button>
                             </td>
                             <td>
 
                             </td>
                             <td>
-                                <button id="upload_firmware_real" type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value, true, '@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
-                                <button id="upload_firmware_virtual" type="button" class="commandButton btn btn-warning  btn-sm"  onclick="showUploadModal(  this.value, false, '@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
+                                <button id="upload_firmware_real" type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value, true, '@Enum_Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
+                                <button id="upload_firmware_virtual" type="button" class="commandButton btn btn-warning  btn-sm"  onclick="showUploadModal(  this.value, false, '@Enum_Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
 
                             </td>
                         </tr>
 
                         <tr>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary   btn-sm" onclick="executeCommand( this.value ,'@Type_of_command.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button>
+                                <button type="button" class="commandButton btn btn-primary   btn-sm" onclick="executeCommand( this.value ,'@Enum_type_of_command.INFO_BOOTLOADER.get_command')"> Get Bootloader Info </button>
                             </td>
                             <td>
-                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.INFO_WIFI_PASSWORD.get_command')"> Get WIFI Password </button><br>
-                                <button type="button" class="commandButton btn btn-success  btn-sm"  onclick="executeCommand(  this.value ,'@Type_of_command.COMMAND_WIFI_PASSWORD.get_command')"> SET WIFI Password </button>
+                                <button type="button" class="commandButton btn btn-primary  btn-sm"  onclick="executeCommand(  this.value ,'@Enum_type_of_command.INFO_WIFI_PASSWORD.get_command')"> Get WIFI Password </button><br>
+                                <button type="button" class="commandButton btn btn-success  btn-sm"  onclick="executeCommand(  this.value ,'@Enum_type_of_command.COMMAND_WIFI_PASSWORD.get_command')"> SET WIFI Password </button>
                             </td>
                             <td>
 
                             </td>
                             <td>
-                                <button id="upload_bootloader_real" type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value, true,'@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
-                                <button id="upload_bootloader_virtual" type="button" class="commandButton btn btn-warning  btn-sm"  onclick="showUploadModal(  this.value, false,'@Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
+                                <button id="upload_bootloader_real" type="button" class="commandButton btn btn-primary  btn-sm"  onclick="showUploadModal(  this.value, true,'@Enum_Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
+                                <button id="upload_bootloader_virtual" type="button" class="commandButton btn btn-warning  btn-sm"  onclick="showUploadModal(  this.value, false,'@Enum_Firmware_type.BOOTLOADER.get_firmwareType()')">Upload Bootloader</button>
                             </td>
                         </tr>
 
                         <tr>
-                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_AUTO_BACKUP.get_command')"> Get BackUp info </button></td>
+                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Enum_type_of_command.INFO_AUTO_BACKUP.get_command')"> Get BackUp info </button></td>
                             <td></td>
                             <td> </td>
                             <td></td>
                         </tr>
 
                         <tr>
-                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Type_of_command.INFO_DATETIME.get_command')"> Get Time </button></td>
+                            <td><button  type="button" class="commandButton btn btn-primary   btn-sm"  onclick="executeCommand( this.value ,'@Enum_type_of_command.INFO_DATETIME.get_command')"> Get Time </button></td>
                             <td></td>
                             <td></td>
                             <td></td>

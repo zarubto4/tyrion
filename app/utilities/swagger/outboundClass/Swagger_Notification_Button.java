@@ -2,7 +2,7 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Notification_action;
+import utilities.enums.Enum_Notification_action;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -12,7 +12,7 @@ import javax.persistence.Enumerated;
 public class Swagger_Notification_Button {
 
     @ApiModelProperty(required =  true) public String text;
-    @ApiModelProperty(required =  true) @Enumerated(EnumType.STRING) public Notification_action action;
+    @ApiModelProperty(required =  true) @Enumerated(EnumType.STRING) public Enum_Notification_action action;
     @ApiModelProperty(required =  true) public String color;
     @ApiModelProperty(required =  true) public String payload = null;
 

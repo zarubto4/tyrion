@@ -3,8 +3,8 @@ package utilities.swagger.documentationClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
-import utilities.enums.Library_state;
-import utilities.enums.Library_tag;
+import utilities.enums.Enum_Library_state;
+import utilities.enums.Enum_Library_tag;
 
 @ApiModel(description = "Json Model for new ImportLibrary",
           value = "ImportLibrary_New")
@@ -29,8 +29,8 @@ public class Swagger_ImportLibrary_New {
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "The tag describes what the library is doing")
-    public Library_tag tag;
+    public Enum_Library_tag tag;
 
     @ApiModelProperty(required = false, value = "The state describes if the library is tested, new or old.")
-    public Library_state state;
+    public Enum_Library_state state;
 }

@@ -15,10 +15,10 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.enums.Notification_action;
-import utilities.enums.Notification_importance;
-import utilities.enums.Notification_level;
-import utilities.enums.Notification_state;
+import utilities.enums.Enum_Notification_action;
+import utilities.enums.Enum_Notification_importance;
+import utilities.enums.Enum_Notification_level;
+import utilities.enums.Enum_Notification_state;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
@@ -49,7 +49,7 @@ public class Controller_Notification extends Controller {
   // TODO zařadit pod objekt
   public static void upload_of_Instance_was_unsuccessful_with_error(Model_Person person, Model_VersionObject version_object){
 
-    Model_Notification notification = new Model_Notification(Notification_importance.normal, Notification_level.error, person)
+    Model_Notification notification = new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.error, person)
                                     .setText("Server not upload instance to cloud on Blocko Version")
                                     .setObject(version_object)
                                     .setText("from Blocko program")
@@ -61,23 +61,23 @@ public class Controller_Notification extends Controller {
 
   public static void test_notification(Model_Person person, String level, String importance, String type, String buttons){
 
-    Notification_level lvl;
+    Enum_Notification_level lvl;
 
-    Notification_importance imp;
+    Enum_Notification_importance imp;
 
     switch (importance){
-      case "low": imp = Notification_importance.low; break;
-      case "normal": imp = Notification_importance.normal; break;
-      case "high": imp = Notification_importance.high; break;
-      default: imp = Notification_importance.normal; break;
+      case "low": imp = Enum_Notification_importance.low; break;
+      case "normal": imp = Enum_Notification_importance.normal; break;
+      case "high": imp = Enum_Notification_importance.high; break;
+      default: imp = Enum_Notification_importance.normal; break;
     }
 
     switch (level){
-      case "info": lvl = Notification_level.info;break;
-      case "success": lvl = Notification_level.success;break;
-      case "warning": lvl = Notification_level.warning;break;
-      case "error": lvl = Notification_level.error;break;
-      default: lvl = Notification_level.info;break;
+      case "info": lvl = Enum_Notification_level.info;break;
+      case "success": lvl = Enum_Notification_level.success;break;
+      case "warning": lvl = Enum_Notification_level.warning;break;
+      case "error": lvl = Enum_Notification_level.error;break;
+      default: lvl = Enum_Notification_level.info;break;
     }
 
     Model_Notification notification;
@@ -216,19 +216,19 @@ public class Controller_Notification extends Controller {
     switch (buttons){
       case "0": break;
       case "1":{
-        notification.setButton(Notification_action.confirm_notification, "test", "blue", "OK", false, false, false);
+        notification.setButton(Enum_Notification_action.confirm_notification, "test", "blue", "OK", false, false, false);
         break;}
       case "2":{
-        notification.setButton(Notification_action.confirm_notification, "test", "green", "Yes", false, false, true);
-        notification.setButton(Notification_action.confirm_notification, "test", "red", "No", false, false, true);
+        notification.setButton(Enum_Notification_action.confirm_notification, "test", "green", "Yes", false, false, true);
+        notification.setButton(Enum_Notification_action.confirm_notification, "test", "red", "No", false, false, true);
         break;}
       case "3":{
-        notification.setButton(Notification_action.confirm_notification, "test", "green", "Yes", true, false, false);
-        notification.setButton(Notification_action.confirm_notification, "test", "red", "No", true, false, false);
-        notification.setButton(Notification_action.confirm_notification, "test", "white", "Close", false, true, false);
+        notification.setButton(Enum_Notification_action.confirm_notification, "test", "green", "Yes", true, false, false);
+        notification.setButton(Enum_Notification_action.confirm_notification, "test", "red", "No", true, false, false);
+        notification.setButton(Enum_Notification_action.confirm_notification, "test", "white", "Close", false, true, false);
         break;}
       default:{
-        notification.setButton(Notification_action.confirm_notification, "test", "green", "Yes", false, false, false);
+        notification.setButton(Enum_Notification_action.confirm_notification, "test", "green", "Yes", false, false, false);
         break;}
     }
 
@@ -339,7 +339,7 @@ public class Controller_Notification extends Controller {
       for(Model_Notification notification : notifications) {
 
         notification.set_read();
-        notification.state = Notification_state.updated;
+        notification.state = Enum_Notification_state.updated;
         notification.send();
       }
 
@@ -366,11 +366,11 @@ public class Controller_Notification extends Controller {
   @Security.Authenticated(Secured_API.class)
   public Result get_unconfirmed_notifications(){
     try{
-      List<Model_Notification> notifications = Model_Notification.find.where().eq("person.id", Controller_Security.getPerson().id).eq("notification_importance", Notification_importance.high).eq("confirmed", false).findList();
+      List<Model_Notification> notifications = Model_Notification.find.where().eq("person.id", Controller_Security.getPerson().id).eq("notification_importance", Enum_Notification_importance.high).eq("confirmed", false).findList();
       if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
 
       for (Model_Notification notification : notifications){
-          notification.state = Notification_state.unconfirmed;
+          notification.state = Enum_Notification_state.unconfirmed;
           notification.send();
       }
 

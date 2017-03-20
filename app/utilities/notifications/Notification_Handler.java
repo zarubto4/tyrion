@@ -5,8 +5,8 @@ import controllers.Controller_WebSocket;
 import models.Model_Notification;
 import models.Model_Invitation;
 import models.Model_Person;
-import utilities.enums.Notification_action;
-import utilities.enums.Notification_importance;
+import utilities.enums.Enum_Notification_action;
+import utilities.enums.Enum_Notification_importance;
 import utilities.web_socket.WS_Becki_Website;
 
 import java.util.ArrayList;
@@ -81,13 +81,13 @@ public class Notification_Handler {
         for (Model_Person person : receivers) {
 
             // Pokud je notification_importance vyšší než "low" notifikaci uložím
-            if ((notification.notification_importance != Notification_importance.low)&&(notification.id == null)) {
+            if ((notification.notification_importance != Enum_Notification_importance.low)&&(notification.id == null)) {
 
                 notification.person = person;
                 notification.save_object();
 
                 try {
-                    if((!notification.buttons().isEmpty())&&(notification.buttons().get(0).action == Notification_action.accept_project_invitation)){
+                    if((!notification.buttons().isEmpty())&&(notification.buttons().get(0).action == Enum_Notification_action.accept_project_invitation)){
 
                         Model_Invitation invitation = Model_Invitation.find.byId(notification.buttons().get(0).payload);
                         invitation.notification_id = notification.id;

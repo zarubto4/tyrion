@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Library_state;
-import utilities.enums.Library_tag;
+import utilities.enums.Enum_Library_state;
+import utilities.enums.Enum_Library_tag;
 import utilities.swagger.outboundClass.Swagger_ImportLibrary_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_ImportLibrary_Version_Short_Detail;
 
@@ -31,13 +31,13 @@ public class Model_ImportLibrary extends Model{
     @Column(columnDefinition = "TEXT")
     @ApiModelProperty(required = true)     public String long_description;
 
-    @ApiModelProperty(required = true)     public Library_state state;
+    @ApiModelProperty(required = true)     public Enum_Library_state state;
 
     @ApiModelProperty(required = true)     public boolean removed;
 
                               @JsonIgnore private String azure_library_link;
     @Enumerated(EnumType.STRING)
-    @ApiModelProperty(required = true)     public Library_tag tag; // K čemu knihovna slouží (matematická, audio, atd...)
+    @ApiModelProperty(required = true)     public Enum_Library_tag tag; // K čemu knihovna slouží (matematická, audio, atd...)
 
     @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_VersionObject> versions        = new ArrayList<>();
 

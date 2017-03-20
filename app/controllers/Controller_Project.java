@@ -94,7 +94,7 @@ public class Controller_Project extends Controller {
             Model_ProjectParticipant participant = new Model_ProjectParticipant();
             participant.person = product.payment_details.person;
             participant.project = project;
-            participant.state = Participant_status.owner;
+            participant.state = Enum_Participant_status.owner;
 
             participant.save();
 
@@ -453,7 +453,7 @@ public class Controller_Project extends Controller {
                 Model_ProjectParticipant participant = new Model_ProjectParticipant();
                 participant.person = person;
                 participant.project = project;
-                participant.state = Participant_status.member;
+                participant.state = Enum_Participant_status.member;
 
                 participant.save();
             }

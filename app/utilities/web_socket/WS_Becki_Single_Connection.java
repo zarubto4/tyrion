@@ -3,7 +3,7 @@ package utilities.web_socket;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 
-public class WS_Becki_Single_Connection extends  WebSCType {
+public class WS_Becki_Single_Connection extends WS_Interface_type {
 
     WS_Becki_Website person_connection;
     public boolean notification_subscriber = false;

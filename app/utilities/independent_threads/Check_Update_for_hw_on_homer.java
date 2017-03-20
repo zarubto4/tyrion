@@ -3,7 +3,7 @@ package utilities.independent_threads;
 import models.Model_Board;
 import models.Model_HomerInstance;
 import models.Model_HomerServer;
-import utilities.enums.Homer_Instance_Type;
+import utilities.enums.Enum_Homer_instance_type;
 import utilities.web_socket.WS_HomerServer;
 import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
 import utilities.web_socket.message_objects.homer_instance.WS_Yoda_connected;
@@ -51,11 +51,11 @@ public class Check_Update_for_hw_on_homer extends Thread {
                 .where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator)
                         .disjunction()
                             .conjunction()
-                                .eq("instance_type", Homer_Instance_Type.INDIVIDUAL)
+                                .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL)
                                 .isNotNull("actual_instance")
                             .endJunction()
                             .conjunction()
-                                .eq("instance_type", Homer_Instance_Type.VIRTUAL)
+                                .eq("instance_type", Enum_Homer_instance_type.VIRTUAL)
                                 .isNotNull("boards_in_virtual_instance")
                              .endJunction()
                             .endJunction()

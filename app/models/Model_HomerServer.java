@@ -14,8 +14,8 @@ import play.i18n.Lang;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.enums.Enum_Cloud_HomerServer_type;
-import utilities.enums.Log_Level;
-import utilities.enums.Where_logged_tag;
+import utilities.enums.Enum_Log_level;
+import utilities.enums.Enum_Where_logged_tag;
 import utilities.hardware_updater.Actualization_Task;
 import utilities.independent_threads.Check_Homer_instance_after_connection;
 import utilities.independent_threads.Check_Update_for_hw_on_homer;
@@ -60,7 +60,7 @@ public class Model_HomerServer extends Model{
                                                                 public Integer days_in_archive;
                                                                 public boolean logging;
                                                                 public boolean interactive;
-                                                                public Log_Level logLevel;
+                                                                public Enum_Log_level logLevel;
 
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();
 
@@ -226,7 +226,7 @@ public class Model_HomerServer extends Model{
                 Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
                 floatingPersonToken.person = person;
                 floatingPersonToken.user_agent = message.user_agent;
-                floatingPersonToken.where_logged = Where_logged_tag.HOMER_SERVER;
+                floatingPersonToken.where_logged = Enum_Where_logged_tag.HOMER_SERVER;
                 floatingPersonToken.save();
 
                 homer.write_without_confirmation( message.make_request_success(homer.server, person, floatingPersonToken) );

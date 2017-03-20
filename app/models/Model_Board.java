@@ -14,7 +14,7 @@ import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.*;
 import utilities.hardware_updater.Actualization_procedure;
-import utilities.hardware_updater.Master_Updater;
+import utilities.hardware_updater.Utilities_Master_thread_updater;
 import utilities.swagger.documentationClass.Swagger_Board_for_fast_upload_detail;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
@@ -177,8 +177,8 @@ public class Model_Board extends Model {
         Model_HomerInstance instance =  get_instance();
 
         Swagger_Board_Status board_status = new Swagger_Board_Status();
-        board_status.status = is_online() ? Board_Status.online : Board_Status.offline;
-        if(project == null) board_status.where = Board_Type_of_connection.connected_to_server_unregistered;
+        board_status.status = is_online() ? Enum_Board_status.online : Enum_Board_status.offline;
+        if(project == null) board_status.where = Enum_Board_type_of_connection.connected_to_server_unregistered;
 
 
         // Stavy Desky--------------------------------------------------------------------------------------------------
@@ -187,7 +187,7 @@ public class Model_Board extends Model {
         // 3) Je ve Virtuální instanci
         if(instance != null) {
 
-            board_status.where = Board_Type_of_connection.in_person_instance;
+            board_status.where = Enum_Board_type_of_connection.in_person_instance;
             board_status.instance_id = instance.blocko_instance_name;
             board_status.instance_online_status = instance.instance_online();
             if (instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
@@ -206,14 +206,14 @@ public class Model_Board extends Model {
             // 1) Není známo kam se deska připojila a nemá instanci
             if(get_instance() == null && get_connected_server() == null) {
 
-                board_status.status = Board_Status.not_yet_first_connected;
+                board_status.status = Enum_Board_status.not_yet_first_connected;
                 // 2) Je známo kam se deska připojila a nemá instanci - Takže třeba když jí uživatel vyndal z krabičky nahrál na ní něco
             }
 
             if(get_instance()  == null && get_connected_server() != null) {
 
                 logger.debug("Model_Board:: status:: Check Status:: ");
-                board_status.where = Board_Type_of_connection.connected_to_byzance;
+                board_status.where = Enum_Board_type_of_connection.connected_to_byzance;
                 board_status.server_name = connected_server.personal_server_name;
                 board_status.homer_server_id = connected_server.unique_identificator;
                 board_status.server_online_status = connected_server.server_is_online();
@@ -224,7 +224,7 @@ public class Model_Board extends Model {
 
         // 4) Je ve virtuální instanci
         if( get_virtual_instance() != null ){
-            board_status.where = Board_Type_of_connection.under_project_virtual_instance;
+            board_status.where = Enum_Board_type_of_connection.under_project_virtual_instance;
             board_status.server_name = get_virtual_instance().cloud_homer_server.personal_server_name;
             board_status.homer_server_id = get_virtual_instance().cloud_homer_server.unique_identificator;
         }
@@ -245,7 +245,7 @@ public class Model_Board extends Model {
 
 
         List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.where()
-                .eq("firmware_type", Firmware_type.FIRMWARE)
+                .eq("firmware_type", Enum_Firmware_type.FIRMWARE)
                 .disjunction()
                     .eq("state", Enum_CProgram_updater_state.in_progress)
                     .eq("state", Enum_CProgram_updater_state.waiting_for_device)
@@ -259,7 +259,7 @@ public class Model_Board extends Model {
 
 
         List<Model_CProgramUpdatePlan> c_backup_program_plans = Model_CProgramUpdatePlan.find.where()
-                .eq("firmware_type", Firmware_type.BACKUP)
+                .eq("firmware_type", Enum_Firmware_type.BACKUP)
                 .disjunction()
                 .eq("state", Enum_CProgram_updater_state.in_progress)
                 .eq("state", Enum_CProgram_updater_state.waiting_for_device)
@@ -309,7 +309,7 @@ public class Model_Board extends Model {
         if(this.get_instance() == null){
 
             System.out.println("Board nemá instanci " );
-            board_for_fast_upload_detail.collision = Board_update_collision.NO_COLLISION;
+            board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;
 
         }else {
 
@@ -317,8 +317,8 @@ public class Model_Board extends Model {
             System.out.println("Aktuální instance typ " + this.get_instance().instance_type);
 
 
-            if(this.get_instance().instance_type == Homer_Instance_Type.VIRTUAL) board_for_fast_upload_detail.collision = Board_update_collision.NO_COLLISION;
-            else                                     board_for_fast_upload_detail.collision = Board_update_collision.ALREADY_IN_INSTANCE;
+            if(this.get_instance().instance_type == Enum_Homer_instance_type.VIRTUAL) board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;
+            else                                     board_for_fast_upload_detail.collision = Enum_Board_update_collision.ALREADY_IN_INSTANCE;
 
         }
 
@@ -511,13 +511,13 @@ public class Model_Board extends Model {
 
                 try{
 
-                    Hardware_update_state_from_Homer status = Hardware_update_state_from_Homer.getUpdate_state(updateDeviceInformation_device.update_state);
+                    Enum_Hardware_update_state_from_Homer status = Enum_Hardware_update_state_from_Homer.getUpdate_state(updateDeviceInformation_device.update_state);
                     if(status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + updateDeviceInformation_device.update_state + " is not recognize in Json!");
 
                     Model_Board board = Model_Board.find.byId(updateDeviceInformation_device.deviceId);
                     if(board == null) throw new NullPointerException("Device id" +updateDeviceInformation_device.deviceId + " not found!");
 
-                    Firmware_type firmware_type = Firmware_type.getFirmwareType(updateDeviceInformation_device.firmwareType);
+                    Enum_Firmware_type firmware_type = Enum_Firmware_type.getFirmwareType(updateDeviceInformation_device.firmwareType);
                     if(firmware_type == null) throw new NullPointerException("Firmware_type " +updateDeviceInformation_device.firmwareType + "is not recognize in Json!");
 
 
@@ -525,14 +525,14 @@ public class Model_Board extends Model {
                     if(plan == null) throw new NullPointerException("Plan id" +updateDeviceInformation_device.c_program_update_plan_id + " not found!");
 
 
-                    if(status == Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE){
+                    if(status == Enum_Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE){
                         plan.state = Enum_CProgram_updater_state.complete;
                         plan.date_of_finish = new Date();
                         plan.update();
 
                         logger.debug("Model_Board:: Update_report_from_homer:: FirmwareType check");
 
-                        if(firmware_type == Firmware_type.FIRMWARE){
+                        if(firmware_type == Enum_Firmware_type.FIRMWARE){
 
                             logger.debug("Model_Board:: Update_report_from_homer:: Firmware");
 
@@ -541,7 +541,7 @@ public class Model_Board extends Model {
                             continue;
                         }
 
-                        if(firmware_type == Firmware_type.BACKUP){
+                        if(firmware_type == Enum_Firmware_type.BACKUP){
 
                             logger.debug("Model_Board:: Update_report_from_homer:: BACKUP");
 
@@ -551,7 +551,7 @@ public class Model_Board extends Model {
                             continue;
                         }
 
-                        if(firmware_type == Firmware_type.BOOTLOADER){
+                        if(firmware_type == Enum_Firmware_type.BOOTLOADER){
 
                             logger.debug("Model_Board:: Update_report_from_homer:: Bootloader");
                             board.actual_boot_loader = plan.bootloader;
@@ -563,13 +563,13 @@ public class Model_Board extends Model {
 
                     }
 
-                    if(status == Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || status == Hardware_update_state_from_Homer.YODA_WAS_OFFLINE){
+                    if(status == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || status == Enum_Hardware_update_state_from_Homer.YODA_WAS_OFFLINE){
                         plan.state = Enum_CProgram_updater_state.waiting_for_device;
                         plan.update();
                         continue;
                     }
 
-                    if(status == Hardware_update_state_from_Homer.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION){
+                    if(status == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION){
                         plan.state = Enum_CProgram_updater_state.not_updated;
                         plan.date_of_finish = new Date();
                         plan.update();
@@ -647,7 +647,7 @@ public class Model_Board extends Model {
 
                 System.out.println("Bubu kontrolovat na co mám plán");
 
-                if (plans.get(0).firmware_type == Firmware_type.FIRMWARE) {
+                if (plans.get(0).firmware_type == Enum_Firmware_type.FIRMWARE) {
 
                     logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
 
@@ -663,7 +663,7 @@ public class Model_Board extends Model {
 
                             plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                             plans.get(0).update();
-                            Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                            Utilities_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
                         }
 
                     }else {
@@ -672,11 +672,11 @@ public class Model_Board extends Model {
                         plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                         plans.get(0).update();
 
-                        Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                        Utilities_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
 
                     }
 
-                } else if (plans.get(0).firmware_type == Firmware_type.BOOTLOADER) {
+                } else if (plans.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER) {
 
                     logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
 
@@ -691,10 +691,10 @@ public class Model_Board extends Model {
                         plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                         plans.get(0).update();
 
-                        Master_Updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                        Utilities_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
                     }
 
-                } else if (plans.get(0).firmware_type == Firmware_type.BACKUP) {
+                } else if (plans.get(0).firmware_type == Enum_Firmware_type.BACKUP) {
 
                     logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
 
@@ -825,7 +825,7 @@ public class Model_Board extends Model {
             List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
                     .find
                     .where()
-                    .eq("firmware_type", Firmware_type.BOOTLOADER)
+                    .eq("firmware_type", Enum_Firmware_type.BOOTLOADER)
                     .disjunction()
                     .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
@@ -856,7 +856,7 @@ public class Model_Board extends Model {
             Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
             plan.board = board;
 
-            plan.firmware_type = Firmware_type.BOOTLOADER;
+            plan.firmware_type = Enum_Firmware_type.BOOTLOADER;
             plan.actualization_procedure = procedure;
 
             if(boot_loader_for_using == null){
@@ -874,7 +874,7 @@ public class Model_Board extends Model {
         }
 
         procedure.refresh();
-        Master_Updater.add_new_Procedure(procedure);
+        Utilities_Master_thread_updater.add_new_Procedure(procedure);
     }
 
     @JsonIgnore @Transient public static void update_firmware(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
@@ -889,7 +889,7 @@ public class Model_Board extends Model {
             List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
                     .find
                     .where()
-                    .eq("firmware_type", Firmware_type.FIRMWARE)
+                    .eq("firmware_type", Enum_Firmware_type.FIRMWARE)
                     .disjunction()
                     .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
@@ -907,7 +907,7 @@ public class Model_Board extends Model {
 
             Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
             plan.board =  b_pair.board;
-            plan.firmware_type = Firmware_type.FIRMWARE;
+            plan.firmware_type = Enum_Firmware_type.FIRMWARE;
             plan.actualization_procedure = procedure;
 
 
@@ -927,7 +927,7 @@ public class Model_Board extends Model {
 
         procedure.refresh();
 
-        Master_Updater.add_new_Procedure(procedure);
+        Utilities_Master_thread_updater.add_new_Procedure(procedure);
     }
 
     @JsonIgnore @Transient  public static void update_backup(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
@@ -952,7 +952,7 @@ public class Model_Board extends Model {
             List<Model_CProgramUpdatePlan>  procedures_for_overriding = Model_CProgramUpdatePlan
                     .find
                     .where()
-                    .eq("firmware_type", Firmware_type.BACKUP)
+                    .eq("firmware_type", Enum_Firmware_type.BACKUP)
                     .disjunction()
                     .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
@@ -970,7 +970,7 @@ public class Model_Board extends Model {
 
             Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
             plan.board = b_pair.board;
-            plan.firmware_type = Firmware_type.BACKUP;
+            plan.firmware_type = Enum_Firmware_type.BACKUP;
             plan.actualization_procedure = procedure;
 
             if( b_pair.c_program_version == null){
@@ -992,7 +992,7 @@ public class Model_Board extends Model {
         procedure.updates.addAll(plans);
         procedure.update();
 
-        Master_Updater.add_new_Procedure(procedure);
+        Utilities_Master_thread_updater.add_new_Procedure(procedure);
     }
 
     @JsonIgnore @Transient  public static WS_Board_set_autobackup set_auto_backup(Model_Board board_for_update){
@@ -1040,7 +1040,7 @@ public class Model_Board extends Model {
         for (Model_ProjectParticipant participant : this.project.participants)
             receivers.add(participant.person);
 
-        new Model_Notification(Notification_importance.low, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
                 .setObject(this)
                 .setText("is connected.", "black", false, false, false)
@@ -1054,7 +1054,7 @@ public class Model_Board extends Model {
         for (Model_ProjectParticipant participant : this.project.participants)
             receivers.add(participant.person);
 
-        new Model_Notification(Notification_importance.low, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : "" ))
                 .setObject(this)
                 .setText("is disconnected.")
@@ -1064,7 +1064,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient
     public void notification_new_actualization_request_with_file(){
 
-        new Model_Notification(Notification_importance.low, Notification_level.info)
+        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("New actualization task was added to Task Queue on ")
                 .setObject(this)
                 .setText(" with user File ") // TODO ? asi dodělat soubor ?
