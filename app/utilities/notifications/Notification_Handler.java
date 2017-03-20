@@ -7,7 +7,7 @@ import models.Model_Invitation;
 import models.Model_Person;
 import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
-import utilities.web_socket.WS_Becki_Website;
+import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;
 import java.util.List;

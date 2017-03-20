@@ -14,10 +14,10 @@ import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.Enum_Compile_status;
 import utilities.independent_threads.Compilation_After_BlackOut;
-import utilities.web_socket.WS_Send_message;
-import utilities.web_socket.WS_CompilerServer;
-import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
-import utilities.web_socket.message_objects.compilator_tyrion.WS_Ping_compilation_server;
+import web_socket.message_objects.common.WS_Send_message;
+import web_socket.services.WS_CompilerServer;
+import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
+import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -78,7 +78,7 @@ public class Model_CompilationServer extends Model {
         return  !Controller_WebSocket.compiler_cloud_servers.isEmpty();
     }
 
-    @JsonIgnore @Transient public static WS_Make_compilation make_Compilation(ObjectNode request){
+    @JsonIgnore @Transient public static WS_Message_Make_compilation make_Compilation(ObjectNode request){
         try{
 
             List<String> keys        = new ArrayList<>(Controller_WebSocket.compiler_cloud_servers.keySet());
@@ -90,7 +90,7 @@ public class Model_CompilationServer extends Model {
 
                 logger.debug("Model_CompilationServer:: make_Compilation:: Incoming message has not contains state = success");
 
-                WS_Make_compilation make_compilation = new WS_Make_compilation();
+                WS_Message_Make_compilation make_compilation = new WS_Message_Make_compilation();
 
                 make_compilation.status = "error";
                 make_compilation.error = "Something was wrong";
@@ -106,10 +106,10 @@ public class Model_CompilationServer extends Model {
 
             logger.debug("Model_CompilationServer:: make_Compilation:: Result is here!!! " + node.toString());
 
-            final Form<WS_Make_compilation> form = Form.form(WS_Make_compilation.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Make_compilation:: Incoming Json from Compilation Server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Make_compilation();}
+            final Form<WS_Message_Make_compilation> form = Form.form(WS_Message_Make_compilation.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Make_compilation:: Incoming Json from Compilation Server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Make_compilation();}
 
-            WS_Make_compilation compilation = form.get();
+            WS_Message_Make_compilation compilation = form.get();
 
             if(compilation_request.has("interface_code")) compilation.interface_code = compilation_request.get("interface_code").toString();
 
@@ -119,25 +119,25 @@ public class Model_CompilationServer extends Model {
 
         }catch (Exception e){
             e.printStackTrace();
-            return new  WS_Make_compilation();
+            return new WS_Message_Make_compilation();
         }
     }
 
-    @JsonIgnore @Transient public WS_Ping_compilation_server ping(){
+    @JsonIgnore @Transient public WS_Message_Ping_compilation_server ping(){
         try {
             ObjectNode request = Json.newObject();
             request.put("messageType", "ping");
             request.put("messageChannel", CHANNEL);
 
-            JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
+            JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
 
-            final Form<WS_Ping_compilation_server> form = Form.form(WS_Ping_compilation_server.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_compilation_server:: Incoming Json for Yoda has not right Form");return new WS_Ping_compilation_server();}
+            final Form<WS_Message_Ping_compilation_server> form = Form.form(WS_Message_Ping_compilation_server.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_compilation_server:: Incoming Json for Yoda has not right Form");return new WS_Message_Ping_compilation_server();}
 
             return form.get();
 
         }catch (Exception e){
-            return new WS_Ping_compilation_server();
+            return new WS_Message_Ping_compilation_server();
         }
     }
 

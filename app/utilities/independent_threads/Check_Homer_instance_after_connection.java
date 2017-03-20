@@ -3,10 +3,10 @@ package utilities.independent_threads;
 import models.Model_HomerInstance;
 import models.Model_HomerServer;
 import utilities.enums.Enum_Homer_instance_type;
-import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.homer_instance.WS_Update_device_summary_collection;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Get_instance_list;
+import web_socket.services.WS_HomerServer;
+import web_socket.message_objects.homer_instance.WS_Message_Update_device_summary_collection;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Get_instance_list;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class Check_Homer_instance_after_connection extends Thread {
 
                     logger.trace("Check_Homer_instance_after_connection:: run:: Tyrion send to Homer Server request for listInstances");
 
-                    WS_Get_instance_list list_instances = model_server.get_homer_server_listOfInstance();
+                    WS_Message_Get_instance_list list_instances = model_server.get_homer_server_listOfInstance();
 
 
                     // Vylistuji si seznam instnancí, které by měli běžet na serveru
@@ -84,7 +84,7 @@ public class Check_Homer_instance_after_connection extends Thread {
 
                     if (!instances_for_removing.isEmpty()) {
                         for (String identificator : instances_for_removing) {
-                            WS_Destroy_instance remove_result = model_server.remove_instance(identificator);
+                            WS_Message_Destroy_instance remove_result = model_server.remove_instance(identificator);
                             if(!remove_result.status.equals("success"))   logger.error("Blocko Server: Removing instance Error: "+ remove_result.toString());
                         }
                     }
@@ -110,7 +110,7 @@ public class Check_Homer_instance_after_connection extends Thread {
                             }
 
                             logger.trace("Check_Homer_instance_after_connection:: run:: "+   instance.blocko_instance_name +" add instance to server");
-                            WS_Update_device_summary_collection add_instance = instance.add_instance_to_server();
+                            WS_Message_Update_device_summary_collection add_instance = instance.add_instance_to_server();
 
                             if (add_instance.status.equals("success")) {
                                 logger.trace("Check_Homer_instance_after_connection:: run::Upload instance was successful");

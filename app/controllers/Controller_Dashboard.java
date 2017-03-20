@@ -27,9 +27,8 @@ import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
-import utilities.web_socket.*;
-import utilities.web_socket.message_objects.compilator_tyrion.WS_Ping_compilation_server;
-import utilities.web_socket.message_objects.homer_instance.WS_Ping_instance;
+import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
+import web_socket.message_objects.homer_instance.WS_Message_Ping_instance;
 import views.html.*;
 import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
@@ -59,6 +58,10 @@ import views.html.tariffs.tariffs;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
 import views.html.websocket.websocket_homer_server_detail;
+import web_socket.services.WS_Becki_Website;
+import web_socket.services.WS_CompilerServer;
+import web_socket.services.WS_HomerServer;
+import web_socket.services.WS_Interface_type;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -328,7 +331,7 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_HomerInstance instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_id).findUnique();
-            WS_Ping_instance result = instance.ping();
+            WS_Message_Ping_instance result = instance.ping();
             return GlobalResult.result_ok(Json.toJson(result));
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -340,7 +343,7 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_CompilationServer server = Model_CompilationServer.find.where().eq("unique_identificator", identificator).findUnique();
-            WS_Ping_compilation_server result = server.ping();
+            WS_Message_Ping_compilation_server result = server.ping();
 
             return GlobalResult.result_ok(Json.toJson(result));
 

@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.data.Form;
 import play.i18n.Lang;
 import utilities.enums.Enum_Log_level;
-import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Get_homer_server_configuration;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Set_homer_server_configuration;
+import web_socket.services.WS_HomerServer;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Get_homer_server_configuration;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Set_homer_server_configuration;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.TimeoutException;
@@ -29,11 +29,11 @@ public class SynchronizeHomerServer extends Thread {
 
         try{
 
-            ObjectNode ask_for_configuration = homer_server.write_with_confirmation( new WS_Get_homer_server_configuration().make_request() , 1000 * 5, 0, 2);
-            final Form<WS_Get_homer_server_configuration> form_get = Form.form(WS_Get_homer_server_configuration.class).bind(ask_for_configuration);
+            ObjectNode ask_for_configuration = homer_server.write_with_confirmation( new WS_Message_Get_homer_server_configuration().make_request() , 1000 * 5, 0, 2);
+            final Form<WS_Message_Get_homer_server_configuration> form_get = Form.form(WS_Message_Get_homer_server_configuration.class).bind(ask_for_configuration);
             if(form_get.hasErrors()){logger.error("SynchronizeHomerServer:: WS_Get_homer_server_configuration:: Incoming Json for Yoda has not right Form" +  form_get.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
-            WS_Get_homer_server_configuration help = form_get.get();
+            WS_Message_Get_homer_server_configuration help = form_get.get();
 
             if(help.get_Date().compareTo(homer_server.server.time_stamp_configuration) == 0){
                 // Nedochází k žádným změnám
@@ -68,12 +68,12 @@ public class SynchronizeHomerServer extends Thread {
                 // Tyrion server má novější konfiguraci
 
                 logger.trace("Synchronize_configuration::  " + homer_server.identifikator + " Sending new Configuration to Homer Server");
-                JsonNode result = homer_server.write_with_confirmation( new WS_Set_homer_server_configuration().make_request(homer_server.server) , 1000 * 5, 0, 2);
+                JsonNode result = homer_server.write_with_confirmation( new WS_Message_Set_homer_server_configuration().make_request(homer_server.server) , 1000 * 5, 0, 2);
 
-                final Form<WS_Set_homer_server_configuration> form_set = Form.form(WS_Set_homer_server_configuration.class).bind(result);
+                final Form<WS_Message_Set_homer_server_configuration> form_set = Form.form(WS_Message_Set_homer_server_configuration.class).bind(result);
                 if(form_set.hasErrors()){logger.error("SynchronizeHomerServer:: synchronize_configuration:: WS_Set_homer_server_configuration:: Incoming Json for Yoda has not right Form" + form_set.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
-                WS_Set_homer_server_configuration help_conf = form_set.get();
+                WS_Message_Set_homer_server_configuration help_conf = form_set.get();
 
                 if(help_conf.status.equals("success")){
                     logger.trace("SynchronizeHomerServer:: synchronize_configuration: New Config state:: success! ");

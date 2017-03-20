@@ -15,14 +15,14 @@ import utilities.enums.Enum_Homer_instance_type;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
 import utilities.enums.Enum_type_of_command;
-import utilities.hardware_updater.Utilities_Master_thread_updater;
+import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.WS_Interface_type;
-import utilities.web_socket.message_objects.homer_instance.Help_object.YodaOnlyHardwareIdList;
-import utilities.web_socket.message_objects.homer_instance.*;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
+import web_socket.services.WS_HomerServer;
+import web_socket.services.WS_Interface_type;
+import web_socket.message_objects.homer_instance.helps_objects.WS_Message_Help_Yoda_only_hardware_Id_list;
+import web_socket.message_objects.homer_instance.*;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -197,19 +197,19 @@ public class Model_HomerInstance extends Model {
         try {
             switch (json.get("messageType").asText()) {
 
-                case WS_Device_connected.messageType: {
+                case WS_Message_Device_connected.messageType: {
 
-                    final Form<WS_Device_connected> form = Form.form(WS_Device_connected.class).bind(json);
+                    final Form<WS_Message_Device_connected> form = Form.form(WS_Message_Device_connected.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: WS_Device_connected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.device_Connected(homer, form.get());
                     return;
                 }
 
-                case WS_Yoda_connected.messageType: {
+                case WS_Message_Yoda_connected.messageType: {
 
                     // Zpracování Json
-                    final Form<WS_Yoda_connected> form = Form.form(WS_Yoda_connected.class).bind(json);
+                    final Form<WS_Message_Yoda_connected> form = Form.form(WS_Message_Yoda_connected.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: WS_Yoda_connected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.master_device_Connected(homer, form.get());
@@ -217,27 +217,27 @@ public class Model_HomerInstance extends Model {
                 }
 
 
-                case WS_Yoda_disconnected.messageType: {
+                case WS_Message_Yoda_disconnected.messageType: {
 
-                    final Form<WS_Yoda_disconnected> form = Form.form(WS_Yoda_disconnected.class).bind(json);
+                    final Form<WS_Message_Yoda_disconnected> form = Form.form(WS_Message_Yoda_disconnected.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: WS_Yoda_disconnected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.master_device_Disconnected(form.get());
                     return;
                 }
 
-                case WS_Device_disconnected.messageType: {
+                case WS_Message_Device_disconnected.messageType: {
 
-                    final Form<WS_Device_disconnected> form = Form.form(WS_Device_disconnected.class).bind(json);
+                    final Form<WS_Message_Device_disconnected> form = Form.form(WS_Message_Device_disconnected.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: WS_Device_disconnected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.device_Disconnected(form.get());
                     return;
                 }
 
-                case WS_Update_device_firmware.messageType : {
+                case WS_Message_Update_device_firmware.messageType : {
 
-                    final Form<WS_Update_device_firmware> form = Form.form(WS_Update_device_firmware.class).bind(json);
+                    final Form<WS_Message_Update_device_firmware> form = Form.form(WS_Message_Update_device_firmware.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: WS_Update_device_firmware:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
 
@@ -246,32 +246,32 @@ public class Model_HomerInstance extends Model {
                     
                 }
 
-                case WS_Get_summary_information.messageType: {
+                case WS_Message_Get_summary_information.messageType: {
 
-                    final Form<WS_Get_summary_information> form = Form.form(WS_Get_summary_information.class).bind(json);
+                    final Form<WS_Message_Get_summary_information> form = Form.form(WS_Message_Get_summary_information.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: WS_Get_summary_information:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_HomerInstance.summary_information(homer, form.get());
                     return;
                 }
 
-                case WS_Grid_token_verification.messageType : {
+                case WS_Message_Grid_token_verification.messageType : {
 
-                    final Form<WS_Grid_token_verification> form = Form.form(WS_Grid_token_verification.class).bind(json);
+                    final Form<WS_Message_Grid_token_verification> form = Form.form(WS_Message_Grid_token_verification.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: token_grid_verification:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
-                    WS_Grid_token_verification help = form.get();
+                    WS_Message_Grid_token_verification help = form.get();
                     help.get_instance().cloud_verification_token_GRID(help);
 
                     return;
                 }
 
-                case WS_WebView_token_verification.messageType : {
+                case WS_Message_WebView_token_verification.messageType : {
 
-                    final Form<WS_WebView_token_verification> form = Form.form(WS_WebView_token_verification.class).bind(json);
+                    final Form<WS_Message_WebView_token_verification> form = Form.form(WS_Message_WebView_token_verification.class).bind(json);
                     if(form.hasErrors()){logger.error("Homer_Instance:: token_webView_verification:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
-                    WS_WebView_token_verification help = form.get();
+                    WS_Message_WebView_token_verification help = form.get();
                     help.get_instance().cloud_verification_token_WEBVIEW(help);
 
                     return;
@@ -297,46 +297,46 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore @Transient public WS_Interface_type send_to_instance(){ return Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator);}
 
-    @JsonIgnore @Transient public  WS_Instance_status get_instance_status(){
+    @JsonIgnore @Transient public WS_Message_Instance_status get_instance_status(){
         try{
 
-            JsonNode node =  send_to_instance().write_with_confirmation( new WS_Instance_status().make_request(this), 1000*3, 0, 2);
+            JsonNode node =  send_to_instance().write_with_confirmation( new WS_Message_Instance_status().make_request(this), 1000*3, 0, 2);
 
-            final Form<WS_Instance_status> form = Form.form(WS_Instance_status.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Instance_status:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Instance_status();}
+            final Form<WS_Message_Instance_status> form = Form.form(WS_Message_Instance_status.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Instance_status:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Instance_status();}
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Instance_status();
+            return new WS_Message_Instance_status();
         }catch (Exception e){
             logger.error("Model_HomerServer:: get_instance_status:: Error:: ", e);
-            return new WS_Instance_status();
+            return new WS_Message_Instance_status();
         }
     }
 
-    @JsonIgnore @Transient public  WS_Ping_instance ping() {
+    @JsonIgnore @Transient public WS_Message_Ping_instance ping() {
         try{
 
-            JsonNode node = send_to_instance().write_with_confirmation( new WS_Ping_instance().make_request(this), 1000*3, 0, 2);
+            JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Ping_instance().make_request(this), 1000*3, 0, 2);
 
-            final Form<WS_Ping_instance> form = Form.form(WS_Ping_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Ping_instance();}
+            final Form<WS_Message_Ping_instance> form = Form.form(WS_Message_Ping_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Ping_instance();}
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Ping_instance();
+            return new WS_Message_Ping_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: ping:: Error:: ", e);
-            return new WS_Ping_instance();
+            return new WS_Message_Ping_instance();
         }
     }
 
     @JsonIgnore @Transient public  JsonNode devices_commands(String targetId, Enum_type_of_command command) {
         try{
 
-           return send_to_instance().write_with_confirmation(new WS_Basic_command_for_device().make_request(this, targetId, command), 1000*10, 0, 4);
+           return send_to_instance().write_with_confirmation(new WS_Message_Basic_command_for_device().make_request(this, targetId, command), 1000*10, 0, 4);
 
         }catch (TimeoutException e){
             return null;
@@ -346,7 +346,7 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  WS_Add_yoda_to_instance add_Yoda_to_instance(String yoda_id){
+    @JsonIgnore @Transient public WS_Message_Add_yoda_to_instance add_Yoda_to_instance(String yoda_id){
         try{
 
             if(project != null ){
@@ -358,47 +358,47 @@ public class Model_HomerInstance extends Model {
                 }
             }
 
-            JsonNode node =  send_to_instance().write_with_confirmation(new WS_Add_yoda_to_instance().make_request(this, yoda_id), 1000*3, 0, 4);
+            JsonNode node =  send_to_instance().write_with_confirmation(new WS_Message_Add_yoda_to_instance().make_request(this, yoda_id), 1000*3, 0, 4);
 
-            final Form<WS_Add_yoda_to_instance> form = Form.form(WS_Add_yoda_to_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_yoda_to_instance:: Incoming Json from Homer server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Add_yoda_to_instance();}
+            final Form<WS_Message_Add_yoda_to_instance> form = Form.form(WS_Message_Add_yoda_to_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_yoda_to_instance:: Incoming Json from Homer server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Add_yoda_to_instance();}
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Add_yoda_to_instance();
+            return new WS_Message_Add_yoda_to_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: add_Yoda_to_instance:: Error:: ", e);
-            return new WS_Add_yoda_to_instance();
+            return new WS_Message_Add_yoda_to_instance();
         }
     }
 
-    @JsonIgnore @Transient public  WS_Remove_yoda_from_instance remove_Yoda_from_instance(String yoda_id) {
+    @JsonIgnore @Transient public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(String yoda_id) {
         try{
 
-            JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_yoda_from_instance().make_request(this, yoda_id), 1000*3, 0, 4);
+            JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_yoda_from_instance().make_request(this, yoda_id), 1000*3, 0, 4);
 
-            final Form<WS_Remove_yoda_from_instance> form = Form.form(WS_Remove_yoda_from_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_yoda_from_instance();}
+            final Form<WS_Message_Remove_yoda_from_instance> form = Form.form(WS_Message_Remove_yoda_from_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Remove_yoda_from_instance();}
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Remove_yoda_from_instance();
+            return new WS_Message_Remove_yoda_from_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: remove_Yoda_from_instance:: Error:: ", e);
-            return new WS_Remove_yoda_from_instance();
+            return new WS_Message_Remove_yoda_from_instance();
         }
     }
 
 
-    @JsonIgnore @Transient public  WS_Remove_yoda_from_instance remove_Yoda_from_instance(Model_Board yoda) {
+    @JsonIgnore @Transient public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(Model_Board yoda) {
         try{
 
-            JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_yoda_from_instance().make_request(this, yoda.id), 1000*3, 0, 4);
+            JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_yoda_from_instance().make_request(this, yoda.id), 1000*3, 0, 4);
 
-            final Form<WS_Remove_yoda_from_instance> form = Form.form(WS_Remove_yoda_from_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Remove_yoda_from_instance();}
+            final Form<WS_Message_Remove_yoda_from_instance> form = Form.form(WS_Message_Remove_yoda_from_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Remove_yoda_from_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Remove_yoda_from_instance();}
 
 
             if(yoda.virtual_instance_under_project != null){
@@ -413,58 +413,58 @@ public class Model_HomerInstance extends Model {
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Remove_yoda_from_instance();
+            return new WS_Message_Remove_yoda_from_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: remove_Yoda_from_instance:: Error:: ", e);
-            return new WS_Remove_yoda_from_instance();
+            return new WS_Message_Remove_yoda_from_instance();
         }
     }
 
-    @JsonIgnore @Transient public WS_Add_device_to_instance add_Device_to_instance(String yoda_id, List<String> devices_id){
+    @JsonIgnore @Transient public WS_Message_Add_device_to_instance add_Device_to_instance(String yoda_id, List<String> devices_id){
         try{
 
-            JsonNode node =   send_to_instance().write_with_confirmation(new WS_Add_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
+            JsonNode node =   send_to_instance().write_with_confirmation(new WS_Message_Add_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
 
-            final Form<WS_Add_device_to_instance> form = Form.form(WS_Add_device_to_instance.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Add_device_to_instance();}
+            final Form<WS_Message_Add_device_to_instance> form = Form.form(WS_Message_Add_device_to_instance.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Add_device_to_instance();}
 
             return form.get();
         }catch (TimeoutException e){
-            return new WS_Add_device_to_instance();
+            return new WS_Message_Add_device_to_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: add_Device_to_instance:: Error:: ", e);
-            return new WS_Add_device_to_instance();
+            return new WS_Message_Add_device_to_instance();
         }
     }
 
-    @JsonIgnore @Transient public WS_Remove_device_from_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
+    @JsonIgnore @Transient public WS_Message_Remove_device_from_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
         try {
 
-            JsonNode node = send_to_instance().write_with_confirmation(new WS_Remove_device_from_instance().make_request(this, yoda_id, devices_id), 1000 * 3, 0, 4);
+            JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_device_from_instance().make_request(this, yoda_id, devices_id), 1000 * 3, 0, 4);
 
-            final Form<WS_Remove_device_from_instance> form = Form.form(WS_Remove_device_from_instance.class).bind(node);
+            final Form<WS_Message_Remove_device_from_instance> form = Form.form(WS_Message_Remove_device_from_instance.class).bind(node);
             if (form.hasErrors()) {
                 logger.error("Model_HomerServer:: WS_Remove_Device_to_instance:: Incoming Json from Homer server has not right Form:: " + form.errorsAsJson(new Lang(new play.api.i18n.Lang("en", "US"))).toString());
-                return new WS_Remove_device_from_instance();
+                return new WS_Message_Remove_device_from_instance();
             }
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Remove_device_from_instance();
+            return new WS_Message_Remove_device_from_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: remove_Device_from_instance:: Error:: ", e);
-            return new WS_Remove_device_from_instance();
+            return new WS_Message_Remove_device_from_instance();
         }
     }
 
-    @JsonIgnore @Transient public  WS_Update_device_summary_collection add_instance_to_server() {
+    @JsonIgnore @Transient public WS_Message_Update_device_summary_collection add_instance_to_server() {
         try{
 
 
             // Vytvořím Instanci
-            WS_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
-            if(!result_instance.status.equals("success")) return new WS_Update_device_summary_collection();
+            WS_Message_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
+            if(!result_instance.status.equals("success")) return new WS_Message_Update_device_summary_collection();
 
 
             // Doplním do ní HW
@@ -473,7 +473,7 @@ public class Model_HomerInstance extends Model {
 
             if(instance_type == Enum_Homer_instance_type.VIRTUAL){
 
-                WS_Update_device_summary_collection ws_update_device_summary_collection = new WS_Update_device_summary_collection();
+                WS_Message_Update_device_summary_collection ws_update_device_summary_collection = new WS_Message_Update_device_summary_collection();
                 ws_update_device_summary_collection.status = "success";
                 return ws_update_device_summary_collection; // Virutální instance nemá blocko!
             }
@@ -481,10 +481,10 @@ public class Model_HomerInstance extends Model {
 
 
             // Nahraju Blocko Program
-            WS_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
-            if(!result_blocko_program.status.equals("success")) return new WS_Update_device_summary_collection();
+            WS_Message_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
+            if(!result_blocko_program.status.equals("success")) return new WS_Message_Update_device_summary_collection();
 
-            WS_Update_device_summary_collection response = new WS_Update_device_summary_collection();
+            WS_Message_Update_device_summary_collection response = new WS_Message_Update_device_summary_collection();
             response.status = "success";
 
             return   response;
@@ -492,11 +492,11 @@ public class Model_HomerInstance extends Model {
 
         }catch (Exception e){
             logger.error("Model_HomerServer:: add_instance_to_server:: Error:: ", e);
-            return new WS_Update_device_summary_collection();
+            return new WS_Message_Update_device_summary_collection();
         }
     }
 
-    @JsonIgnore @Transient public  WS_Destroy_instance remove_instance_from_server() {
+    @JsonIgnore @Transient public WS_Message_Destroy_instance remove_instance_from_server() {
         try{
 
             if(!actual_instance.hardware_group().isEmpty()){
@@ -513,10 +513,10 @@ public class Model_HomerInstance extends Model {
                 }
             }
 
-            if(!instance_online()) return new WS_Destroy_instance();
+            if(!instance_online()) return new WS_Message_Destroy_instance();
 
             // Vytvořím Instanci
-            WS_Destroy_instance result_instance  = this.cloud_homer_server.remove_instance(this.blocko_instance_name);
+            WS_Message_Destroy_instance result_instance  = this.cloud_homer_server.remove_instance(this.blocko_instance_name);
 
             if(this.actual_instance != null) {
                 this.actual_instance.running_to = new Date();
@@ -530,7 +530,7 @@ public class Model_HomerInstance extends Model {
 
         }catch (Exception e){
             logger.error("Model_HomerServer:: remove_instance_from_server:: Error:: ", e);
-            return new WS_Destroy_instance();
+            return new WS_Message_Destroy_instance();
         }
     }
 
@@ -604,14 +604,14 @@ public class Model_HomerInstance extends Model {
 
 
     // TODO tuto metodu budu volat ve chvíli kdy nějakou časovu známkou prohodím verze - podle času uživatele
-    @JsonIgnore @Transient public  WS_Update_instance_to_actual_instance_record update_instance_to_actual_instance_record() {
+    @JsonIgnore @Transient public WS_Message_Update_instance_to_actual_instance_record update_instance_to_actual_instance_record() {
         try{
 
             // Zkontroluji jestli běží server
             if(!server_is_online()) {
                 logger.error("Model_HomerServer:: update_instance_to_actual_instance_record:: Server is offline and some procedure called update_instance_to_actual_instance_record");
 
-                WS_Update_instance_to_actual_instance_record response = new  WS_Update_instance_to_actual_instance_record();
+                WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
                 response.status = "error";
                 response.error = "Server is offline";
 
@@ -621,11 +621,11 @@ public class Model_HomerInstance extends Model {
             if(!instance_online()){
 
                 // Vytvořím Instanci
-                WS_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
+                WS_Message_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
                 if(!result_instance.status.equals("success")){
 
                     logger.error("Model_HomerServer:: update_instance_to_actual_instance_record:: Add Instance Failed:: Error:: " + result_instance.error + " ErrorCode:: "+ result_instance.errorCode);
-                    WS_Update_instance_to_actual_instance_record response = new  WS_Update_instance_to_actual_instance_record();
+                    WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
                     response.status = result_instance.status;
                     response.error =  result_instance.error;
                     response.errorCode =  result_instance.errorCode;
@@ -641,13 +641,13 @@ public class Model_HomerInstance extends Model {
 
             // Nahraju Blocko Program
             logger.debug("Model_HomerInstance:: update_instance_to_actual_instance_record:: Upload Blocko Program");
-            WS_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
+            WS_Message_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
 
             if(!result_blocko_program.status.equals("success")){
 
                 logger.error("Model_HomerServer:: update_instance_to_actual_instance_record:: upload_blocko_program() Failed:: Error:: " + result_blocko_program.error + " ErrorCode:: " + result_blocko_program.errorCode);
 
-                WS_Update_instance_to_actual_instance_record response = new  WS_Update_instance_to_actual_instance_record();
+                WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
                 response.status = result_blocko_program.status;
                 response.error =  result_blocko_program.error;
                 response.errorCode =  result_blocko_program.errorCode;
@@ -656,7 +656,7 @@ public class Model_HomerInstance extends Model {
             }
 
             logger.debug("Model_HomerInstance:: update_instance_to_actual_instance_record:: Get Summary Information From Instance");
-            WS_Get_summary_information summary_information = this.get_summary_information();
+            WS_Message_Get_summary_information summary_information = this.get_summary_information();
 
             logger.debug("Model_HomerInstance:: update_instance_to_actual_instance_record:: Vytvářím Aktualizační procedury");
             actual_instance.create_actualization_request(summary_information);
@@ -673,39 +673,39 @@ public class Model_HomerInstance extends Model {
             actual_instance.refresh();
             for(Model_ActualizationProcedure procedure : actual_instance.procedures) {
                 System.out.println("Procedure:: Id:: " + procedure.id + " state:: " + procedure.state);
-                Utilities_Master_thread_updater.add_new_Procedure(procedure);
+                Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
             }
 
 
 
-            WS_Update_instance_to_actual_instance_record response = new WS_Update_instance_to_actual_instance_record();
+            WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
             response.status = "success";
 
             return response;
 
         }catch (Exception e){
-            return  new WS_Update_instance_to_actual_instance_record();
+            return  new WS_Message_Update_instance_to_actual_instance_record();
         }
     }
 
-    @JsonIgnore @Transient public  WS_Upload_blocko_program upload_blocko_program(){
+    @JsonIgnore @Transient public WS_Message_Upload_blocko_program upload_blocko_program(){
         try {
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
 
-            if (fileRecord == null) return new WS_Upload_blocko_program();
+            if (fileRecord == null) return new WS_Message_Upload_blocko_program();
 
-            JsonNode node = this.send_to_instance().write_with_confirmation(new WS_Upload_blocko_program().make_request(this, fileRecord, actual_instance.version_object.id), 1000 * 3, 0, 4);
+            JsonNode node = this.send_to_instance().write_with_confirmation(new WS_Message_Upload_blocko_program().make_request(this, fileRecord, actual_instance.version_object.id), 1000 * 3, 0, 4);
 
-            final Form<WS_Upload_blocko_program> form = Form.form(WS_Upload_blocko_program.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Upload_blocko_program:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Upload_blocko_program();}
+            final Form<WS_Message_Upload_blocko_program> form = Form.form(WS_Message_Upload_blocko_program.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Upload_blocko_program:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Upload_blocko_program();}
 
             return form.get();
 
         }catch (TimeoutException e){
-            return  new WS_Upload_blocko_program();
+            return  new WS_Message_Upload_blocko_program();
         }catch (Exception e){
             logger.error("Model_HomerServer:: upload_blocko_program:: Error:: ", e);
-            return  new WS_Upload_blocko_program();
+            return  new WS_Message_Upload_blocko_program();
         }
     }
 
@@ -719,7 +719,7 @@ public class Model_HomerInstance extends Model {
                 List<Model_BProgramHwGroup> hardware_groups = Model_BProgramHwGroup.find.where().eq("b_program_version_groups.id", actual_instance.version_object.id).findList();
 
                 // Zkontroluji HW který aktálně v instanci vysí
-                WS_Get_Hardware_list summary_information = this.get_hardware_list();
+                WS_Message_Get_Hardware_list summary_information = this.get_hardware_list();
 
                 if(!summary_information.status.equals("success")){
                     logger.error("Model_HomerServer:: update_device_summary_collection:: Get Instance status Failed:: Error:: " + summary_information.error + " ErrorCode:: "+ summary_information.errorCode);
@@ -728,7 +728,7 @@ public class Model_HomerInstance extends Model {
 
                 List<String> yodas_id_on_instance = new ArrayList<>();
 
-                for(YodaOnlyHardwareIdList yoda_list : summary_information.hardwareIdList){
+                for(WS_Message_Help_Yoda_only_hardware_Id_list yoda_list : summary_information.hardwareIdList){
 
                     yodas_id_on_instance.add(yoda_list.deviceId);
 
@@ -743,7 +743,7 @@ public class Model_HomerInstance extends Model {
                             this.remove_Device_from_instance(devicesId, yoda_list.devicesId);
                         }
 
-                        WS_Remove_yoda_from_instance remove_yoda_from_instance =  this.remove_Yoda_from_instance(yoda_list.deviceId);
+                        WS_Message_Remove_yoda_from_instance remove_yoda_from_instance =  this.remove_Yoda_from_instance(yoda_list.deviceId);
                         if(!remove_yoda_from_instance.status.equals("success")){
                             logger.error("Model_HomerServer:: update_device_summary_collection:: Remove Yoda Failed:: Error:: " + remove_yoda_from_instance.error + " ErrorCode:: "+ remove_yoda_from_instance.errorCode);
                         }
@@ -787,7 +787,7 @@ public class Model_HomerInstance extends Model {
 
 
                     if(devicesId_for_removing.isEmpty()) continue;
-                    WS_Remove_device_from_instance remove_device_from_instance = this.remove_Device_from_instance(yoda_list.deviceId,devicesId_for_removing);
+                    WS_Message_Remove_device_from_instance remove_device_from_instance = this.remove_Device_from_instance(yoda_list.deviceId,devicesId_for_removing);
                     if(!remove_device_from_instance.status.equals("success")) {
                         logger.error("Model_HomerServer:: update_device_summary_collection:: Remove Yoda Failed:: Error:: " + remove_device_from_instance.error + " ErrorCode:: " + remove_device_from_instance.errorCode);
                     }
@@ -832,7 +832,7 @@ public class Model_HomerInstance extends Model {
                         // Obsahuje Yodu - takže kontroluji ještě Devices
                         List<String> devices_id_under_yoda = new ArrayList<>();
 
-                        YodaOnlyHardwareIdList yodaList = summary_information.getListWithYoda(b_program_hw_group.main_board_pair.board_id());
+                        WS_Message_Help_Yoda_only_hardware_Id_list yodaList = summary_information.getListWithYoda(b_program_hw_group.main_board_pair.board_id());
                         if(yodaList == null){
                             logger.error("Model_HomerServer:: update_device_summary_collection:: Error::  yodaList is Null" );
                             continue;
@@ -848,12 +848,12 @@ public class Model_HomerInstance extends Model {
 
 
                 if (!hw_groups.isEmpty()) {
-                    ObjectNode node = send_to_instance().write_with_confirmation( new WS_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
+                    ObjectNode node = send_to_instance().write_with_confirmation( new WS_Message_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
 
-                    final Form<WS_Update_device_summary_collection> form = Form.form(WS_Update_device_summary_collection.class).bind(node);
+                    final Form<WS_Message_Update_device_summary_collection> form = Form.form(WS_Message_Update_device_summary_collection.class).bind(node);
                     if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Update_device_summary_collection:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());}
 
-                    WS_Update_device_summary_collection rsp = form.get();
+                    WS_Message_Update_device_summary_collection rsp = form.get();
                     if(!rsp.status.equals("success")) {
                         logger.error("Model_HomerServer:: WS_Update_device_summary_collection:: Remove Yoda Failed:: Error:: " + rsp.error + " ErrorCode:: " + rsp.errorCode);
                     }
@@ -866,12 +866,12 @@ public class Model_HomerInstance extends Model {
                 List<String> board_id_on_instance = new ArrayList<>();
 
                 // Zkontroluji HW který tam být nemá
-                WS_Get_Hardware_list summary_information = get_hardware_list();
+                WS_Message_Get_Hardware_list summary_information = get_hardware_list();
                 if (!summary_information.status.equals("success")) {
                     logger.error("Model_HomerServer:: update_device_summary_collection:: Get Instance status Failed:: Error:: " + summary_information.error + " ErrorCode:: " + summary_information.errorCode);
                 }
 
-                for (YodaOnlyHardwareIdList yoda_list : summary_information.hardwareIdList) {
+                for (WS_Message_Help_Yoda_only_hardware_Id_list yoda_list : summary_information.hardwareIdList) {
 
                     if (!this.actual_instance.contains_HW(yoda_list.deviceId)) {
                         logger.error("Model_HomerServer:: update_device_summary_collection:: Illegal Connected Yoda " + yoda_list.deviceId + " in Virtual instance ");
@@ -904,32 +904,32 @@ public class Model_HomerInstance extends Model {
         return this.cloud_homer_server.is_instance_exist(this.blocko_instance_name);
     }
 
-    @JsonIgnore @Transient public  WS_Online_states_devices get_devices_online_state(List<String> device_id){
+    @JsonIgnore @Transient public WS_Message_Online_states_devices get_devices_online_state(List<String> device_id){
         try{
 
-            if(!online_state()) return new WS_Online_states_devices();
-            JsonNode node = send_to_instance().write_with_confirmation( new WS_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
+            if(!online_state()) return new WS_Message_Online_states_devices();
+            JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
 
 
-            final Form<WS_Online_states_devices> form = Form.form(WS_Online_states_devices.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Online_states_devices:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Online_states_devices();}
+            final Form<WS_Message_Online_states_devices> form = Form.form(WS_Message_Online_states_devices.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Online_states_devices:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Online_states_devices();}
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Online_states_devices();
+            return new WS_Message_Online_states_devices();
         }catch (Exception e){
             logger.error("Model_HomerInstance:: get_devices_online_state: Error:: ", e);
-            return new WS_Online_states_devices();
+            return new WS_Message_Online_states_devices();
         }
     }
 
-    @JsonIgnore @Transient public  WS_Get_summary_information get_summary_information(){
+    @JsonIgnore @Transient public WS_Message_Get_summary_information get_summary_information(){
         try {
 
-            ObjectNode node = send_to_instance().write_with_confirmation(new WS_Get_summary_information().make_request(this), 1000 * 5, 0, 1);
+            ObjectNode node = send_to_instance().write_with_confirmation(new WS_Message_Get_summary_information().make_request(this), 1000 * 5, 0, 1);
 
-            final Form<WS_Get_summary_information> form = Form.form(WS_Get_summary_information.class).bind(node);
+            final Form<WS_Message_Get_summary_information> form = Form.form(WS_Message_Get_summary_information.class).bind(node);
             if (form.hasErrors()) {
                 logger.error("Model_HomerInstance:: WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson(new Lang(new play.api.i18n.Lang("en", "US"))).toString());
                 throw new Exception("Invalid Json data format");
@@ -938,32 +938,32 @@ public class Model_HomerInstance extends Model {
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Get_summary_information();
+            return new WS_Message_Get_summary_information();
         }catch (Exception e){
             logger.error("Model_HomerInstance:: get_summary_information: Error:: ", e);
-            return new WS_Get_summary_information();
+            return new WS_Message_Get_summary_information();
         }
     }
 
-    @JsonIgnore @Transient public  WS_Get_Hardware_list get_hardware_list(){
+    @JsonIgnore @Transient public WS_Message_Get_Hardware_list get_hardware_list(){
         try {
 
-            ObjectNode node = send_to_instance().write_with_confirmation( new WS_Get_Hardware_list().make_request(this), 1000*5, 0, 1);
+            ObjectNode node = send_to_instance().write_with_confirmation( new WS_Message_Get_Hardware_list().make_request(this), 1000*5, 0, 1);
 
-            final Form<WS_Get_Hardware_list> form = Form.form(WS_Get_Hardware_list.class).bind(node);
+            final Form<WS_Message_Get_Hardware_list> form = Form.form(WS_Message_Get_Hardware_list.class).bind(node);
             if (form.hasErrors()) {logger.error("Model_HomerInstance:: get_hardware_list: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); throw new Exception("Invalid Json data format");}
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Get_Hardware_list();
+            return new WS_Message_Get_Hardware_list();
         }catch (Exception e){
             logger.error("Model_HomerInstance:: get_hardware_list: Error:: ", e);
-            return new WS_Get_Hardware_list();
+            return new WS_Message_Get_Hardware_list();
         }
     }
 
-    @JsonIgnore @Transient public  static void summary_information(WS_HomerServer homer_server , WS_Get_summary_information summary_information){
+    @JsonIgnore @Transient public  static void summary_information(WS_HomerServer homer_server , WS_Message_Get_summary_information summary_information){
         try {
 
 
@@ -976,7 +976,7 @@ public class Model_HomerInstance extends Model {
 
 
     // TOKEN verification
-    @JsonIgnore @Transient public  void cloud_verification_token_GRID(WS_Grid_token_verification help){
+    @JsonIgnore @Transient public  void cloud_verification_token_GRID(WS_Message_Grid_token_verification help){
         try {
 
             logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
@@ -1020,7 +1020,7 @@ public class Model_HomerInstance extends Model {
         }
 
     }
-    @JsonIgnore @Transient public  void cloud_verification_token_WEBVIEW(WS_WebView_token_verification help){
+    @JsonIgnore @Transient public  void cloud_verification_token_WEBVIEW(WS_Message_WebView_token_verification help){
         try {
 
             logger.debug("Homer_Instance:: cloud_verification_token:: WebView  Checking Token");

@@ -23,7 +23,7 @@ import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
 import utilities.swagger.outboundClass.*;
-import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
+import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
 
 import javax.persistence.*;
 import java.net.ConnectException;
@@ -358,7 +358,7 @@ public class Model_VersionObject extends Model {
 
 
 
-        WS_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Make_compilation().make_request( typeOfBoard ,this.id, code_file.main, includes   ));
+        WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request( typeOfBoard ,this.id, code_file.main, includes   ));
 
         // Controller_Notification.successful_compilation(Controller_Security.getPerson(), this); TODO Notifikace
 

@@ -4,9 +4,9 @@ import models.Model_Board;
 import models.Model_HomerInstance;
 import models.Model_HomerServer;
 import utilities.enums.Enum_Homer_instance_type;
-import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
-import utilities.web_socket.message_objects.homer_instance.WS_Yoda_connected;
+import web_socket.services.WS_HomerServer;
+import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
+import web_socket.message_objects.homer_instance.WS_Message_Yoda_connected;
 
 public class Check_Update_for_hw_on_homer extends Thread {
 
@@ -68,7 +68,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
                         logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
 
-                        WS_Get_summary_information summary_information = instance.get_summary_information();
+                        WS_Message_Get_summary_information summary_information = instance.get_summary_information();
 
                         // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
                         if(!summary_information.status.equals("success")){
@@ -89,11 +89,11 @@ public class Check_Update_for_hw_on_homer extends Thread {
     }
 
 
-    public static void check_Update(WS_HomerServer homer_server, WS_Get_summary_information summary_information){
+    public static void check_Update(WS_HomerServer homer_server, WS_Message_Get_summary_information summary_information){
 
         logger.debug("Check_Update_for_hw_on_homer:: check_Update:: ");
 
-        for(WS_Yoda_connected yoda_connected : summary_information.masterDeviceList){
+        for(WS_Message_Yoda_connected yoda_connected : summary_information.masterDeviceList){
 
             if(!yoda_connected.online_status) {
                 logger.debug("Check_Update_for_hw_on_homer:: Device is offline check is not possible!!!");

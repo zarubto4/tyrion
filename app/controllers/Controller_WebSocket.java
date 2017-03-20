@@ -18,11 +18,11 @@ import utilities.login_entities.TokenCache;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
-import utilities.web_socket.*;
-import utilities.web_socket.message_objects.common.WS_Token;
-import utilities.web_socket.message_objects.common.service_class.WS_Tyrion_restart_echo;
-import utilities.web_socket.message_objects.compilator_tyrion.WS_Ping_compilation_server;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Ping_server;
+import web_socket.message_objects.common.WS_Token;
+import web_socket.message_objects.common.service_class.WS_Message_Tyrion_restart_echo;
+import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Ping_server;
+import web_socket.services.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -132,7 +132,7 @@ public class Controller_WebSocket extends Controller {
                 logger.warn("Controller_WebSocket:: homer_cloud_server_connection::  Server is connected -> Tyrion try to send ping");
 
                 WS_HomerServer ws_blockoServer = (WS_HomerServer) homer_servers.get(unique_identificator);
-                WS_Ping_server result = ws_blockoServer.server.ping();
+                WS_Message_Ping_server result = ws_blockoServer.server.ping();
                 if(!result.status.equals("success")){
                     logger.warn("Controller_WebSocket:: homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
                     if(homer_servers.containsKey(unique_identificator)){
@@ -205,7 +205,7 @@ public class Controller_WebSocket extends Controller {
                     logger.warn("Controller_WebSocket:: compilator_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
 
                     WS_CompilerServer ws_compilerServer = (WS_CompilerServer) compiler_cloud_servers.get(unique_identificator);
-                    WS_Ping_compilation_server result = ws_compilerServer.server.ping();
+                    WS_Message_Ping_compilation_server result = ws_compilerServer.server.ping();
                     if (!result.status.equals("success")) {
                         logger.warn("Controller_WebSocket:: compilator_server_connection:: Ping Failed - Tyrion remove previous connection");
                         if (homer_servers.containsKey(unique_identificator)) {
@@ -297,7 +297,7 @@ public class Controller_WebSocket extends Controller {
 
     public static void server_violently_terminate_terminal(WS_Interface_type terminal){
 
-        terminal.write_without_confirmation(new WS_Tyrion_restart_echo().make_request());
+        terminal.write_without_confirmation(new WS_Message_Tyrion_restart_echo().make_request());
 
         try {
             terminal.close();

@@ -1,7 +1,7 @@
 package utilities.independent_threads;
 
-import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
+import web_socket.services.WS_HomerServer;
+import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ public class Check_update_for_hw_under_homer_ws  {
 
     private WS_HomerServer homer_server = null;
 
-    private List<WS_Get_summary_information> list = new ArrayList<>();
+    private List<WS_Message_Get_summary_information> list = new ArrayList<>();
 
     public Check_update_for_hw_under_homer_ws(WS_HomerServer homer_server){
         this.homer_server = homer_server;
@@ -26,7 +26,7 @@ public class Check_update_for_hw_under_homer_ws  {
         if(!hw_checker_thread.isAlive()) hw_checker_thread.start();
     }
 
-    public void add_new_Procedure(WS_Get_summary_information summary_information){
+    public void add_new_Procedure(WS_Message_Get_summary_information summary_information){
 
         logger.debug("Check_update_for_hw_under_homer_ws:: add_new_Procedure:: new incoming procedure");
 

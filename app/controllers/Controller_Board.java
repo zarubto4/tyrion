@@ -20,8 +20,8 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
 import utilities.swagger.outboundClass.*;
-import utilities.web_socket.message_objects.compilator_tyrion.WS_Make_compilation;
-import utilities.web_socket.message_objects.homer_instance.WS_Board_set_autobackup;
+import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
+import web_socket.message_objects.homer_instance.WS_Message_Board_set_autobackup;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -215,7 +215,7 @@ public class Controller_Board extends Controller {
 
 
             // Odesílám na compilační cloud_compilation_server
-            WS_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Make_compilation().make_request( typeOfBoard ,"", help.main, includes ));
+            WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( typeOfBoard ,"", help.main, includes ));
 
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
@@ -1930,7 +1930,7 @@ public class Controller_Board extends Controller {
 
                 logger.debug("Controller_Board:: board_update_backup:: Board has own Static Backup - Removing static backup procedure required");
 
-                WS_Board_set_autobackup result =  Model_Board.set_auto_backup(board);
+                WS_Message_Board_set_autobackup result =  Model_Board.set_auto_backup(board);
                 if(result.status.equals("success")){
 
                     board.actual_backup_c_program_version = null;

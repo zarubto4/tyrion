@@ -9,8 +9,8 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Update_group_procedure_state;
 import utilities.enums.Enum_CProgram_updater_state;
 import utilities.enums.Enum_Firmware_type;
-import utilities.hardware_updater.Utilities_Master_thread_updater;
-import utilities.web_socket.message_objects.homer_instance.WS_Get_summary_information;
+import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
+import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -110,7 +110,7 @@ public class Model_HomerInstanceRecord extends Model {
 
 
     @JsonIgnore @Transient
-    public void create_actualization_request(WS_Get_summary_information summary_information ) {
+    public void create_actualization_request(WS_Message_Get_summary_information summary_information ) {
         try {
 
             logger.debug("Model_HomerInstanceRecord:: create_actualization_request byl zavolán na Instance Record:: "  + id);
@@ -368,7 +368,7 @@ public class Model_HomerInstanceRecord extends Model {
                     procedure.save();
 
                     logger.debug("Sending new Actualization procedure to Master Updater");
-                    Utilities_Master_thread_updater.add_new_Procedure(procedure);
+                    Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
                 }
             }
 

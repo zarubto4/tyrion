@@ -42,8 +42,8 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import utilities.web_socket.message_objects.homer_instance.*;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Destroy_instance;
+import web_socket.message_objects.homer_instance.*;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -715,7 +715,7 @@ public class Controller_Blocko extends Controller{
             }
 
 
-            WS_Destroy_instance result = homer_instance.remove_instance_from_server();
+            WS_Message_Destroy_instance result = homer_instance.remove_instance_from_server();
 
 
             return GlobalResult.result_ok();
@@ -915,7 +915,7 @@ public class Controller_Blocko extends Controller{
 
             if(!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-            WS_Ping_instance result = homer_instance.ping();
+            WS_Message_Ping_instance result = homer_instance.ping();
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_BadRequest(Json.toJson(result));
@@ -986,7 +986,7 @@ public class Controller_Blocko extends Controller{
 
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-            WS_Add_yoda_to_instance result = homer_instance.add_Yoda_to_instance( yoda_id);
+            WS_Message_Add_yoda_to_instance result = homer_instance.add_Yoda_to_instance( yoda_id);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_BadRequest();
@@ -1005,7 +1005,7 @@ public class Controller_Blocko extends Controller{
 
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
-            WS_Remove_yoda_from_instance result = homer_instance.remove_Yoda_from_instance(yoda_id);
+            WS_Message_Remove_yoda_from_instance result = homer_instance.remove_Yoda_from_instance(yoda_id);
 
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
@@ -1031,7 +1031,7 @@ public class Controller_Blocko extends Controller{
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
 
-            WS_Add_device_to_instance result = homer_instance.add_Device_to_instance(yoda_id, list_of_devices);
+            WS_Message_Add_device_to_instance result = homer_instance.add_Device_to_instance(yoda_id, list_of_devices);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_BadRequest();
@@ -1055,7 +1055,7 @@ public class Controller_Blocko extends Controller{
             if (!homer_instance.instance_online()) return GlobalResult.notFoundObject("Homer_Instance on Tyrion is not online");
 
 
-            WS_Remove_device_from_instance result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
+            WS_Message_Remove_device_from_instance result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_BadRequest();

@@ -31,7 +31,7 @@ import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
-import utilities.web_socket.WS_Becki_Website;
+import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;
 import java.util.List;

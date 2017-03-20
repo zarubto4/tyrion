@@ -13,17 +13,17 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.*;
-import utilities.hardware_updater.Actualization_procedure;
-import utilities.hardware_updater.Utilities_Master_thread_updater;
+import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
+import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.swagger.documentationClass.Swagger_Board_for_fast_upload_detail;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
-import utilities.web_socket.WS_HomerServer;
-import utilities.web_socket.message_objects.common.abstract_class.WS_AbstractMessageBoard;
-import utilities.web_socket.message_objects.homer_instance.*;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Is_device_connected;
-import utilities.web_socket.message_objects.homer_tyrion.WS_Unregistred_device_connected;
+import web_socket.services.WS_HomerServer;
+import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Board;
+import web_socket.message_objects.homer_instance.*;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Is_device_connected;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Unregistred_device_connected;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -364,7 +364,7 @@ public class Model_Board extends Model {
 
             logger.warn("Board::"+  id + " Checking online state!");
 
-            WS_Online_states_devices result = homer_instance.get_devices_online_state(list);
+            WS_Message_Online_states_devices result = homer_instance.get_devices_online_state(list);
 
             logger.warn("Board::"+  id + " Přišla odpověď na state devicu status :: " + result.status);
 
@@ -410,7 +410,7 @@ public class Model_Board extends Model {
 
 
     // Kontrola připojení
-    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_Yoda_connected help){
+    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_Message_Yoda_connected help){
         try {
 
             Model_Board master_device = Model_Board.find.byId(help.deviceId);
@@ -431,7 +431,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void master_device_Disconnected(WS_Yoda_disconnected help){
+    @JsonIgnore @Transient  public static void master_device_Disconnected(WS_Message_Yoda_disconnected help){
         try {
 
             // TODO Chache
@@ -441,7 +441,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_Device_connected help){
+    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_Message_Device_connected help){
         try {
 
             Model_Board device = Model_Board.find.byId(help.deviceId);
@@ -461,7 +461,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Disconnected(WS_Device_disconnected help){
+    @JsonIgnore @Transient  public static void device_Disconnected(WS_Message_Device_disconnected help){
         try {
 
             //TODO Chache
@@ -471,7 +471,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static void unregistred_device_connected(WS_HomerServer homer_server, WS_Unregistred_device_connected report) {
+    @JsonIgnore @Transient public static void unregistred_device_connected(WS_HomerServer homer_server, WS_Message_Unregistred_device_connected report) {
         logger.debug("Model_Board:: unregistred_device_connected:: " + report.deviceId);
 
         Model_Board board = Model_Board.find.byId(report.deviceId);
@@ -502,12 +502,12 @@ public class Model_Board extends Model {
 
     }
 
-    @JsonIgnore @Transient public static void update_report_from_homer(WS_Update_device_firmware report){
+    @JsonIgnore @Transient public static void update_report_from_homer(WS_Message_Update_device_firmware report){
 
-        for(WS_Update_device_firmware.UpdateDeviceInformation updateDeviceInformation : report.procedure_list){
+        for(WS_Message_Update_device_firmware.UpdateDeviceInformation updateDeviceInformation : report.procedure_list){
 
 
-            for(WS_Update_device_firmware.UpdateDeviceInformation_Device updateDeviceInformation_device : updateDeviceInformation.device_state_list){
+            for(WS_Message_Update_device_firmware.UpdateDeviceInformation_Device updateDeviceInformation_device : updateDeviceInformation.device_state_list){
 
                 try{
 
@@ -595,7 +595,7 @@ public class Model_Board extends Model {
     }
 
     // Kontrola up_to_date harwaru
-    @JsonIgnore @Transient  public static void hardware_firmware_state_check(WS_HomerServer server, Model_Board board, WS_AbstractMessageBoard report) {
+    @JsonIgnore @Transient  public static void hardware_firmware_state_check(WS_HomerServer server, Model_Board board, WS_AbstractMessage_Board report) {
         try {
 
             logger.debug("Model_Board:: hardware_firmware_state_check:: Summary information of connected master board: ", board.id);
@@ -663,7 +663,7 @@ public class Model_Board extends Model {
 
                             plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                             plans.get(0).update();
-                            Utilities_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                            Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
                         }
 
                     }else {
@@ -672,7 +672,7 @@ public class Model_Board extends Model {
                         plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                         plans.get(0).update();
 
-                        Utilities_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
 
                     }
 
@@ -691,7 +691,7 @@ public class Model_Board extends Model {
                         plans.get(0).state = Enum_CProgram_updater_state.in_progress;
                         plans.get(0).update();
 
-                        Utilities_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
                     }
 
                 } else if (plans.get(0).firmware_type == Enum_Firmware_type.BACKUP) {
@@ -709,10 +709,10 @@ public class Model_Board extends Model {
 
             board.notification_board_connect();
 
-            if(report instanceof WS_Yoda_connected){
+            if(report instanceof WS_Message_Yoda_connected){
 
-                WS_Yoda_connected ws_yoda_connected = (WS_Yoda_connected) report;
-                for(WS_Device_connected ws_device_connected : ws_yoda_connected.deviceList){
+                WS_Message_Yoda_connected ws_yoda_connected = (WS_Message_Yoda_connected) report;
+                for(WS_Message_Device_connected ws_device_connected : ws_yoda_connected.deviceList){
                     device_Connected(server, ws_device_connected);
                 }
             }
@@ -723,19 +723,19 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static WS_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, List<Actualization_procedure> procedures){
+    @JsonIgnore @Transient public static WS_Message_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, List<Utilities_HW_Updater_Actualization_procedure> procedures){
 
         try {
 
-            JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Update_device_firmware().make_request(instance, procedures), 1000 * 30, 0, 3);
+            JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Message_Update_device_firmware().make_request(instance, procedures), 1000 * 30, 0, 3);
 
-            final Form<WS_Update_device_firmware> form = Form.form(WS_Update_device_firmware.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_Board:: WS_Update_device_firmware:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Update_device_firmware();}
+            final Form<WS_Message_Update_device_firmware> form = Form.form(WS_Message_Update_device_firmware.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_Board:: WS_Update_device_firmware:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Update_device_firmware();}
 
             return form.get();
 
         }catch (Exception e){
-            return new WS_Update_device_firmware();
+            return new WS_Message_Update_device_firmware();
         }
     }
 
@@ -800,7 +800,7 @@ public class Model_Board extends Model {
 
             if(!find_server.server_is_online()) continue;
 
-            WS_Is_device_connected result = find_server.is_device_connected(this.id);
+            WS_Message_Is_device_connected result = find_server.is_device_connected(this.id);
 
             // TODO...
 
@@ -874,7 +874,7 @@ public class Model_Board extends Model {
         }
 
         procedure.refresh();
-        Utilities_Master_thread_updater.add_new_Procedure(procedure);
+        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
     }
 
     @JsonIgnore @Transient public static void update_firmware(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
@@ -927,7 +927,7 @@ public class Model_Board extends Model {
 
         procedure.refresh();
 
-        Utilities_Master_thread_updater.add_new_Procedure(procedure);
+        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
     }
 
     @JsonIgnore @Transient  public static void update_backup(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
@@ -992,39 +992,39 @@ public class Model_Board extends Model {
         procedure.updates.addAll(plans);
         procedure.update();
 
-        Utilities_Master_thread_updater.add_new_Procedure(procedure);
+        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
     }
 
-    @JsonIgnore @Transient  public static WS_Board_set_autobackup set_auto_backup(Model_Board board_for_update){
+    @JsonIgnore @Transient  public static WS_Message_Board_set_autobackup set_auto_backup(Model_Board board_for_update){
         try{
 
             Model_HomerInstance instance = board_for_update.get_instance();
             if(instance == null) {
                 logger.error("Model_Board:: set_auto_backup:: on DeviceId:: " + board_for_update.id + " has not own instance");
 
-                WS_Board_set_autobackup result = new WS_Board_set_autobackup();
+                WS_Message_Board_set_autobackup result = new WS_Message_Board_set_autobackup();
                 return result;
             }
 
             if(!instance.instance_online()){
                 logger.error("Model_Board:: set_auto_backup:: instanceId:: " + instance.blocko_instance_name + " is offline");
 
-                WS_Board_set_autobackup result = new WS_Board_set_autobackup();
+                WS_Message_Board_set_autobackup result = new WS_Message_Board_set_autobackup();
                 return result;
             }
 
-            JsonNode node =  instance.send_to_instance().write_with_confirmation(new WS_Board_set_autobackup().make_request(instance, board_for_update), 1000*3, 0, 4);
+            JsonNode node =  instance.send_to_instance().write_with_confirmation(new WS_Message_Board_set_autobackup().make_request(instance, board_for_update), 1000*3, 0, 4);
 
-            final Form<WS_Board_set_autobackup> form = Form.form(WS_Board_set_autobackup.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Board_set_autobackup();}
+            final Form<WS_Message_Board_set_autobackup> form = Form.form(WS_Message_Board_set_autobackup.class).bind(node);
+            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Board_set_autobackup();}
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Board_set_autobackup();
+            return new WS_Message_Board_set_autobackup();
         }catch (Exception e){
             logger.error("Model_Board:: set_auto_backup:: Error:: ", e);
-            return new WS_Board_set_autobackup();
+            return new WS_Message_Board_set_autobackup();
         }
 
     }
