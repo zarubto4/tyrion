@@ -150,7 +150,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             record.save();
 
             // Ověřím full_id - pokud už existuje a je shodný s MacAdressou - pak zašlu jen novou konfiguraci
-            if( Model_Board.find.where().eq("id", help.full_id).findUnique() != null){
+            if( Model_Board.get_model(help.full_id) != null){
                 logger.debug("HardwareGeneratorController:: new_hardware_request:: Full_Id is used - Just new Configuration!");
             }
 

@@ -9,9 +9,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
+import utilities.cache.Server_Cache;
 import utilities.enums.*;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
@@ -171,10 +173,11 @@ public class Model_Board extends Model {
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status()       {
 
-        logger.debug("Model_Board:: status:: Check Status" + this.id);
+        logger.debug("Model_Board:: status:: Check Status:: " + this.id);
 
-        // Složený SQL dotaz pro nalezení funkční běžící instance (B_Pair)
         Model_HomerInstance instance =  get_instance();
+
+        logger.debug("Model_Board:: status:: Get Instance success :: " + instance.blocko_instance_name);
 
         Swagger_Board_Status board_status = new Swagger_Board_Status();
         board_status.status = is_online() ? Enum_Board_status.online : Enum_Board_status.offline;
@@ -349,44 +352,6 @@ public class Model_Board extends Model {
 
 /* BOARD WEBSOCKET CONTROLLING UNDER INSTANCE --------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  public boolean is_online(){ // Velmi opatrně s touto proměnou - je časově velmi náročná!!!!!!!!
-        try {
-
-            Model_HomerInstance homer_instance = get_instance();
-
-            if(homer_instance == null){
-                logger.warn("Board::"+  id + " has not set instance!");
-                return false;
-            }
-
-            List<String> list = new ArrayList<>();
-            list.add(this.id);
-
-            logger.warn("Board::"+  id + " Checking online state!");
-
-            WS_Message_Online_states_devices result = homer_instance.get_devices_online_state(list);
-
-            logger.warn("Board::"+  id + " Přišla odpověď na state devicu status :: " + result.status);
-
-            if( result.status.equals("error")){
-                logger.warn("Board::"+  id + " Checking online state! status is Error:: ");
-                return false;
-            }
-
-            if( result.status.equals("success") ){
-                return result.is_device_online(id);
-            }
-
-            return false;
-
-        }catch (NullPointerException e){
-            return false;
-        }catch (Exception e){
-            logger.error("Board:: is_online:: Error:: ", e);
-            return false;
-        }
-    }
-
     @JsonIgnore @Transient  Model_HomerInstance homer_instance = null; // SLouží pouze k uchovávání get_instance()!
     @JsonIgnore @Transient  public Model_HomerInstance get_instance(){
 
@@ -408,12 +373,11 @@ public class Model_Board extends Model {
             return homer_instance;
     }
 
-
     // Kontrola připojení
     @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_Message_Yoda_connected help){
         try {
 
-            Model_Board master_device = Model_Board.find.byId(help.deviceId);
+            Model_Board master_device = Model_Board.get_model(help.deviceId);
 
             if(master_device == null){
                 logger.error("Board:: master_device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
@@ -444,7 +408,9 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_Message_Device_connected help){
         try {
 
-            Model_Board device = Model_Board.find.byId(help.deviceId);
+            Server_Cache.cacheManager.getCache( Model_Board.CACHE_ONLINE_STATE , String.class, Boolean.class).put(help.deviceId, true);
+
+            Model_Board device = Model_Board.get_model(help.deviceId);
 
             if(device == null){
                 logger.error("Board:: master_device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
@@ -464,24 +430,24 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void device_Disconnected(WS_Message_Device_disconnected help){
         try {
 
-            //TODO Chache
+            Server_Cache.cacheManager.getCache( Model_Board.CACHE_ONLINE_STATE , String.class, Boolean.class).put(help.deviceId, false);
 
         }catch (Exception e){
             logger.error("Board:: device_Disconnected:: ERROR:: ", e);
         }
     }
 
-    @JsonIgnore @Transient public static void unregistred_device_connected(WS_HomerServer homer_server, WS_Message_Unregistred_device_connected report) {
-        logger.debug("Model_Board:: unregistred_device_connected:: " + report.deviceId);
+    @JsonIgnore @Transient public static void un_registred_device_connected(WS_HomerServer homer_server, WS_Message_Unregistred_device_connected report) {
+        logger.debug("Model_Board:: un_registred_device_connected:: " + report.deviceId);
 
-        Model_Board board = Model_Board.find.byId(report.deviceId);
+        Model_Board board = Model_Board.get_model(report.deviceId);
         if(board == null){
             logger.warn("Unknown device tries to connect:: " + report.deviceId);
             return;
         }
 
         if(board.project == null){
-            logger.debug("Model_Board:: unregistred_device_connected is registed under server:: " + homer_server.identifikator + " Server name:: " + homer_server.server.personal_server_name);
+            logger.debug("Model_Board:: un_registred_device_connected is registed under server:: " + homer_server.identifikator + " Server name:: " + homer_server.server.personal_server_name);
             board.connected_server =  homer_server.server;
             board.is_active = true;
             board.update();
@@ -514,7 +480,7 @@ public class Model_Board extends Model {
                     Enum_Hardware_update_state_from_Homer status = Enum_Hardware_update_state_from_Homer.getUpdate_state(updateDeviceInformation_device.update_state);
                     if(status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + updateDeviceInformation_device.update_state + " is not recognize in Json!");
 
-                    Model_Board board = Model_Board.find.byId(updateDeviceInformation_device.deviceId);
+                    Model_Board board = Model_Board.get_model(updateDeviceInformation_device.deviceId);
                     if(board == null) throw new NullPointerException("Device id" +updateDeviceInformation_device.deviceId + " not found!");
 
                     Enum_Firmware_type firmware_type = Enum_Firmware_type.getFirmwareType(updateDeviceInformation_device.firmwareType);
@@ -1078,11 +1044,12 @@ public class Model_Board extends Model {
                                                                                       "- Or user need combination of static/dynamic permission key and Board.first_connect_permission == true";
     @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
-                                       @JsonIgnore   @Transient public boolean create_permission(){  return   Controller_Security.getPerson().has_permission("Board_Create"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  (project != null && project.update_permission())|| Controller_Security.getPerson().has_permission("Board_edit")  ;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return  (project != null && project.read_permission()  )|| Controller_Security.getPerson().has_permission("Board_read")  ;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  (project != null && project.update_permission())|| Controller_Security.getPerson().has_permission("Board_delete");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  (project != null && project.update_permission())|| Controller_Security.getPerson().has_permission("Board_update");}
+                                       @JsonIgnore   @Transient public boolean create_permission(){  return  Controller_Security.has_token() && Controller_Security.getPerson().has_permission("Board_Create"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.getPerson().has_permission("Board_edit")) ;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return Controller_Security.has_token() && ((project != null && project.read_permission())   || Controller_Security.has_token() && Controller_Security.getPerson().has_permission("Board_read"));
+    }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.has_token() && Controller_Security.getPerson().has_permission("Board_delete"));}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.has_token() && Controller_Security.getPerson().has_permission("Board_update"));}
 
 
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}
@@ -1094,11 +1061,19 @@ public class Model_Board extends Model {
 
     @Override
     public void update(){
+
+        //Cache Update
+        Cache<String, Model_Board> cache = Server_Cache.cacheManager.getCache( Model_Board.CACHE_MODEL, String.class, Model_Board.class);
+        cache.put(this.id, this);
+
+        //Database Update
         super.update();
     }
 
+
     @Override
     public void save(){
+
 
         while(true){ // I need Unique Value
 
@@ -1106,10 +1081,101 @@ public class Model_Board extends Model {
             this.hash_for_adding = UUDID.substring(0, 4) + "-" + UUDID.substring(4, 8) + "-" + UUDID.substring(9, 13);
 
             if (Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique() == null) break;
+
         }
 
         super.save();
+
+        //Cache Update
+        Cache<String, Model_Board> cache = Server_Cache.cacheManager.getCache( Model_Board.CACHE_MODEL, String.class, Model_Board.class);
+        cache.put(this.id, this);
     }
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE_ONLINE_STATE = Model_Board.class.getName() + "_ONLINE_STATUS";
+    public static final String CACHE_MODEL        = Model_Board.class.getName() + "_MODEL";
+    public static Cache<String, Model_Board> cache_model_board = null; // Server_cache Override during server initialization
+    public static Cache<String, Boolean> cache_online_status = null; // Server_cache Override during server initialization
+
+    public static Model_Board get_model(String board_id){
+
+        Model_Board model = cache_model_board.get(board_id);
+
+        if(model == null){
+            model = Model_Board.get_model(board_id);
+            cache_model_board.put(board_id, model);
+        }
+
+        return model;
+    }
+
+    public static List<Model_Board> get_models(List<String> board_ids){
+
+        List<Model_Board> model_boards = new ArrayList<>();
+        for(String board_id : board_ids) model_boards.add(get_model(board_id));
+        return model_boards;
+
+    }
+
+
+    @JsonIgnore
+    public boolean is_online() {
+
+        logger.debug("Model_Board:: is_online:: " + id);
+
+        Boolean status = cache_online_status.get(id);
+
+
+        if (status == null){
+
+            try {
+
+                Model_HomerInstance homer_instance = get_instance();
+
+                if(homer_instance == null){
+                    cache_online_status.put(id, false);
+                    return false;
+                }
+
+                List<String> list = new ArrayList<>();
+                list.add(this.id);
+
+                WS_Message_Online_states_devices result = homer_instance.get_devices_online_state(list);
+
+
+
+                if( result.status.equals("error")){
+
+                    logger.warn("Board::"+  id + " Checking online state! status is Error:: ");
+                    cache_online_status.put(id, false);
+                    return false;
+
+                } else if( result.status.equals("success") ){
+
+                    cache_online_status.put(id, result.is_device_online(id));
+                    return false;
+
+                }
+
+                cache_online_status.put(id, false );
+                return false;
+
+
+            }catch (NullPointerException e){
+                cache_online_status.put(id, false );
+                return false;
+            }catch (Exception e){
+                logger.error("Board:: is_online:: Error:: ", e);
+                return false;
+            }
+        }else {
+
+            return status;
+        }
+    }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_Board> find = new Finder<>(Model_Board.class);

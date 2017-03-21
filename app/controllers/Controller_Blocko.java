@@ -361,7 +361,7 @@ public class Controller_Blocko extends Controller{
                     System.out.println("Mám main Board ID: " + group.main_board_pair.board_id);
                     Model_BPair b_pair = new Model_BPair();
 
-                    b_pair.board = Model_Board.find.byId(group.main_board_pair.board_id);
+                    b_pair.board = Model_Board.get_model(group.main_board_pair.board_id);
                     if ( b_pair.board == null) return GlobalResult.notFoundObject("Board board_id not found");
                     if (!b_pair.board.type_of_board.connectible_to_internet)  return GlobalResult.result_BadRequest("Main Board must be internet connectible!");
                     if(!b_pair.board.update_permission()) return GlobalResult.forbidden_Permission();
@@ -1071,7 +1071,7 @@ public class Controller_Blocko extends Controller{
         try{
 
             // Kontrola oprávnění
-            Model_Board board = Model_Board.find.byId(target_id);
+            Model_Board board = Model_Board.get_model(target_id);
             if (board == null) return GlobalResult.notFoundObject("Board targetId not found");
 
             // Kontrola objektu

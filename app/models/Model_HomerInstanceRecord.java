@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Update_group_procedure_state;
 import utilities.enums.Enum_CProgram_updater_state;
 import utilities.enums.Enum_Firmware_type;
+import utilities.enums.Enum_Update_type_of_update;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 
@@ -114,6 +115,15 @@ public class Model_HomerInstanceRecord extends Model {
         try {
 
             logger.debug("Model_HomerInstanceRecord:: create_actualization_request byl zavolán na Instance Record:: "  + id);
+
+            Model_ActualizationProcedure actualization_procedure = new Model_ActualizationProcedure();
+            actualization_procedure.date_of_create = new Date();
+
+            if(running_from != null) actualization_procedure.date_of_planing = running_from;
+
+            actualization_procedure.homer_instance_record = this;
+            actualization_procedure.type_of_update = Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP;
+            actualization_procedure.save();
 
 
             // Projedu seznam HW - podle skupin instancí jak jsou poskládané podle Yody
@@ -254,41 +264,34 @@ public class Model_HomerInstanceRecord extends Model {
                 }
 
 
-                // Mohu nahrávat instanci která nemusí mít vůbec žádný update hardwaru a tak je zbytečné vytvářet objekt
-                if(updates.size() > 0){
+                actualization_procedure.updates.addAll(updates);
 
-                    Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
-
-                    procedure.date_of_create = new Date();
-                    if(running_from != null) procedure.date_of_planing = running_from;
-
-                    procedure.homer_instance_record = this;
-                    procedure.save();
-
-                    for(Model_CProgramUpdatePlan plan_update : updates){
-
-                        logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Checking Model_CProgramUpdatePlan id:: " + plan_update.state);
-
-                        if(plan_update.state != Enum_CProgram_updater_state.complete && procedure.state == null) {
-                            logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Set procedure to not_start_yet");
-                            procedure.state = Enum_Update_group_procedure_state.not_start_yet;
-                            procedure.update();
-                        }
-
-                        plan_update.actualization_procedure = procedure;
-                        plan_update.save();
-                    }
-
-                    if(procedure.state == null) {
-                        logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Set procedure to successful_complete");
-                        procedure.refresh();
-                        procedure.state = Enum_Update_group_procedure_state.successful_complete;
-                        procedure.update();
-                    }
-
-
-                }
             }
+
+            if(actualization_procedure.updates.size() > 0){
+
+                for(Model_CProgramUpdatePlan plan_update : actualization_procedure.updates){
+
+                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Checking Model_CProgramUpdatePlan id:: " + plan_update.state);
+
+                    if(plan_update.state != Enum_CProgram_updater_state.complete && actualization_procedure.state == null) {
+                        logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Set procedure to not_start_yet");
+                        actualization_procedure.state = Enum_Update_group_procedure_state.not_start_yet;
+                    }
+
+                    plan_update.actualization_procedure = actualization_procedure;
+                    plan_update.save();
+                }
+
+                if(actualization_procedure.state == null) {
+                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Set procedure to successful_complete");
+                    actualization_procedure.state = Enum_Update_group_procedure_state.successful_complete;
+                    actualization_procedure.update();
+                }
+
+            }
+
+
 
         }catch (Exception e){
             logger.error("Model_HomerInstanceRecord::  create_actualization_request:: add_new_actualization_request:: Error ", e);

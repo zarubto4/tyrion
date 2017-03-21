@@ -425,6 +425,7 @@ create table model_mproject (
   date_of_create            timestamp,
   project_id                varchar(255),
   azure_m_project_link      varchar(255),
+  removed_by_user           boolean,
   constraint pk_model_mproject primary key (id))
 ;
 
