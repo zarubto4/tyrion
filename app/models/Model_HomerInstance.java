@@ -898,7 +898,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public boolean online_state(){
+    @JsonIgnore @Transient
+    public boolean online_state(){
 
         // TODO - Stav!!!!!
         return this.cloud_homer_server.is_instance_exist(this.blocko_instance_name);
@@ -1056,6 +1057,10 @@ public class Model_HomerInstance extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static Model.Finder<String, Model_HomerInstance> find = new Finder<>(Model_HomerInstance.class);
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
 
 }

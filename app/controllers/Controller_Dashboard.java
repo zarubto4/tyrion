@@ -173,6 +173,25 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
+    @Security.Authenticated(Secured_Admin.class)
+    public Result show_wiki(String file_name) throws IOException {
+        try {
+
+            logger.debug("Creating wiki content");
+
+            String text = "";
+
+            for (String line : Files.readAllLines(Paths.get("conf/markdown_documentation/" + file_name + ".markdown"), StandardCharsets.UTF_8)) text += line + "\n";
+
+            Html wiki_html = wiki.render(file_name.substring(0,1).toUpperCase() + file_name.substring(1), new Html(new PegDownProcessor().markdownToHtml(text)));
+
+            return return_page(wiki_html);
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
 // API DIFF ###############################################################################################################
 
     // Zobrazení rozdílu mezi verzemi

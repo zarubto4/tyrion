@@ -31,6 +31,12 @@ public class Server_Cache {
         cacheManager.createCache("token",
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_FloatingPersonToken.class,
                         ResourcePoolsBuilder.heap(100)).build());
+
+        cacheManager.createCache("instance_state",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_FloatingPersonToken.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+
+
     }
 
     public static void stopCache(){

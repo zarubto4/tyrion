@@ -24,8 +24,8 @@ public class WS_Message_Get_Hardware_list extends WS_AbstractMessage_Instance {
     @JsonIgnore
     public WS_Message_Help_Yoda_only_hardware_Id_list getListWithYoda(String yodaId){
 
-        for(WS_Message_Help_Yoda_only_hardware_Id_list hardwareIdList: hardwareIdList){
-            if(hardwareIdList.deviceId.equals(yodaId)) return hardwareIdList;
+        for(WS_Message_Help_Yoda_only_hardware_Id_list hardwareId: hardwareIdList){
+            if(hardwareId.deviceId.equals(yodaId)) return hardwareId;
         }
 
         return null;
