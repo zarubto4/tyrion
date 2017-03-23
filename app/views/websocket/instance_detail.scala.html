@@ -118,7 +118,7 @@
                                             <div class="btn-group">
 
                                                     @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.main_board_pair.id.toString()  ).findUnique() != null){
-                                                        @if(Model_Board.get_model( x.main_board_pair.id.toString() ).update_boot_loader_required()) {
+                                                        @if(Model_Board.get_byId( x.main_board_pair.id.toString() ).update_boot_loader_required()) {
                                                             <a  onclick="updateBootLoader('@x.main_board_pair.id.toString()')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
                                                         }else {
                                                             <p class="lead text-green">(Actual)</p>
@@ -205,7 +205,7 @@
                                     <div class="btn-group">
 
                                         @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.id  ).findUnique() != null){
-                                            @if(Model_Board.get_model( x.id ).update_boot_loader_required()) {
+                                            @if(Model_Board.get_byId( x.id ).update_boot_loader_required()) {
                                                 <a  onclick="updateBootLoader('@x.id')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
                                             }else {
                                                 <p class="lead text-green">(Actual)</p>

@@ -5,7 +5,6 @@ import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.ehcache.config.units.MemoryUnit;
 import org.ehcache.expiry.Duration;
 import org.ehcache.expiry.Expirations;
 
@@ -37,40 +36,35 @@ public class Server_Cache {
                         ResourcePoolsBuilder.heap(100)).build());
 
 
-        /**
+        /*
          *  Model_Board
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-                * // Cache for Board  - Max for 100K or 500MB
-         * // Cache for Board Online status for 100K Devices - Expirate time set to 20 Minutes with Backup on harddisk
+         * // Cache for Board  - Max 100 Entries
+         * // Cache for Board Online status for 100 Devices - Expiration time set to 60 Minutes
          */
 
-        cacheManager.createCache(Model_Board.CACHE_MODEL,  CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
-                ResourcePoolsBuilder.heap(100000).offheap(200, MemoryUnit.MB)).withExpiry(Expirations.timeToLiveExpiration(Duration.of(15, TimeUnit.MINUTES))).build());
+        Model_Board.cache = cacheManager.createCache(Model_Board.CACHE,
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Board.class,
+                        ResourcePoolsBuilder.heap(100)).withExpiry(Expirations.timeToIdleExpiration(Duration.of(15, TimeUnit.MINUTES))).build());
 
-        Model_Board.cache_model_board = Server_Cache.cacheManager.getCache( Model_Board.CACHE_MODEL, String.class, Model_Board.class);
+
+        Model_Board.cache_status = cacheManager.createCache(Model_Board.CACHE_STATUS,
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
+                        ResourcePoolsBuilder.heap(1000)).withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 
 
-        cacheManager.createCache(Model_Board.CACHE_ONLINE_STATE,  CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
-                ResourcePoolsBuilder.heap(100000).offheap(500, MemoryUnit.MB).disk(200, MemoryUnit.MB) ).withExpiry(Expirations.timeToLiveExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
-
-        Model_Board.cache_online_status  = Server_Cache.cacheManager.getCache( Model_Board.CACHE_ONLINE_STATE , String.class, Boolean.class);
-
-        /**
+        /*
          *  Model_Instance
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
          */
 
-        // TOM TODO
-        cacheManager.createCache( "TOOOOODOOOO....... " ,  CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerInstance.class,
-                ResourcePoolsBuilder.heap(5000)).withExpiry(Expirations.timeToLiveExpiration(Duration.of(15, TimeUnit.MINUTES))).build());
+        Model_HomerInstance.cache_status = cacheManager.createCache(Model_HomerInstance.CACHE_STATUS,
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
+                        ResourcePoolsBuilder.heap(1000)).withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 
-        cacheManager.createCache( "TOOOOODOOOO....... " ,  CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerInstanceRecord.class,
-                ResourcePoolsBuilder.heap(5000)).withExpiry(Expirations.timeToLiveExpiration(Duration.of(15, TimeUnit.MINUTES))).build());
-
-
-        cacheManager.createCache( "TOOOOODOOOO....... " ,  CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerInstanceRecord.class,
-                ResourcePoolsBuilder.heap(5000).offheap(100, MemoryUnit.MB).disk(200, MemoryUnit.MB) ).withExpiry(Expirations.timeToLiveExpiration(Duration.of(15, TimeUnit.MINUTES))).build());
-
+        //cacheManager.createCache(,
+        //        CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerInstanceRecord.class,
+        //                ResourcePoolsBuilder.heap(5000)).withExpiry(Expirations.timeToIdleExpiration(Duration.of(15, TimeUnit.MINUTES))).build());
 
 
 
@@ -78,11 +72,11 @@ public class Server_Cache {
          *  Model_HomerServer
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
          */
-        cacheManager.createCache("TODO........",
+/*        cacheManager.createCache("TODO........",
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerServer.class,
                         ResourcePoolsBuilder.heap(10000)).build());
 
-
+*/
 
 
     }
