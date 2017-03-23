@@ -100,7 +100,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
                 continue;
             }
 
-            Model_Board yoda = Model_Board.get_model(yoda_connected.deviceId);
+            Model_Board yoda = Model_Board.get_byId(yoda_connected.deviceId);
             if(yoda == null){
                 logger.error("Check_Update_for_hw_on_homer:: unknow Device!!! ");
             }

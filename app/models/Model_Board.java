@@ -101,11 +101,11 @@ public class Model_Board extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                   @Id @ApiModelProperty(required = true)   public String id;                     // Full_Id procesoru přiřazené Garfieldem
-                                       @ApiModelProperty(required = true)   public String hash_for_adding;        // Vygenerovaný Hash pro přidávání a párování s Platformou.
+                                   @Id @ApiModelProperty(required = true)   public String id;                   // Full_Id procesoru přiřazené Garfieldem
+                                       @ApiModelProperty(required = true)   public String hash_for_adding;      // Vygenerovaný Hash pro přidávání a párování s Platformou.
 
-                                       @ApiModelProperty(required = true)   public String wifi_mac_address;       // Mac addressa wifi čipu
-                                       @ApiModelProperty(required = true)   public String mac_address;            // Přiřazená MacAdresa z rozsahu Adres
+                                       @ApiModelProperty(required = true)   public String wifi_mac_address;     // Mac addressa wifi čipu
+                                       @ApiModelProperty(required = true)   public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
                                        @ApiModelProperty(required = true)   public String generationDescription;  // Info  výrobní generaci
 
 
@@ -377,7 +377,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_Message_Yoda_connected help){
         try {
 
-            Model_Board master_device = Model_Board.get_model(help.deviceId);
+            Model_Board master_device = Model_Board.get_byId(help.deviceId);
 
             if(master_device == null){
                 logger.error("Board:: master_device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
@@ -408,9 +408,9 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_Message_Device_connected help){
         try {
 
-            Server_Cache.cacheManager.getCache( Model_Board.CACHE_ONLINE_STATE , String.class, Boolean.class).put(help.deviceId, true);
+            Server_Cache.cacheManager.getCache( Model_Board.CACHE_STATUS, String.class, Boolean.class).put(help.deviceId, true);
 
-            Model_Board device = Model_Board.get_model(help.deviceId);
+            Model_Board device = Model_Board.get_byId(help.deviceId);
 
             if(device == null){
                 logger.error("Board:: master_device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
@@ -430,7 +430,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void device_Disconnected(WS_Message_Device_disconnected help){
         try {
 
-            Server_Cache.cacheManager.getCache( Model_Board.CACHE_ONLINE_STATE , String.class, Boolean.class).put(help.deviceId, false);
+            Server_Cache.cacheManager.getCache( Model_Board.CACHE_STATUS, String.class, Boolean.class).put(help.deviceId, false);
 
         }catch (Exception e){
             logger.error("Board:: device_Disconnected:: ERROR:: ", e);
@@ -1063,7 +1063,7 @@ public class Model_Board extends Model {
     public void update(){
 
         //Cache Update
-        cache_model_board.put(this.id, this);
+        cache.put(this.id, this);
 
         //Database Update
         super.update();
@@ -1086,33 +1086,37 @@ public class Model_Board extends Model {
         super.save();
 
         //Cache Update
-        cache_model_board.put(this.id, this);
+        cache.put(this.id, this);
     }
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static final String CACHE_ONLINE_STATE = Model_Board.class.getName() + "_ONLINE_STATUS";
-    public static final String CACHE_MODEL        = Model_Board.class.getName() + "_MODEL";
-    public static Cache<String, Model_Board> cache_model_board = null; // Server_cache Override during server initialization
-    public static Cache<String, Boolean> cache_online_status = null; // Server_cache Override during server initialization
+    public static final String CACHE        = Model_Board.class.getSimpleName();
+    public static final String CACHE_STATUS = Model_Board.class.getSimpleName() + "_STATUS";
 
-    public static Model_Board get_model(String board_id){
+    public static Cache<String, Model_Board> cache; // Server_cache Override during server initialization
+    public static Cache<String, Boolean> cache_status; // Server_cache Override during server initialization
+
+    public static Model_Board get_byId(String id){
 
         Model_Board model = cache_model_board.get(board_id);
 
         if(model == null){
-            model = Model_Board.find.byId(board_id);
-            cache_model_board.put(board_id, model);
+            model = find.byId(id);
+
+            if (model == null) return null;
+
+            cache.put(board_id, model);
         }
 
         return model;
     }
 
-    public static List<Model_Board> get_models(List<String> board_ids){
+    public static List<Model_Board> get_byIds(List<String> board_ids){
 
         List<Model_Board> model_boards = new ArrayList<>();
-        for(String board_id : board_ids) model_boards.add(get_model(board_id));
+        for(String board_id : board_ids) model_boards.add(get_byId(board_id));
         return model_boards;
 
     }
@@ -1123,7 +1127,7 @@ public class Model_Board extends Model {
 
         logger.debug("Model_Board:: is_online:: " + id);
 
-        Boolean status = cache_online_status.get(id);
+        Boolean status = cache_status.get(id);
 
 
         if (status == null){
@@ -1133,7 +1137,7 @@ public class Model_Board extends Model {
                 Model_HomerInstance homer_instance = get_instance();
 
                 if(homer_instance == null){
-                    cache_online_status.put(id, false);
+                    cache_status.put(id, false);
                     return false;
                 }
 
@@ -1147,22 +1151,22 @@ public class Model_Board extends Model {
                 if( result.status.equals("error")){
 
                     logger.warn("Board::"+  id + " Checking online state! status is Error:: ");
-                    cache_online_status.put(id, false);
+                    cache_status.put(id, false);
                     return false;
 
                 } else if( result.status.equals("success") ){
 
-                    cache_online_status.put(id, result.is_device_online(id));
+                    cache_status.put(id, result.is_device_online(id));
                     return false;
 
                 }
 
-                cache_online_status.put(id, false );
+                cache_status.put(id, false );
                 return false;
 
 
             }catch (NullPointerException e){
-                cache_online_status.put(id, false );
+                cache_status.put(id, false );
                 return false;
             }catch (Exception e){
                 logger.error("Board:: is_online:: Error:: ", e);

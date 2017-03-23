@@ -173,6 +173,27 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
+    @Security.Authenticated(Secured_Admin.class)
+    public Result show_wiki(String file_name) throws IOException {
+        try {
+
+            logger.debug("Creating wiki content");
+
+            String text = "";
+
+            for (String line : Files.readAllLines(Paths.get("conf/markdown_documentation/" + file_name + ".markdown"), StandardCharsets.UTF_8)) text += line + "\n";
+
+            if (file_name.contains("_")) file_name = file_name.substring(file_name.lastIndexOf("_") + 1);
+
+            Html wiki_html = wiki.render(file_name.substring(0,1).toUpperCase() + file_name.substring(1), new Html(new PegDownProcessor().markdownToHtml(text)));
+
+            return return_page(wiki_html);
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
 // API DIFF ###############################################################################################################
 
     // Zobrazení rozdílu mezi verzemi
@@ -451,7 +472,7 @@ public class Controller_Dashboard extends Controller {
     public Result board_detail(String board_id){
         try {
 
-            Html content = board_detail.render( Model_Board.get_model(board_id) );
+            Html content = board_detail.render( Model_Board.get_byId(board_id) );
             return return_page ( content );
 
         }catch (Exception e){

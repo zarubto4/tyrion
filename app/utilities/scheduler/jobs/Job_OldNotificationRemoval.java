@@ -32,7 +32,7 @@ public class Job_OldNotificationRemoval implements Job {
 
             try {
 
-                logger.debug("Job_OldNotificationRemoval:: remove_notification_thread: concurrent thread started on {}" + new Date());
+                logger.debug("Job_OldNotificationRemoval:: remove_notification_thread: concurrent thread started on {}", new Date());
 
                 Date created = new Date(new Date().getTime() - TimeUnit.DAYS.toMillis(30)); // before one month
 
@@ -53,7 +53,7 @@ public class Job_OldNotificationRemoval implements Job {
                 Loggy.internalServerError("Job_OldNotificationRemoval:: remove_notification_thread:", e);
             }
 
-            logger.debug("Job_OldNotificationRemoval:: remove_notification_thread: thread stopped on {}" + new Date());
+            logger.debug("Job_OldNotificationRemoval:: remove_notification_thread: thread stopped on {}", new Date());
         }
     };
 }

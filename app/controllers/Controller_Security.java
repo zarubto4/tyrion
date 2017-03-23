@@ -59,7 +59,7 @@ public class Controller_Security extends Controller {
         try {
             return (Model_Person) Http.Context.current().args.get("person");
         }catch (Exception e){
-            logger.error("Controller_Security:: getPerson Exception");
+            Loggy.internalServerError("Controller_Security:: getPerson:", e);
             return null;
         }
     }
@@ -67,7 +67,7 @@ public class Controller_Security extends Controller {
         try {
             return (Model_Person) Http.Context.current().args.get("person");
         }catch (Exception e){
-            logger.error("Controller_Security:: getPerson Exception");
+            Loggy.internalServerError("Controller_Security:: getPerson:", e);
             return null;
         }
     }

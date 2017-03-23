@@ -108,11 +108,9 @@ public class Loggy{
         description.append("\n");
         description.append("    Tyrion mode: " + Server.server_mode);
         description.append("\n");
-        description.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "non user request error"));
-        description.append("\n");
 
         description.append("    Stack trace: \n");
-        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {    // formátování stack trace
+        for (StackTraceElement element : exception.getStackTrace()) {    // formátování stack trace
             description.append("        ");
             description.append(element);
             description.append("\n");

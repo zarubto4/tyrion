@@ -433,6 +433,7 @@ GET             /admin/websocket/summary                        @controllers.Con
 GET             /admin/websocket/server_detail/:server_name     @controllers.Controller_Dashboard.show_websocket_server_detail(server_name)
 GET             /admin/websocket/instance_detail/:instance_id   @controllers.Controller_Dashboard.show_instance_detail(instance_id)
 GET             /admin/show_readme                              @controllers.Controller_Dashboard.show_readme()
+GET             /admin/show_wiki/:file_name                     @controllers.Controller_Dashboard.show_wiki(file_name)
 GET             /admin/show_diff_on_Api/                        @controllers.Controller_Dashboard.show_diff_on_Api(old_api: String?="",new_api: String?="")
 
 GET             /admin/request_stats                            @utilities.request_counter.RequestCounter.get_request_stats()

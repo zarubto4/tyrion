@@ -1,6 +1,7 @@
 @import utilities.Server
 @import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller
 @import utilities.loggy.Loggy
+@import utilities.wiki.Wiki
 
 
     <aside class="main-sidebar">
@@ -37,28 +38,7 @@
                         </li>
                     </ul>
                 </li>
-<!-------------------------------------------------------------------------- ------------------------>
 
-
-<!-------------------------------------------------------------------------- ------------------------>
-                 <li class="treeview">
-                    <a href="#">
-                        <i class="fa fa-share"></i> <span>External API</span>
-                        <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li><a href='@Server.link_api_swagger'><i class="fa fa-circle-o"></i>Api on latest version</a></li>
-                        <li>
-                            <a href="#"><i class="fa fa-circle-o"></i> Historical Version <i class="fa fa-angle-left pull-right"></i></a>
-                            <ul class="treeview-menu">
-                            @for(version <- Swagger_diff_Controller.json_docu_files() ) {
-                                <li><a href='@Server.link_api_swagger/@Server.server_version' ><i class="fa fa-circle-o"></i>@Server.server_version</a></li>
-                            }
-                            </ul>
-                        </li>
-                        <li><a href='@routes.Controller_Dashboard.show_diff_on_Api()' ><i class="fa fa-circle-o"></i> Diff Tools </a></li>
-                    </ul>
-                </li>
 <!-------------------------------------------------------------------------- ------------------------>
                 @if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")){
                 <li class="treeview">
@@ -79,7 +59,9 @@
                                     <a href="#"><i class="fa fa-circle-o"></i> Historical Version <i class="fa fa-angle-left pull-right"></i></a>
                                     <ul class="treeview-menu">
                                     @for(version <- Swagger_diff_Controller.json_docu_files() ) {
-                                        <li><a href='@Server.link_api_swagger/@Server.server_version' ><i class="fa fa-circle-o"></i>@Server.server_version</a></li>
+                                        <li>
+                                            <a href='@Server.link_api_swagger/@version' ><i class="fa fa-circle-o"></i>@version</a>
+                                        </li>
                                     }
                                     </ul>
                                 </li>
@@ -124,10 +106,65 @@
                 }
 <!-------------------------------------------------------------------------- ------------------------>
 
-                <li>
-                    <a href="http://wiki.byzance.cz">
-                        <i class="fa fa-wikipedia-w"></i> <span>Wiki documentation</span>
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-graduation-cap"></i> <span>Wiki documentation</span>
+                        <i class="fa fa-angle-left pull-right"></i>
                     </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="http://wiki.byzance.cz">
+                                <i class="fa fa-wikipedia-w"></i> <span>External wiki</span>
+                            </a>
+                        </li>
+
+                        @tree(files: List[Wiki.Element]) = {
+
+                            @for(file <- files) {
+                                @if(file.leaf) {
+                                    <li>
+                                        <a href='@routes.Controller_Dashboard.show_wiki(file.value)' ><i class="fa fa-graduation-cap"></i>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</a>
+                                    </li>
+                                } else {
+                                    <li class="treeview">
+                                        <a href="#">
+                                            <i class="fa fa-graduation-cap"></i> <span>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</span>
+                                            <i class="fa fa-angle-left pull-right"></i>
+                                        </a>
+                                        <ul class="treeview-menu">
+                                        @tree2(file.children)
+                                        </ul>
+                                    </li>
+                                }
+
+                            }
+                        }
+
+                        @tree2(files: List[Wiki.Element]) = {
+
+                        @for(file <- files) {
+                            @if(file.leaf) {
+                                <li>
+                                    <a href='@routes.Controller_Dashboard.show_wiki(file.value)' ><i class="fa fa-graduation-cap"></i>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</a>
+                                </li>
+                            } else {
+                                <li class="treeview">
+                                    <a href="#">
+                                        <i class="fa fa-graduation-cap"></i> <span>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</span>
+                                        <i class="fa fa-angle-left pull-right"></i>
+                                    </a>
+                                    <ul class="treeview-menu">
+                                    @tree(file.children)
+                                    </ul>
+                                </li>
+                            }
+
+                        }
+                        }
+
+                        @tree(Wiki.getWikiFiles())
+
+                    </ul>
                 </li>
 <!-------------------------------------------------------------------------- ------------------------>
 

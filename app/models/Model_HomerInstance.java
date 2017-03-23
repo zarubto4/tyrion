@@ -9,6 +9,7 @@ import controllers.Controller_Security;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import utilities.enums.Enum_Homer_instance_type;
@@ -192,7 +193,8 @@ public class Model_HomerInstance extends Model {
 
 
     // Messenger
-    @JsonIgnore @Transient public static void Messages(WS_HomerServer homer, ObjectNode json){
+    @JsonIgnore @Transient
+    public static void Messages(WS_HomerServer homer, ObjectNode json){
 
         try {
             switch (json.get("messageType").asText()) {
@@ -295,9 +297,11 @@ public class Model_HomerInstance extends Model {
 
 
 
-    @JsonIgnore @Transient public WS_Interface_type send_to_instance(){ return Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator);}
+    @JsonIgnore @Transient
+    public WS_Interface_type send_to_instance(){ return Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator);}
 
-    @JsonIgnore @Transient public WS_Message_Instance_status get_instance_status(){
+    @JsonIgnore @Transient
+    public WS_Message_Instance_status get_instance_status(){
         try{
 
             JsonNode node =  send_to_instance().write_with_confirmation( new WS_Message_Instance_status().make_request(this), 1000*3, 0, 2);
@@ -315,7 +319,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Ping_instance ping() {
+    @JsonIgnore @Transient
+    public WS_Message_Ping_instance ping() {
         try{
 
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Ping_instance().make_request(this), 1000*3, 0, 2);
@@ -333,7 +338,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  JsonNode devices_commands(String targetId, Enum_type_of_command command) {
+    @JsonIgnore @Transient
+    public JsonNode devices_commands(String targetId, Enum_type_of_command command) {
         try{
 
            return send_to_instance().write_with_confirmation(new WS_Message_Basic_command_for_device().make_request(this, targetId, command), 1000*10, 0, 4);
@@ -346,7 +352,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Add_yoda_to_instance add_Yoda_to_instance(String yoda_id){
+    @JsonIgnore @Transient
+    public WS_Message_Add_yoda_to_instance add_Yoda_to_instance(String yoda_id){
         try{
 
             if(project != null ){
@@ -373,7 +380,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(String yoda_id) {
+    @JsonIgnore @Transient
+    public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(String yoda_id) {
         try{
 
             JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_yoda_from_instance().make_request(this, yoda_id), 1000*3, 0, 4);
@@ -392,7 +400,8 @@ public class Model_HomerInstance extends Model {
     }
 
 
-    @JsonIgnore @Transient public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(Model_Board yoda) {
+    @JsonIgnore @Transient
+    public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(Model_Board yoda) {
         try{
 
             JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_yoda_from_instance().make_request(this, yoda.id), 1000*3, 0, 4);
@@ -420,7 +429,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Add_device_to_instance add_Device_to_instance(String yoda_id, List<String> devices_id){
+    @JsonIgnore @Transient
+    public WS_Message_Add_device_to_instance add_Device_to_instance(String yoda_id, List<String> devices_id){
         try{
 
             JsonNode node =   send_to_instance().write_with_confirmation(new WS_Message_Add_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
@@ -437,7 +447,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Remove_device_from_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
+    @JsonIgnore @Transient
+    public WS_Message_Remove_device_from_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
         try {
 
             JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_device_from_instance().make_request(this, yoda_id, devices_id), 1000 * 3, 0, 4);
@@ -458,7 +469,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Update_device_summary_collection add_instance_to_server() {
+    @JsonIgnore @Transient
+    public WS_Message_Update_device_summary_collection add_instance_to_server() {
         try{
 
 
@@ -496,7 +508,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Destroy_instance remove_instance_from_server() {
+    @JsonIgnore @Transient
+    public WS_Message_Destroy_instance remove_instance_from_server() {
         try{
 
             if(!actual_instance.hardware_group().isEmpty()){
@@ -534,7 +547,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static void upload_Record_immediately(Model_HomerInstanceRecord record) {
+    @JsonIgnore @Transient
+    public static void upload_Record_immediately(Model_HomerInstanceRecord record) {
 
         Thread upload_record= new Thread() {
             @Override
@@ -604,7 +618,8 @@ public class Model_HomerInstance extends Model {
 
 
     // TODO tuto metodu budu volat ve chvíli kdy nějakou časovu známkou prohodím verze - podle času uživatele
-    @JsonIgnore @Transient public WS_Message_Update_instance_to_actual_instance_record update_instance_to_actual_instance_record() {
+    @JsonIgnore @Transient
+    public WS_Message_Update_instance_to_actual_instance_record update_instance_to_actual_instance_record() {
         try{
 
             // Zkontroluji jestli běží server
@@ -688,7 +703,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Upload_blocko_program upload_blocko_program(){
+    @JsonIgnore @Transient
+    public WS_Message_Upload_blocko_program upload_blocko_program(){
         try {
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
 
@@ -709,7 +725,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public void update_device_summary_collection(){
+    @JsonIgnore @Transient
+    public void update_device_summary_collection(){
         try {
 
             if(actual_instance != null) {
@@ -748,7 +765,7 @@ public class Model_HomerInstance extends Model {
                             logger.error("Model_HomerServer:: update_device_summary_collection:: Remove Yoda Failed:: Error:: " + remove_yoda_from_instance.error + " ErrorCode:: "+ remove_yoda_from_instance.errorCode);
                         }
 
-                        Model_Board master_board = Model_Board.get_model(yoda_list.deviceId);
+                        Model_Board master_board = Model_Board.get_byId(yoda_list.deviceId);
                         if(master_board.virtual_instance_under_project == null){
                             master_board.virtual_instance_under_project = master_board.project.private_instance;
                             master_board.virtual_instance_under_project.add_Yoda_to_instance(yoda_list.deviceId);
@@ -898,13 +915,14 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public boolean online_state(){
+    @JsonIgnore @Transient
+    public boolean online_state(){
 
-        // TODO - Stav!!!!!
-        return this.cloud_homer_server.is_instance_exist(this.blocko_instance_name);
+        return get_status();
     }
 
-    @JsonIgnore @Transient public WS_Message_Online_states_devices get_devices_online_state(List<String> device_id){
+    @JsonIgnore @Transient
+    public WS_Message_Online_states_devices get_devices_online_state(List<String> device_id){
         try{
 
             if(!online_state()) return new WS_Message_Online_states_devices();
@@ -924,7 +942,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Get_summary_information get_summary_information(){
+    @JsonIgnore @Transient
+    public WS_Message_Get_summary_information get_summary_information(){
         try {
 
             ObjectNode node = send_to_instance().write_with_confirmation(new WS_Message_Get_summary_information().make_request(this), 1000 * 5, 0, 1);
@@ -945,7 +964,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public WS_Message_Get_Hardware_list get_hardware_list(){
+    @JsonIgnore @Transient
+    public WS_Message_Get_Hardware_list get_hardware_list(){
         try {
 
             ObjectNode node = send_to_instance().write_with_confirmation( new WS_Message_Get_Hardware_list().make_request(this), 1000*5, 0, 1);
@@ -963,7 +983,8 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-    @JsonIgnore @Transient public  static void summary_information(WS_HomerServer homer_server , WS_Message_Get_summary_information summary_information){
+    @JsonIgnore @Transient
+    public static void summary_information(WS_HomerServer homer_server , WS_Message_Get_summary_information summary_information){
         try {
 
 
@@ -976,7 +997,8 @@ public class Model_HomerInstance extends Model {
 
 
     // TOKEN verification
-    @JsonIgnore @Transient public  void cloud_verification_token_GRID(WS_Message_Grid_token_verification help){
+    @JsonIgnore @Transient
+    public void cloud_verification_token_GRID(WS_Message_Grid_token_verification help){
         try {
 
             logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
@@ -1020,7 +1042,9 @@ public class Model_HomerInstance extends Model {
         }
 
     }
-    @JsonIgnore @Transient public  void cloud_verification_token_WEBVIEW(WS_Message_WebView_token_verification help){
+
+    @JsonIgnore @Transient
+    public void cloud_verification_token_WEBVIEW(WS_Message_WebView_token_verification help){
         try {
 
             logger.debug("Homer_Instance:: cloud_verification_token:: WebView  Checking Token");
@@ -1056,6 +1080,25 @@ public class Model_HomerInstance extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static Model.Finder<String, Model_HomerInstance> find = new Finder<>(Model_HomerInstance.class);
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE        = Model_HomerInstance.class.getSimpleName();
+    public static final String CACHE_STATUS = Model_HomerInstance.class.getSimpleName() + "_STATUS";
+
+    public static Cache<String, Model_HomerInstance> cache; // Server_cache Override during server initialization
+    public static Cache<String, Boolean> cache_status; // Server_cache Override during server initialization
+
+    public boolean get_status(){
+
+        Boolean status = cache_status.get(this.blocko_instance_name);
+        if (status == null){
+
+            status = this.cloud_homer_server.is_instance_exist(this.blocko_instance_name);
+        }
+
+        return status;
+    }
 }

@@ -3,17 +3,17 @@
  * Classes of models, controllers or swagger documentation classes are **prefixed** with "type" and underscore.
 
 #### Controllers
- * name is prefixed with "**Controller_**"
+ * name is prefixed with **Controller_**
  * pattern: *Controller_NameOfController*
  * e.g. **Controller_Blocko**
 
 #### Models
- * name is prefixed with "**Model_**"
+ * name is prefixed with **Model_**
  * pattern: *Model_NameOfModel*
  * e.g. **Model_Person**
 
 #### Swagger
- * name is prefixed with "**Swagger_**"
+ * name is prefixed with **Swagger_**
  * pattern: *Swagger_NameOfObject_Operation*
  * e.g. **Swagger_TypeOfBlock_New**
 
@@ -76,10 +76,10 @@
 #### Logging application behaviour
  * Sometimes we want to know, what the application is doing, for that purpose some classes have static logger defined with name *Loggy*. Declaration looks like this:
 
-        private static play.Logger.ALogger logger = play.Logger.of("Loggy");
+        private static ALogger logger = Logger.of("Loggy");
 
  * Logger has different levels of logging, depending on how detailed information we want to know.
- * Levels are: "*error, warn, info, debug, trace*" in descending order of importance.
+ * Levels are: *error, warn, info, debug, trace* in descending order of importance.
  * We do not use level **error**, because exceptions are logged via **Loggy** class.
  * Level **warning** is used to log application lifecycle (e.g. onStart events, onStop events etc.) or behaviour that is unwanted, but code still can continue.
 
@@ -104,4 +104,8 @@
 
         ...
  * Last level is **trace**. It is the most detailed level, for example it can log values of parameters of a method and so on.
+ * If you want to insert some variable values into log, you should use curly brackets.
+
+        logger.trace("Job_SpendingCredit:: spend_credit: product ID is {} and actual state is {}", product_id, state);
+
  * Remember that in well logged application, errors can be easily found, so it is **important**, but you should use your **own reason** where to place logs and how many of them, since because it could cause performance problems. If you get **confident** about some part of your code, you can even remove some logs or switch level.
