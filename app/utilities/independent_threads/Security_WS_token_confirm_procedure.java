@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_HomerServer;
 import play.data.Form;
 import play.i18n.Lang;
-import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Approve_homer_server;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Check_homer_server_permission;
+import web_socket.services.WS_HomerServer;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +31,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
         while (true) {
 
             try {
-                logger.trace("Security_WS_token_confirm_procedure:: run:: Trying to Confirm WebSocket");
+                logger.debug("Security_WS_token_confirm_procedure:: run:: Trying to Confirm WebSocket");
 
                 ObjectNode ask_for_token = server.super_write_with_confirmation(new WS_Message_Check_homer_server_permission().make_request(), 1000 * 5, 0, 2);
 
@@ -45,11 +45,13 @@ public class Security_WS_token_confirm_procedure extends Thread {
                 // Vytovření objektu
                 WS_Message_Check_homer_server_permission help = form.get();
 
+                logger.debug("Security_WS_token_confirm_procedure:: run:: Trying to Confirm WebSocket:: Result from Server:: " + ask_for_token.toString());
+
                 // Vyhledání DB reference
                 Model_HomerServer check_server = Model_HomerServer.find.where().eq("hash_certificate", help.hashToken).findUnique();
 
                 // Kontrola
-                if (!check_server.unique_identificator.equals(server.server.unique_identificator)) {
+                if (!check_server.unique_identificator.equals( server.identifikator )) {
                     logger.warn("Security_WS_token_confirm_procedure:: run:: Connected server has not permission");
                     sleep(1000 * 10  * ++number_of_tries);
                     continue;
@@ -74,7 +76,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
                 // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
-                server.server.check_after_connection();
+                Model_HomerServer.get_model(server.identifikator).check_after_connection();
 
                 logger.trace("Security_WS_token_confirm_procedure:: run:: Connection procedure done!");
                 break;

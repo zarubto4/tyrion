@@ -101,11 +101,11 @@ public class Model_Board extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                   @Id @ApiModelProperty(required = true)   public String id;                   // Full_Id procesoru přiřazené Garfieldem
-                                       @ApiModelProperty(required = true)   public String hash_for_adding;      // Vygenerovaný Hash pro přidávání a párování s Platformou.
+                                   @Id @ApiModelProperty(required = true)   public String id;                     // Full_Id procesoru přiřazené Garfieldem
+                                       @ApiModelProperty(required = true)   public String hash_for_adding;        // Vygenerovaný Hash pro přidávání a párování s Platformou.
 
-                                       @ApiModelProperty(required = true)   public String wifi_mac_address;     // Mac addressa wifi čipu
-                                       @ApiModelProperty(required = true)   public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
+                                       @ApiModelProperty(required = true)   public String wifi_mac_address;       // Mac addressa wifi čipu
+                                       @ApiModelProperty(required = true)   public String mac_address;            // Přiřazená MacAdresa z rozsahu Adres
                                        @ApiModelProperty(required = true)   public String generationDescription;  // Info  výrobní generaci
 
 
@@ -447,8 +447,8 @@ public class Model_Board extends Model {
         }
 
         if(board.project == null){
-            logger.debug("Model_Board:: un_registred_device_connected is registed under server:: " + homer_server.identifikator + " Server name:: " + homer_server.server.personal_server_name);
-            board.connected_server =  homer_server.server;
+            logger.debug("Model_Board:: un_registred_device_connected is registed under server:: " + homer_server.identifikator + " Server name:: " + Model_HomerServer.get_model(homer_server.identifikator).personal_server_name);
+            board.connected_server = Model_HomerServer.get_model(homer_server.identifikator);
             board.is_active = true;
             board.update();
             return;
@@ -461,7 +461,7 @@ public class Model_Board extends Model {
                 logger.warn("Board without own instance! " + report.deviceId);
                 return;
             }
-            if(!board.get_instance().cloud_homer_server.unique_identificator.equals(homer_server.server.unique_identificator)){
+            if(!board.get_instance().cloud_homer_server.unique_identificator.equals(homer_server.identifikator)){
                 board.device_change_server(board.get_instance().cloud_homer_server);
             }
         }
@@ -762,7 +762,7 @@ public class Model_Board extends Model {
 
         logger.debug("Model_Board:: device_change_server:: Server not found - All servers will be checked");
         // Po zé ze zoufalosti zkusím všechny servery popořadě zeptat se zda ho někdo neviděl (JE to záloha selhání nevalidního přepsání!)
-        for( Model_HomerServer find_server : Model_HomerServer.find.all()){
+        for( Model_HomerServer find_server : Model_HomerServer.get_model_all()){
 
             if(!find_server.server_is_online()) continue;
 
@@ -1063,8 +1063,7 @@ public class Model_Board extends Model {
     public void update(){
 
         //Cache Update
-        Cache<String, Model_Board> cache = Server_Cache.cacheManager.getCache( Model_Board.CACHE_MODEL, String.class, Model_Board.class);
-        cache.put(this.id, this);
+        cache_model_board.put(this.id, this);
 
         //Database Update
         super.update();
@@ -1087,8 +1086,7 @@ public class Model_Board extends Model {
         super.save();
 
         //Cache Update
-        Cache<String, Model_Board> cache = Server_Cache.cacheManager.getCache( Model_Board.CACHE_MODEL, String.class, Model_Board.class);
-        cache.put(this.id, this);
+        cache_model_board.put(this.id, this);
     }
 
 
@@ -1104,7 +1102,7 @@ public class Model_Board extends Model {
         Model_Board model = cache_model_board.get(board_id);
 
         if(model == null){
-            model = Model_Board.get_model(board_id);
+            model = Model_Board.find.byId(board_id);
             cache_model_board.put(board_id, model);
         }
 

@@ -93,7 +93,7 @@ public class Controller_WebSocket extends Controller {
 
             logger.debug("Controller_WebSocket:: homer_cloud_server_connection:: Incoming connection: Server:  " + unique_identificator);
 
-            Model_HomerServer homer_server = Model_HomerServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
+            Model_HomerServer homer_server = Model_HomerServer.get_model(unique_identificator);
             if(homer_server== null){
 
                 // Připojím se
@@ -132,7 +132,7 @@ public class Controller_WebSocket extends Controller {
                 logger.warn("Controller_WebSocket:: homer_cloud_server_connection::  Server is connected -> Tyrion try to send ping");
 
                 WS_HomerServer ws_blockoServer = (WS_HomerServer) homer_servers.get(unique_identificator);
-                WS_Message_Ping_server result = ws_blockoServer.server.ping();
+                WS_Message_Ping_server result = Model_HomerServer.get_model(ws_blockoServer.identifikator).ping();
                 if(!result.status.equals("success")){
                     logger.warn("Controller_WebSocket:: homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
                     if(homer_servers.containsKey(unique_identificator)){

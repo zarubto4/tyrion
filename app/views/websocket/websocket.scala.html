@@ -156,7 +156,7 @@
 
                         </tr>
 
-                        @for( x <- Model_HomerServer.find.all() ){
+                        @for( x <- Model_HomerServer.get_model_all()){
                             <tr>
                                 <td> @x.personal_server_name </td>
                                 <td> @x.unique_identificator </td>

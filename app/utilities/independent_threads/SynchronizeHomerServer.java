@@ -2,6 +2,7 @@ package utilities.independent_threads;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.Model_HomerServer;
 import play.data.Form;
 import play.i18n.Lang;
 import utilities.enums.Enum_Log_level;
@@ -35,40 +36,42 @@ public class SynchronizeHomerServer extends Thread {
 
             WS_Message_Get_homer_server_configuration help = form_get.get();
 
-            if(help.get_Date().compareTo(homer_server.server.time_stamp_configuration) == 0){
+            if(help.get_Date().compareTo(Model_HomerServer.get_model(homer_server.identifikator).time_stamp_configuration) == 0){
                 // Nedochází k žádným změnám
                 logger.trace("SynchronizeHomerServer:: synchronize_configuration: configuration without changes");
 
-            }else if(help.get_Date().compareTo(homer_server.server.time_stamp_configuration) > 0){
+            }else if(help.get_Date().compareTo( Model_HomerServer.get_model(homer_server.identifikator).time_stamp_configuration) > 0){
                 // Homer server má novější novou konfiguraci
                 logger.debug("SynchronizeHomerServer:: " + homer_server.identifikator + " synchronize_configuration: Homer server has new configuration");
 
-                homer_server.server.personal_server_name = help.serverName;
-                homer_server.server.mqtt_port = help.mqttPort;
-                homer_server.server.mqtt_password = help.mqttPassword;
-                homer_server.server.mqtt_username = help.mqttUser;
-                homer_server.server.grid_port = help.gridPort;
+                Model_HomerServer homer = Model_HomerServer.get_model(homer_server.identifikator);
 
-                homer_server.server.webView_port = help.beckiPort;
-                homer_server.server.server_remote_port = help.webPort;
+                homer.personal_server_name = help.serverName;
+                homer.mqtt_port = help.mqttPort;
+                homer.mqtt_password = help.mqttPassword;
+                homer.mqtt_username = help.mqttUser;
+                homer.grid_port = help.gridPort;
 
-                homer_server.server.mqtt_username = help.mqttUser;
-                homer_server.server.grid_port = help.gridPort;
-                homer_server.server.webView_port = help.beckiPort;
-                homer_server.server.days_in_archive = help.daysInArchive;
-                homer_server.server.time_stamp_configuration = help.get_Date();
+                homer.webView_port = help.beckiPort;
+                homer.server_remote_port = help.webPort;
 
-                homer_server.server.logging = help.logging;
-                homer_server.server.interactive = help.interactive;
-                homer_server.server.logLevel = Enum_Log_level.fromString(help.logLevel);
-                homer_server.server.update();
+                homer.mqtt_username = help.mqttUser;
+                homer.grid_port = help.gridPort;
+                homer.webView_port = help.beckiPort;
+                homer.days_in_archive = help.daysInArchive;
+                homer.time_stamp_configuration = help.get_Date();
+
+                homer.logging = help.logging;
+                homer.interactive = help.interactive;
+                homer.logLevel = Enum_Log_level.fromString(help.logLevel);
+                homer.update();
 
 
             }else {
                 // Tyrion server má novější konfiguraci
 
                 logger.trace("Synchronize_configuration::  " + homer_server.identifikator + " Sending new Configuration to Homer Server");
-                JsonNode result = homer_server.write_with_confirmation( new WS_Message_Set_homer_server_configuration().make_request(homer_server.server) , 1000 * 5, 0, 2);
+                JsonNode result = homer_server.write_with_confirmation( new WS_Message_Set_homer_server_configuration().make_request( Model_HomerServer.get_model(homer_server.identifikator)) , 1000 * 5, 0, 2);
 
                 final Form<WS_Message_Set_homer_server_configuration> form_set = Form.form(WS_Message_Set_homer_server_configuration.class).bind(result);
                 if(form_set.hasErrors()){logger.error("SynchronizeHomerServer:: synchronize_configuration:: WS_Set_homer_server_configuration:: Incoming Json for Yoda has not right Form" + form_set.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}

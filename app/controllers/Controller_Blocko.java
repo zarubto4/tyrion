@@ -933,7 +933,7 @@ public class Controller_Blocko extends Controller{
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Instance_Temporary help = form.get();
 
-            Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", help.unique_identificator).findUnique();
+            Model_HomerServer server = Model_HomerServer.get_model(help.unique_identificator);
             if(server == null) return GlobalResult.notFoundObject("Server not found");
 
                 // JsonNode result = server.add_temporary_instance(help.instance_name);

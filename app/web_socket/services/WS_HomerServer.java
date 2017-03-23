@@ -22,7 +22,6 @@ import java.util.concurrent.TimeoutException;
 
 public class WS_HomerServer extends WS_Interface_type {
 
-    public Model_HomerServer server;
     public boolean security_token_confirm;
 
     public Check_update_for_hw_under_homer_ws check_update_for_hw_under_homer_ws = null;
@@ -32,7 +31,6 @@ public class WS_HomerServer extends WS_Interface_type {
         super.identifikator = server != null ? server.unique_identificator : null;
         super.maps = blocko_servers;
         super.webSCtype = this;
-        this.server = server;
         this.update_thread.start();
         this.check_update_for_hw_under_homer_ws = new Check_update_for_hw_under_homer_ws(this);
     }
@@ -45,7 +43,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
         this.update_thread.stop();
         Controller_WebSocket.homer_servers.remove(super.identifikator);
-        server.is_disconnect();
+        Model_HomerServer.get_model(identifikator).is_disconnect();
     }
 
     @Override

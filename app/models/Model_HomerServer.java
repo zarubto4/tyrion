@@ -9,6 +9,7 @@ import controllers.Controller_Security;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.Http;
@@ -20,16 +21,13 @@ import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualizati
 import utilities.independent_threads.Check_Homer_instance_after_connection;
 import utilities.independent_threads.Check_Update_for_hw_on_homer;
 import utilities.independent_threads.SynchronizeHomerServer;
-import web_socket.services.WS_HomerServer;
+import web_socket.message_objects.homerServer_with_tyrion.*;
 import web_socket.message_objects.homer_instance.WS_Message_Add_new_instance;
 import web_socket.message_objects.homer_instance.WS_Message_Is_instance_exist;
-import web_socket.message_objects.homerServer_with_tyrion.*;
+import web_socket.services.WS_HomerServer;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @ApiModel(description = "Model of HomerServer",
@@ -67,7 +65,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @OneToMany(mappedBy="connected_server", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_Board> latest_know_connected_board = new ArrayList<>();
 
 
-    /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
 
     @ApiModelProperty(required = true, readOnly = true)
@@ -95,16 +93,26 @@ public class Model_HomerServer extends Model{
         if(unique_identificator == null)    // Určeno pro možnost vytvořit testovací server - manuální doplnění unique_identificator
         while(true){ // I need Unique Value
             unique_identificator = UUID. randomUUID().toString().substring(0,10);
-            if (Model_HomerServer.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;
+            if (Model_HomerServer.get_model(unique_identificator) == null) break;
         }
 
         super.save();
+
+        //Cache Update
+        cache_model_homer_server.put(this.unique_identificator, this);
     }
 
     @JsonIgnore @Override public void update() {
+
+        //Cache Update
+        cache_model_homer_server.put(this.unique_identificator, this);
+
         super.update();
         this.set_new_configuration_on_homer();
     }
+
+
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -121,31 +129,30 @@ public class Model_HomerServer extends Model{
 
         }else {
 
-            String wining_server_id = null;
+            String unique_identificator = null;
             Integer count = null;
 
-            for (Object server_id :  Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findIds()) {
+            for (Object unique_identificator_help :  Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findIds()) {
 
-
-                Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", server_id).findRowCount();
+                Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", unique_identificator).findRowCount();
 
                 if(actual_Server_count == 0){
-                    wining_server_id = server_id.toString();
+                    unique_identificator = unique_identificator_help.toString();
                     break;
                 }
-                else if(wining_server_id == null) {
+                else if(unique_identificator == null) {
 
-                    wining_server_id = server_id.toString();
+                    unique_identificator = unique_identificator_help.toString();
                     count = actual_Server_count;
 
                 }else if(actual_Server_count < count ){
-                    wining_server_id  = server_id.toString();
+                    unique_identificator  = unique_identificator_help.toString();
                     count = actual_Server_count;
 
                 }
             }
 
-            return  Model_HomerServer.find.byId(wining_server_id);
+            return  Model_HomerServer.get_model(unique_identificator);
         }
     }
 
@@ -219,7 +226,7 @@ public class Model_HomerServer extends Model{
                 return;
             }
 
-            if(homer.server.read_permission(person)){
+            if( Model_HomerServer.get_model(homer.identifikator).read_permission(person)){
 
                 logger.debug("Cloud_Homer_Server:: check_person_permission_for_homer_server:: Person found with Email:: " + message.email + " with right permissions");
 
@@ -229,7 +236,7 @@ public class Model_HomerServer extends Model{
                 floatingPersonToken.where_logged = Enum_Where_logged_tag.HOMER_SERVER;
                 floatingPersonToken.save();
 
-                homer.write_without_confirmation( message.make_request_success(homer.server, person, floatingPersonToken) );
+                homer.write_without_confirmation( message.make_request_success(Model_HomerServer.get_model(homer.identifikator), person, floatingPersonToken) );
                 return;
             }else {
 
@@ -255,9 +262,9 @@ public class Model_HomerServer extends Model{
             }
 
 
-            if(homer.server.read_permission(person)){
+            if(Model_HomerServer.get_model(homer.identifikator).read_permission(person)){
 
-                homer.write_without_confirmation(message.make_request_success(homer.server, person));
+                homer.write_without_confirmation(message.make_request_success(Model_HomerServer.get_model(homer.identifikator) , person));
 
             }else {
 
@@ -477,7 +484,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: User (Admin with privileges) can read public servers, User (Customer) can read own private servers";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User (Admin with privileges) can create public cloud cloud_blocko_server where the system uniformly creating Blocko instantiates or (Customer) can create private cloud_blocko_server for own projects";
 
-                                                                                                                     // TODO oprávnění bude komplikovanější až se budou podporovat lokální servery
+                                                                      // TODO oprávnění bude komplikovanější až se budou podporovat lokální servery
     @JsonIgnore                                                       @Transient public boolean create_permission()  {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_create");  }
     @JsonIgnore                                                       @Transient public boolean read_permission()    {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_read");    }
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean edit_permission()    {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_edit");    }
@@ -490,8 +497,40 @@ public class Model_HomerServer extends Model{
     @JsonIgnore public boolean edit_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_edit");    }
     @JsonIgnore public boolean delete_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_delete");  }
 
-
     public enum permissions{Cloud_Homer_Server_create, Cloud_Homer_Server_read, Cloud_Homer_Server_edit, Cloud_Homer_Server_delete}
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE_MODEL        = Model_HomerServer.class.getName() + "_MODEL";
+
+    public static Cache<String, Model_HomerServer> cache_model_homer_server = null; // Server_cache Override during server initialization
+
+    public static Model_HomerServer get_model(String unique_identificator){
+
+        if(cache_model_homer_server == null){
+            logger.error("Model_HomerServer:: get_model:: cache_model_homer_server is null");
+            return null;
+        }
+
+        Model_HomerServer model = cache_model_homer_server.get(unique_identificator);
+
+        if(model == null){
+            model = Model_HomerServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
+            cache_model_homer_server.put(unique_identificator, model);
+        }
+
+        if(model == null){
+            logger.error("Model_HomerServer:: get_model:: unique_identificator not found:: " + unique_identificator);
+        }
+
+        return model;
+    }
+
+    public static List<Model_HomerServer> get_model_all(){
+        return Model_HomerServer.find.all();
+    }
+
 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

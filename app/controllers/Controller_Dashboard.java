@@ -318,7 +318,7 @@ public class Controller_Dashboard extends Controller {
     public Result ping_homer_server(String identificator) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator", identificator).findUnique();
+            Model_HomerServer server = Model_HomerServer.get_model(identificator);
 
             return GlobalResult.result_ok(Json.toJson(server.ping()));
         }catch (Exception e){
@@ -415,7 +415,7 @@ public class Controller_Dashboard extends Controller {
     @Security.Authenticated(Secured_Admin.class)
     public Result  show_websocket_server_detail(String server_identificator) {
 
-        Model_HomerServer server = Model_HomerServer.find.where().eq("unique_identificator",server_identificator).findUnique();
+        Model_HomerServer server = Model_HomerServer.get_model(server_identificator);
         if(server == null) return show_web_socket_stats();
 
 

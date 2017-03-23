@@ -52,7 +52,7 @@
                                         <select id="selectServers" name="server_unique_names[]" class="form-control" multiple>
                                             <option selected="selected" value="@homer_server.unique_identificator"> @homer_server.personal_server_name ( @homer_server.unique_identificator )</option>
 
-                                            @for(server <- Model_HomerServer.find.all() ) {
+                                            @for(server <- Model_HomerServer.get_model_all()) {
                                                 <option value="@server.unique_identificator"> @server.personal_server_name ( @server.unique_identificator )</option>
                                             }
                                         </select>

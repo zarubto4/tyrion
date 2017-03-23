@@ -118,7 +118,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Homer_Server(@ApiParam(value = "server_id ", required = true) String server_id ){
+    public Result edit_Homer_Server(@ApiParam(value = "unique_identificator ", required = true) String unique_identificator ){
         try{
 
             // Zpracování Json
@@ -127,7 +127,7 @@ public class Controller_ExternalServer extends Controller {
             Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.find.byId(server_id);
+            Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
             if (server == null) return GlobalResult.notFoundObject("Cloud_Blocko_Server server_id not found");
 
             // Kontrola oprávnění
@@ -184,7 +184,7 @@ public class Controller_ExternalServer extends Controller {
         try{
 
             // Získání seznamu
-            List<Model_HomerServer> servers = Model_HomerServer.find.all();
+            List<Model_HomerServer> servers = Model_HomerServer.get_model_all();
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(servers));
@@ -213,11 +213,11 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result delete_Homer_Server(@ApiParam(value = "server_id ", required = true)  String server_id ){
+    public Result delete_Homer_Server(@ApiParam(value = "unique_identificator ", required = true)  String unique_identificator ){
         try{
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.find.byId(server_id);
+            Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
             if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
 
             // Kontrola oprávnění
