@@ -748,7 +748,7 @@ public class Model_HomerInstance extends Model {
                             logger.error("Model_HomerServer:: update_device_summary_collection:: Remove Yoda Failed:: Error:: " + remove_yoda_from_instance.error + " ErrorCode:: "+ remove_yoda_from_instance.errorCode);
                         }
 
-                        Model_Board master_board = Model_Board.find.byId(yoda_list.deviceId);
+                        Model_Board master_board = Model_Board.get_model(yoda_list.deviceId);
                         if(master_board.virtual_instance_under_project == null){
                             master_board.virtual_instance_under_project = master_board.project.private_instance;
                             master_board.virtual_instance_under_project.add_Yoda_to_instance(yoda_list.deviceId);

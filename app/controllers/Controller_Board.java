@@ -457,7 +457,7 @@ public class Controller_Board extends Controller {
                 if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
 
                 // Kotrola objektu
-                Model_Board board = Model_Board.find.byId(board_update_pair.board_id);
+                Model_Board board = Model_Board.get_model(board_update_pair.board_id);
                 if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
 
                 // Kontrola oprávnění
@@ -1850,7 +1850,7 @@ public class Controller_Board extends Controller {
             Swagger_Board_Personal help = form.get();
 
             // Kotrola objektu
-            Model_Board board = Model_Board.find.byId(board_id);
+            Model_Board board = Model_Board.get_model(board_id);
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
@@ -1996,7 +1996,7 @@ public class Controller_Board extends Controller {
             for(Swagger_Board_SetBackup.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
 
                 // Kotrola objektu
-                Model_Board board = Model_Board.find.byId(board_backup_pair.board_id);
+                Model_Board board = Model_Board.get_model(board_backup_pair.board_id);
                 if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
 
                 // Kontrola oprávnění
@@ -2197,7 +2197,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kotrola objektu
-            Model_Board board = Model_Board.find.byId(board_id);
+            Model_Board board = Model_Board.get_model(board_id);
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
@@ -2362,7 +2362,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Board board = Model_Board.find.byId(board_id);
+            Model_Board board = Model_Board.get_model(board_id);
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
 
             // Kontrola oprávnění
@@ -2415,10 +2415,10 @@ public class Controller_Board extends Controller {
 
             // Získání objektu
             Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
-            boards_for_blocko.add_M_Projects(project.m_projects);
-            boards_for_blocko.add_C_Programs(project.c_programs);
+            boards_for_blocko.add_M_Projects(project.get_m_project_not_deleted());
+            boards_for_blocko.add_C_Programs(project.get_c_program_not_deleted());
 
-            for (Model_Board board : project.boards)              boards_for_blocko.boards.add(board.get_short_board());
+            for (Model_Board board : project.boards) boards_for_blocko.boards.add(board.get_short_board());
 
 
             boards_for_blocko.type_of_boards = Model_TypeOfBoard.find.where().eq("boards.project.id", project.id).findList();

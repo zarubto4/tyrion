@@ -88,6 +88,19 @@ public class Model_Project extends Model {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+/* GET SQL PARAMETR - CACHE OBJECTS ------------------------------------------------------------------------------------*/
+
+    public List<Model_CProgram> get_c_program_not_deleted(){
+
+        return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).findList();
+    }
+
+    public List<Model_MProject> get_m_project_not_deleted(){
+
+        return Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).findList();
+
+    }
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient

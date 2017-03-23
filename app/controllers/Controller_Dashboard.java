@@ -470,7 +470,7 @@ public class Controller_Dashboard extends Controller {
     public Result board_detail(String board_id){
         try {
 
-            Html content = board_detail.render( Model_Board.find.byId(board_id) );
+            Html content = board_detail.render( Model_Board.get_model(board_id) );
             return return_page ( content );
 
         }catch (Exception e){

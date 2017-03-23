@@ -167,7 +167,7 @@ public class Model_HomerServer extends Model{
                     final Form<WS_Message_Unregistred_device_connected> form = Form.form(WS_Message_Unregistred_device_connected.class).bind(json);
                     if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Unregistred_device_connected:: Incoming Json from Homer Server has not right Form:: " + json.toString());return;}
 
-                    Model_Board.unregistred_device_connected(homer, form.get());
+                    Model_Board.un_registred_device_connected(homer, form.get());
                     return;
                 }
 

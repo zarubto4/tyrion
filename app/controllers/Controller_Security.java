@@ -50,15 +50,26 @@ public class Controller_Security extends Controller {
 
 //######################################################################################################################
 
+    public static boolean has_token() {
+        return getPerson() != null;
+    }
+
+
     public static Model_Person getPerson() {
         try {
             return (Model_Person) Http.Context.current().args.get("person");
-        } catch (Exception e) {
+        }catch (Exception e){
+            Loggy.internalServerError("Controller_Security:: getPerson:", e);
             return null;
         }
     }
     public static Model_Person getPerson(Http.Context context) {
-        return (Model_Person) Http.Context.current().args.get("person");
+        try {
+            return (Model_Person) Http.Context.current().args.get("person");
+        }catch (Exception e){
+            Loggy.internalServerError("Controller_Security:: getPerson:", e);
+            return null;
+        }
     }
 
 //######################################################################################################################

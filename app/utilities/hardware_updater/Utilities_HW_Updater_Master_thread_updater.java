@@ -2,16 +2,12 @@ package utilities.hardware_updater;
 
 import com.avaje.ebean.Expr;
 import controllers.Controller_WebSocket;
-import models.Model_Board;
-import models.Model_FileRecord;
-import models.Model_HomerInstance;
-import models.Model_ActualizationProcedure;
-import models.Model_CProgramUpdatePlan;
+import models.*;
 import play.libs.Json;
-import utilities.enums.Enum_Update_group_procedure_state;
 import utilities.enums.Enum_CProgram_updater_state;
-import utilities.enums.Enum_Update_type_of_update;
 import utilities.enums.Enum_Firmware_type;
+import utilities.enums.Enum_Update_group_procedure_state;
+import utilities.enums.Enum_Update_type_of_update;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_Task;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Target_pair;
@@ -19,7 +15,6 @@ import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Target_pair
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Utilities_HW_Updater_Master_thread_updater {
 
@@ -103,7 +98,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
      * na update všech deviců napříč projekty atd... a i když je metoda složitější na počet dotazů, ve výsledku to sníží
      * websocketovou zátěž v duplicitním zasílání stejných updatovacích požadavků.
      */
-    class ActualizationStructure {
+    class Actualization_structure {
         public HashMap<String, Instance> instances = new HashMap<>();
     }
 
@@ -113,6 +108,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
     }
 
     class Program{
+
         public String program_identificator;
         public Enum_Firmware_type firmware_type;
         public Model_FileRecord file_record;
@@ -120,6 +116,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
         public Enum_Update_type_of_update type_of_update;
 
         public List<Utilities_HW_Updater_Target_pair> target_pairs = new ArrayList<>();
+
     }
 
 
@@ -146,12 +143,12 @@ public class Utilities_HW_Updater_Master_thread_updater {
             return;
         }
 
-
         logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " state::  " + procedure.state);
 
+        logger.debug("Master_Updater:: actualization_update_procedure:: Procedure Number of C_Procedures:: " + procedure.updates.size());
 
-        Map<String, String> files_codes = new HashMap<>(); // < c_program_version_id, code of program >
-        ActualizationStructure structure = new ActualizationStructure();
+
+        Actualization_structure structure = new Actualization_structure();
 
         List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where().eq("actualization_procedure.id", procedure.id)
                 .disjunction()
@@ -159,6 +156,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                     .eq("state", Enum_CProgram_updater_state.waiting_for_device)
                     .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
                     .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                    .eq("state", Enum_CProgram_updater_state.bin_file_not_found)
                 .endJunction()
                 .findList();
 
@@ -166,6 +164,8 @@ public class Utilities_HW_Updater_Master_thread_updater {
                 logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " all updates is done or in progress");
                 return;
             }
+
+        logger.debug("Master_Updater:: actualization_update_procedure:: Procedure Number of C_Procedures By database for execution:: " + plans.size());
 
            for (Model_CProgramUpdatePlan plan : plans) {
                try {
@@ -323,18 +323,34 @@ public class Utilities_HW_Updater_Master_thread_updater {
                }
            }
 
+
+        logger.debug("Master_Updater:: Summary for actualizations");
+
         for (Instance instance : structure.instances.values()) {
+
+            logger.debug("Master_Updater:: Summary: Instance ::" + instance.instance.blocko_instance_name);
 
             Utilities_HW_Updater_Actualization_Task task = new Utilities_HW_Updater_Actualization_Task();
             task.instance = instance.instance;
 
             for(Program program : instance.programs.values()){
 
+                logger.debug("  Master_Updater:: Summary: Program ::" + program.program_identificator);
+                logger.debug("  Master_Updater:: Summary: Type of Update ::" + program.program_identificator);
+
                 Utilities_HW_Updater_Actualization_procedure actualization_procedure= new Utilities_HW_Updater_Actualization_procedure();
                 actualization_procedure.typeOfUpdate = program.type_of_update;
                 actualization_procedure.actualizationProcedureId = procedure.id;
                 actualization_procedure.file_record = program.file_record;
                 actualization_procedure.firmwareType = program.firmware_type;
+
+                logger.debug("       Master_Updater:: Summary: Targets ::");
+
+                for(Utilities_HW_Updater_Target_pair pair : program.target_pairs){
+                    logger.debug("       Master_Updater:: Summary: Targets :: " + pair.targetId + " update_procedure_id:: " + pair.c_program_update_plan_id);
+                }
+
+
                 actualization_procedure.targetPairs.addAll(program.target_pairs);
 
                 task.procedures.add(actualization_procedure);

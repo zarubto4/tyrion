@@ -2,7 +2,6 @@ package utilities.goPay.helps_objects;
 
 public class GoPay_Contact {
 
-
     public String first_name;
     public String last_name = "";
     public String email;

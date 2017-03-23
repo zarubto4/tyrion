@@ -35,7 +35,7 @@ public class Model_MProject extends Model {
     @JsonIgnore @ApiModelProperty(required = true) @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<Model_MProgram> m_programs = new ArrayList<>();
 
 
-
+    @JsonIgnore  public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -75,6 +75,13 @@ public class Model_MProject extends Model {
         }
 
         super.save();
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        removed_by_user = true;
+        super.update();
+
     }
 
     @JsonIgnore @Transient
