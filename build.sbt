@@ -1,10 +1,9 @@
+
 name := """Tyrion"""
 
-version := "1.0-SNAPSHOT"
+version := "2.07.8"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
-
-
 
 scalaVersion := "2.11.6"
 crossScalaVersions := Seq("2.11.6", "2.11.7")

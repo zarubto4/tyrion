@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Compile_status;
+import utilities.models_update_echo.Update_echo_handler;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -50,6 +52,11 @@ public class Model_CCompilation extends Model {
         }
         this.date_of_create = new Date();
         super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+        Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_VersionObject.class, version_object.c_program.project_id(), this.version_object.id));
+        super.update();
     }
 
     @JsonIgnore @Transient

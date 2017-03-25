@@ -8,7 +8,11 @@ public class Wiki {
 
     public static List<Element> getWikiFiles(){
 
+
+
         List<String> fileNames = new ArrayList<>();
+
+
 
         File[] files = new File(System.getProperty("user.dir") + "/conf/markdown_documentation").listFiles();
 
@@ -19,6 +23,13 @@ public class Wiki {
         }
 
         List<Element> tree = new ArrayList<>();
+
+        if(true) {
+            // TODO LEXA FIX WIKI Tohle si odkomentuj a pušt tyriona je tam někde problém v rekurzi
+            // Tyrion-
+
+            return tree;
+        }
 
         for (String fileName : fileNames) {
 
@@ -45,6 +56,7 @@ public class Wiki {
         Element temp = new Element();
         temp.text = steps.get(0);
         temp.leaf = false;
+
 
         Element existing = localTree.stream()
                 .filter(current -> temp.text.equals(current.text))

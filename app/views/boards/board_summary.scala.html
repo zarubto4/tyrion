@@ -354,6 +354,7 @@
          content +="<th>Hash for adding</th>";
          content +="<th>Personal Description</th>";
 
+         content +="<th>Online</th>";
          content +="<th>Under Project</th>";
          content +="<th>Activated?</th>";
          content +="<th>Backup</th>";
@@ -372,10 +373,18 @@
              content += "<td>" + v.hash_for_adding +"</td>";
              content += "<td>" + v.personal_description +"</td>";
 
+
+             if(v.online == true) {
+                 content += "<td><span class=\"label label-success\">Online</span></td>";
+             }else{
+                 content += "<td><span class=\"label label-danger\">Offline</span></td>";
+             }
+
+
              if(v.project_id != null) {
                  content += "<td><span class=\"label label-success\">True</span></td>";
              }else{
-                 content += "<td><span class=\"label label-danger\">False</span></td>";
+                 content += "<td><span class=\"label label-warning\">False</span></td>";
              }
 
              if(v.is_active == true) {

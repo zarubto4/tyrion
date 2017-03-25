@@ -173,109 +173,111 @@ public class Model_Board extends Model {
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status()       {
 
-        logger.debug("Model_Board:: status:: Check Status:: " + this.id);
-
-        Model_HomerInstance instance =  get_instance();
-
-        logger.debug("Model_Board:: status:: Get Instance success :: " + instance.blocko_instance_name);
-
-        Swagger_Board_Status board_status = new Swagger_Board_Status();
-        board_status.status = is_online() ? Enum_Board_status.online : Enum_Board_status.offline;
-        if(project == null) board_status.where = Enum_Board_type_of_connection.connected_to_server_unregistered;
+        try{
 
 
-        // Stavy Desky--------------------------------------------------------------------------------------------------
+            Model_HomerInstance instance =  get_instance();
+
+            Swagger_Board_Status board_status = new Swagger_Board_Status();
+            board_status.status = is_online() ? Enum_Board_status.online : Enum_Board_status.offline;
+            if(project == null) board_status.where = Enum_Board_type_of_connection.connected_to_server_unregistered;
 
 
-        // 3) Je ve Virtuální instanci
-        if(instance != null) {
+            // Stavy Desky--------------------------------------------------------------------------------------------------
 
-            board_status.where = Enum_Board_type_of_connection.in_person_instance;
-            board_status.instance_id = instance.blocko_instance_name;
-            board_status.instance_online_status = instance.instance_online();
-            if (instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
-            if (instance.getB_program() != null) board_status.b_program_name = instance.getB_program().name;
 
-            if (instance.actual_instance != null)
-                board_status.b_program_version_id = instance.actual_instance.version_object.id;
-            if (instance.actual_instance != null)
-                board_status.b_program_version_name = instance.actual_instance.version_object.version_name;
+            // 3) Je ve Virtuální instanci
+            if(instance != null) {
 
-            board_status.server_name = instance.cloud_homer_server.personal_server_name;
-            board_status.homer_server_id = instance.cloud_homer_server.unique_identificator;
-            board_status.server_online_status = instance.cloud_homer_server.server_is_online();
-        }else {
+                board_status.where = Enum_Board_type_of_connection.in_person_instance;
+                board_status.instance_id = instance.blocko_instance_name;
+                board_status.instance_online_status = instance.instance_online();
+                if (instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
+                if (instance.getB_program() != null) board_status.b_program_name = instance.getB_program().name;
 
-            // 1) Není známo kam se deska připojila a nemá instanci
-            if(get_instance() == null && get_connected_server() == null) {
+                if (instance.actual_instance != null)
+                    board_status.b_program_version_id = instance.actual_instance.version_object.id;
+                if (instance.actual_instance != null)
+                    board_status.b_program_version_name = instance.actual_instance.version_object.version_name;
 
-                board_status.status = Enum_Board_status.not_yet_first_connected;
-                // 2) Je známo kam se deska připojila a nemá instanci - Takže třeba když jí uživatel vyndal z krabičky nahrál na ní něco
+                board_status.server_name = instance.cloud_homer_server.personal_server_name;
+                board_status.homer_server_id = instance.cloud_homer_server.unique_identificator;
+                board_status.server_online_status = instance.cloud_homer_server.server_is_online();
+            }else {
+
+                // 1) Není známo kam se deska připojila a nemá instanci
+                if(get_instance() == null && get_connected_server() == null) {
+
+                    board_status.status = Enum_Board_status.not_yet_first_connected;
+                    // 2) Je známo kam se deska připojila a nemá instanci - Takže třeba když jí uživatel vyndal z krabičky nahrál na ní něco
+                }
+
+                if(get_instance()  == null && get_connected_server() != null) {
+
+                    board_status.where = Enum_Board_type_of_connection.connected_to_byzance;
+                    board_status.server_name = connected_server.personal_server_name;
+                    board_status.homer_server_id = connected_server.unique_identificator;
+                    board_status.server_online_status = connected_server.server_is_online();
+
+                }
+
             }
 
-            if(get_instance()  == null && get_connected_server() != null) {
-
-                logger.debug("Model_Board:: status:: Check Status:: ");
-                board_status.where = Enum_Board_type_of_connection.connected_to_byzance;
-                board_status.server_name = connected_server.personal_server_name;
-                board_status.homer_server_id = connected_server.unique_identificator;
-                board_status.server_online_status = connected_server.server_is_online();
-
+            // 4) Je ve virtuální instanci
+            if( get_virtual_instance() != null ){
+                board_status.where = Enum_Board_type_of_connection.under_project_virtual_instance;
+                board_status.server_name = get_virtual_instance().cloud_homer_server.personal_server_name;
+                board_status.homer_server_id = get_virtual_instance().cloud_homer_server.unique_identificator;
             }
 
-        }
+            if(actual_c_program_version != null){
+                board_status.actual_c_program_id = actual_c_program_version.c_program.id;
+                board_status.actual_c_program_name = actual_c_program_version.c_program.name;
+                board_status.actual_c_program_version_id = actual_c_program_version.id;
+                board_status.actual_c_program_version_name = actual_c_program_version.version_name;
+            }
 
-        // 4) Je ve virtuální instanci
-        if( get_virtual_instance() != null ){
-            board_status.where = Enum_Board_type_of_connection.under_project_virtual_instance;
-            board_status.server_name = get_virtual_instance().cloud_homer_server.personal_server_name;
-            board_status.homer_server_id = get_virtual_instance().cloud_homer_server.unique_identificator;
-        }
-
-        if(actual_c_program_version != null){
-            board_status.actual_c_program_id = actual_c_program_version.c_program.id;
-            board_status.actual_c_program_name = actual_c_program_version.c_program.name;
-            board_status.actual_c_program_version_id = actual_c_program_version.id;
-            board_status.actual_c_program_version_name = actual_c_program_version.version_name;
-        }
-
-        if(actual_backup_c_program_version != null){
-            board_status.actual_backup_c_program_id = actual_backup_c_program_version.c_program.id;
-            board_status.actual_backup_c_program_name = actual_backup_c_program_version.c_program.name;
-            board_status.actual_backup_c_program_version_id = actual_backup_c_program_version.id;
-            board_status.actual_backup_c_program_version_name = actual_backup_c_program_version.version_name;
-        }
+            if(actual_backup_c_program_version != null){
+                board_status.actual_backup_c_program_id = actual_backup_c_program_version.c_program.id;
+                board_status.actual_backup_c_program_name = actual_backup_c_program_version.c_program.name;
+                board_status.actual_backup_c_program_version_id = actual_backup_c_program_version.id;
+                board_status.actual_backup_c_program_version_name = actual_backup_c_program_version.version_name;
+            }
 
 
-        List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.where()
-                .eq("firmware_type", Enum_Firmware_type.FIRMWARE)
-                .disjunction()
+            List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.where()
+                    .eq("firmware_type", Enum_Firmware_type.FIRMWARE)
+                    .disjunction()
                     .eq("state", Enum_CProgram_updater_state.in_progress)
                     .eq("state", Enum_CProgram_updater_state.waiting_for_device)
                     .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
                     .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
-                .endJunction()
-                .eq("board.id", id).order().asc("actualization_procedure.date_of_create").findList();
+                    .endJunction()
+                    .eq("board.id", id).order().asc("actualization_procedure.date_of_create").findList();
 
-        for(Model_CProgramUpdatePlan plan : c_program_plans) board_status.required_c_programs.add(plan.get_short_version_for_board());
-
-
-
-        List<Model_CProgramUpdatePlan> c_backup_program_plans = Model_CProgramUpdatePlan.find.where()
-                .eq("firmware_type", Enum_Firmware_type.BACKUP)
-                .disjunction()
-                .eq("state", Enum_CProgram_updater_state.in_progress)
-                .eq("state", Enum_CProgram_updater_state.waiting_for_device)
-                .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
-                .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
-                .endJunction()
-                .eq("board.id", id).order().asc("date_of_create").findList();
-
-        for(Model_CProgramUpdatePlan plan : c_backup_program_plans) board_status.required_backup_c_programs.add(plan.get_short_version_for_board());
+            for(Model_CProgramUpdatePlan plan : c_program_plans) board_status.required_c_programs.add(plan.get_short_version_for_board());
 
 
 
-        return board_status;
+            List<Model_CProgramUpdatePlan> c_backup_program_plans = Model_CProgramUpdatePlan.find.where()
+                    .eq("firmware_type", Enum_Firmware_type.BACKUP)
+                    .disjunction()
+                    .eq("state", Enum_CProgram_updater_state.in_progress)
+                    .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                    .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                    .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
+                    .endJunction()
+                    .eq("board.id", id).order().asc("date_of_create").findList();
+
+            for(Model_CProgramUpdatePlan plan : c_backup_program_plans) board_status.required_backup_c_programs.add(plan.get_short_version_for_board());
+
+
+
+            return board_status;
+        }catch (Exception e) {
+            logger.error("Model_Board:: status:: Error:: ", e);
+            return null;
+        }
 
     }
 
@@ -440,7 +442,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static void un_registred_device_connected(WS_HomerServer homer_server, WS_Message_Unregistred_device_connected report) {
         logger.debug("Model_Board:: un_registred_device_connected:: " + report.deviceId);
 
-        Model_Board board = Model_Board.get_model(report.deviceId);
+        Model_Board board = Model_Board.get_byId(report.deviceId);
         if(board == null){
             logger.warn("Unknown device tries to connect:: " + report.deviceId);
             return;
@@ -470,93 +472,99 @@ public class Model_Board extends Model {
 
     @JsonIgnore @Transient public static void update_report_from_homer(WS_Message_Update_device_firmware report){
 
-        for(WS_Message_Update_device_firmware.UpdateDeviceInformation updateDeviceInformation : report.procedure_list){
+        try {
+            for (WS_Message_Update_device_firmware.UpdateDeviceInformation updateDeviceInformation : report.procedure_list) {
 
 
-            for(WS_Message_Update_device_firmware.UpdateDeviceInformation_Device updateDeviceInformation_device : updateDeviceInformation.device_state_list){
+                for (WS_Message_Update_device_firmware.UpdateDeviceInformation_Device updateDeviceInformation_device : updateDeviceInformation.device_state_list) {
 
-                try{
+                    try {
 
-                    Enum_Hardware_update_state_from_Homer status = Enum_Hardware_update_state_from_Homer.getUpdate_state(updateDeviceInformation_device.update_state);
-                    if(status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + updateDeviceInformation_device.update_state + " is not recognize in Json!");
+                        Enum_Hardware_update_state_from_Homer status = Enum_Hardware_update_state_from_Homer.getUpdate_state(updateDeviceInformation_device.update_state);
+                        if (status == null)
+                            throw new NullPointerException("Hardware_update_state_from_Homer " + updateDeviceInformation_device.update_state + " is not recognize in Json!");
 
-                    Model_Board board = Model_Board.get_model(updateDeviceInformation_device.deviceId);
-                    if(board == null) throw new NullPointerException("Device id" +updateDeviceInformation_device.deviceId + " not found!");
+                        Model_Board board = Model_Board.get_byId(updateDeviceInformation_device.deviceId);
+                        if (board == null)
+                            throw new NullPointerException("Device id" + updateDeviceInformation_device.deviceId + " not found!");
 
-                    Enum_Firmware_type firmware_type = Enum_Firmware_type.getFirmwareType(updateDeviceInformation_device.firmwareType);
-                    if(firmware_type == null) throw new NullPointerException("Firmware_type " +updateDeviceInformation_device.firmwareType + "is not recognize in Json!");
-
-
-                    Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.byId(updateDeviceInformation_device.c_program_update_plan_id);
-                    if(plan == null) throw new NullPointerException("Plan id" +updateDeviceInformation_device.c_program_update_plan_id + " not found!");
+                        Enum_Firmware_type firmware_type = Enum_Firmware_type.getFirmwareType(updateDeviceInformation_device.firmwareType);
+                        if (firmware_type == null)
+                            throw new NullPointerException("Firmware_type " + updateDeviceInformation_device.firmwareType + "is not recognize in Json!");
 
 
-                    if(status == Enum_Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE){
-                        plan.state = Enum_CProgram_updater_state.complete;
+                        Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.byId(updateDeviceInformation_device.c_program_update_plan_id);
+                        if (plan == null)
+                            throw new NullPointerException("Plan id" + updateDeviceInformation_device.c_program_update_plan_id + " not found!");
+
+
+                        if (status == Enum_Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE) {
+                            plan.state = Enum_CProgram_updater_state.complete;
+                            plan.date_of_finish = new Date();
+                            plan.update();
+
+                            logger.debug("Model_Board:: Update_report_from_homer:: FirmwareType check");
+
+                            if (firmware_type == Enum_Firmware_type.FIRMWARE) {
+
+                                logger.debug("Model_Board:: Update_report_from_homer:: Firmware");
+
+                                board.actual_c_program_version = plan.c_program_version_for_update;
+                                board.update();
+                                continue;
+                            }
+
+                            if (firmware_type == Enum_Firmware_type.BACKUP) {
+
+                                logger.debug("Model_Board:: Update_report_from_homer:: BACKUP");
+
+                                board.actual_backup_c_program_version = plan.c_program_version_for_update;
+                                board.backup_mode = false;
+                                board.update();
+                                continue;
+                            }
+
+                            if (firmware_type == Enum_Firmware_type.BOOTLOADER) {
+
+                                logger.debug("Model_Board:: Update_report_from_homer:: Bootloader");
+                                board.actual_boot_loader = plan.bootloader;
+                                board.update();
+                                continue;
+                            }
+
+                            logger.error("Model_Board:: Update_report_from_homer:: ERROR: Its not Firmware, BACKUP or Bootloader!!! ");
+
+                        }
+
+                        if (status == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || status == Enum_Hardware_update_state_from_Homer.YODA_WAS_OFFLINE) {
+                            plan.state = Enum_CProgram_updater_state.waiting_for_device;
+                            plan.update();
+                            continue;
+                        }
+
+                        if (status == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION) {
+                            plan.state = Enum_CProgram_updater_state.not_updated;
+                            plan.date_of_finish = new Date();
+                            plan.update();
+                            continue;
+                        }
+
+                        // Na závěr vše ostatní je chyba
+
+                        plan.state = Enum_CProgram_updater_state.critical_error;
+                        plan.error = updateDeviceInformation_device.error;
+                        plan.errorCode = updateDeviceInformation_device.errorCode;
                         plan.date_of_finish = new Date();
                         plan.update();
 
-                        logger.debug("Model_Board:: Update_report_from_homer:: FirmwareType check");
-
-                        if(firmware_type == Enum_Firmware_type.FIRMWARE){
-
-                            logger.debug("Model_Board:: Update_report_from_homer:: Firmware");
-
-                            board.actual_c_program_version = plan.c_program_version_for_update;
-                            board.update();
-                            continue;
-                        }
-
-                        if(firmware_type == Enum_Firmware_type.BACKUP){
-
-                            logger.debug("Model_Board:: Update_report_from_homer:: BACKUP");
-
-                            board.actual_backup_c_program_version = plan.c_program_version_for_update;
-                            board.backup_mode = false;
-                            board.update();
-                            continue;
-                        }
-
-                        if(firmware_type == Enum_Firmware_type.BOOTLOADER){
-
-                            logger.debug("Model_Board:: Update_report_from_homer:: Bootloader");
-                            board.actual_boot_loader = plan.bootloader;
-                            board.update();
-                            continue;
-                        }
-
-                        logger.error("Model_Board:: Update_report_from_homer:: ERROR: Its not Firmware, BACKUP or Bootloader!!! ");
-
+                    } catch (Exception e) {
+                        logger.error("Model_Board:: update_report_from_homer:: Error:: ", e);
                     }
-
-                    if(status == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || status == Enum_Hardware_update_state_from_Homer.YODA_WAS_OFFLINE){
-                        plan.state = Enum_CProgram_updater_state.waiting_for_device;
-                        plan.update();
-                        continue;
-                    }
-
-                    if(status == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION){
-                        plan.state = Enum_CProgram_updater_state.not_updated;
-                        plan.date_of_finish = new Date();
-                        plan.update();
-                        continue;
-                    }
-
-                    // Na závěr vše ostatní je chyba
-
-                    plan.state = Enum_CProgram_updater_state.critical_error;
-                    plan.error = updateDeviceInformation_device.error;
-                    plan.errorCode = updateDeviceInformation_device.errorCode;
-                    plan.date_of_finish = new Date();
-                    plan.update();
-
-                }catch (Exception e){
-                    logger.error("Model_Board:: update_report_from_homer:: Error:: ", e);
                 }
             }
+        }catch (Exception e){
+            logger.error("Model_Board:: update_report_from_homer Error:: ", e);
         }
-
-
 
     }
 
@@ -1100,17 +1108,17 @@ public class Model_Board extends Model {
 
     public static Model_Board get_byId(String id){
 
-        Model_Board model = cache_model_board.get(board_id);
+        Model_Board board_model = cache.get(id);
 
-        if(model == null){
-            model = find.byId(id);
+        if(board_model == null){
+            board_model = Model_Board.find.byId(id);
 
-            if (model == null) return null;
+            if (board_model == null) return null;
 
-            cache.put(board_id, model);
+            cache.put(id, board_model);
         }
 
-        return model;
+        return board_model;
     }
 
     public static List<Model_Board> get_byIds(List<String> board_ids){
@@ -1125,12 +1133,11 @@ public class Model_Board extends Model {
     @JsonIgnore
     public boolean is_online() {
 
-        logger.debug("Model_Board:: is_online:: " + id);
-
         Boolean status = cache_status.get(id);
 
-
         if (status == null){
+
+            logger.debug("Model_Board::  Check online status - its not in cache:: " + id);
 
             try {
 
@@ -1173,7 +1180,6 @@ public class Model_Board extends Model {
                 return false;
             }
         }else {
-
             return status;
         }
     }

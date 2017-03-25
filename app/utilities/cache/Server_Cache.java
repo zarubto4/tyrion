@@ -5,9 +5,11 @@ import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.ehcache.config.units.MemoryUnit;
 import org.ehcache.expiry.Duration;
 import org.ehcache.expiry.Expirations;
+import play.Configuration;
+import utilities.Server;
+import utilities.cache.helps_objects.IdsList;
 
 import java.util.concurrent.TimeUnit;
 
@@ -20,76 +22,106 @@ public class Server_Cache {
     public static void initCache(){
 
         try {
-        cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
 
-        cacheManager.createCache("person_token",
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Person.class,
-                        ResourcePoolsBuilder.heap(100)).build());
+            cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
 
-        cacheManager.createCache("person_id",
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Person.class,
-                        ResourcePoolsBuilder.heap(100)).build());
 
-        cacheManager.createCache("project",
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Project.class,
-                        ResourcePoolsBuilder.heap(100)).build());
+        /*
+         *  Person / Token
+         *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+         *
+         */
 
-        cacheManager.createCache("token",
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_FloatingPersonToken.class,
-                        ResourcePoolsBuilder.heap(100)).build());
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Person Model");
+            Model_Person.token_cache = cacheManager.createCache(Model_Person.CACHE_TOKEN,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode + ".Model_Person.CACHE_TOKEN")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
+
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Person Tokens");
+            Model_Person.cache = cacheManager.createCache(Model_Person.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Person.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode + ".Model_Person.CACHE_TOKEN")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
+
+
+
+
+
+        /*
+         *  Project Hierarchy ( Project, B_Program, C_Program, M_Program,
+         *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+         *
+         */
+
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Project Frontend Connection Person_ID_Tokens");
+            Model_Project.token_cache = cacheManager.createCache(Model_Project.CACHE_BECKI_CONNECTED_PERSONS,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, IdsList.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode + ".Model_Project.CACHE_BECKI_CONNECTED_PERSONS")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+
 
 
         /*
          *  Model_Board
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-                * // Cache for Board  - Max for 100K or 500MB
-         * // Cache for Board Online status for 100K Devices - Expirate time set to 20 Minutes with Backup on harddisk
+         *  Cache for Board
+         *  Cache for Board Online status
          */
 
-        Model_Board.cache = cacheManager.createCache(Model_Board.CACHE,
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Board.class,
-                        ResourcePoolsBuilder.heap(100)).withExpiry(Expirations.timeToIdleExpiration(Duration.of(15, TimeUnit.MINUTES))).build());
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Board Models");
+            Model_Board.cache = cacheManager.createCache(Model_Board.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Board.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode + ".Model_Board.CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
+
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Board status");
+            Model_Board.cache_status = cacheManager.createCache(Model_Board.CACHE_STATUS,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
+                    ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode + ".Model_Board.CACHE_STATUS")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
 
 
-        Model_Board.cache_status = cacheManager.createCache(Model_Board.CACHE_STATUS,
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
-                        ResourcePoolsBuilder.heap(1000)).withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 
-        cacheManager.createCache(Model_Board.CACHE_ONLINE_STATE,  CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
-                ResourcePoolsBuilder.heap(100000).offheap(500, MemoryUnit.MB).disk(200, MemoryUnit.MB) ).withExpiry(Expirations.timeToLiveExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 
         /*
          *  Model_Instance
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+         *    Cache for Model_HomerInstance
          */
 
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Instance status");
+            Model_HomerInstance.cache_status = cacheManager.createCache(Model_HomerInstance.CACHE_STATUS,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode + ".Model_HomerInstance.CACHE_STATUS")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
 
-        Model_HomerInstance.cache_status = cacheManager.createCache(Model_HomerInstance.CACHE_STATUS,
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
-                        ResourcePoolsBuilder.heap(1000)).withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 
-        //cacheManager.createCache(,
-        //        CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerInstanceRecord.class,
-        //                ResourcePoolsBuilder.heap(5000)).withExpiry(Expirations.timeToIdleExpiration(Duration.of(15, TimeUnit.MINUTES))).build());
+
 
 
         /*
          *  Model_HomerServer
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-         *  1) Cache for Model_HomerServer  - Max for 100 or 100MB Backup 500MB on disk
+         *  Cache for Model_HomerServer
+         *
+         *  Homer_Status (Online / offline) is not necessary - you can check websocket.containsKey()
+         *
          */
-
-        cacheManager.createCache(Model_HomerServer.CACHE_MODEL, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerServer.class,
-                ResourcePoolsBuilder.heap(100).offheap(100, MemoryUnit.MB)).withExpiry(Expirations.timeToLiveExpiration(Duration.of(15, TimeUnit.HOURS))).build());
-
-        Model_HomerServer.cache_model_homer_server =Server_Cache.cacheManager.getCache(Model_HomerServer.CACHE_MODEL, String.class, Model_HomerServer.class);
-
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Homer Server Models");
+            Model_HomerServer.cache_model_homer_server = cacheManager.createCache(Model_HomerServer.CACHE, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerServer.class,
+                    ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode + ".Model_HomerServer.CACHE")))
+                    .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
 
 
+
+        }catch (Exception e){
+            logger.error("Server_Cache:: Error: ", e);
+        }
     }
 
     public static void stopCache(){
-
         cacheManager.close();
     }
 }

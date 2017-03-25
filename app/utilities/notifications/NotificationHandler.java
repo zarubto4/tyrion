@@ -1,10 +1,12 @@
 package utilities.notifications;
 
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.Model_Notification;
 import models.Model_Invitation;
 import models.Model_Person;
+import org.codehaus.jackson.map.ObjectMapper;
 import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
 import utilities.loggy.Loggy;
@@ -24,18 +26,18 @@ public class NotificationHandler {
     public static List<Model_Notification> notifications = new ArrayList<>();
 
     public static void startNotificationThread(){
-        logger.info("NotificationHandler:: startNotificationThread: starting");
+        logger.trace("NotificationHandler:: startNotificationThread:_ starting");
         if(!send_notification_thread.isAlive()) send_notification_thread.start();
     }
 
     public static void addToQueue(Model_Notification notification){
 
-        logger.info("NotificationHandler:: addToQueue: adding notification to queue");
+        logger.trace("NotificationHandler:: addToQueue:: adding notification to queue");
 
         notifications.add(notification);
 
         if(send_notification_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.debug("NotificationHandler:: addToQueue: thread is sleeping, waiting for interruption!");
+            logger.trace("NotificationHandler:: addToQueue:: thread is sleeping, waiting for interruption!");
             send_notification_thread.interrupt();
         }
     }
@@ -46,23 +48,22 @@ public class NotificationHandler {
         public void run() {
 
 
-            logger.info("NotificationHandler:: send_notification_thread: concurrent thread started on {}", new Date()) ;
+            logger.trace("NotificationHandler:: send_notification_thread:: concurrent thread started on {}", new Date()) ;
 
             while(true){
                 try{
 
                     if(!notifications.isEmpty()) {
 
-                        logger.debug("NotificationHandler:: send_notification_thread: sending {} notifications ", notifications.size());
-
                         Model_Notification notification = notifications.get(0);
 
-                        new NotificationHandler().sendNotification( notification , notification.receivers );
+                        sendNotification( notification );
                         notifications.remove( notification );
 
                     } else {
 
-                        logger.debug("NotificationHandler:: send_notification_thread: no notifications, thread is going to sleep");
+                        logger.trace("NotificationHandler:: send_notification_thread:: no notifications, thread is going to sleep");
+
                         sleep(500000000);
                     }
                 }catch (InterruptedException i){
@@ -74,11 +75,11 @@ public class NotificationHandler {
         }
     };
 
-    private void sendNotification(Model_Notification notification, List<Model_Person> receivers){
+    private static void sendNotification(Model_Notification notification){
 
-        logger.info("NotificationHandler:: sendNotification: sending notification");
+        logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
-        for (Model_Person person : receivers) {
+        for (Model_Person person : notification.receivers) {
 
             // Pokud je notification_importance vyšší než "low" notifikaci uložím
             if ((notification.notification_importance != Enum_Notification_importance.low)&&(notification.id == null)) {
@@ -94,14 +95,14 @@ public class NotificationHandler {
                         invitation.update();
                     }
                 }catch (Exception e){
-                    Loggy.internalServerError("NotificationHandler:: sendNotification:", e);
+                    Loggy.internalServerError("NotificationHandler:: sendNotification:: Error", e);
                 }
             }
 
             // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
             if (Controller_WebSocket.becki_website.containsKey(person.id)) {
                 WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person.id);
-                becki.becki_sendNotification(notification);
+                becki.write_without_confirmation(new ObjectMapper().convertValue(notification, ObjectNode.class));
             }
 
             notification.id = null;

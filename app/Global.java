@@ -85,7 +85,6 @@ public class Global extends GlobalSettings {
         }
 
 
-
         System.err.println(" ");
         System.err.println(" ");
         System.err.println("  _____________ __                                             ___                   __        ________                                                              ");
@@ -109,7 +108,7 @@ public class Global extends GlobalSettings {
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
 
-        logger.debug(request.path());
+        // logger.debug(request.path());
 
         RequestCounter.count(actionMethod.getName());
 

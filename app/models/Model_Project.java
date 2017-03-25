@@ -5,8 +5,11 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
+import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
+import utilities.cache.helps_objects.IdsList;
 import utilities.enums.*;
 import utilities.swagger.outboundClass.*;
 
@@ -220,6 +223,99 @@ public class Model_Project extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
    public static Model.Finder<String,Model_Project> find = new Finder<>(Model_Project.class);
+
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE                          = Model_Project.class.getSimpleName();
+    public static final String CACHE_BECKI_CONNECTED_PERSONS  = Model_Project.class.getSimpleName() + "_BECKI_CONNECTED_PERSONS_ID";
+
+    // TODO public static Cache<String, Model_Project> cache = null;       // < Project_Id, Model_Project>
+    public static Cache<String, IdsList> token_cache = null;  // < Project_Id, List<Person_id>> // Only connected on Websocket with Becki
+
+
+    public static Model_Project get_byId(String project_id){
+
+        // TODO Velký todo pro LEXU!!!
+        return Model_Project.find.byId(project_id);
+    }
+
+
+
+    public static void becki_person_id_subscribe(String person_id){
+
+        Model_Person person = Model_Person.get_byId(person_id);
+
+        List<Model_Project> list_of_projects = Model_Project.find.where().eq("participants.person.id", person_id).disjunction()
+                    .eq("state", Enum_Participant_status.admin)
+                    .eq("state", Enum_Participant_status.member)
+                    .eq("state", Enum_Participant_status.owner)
+                .endJunction()
+                .findList();
+
+        for(Model_Project project : list_of_projects ){
+
+            IdsList idlist = token_cache.get(project.id);
+
+            if(idlist == null){
+
+                idlist = new IdsList();
+                idlist.list.add(person_id);
+                token_cache.put(project.id, idlist);
+
+            }else {
+                idlist.list.add(person_id);
+            }
+
+        }
+    }
+
+    public static void becki_person_id_unsubscribe(String person_id){
+
+        List<Model_Project> list_of_projects = Model_Project.find.where().eq("participants.person.id", person_id).disjunction()
+                .eq("state", Enum_Participant_status.admin)
+                .eq("state", Enum_Participant_status.member)
+                .eq("state", Enum_Participant_status.owner)
+                .endJunction()
+                .findList();
+
+        for(Model_Project project : list_of_projects ){
+
+            IdsList idlist = token_cache.get(project.id);
+
+            if(idlist != null){
+                idlist.list.remove(person_id);
+            }
+
+        }
+
+    }
+
+
+    public static List<String> get_project_becki_person_ids_list(String project_id){
+
+        IdsList idlist = token_cache.get(project_id);
+
+        if(idlist == null){
+
+            idlist = new IdsList();
+
+            for(Model_ProjectParticipant participant :get_byId(project_id).participants){
+
+               if(Controller_WebSocket.becki_website.containsKey(participant.person.id)){
+                   idlist.list.add(participant.person.id);
+               }
+
+            }
+
+            token_cache.put(project_id, idlist);
+
+        }
+
+        return idlist.list;
+    }
+
 
 }
 

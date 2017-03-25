@@ -13,6 +13,7 @@ import utilities.enums.*;
 import utilities.notifications.NotificationHandler;
 import utilities.swagger.outboundClass.Swagger_Notification_Button;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
+import web_socket.services.WS_Becki_Website;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -43,27 +44,55 @@ public class Model_Notification extends Model {
                                 @ApiModelProperty(required = true)  public boolean confirmed;
                                 @ApiModelProperty(required = true)  public boolean was_read;
 
-    @ApiModelProperty(required = true,
-            dataType = "integer", readOnly = true,
-            value = "UNIX time in ms",
-            example = "1466163478925")                              public Date   created;
+    @ApiModelProperty(required = true, readOnly = true, value = "UNIX time in ms")  public Date   created;
 
-    @JsonIgnore
-    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY) public Model_Person person;
+    @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY) public Model_Person person;
+
+
+/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
+    @ApiModelProperty(required = true)  public static final String messageType = "notification";
+    @ApiModelProperty(required = true)  public static final String messageChannel = WS_Becki_Website.CHANNEL;
+
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Swagger_Notification_Element> notification_body(){
+        try {
+            if(array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Swagger_Notification_Element>>() {});
+            return array;
+
+        }catch (Exception e){
+            logger.error("Parsing notification body error", e);
+            return new ArrayList<Swagger_Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
+        }
+    }
+
+    @JsonProperty
+    @ApiModelProperty(required = true)
+    public List<Swagger_Notification_Button> buttons(){
+        try {
+
+            if((buttons == null || buttons.size() < 1) && buttons_string != null ){
+                buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
+            }
+            return buttons;
+
+        }catch (Exception e){
+            logger.error("Parsing notification buttons error", e);
+            return new ArrayList<Swagger_Notification_Button>();   // Vracím prázdný list - ale reportuji chybu
+        }
+
+    }
 
 /* BODY NOTIFICATION SEGMENTS ------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    List<Swagger_Notification_Element> array = new ArrayList<>();
+    @JsonIgnore @Transient List<Swagger_Notification_Element> array = new ArrayList<>();
 
-    @JsonIgnore @Transient
-    List<Swagger_Notification_Button> buttons = new ArrayList<>();
+    @JsonIgnore @Transient List<Swagger_Notification_Button> buttons = new ArrayList<>();
 
-    @JsonIgnore @Transient
-    public Enum_Notification_state state;
+    @JsonIgnore @Transient public Enum_Notification_state state;
 
-    @JsonIgnore @Transient
-    public List<Model_Person> receivers = new ArrayList<>();
+    @JsonIgnore @Transient public List<Model_Person> receivers = new ArrayList<>();
 
     @JsonIgnore
     public Model_Notification(Enum_Notification_importance importance, Enum_Notification_level level, Model_Person person){
@@ -95,6 +124,7 @@ public class Model_Notification extends Model {
         return this;
     }
 
+    @JsonIgnore @Transient
     public Model_Notification setText(String message, String color, boolean bold, boolean italic, boolean underline){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
@@ -243,38 +273,6 @@ public class Model_Notification extends Model {
         return this;
     }
 
- /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
-
-    @JsonProperty
-    @ApiModelProperty(required = true)
-    public List<Swagger_Notification_Element> notification_body(){
-        try {
-                if(array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Swagger_Notification_Element>>() {});
-                return array;
-
-        }catch (Exception e){
-            logger.error("Parsing notification body error", e);
-            return new ArrayList<Swagger_Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
-        }
-
-    }
-
-    @JsonProperty
-    @ApiModelProperty(required = true)
-    public List<Swagger_Notification_Button> buttons(){
-        try {
-
-            if((buttons == null || buttons.size() < 1) && buttons_string != null ){
-                buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
-            }
-            return buttons;
-
-        }catch (Exception e){
-            logger.error("Parsing notification buttons error", e);
-            return new ArrayList<Swagger_Notification_Button>();   // Vracím prázdný list - ale reportuji chybu
-        }
-
-    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

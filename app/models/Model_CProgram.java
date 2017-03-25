@@ -10,9 +10,11 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.libs.Json;
 import utilities.enums.Enum_Compile_status;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.outboundClass.*;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -189,6 +191,14 @@ public class Model_CProgram extends Model {
 
         super.save();
     }
+
+
+    @JsonIgnore @Override public void update() {
+        Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgram.class, project_id() , this.id));
+        super.update();
+    }
+
+
 
     @JsonIgnore @Override public void delete() {
         this.removed_by_user = true;

@@ -30,7 +30,7 @@ public class Job_RequestStatsUpdate implements Job {
         public void run() {
 
             try {
-                logger.debug("Job_RequestStatsUpdate:: stats_update_thread: concurrent thread started on {}", new Date());
+                logger.trace("Job_RequestStatsUpdate:: stats_update_thread: concurrent thread started on {}", new Date());
 
                 if (!RequestCounter.requests.isEmpty()) {
 
@@ -56,15 +56,15 @@ public class Job_RequestStatsUpdate implements Job {
 
                     RequestCounter.requests.clear();
 
-                    logger.debug("Job_RequestStatsUpdate:: stats_update_thread: logs successfully updated");
+                    logger.trace("Job_RequestStatsUpdate:: stats_update_thread: logs successfully updated");
                 } else {
-                    logger.debug("Job_RequestStatsUpdate:: stats_update_thread: no requests");
+                    logger.trace("Job_RequestStatsUpdate:: stats_update_thread: no requests");
                 }
             } catch (Exception e) {
                 Loggy.internalServerError("Job_RequestStatsUpdate:: stats_update_thread:", e);
             }
 
-            logger.debug("Job_RequestStatsUpdate:: stats_update_thread: thread stopped on {}", new Date());
+            logger.trace("Job_RequestStatsUpdate:: stats_update_thread: thread stopped on {}", new Date());
         }
     };
 }

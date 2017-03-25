@@ -36,7 +36,7 @@ public class Model_HomerServer extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                      @JsonIgnore @Id           public String unique_identificator;
+                                       @Id                         public String unique_identificator;
                                        @JsonIgnore              public String hash_certificate;
 
     @JsonIgnore                                                 public String personal_server_name;
@@ -60,6 +60,7 @@ public class Model_HomerServer extends Model{
                                                                 public boolean interactive;
                                                                 public Enum_Log_level logLevel;
 
+
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="connected_server", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_Board> latest_know_connected_board = new ArrayList<>();
@@ -68,12 +69,7 @@ public class Model_HomerServer extends Model{
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
 
-    @ApiModelProperty(required = true, readOnly = true)
-    @JsonProperty @Transient  public boolean server_is_online(){
-        return Controller_WebSocket.homer_servers.containsKey(this.unique_identificator);
-    }
-
-
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient  public boolean server_is_online(){ return Controller_WebSocket.homer_servers.containsKey(this.unique_identificator);}
 
 
 
@@ -161,11 +157,11 @@ public class Model_HomerServer extends Model{
 
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER---------------------------------------------------------------------------------*/
-    
-    public static final String CHANNEL = "homer-server";
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    @JsonIgnore @Transient public static void Messages(WS_HomerServer homer, ObjectNode json){
+    @JsonIgnore @Transient  public static final String CHANNEL = "homer-server";
+    @JsonIgnore @Transient  static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
+    @JsonIgnore @Transient  public static void Messages(WS_HomerServer homer, ObjectNode json){
         try {
             switch (json.get("messageType").asText()) {
 
@@ -449,7 +445,7 @@ public class Model_HomerServer extends Model{
         // TODO nějaký Alarm když se to stane??
     }
 
-    @JsonIgnore @Transient public  void add_task(Utilities_HW_Updater_Actualization_Task task){
+    @JsonIgnore @Transient  public  void add_task(Utilities_HW_Updater_Actualization_Task task){
         try {
 
            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(this.unique_identificator);
@@ -492,17 +488,17 @@ public class Model_HomerServer extends Model{
 
     // Speciální řízení oprávnění z důvodů ověřování identit na homer serveru
     // Tyrion v contextu nemá Http.Context.current().args.get("person"); podle kterého se běžně všude ověřuje identita!!!
-    @JsonIgnore public boolean create_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_create");  }
-    @JsonIgnore public boolean read_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_read");    }
-    @JsonIgnore public boolean edit_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_edit");    }
-    @JsonIgnore public boolean delete_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_delete");  }
+    @JsonIgnore @Transient public boolean create_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_create");  }
+    @JsonIgnore @Transient public boolean read_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_read");    }
+    @JsonIgnore @Transient public boolean edit_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_edit");    }
+    @JsonIgnore @Transient public boolean delete_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_delete");  }
 
     public enum permissions{Cloud_Homer_Server_create, Cloud_Homer_Server_read, Cloud_Homer_Server_edit, Cloud_Homer_Server_delete}
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static final String CACHE_MODEL        = Model_HomerServer.class.getName() + "_MODEL";
+    public static final String CACHE = Model_HomerServer.class.getName() + "_MODEL";
 
     public static Cache<String, Model_HomerServer> cache_model_homer_server = null; // Server_cache Override during server initialization
 
@@ -512,6 +508,17 @@ public class Model_HomerServer extends Model{
             logger.error("Model_HomerServer:: get_model:: cache_model_homer_server is null");
             return null;
         }
+
+        ClassLoader classLoader = Model_HomerServer.class.getClassLoader();
+
+        if (classLoader == null) {
+            classLoader  = Thread.currentThread().getContextClassLoader();
+        }
+
+        if (classLoader == null) {
+            classLoader = Model_HomerServer.class.getClassLoader();
+        }
+
 
         Model_HomerServer model = cache_model_homer_server.get(unique_identificator);
 

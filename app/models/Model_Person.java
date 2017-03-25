@@ -11,7 +11,6 @@ import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
 import play.data.validation.Constraints;
 import utilities.Server;
-import utilities.cache.Server_Cache;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.*;
@@ -73,6 +72,9 @@ public class Model_Person extends Model {
         }
         return Server.azureLink + azure_picture_link;
     }
+
+/* JSON IGNOR VALUES ----------------------------------------------------------------------------------------------------*/
+
 
 
 /* Security Tools @ JSON IGNORE -----------------------------------------------------------------------------------------*/
@@ -184,15 +186,20 @@ public class Model_Person extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE        = Model_Person.class.getSimpleName();
+    public static final String CACHE_TOKEN  = Model_Person.class.getSimpleName() + "_TOKEN";
+
+    public static  Cache<String, Model_Person> cache = null; // < Person_id, Person>
+    public static  Cache<String, String> token_cache = null; // < Token_Key, Person_is>
+
     @JsonIgnore
     public static Model_Person get_byId(String id) {
 
-        Cache<String, Model_Person> cache = Server_Cache.cacheManager.getCache("person_id", String.class, Model_Person.class);
 
         Model_Person person = cache.get(id);
         if (person == null){
 
-            person = find.byId(id);
+            person = Model_Person.find.byId(id);
             if (person == null) return null;
 
             cache.put(id, person);
@@ -204,17 +211,20 @@ public class Model_Person extends Model {
     @JsonIgnore
     public static Model_Person get_byAuthToken(String authToken) {
 
-        Cache<String, Model_Person> cache = Server_Cache.cacheManager.getCache("person_token", String.class, Model_Person.class);
 
-        Model_Person person = cache.get(authToken);
-        if (person == null){
+        String person_id = token_cache.get(authToken);
+        if (person_id == null){
 
-            person = find.where().eq("floatingPersonTokens.authToken", authToken).findUnique();
+            Model_Person person = find.where().eq("floatingPersonTokens.authToken", authToken).findUnique();
             if (person == null) return null;
 
-            cache.put(authToken, person);
-        }
+            cache.put(person.id, person);
+            token_cache.put(authToken, person.id);
 
-        return person;
+            return person;
+
+        }else {
+            return get_byId(person_id);
+        }
     }
 }
