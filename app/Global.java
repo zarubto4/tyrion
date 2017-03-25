@@ -109,7 +109,6 @@ public class Global extends GlobalSettings {
     public Action onRequest(Http.Request request, Method actionMethod) {
 
         // logger.debug(request.path());
-
         RequestCounter.count(actionMethod.getName());
 
         return super.onRequest(request, actionMethod);
