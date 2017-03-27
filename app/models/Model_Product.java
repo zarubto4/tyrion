@@ -60,8 +60,7 @@ public class Model_Product extends Model {
                @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)                           public Model_PaymentDetails payment_details;
 
 
-    @ManyToMany(cascade = CascadeType.ALL, mappedBy="products") @JoinTable(name="typePostsTable")   public List<Model_GeneralTariffExtensions> extensions = new ArrayList<>();
-
+    @OneToMany(cascade = CascadeType.ALL, mappedBy="product") public List<Model_ProductExtension> extensions = new ArrayList<>();
 
 
  /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
@@ -175,11 +174,11 @@ public class Model_Product extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission()              {  return true;  }
-    @JsonIgnore   @Transient                                    public boolean read_permission()                {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_read");  }
-                  @Transient                                    public boolean edit_permission()                {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_edit");  }
-                  @Transient                                    public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_act_deactivate"); }
-    @JsonIgnore   @Transient                                    public boolean delete_permission()              {  return Controller_Security.getPerson().has_permission("Product_delete");}
+    @JsonIgnore   @Transient public boolean create_permission()         {  return true;  }
+    @JsonIgnore   @Transient public boolean read_permission()           {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_read");  }
+                  @Transient public boolean edit_permission()           {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_edit");  }
+                  @Transient public boolean act_deactivate_permission() {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_act_deactivate"); }
+    @JsonIgnore   @Transient public boolean delete_permission()         {  return Controller_Security.getPerson().has_permission("Product_delete");}
 
     // Project
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean  create_new_project()             {

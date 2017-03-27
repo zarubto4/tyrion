@@ -63,7 +63,7 @@ public class Model_FloatingPersonToken extends Model {
     @JsonIgnore @Override
     public void save() {
 
-        this.setToken( createToken() );
+        if (authToken == null || authToken.isEmpty()) this.setToken( createToken() );
         this.setDate();
 
         while (true) { // I need Unique Value

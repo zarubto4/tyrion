@@ -1100,8 +1100,8 @@ public class Model_Board extends Model {
     public static final String CACHE        = Model_Board.class.getSimpleName();
     public static final String CACHE_STATUS = Model_Board.class.getSimpleName() + "_STATUS";
 
-    public static Cache<String, Model_Board> cache; // Server_cache Override during server initialization
-    public static Cache<String, Boolean> cache_status; // Server_cache Override during server initialization
+    public static Cache<String, Model_Board> cache = null; // Server_cache Override during server initialization
+    public static Cache<String, Boolean> cache_status = null; // Server_cache Override during server initialization
 
     public static Model_Board get_byId(String id){
 

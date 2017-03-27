@@ -119,6 +119,9 @@ PUT            /product/deactivate/:product_id                                  
 PUT            /product/activate/:product_id                                                @controllers.Controller_Finance.product_activate(product_id)
 DELETE         /product/:product_id                                                         @controllers.Controller_Finance.product_delete(product_id)
 
+POST           /product_extension                                                           @controllers.Controller_Finance.productExtension_create()
+GET            /product_extension                                                           @controllers.Controller_Finance.productExtension_getAllTypes()
+
 GET            /product/user_applicable                                                     @controllers.Controller_Finance.get_applicable_products_for_creating_new_project()
 
 PUT            /product/details/:payment_details_id                                         @controllers.Controller_Finance.edit_payment_details(payment_details_id: Long)
@@ -502,14 +505,14 @@ PUT             /admin/tariff/up/:general_tariff_id             @controllers.Con
 PUT             /admin/tariff/down/:general_tariff_id           @controllers.Controller_Finance.tariff_general_down(general_tariff_id)
 
 POST            /admin/label/tariff                             @controllers.Controller_Finance.tariff_general_label_tariff_create()
-POST            /admin/label/extension                          @controllers.Controller_Finance.tariff_general_label_extension_create()
+#POST            /admin/label/extension                          @controllers.Controller_Finance.tariff_general_label_extension_create()
 PUT             /admin/label                                    @controllers.Controller_Finance.tariff_general_label_edit()
 PUT             /admin/label/up/:label_id                       @controllers.Controller_Finance.tariff_general_label_edit_up(label_id)
 PUT             /admin/label/down/:label_id                     @controllers.Controller_Finance.tariff_general_label_edit_down(label_id)
 DELETE          /admin/label/:label_id                          @controllers.Controller_Finance.tariff_general_label_remove(label_id)
 
 POST            /admin/extension                                @controllers.Controller_Finance.tariff_general_extension_create()
-PUT             /admin/extension                                @controllers.Controller_Finance.tariff_general_extension_edit()
+#PUT             /admin/extension                                @controllers.Controller_Finance.tariff_general_extension_edit()
 PUT             /admin/extension/up/:extension_id               @controllers.Controller_Finance.tariff_general_extension_edit_up(extension_id)
 PUT             /admin/extension/down/:extension_id             @controllers.Controller_Finance.tariff_general_extension_edit_down(extension_id)
 PUT             /admin/extension/deactive/:extension_id         @controllers.Controller_Finance.tariff_general_extension_deactivate(extension_id)

@@ -74,7 +74,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
 // PRIVATE EXECUTIVE METHODS ###########################################################################################
 
-    public static Model_Invoice create_proforma(Model_Product product, Model_Invoice invoice){
+    public static Result create_proforma(Model_Product product, Model_Invoice invoice){
 
         Utilities_Fakturoid_Invoice fakturoid_invoice = new Utilities_Fakturoid_Invoice();
         fakturoid_invoice.custom_id         = product.id;
@@ -111,43 +111,45 @@ public class Utilities_Fakturoid_Controller extends Controller {
                 .setRequestTimeout(5000)
                 .post(Json.toJson(fakturoid_invoice));
 
-            WSResponse response = responsePromise.get(5000);
+        WSResponse response = responsePromise.get(5000);
 
-            logger.debug("Fakturoid_Controller:: create_proforma:: Incoming status: " + response.getStatus());
-
-
-            if( response.getStatus() == 201) {
-                JsonNode result = response.asJson();
-                logger.debug("Fakturoid_Controller:: create_proforma:: POST: Result: " + result.toString());
-
-                if(!result.has("id")){
-                    logger.error("Fakturoid_Controller:: create_proforma:: Invoice From fakturoid does not contains ID");
-                    throw new NullPointerException("Invoice From fakturoid does not contains ID");
-                }
+        logger.debug("Fakturoid_Controller:: create_proforma:: Incoming status: " + response.getStatus());
 
 
-                invoice.facturoid_invoice_id = result.get("id").asLong();
-                invoice.facturoid_pdf_url    = result.get("pdf_url").asText();
-                invoice.invoice_number       = result.get("number").asText();
-                invoice.update();
+        if( response.getStatus() == 201) {
+            JsonNode result = response.asJson();
+            logger.debug("Fakturoid_Controller:: create_proforma:: POST: Result: " + result.toString());
 
-                return invoice;
-
-            }else if( response.getStatus() == 401){
-                logger.error("Fakturoid_Controller:: create_proforma:: Fakturoid Unauthorized");
-                throw new NullPointerException();
-            }else if( response.getStatus() == 403){
-                logger.error("Fakturoid_Controller:: create_proforma:: Fakturoid you have maximum of customers!!!");
-                throw new NullPointerException();
-
-            }else if( response.getStatus() == 422 ){
-
-                logger.error("Fakturoid_Controller:: create_proforma::  Response"+ response.getBody());
-
-                throw new NullPointerException();
+            if(!result.has("id")){
+                logger.error("Fakturoid_Controller:: create_proforma:: Invoice From fakturoid does not contains ID");
+                throw new NullPointerException("Invoice From fakturoid does not contains ID");
             }
 
-        throw new NullPointerException();
+
+            invoice.facturoid_invoice_id = result.get("id").asLong();
+            invoice.facturoid_pdf_url    = result.get("pdf_url").asText();
+            invoice.invoice_number       = result.get("number").asText();
+            invoice.update();
+
+            return GlobalResult.created(Json.toJson(invoice));
+
+        }else if( response.getStatus() == 401){
+
+            Loggy.internalServerError("Fakturoid_Controller:: create_proforma:", new Exception("Fakturoid: Unauthorized. " + response.getBody()));
+            return GlobalResult.result_BadRequest();
+        }else if( response.getStatus() == 403){
+
+            Loggy.internalServerError("Fakturoid_Controller:: create_proforma:", new Exception("Fakturoid: You have maximum of customers. " + response.getBody()));
+            return GlobalResult.result_BadRequest();
+
+        }else if( response.getStatus() == 422 ){
+
+            Loggy.internalServerError("Fakturoid_Controller:: create_proforma:", new Exception("Response: " + response.getBody()));
+            return GlobalResult.result_BadRequest();
+        }
+
+        Loggy.internalServerError("Fakturoid_Controller:: create_proforma:", new Exception("Unhandled exception: " + response.getBody()));
+        return GlobalResult.result_BadRequest("Something went wrong when creating invoice.");
     }
 
     public static Model_Invoice create_paid_invoice(Model_Product product, Model_Invoice invoice){
@@ -349,7 +351,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
             }else if( response.getStatus() == 422 ){
 
-                logger.error("Fakturoid_Controller:: fakturoid_post::  Error:: " + Json.toJson(response.getBody()).toString());
+                logger.error("Fakturoid_Controller:: fakturoid_post::  Error:: " + response.getBody());
 
                 throw new NullPointerException();
             }

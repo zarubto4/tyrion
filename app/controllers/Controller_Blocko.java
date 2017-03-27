@@ -50,6 +50,7 @@ import java.util.Date;
 import java.util.List;
 
 @Security.Authenticated(Secured_API.class)
+@Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Blocko extends Controller{
 
 // LOGGER ##############################################################################################################

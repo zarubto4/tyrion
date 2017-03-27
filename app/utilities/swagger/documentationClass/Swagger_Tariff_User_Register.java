@@ -99,7 +99,7 @@ public class Swagger_Tariff_User_Register {
 
 
     @ApiModelProperty(required = false, value = "List of Ids of Extends packages")
-    public List<String> extensions_ids = new ArrayList<>();
+    public List<String> extension_ids = new ArrayList<>();
 
 
 }

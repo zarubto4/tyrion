@@ -57,9 +57,9 @@ public class Model_GeneralTariff extends Model {
 
 
                 @OneToMany(mappedBy="general_tariff",          cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<Model_GeneralTariffLabel> labels = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_GeneralTariffExtensions> extensions_included = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_GeneralTariffExtensions> extensions_optional = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff",           cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                public List<Model_Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
+    @JsonIgnore @OneToMany(mappedBy="general_tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_included = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="general_tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="general_tariff",          cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                 public List<Model_Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -104,13 +104,15 @@ public class Model_GeneralTariff extends Model {
 
     }
 
-    @JsonProperty public List<Model_GeneralTariffExtensions> extensions_included(){
-        return  Model_GeneralTariffExtensions.find.where().eq("general_tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
+    @JsonProperty
+    public List<Model_ProductExtension> extensions_included(){
+        return  Model_ProductExtension.find.where().eq("general_tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
     }
 
 
-    @JsonProperty public List<Model_GeneralTariffExtensions> extensions_optional(){
-        return  Model_GeneralTariffExtensions.find.where().eq("general_tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
+    @JsonProperty
+    public List<Model_ProductExtension> extensions_optional(){
+        return  Model_ProductExtension.find.where().eq("general_tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -162,9 +164,11 @@ public class Model_GeneralTariff extends Model {
 
     public double total_per_month(){
         double total_price = 0.0;
-        for(Model_GeneralTariffExtensions extension : this.extensions_included){
-            if(extension.price_in_usd != null)
-            total_price += extension.price_in_usd;
+        for(Model_ProductExtension extension : this.extensions_included){
+            Double price = extension.getPrice();
+
+            if(price != null)
+            total_price += price;
         }
         return  total_price*30;
     }

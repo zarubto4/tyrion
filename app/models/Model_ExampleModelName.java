@@ -24,7 +24,7 @@ public class Model_ExampleModelName extends Model{
 
     @Id public String id;
 
-    @JsonIgnore public Date date_of_create;
+    @JsonIgnore public Date created;
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ public class Model_ExampleModelName extends Model{
     @JsonIgnore @Override
     public void save() {
 
-        date_of_create = new Date();
+        created = new Date();
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();

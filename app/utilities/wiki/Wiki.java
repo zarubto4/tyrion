@@ -47,7 +47,7 @@ public class Wiki {
         temp.leaf = false;
 
         Element existing = localTree.stream()
-                .filter(current -> temp.text.equals(current.text))
+                .filter(current -> temp.text.equals(current.text) && current.children != null)
                 .findAny()
                 .orElse(null);
 

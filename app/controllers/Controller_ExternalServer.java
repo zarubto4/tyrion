@@ -21,6 +21,7 @@ import utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New;
 import java.util.List;
 
 @Security.Authenticated(Secured_API.class)
+@Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ExternalServer extends Controller {
 
     static play.Logger.ALogger logger = play.Logger.of("Loggy");

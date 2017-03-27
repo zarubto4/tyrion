@@ -19,7 +19,7 @@ public class Model_GeneralTariffLabel extends Model {
                                                          @JsonIgnore @Id public String id;
 
                                                 @JsonIgnore @ManyToOne   public Model_GeneralTariff general_tariff;
-                                                @JsonIgnore @ManyToOne   public Model_GeneralTariffExtensions extensions;
+
 
                                                                          public String label;
                                                                          public String description;
@@ -35,12 +35,10 @@ public class Model_GeneralTariffLabel extends Model {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString().substring(0,8);
-            if (Model_GeneralTariffLabel.find.byId(this.id) == null) break;
+            if (find.byId(this.id) == null) break;
         }
         if(general_tariff != null) {
-            order_position = Model_GeneralTariffLabel.find.where().eq("general_tariff.id", general_tariff.id).findRowCount() + 1;
-        }else {
-            order_position = Model_GeneralTariffLabel.find.where().eq("extensions.id", extensions.id).findRowCount() + 1;
+            order_position = find.where().eq("general_tariff.id", general_tariff.id).findRowCount() + 1;
         }
         super.save();
     }
@@ -58,14 +56,6 @@ public class Model_GeneralTariffLabel extends Model {
                     label.update();
                 }
             }
-        }else {
-            for (Model_GeneralTariffLabel label : extensions.labels) {
-
-                if (!label.id.equals(this.id)) {
-                    label.order_position = pointer++;
-                    label.update();
-                }
-            }
         }
         super.delete();
     }
@@ -76,9 +66,6 @@ public class Model_GeneralTariffLabel extends Model {
         if(general_tariff != null) {
             general_tariff.labels.get(order_position - 2).order_position = this.order_position;
             general_tariff.labels.get(order_position - 2).update();
-        }else {
-            extensions.labels.get(order_position - 2).order_position = this.order_position;
-            extensions.labels.get(order_position - 2).update();
         }
 
         this.order_position -= 1;
@@ -91,9 +78,6 @@ public class Model_GeneralTariffLabel extends Model {
         if(general_tariff != null) {
             general_tariff.labels.get(order_position).order_position =  general_tariff.labels.get(order_position).order_position-1;
             general_tariff.labels.get(order_position).update();
-        }else {
-            extensions.labels.get(order_position).order_position =  extensions.labels.get(order_position).order_position-1;
-            extensions.labels.get(order_position).update();
         }
 
         this.order_position += 1;

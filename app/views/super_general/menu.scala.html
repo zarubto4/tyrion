@@ -123,7 +123,7 @@
                             @for(file <- files) {
                                 @if(file.leaf) {
                                     <li>
-                                        <a href='@routes.Controller_Dashboard.show_wiki(file.value)' ><i class="fa fa-graduation-cap"></i>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</a>
+                                        <a href='@routes.Controller_Dashboard.show_wiki(file.value)' ><i class="fa fa-graduation-cap"></i> <span>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</span></a>
                                     </li>
                                 } else {
                                     <li class="treeview">
@@ -145,7 +145,7 @@
                         @for(file <- files) {
                             @if(file.leaf) {
                                 <li>
-                                    <a href='@routes.Controller_Dashboard.show_wiki(file.value)' ><i class="fa fa-graduation-cap"></i>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</a>
+                                    <a href='@routes.Controller_Dashboard.show_wiki(file.value)' ><i class="fa fa-graduation-cap"></i> <span>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</span></a>
                                 </li>
                             } else {
                                 <li class="treeview">
@@ -176,7 +176,7 @@
                     <ul class="treeview-menu">
 
                         <li>
-                            <a href="#"><i class="fa fa-wrench"></i>HW Management<i class="fa fa-angle-left pull-right"></i></a>
+                            <a href="#"><i class="fa fa-wrench"></i> HW Management <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
                                 <li>
                                     <a href='@routes.Controller_Dashboard.basic_board_management()' >

@@ -1,6 +1,6 @@
 @import models.Model_GeneralTariffLabel
 @import models.Model_GeneralTariff
-@import models.Model_GeneralTariffExtensions
+@import models.Model_ProductExtension
 
 @(tariff: Model_GeneralTariff)
 
@@ -264,12 +264,12 @@
                             <tr>
                                 <td>@extension.id</td>
                                 <td>@extension.order_position</td>
-                                <td>@extension.name</td>
+                                <td></td>
 
-                                <td>$@extension.price_in_usd</td>
+                                <td></td>
 
                                 <td>@extension.color</td>
-                                <td>@extension.description</td>
+                                <td></td>
 
                                 <td>@if(extension.order_position != 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariffExtension('@extension.id')">Up</button>}</td>
                                 <td>@if(tariff.extensions_included.length != extension.order_position){<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariffExtension('@extension.id')">Down</button>}</td>
@@ -318,11 +318,11 @@
                             <tr>
                                 <td>@extension.id</td>
                                 <td>@extension.order_position</td>
-                                <td>@extension.name</td>
-                                <td>$@extension.price_in_usd</td>
+                                <td></td>
+                                <td></td>
 
                                 <td>@extension.color</td>
-                                <td>@extension.description</td>
+                                <td></td>
 
                                 <td>@if(extension.order_position != 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariffExtension('@extension.id')">Up</button>}</td>
                                 <td>@if(tariff.extensions_optional.length != extension.order_position){<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariffExtension('@extension.id')">Down</button>}</td>

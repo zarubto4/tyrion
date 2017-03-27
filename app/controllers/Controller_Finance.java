@@ -19,14 +19,12 @@ import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.Result_BadRequest;
-import utilities.response.response_objects.Result_PermissionRequired;
-import utilities.response.response_objects.Result_Unauthorized;
-import utilities.response.response_objects.Result_ok;
+import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagged_Applicable_Product;
 import utilities.swagger.outboundClass.Swagger_GoPay_Url;
 import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
+import utilities.swagger.outboundClass.Swagger_ProductExtension_Type;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -222,31 +220,6 @@ public class Controller_Finance extends Controller {
     }
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    public Result tariff_general_label_extension_create(){
-        try {
-
-            final Form<Swagger_Tariff_General_Label> form = Form.form(Swagger_Tariff_General_Label.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Tariff_General_Label help = form.get();
-
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(help.id);
-            if(extensions == null) return GlobalResult.notFoundObject("Tariff not found");
-
-            Model_GeneralTariffLabel label = new Model_GeneralTariffLabel();
-            label.extensions = extensions;
-            label.description = help.description;
-            label.label = help.label;
-            label.icon = help.icon;
-            label.save();
-
-            return GlobalResult.result_ok(Json.toJson(label));
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_label_edit(){
         try {
 
@@ -320,6 +293,84 @@ public class Controller_Finance extends Controller {
 
     // USER GENERAL_TARIFF EXTENSION PACKAGES #########################################################################
 
+    @ApiOperation(value = "get all Product Extension types",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ProductExtension_Type.class, responseContainer = "list"),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    public Result productExtension_getAllTypes(){
+        try{
+
+            return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.getExtensionTypes()));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "create Product Extension",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ProductExtension_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_ProductExtension.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result productExtension_create(){
+        try{
+
+            final Form<Swagger_ProductExtension_New> form = Form.form(Swagger_ProductExtension_New.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ProductExtension_New help = form.get();
+
+            Model_Product product = Model_Product.find.byId(help.product_id);
+            if(product == null) return GlobalResult.notFoundObject("Product not found");
+
+            Model_ProductExtension extension = new Model_ProductExtension();
+            extension.name = help.name;
+            extension.description = help.description;
+            extension.type = help.type;
+            extension.active = true;
+            extension.config = Json.toJson(help.config).toString();
+            extension.product = product;
+
+            extension.create_permission();
+
+            extension.save();
+
+            return GlobalResult.result_ok(Json.toJson(extension));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_extension_create(){
@@ -329,32 +380,33 @@ public class Controller_Finance extends Controller {
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_General_Extension_Create help = form.get();
 
-            Model_GeneralTariff tariff = Model_GeneralTariff.find.byId(help.id);
+            Model_GeneralTariff tariff = Model_GeneralTariff.find.byId(help.tariff_id);
             if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
 
-            Model_GeneralTariffExtensions extensions = new Model_GeneralTariffExtensions();
+            Model_ProductExtension extension = new Model_ProductExtension();
+            extension.name = help.name;
+            extension.description = help.description;
+            extension.type = help.type;
+            extension.active = true;
+            extension.config = Json.toJson(help.config).toString();
 
-            if(help.included){
-                extensions.general_tariff_included = tariff;
-            }else {
-                extensions.general_tariff_optional= tariff;
+            if (help.included){
+                extension.general_tariff_included = tariff;
+            } else {
+                extension.general_tariff_optional = tariff;
             }
 
-            extensions.description = help.description;
-            extensions.name = help.name;
-            extensions.color = help.color;
+            extension.create_permission();
 
-            extensions.price_in_usd = help.price_in_usd;
+            extension.save();
 
-            extensions.save();
-
-            return GlobalResult.result_ok(Json.toJson(extensions));
+            return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }
-
+/*
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     public Result tariff_general_extension_edit(){
         try{
@@ -363,31 +415,29 @@ public class Controller_Finance extends Controller {
             if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Tariff_General_Extension_Create help = form.get();
 
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(help.id);
-            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(help.id);
+            if(extension == null) return GlobalResult.notFoundObject("Extensions not found");
 
-            extensions.description = help.description;
-            extensions.name = help.name;
-            extensions.color = help.color;
+            extension.color = help.color;
 
-            extensions.price_in_usd = help.price_in_usd;
+            extension.price_in_usd = help.price_in_usd;
 
-            extensions.update();
+            extension.update();
 
-            return GlobalResult.result_ok(Json.toJson(extensions));
+            return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }
-
+*/
     @ApiOperation(value = "up label from general Tariffs", hidden = true)
     public Result tariff_general_extension_edit_up(String extension_id){
         try{
 
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(extension_id);
-            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
-            extensions.up();
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+            extension.up();
 
             return GlobalResult.result_ok();
 
@@ -400,10 +450,10 @@ public class Controller_Finance extends Controller {
     public Result tariff_general_extension_edit_down(String extension_id){
         try{
 
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(extension_id);
-            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
 
-            extensions.down();
+            extension.down();
 
             return GlobalResult.result_ok();
 
@@ -416,10 +466,10 @@ public class Controller_Finance extends Controller {
     public Result tariff_general_extension_delete(String extension_id){
         try{
 
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(extension_id);
-            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
 
-            extensions.delete();
+            extension.delete();
 
             return GlobalResult.result_ok();
 
@@ -432,11 +482,11 @@ public class Controller_Finance extends Controller {
     public Result tariff_general_extension_deactivate(String extension_id){
         try{
 
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(extension_id);
-            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
 
-            extensions.active = false;
-            extensions.update();
+            extension.active = false;
+            extension.update();
 
             return GlobalResult.result_ok();
 
@@ -449,11 +499,11 @@ public class Controller_Finance extends Controller {
     public Result tariff_general_extension_activate(String extension_id){
         try{
 
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(extension_id);
-            if(extensions == null) return GlobalResult.notFoundObject("Extensions not found");
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
 
-            extensions.active = true;
-            extensions.update();
+            extension.active = true;
+            extension.update();
 
             return GlobalResult.result_ok();
 
@@ -638,13 +688,13 @@ public class Controller_Finance extends Controller {
                 }
 
                 // Přidám ty, co vybral uživatel
-                if(help.extensions_ids.size() > 0) {
-                    List<Model_GeneralTariffExtensions> list = Model_GeneralTariffExtensions.find.where().in("id", help.extensions_ids).eq("general_tariff_optional.id", tariff.id).findList();
+                if(help.extension_ids.size() > 0) {
+                    List<Model_ProductExtension> list = Model_ProductExtension.find.where().in("id", help.extension_ids).eq("general_tariff_optional.id", tariff.id).findList();
                     product.extensions.addAll(list);
                 }
 
             // Přidám všechny, které má Tarrif už v sobě - Ale jen ty aktivní
-                for ( Model_GeneralTariffExtensions extension : tariff.extensions_included){
+                for ( Model_ProductExtension extension : tariff.extensions_included){
                     if(extension.active) product.extensions.add(extension);
                 }
 

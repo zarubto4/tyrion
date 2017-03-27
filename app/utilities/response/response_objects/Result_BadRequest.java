@@ -10,6 +10,9 @@ public class Result_BadRequest {
     @ApiModelProperty(value = "state", allowableValues = "error", required = true, readOnly = true)
     public String state = "error";
 
+    @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
+    public Integer code = 400;
+
     @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
     public String message;
 

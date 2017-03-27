@@ -2,9 +2,9 @@ package utilities.scheduler.jobs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import models.Model_Product;
-import models.Model_GeneralTariffExtensions;
 import models.Model_Invoice;
 import models.Model_InvoiceItem;
+import models.Model_ProductExtension;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -20,6 +20,7 @@ import utilities.enums.Enum_Payment_status;
 import utilities.fakturoid.Utilities_Fakturoid_Controller;
 import utilities.goPay.Utilities_GoPay_Controller;
 import utilities.goPay.helps_objects.GoPay_Recurrence;
+import utilities.loggy.Loggy;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -46,36 +47,41 @@ public class Job_SpendingCredit implements Job {
 
             logger.debug("Job_SpendingCredit:: spend_credit_thread: concurrent thread started on {}", new Date());
 
-            Date created = new Date(new Date().getTime() - TimeUnit.HOURS.toMillis(16));
+            try {
 
-            int total =  Model_Product.find.where().lt("date_of_create", created)
-                    .isNotNull("extensions.price_in_usd")
-                    .findRowCount();
+                Date created = new Date(new Date().getTime() - TimeUnit.HOURS.toMillis(16));
 
-            if (total != 0) {
+                int total =  Model_Product.find.where().lt("date_of_create", created)
+                        .isNotNull("extensions.id")
+                        .findRowCount();
 
-                int page_total = total / 25;
+                if (total != 0) {
 
-                if (total % 25 > 0) page_total++;
+                    int page_total = total / 25;
 
-                for (int page = 0; page <= page_total - 1; page++) {
+                    if (total % 25 > 0) page_total++;
 
-                    logger.debug("Job_SpendingCredit:: spend_credit_thread: procedure for page {} from {}", (page + 1), page_total);
+                    for (int page = 0; page <= page_total - 1; page++) {
+
+                        logger.debug("Job_SpendingCredit:: spend_credit_thread: procedure for page {} from {}", (page + 1), page_total);
 
                     /*
                      * Filter slouží k hledání těch produktů, kde by mělo dojít ke stržení kreditu
                      * Kredit se strhává u všech produktů, starších než 16 hodin (Aby někdo před půlnocí nezaložil produkt a hned se mu nestrhla raketa)
                      *
                      */
-                    List<Model_Product> products = Model_Product.find.where()
-                            .isNotNull("extensions.price_in_usd")
-                            .lt("date_of_create", created)
-                            .order("date_of_create")
-                            .findPagedList(page, 25)
-                            .getList();
+                        List<Model_Product> products = Model_Product.find.where()
+                                .isNotNull("extensions.id")
+                                .lt("date_of_create", created)
+                                .order("date_of_create")
+                                .findPagedList(page, 25)
+                                .getList();
 
-                    products.forEach(Job_SpendingCredit::spending_credit);
+                        products.forEach(Job_SpendingCredit::spending_credit);
+                    }
                 }
+            } catch (Exception e) {
+                Loggy.internalServerError("Job_SpendingCredit:: spend_credit_thread:", e);
             }
 
             logger.debug("Job_SpendingCredit:: spend_credit_thread: thread stopped on {}", new Date());
@@ -90,8 +96,8 @@ public class Job_SpendingCredit implements Job {
         logger.info("Job_SpendingCredit:: spending_credit: Product ID: ", product.id );
         double total_spending = 0.0;
 
-        for(Model_GeneralTariffExtensions extension : product.extensions){
-                total_spending += extension.price_in_usd;
+        for(Model_ProductExtension extension : product.extensions){
+                total_spending += extension.getPrice();
         }
 
         logger.debug("Job_SpendingCredit:: spending_credit: Product ID: {} total spending: {}", product.id, total_spending);

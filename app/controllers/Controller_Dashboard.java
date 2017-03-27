@@ -2,17 +2,7 @@ package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.Api;
-import models.Model_Board;
-import models.Model_CompilationServer;
-import models.Model_TypeOfBoard;
-import models.Model_Person;
-import models.Model_SecurityRole;
-import models.Model_HomerInstance;
-import models.Model_HomerServer;
-import models.Model_Product;
-import models.Model_Project;
-import models.Model_GeneralTariff;
-import models.Model_GeneralTariffExtensions;
+import models.*;
 import org.pegdown.PegDownProcessor;
 import play.Application;
 import play.Routes;
@@ -793,7 +783,7 @@ public class Controller_Dashboard extends Controller {
     public Result general_tariff_extension_edit(String extension_id){
         try {
 
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(extension_id);
+            Model_ProductExtension extensions = Model_ProductExtension.find.byId(extension_id);
 
             if(extensions == null) return not_found();
 
