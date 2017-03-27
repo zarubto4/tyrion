@@ -1870,7 +1870,7 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "update Board - update Backup settiong",
+    @ApiOperation(value = "update Board - update Backup setting",
             tags = { "Board"},
             notes = "",
             produces = "application/json",
@@ -1950,7 +1950,7 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "update Board - update Backup settiong",
+    @ApiOperation(value = "update Board - set Backup Code",
             tags = { "Board"},
             notes = "",
             produces = "application/json",
@@ -1967,7 +1967,7 @@ public class Controller_Board extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Backup_settings",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_SetBackup",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
