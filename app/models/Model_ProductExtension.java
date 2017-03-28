@@ -41,6 +41,7 @@ public class Model_ProductExtension extends Model{
                                         @ApiModelProperty(required = true) public Integer order_position;
 
                                         @ApiModelProperty(required = true) public boolean active;
+                                                               @JsonIgnore public boolean removed;
 
                                         @ApiModelProperty(required = true) public Date created;
 
@@ -139,6 +140,26 @@ public class Model_ProductExtension extends Model{
     }
 
     @JsonIgnore
+    public Extension getExtensionType() {
+        try {
+
+            Class<? extends Extension> clazz = this.type.getExtensionClass();
+
+            Extension extension = null;
+
+            if (clazz != null) {
+                extension = clazz.newInstance();
+            }
+
+            return extension;
+
+        } catch (Exception e){
+            Loggy.internalServerError("Model_ProductExtension:: getExtensionType:", e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
     public static List<Swagger_ProductExtension_Type> getExtensionTypes() {
         try {
 
@@ -206,6 +227,11 @@ public class Model_ProductExtension extends Model{
 
     @JsonIgnore
     public static Model_ProductExtension get_byId(String id) {
-        return find.byId(id);
+        return find.where().eq("id", id).eq("removed", false).findUnique();
+    }
+
+    @JsonIgnore
+    public static List<Model_ProductExtension> get_byUser(String person_id) {
+        return find.where().eq("product.payment_details.person.id", person_id).eq("removed", false).findList();
     }
 }

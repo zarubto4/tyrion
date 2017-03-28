@@ -18,8 +18,13 @@ public class Swagger_ProductExtension_New {
     @ApiModelProperty(required = true, value = "Name of extension")
     public String name;
 
-    @ApiModelProperty(required = false, value = "Description")
+    @Constraints.MaxLength(value = 255)
+    @ApiModelProperty(required = false, value = "Description must not have more than 255 characters")
     public String description;
+
+    @Constraints.Required
+    @ApiModelProperty(required = true, value = "Name of extension")
+    public String color;
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Enumerated type of extension")

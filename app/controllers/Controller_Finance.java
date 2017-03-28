@@ -293,29 +293,6 @@ public class Controller_Finance extends Controller {
 
     // USER GENERAL_TARIFF EXTENSION PACKAGES #########################################################################
 
-    @ApiOperation(value = "get all Product Extension types",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ProductExtension_Type.class, responseContainer = "list"),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
-    })
-    public Result productExtension_getAllTypes(){
-        try{
-
-            return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.getExtensionTypes()));
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
-
     @ApiOperation(value = "create Product Extension",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
@@ -356,16 +333,250 @@ public class Controller_Finance extends Controller {
             Model_ProductExtension extension = new Model_ProductExtension();
             extension.name = help.name;
             extension.description = help.description;
+            extension.color = help.color;
             extension.type = help.type;
             extension.active = true;
+            extension.removed = false;
             extension.config = Json.toJson(help.config).toString();
             extension.product = product;
 
-            extension.create_permission();
+            if (!extension.create_permission()) return GlobalResult.forbidden_Permission();
 
             extension.save();
 
             return GlobalResult.result_ok(Json.toJson(extension));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Product Extension by ID",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    public Result productExtension_get(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+        try{
+
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
+            if (extension == null) return GlobalResult.notFoundObject("Extension not found");
+
+            if (!extension.read_permission()) return GlobalResult.forbidden_Permission();
+
+            return GlobalResult.result_ok(Json.toJson(extension));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get all Product Extension of logged user",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class, responseContainer = "list"),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    public Result productExtension_getAll(){
+        try{
+
+            return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.get_byUser(Controller_Security.getPerson().id)));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get all Product Extension types",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ProductExtension_Type.class, responseContainer = "list"),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    public Result productExtension_getAllTypes(){
+        try{
+
+            return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.getExtensionTypes()));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "update Product Extension",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Updates extension. User can change name, description or color.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ProductExtension_Edit",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result productExtension_update(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+        try{
+
+            final Form<Swagger_ProductExtension_Edit> form = Form.form(Swagger_ProductExtension_Edit.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_ProductExtension_Edit help = form.get();
+
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
+            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+
+            if (!extension.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            extension.name = help.name;
+            extension.description = help.description;
+            extension.color = help.color;
+
+            extension.update();
+
+            return GlobalResult.result_ok(Json.toJson(extension));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "activate Product Extension",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    public Result productExtension_activate(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+        try{
+
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
+            if (extension == null) return GlobalResult.notFoundObject("Extension not found");
+
+            if (!extension.act_deactivate_permission()) return GlobalResult.forbidden_Permission();
+
+            if (extension.active) return GlobalResult.result_BadRequest("Extension is already activated");
+
+            extension.active = true;
+
+            extension.update();
+
+            return GlobalResult.result_ok(Json.toJson(extension));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "deactivate Product Extension",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    public Result productExtension_deactivate(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+        try{
+
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
+            if (extension == null) return GlobalResult.notFoundObject("Extension not found");
+
+            if (!extension.act_deactivate_permission()) return GlobalResult.forbidden_Permission();
+
+            if (!extension.active) return GlobalResult.result_BadRequest("Extension is already deactivated");
+
+            extension.active = false;
+
+            extension.update();
+
+            return GlobalResult.result_ok(Json.toJson(extension));
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "delete Product Extension",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    public Result productExtension_delete(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+        try{
+
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
+            if (extension == null) return GlobalResult.notFoundObject("Extension not found");
+
+            if (!extension.delete_permission()) return GlobalResult.forbidden_Permission();
+
+            extension.removed = true;
+
+            extension.update();
+
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

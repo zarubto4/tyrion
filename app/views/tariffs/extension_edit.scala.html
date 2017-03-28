@@ -31,50 +31,51 @@
                 <div class="box-body">
                     <form id="extension_main_form">
 
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">Tariff Id</label>
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Tariff Id</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="id" value="@extension.id"  name="id" readonly>
                             </div>
-                        </div><br>
+                        </div>
 
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Tarif name</label>
-
-                            <div class="col-sm-10">
-                            </div>
-                        </div><br>
-
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Tariff description</label>
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Tarif name</label>
 
                             <div class="col-sm-10">
-
+                                <input type="text" class="form-control" id="name" value="@extension.name"  name="name">
                             </div>
-                        </div><br>
+                        </div>
 
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Color</label>
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Tariff description</label>
+
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="description" value="@extension.description"  name="description">
+                            </div>
+                        </div>
+
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Color</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="tariff_name" value="@extension.color"  name="color">
                             </div>
-                        </div><br><br>
+                        </div>
 
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Price in USD</label>
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Price in USD</label>
 
                             <div class="col-sm-10">
 
                             </div>
-                        </div><br><br>
+                        </div>
 
 
                     </form>
                 </div>
                 <div class="box-footer">
-                    <button id="createCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="updateGeneralTariffExtension()">Save changes</button>
+                    <button id="updateExtensionButton" value="" class="btn btn-primary" type="button" onclick="updateGeneralTariffExtension()">Save changes</button>
                 </div>
             </div>
         </div>

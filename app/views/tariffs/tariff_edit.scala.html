@@ -30,78 +30,66 @@
                 <div class="box-body">
                     <form id="tariff_main_form">
 
-                        <div class="form-group">
+                        <div class="box-body">
                             <label class="col-sm-2 control-label">Tariff Id</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="general_tariff_id" value="@tariff.id"  name="id" readonly>
                             </div>
-                        </div><br>
-
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body">
                             <label for="tariff_main_form" class="col-sm-2 control-label">Tarif name</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="tariff_name" value="@tariff.tariff_name"  name="tariff_name">
                             </div>
-                        </div><br>
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body">
                             <label for="tariff_main_form" class="col-sm-2 control-label">Tariff description</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="tariff_description" value="@tariff.tariff_description"  name="tariff_description">
                             </div>
-                        </div><br>
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body">
                             <label for="tariff_main_form" class="col-sm-2 control-label">Identificator</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="identificator" value="@tariff.identificator"  name="identificator">
                             </div>
-                        </div><br><br>
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body">
 
                             <label for="tariff_main_form" class="col-sm-2 control-label">Color (<a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_colors.html">Výběr barev zde</a>)</label>
 
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.color"  name="color">
+                                <input type="text" class="form-control" id="tariff_color" value="@tariff.color"  name="color">
                             </div>
 
                         </div>
-
-                        <br><br>
-
-                        <div class="form-group">
+                        <div class="box-body">
                             <label for="tariff_main_form" class="col-sm-2 control-label">Free credit to beginning</label>
 
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.credit_for_beginning"  name="credit_for_beginning">
+                                <input type="text" class="form-control" id="credit_for_beginning" value="@tariff.credit_for_beginning"  name="credit_for_beginning">
                             </div>
-                        </div><br><br>
-
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body">
                             <label for="tariff_main_form" class="col-sm-2 control-label">Price in USD</label>
 
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.price_in_usd"  name="price_in_usd">
+                                <input type="text" class="form-control" id="price_in_usd" value="@tariff.price_in_usd"  name="price_in_usd">
                             </div>
-                        </div><br><br>
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body">
                             <div class="col-sm-offset-2 col-sm-10">
                                 <div class="checkbox"><label> @if( tariff.company_details_required ){ <input type="checkbox" name="company_details_required" checked>}else{<input type="checkbox" name="company_details_required">}
-                                    Company detaily required
+                                    Company details required
                                     </label>
                                 </div>
                             </div>
-                        </div><br>
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body">
                             <div class="col-sm-offset-2 col-sm-10">
                                 <div class="checkbox"><label> @if( tariff.required_payment_mode ){ <input type="checkbox" name="required_payment_mode" checked>}else{<input type="checkbox" name="required_payment_mode" >}
                                     Payment mode required ( Vyžaduji aby uživatel vybral v jakém modu bude platit)
@@ -110,25 +98,23 @@
                             </div>
                         </div>
 
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <div class="checkbox"><label> @if( tariff.mode_annually ){ <input type="checkbox" name="mode_annually" checked>}else{<input type="checkbox" name="mode_annually">}
-                                           Měsíčně (Automatické strhávání)
-                                        </label>
-                                        </div>
-                                    </div>
+                        <div class="box-body">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <div class="checkbox"><label> @if( tariff.mode_annually ){ <input type="checkbox" name="mode_annually" checked>}else{<input type="checkbox" name="mode_annually">}
+                                   Měsíčně (Automatické strhávání)
+                                </label>
                                 </div>
-
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <div class="checkbox"><label> @if( tariff.mode_credit ){ <input type="checkbox" name="mode_credit" checked>}else{<input type="checkbox" name="mode_credit">}
-                                            Přednabytí kreditů
-                                        </label>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <div class="checkbox"><label> @if( tariff.mode_credit ){ <input type="checkbox" name="mode_credit" checked>}else{<input type="checkbox" name="mode_credit">}
+                                    Přednabytí kreditů
+                                </label>
                                 </div>
-
-                        <div class="form-group">
+                            </div>
+                        </div>
+                        <div class="box-body">
                             <div class="col-sm-offset-2 col-sm-10">
                                 <div class="checkbox"><label> @if( tariff.required_payment_method ){ <input type="checkbox" name="required_payment_method" checked>}else{<input type="checkbox" name="required_payment_method">}
                                     Payment method required (Vyžaduji aby si uživatel vybral jakou formou bude platit)
@@ -136,27 +122,23 @@
                                 </div>
                             </div>
                         </div>
-
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <div class="checkbox"><label> @if( tariff.bank_transfer_support ){ <input type="checkbox" name="bank_transfer_support" checked>}else{<input type="checkbox" name="bank_transfer_support">}
-                                            Bankovním převodem
-                                        </label>
-                                        </div>
-                                    </div>
+                        <div class="box-body">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <div class="checkbox"><label> @if( tariff.bank_transfer_support ){ <input type="checkbox" name="bank_transfer_support" checked>}else{<input type="checkbox" name="bank_transfer_support">}
+                                    Bankovním převodem
+                                </label>
                                 </div>
-
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <div class="checkbox"><label> @if( tariff.credit_card_support ){ <input type="checkbox" name="credit_card_support" checked>}else{<input type="checkbox" name="credit_card_support">}
-                                            Mužu platit kartou
-                                        </label>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <div class="checkbox"><label> @if( tariff.credit_card_support ){ <input type="checkbox" name="credit_card_support" checked>}else{<input type="checkbox" name="credit_card_support">}
+                                    Mužu platit kartou
+                                </label>
                                 </div>
-
-
-                        <div class="form-group">
+                            </div>
+                        </div>
+                        <div class="box-body">
                             <div class="col-sm-offset-2 col-sm-10">
                                 <div class="checkbox"><label> @if( tariff.free_tariff ){ <input type="checkbox" name="free_tariff" checked>}else{<input type="checkbox" name="free_tariff">}
                                     Free Tariff
@@ -164,7 +146,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </form>
                 </div>
                 <div class="box-footer">
@@ -236,7 +217,7 @@
                     <h3 class="box-title">External Servicess</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <td><button class="btn btn-block btn-info" type="button" onclick="openNewGeneralTariffExtensionModal('@tariff.id')">Create new Servicess</button></td>
+                            <button class="btn btn-block btn-info" type="button" onclick="openNewGeneralTariffExtensionModal('@tariff.id')">Create new Servicess</button>
                         </div>
                     </div>
                 </div>
@@ -249,37 +230,31 @@
                             <th>ID</th>
                             <th>Order</th>
                             <th>Name</th>
-                            <th class="col-md-2">Price</th>
-
+                            <th class="col-md-2">Price (per day)</th>
                             <th>Color</th>
-                            <th>Description (Po najetí myškou)</th>
-
+                            <th>Description (on mouseover)</th>
                             <th>Up</th>
                             <th>Down</th>
-                            <th>EDIT</th>
-                            <th>DEACTIVATE</th>
+                            <th>Edit</th>
+                            <th>Active</th>
                         </tr>
 
                         @for(extension <- tariff.extensions_included){
                             <tr>
                                 <td>@extension.id</td>
                                 <td>@extension.order_position</td>
-                                <td></td>
-
-                                <td></td>
-
+                                <td>@extension.name</td>
+                                <td>@extension.getExtensionType.getMonthlyPrice</td>
                                 <td>@extension.color</td>
-                                <td></td>
-
+                                <td>@extension.description</td>
                                 <td>@if(extension.order_position != 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariffExtension('@extension.id')">Up</button>}</td>
                                 <td>@if(tariff.extensions_included.length != extension.order_position){<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariffExtension('@extension.id')">Down</button>}</td>
-
                                 <td><a href='@routes.Controller_Dashboard.general_tariff_extension_edit(extension.id)'><button class="btn btn-block btn-info" type="button">Settings</button></a></td>
                                 <td>
                                     @if(!extension.active) {
-                                        <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariffExtension('@extension.id')">Deactivate</button>
+                                        <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariffExtension('@extension.id')">Activate</button>
                                     }else{
-                                        <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariffExtension('@extension.id')">Activate</button>
+                                        <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariffExtension('@extension.id')">Deactivate</button>
                                     }
                                 </td>
                             </tr>
@@ -305,34 +280,32 @@
                             <th>ID</th>
                             <th>Order</th>
                             <th>Name</th>
-                            <th class="col-md-2">Price</th>
+                            <th class="col-md-2">Price (per day)</th>
                             <th>Color</th>
-                            <th>Description (Po najetí myškou)</th>
+                            <th>Description (on mouseover)</th>
                             <th>Up</th>
                             <th>Down</th>
-                            <th>EDIT</th>
-                            <th>DEACTIVATE</th>
+                            <th>Edit</th>
+                            <th>Active</th>
                         </tr>
 
                         @for(extension <- tariff.extensions_optional){
                             <tr>
                                 <td>@extension.id</td>
                                 <td>@extension.order_position</td>
-                                <td></td>
-                                <td></td>
-
+                                <td>@extension.name</td>
+                                <td>@extension.getExtensionType.getMonthlyPrice</td>
                                 <td>@extension.color</td>
-                                <td></td>
-
+                                <td>@extension.description</td>
                                 <td>@if(extension.order_position != 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariffExtension('@extension.id')">Up</button>}</td>
                                 <td>@if(tariff.extensions_optional.length != extension.order_position){<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariffExtension('@extension.id')">Down</button>}</td>
 
                                 <td><a href='@routes.Controller_Dashboard.general_tariff_extension_edit(extension.id)'><button class="btn btn-block btn-info" type="button">Settings</button></a></td>
                                 <td>
                                 @if(!extension.active) {
-                                    <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariffExtension('@extension.id')">Deactivate</button>
+                                    <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariffExtension('@extension.id')">Activate</button>
                                 }else{
-                                    <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariffExtension('@extension.id')">Activate</button>
+                                    <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariffExtension('@extension.id')">Deactivate</button>
                                 }
                                 </td>
                             </tr>

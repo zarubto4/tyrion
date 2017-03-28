@@ -551,6 +551,7 @@ create table model_product_extension (
   config                    varchar(255),
   order_position            integer,
   active                    boolean,
+  removed                   boolean,
   created                   timestamp,
   product_id                varchar(255),
   general_tariff_included_id varchar(255),

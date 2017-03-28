@@ -489,6 +489,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_1.description = "description extension 1";
             extensions_1.type = Enum_ExtensionType.Project;
             extensions_1.active = true;
+            extensions_1.removed = false;
             extensions_1.color = "blue-madison";
             extensions_1.general_tariff_included = tariff_1;
             extensions_1.config = "{\"price\":0.6,\"count\":5}";
@@ -500,6 +501,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_2.description = "description extension 2";
             extensions_2.type = Enum_ExtensionType.Log;
             extensions_2.active = true;
+            extensions_2.removed = false;
             extensions_2.color = "blue-chambray";
             extensions_2.general_tariff_optional = tariff_1;
             extensions_2.config = "{\"price\":0.6,\"count\":5}";
@@ -653,6 +655,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_5.description = "description extension 1";
             business_tariff_extensions_5.type = Enum_ExtensionType.Project;
             business_tariff_extensions_5.active = true;
+            business_tariff_extensions_5.removed = false;
             business_tariff_extensions_5.color = "blue-chambray";
             business_tariff_extensions_5.general_tariff_included = business_tariff;
             business_tariff_extensions_5.config = "{\"price\":0.6,\"count\":5}";
@@ -663,6 +666,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_4.description = "description extension sadafdfv";
             business_tariff_extensions_4.type = Enum_ExtensionType.Project;
             business_tariff_extensions_4.active = true;
+            business_tariff_extensions_4.removed = false;
             business_tariff_extensions_4.color = "blue-chambray";
             business_tariff_extensions_4.general_tariff_included = business_tariff;
             business_tariff_extensions_4.config = "{\"price\":0.6,\"count\":5}";
@@ -674,6 +678,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_3.description = "description extension djsdjs";
             business_tariff_extensions_3.type = Enum_ExtensionType.Project;
             business_tariff_extensions_3.active = true;
+            business_tariff_extensions_3.removed = false;
             business_tariff_extensions_3.color = "blue-chambray";
             business_tariff_extensions_3.general_tariff_included = business_tariff;
             business_tariff_extensions_3.config = "{\"price\":0.6,\"count\":5}";
@@ -685,6 +690,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_2.description = "description extasdension 1";
             business_tariff_extensions_2.type = Enum_ExtensionType.Project;
             business_tariff_extensions_2.active = true;
+            business_tariff_extensions_2.removed = false;
             business_tariff_extensions_2.color = "blue-chambray";
             business_tariff_extensions_2.general_tariff_optional = business_tariff;
             business_tariff_extensions_2.config = "{\"price\":0.6,\"count\":5}";
@@ -696,6 +702,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_1.description = "description extensioasdan 1";
             business_tariff_extensions_1.type = Enum_ExtensionType.Project;
             business_tariff_extensions_1.active = true;
+            business_tariff_extensions_1.removed = false;
             business_tariff_extensions_1.color = "blue-chambray";
             business_tariff_extensions_1.general_tariff_optional = business_tariff;
             business_tariff_extensions_1.config = "{\"price\":0.6,\"count\":5}";
@@ -768,6 +775,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_5.description = "description extensioasn 1";
             business_tariff2_extensions_5.type = Enum_ExtensionType.Project;
             business_tariff2_extensions_5.active = true;
+            business_tariff2_extensions_5.removed = false;
             business_tariff2_extensions_5.color = "blue-chambray";
             business_tariff2_extensions_5.general_tariff_included = business_tariff_2;
             business_tariff2_extensions_5.config = "{\"price\":0.6,\"count\":5}";
@@ -779,6 +787,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_4.description = "description extensdan 1";
             business_tariff2_extensions_4.type = Enum_ExtensionType.Project;
             business_tariff2_extensions_4.active = true;
+            business_tariff2_extensions_4.removed = false;
             business_tariff2_extensions_4.color = "blue-chambray";
             business_tariff2_extensions_4.general_tariff_included = business_tariff_2;
             business_tariff2_extensions_4.config = "{\"price\":0.6,\"count\":5}";
@@ -791,6 +800,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_3.description = "description extensioan 1";
             business_tariff2_extensions_3.type = Enum_ExtensionType.Project;
             business_tariff2_extensions_3.active = true;
+            business_tariff2_extensions_3.removed = false;
             business_tariff2_extensions_3.color = "blue-chambray";
             business_tariff2_extensions_3.general_tariff_optional = business_tariff_2;
             business_tariff2_extensions_3.config = "{\"price\":0.6,\"count\":5}";
@@ -804,6 +814,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_2.description = "description extenssdan 1";
             business_tariff2_extensions_2.type = Enum_ExtensionType.Project;
             business_tariff2_extensions_2.active = true;
+            business_tariff2_extensions_2.removed = false;
             business_tariff2_extensions_2.color = "blue-chambray";
             business_tariff2_extensions_2.general_tariff_optional = business_tariff_2;
             business_tariff2_extensions_2.config = "{\"price\":0.6,\"count\":5}";
@@ -815,6 +826,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_1.description = "description extenssaioasdan 1";
             business_tariff2_extensions_1.type = Enum_ExtensionType.Project;
             business_tariff2_extensions_1.active = true;
+            business_tariff2_extensions_1.removed = false;
             business_tariff2_extensions_1.color = "blue-chambray";
             business_tariff2_extensions_1.general_tariff_optional = business_tariff_2;
             business_tariff2_extensions_1.config = "{\"price\":0.6,\"count\":5}";
