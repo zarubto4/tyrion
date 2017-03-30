@@ -19,6 +19,7 @@
         ssh-keygen -t rsa -b 4096 -C "admin@byzance.cz" 
         (3x enter)
         
+        
  7) **Install java**
  
          sudo apt-get install default-jre
