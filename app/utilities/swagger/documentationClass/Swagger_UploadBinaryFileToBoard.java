@@ -17,7 +17,7 @@ public class Swagger_UploadBinaryFileToBoard {
     @ApiModelProperty(value = "List of Pairs for settings of Backup C_Program Version on boards", required = true)
     public List<Board_pair> board_pairs  = new ArrayList<>();
 
-    @ApiModel(value = "Hardware_group_IN")
+    @ApiModel(value = "Hardware_IN")
     public static class Board_pair {
 
         public Board_pair(){}
