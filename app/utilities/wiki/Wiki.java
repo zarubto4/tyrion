@@ -8,79 +8,58 @@ public class Wiki {
 
     public static List<Element> getWikiFiles(){
 
-
-
-        List<String> fileNames = new ArrayList<>();
-
-
-
         File[] files = new File(System.getProperty("user.dir") + "/conf/markdown_documentation").listFiles();
 
-        if (files != null) {
-            for (File file : files) {
-                fileNames.add(file.getName().substring(0, file.getName().lastIndexOf('.')));
-            }
-        }
 
         List<Element> tree = new ArrayList<>();
 
-        for (String fileName : fileNames) {
 
-            String[] steps = fileName.split("_");
+        for (File file : files) {
 
-            List<String> steps_list = new ArrayList<>();
-            for (String step : steps) steps_list.add(step);
+            if(!file.isDirectory() && !file.getPath().contains(".markdown")) continue;
 
-            tree = makeTree(tree, steps_list, fileName);
+            System.out.println("Jména souboru:: " + file.getPath() + " jmena " + file.getName());
+
+            Element element = new Element();
+            element.file_name = file.getName();
+            element.file = file;
+
+            tree.add(element);
+
+            if(file.isDirectory()){
+                element.find_all_elements();
+            }
         }
 
         return tree;
     }
 
+
     public static class Element {
-        public String text;
-        public String value;
-        public boolean leaf;
+
+        public String file_name;
+        public File file;
         public List<Element> children = new ArrayList<>();
-    }
 
-    private static List<Element> makeTree(List<Element> localTree, List<String> steps, String fileName){
+        public void find_all_elements(){
 
-        Element temp = new Element();
-        temp.text = steps.get(0);
-        temp.leaf = false;
+            File[] files = new File( file.getPath() ).listFiles();
 
+            for (File file : files) {
 
-        Element existing = localTree.stream()
-                .filter(current -> temp.text.equals(current.text) && current.children != null)
-                .findAny()
-                .orElse(null);
+                Element element = new Element();
+                element.file_name = file.getName();
+                element.file = file;
 
-        if (steps.size() == 1){
+                children.add(element);
 
-            temp.leaf = true;
-            temp.value = fileName;
-            temp.children = null;
-            localTree.add(temp);
-
-        } else {
-
-            steps.remove(temp.text);
-
-            if(existing != null){
-
-                int index = localTree.indexOf(existing);
-
-                existing.children = makeTree(existing.children, steps, fileName);
-
-                localTree.set(index, existing);
-            } else {
-
-                temp.children = makeTree(temp.children, steps, fileName);
-                localTree.add(temp);
+                if(file.isDirectory()){
+                    element.find_all_elements();
+                }
             }
-        }
 
-        return localTree;
+        }
     }
+
+
 }

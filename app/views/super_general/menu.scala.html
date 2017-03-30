@@ -121,14 +121,17 @@
                         @tree(files: List[Wiki.Element]) = {
 
                             @for(file <- files) {
-                                @if(file.leaf) {
+
+                                @if(file.file.isFile) {
                                     <li>
-                                        <a href='@routes.Controller_Dashboard.show_wiki(file.value)' ><i class="fa fa-graduation-cap"></i>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</a>
+                                        <a href='@routes.Controller_Dashboard.show_wiki(file.file_name)'>
+                                            <i class="fa fa-graduation-cap"></i>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</a>
                                     </li>
+
                                 } else {
                                     <li class="treeview">
                                         <a href="#">
-                                            <i class="fa fa-graduation-cap"></i> <span>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</span>
+                                            <i class="fa fa-circle"></i> <span>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</span>
                                             <i class="fa fa-angle-left pull-right"></i>
                                         </a>
                                         <ul class="treeview-menu">
@@ -143,14 +146,16 @@
                         @tree2(files: List[Wiki.Element]) = {
 
                         @for(file <- files) {
-                            @if(file.leaf) {
+
+                            @if(file.file.isFile) {
                                 <li>
-                                    <a href='@routes.Controller_Dashboard.show_wiki(file.value)' ><i class="fa fa-graduation-cap"></i>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</a>
+                                    <a href='@routes.Controller_Dashboard.show_wiki(file.file_name)' >
+                                        <i class="fa fa-graduation-cap"></i>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</a>
                                 </li>
                             } else {
                                 <li class="treeview">
                                     <a href="#">
-                                        <i class="fa fa-graduation-cap"></i> <span>@file.text.substring(0, 1).toUpperCase()@file.text.substring(1).replace("-", " ")</span>
+                                        <i class="fa fa-circle"></i> <span>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</span>
                                         <i class="fa fa-angle-left pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">
