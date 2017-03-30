@@ -24,13 +24,6 @@ public class Wiki {
 
         List<Element> tree = new ArrayList<>();
 
-        if(true) {
-            // TODO LEXA FIX WIKI Tohle si odkomentuj a pušt tyriona je tam někde problém v rekurzi
-            // Tyrion-
-
-            return tree;
-        }
-
         for (String fileName : fileNames) {
 
             String[] steps = fileName.split("_");
@@ -59,7 +52,7 @@ public class Wiki {
 
 
         Element existing = localTree.stream()
-                .filter(current -> temp.text.equals(current.text))
+                .filter(current -> temp.text.equals(current.text) && current.children != null)
                 .findAny()
                 .orElse(null);
 

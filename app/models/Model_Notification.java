@@ -44,7 +44,8 @@ public class Model_Notification extends Model {
                                 @ApiModelProperty(required = true)  public boolean confirmed;
                                 @ApiModelProperty(required = true)  public boolean was_read;
 
-    @ApiModelProperty(required = true, readOnly = true, value = "UNIX time in ms")  public Date   created;
+    @ApiModelProperty(required = true, dataType = "integer",
+            readOnly = true, value = "UNIX time in ms")             public Date   created;
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY) public Model_Person person;
 
