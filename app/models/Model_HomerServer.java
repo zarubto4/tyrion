@@ -388,6 +388,8 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public void set_new_configuration_on_homer(){
         try{
 
+            if(!server_is_online()) return;
+
             SynchronizeHomerServer check = new SynchronizeHomerServer(get_server_webSocket_connection());
             check.start();
 

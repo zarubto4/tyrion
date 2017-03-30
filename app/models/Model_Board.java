@@ -715,7 +715,6 @@ public class Model_Board extends Model {
 
 
 
-
     @JsonIgnore @Transient  public void device_change_server(Model_HomerServer homerServer){
 
         logger.debug("Model_Board:: device_change_server for Device " + this.id);
@@ -784,7 +783,6 @@ public class Model_Board extends Model {
         logger.error("Model_Board:: device_change_server:: Device not found for Transfer!");
 
     }
-
 
     @JsonIgnore @Transient public static void update_bootloader(Enum_Update_type_of_update type_of_update, List<Model_Board> board_for_update, Model_BootLoader boot_loader){
         // Attention!! Value  boot_loader can be null - in this case - system will used
@@ -1010,29 +1008,21 @@ public class Model_Board extends Model {
 
         if(project == null) return;
 
-        List<Model_Person> receivers = new ArrayList<>();
-        for (Model_ProjectParticipant participant : this.project.participants)
-            receivers.add(participant.person);
-
         new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
                 .setObject(this)
                 .setText("is connected.", "black", false, false, false)
-                .send(receivers);
+                .send_under_project(project_id());
     }
 
     @JsonIgnore @Transient
     public void notification_board_disconnect(){
 
-        List<Model_Person> receivers = new ArrayList<>();
-        for (Model_ProjectParticipant participant : this.project.participants)
-            receivers.add(participant.person);
-
         new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : "" ))
                 .setObject(this)
                 .setText("is disconnected.")
-                .send(receivers);
+                .send_under_project(project_id());
     }
 
     @JsonIgnore @Transient
@@ -1044,6 +1034,8 @@ public class Model_Board extends Model {
                 .setText(" with user File ") // TODO ? asi dodělat soubor ?
                 .send(Controller_Security.getPerson());
     }
+
+
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

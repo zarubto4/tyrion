@@ -214,7 +214,9 @@ PUT             /blocko/approval                                                
 
 #Homer Server
 POST            /homer_server                                                      @controllers.Controller_ExternalServer.create_Homer_Server()
-PUT             /homer_server/:server_id                                           @controllers.Controller_ExternalServer.edit_Homer_Server(server_id)
+PUT             /homer_server/edit/:server_id                                      @controllers.Controller_ExternalServer.edit_Homer_Server(server_id)
+PUT             /homer_server/set_backup/:server_id                                @controllers.Controller_ExternalServer.set_backup_server(server_id)
+PUT             /homer_server/set_main/:server_id                                  @controllers.Controller_ExternalServer.set_main_server(server_id)
 GET             /homer_server                                                      @controllers.Controller_ExternalServer.get_All_Homer_Server()
 DELETE          /homer_server/:server_id                                           @controllers.Controller_ExternalServer.delete_Homer_Server(server_id)
 

@@ -33,6 +33,8 @@ public class Utilities_HW_Updater_Actualization_procedure {
         return file_record.get_fileRecord_from_Azure_inString();
     }
 
+
+
     @JsonProperty
     public String buildId(){
         if(firmwareType == Enum_Firmware_type.FIRMWARE)         return  file_record.c_compilations_binary_file.firmware_build_id;

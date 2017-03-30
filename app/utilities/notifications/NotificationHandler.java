@@ -15,6 +15,7 @@ import web_socket.services.WS_Becki_Website;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class NotificationHandler {
 
@@ -55,10 +56,16 @@ public class NotificationHandler {
 
                     if(!notifications.isEmpty()) {
 
+                        logger.debug("Beru notifikaci z Listku:: Počet notifikací v listu je:: " + notifications.size());
+
                         Model_Notification notification = notifications.get(0);
 
                         sendNotification( notification );
+
                         notifications.remove( notification );
+
+                        logger.debug("Beru notifikaci z Listku:: Smazal jsem odeslanou  notifikací z listu a teď jich je:: " + notifications.size());
+
 
                     } else {
 
@@ -77,35 +84,50 @@ public class NotificationHandler {
 
     private static void sendNotification(Model_Notification notification){
 
-        logger.trace("NotificationHandler:: sendNotification:: sending notification");
+        try {
 
-        for (Model_Person person : notification.receivers) {
+            logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
-            // Pokud je notification_importance vyšší než "low" notifikaci uložím
-            if ((notification.notification_importance != Enum_Notification_importance.low)&&(notification.id == null)) {
-
-                notification.person = person;
-                notification.save_object();
+            for (String person_id : notification.list_of_ids_receivers) {
 
                 try {
-                    if((!notification.buttons().isEmpty())&&(notification.buttons().get(0).action == Enum_Notification_action.accept_project_invitation)){
+                    // Pokud je notification_importance vyšší než "low" notifikaci uložím
+                    if ((notification.notification_importance != Enum_Notification_importance.low) && (notification.id == null)) {
 
-                        Model_Invitation invitation = Model_Invitation.find.byId(notification.buttons().get(0).payload);
-                        invitation.notification_id = notification.id;
-                        invitation.update();
+                        notification.person = Model_Person.get_byId(person_id); // Get Person Model from Cache
+                        notification.save_object();
+
+                        try {
+                            if ((!notification.buttons().isEmpty()) && (notification.buttons().get(0).action == Enum_Notification_action.accept_project_invitation)) {
+                                Model_Invitation invitation = Model_Invitation.find.byId(notification.buttons().get(0).payload);
+                                invitation.notification_id = notification.id;
+                                invitation.update();
+                            }
+                        } catch (Exception e) {
+                            Loggy.internalServerError("NotificationHandler:: sendNotification:: Error", e);
+                        }
+
+                        notification.refresh();
+
+                     // V opačném případě jí přidělím ID - aby ho becka mohla zpracovat
+                    }else {
+                        notification.id = UUID.randomUUID().toString();
                     }
-                }catch (Exception e){
-                    Loggy.internalServerError("NotificationHandler:: sendNotification:: Error", e);
+
+                    // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
+                    if (Controller_WebSocket.becki_website.containsKey(person_id)) {
+                        WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person_id);
+                        becki.write_without_confirmation(new ObjectMapper().convertValue(notification, ObjectNode.class));
+                    }
+
+
+
+                } catch (NullPointerException e) {
+                    logger.error("NotificationHandler:: SendNotification inside for void Error:", e);
                 }
             }
-
-            // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
-            if (Controller_WebSocket.becki_website.containsKey(person.id)) {
-                WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person.id);
-                becki.write_without_confirmation(new ObjectMapper().convertValue(notification, ObjectNode.class));
-            }
-
-            notification.id = null;
+        }catch (Exception e){
+            logger.error("NotificationHandler:: SendNotification void Error: ", e);
         }
     }
 }

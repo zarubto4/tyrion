@@ -296,6 +296,9 @@ public class Utilities_HW_Updater_Master_thread_updater {
                   if(!structure.instances.get(homer_instance.blocko_instance_name).programs.containsKey(program_identificator)){
 
                       Program program = new Program();
+
+                      System.out.print("Typ procedury k updatu je:: " + plan.actualization_procedure.type_of_update.name());
+
                       program.type_of_update = plan.actualization_procedure.type_of_update;
                       program.program_identificator = program_identificator;
                       program.firmware_type  = plan.firmware_type;
@@ -336,9 +339,11 @@ public class Utilities_HW_Updater_Master_thread_updater {
             for(Program program : instance.programs.values()){
 
                 logger.debug("  Master_Updater:: Summary: Program ::" + program.program_identificator);
-                logger.debug("  Master_Updater:: Summary: Type of Update ::" + program.program_identificator);
+                logger.debug("  Master_Updater:: Summary: Type of Update ::" + program.type_of_update);
+
 
                 Utilities_HW_Updater_Actualization_procedure actualization_procedure= new Utilities_HW_Updater_Actualization_procedure();
+
                 actualization_procedure.typeOfUpdate = program.type_of_update;
                 actualization_procedure.actualizationProcedureId = procedure.id;
                 actualization_procedure.file_record = program.file_record;

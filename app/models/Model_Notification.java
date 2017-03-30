@@ -92,8 +92,6 @@ public class Model_Notification extends Model {
 
     @JsonIgnore @Transient public Enum_Notification_state state;
 
-    @JsonIgnore @Transient public List<Model_Person> receivers = new ArrayList<>();
-
     @JsonIgnore
     public Model_Notification(Enum_Notification_importance importance, Enum_Notification_level level, Model_Person person){
         this.notification_level = level;
@@ -328,17 +326,26 @@ public class Model_Notification extends Model {
         this.send();
     }
 
+
+
+    @JsonIgnore @Transient public List<String> list_of_ids_receivers = new ArrayList<>(); // List of Person_ids
+
     @JsonIgnore @Transient
     public void send(List<Model_Person> receivers){
-        this.receivers = new ArrayList<>();
-        this.receivers = receivers;
+        for(Model_Person person : receivers) this.list_of_ids_receivers.add(person.id);
+        NotificationHandler.addToQueue(this);
+    }
+
+
+    @JsonIgnore @Transient
+    public void send_under_project(String project_id){
+        this.list_of_ids_receivers.addAll( Model_Project.get_project_becki_person_ids_list(project_id)); // Přidám z Cashe všechny ID osob, které odebírjí konkrétní projekt
         NotificationHandler.addToQueue(this);
     }
 
     @JsonIgnore @Transient
     public void send(Model_Person person){
-        this.receivers = new ArrayList<>();
-        this.receivers.add(person);
+        this.list_of_ids_receivers.add(person.id);
         NotificationHandler.addToQueue(this);
     }
 
@@ -346,8 +353,6 @@ public class Model_Notification extends Model {
     @JsonIgnore @Transient
     public void send(){
         try {
-            this.receivers = new ArrayList<>();
-            this.receivers.add(this.person);
             NotificationHandler.addToQueue(this);
         }catch (NullPointerException npe){
             logger.error("Method probably misused, use this method only when you resend notifications. If notification contains person.");

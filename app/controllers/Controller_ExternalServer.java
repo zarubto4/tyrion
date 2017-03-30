@@ -86,6 +86,52 @@ public class Controller_ExternalServer extends Controller {
         }
     }
 
+    @ApiOperation(value = "Homer server - set main server", hidden = true)
+    public Result set_main_server(String homer_server_id){
+        try{
+
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
+            if(server == null) return GlobalResult.notFoundObject("HomerServer homer_server_id not found");
+
+            Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
+            if(main_server != null) return GlobalResult.result_BadRequest("HomerServer Main server is already set.");
+
+            if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            server.server_type = Enum_Cloud_HomerServer_type.main_server;
+            server.update();
+
+            return GlobalResult.result_ok(Json.toJson(server));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "Homer server - set main server", hidden = true)
+    public Result set_backup_server(String homer_server_id){
+        try{
+
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
+            if(server == null) return GlobalResult.notFoundObject("HomerServer homer_server_id not found");
+            if(server.server_type != Enum_Cloud_HomerServer_type.public_server) return GlobalResult.result_BadRequest("Server must be in public group!");
+
+
+            Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.backup_server).findUnique();
+            if(backup_server != null) return GlobalResult.result_BadRequest("HomerServer Main server is already set.");
+
+            if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            server.server_type = Enum_Cloud_HomerServer_type.backup_server;
+            server.update();
+
+            return GlobalResult.result_ok(Json.toJson(server));
+
+        } catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "edit Compilation Server",
             tags = {"External Server"},
             notes = "Edit basic information Compilation Server",

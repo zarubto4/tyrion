@@ -171,14 +171,10 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public void notification_new_actualization_request_instance(){
 
-        List<Model_Person> receivers = new ArrayList<>();
-        for (Model_ProjectParticipant participant : this.project.participants)
-            receivers.add(participant.person);
-
         new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
                 .setText("New actualization task was added to Task Queue on Version ")
                 .setObject(this.actual_instance.version_object)
-                .send(receivers);
+                .send_under_project(b_program.project_id());
 
     }
 
