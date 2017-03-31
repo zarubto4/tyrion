@@ -3,10 +3,10 @@ package utilities.notifications;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
-import models.Model_Notification;
 import models.Model_Invitation;
+import models.Model_Notification;
 import models.Model_Person;
-import org.codehaus.jackson.map.ObjectMapper;
+import play.libs.Json;
 import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
 import utilities.loggy.Loggy;
@@ -76,7 +76,7 @@ public class NotificationHandler {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    Loggy.internalServerError("NotificationHandler:: send_notification_thread:", e);
+                    Loggy.internalServerError("NotificationHandler:: send_notification_thread: ", e);
                 }
             }
         }
@@ -86,7 +86,21 @@ public class NotificationHandler {
 
         try {
 
-            logger.trace("NotificationHandler:: sendNotification:: sending notification");
+            logger.debug("NotificationHandler:: sendNotification:: sending notification");
+
+            ObjectNode message = Json.newObject();
+            message.put("messageType", Model_Notification.messageType);
+            message.put("messageChannel", WS_Becki_Website.CHANNEL);
+            message.put("notification_level", notification.notification_level.name());
+            message.put("notification_importance", notification.notification_importance.name());
+            message.put("state", notification.state.name());
+            message.set("notification_body", Json.toJson(notification.notification_body()));
+            message.put("confirmation_required", notification.confirmation_required);
+            message.put("confirmed", notification.confirmation_required);
+            message.put("was_read", notification.was_read);
+            message.put("created", notification.created.getTime());
+            message.set("buttons", Json.toJson(notification.buttons()) );
+            message.set("notification_body", Json.toJson(notification.notification_body()));
 
             for (String person_id : notification.list_of_ids_receivers) {
 
@@ -94,8 +108,11 @@ public class NotificationHandler {
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
                     if ((notification.notification_importance != Enum_Notification_importance.low) && (notification.id == null)) {
 
+
                         notification.person = Model_Person.get_byId(person_id); // Get Person Model from Cache
-                        notification.save_object();
+                        // notification.save_object();
+
+                        message.put("id", notification.id);
 
                         try {
                             if ((!notification.buttons().isEmpty()) && (notification.buttons().get(0).action == Enum_Notification_action.accept_project_invitation)) {
@@ -104,26 +121,25 @@ public class NotificationHandler {
                                 invitation.update();
                             }
                         } catch (Exception e) {
-                            Loggy.internalServerError("NotificationHandler:: sendNotification:: Error", e);
+                            Loggy.internalServerError("NotificationHandler:: sendNotification:: Error:: ", e);
                         }
 
-                        notification.refresh();
-
-                     // V opačném případě jí přidělím ID - aby ho becka mohla zpracovat
                     }else {
-                        notification.id = UUID.randomUUID().toString();
+                        message.put("id", UUID.randomUUID().toString());
                     }
 
                     // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
                     if (Controller_WebSocket.becki_website.containsKey(person_id)) {
                         WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person_id);
-                        becki.write_without_confirmation(new ObjectMapper().convertValue(notification, ObjectNode.class));
+
+                        becki.write_without_confirmation( message );
                     }
 
 
+                    notification.id = null;
 
                 } catch (NullPointerException e) {
-                    logger.error("NotificationHandler:: SendNotification inside for void Error:", e);
+                    logger.error("NotificationHandler:: SendNotification inside for void Error:: ", e);
                 }
             }
         }catch (Exception e){

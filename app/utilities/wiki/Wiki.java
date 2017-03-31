@@ -18,10 +18,9 @@ public class Wiki {
 
             if(!file.isDirectory() && !file.getPath().contains(".markdown")) continue;
 
-            System.out.println("Jména souboru:: " + file.getPath() + " jmena " + file.getName());
-
             Element element = new Element();
             element.file_name = file.getName();
+            element.file_path = file.getName();
             element.file = file;
 
             tree.add(element);
@@ -38,6 +37,7 @@ public class Wiki {
     public static class Element {
 
         public String file_name;
+        public String file_path;
         public File file;
         public List<Element> children = new ArrayList<>();
 
@@ -49,6 +49,7 @@ public class Wiki {
 
                 Element element = new Element();
                 element.file_name = file.getName();
+                element.file_path = file_path + "/" + file.getName();
                 element.file = file;
 
                 children.add(element);

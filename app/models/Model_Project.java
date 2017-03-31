@@ -11,6 +11,9 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.helps_objects.IdsList;
 import utilities.enums.*;
+import utilities.notifications.helps_objects.Becki_color;
+import utilities.notifications.helps_objects.Notification_Button;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
@@ -32,9 +35,9 @@ public class Model_Project extends Model {
                                                                           public String name;
                                                                           public String description;
 
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_BProgram>                b_programs        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_CProgram>                c_programs        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_MProject>                m_projects        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgram>                b_programs        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgram>                c_programs        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_MProject>                m_projects        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_TypeOfBlock>             type_of_blocks    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_TypeOfWidget>            type_of_widgets   = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_Board>                   boards            = new ArrayList<>();
@@ -49,9 +52,9 @@ public class Model_Project extends Model {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()           { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    for( Model_Board m           : boards)         l.add(m.get_short_board());                return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()       { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( Model_BProgram m        : b_programs)     if(!m.removed_by_user) l.add(m.get_b_program_short_detail());     return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()       { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    for( Model_CProgram m        : c_programs)     if(!m.removed_by_user) l.add(m.get_c_program_short_detail());     return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()       { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    for( Model_MProject m        : m_projects)     l.add(m.get_short_m_project());            return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()       { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( Model_BProgram m        : get_b_program_not_deleted()) l.add(m.get_b_program_short_detail()); return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()       { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    for( Model_CProgram m        : get_c_program_not_deleted()) l.add(m.get_c_program_short_detail()); return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()       { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    for( Model_MProject m        : get_m_project_not_deleted()) l.add(m.get_short_m_project()); return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()   { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    for( Model_TypeOfBlock m     : type_of_blocks) l.add(m.get_type_of_block_short_detail()); return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()  { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    for( Model_TypeOfWidget m    : type_of_widgets)l.add(m.get_typeOfWidget_short_detail());  return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()       { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    for( Model_HomerInstance m   : Model_HomerInstance.find.where().isNotNull("actual_instance").eq("b_program.project.id", id).findList()) l.add(m.get_instance_short_detail());  return l;}
@@ -91,13 +94,21 @@ public class Model_Project extends Model {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-/* GET SQL PARAMETR - CACHE OBJECTS ------------------------------------------------------------------------------------*/
+/* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
     public List<Model_CProgram> get_c_program_not_deleted(){
 
         return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).findList();
     }
 
+    @JsonIgnore
+    public List<Model_BProgram> get_b_program_not_deleted(){
+
+        return Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).findList();
+    }
+
+    @JsonIgnore
     public List<Model_MProject> get_m_project_not_deleted(){
 
         return Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).findList();
@@ -111,14 +122,16 @@ public class Model_Project extends Model {
 
         Model_Person owner = Controller_Security.getPerson();
 
-        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.info)
-                .setText("User ")
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.normal)
+                .setLevel(Enum_Notification_level.info)
+                .setText(new Notification_Text().setText("User "))
                 .setObject(owner)
-                .setText(" invited you into the project ")
+                .setText(new Notification_Text().setText(" invited you into the project "))
                 .setObject(this)
-                .setText(". Do you accept the invitation?")
-                .setButton(Enum_Notification_action.accept_project_invitation, invitation.id, "green", "Yes", false, false, false)
-                .setButton(Enum_Notification_action.reject_project_invitation, invitation.id, "red", "No", false, false, false)
+                .setText(new Notification_Text().setText(". Do you accept the invitation?"))
+                .setButton( new Notification_Button().setAction(Enum_Notification_action.accept_project_invitation).setPayload(invitation.id).setColor(Becki_color.byzance_green).setText("Yes")  )
+                .setButton( new Notification_Button().setAction(Enum_Notification_action.reject_project_invitation).setPayload(invitation.id).setColor(Becki_color.byzance_red).setText("No")  )
                 .send(person);
     }
 
@@ -127,12 +140,14 @@ public class Model_Project extends Model {
 
         Model_Person person = Controller_Security.getPerson();
 
-        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.info)
-                .setText("User ")
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.normal)
+                .setLevel(Enum_Notification_level.info)
+                .setText(new Notification_Text().setText("User "))
                 .setObject(person)
-                .setText(" did not accept your invitation to the project ")
+                .setText(new Notification_Text().setText(" did not accept your invitation to the project "))
                 .setObject(this)
-                .setText(".")
+                .setText(new Notification_Text().setText("."))
                 .send(owner);
     }
 
@@ -141,12 +156,14 @@ public class Model_Project extends Model {
 
         Model_Person person = Controller_Security.getPerson();
 
-        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.info)
-                .setText("User ")
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.normal)
+                .setLevel(Enum_Notification_level.info)
+                .setText(new Notification_Text().setText("User "))
                 .setObject(person)
-                .setText(" accepted your invitation to the project ")
+                .setText(new Notification_Text().setText(" accepted your invitation to the project "))
                 .setObject(this)
-                .setText(".")
+                .setText(new Notification_Text().setText("."))
                 .send(owner);
     }
 
@@ -155,12 +172,14 @@ public class Model_Project extends Model {
 
         Model_Person person = Controller_Security.getPerson();
 
-        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.info)
-                .setText("User ")
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.normal)
+                .setLevel(Enum_Notification_level.info)
+                .setText(new Notification_Text().setText("User "))
                 .setObject(person)
-                .setText(" changed your status in project ")
+                .setText(new Notification_Text().setText(" changed your status in project "))
                 .setObject(this)
-                .setText(" to " + participant.state.name() + ". You have different permissions now.")
+                .setText(new Notification_Text().setText(" to " + participant.state.name() + ". You have different permissions now."))
                 .send(participant.person);
     }
 

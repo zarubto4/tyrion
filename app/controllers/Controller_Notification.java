@@ -21,6 +21,10 @@ import utilities.enums.Enum_Notification_level;
 import utilities.enums.Enum_Notification_state;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
+import utilities.notifications.helps_objects.Becki_color;
+import utilities.notifications.helps_objects.Notification_Button;
+import utilities.notifications.helps_objects.Notification_Link;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
@@ -34,30 +38,13 @@ import java.util.List;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Notification extends Controller {
 
-  @Inject
-  Controller_Project controllerProgramingPackage;
+  @Inject Controller_Project controllerProgramingPackage;
 
   //####################################################################################################################
   static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
+
   // Tvroba objektů jednotlivých notifikací ############################################################################
-
-  public static void upload_firmware_progress(Model_Person person, String version_object){
-    // TODO a taky zařadit pod objekt
-  }
-
-  // TODO zařadit pod objekt
-  public static void upload_of_Instance_was_unsuccessful_with_error(Model_Person person, Model_VersionObject version_object){
-
-    Model_Notification notification = new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.error, person)
-                                    .setText("Server not upload instance to cloud on Blocko Version")
-                                    .setObject(version_object)
-                                    .setText("from Blocko program")
-                                    .setObject(version_object.b_program)
-                                    .setText("with Critical unknown Error, Probably some bug.");
-
-    //send_notification(person, notification);
-  }
 
   public static void test_notification(Model_Person person, String level, String importance, String type, String buttons){
 
@@ -84,13 +71,17 @@ public class Controller_Notification extends Controller {
 
     switch (type){
       case "1":{
-        notification = new Model_Notification(imp, lvl)
-                .setText("Test object: ")
+        notification = new Model_Notification()
+                .setImportance(imp)
+                .setLevel(lvl)
+                .setText( new Notification_Text().setText("Test object: "))
                 .setObject(person)
-                .setText(" test bold text: ")
-                .setBoldText("bold text ")
-                .setText("test link: ")
-                .setLink("TestLink ","#");
+                .setText(new Notification_Text().setText(" test text, "))
+                .setText(new Notification_Text().setText(" test bold text, ").setBoltText())
+                .setText(new Notification_Text().setText(" test italic text, ").setItalicText())
+                .setText(new Notification_Text().setText(" test underline text, ").setUnderlineText())
+                .setText(new Notification_Text().setText(" test red color text, ").setColor(Becki_color.byzance_red))
+                .setLink(new Notification_Link().setUrl("Text linku na google ", "http://google.com"));
 
         Model_Project project = Model_Project.find.where().eq("participants.person.id", person.id).eq("name", "První velkolepý projekt").findUnique();
         if (project != null) {
@@ -145,7 +136,6 @@ public class Controller_Notification extends Controller {
           Model_BProgram bProgram;
           if (!project.b_programs.isEmpty()){
             bProgram = project.b_programs.get(0);
-
           } else {
 
             bProgram = new Model_BProgram();
@@ -186,49 +176,56 @@ public class Controller_Notification extends Controller {
 
         break;}
       case "2":{
-        notification = new Model_Notification(imp, lvl)
-                .setText("Test object and long text: ")
+        notification = new Model_Notification()
+                .setImportance(imp)
+                .setLevel(lvl)
+                .setText(new Notification_Text().setText("Test object and long text: "))
                 .setObject(person)
-                .setText(" test text: Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ");
+                .setText(new Notification_Text().setText(" test text: Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "));
         break;}
       case "3":{
-        notification = new Model_Notification(imp, lvl)
-                .setText("Test short text with link: ")
-                .setLink("TestLink","#");
+        notification = new Model_Notification()
+                .setImportance(imp)
+                .setLevel(lvl)
+                .setText(new Notification_Text().setText("Test short text with link: "))
+                .setLink(new Notification_Link().setUrl("Text linku na google ", "http://google.com"));
         break;}
       case "4": {
-        notification = new Model_Notification(imp, lvl)
-                .setText("Test object and link: ")
+        notification = new Model_Notification()
+                .setImportance(imp)
+                .setLevel(lvl)
+                .setText( new Notification_Text().setText("Test object and link: "))
                 .setObject(person)
-                .setText(" test link: ")
-                .setLink("Yes","#");
+                .setText( new Notification_Text().setText(" test link: "))
+                .setLink(new Notification_Link().setUrl("Yes", "http://google.com"));
         break;}
       default:{
-        notification = new Model_Notification(imp, lvl)
-                .setText("Test object: ")
+        notification = new Model_Notification()
+                .setImportance(imp)
+                .setLevel(lvl)
+                .setText( new Notification_Text().setText("Test object: "))
                 .setObject(person)
-                .setText(" test bold text: ")
-                .setBoldText("bold text ")
-                .setText("test link: ")
-                .setLink("TestLink","#");
+                .setText( new Notification_Text().setText(" test bold text: ").setBoltText())
+                .setText( new Notification_Text().setText( "test link: "))
+                .setLink( new Notification_Link().setUrl("Yes", "http://google.com"));
         break;}
     }
     switch (buttons){
       case "0": break;
       case "1":{
-        notification.setButton(Enum_Notification_action.confirm_notification, "test", "blue", "OK", false, false, false);
+        notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_blue).setText("OK") );
         break;}
       case "2":{
-        notification.setButton(Enum_Notification_action.confirm_notification, "test", "green", "Yes", false, false, true);
-        notification.setButton(Enum_Notification_action.confirm_notification, "test", "red", "No", false, false, true);
+        notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_green).setText("YES") );
+        notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_red).setText("NO").setUnderLine() );
         break;}
       case "3":{
-        notification.setButton(Enum_Notification_action.confirm_notification, "test", "green", "Yes", true, false, false);
-        notification.setButton(Enum_Notification_action.confirm_notification, "test", "red", "No", true, false, false);
-        notification.setButton(Enum_Notification_action.confirm_notification, "test", "white", "Close", false, true, false);
+        notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.white).setText("NO").setBold() );
+        notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_green).setText("NO").setItalic() );
+        notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_blue).setText("NO").setItalic() );
         break;}
       default:{
-        notification.setButton(Enum_Notification_action.confirm_notification, "test", "green", "Yes", false, false, false);
+        notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_blue).setText("NO").setItalic() );
         break;}
     }
 

@@ -452,6 +452,7 @@ create table model_notification (
   id                        varchar(255) not null,
   notification_level        varchar(7),
   notification_importance   varchar(6),
+  state                     varchar(11),
   content_string            TEXT,
   buttons_string            TEXT,
   confirmation_required     boolean,
@@ -461,6 +462,7 @@ create table model_notification (
   person_id                 varchar(255),
   constraint ck_model_notification_notification_level check (notification_level in ('success','warning','error','info')),
   constraint ck_model_notification_notification_importance check (notification_importance in ('normal','high','low')),
+  constraint ck_model_notification_state check (state in ('unconfirmed','deleted','created','updated')),
   constraint pk_model_notification primary key (id))
 ;
 

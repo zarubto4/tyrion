@@ -17,6 +17,7 @@ import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
 import utilities.enums.Enum_type_of_command;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import web_socket.services.WS_HomerServer;
@@ -129,11 +130,13 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public void notification_instance_start_upload(){
 
-        new Model_Notification(Enum_Notification_importance.low,  Enum_Notification_level.info)
-                .setText("Server started creating new Blocko Instance of Blocko Version ")
-                .setText(this.actual_instance.version_object.b_program.name + " ", "black", true, false, false)
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.low)
+                .setLevel(Enum_Notification_level.info)
+                .setText( new Notification_Text().setText("Server started creating new Blocko Instance of Blocko Version "))
+                .setText( new Notification_Text().setText(this.actual_instance.version_object.b_program.name).setBoltText())
                 .setObject(this.actual_instance.version_object)
-                .setText(" from Blocko program ")
+                .setText( new Notification_Text().setText(" from Blocko program "))
                 .setObject(this.actual_instance.version_object.b_program)
                 .send(Controller_Security.getPerson());
 
@@ -142,40 +145,44 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public void notification_instance_successful_upload(){
 
-        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.success)
-                .setText("Server successfully created the instance of Blocko Version ")
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.low)
+                .setLevel(Enum_Notification_level.success)
+                .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
                 .setObject(this.actual_instance.version_object)
-                .setText(" from Blocko program ")
+                .setText(new Notification_Text().setText(" from Blocko program "))
                 .setObject(this.actual_instance.version_object.b_program)
-                .send(Controller_Security.getPerson());
+                .send_under_project(project.id);
     }
 
     @JsonIgnore @Transient
     public void notification_instance_unsuccessful_upload(String reason){
 
-
-        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.warning)
-                .setText("Server did not upload instance to cloud on Blocko Version ")
-                .setText(this.actual_instance.version_object.version_name, "black", true, false, false)
-                .setText(" from Blocko program ")
-                .setText(this.b_program.name, "black", true, false, false)
-                .setText("for reason: ")
-                .setText(reason + " ", "black", true, false, false)
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.low)
+                .setLevel(Enum_Notification_level.warning)
+                .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
+                .setText( new Notification_Text().setText(this.actual_instance.version_object.version_name ).setBoltText())
+                .setText( new Notification_Text().setText(" from Blocko program "))
+                .setText( new Notification_Text().setText(this.b_program.name).setBoltText())
+                .setText( new Notification_Text().setText(" for reason: ").setBoltText() )
+                .setText( new Notification_Text().setText(reason + " ").setBoltText())
                 .setObject(this.actual_instance.version_object)
-                .setText(" from Blocko program ")
+                .setText( new Notification_Text().setText(" from Blocko program "))
                 .setObject(this.b_program)
-                .setText(". Server will try to do that as soon as possible.")
-                .send(Controller_Security.getPerson()); // TODO jestli bude uživatel přihlášen, když se notifikace odesílá
+                .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
+                .send_under_project(project.id);
     }
 
     @JsonIgnore @Transient
     public void notification_new_actualization_request_instance(){
 
-        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
-                .setText("New actualization task was added to Task Queue on Version ")
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.low)
+                .setLevel(Enum_Notification_level.info)
+                .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
                 .setObject(this.actual_instance.version_object)
                 .send_under_project(b_program.project_id());
-
     }
 
 

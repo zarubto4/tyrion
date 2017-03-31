@@ -2,20 +2,9 @@ package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.Api;
-import models.Model_Board;
-import models.Model_CompilationServer;
-import models.Model_TypeOfBoard;
-import models.Model_Person;
-import models.Model_SecurityRole;
-import models.Model_HomerInstance;
-import models.Model_HomerServer;
-import models.Model_Product;
-import models.Model_Project;
-import models.Model_GeneralTariff;
-import models.Model_GeneralTariffExtensions;
+import models.*;
 import org.pegdown.PegDownProcessor;
 import play.Application;
-import play.Routes;
 import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -27,23 +16,21 @@ import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
-import web_socket.message_objects.homer_instance.WS_Message_Ping_instance;
 import views.html.*;
 import views.html.blocko.blocko_management;
 import views.html.blocko.blocko_objects;
+import views.html.boards.board_detail;
 import views.html.boards.board_settings;
 import views.html.boards.board_summary;
-import views.html.boards.board_detail;
 import views.html.boards.bootloader_settings;
 import views.html.demo_data.demo_data_main;
 import views.html.external_servers.external_servers;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
 import views.html.hardware_generator.generator_main;
+import views.html.helpdesk_tool.product_detail;
 import views.html.helpdesk_tool.project_detail;
 import views.html.helpdesk_tool.user_summary;
-import views.html.helpdesk_tool.product_detail;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
 import views.html.publiccprograms.approvalprocedurecprogram;
@@ -58,6 +45,8 @@ import views.html.tariffs.tariffs;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
 import views.html.websocket.websocket_homer_server_detail;
+import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
+import web_socket.message_objects.homer_instance.WS_Message_Ping_instance;
 import web_socket.services.WS_Becki_Website;
 import web_socket.services.WS_CompilerServer;
 import web_socket.services.WS_HomerServer;
@@ -96,31 +85,7 @@ public class Controller_Dashboard extends Controller {
 
 // Index (úvod) ########################################################################################################
 
-    public Result javascriptRoutes() {
-        response().setContentType("text/javascript");
-        return ok(
-                Routes.javascriptRouter("jsRoutes",
-                        controllers.routes.javascript.Controller_Board.typeOfBoard_create(),
-                        controllers.routes.javascript.Controller_Board.typeOfBoard_get(),
-                        controllers.routes.javascript.Controller_Board.typeOfBoard_update(),
-                        controllers.routes.javascript.Controller_Board.typeOfBoard_delete(),
 
-                        controllers.routes.javascript.Controller_Board.processor_create(),
-                        controllers.routes.javascript.Controller_Board.processor_get(),
-                        controllers.routes.javascript.Controller_Board.processor_getAll(),
-                        controllers.routes.javascript.Controller_Board.processor_update(),
-                        controllers.routes.javascript.Controller_Board.processor_delete(),
-
-                        controllers.routes.javascript.Controller_Board.producer_create(),
-                        controllers.routes.javascript.Controller_Board.producer_update(),
-                        controllers.routes.javascript.Controller_Board.producer_getAll(),
-                        controllers.routes.javascript.Controller_Board.producer_get(),
-                        controllers.routes.javascript.Controller_Board.producer_delete(),
-
-                        controllers.routes.javascript.Controller_Blocko.ping_instance()
-                )
-        );
-    }
 
     // Pomocná metoda, která skládá jednotlivé stránky dohromady
     public Result return_page( Html content){
@@ -181,11 +146,17 @@ public class Controller_Dashboard extends Controller {
 
             String text = "";
 
-            for (String line : Files.readAllLines(Paths.get("conf/markdown_documentation/" + file_name + ".markdown"), StandardCharsets.UTF_8)) text += line + "\n";
+            file_name.replaceAll("%2F", "/");
 
-            if (file_name.contains("_")) file_name = file_name.substring(file_name.lastIndexOf("_") + 1);
+            for (String line : Files.readAllLines(Paths.get("conf/markdown_documentation/" + file_name), StandardCharsets.UTF_8)){
+                text += line + "\n";
+            }
 
-            Html wiki_html = wiki.render(file_name.substring(0,1).toUpperCase() + file_name.substring(1), new Html(new PegDownProcessor().markdownToHtml(text)));
+            file_name = file_name.substring(file_name.lastIndexOf("/") + 1);
+            file_name = file_name.replaceAll("_", " ");
+            file_name.replace(".markdown", " ");
+
+            Html wiki_html = wiki.render(file_name.substring(0,1).toUpperCase() + file_name.substring(1) , new Html(new PegDownProcessor().markdownToHtml(text)));
 
             return return_page(wiki_html);
 

@@ -17,6 +17,8 @@ import utilities.cache.Server_Cache;
 import utilities.enums.*;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
+import utilities.loggy.Loggy;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.documentationClass.Swagger_Board_for_fast_upload_detail;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Board_Status;
@@ -187,11 +189,12 @@ public class Model_Board extends Model {
 
 
             // 3) Je ve Virtuální instanci
-            if(instance != null) {
+            if(instance != null && instance.instance_type != Enum_Homer_instance_type.VIRTUAL) {
 
                 board_status.where = Enum_Board_type_of_connection.in_person_instance;
                 board_status.instance_id = instance.blocko_instance_name;
                 board_status.instance_online_status = instance.instance_online();
+
                 if (instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
                 if (instance.getB_program() != null) board_status.b_program_name = instance.getB_program().name;
 
@@ -203,10 +206,17 @@ public class Model_Board extends Model {
                 board_status.server_name = instance.cloud_homer_server.personal_server_name;
                 board_status.homer_server_id = instance.cloud_homer_server.unique_identificator;
                 board_status.server_online_status = instance.cloud_homer_server.server_is_online();
+
+            } else if(instance != null && instance.instance_type == Enum_Homer_instance_type.VIRTUAL){
+
+                board_status.server_name = instance.cloud_homer_server.personal_server_name;
+                board_status.homer_server_id = instance.cloud_homer_server.unique_identificator;
+                board_status.server_online_status = instance.cloud_homer_server.server_is_online();
+
             }else {
 
                 // 1) Není známo kam se deska připojila a nemá instanci
-                if(get_instance() == null && get_connected_server() == null) {
+                if(instance == null && get_connected_server() == null) {
 
                     board_status.status = Enum_Board_status.not_yet_first_connected;
                     // 2) Je známo kam se deska připojila a nemá instanci - Takže třeba když jí uživatel vyndal z krabičky nahrál na ní něco
@@ -246,12 +256,12 @@ public class Model_Board extends Model {
 
 
             List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.where()
-                    .eq("firmware_type", Enum_Firmware_type.FIRMWARE)
+                        .eq("firmware_type", Enum_Firmware_type.FIRMWARE)
                     .disjunction()
-                    .eq("state", Enum_CProgram_updater_state.in_progress)
-                    .eq("state", Enum_CProgram_updater_state.waiting_for_device)
-                    .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
-                    .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
+                        .eq("state", Enum_CProgram_updater_state.in_progress)
+                        .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                        .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                        .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
                     .endJunction()
                     .eq("board.id", id).order().asc("actualization_procedure.date_of_create").findList();
 
@@ -262,11 +272,11 @@ public class Model_Board extends Model {
             List<Model_CProgramUpdatePlan> c_backup_program_plans = Model_CProgramUpdatePlan.find.where()
                     .eq("firmware_type", Enum_Firmware_type.BACKUP)
                     .disjunction()
-                    .eq("state", Enum_CProgram_updater_state.in_progress)
-                    .eq("state", Enum_CProgram_updater_state.waiting_for_device)
-                    .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
-                    .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
-                    .endJunction()
+                        .eq("state", Enum_CProgram_updater_state.in_progress)
+                        .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                        .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                        .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
+                        .endJunction()
                     .eq("board.id", id).order().asc("date_of_create").findList();
 
             for(Model_CProgramUpdatePlan plan : c_backup_program_plans) board_status.required_backup_c_programs.add(plan.get_short_version_for_board());
@@ -379,6 +389,9 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_Message_Yoda_connected help){
         try {
 
+            logger.debug("Updating device status " +  help.deviceId + " on online ");
+            cache_status.put(help.deviceId, true);
+
             Model_Board master_device = Model_Board.get_byId(help.deviceId);
 
             if(master_device == null){
@@ -386,10 +399,8 @@ public class Model_Board extends Model {
                 logger.error("Board:: master_device_Connected:: Unregistered Hardware:: ",  help.deviceId);
                 return;
             }
+            master_device.notification_board_connect();
 
-            logger.debug("Board:: master_device_Connected:: Board connected to Blocko cloud_blocko_server:: ", help.deviceId);
-
-            // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
             Model_Board.hardware_firmware_state_check(server, master_device, help);
 
         }catch (Exception e){
@@ -400,7 +411,11 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void master_device_Disconnected(WS_Message_Yoda_disconnected help){
         try {
 
-            // TODO Chache
+            logger.debug("Updating device status " +  help.deviceId + " on offline ");
+            cache_status.put(help.deviceId, false);
+
+            Model_Board.get_byId(help.deviceId).notification_board_disconnect();
+            Server_Cache.cacheManager.getCache( Model_Board.CACHE_STATUS, String.class, Boolean.class).put(help.deviceId, false);
 
         }catch (Exception e){
             logger.error("Board:: master_device_Disconnected:: ERROR:: ", e);
@@ -410,7 +425,8 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_Message_Device_connected help){
         try {
 
-            Server_Cache.cacheManager.getCache( Model_Board.CACHE_STATUS, String.class, Boolean.class).put(help.deviceId, true);
+            logger.debug("Updating device status " +  help.deviceId + " on online ");
+            cache_status.put(help.deviceId, true);
 
             Model_Board device = Model_Board.get_byId(help.deviceId);
 
@@ -420,9 +436,9 @@ public class Model_Board extends Model {
                 return;
             }
 
+            device.notification_board_connect();
+
             Model_Board.hardware_firmware_state_check( server, device, help);
-            // Požádám o kontrolu zda nečeká nějaká nová aktualizační procedura - pro Yodu nebo jeho device
-           //  Model_Board.hardware_connected(device, help);
 
         }catch (Exception e){
             logger.error("Board:: device_Connected:: ERROR:: ", e);
@@ -432,6 +448,11 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void device_Disconnected(WS_Message_Device_disconnected help){
         try {
 
+            logger.debug("Updating device status " +  help.deviceId + " on offline ");
+            cache_status.put(help.deviceId, false);
+
+
+            Model_Board.get_byId(help.deviceId).notification_board_disconnect();
             Server_Cache.cacheManager.getCache( Model_Board.CACHE_STATUS, String.class, Boolean.class).put(help.deviceId, false);
 
         }catch (Exception e){
@@ -681,8 +702,6 @@ public class Model_Board extends Model {
                 logger.debug("No actualization plan found for Master Device: " + board.id);
             }
 
-            board.notification_board_connect();
-
             if(report instanceof WS_Message_Yoda_connected){
 
                 WS_Message_Yoda_connected ws_yoda_connected = (WS_Message_Yoda_connected) report;
@@ -712,7 +731,6 @@ public class Model_Board extends Model {
             return new WS_Message_Update_device_firmware();
         }
     }
-
 
 
     @JsonIgnore @Transient  public void device_change_server(Model_HomerServer homerServer){
@@ -1008,40 +1026,46 @@ public class Model_Board extends Model {
 
         if(project == null) return;
 
-        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
-                .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : null ), "black", false, false, false)
-                .setObject(this)
-                .setText("is connected.", "black", false, false, false)
-                .send_under_project(project_id());
+        try{
+            new Model_Notification()
+                    .setImportance( Enum_Notification_importance.low )
+                    .setLevel( Enum_Notification_level.info)
+                    .setText( new Notification_Text().setText("One of your Boards " + this.personal_description ))
+                    .setObject(this)
+                    .setText( new Notification_Text().setText("is connected."))
+                    .send_under_project(project_id());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_Board:: notification_board_connect", e);
+        }
+
     }
 
     @JsonIgnore @Transient
     public void notification_board_disconnect(){
 
-        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
-                .setText("One of your Boards " + (this.personal_description != null ? this.personal_description : "" ))
+        if(project == null) return;
+        // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
+        try{
+
+            new Model_Notification()
+                .setImportance( Enum_Notification_importance.low )
+                .setLevel( Enum_Notification_level.info)
+                .setText(  new Notification_Text().setText("One of your Boards " + this.personal_description))
                 .setObject(this)
-                .setText("is disconnected.")
+                .setText( new Notification_Text().setText(" is disconnected."))
                 .send_under_project(project_id());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_Board:: notification_board_disconnect", e);
+        }
     }
-
-    @JsonIgnore @Transient
-    public void notification_new_actualization_request_with_file(){
-
-        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
-                .setText("New actualization task was added to Task Queue on ")
-                .setObject(this)
-                .setText(" with user File ") // TODO ? asi dodělat soubor ?
-                .send(Controller_Security.getPerson());
-    }
-
-
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
     @JsonIgnore @Transient public static final String connection_permission_docs    = "read: If user want connect Project with board, he needs two Permission! Project.update_permission == true and also Board.first_connect_permission == true. " +
-                                                                                      "- Or user need combination of static/dynamic permission key and Board.first_connect_permission == true";
+                                                                                      " - Or user need combination of static/dynamic permission key and Board.first_connect_permission == true";
     @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
                                        @JsonIgnore   @Transient public boolean create_permission(){  return  Controller_Security.has_token() && Controller_Security.getPerson().has_permission("Board_Create"); }

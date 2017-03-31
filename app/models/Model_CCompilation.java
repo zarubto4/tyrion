@@ -2,10 +2,15 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Compile_status;
+import utilities.enums.Enum_Notification_importance;
+import utilities.enums.Enum_Notification_level;
+import utilities.loggy.Loggy;
 import utilities.models_update_echo.Update_echo_handler;
+import utilities.notifications.helps_objects.Notification_Text;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
@@ -68,6 +73,90 @@ public class Model_CCompilation extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
+    public void notification_compilation_start(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.info)
+                    .setText(new Notification_Text().setText("Server starts compilation of Version "))
+                    .setObject(this)
+                    .send(Controller_Security.getPerson());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_CCompilation:: notification_compilation_start", e);
+        }
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_success(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.success)
+                    .setText(new Notification_Text().setText("Compilation of Version "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText("was successful."))
+                    .send(Controller_Security.getPerson());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_CCompilation:: notification_compilation_success", e);
+        }
+
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_unsuccessful_warn(String reason){
+        try {
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setText(new Notification_Text().setText("Compilation of Version "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText("was unsuccessful, for reason:"))
+                    .setText(new Notification_Text().setText(reason).setBoltText())
+                    .send(Controller_Security.getPerson());
+        }catch (Exception e){
+            Loggy.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_warn", e);
+        }
+    }
+
+    @JsonIgnore @Transient
+    public void notification_compilation_unsuccessful_error(String result){
+        try {
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.error)
+                    .setText(new Notification_Text().setText("Compilation of Version"))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText("with critical Error:"))
+                    .setText(new Notification_Text().setText(result).setBoltText())
+                    .send(Controller_Security.getPerson());
+        }catch (Exception e){
+            Loggy.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_error", e);
+        }
+    }
+
+    @JsonIgnore @Transient
+    public void notification_new_actualization_request_on_version(){
+        try {
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.info)
+                    .setText(new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" from Program "))
+                    .setObject(this.version_object.c_program)
+                    .send(Controller_Security.getPerson());
+        }catch (Exception e){
+            Loggy.internalServerError("Model_CCompilation:: notification_new_actualization_request_on_version", e);
+        }
+    }
+
+
+
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
@@ -84,7 +173,7 @@ public class Model_CCompilation extends Model {
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Model_CCompilation> find = new Finder<>(Model_CCompilation.class);
 
-    /* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
+/* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
     @JsonIgnore @Transient public final static String virtual_input_output_docu = "dsafsdfsdf"; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-304
 
 }

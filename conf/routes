@@ -518,7 +518,7 @@ PUT             /admin/extension/deactive/:extension_id         @controllers.Con
 PUT             /admin/extension/active/:extension_id           @controllers.Controller_Finance.tariff_general_extension_activate(extension_id)
 DELETE          /admin/extension/:extension_id                  @controllers.Controller_Finance.tariff_general_extension_delete(extension_id)
 
-GET             /javascriptRoutes                               @controllers.Controller_Dashboard.javascriptRoutes()
+#GET             /javascriptRoutes                               @controllers.Controller_Dashboard.javascriptRoutes()
 
 # BUGS SERVISE PAGE
 GET             /admin/bugs/deleteAll                      @controllers.Controller_Dashboard.loggy_remove_all_bugs()

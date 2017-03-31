@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.libs.Json;
 import utilities.enums.Enum_Compile_status;
+import utilities.loggy.Loggy;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
@@ -58,60 +59,81 @@ public class Model_CProgram extends Model {
 
     @JsonProperty public List<Swagger_C_Program_Version_Short_Detail> program_versions() {
 
-        List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
+        try {
 
-        for(Model_VersionObject version : getVersion_objects()){
-            versions.add(version.get_short_c_program_version());
+            List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
+
+            for (Model_VersionObject version : getVersion_objects()) {
+                versions.add(version.get_short_c_program_version());
+            }
+
+            return versions;
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_CProgram:: program_versions", e);
+            List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
+            return versions;
         }
-
-        return versions;
     }
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @Transient @JsonIgnore public Swagger_C_program_Short_Detail get_c_program_short_detail(){
 
-        Swagger_C_program_Short_Detail help = new Swagger_C_program_Short_Detail();
+        try {
+            Swagger_C_program_Short_Detail help = new Swagger_C_program_Short_Detail();
 
-        help.id = id;
-        help.name = name;
-        help.description = description;
-        help.type_of_board_id = type_of_board_id();
-        help.type_of_board_name = type_of_board_name();
+            help.id = id;
+            help.name = name;
+            help.description = description;
+            help.type_of_board_id = type_of_board_id();
+            help.type_of_board_name = type_of_board_name();
 
-        help.edit_permission = edit_permission();
-        help.delete_permission = delete_permission();
-        help.update_permission = update_permission();
+            help.edit_permission = edit_permission();
+            help.delete_permission = delete_permission();
+            help.update_permission = update_permission();
 
-        return help;
+            return help;
+        }catch (Exception e){
+            Loggy.internalServerError("Model_CProgram:: get_c_program_short_detail", e);
+            return null;
+
+        }
     }
 
-    @JsonIgnore public Swagger_Example_Short_Detail get_example_short_detail(){
+    @Transient @JsonIgnore public Swagger_Example_Short_Detail get_example_short_detail(){
 
-        Swagger_Example_Short_Detail help = new Swagger_Example_Short_Detail();
+        try {
 
-        help.id = id;
-        help.name = name;
-        help.description = description;
+            Swagger_Example_Short_Detail help = new Swagger_Example_Short_Detail();
 
-        if (this.version_objects.size() > 0){
-            for (Model_FileRecord file : this.version_objects.get(0).files){
+            help.id = id;
+            help.name = name;
+            help.description = description;
 
-                JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+            if (this.version_objects.size() > 0){
+                for (Model_FileRecord file : this.version_objects.get(0).files){
 
-                Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
-                if(form.hasErrors()) return null;
-                Swagger_C_Program_Version_Update example_form = form.get();
+                    JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
-                help.main = example_form.main;
+                    Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
+                    if(form.hasErrors()) return null;
+                    Swagger_C_Program_Version_Update example_form = form.get();
+
+                    help.main = example_form.main;
+                }
             }
+
+            help.edit_permission = edit_permission();
+            help.delete_permission = delete_permission();
+            help.update_permission = update_permission();
+
+            return help;
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_CProgram:: get_c_program_short_detail", e);
+            return null;
         }
-
-        help.edit_permission = edit_permission();
-        help.delete_permission = delete_permission();
-        help.update_permission = update_permission();
-
-        return help;
     }
 
 

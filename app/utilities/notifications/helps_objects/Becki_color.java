@@ -1,4 +1,4 @@
-package utilities.becki_widgets;
+package utilities.notifications.helps_objects;
 
 public class Becki_color {
 
@@ -14,9 +14,9 @@ public class Becki_color {
     public final static Becki_color byzance_grey_3   = new Becki_color("grey-gallery");
     public final static Becki_color byzance_green    = new Becki_color("green-meadow");
 
-    public final static Becki_color white    = new Becki_color("wweert");
+    public final static Becki_color white            = new Becki_color("wweert");
 
-    public final static Becki_color byzance_red    = new Becki_color("red-thunderbird");
+    public final static Becki_color byzance_red      = new Becki_color("red-thunderbird");
 
 
 

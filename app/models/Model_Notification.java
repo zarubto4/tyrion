@@ -9,8 +9,14 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
-import utilities.enums.*;
+import utilities.enums.Enum_Notification_importance;
+import utilities.enums.Enum_Notification_level;
+import utilities.enums.Enum_Notification_state;
+import utilities.enums.Enum_Notification_type;
 import utilities.notifications.NotificationHandler;
+import utilities.notifications.helps_objects.Notification_Button;
+import utilities.notifications.helps_objects.Notification_Link;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Notification_Button;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
 import web_socket.services.WS_Becki_Website;
@@ -36,6 +42,7 @@ public class Model_Notification extends Model {
 
     @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_level notification_level;   // Typ zprávy
     @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_importance notification_importance; // Důležitost (podbarvení zprávy)
+    @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_state state; // Machinace s notifikací na straně Becki
 
                                 @Column(columnDefinition = "TEXT")  private String content_string;  // Obsah v podobě Json.toString().
                                 @Column(columnDefinition = "TEXT")  private String buttons_string;
@@ -52,8 +59,11 @@ public class Model_Notification extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true)  public static final String messageType = "notification";
-    @ApiModelProperty(required = true)  public static final String messageChannel = WS_Becki_Website.CHANNEL;
+    @ApiModelProperty(required = true) @JsonProperty public static final String messageType = "notification";
+    @ApiModelProperty(required = true) @JsonProperty public static final String messageChannel = WS_Becki_Website.CHANNEL;
+
+    @JsonProperty @ApiModelProperty(required = true) public String messageType(){ return messageType;}
+    @JsonProperty @ApiModelProperty(required = true) public String messageChannel(){ return messageChannel;}
 
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -68,8 +78,7 @@ public class Model_Notification extends Model {
         }
     }
 
-    @JsonProperty
-    @ApiModelProperty(required = true)
+    @JsonProperty @ApiModelProperty(required = false)
     public List<Swagger_Notification_Button> buttons(){
         try {
 
@@ -88,67 +97,47 @@ public class Model_Notification extends Model {
 /* BODY NOTIFICATION SEGMENTS ------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient List<Swagger_Notification_Element> array = new ArrayList<>();
-
     @JsonIgnore @Transient List<Swagger_Notification_Button> buttons = new ArrayList<>();
 
-    @JsonIgnore @Transient public Enum_Notification_state state;
 
     @JsonIgnore
-    public Model_Notification(Enum_Notification_importance importance, Enum_Notification_level level, Model_Person person){
-        this.notification_level = level;
-        this.notification_importance = importance;
-        this.person = person;
-        created = new Date();
-    }
-
-    @JsonIgnore
-    public Model_Notification(Enum_Notification_importance importance, Enum_Notification_level level){
-        this.notification_level = level;
-        this.notification_importance = importance;
+    public Model_Notification(){
         this.state = Enum_Notification_state.created;
         this.created = new Date();
+    }
+
+    @JsonIgnore  @Transient
+    public Model_Notification setId(String id){
+        this.id = id;
+        return this;
+    }
+
+    @JsonIgnore  @Transient
+    public Model_Notification setImportance(Enum_Notification_importance importance){
+        this.notification_importance = importance;
+        return this;
+    }
+
+    @JsonIgnore  @Transient
+    public Model_Notification setLevel(Enum_Notification_level level){
+        this.notification_level = level;
+        return this;
+    }
+
+    @JsonIgnore  @Transient
+    public Model_Notification setState(Enum_Notification_state state){
+        this.state = state;
+        return this;
     }
 
     //---------------------------------------------------------------------------------------------------------------------
 
     @JsonIgnore @Transient
-    public Model_Notification setText(String message){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Enum_Notification_type.text;
-        element.text     = message;
-        element.color    = "black";
-
-        array.add(element);
+    public Model_Notification setText(Notification_Text text){
+        array.add(text.element);
         return this;
     }
 
-    @JsonIgnore @Transient
-    public Model_Notification setText(String message, String color, boolean bold, boolean italic, boolean underline){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Enum_Notification_type.text;
-        element.text     = message;
-        element.color    = color;
-        element.bold     = bold;
-        element.italic   = italic;
-        element.underline= underline;
-
-        array.add(element);
-        return this;
-    }
-
-    @JsonIgnore @Transient
-    public Model_Notification setBoldText(String message){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type     = Enum_Notification_type.text;
-        element.text     = message;
-        element.bold     = true;
-
-        array.add(element);
-        return this;
-    }
 
     @JsonIgnore @Transient
     public Model_Notification setObject(Object object){
@@ -219,56 +208,36 @@ public class Model_Notification extends Model {
 
                 break;
             }
+
+            case "ActualizationProcedure" : {
+                Model_ActualizationProcedure actualizationProcedure = (Model_ActualizationProcedure) object;
+                element.name = class_name;
+                element.id = actualizationProcedure.id;
+                element.project_id = actualizationProcedure.get_project_id();
+                break;
+            }
+
+
+            default:{
+                logger.error("Model_Notification:: setObject:: Error:: Notification Unsupported Object " + class_name);
+            }
         }
 
         array.add(element);
         return this;
     }
 
+
     @JsonIgnore @Transient
-    public Model_Notification setLink(String text, String url, String color, boolean button, boolean bold, boolean italic, boolean underline){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type = Enum_Notification_type.link;
-        element.url  = url;
-        element.text = text;
-        element.color     = color;
-        element.button    = button;
-        element.bold      = bold;
-        element.italic    = italic;
-        element.underline = underline;
-
-        array.add(element);
+    public Model_Notification setLink(Notification_Link link){
+        array.add(link.element);
         return this;
     }
 
     @JsonIgnore @Transient
-    public Model_Notification setLink(String text, String url){
-
-        Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type = Enum_Notification_type.link;
-        element.url  = url;
-        element.text = text;
-
-        array.add(element);
-        return this;
-    }
-
-    @JsonIgnore @Transient
-    public Model_Notification setButton(Enum_Notification_action action, String payload, String color, String text, boolean bold, boolean italic, boolean underline){
-
+    public Model_Notification setButton(Notification_Button button){
         this.confirmation_required = true;
-
-        Swagger_Notification_Button button = new Swagger_Notification_Button();
-        button.action    = action;
-        button.payload   = payload;
-        button.text      = text;
-        button.color     = color;
-        button.bold      = bold;
-        button.italic    = italic;
-        button.underline = underline;
-
-        buttons.add(button);
+        buttons.add(button.element);
         return this;
     }
 
@@ -329,7 +298,7 @@ public class Model_Notification extends Model {
 
 
 
-    @JsonIgnore @Transient public List<String> list_of_ids_receivers = new ArrayList<>(); // List of Person_ids
+    @JsonIgnore @Transient public List<String> list_of_ids_receivers = new ArrayList<>(); // List ofon_ids Pers
 
     @JsonIgnore @Transient
     public void send(List<Model_Person> receivers){

@@ -17,8 +17,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
-import utilities.enums.Enum_Notification_importance;
-import utilities.enums.Enum_Notification_level;
+import utilities.loggy.Loggy;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
@@ -145,43 +144,69 @@ public class Model_VersionObject extends Model {
     }
 
     @Transient @JsonIgnore public Swagger_C_Program_Version_Short_Detail get_short_c_program_version(){
-        Swagger_C_Program_Version_Short_Detail help = new Swagger_C_Program_Version_Short_Detail();
+        try {
 
-        help.version_id = id;
-        help.version_name = version_name;
-        help.version_description = version_description;
-        help.delete_permission = c_program.delete_permission();
-        help.update_permission = c_program.update_permission();
-        help.author = this.author.get_short_person();
-        help.status = this.c_compilation.status;
+            Swagger_C_Program_Version_Short_Detail help = new Swagger_C_Program_Version_Short_Detail();
 
-        return help;
+            help.version_id = id;
+            help.version_name = version_name;
+            help.version_description = version_description;
+            help.delete_permission = c_program.delete_permission();
+            help.update_permission = c_program.update_permission();
+            help.author = this.author.get_short_person();
+
+            if(this.c_compilation != null){
+                help.status = this.c_compilation.status;
+            }else {
+                help.status = Enum_Compile_status.file_with_code_not_found;
+            }
+
+            return help;
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_VersionObject:: get_short_c_program_version", e);
+            return null;
+        }
     }
 
     @Transient @JsonIgnore public Swagger_B_Program_Version_Short_Detail get_short_b_program_version(){
-        Swagger_B_Program_Version_Short_Detail help = new Swagger_B_Program_Version_Short_Detail();
+       try {
 
-        help.version_id = id;
-        help.version_name = version_name;
-        help.version_description = version_description;
-        help.delete_permission = b_program.delete_permission();
-        help.update_permission = b_program.update_permission();
-        help.author = this.author.get_short_person();
+           Swagger_B_Program_Version_Short_Detail help = new Swagger_B_Program_Version_Short_Detail();
 
-        return help;
+           help.version_id = id;
+           help.version_name = version_name;
+           help.version_description = version_description;
+           help.delete_permission = b_program.delete_permission();
+           help.update_permission = b_program.update_permission();
+           help.author = this.author.get_short_person();
+
+           return help;
+
+       }catch (Exception e){
+           Loggy.internalServerError("Model_VersionObject:: get_short_b_program_version", e);
+           return null;
+       }
     }
 
     @Transient @JsonIgnore public Swagger_M_Program_Version_Short_Detail get_short_m_program_version(){
-        Swagger_M_Program_Version_Short_Detail help = new Swagger_M_Program_Version_Short_Detail();
+        try {
 
-        help.version_id = id;
-        help.version_name = version_name;
-        help.version_description = version_description;
-        help.delete_permission = m_program.delete_permission();
-        help.edit_permission = m_program.edit_permission();
-        help.author = this.author.get_short_person();
+            Swagger_M_Program_Version_Short_Detail help = new Swagger_M_Program_Version_Short_Detail();
 
-        return help;
+            help.version_id = id;
+            help.version_name = version_name;
+            help.version_description = version_description;
+            help.delete_permission = m_program.delete_permission();
+            help.edit_permission = m_program.edit_permission();
+            help.author = this.author.get_short_person();
+
+            return help;
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_VersionObject:: get_short_m_program_version", e);
+            return null;
+        }
     }
 
 
@@ -496,57 +521,7 @@ public class Model_VersionObject extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    public void notification_compilation_start(){
 
-        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
-                .setText("Server starts compilation of Version ")
-                .setObject(this)
-                .send(Controller_Security.getPerson());
-    }
-
-    @JsonIgnore @Transient
-    public void notification_compilation_success(){
-
-        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.success)
-                .setText("Compilation of Version ")
-                .setObject(this)
-                .setText("was successful.")
-                .send(Controller_Security.getPerson());
-    }
-
-    @JsonIgnore @Transient
-    public void notification_compilation_unsuccessful_warn(String reason){
-
-        new Model_Notification(Enum_Notification_importance.normal,  Enum_Notification_level.warning)
-                .setText("Compilation of Version ")
-                .setObject(this)
-                .setText("was unsuccessful, for reason:")
-                .setText(reason, "black", true, false, false)
-                .send(Controller_Security.getPerson());
-    }
-
-    @JsonIgnore @Transient
-    public void notification_compilation_unsuccessful_error(String result){
-
-        new Model_Notification(Enum_Notification_importance.normal, Enum_Notification_level.error)
-                .setText( "Compilation of Version")
-                .setObject(this)
-                .setText("with critical Error:")
-                .setText(result, "black", true, false, false)
-                .send(Controller_Security.getPerson());
-    }
-
-    @JsonIgnore @Transient
-    public void notification_new_actualization_request_on_version(){
-
-        new Model_Notification(Enum_Notification_importance.low, Enum_Notification_level.info)
-                .setText("New actualization task was added to Task Queue on Version ")
-                .setObject(this)
-                .setText(" from Program ")
-                .setObject(this.c_program)
-                .send(Controller_Security.getPerson());
-    }
 
 /* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/
 

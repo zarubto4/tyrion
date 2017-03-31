@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Enum_Update_group_procedure_state;
-import utilities.enums.Enum_CProgram_updater_state;
-import utilities.enums.Enum_Update_type_of_update;
+import utilities.enums.*;
+import utilities.loggy.Loggy;
+import utilities.notifications.helps_objects.Notification_Text;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class Model_ActualizationProcedure extends Model {
         return state;
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String  state_fraction(){
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String state_fraction(){
 
         int all = Model_CProgramUpdatePlan.find.where()
                 .eq("actualization_procedure.id",id)
@@ -171,6 +171,20 @@ public class Model_ActualizationProcedure extends Model {
         this.update();
     }
 
+    @JsonIgnore @Transient
+    public String get_project_id(){
+
+        if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
+            return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id", id).select("id").findUnique().id;
+        }
+
+        if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
+            return Model_Project.find.where().eq("private_instance.actual_instance.procedures.id", id).select("id").findUnique().id;
+        }
+
+        return null;
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     class Program_Actualization{
@@ -181,6 +195,59 @@ public class Model_ActualizationProcedure extends Model {
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public void notification_update_procedure_start(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.low)
+                    .setLevel(Enum_Notification_level.info)
+                    .setText(new Notification_Text().setText("Update Procedure "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" is done."))
+                    .send_under_project(get_project_id());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_ActualizationProcedure:: notification_update_procedure_start", e);
+        }
+    }
+
+    @JsonIgnore @Transient
+    public void notification_update_procedure_progress(){
+        try {
+
+            new Model_Notification()
+                    .setId(UUID.randomUUID().toString())
+                    .setImportance( Enum_Notification_importance.low )
+                    .setLevel( Enum_Notification_level.info )
+                    .setText(new Notification_Text().setText("Update of Procedure "))
+                    .setObject(this)
+                    .setText( new Notification_Text().setText(" is done from " + state_fraction() + " ." ))
+                    .send_under_project(get_project_id());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_ActualizationProcedure:: notification_update_procedure_progress", e);
+        }
+    }
+
+    @JsonIgnore @Transient
+    public void notification_update_procedure_complete(){
+        try {
+
+            new Model_Notification()
+                    .setImportance( Enum_Notification_importance.low )
+                    .setLevel( Enum_Notification_level.info )
+                    .setText(new Notification_Text().setText("Update Procedure "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" is done."))
+                    .send_under_project(get_project_id());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_ActualizationProcedure:: notification_update_procedure_complete", e);
+        }
+    }
+
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 

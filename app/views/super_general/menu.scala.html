@@ -124,7 +124,7 @@
 
                                 @if(file.file.isFile) {
                                     <li>
-                                        <a href='@routes.Controller_Dashboard.show_wiki(file.file_name)'>
+                                        <a href='@routes.Controller_Dashboard.show_wiki(file.file_path)'>
                                             <i class="fa fa-graduation-cap"></i>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</a>
                                     </li>
 
@@ -149,7 +149,7 @@
 
                             @if(file.file.isFile) {
                                 <li>
-                                    <a href='@routes.Controller_Dashboard.show_wiki(file.file_name)' >
+                                    <a href='@routes.Controller_Dashboard.show_wiki(file.file_path)' >
                                         <i class="fa fa-graduation-cap"></i>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</a>
                                 </li>
                             } else {
