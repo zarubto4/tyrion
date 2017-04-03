@@ -209,6 +209,14 @@ public class Model_Notification extends Model {
                 break;
             }
 
+            case "HomerInstance" : {
+                Model_HomerInstance homerInstance = (Model_HomerInstance) object;
+                element.name = class_name;
+                element.id = homerInstance.blocko_instance_name;
+                element.project_id = homerInstance.project.id;
+                break;
+            }
+
             case "ActualizationProcedure" : {
                 Model_ActualizationProcedure actualizationProcedure = (Model_ActualizationProcedure) object;
                 element.name = class_name;

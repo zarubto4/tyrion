@@ -33,7 +33,7 @@ public class NotificationHandler {
 
     public static void addToQueue(Model_Notification notification){
 
-        logger.trace("NotificationHandler:: addToQueue:: adding notification to queue");
+        logger.debug("NotificationHandler:: addToQueue:: adding notification to queue");
 
         notifications.add(notification);
 
@@ -104,13 +104,17 @@ public class NotificationHandler {
 
             for (String person_id : notification.list_of_ids_receivers) {
 
+                System.out.print("Komu notifikaci posílám? " + person_id);
+
+
                 try {
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
                     if ((notification.notification_importance != Enum_Notification_importance.low) && (notification.id == null)) {
 
 
                         notification.person = Model_Person.get_byId(person_id); // Get Person Model from Cache
-                        // notification.save_object();
+                        notification.save_object();
+
 
                         message.put("id", notification.id);
 
@@ -142,6 +146,9 @@ public class NotificationHandler {
                     logger.error("NotificationHandler:: SendNotification inside for void Error:: ", e);
                 }
             }
+
+            System.out.print("Všem ze seznamu byla odeslána notifikace - its done");
+
         }catch (Exception e){
             logger.error("NotificationHandler:: SendNotification void Error: ", e);
         }

@@ -124,7 +124,7 @@ public class Model_Board extends Model {
                                                    @JsonIgnore @ManyToOne   public Model_BootLoader    actual_boot_loader;
 
     @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_BPair> b_pair = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_CProgramUpdatePlan> c_program_update_plans;
+    @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
 
 
 
@@ -872,6 +872,8 @@ public class Model_Board extends Model {
         Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
         procedure.state = Enum_Update_group_procedure_state.not_start_yet;
         procedure.type_of_update = type_of_update;
+
+
         procedure.save();
 
         for(Model_BPair b_pair : board_for_update){

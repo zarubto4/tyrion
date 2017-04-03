@@ -32,7 +32,8 @@ public class Model_ActualizationProcedure extends Model {
 
     @ApiModelProperty(required = true, value = "Find description on Model Actual_procedure_State")  public Enum_Update_group_procedure_state state;
 
-                                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerInstanceRecord homer_instance_record;
+                                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerInstanceRecord homer_instance_record; // For updates under instance snapshot records
+                                                   // @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerInstance homer_instance;              // For updates under virtual instance
 
     @ApiModelProperty(required = true, value = "Can be empty")
     @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
@@ -49,6 +50,9 @@ public class Model_ActualizationProcedure extends Model {
         return state;
     }
 
+
+
+
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String state_fraction(){
 
         int all = Model_CProgramUpdatePlan.find.where()
@@ -60,7 +64,7 @@ public class Model_ActualizationProcedure extends Model {
                 .eq("state", Enum_CProgram_updater_state.complete)
                 .findRowCount();
 
-        return all + "/" + complete;
+        return complete + "/" +  all;
 
     }
 
@@ -100,6 +104,9 @@ public class Model_ActualizationProcedure extends Model {
         if( ( ( complete ) * 1.0 / all ) == 1.0 ){
             date_of_finish = new Date();
             state = Enum_Update_group_procedure_state.successful_complete;
+
+            this.notification_update_procedure_complete();
+
             this.update();
             return;
         }
@@ -118,6 +125,9 @@ public class Model_ActualizationProcedure extends Model {
         if( ( ( complete + canceled + override) * 1.0 / all ) == 1.0 ){
             date_of_finish = new Date();
             state = Enum_Update_group_procedure_state.complete;
+
+            this.notification_update_procedure_complete();
+
             this.update();
             return;
         }
@@ -129,6 +139,9 @@ public class Model_ActualizationProcedure extends Model {
 
         if(in_progress != 0){
             state = Enum_Update_group_procedure_state.in_progress;
+
+            notification_update_procedure_progress();
+
             this.update();
         }
 
@@ -175,11 +188,15 @@ public class Model_ActualizationProcedure extends Model {
     public String get_project_id(){
 
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
+
+            System.out.println("Hledám pod public instance");
             return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id", id).select("id").findUnique().id;
         }
 
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
-            return Model_Project.find.where().eq("private_instance.actual_instance.procedures.id", id).select("id").findUnique().id;
+
+            System.out.println("Hledám pod private instance");
+            return Model_Project.find.where().eq("boards.c_program_update_plans.actualization_procedure.id", id).findUnique().id;
         }
 
         return null;
@@ -200,13 +217,59 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_start(){
         try {
 
-            new Model_Notification()
-                    .setImportance(Enum_Notification_importance.low)
-                    .setLevel(Enum_Notification_level.info)
-                    .setText(new Notification_Text().setText("Update Procedure "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" is done."))
-                    .send_under_project(get_project_id());
+            Model_Notification notification = new Model_Notification();
+
+            notification.setImportance(Enum_Notification_importance.normal)
+                        .setLevel(Enum_Notification_level.info);
+
+            if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
+                notification.setText(new Notification_Text().setText("Your manual update "))
+                .setObject(this);
+
+                if(updates.size() == 1){
+
+                    notification.setText(new Notification_Text().setText(" for Board "))
+                                .setObject(updates.get(0).board)
+                                .setText( new Notification_Text().setText(" from Code Editor with Program "))
+                                .setObject(updates.get(0).c_program_version_for_update.c_program)
+                                .setText( new Notification_Text().setText(" version "))
+                                .setObject(updates.get(0).c_program_version_for_update)
+                                .setText( new Notification_Text().setText("."));
+
+                }
+                else{
+                    notification.setText(new Notification_Text().setText(" for " + updates.size()  + " devices from Code Editor"));
+                }
+
+                notification.setText(new Notification_Text().setText(" just begun. We will keep you informed of the progress."));
+
+            }else if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ){
+
+                notification.setText(new Notification_Text().setText("Update under Instance "))
+                .setObject(homer_instance_record.actual_running_instance);
+
+                if(updates.size() == 1){
+
+                    notification.setText(new Notification_Text().setText(" with one device "));
+                    notification.setObject(updates.get(0).board);
+
+                }
+                else{
+                    notification.setText(new Notification_Text().setText(" with " + updates.size()  + " devices from Blocko Snapshot "));
+                }
+
+                notification.setText(new Notification_Text().setText(" just begun. We will keep you informed of the progress."));
+
+            }else {
+
+                logger.error("Model_ActualizationProcedure:: Update procedure has not set type_of_update");
+
+            }
+
+
+            System.out.println(" Notification Update started ");
+
+            notification.send_under_project(get_project_id());
 
         }catch (Exception e){
             Loggy.internalServerError("Model_ActualizationProcedure:: notification_update_procedure_start", e);
@@ -217,14 +280,18 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_progress(){
         try {
 
-            new Model_Notification()
-                    .setId(UUID.randomUUID().toString())
-                    .setImportance( Enum_Notification_importance.low )
-                    .setLevel( Enum_Notification_level.info )
-                    .setText(new Notification_Text().setText("Update of Procedure "))
-                    .setObject(this)
-                    .setText( new Notification_Text().setText(" is done from " + state_fraction() + " ." ))
-                    .send_under_project(get_project_id());
+            if(state_fraction().equals("0/1"))return;
+
+            Model_Notification notification = new Model_Notification();
+
+            notification.setId(UUID.randomUUID().toString())
+                        .setImportance( Enum_Notification_importance.normal)
+                        .setLevel( Enum_Notification_level.info);
+
+            notification.setText(new Notification_Text().setText("Update of Procedure "))
+                        .setObject(this)
+                        .setText( new Notification_Text().setText(" is done from " + state_fraction() + " ." ))
+                        .send_under_project(get_project_id());
 
         }catch (Exception e){
             Loggy.internalServerError("Model_ActualizationProcedure:: notification_update_procedure_progress", e);
@@ -235,9 +302,9 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_complete(){
         try {
 
-            new Model_Notification()
-                    .setImportance( Enum_Notification_importance.low )
-                    .setLevel( Enum_Notification_level.info )
+            Model_Notification notification =  new Model_Notification()
+                    .setImportance( Enum_Notification_importance.normal )
+                    .setLevel( Enum_Notification_level.success )
                     .setText(new Notification_Text().setText("Update Procedure "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" is done."))

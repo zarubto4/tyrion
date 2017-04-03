@@ -329,6 +329,8 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
         logger.debug("Master_Updater:: Summary for actualizations");
 
+        procedure.notification_update_procedure_start();
+
         for (Instance instance : structure.instances.values()) {
 
             logger.debug("Master_Updater:: Summary: Instance ::" + instance.instance.blocko_instance_name);
@@ -342,7 +344,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                 logger.debug("  Master_Updater:: Summary: Type of Update ::" + program.type_of_update);
 
 
-                Utilities_HW_Updater_Actualization_procedure actualization_procedure= new Utilities_HW_Updater_Actualization_procedure();
+                Utilities_HW_Updater_Actualization_procedure actualization_procedure = new Utilities_HW_Updater_Actualization_procedure();
 
                 actualization_procedure.typeOfUpdate = program.type_of_update;
                 actualization_procedure.actualizationProcedureId = procedure.id;

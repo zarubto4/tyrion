@@ -46,19 +46,19 @@ public class Model_HomerInstance extends Model {
                              @JsonIgnore @ManyToOne()               public Model_HomerServer cloud_homer_server;
 
 
-    @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY)          public Model_BProgram b_program;                     //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
+    @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                     //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
-                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)                  public Model_HomerInstanceRecord actual_instance; // Aktuálně běžící instnace na Serveru
+                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)         public Model_HomerInstanceRecord actual_instance; // Aktuálně běžící instnace na Serveru
 
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
-                                                                                                                        public Enum_Homer_instance_type instance_type;
+                                                                                                                   public Enum_Homer_instance_type instance_type;
 
-    @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)            public Model_Project project;
+    @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)       public Model_Project project;
 
 
     @JsonIgnore @OneToMany(mappedBy="virtual_instance_under_project", cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Board> boards_in_virtual_instance = new ArrayList<>();
-
+    //@JsonIgnore @OneToMany(mappedBy="homer_instance",                 cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
