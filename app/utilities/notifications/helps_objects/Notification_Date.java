@@ -3,20 +3,24 @@ package utilities.notifications.helps_objects;
 import utilities.enums.Enum_Notification_element_type;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
 
-public class Notification_Link {
+import java.util.Date;
+
+
+public class Notification_Date {
 
     public Swagger_Notification_Element element = null;
 
-    public Notification_Link(){
+    public Notification_Date(){
         element = new Swagger_Notification_Element();
-        element.type = Enum_Notification_element_type.link;
+        element.type = Enum_Notification_element_type.date;
     }
 
-    public Notification_Link setUrl(String text, String url){
-        element.url  = url;
-        element.text = text;
+    public Notification_Date setDate(Date date){
+        element.date  = date;
 
         return this;
     }
-
 }
+
+
+

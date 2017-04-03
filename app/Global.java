@@ -5,6 +5,7 @@ import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.cache.Server_Cache;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.loggy.Loggy;
 import utilities.request_counter.RequestCounter;
 import utilities.scheduler.CustomScheduler;
@@ -73,7 +74,7 @@ public class Global extends GlobalSettings {
         logger.warn("Global:: onStop: Closing cache layer");
         Server_Cache.stopCache();
 
-        if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")){
+        if(Server.server_mode == Enum_Tyrion_Server_mode.developer ||Server.server_mode == Enum_Tyrion_Server_mode.stage){
             try {
 
                 logger.warn("Global:: onStop: You have developer version - System removes CRON task from your RAM");

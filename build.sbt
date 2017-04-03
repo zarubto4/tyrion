@@ -46,7 +46,10 @@ libraryDependencies ++= Seq(
   javaWs
 )
 
+resolvers += "JBoss" at "https://repository.jboss.org/"
+
 TwirlKeys.templateImports += "utilities.loggy._"
+
 
 
 // Play provides two styles of routers, one expects its actions to be injected, the

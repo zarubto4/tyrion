@@ -1,21 +1,14 @@
 package utilities.enums;
 
+
 import com.avaje.ebean.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonCreator;
 
-public enum Enum_Notification_type {
+public enum  Enum_Notification_type {
 
-    @EnumValue("link")    link,
-    @EnumValue("object")  object,
-    @EnumValue("text")    text;
+    @EnumValue("CHAIN_START")     CHAIN_START,
+    @EnumValue("CHAIN_UPDATE")    CHAIN_UPDATE,
+    @EnumValue("CHAIN_END")       CHAIN_END,
 
-    @JsonCreator
-    public static Enum_Notification_type fromString(String key) {
-        for(Enum_Notification_type type : Enum_Notification_type.values()) {
-            if(type.name().equalsIgnoreCase(key)) {
-                return type;
-            }
-        }
-        return null;
-    }
+    @EnumValue("INDIVIDUAL")       INDIVIDUAL;
+
 }

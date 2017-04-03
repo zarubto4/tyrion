@@ -90,7 +90,9 @@ public class NotificationHandler {
 
             ObjectNode message = Json.newObject();
             message.put("messageType", Model_Notification.messageType);
+
             message.put("messageChannel", WS_Becki_Website.CHANNEL);
+            message.put("notification_type", notification.notification_type.name());
             message.put("notification_level", notification.notification_level.name());
             message.put("notification_importance", notification.notification_importance.name());
             message.put("state", notification.state.name());

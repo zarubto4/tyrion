@@ -16,6 +16,7 @@ import play.mvc.Http;
 import utilities.Server;
 import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Enum_Log_level;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.enums.Enum_Where_logged_tag;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_Task;
 import utilities.independent_threads.Check_Homer_instance_after_connection;
@@ -36,7 +37,7 @@ public class Model_HomerServer extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                       @Id                         public String unique_identificator;
+                                       @Id                      public String unique_identificator;
                                        @JsonIgnore              public String hash_certificate;
 
     @JsonIgnore                                                 public String personal_server_name;
@@ -119,7 +120,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient public static Model_HomerServer get_destination_server(){
 
 
-        if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")) {
+        if(Server.server_mode == Enum_Tyrion_Server_mode.developer || Server.server_mode == Enum_Tyrion_Server_mode.stage) {
 
             return Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.test_server).setMaxRows(1).findUnique();
 
@@ -156,7 +157,7 @@ public class Model_HomerServer extends Model{
 
 
 
-/* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER---------------------------------------------------------------------------------*/
+/* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient  public static final String CHANNEL = "homer-server";
     @JsonIgnore @Transient  static play.Logger.ALogger logger = play.Logger.of("Loggy");
@@ -511,6 +512,7 @@ public class Model_HomerServer extends Model{
             return null;
         }
 
+        /**
         ClassLoader classLoader = Model_HomerServer.class.getClassLoader();
 
         if (classLoader == null) {
@@ -520,7 +522,7 @@ public class Model_HomerServer extends Model{
         if (classLoader == null) {
             classLoader = Model_HomerServer.class.getClassLoader();
         }
-
+        */
 
         Model_HomerServer model = cache_model_homer_server.get(unique_identificator);
 

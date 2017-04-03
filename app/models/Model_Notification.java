@@ -9,12 +9,10 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
-import utilities.enums.Enum_Notification_importance;
-import utilities.enums.Enum_Notification_level;
-import utilities.enums.Enum_Notification_state;
-import utilities.enums.Enum_Notification_type;
+import utilities.enums.*;
 import utilities.notifications.NotificationHandler;
 import utilities.notifications.helps_objects.Notification_Button;
+import utilities.notifications.helps_objects.Notification_Date;
 import utilities.notifications.helps_objects.Notification_Link;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Notification_Button;
@@ -42,6 +40,7 @@ public class Model_Notification extends Model {
 
     @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_level notification_level;   // Typ zprávy
     @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_importance notification_importance; // Důležitost (podbarvení zprávy)
+    @Transient                   @ApiModelProperty(required = true) public Enum_Notification_type notification_type; // Typ zprávy pro long pool - chain message.
     @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_state state; // Machinace s notifikací na straně Becki
 
                                 @Column(columnDefinition = "TEXT")  private String content_string;  // Obsah v podobě Json.toString().
@@ -50,6 +49,7 @@ public class Model_Notification extends Model {
                                 @ApiModelProperty(required = true)  public boolean confirmation_required;
                                 @ApiModelProperty(required = true)  public boolean confirmed;
                                 @ApiModelProperty(required = true)  public boolean was_read;
+
 
     @ApiModelProperty(required = true, dataType = "integer",
             readOnly = true, value = "UNIX time in ms")             public Date   created;
@@ -103,6 +103,7 @@ public class Model_Notification extends Model {
     @JsonIgnore
     public Model_Notification(){
         this.state = Enum_Notification_state.created;
+        this.notification_type = Enum_Notification_type.INDIVIDUAL;
         this.created = new Date();
     }
 
@@ -138,12 +139,27 @@ public class Model_Notification extends Model {
         return this;
     }
 
+    @JsonIgnore @Transient
+    public Model_Notification setChainType(Enum_Notification_type notification_type){
+        this.notification_type = notification_type;
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Model_Notification setDate(Date date){
+
+        Notification_Date element_date = new Notification_Date();
+        element_date.setDate(date);
+
+        array.add(element_date.element);
+        return this;
+    }
 
     @JsonIgnore @Transient
     public Model_Notification setObject(Object object){
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type       = Enum_Notification_type.object;
+        element.type       = Enum_Notification_element_type.object;
         element.color      = "black";
 
         String class_name = object.getClass().getSimpleName().replaceAll("Swagger_","").replaceAll("Model_","");

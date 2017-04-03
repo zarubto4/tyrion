@@ -2,7 +2,7 @@
 @import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller
 @import utilities.loggy.Loggy
 @import utilities.wiki.Wiki
-
+@import utilities.enums.Enum_Tyrion_Server_mode
 
     <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
@@ -40,7 +40,7 @@
                 </li>
 
 <!-------------------------------------------------------------------------- ------------------------>
-                @if(Server.server_mode.equals("developer")||Server.server_mode.equals("stage")){
+                @if(Server.server_mode == Enum_Tyrion_Server_mode.developer || Server.server_mode == Enum_Tyrion_Server_mode.stage){
                 <li class="treeview">
                     <a href="#">
                         <i class="fa fa-bug"></i> <span>For Tyrion Developers</span>

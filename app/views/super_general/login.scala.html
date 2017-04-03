@@ -1,4 +1,5 @@
 @import utilities.Server
+@import utilities.enums.Enum_Tyrion_Server_mode
 
 <!DOCTYPE html>
 <html><head>
@@ -39,20 +40,20 @@
     text-decoration: none;
   }
 
-  @if(Server.server_mode == "developer"){
+  @if(Server.server_mode == Enum_Tyrion_Server_mode.developer){
     header{
       background-color: #3c8dbc;
       width: 100%;
     }
    }
 
-  @if(Server.server_mode == "stage"){
+  @if(Server.server_mode == Enum_Tyrion_Server_mode.stage){
       header{
       background-color: #b604bc;
       width: 100%;
     }
   }
-    @if(Server.server_mode == "production"){
+    @if(Server.server_mode == Enum_Tyrion_Server_mode.production){
       header{
       background-color: #bc0015;
       width: 100%;

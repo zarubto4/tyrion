@@ -12,10 +12,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
-import utilities.enums.Enum_Homer_instance_type;
-import utilities.enums.Enum_Notification_importance;
-import utilities.enums.Enum_Notification_level;
-import utilities.enums.Enum_type_of_command;
+import utilities.Server;
+import utilities.enums.*;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
@@ -74,7 +72,13 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
 
         if(actual_instance != null) {
-            return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+
+            if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
+                return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+            }else{
+                return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+            }
+
         }
 
         return null;
@@ -205,7 +209,7 @@ public class Model_HomerInstance extends Model {
                 case WS_Message_Device_connected.messageType: {
 
                     final Form<WS_Message_Device_connected> form = Form.form(WS_Message_Device_connected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Device_connected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Message_Device_connected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.device_Connected(homer, form.get());
                     return;
@@ -215,7 +219,7 @@ public class Model_HomerInstance extends Model {
 
                     // Zpracování Json
                     final Form<WS_Message_Yoda_connected> form = Form.form(WS_Message_Yoda_connected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Yoda_connected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Message_Yoda_connected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.master_device_Connected(homer, form.get());
                     return;
@@ -225,7 +229,7 @@ public class Model_HomerInstance extends Model {
                 case WS_Message_Yoda_disconnected.messageType: {
 
                     final Form<WS_Message_Yoda_disconnected> form = Form.form(WS_Message_Yoda_disconnected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Yoda_disconnected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Message_Yoda_disconnected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.master_device_Disconnected(form.get());
                     return;
@@ -234,16 +238,26 @@ public class Model_HomerInstance extends Model {
                 case WS_Message_Device_disconnected.messageType: {
 
                     final Form<WS_Message_Device_disconnected> form = Form.form(WS_Message_Device_disconnected.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Device_disconnected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Message_Device_disconnected:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_Board.device_Disconnected(form.get());
+                    return;
+                }
+
+
+                case WS_Message_UpdateProcedure_progress.messageType : {
+
+                    final Form<WS_Message_UpdateProcedure_progress> form = Form.form(WS_Message_UpdateProcedure_progress.class).bind(json);
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Message_UpdateProcedure_progress:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+
+                    Model_CProgramUpdatePlan.update_procedure_progress(form.get());
                     return;
                 }
 
                 case WS_Message_Update_device_firmware.messageType : {
 
                     final Form<WS_Message_Update_device_firmware> form = Form.form(WS_Message_Update_device_firmware.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Update_device_firmware:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Message_Update_device_firmware:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
 
                     Model_Board.update_report_from_homer(form.get());
@@ -254,7 +268,7 @@ public class Model_HomerInstance extends Model {
                 case WS_Message_Get_summary_information.messageType: {
 
                     final Form<WS_Message_Get_summary_information> form = Form.form(WS_Message_Get_summary_information.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Get_summary_information:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Message_Get_summary_information:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     Model_HomerInstance.summary_information(homer, form.get());
                     return;
@@ -263,7 +277,7 @@ public class Model_HomerInstance extends Model {
                 case WS_Message_Grid_token_verification.messageType : {
 
                     final Form<WS_Message_Grid_token_verification> form = Form.form(WS_Message_Grid_token_verification.class).bind(json);
-                    if(form.hasErrors()){logger.error("Homer_Instance:: token_grid_verification:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                    if(form.hasErrors()){logger.error("Homer_Instance:: WS_Message_Grid_token_verification:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
 
                     WS_Message_Grid_token_verification help = form.get();
                     help.get_instance().cloud_verification_token_GRID(help);

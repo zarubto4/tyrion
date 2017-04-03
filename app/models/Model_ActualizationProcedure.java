@@ -7,9 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.enums.*;
 import utilities.loggy.Loggy;
 import utilities.notifications.helps_objects.Notification_Text;
+import web_socket.message_objects.homer_instance.WS_Message_UpdateProcedure_progress;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -49,9 +51,6 @@ public class Model_ActualizationProcedure extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true ) public Enum_Update_group_procedure_state state (){
         return state;
     }
-
-
-
 
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String state_fraction(){
 
@@ -202,6 +201,10 @@ public class Model_ActualizationProcedure extends Model {
         return null;
     }
 
+
+/* SERVER WEBSOCKET ----------------------------------------------------------------------------------------------------*/
+
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     class Program_Actualization{
@@ -210,6 +213,7 @@ public class Model_ActualizationProcedure extends Model {
         @ApiModelProperty(required = true, value = "Can be empty")  public String b_program_name;
         @ApiModelProperty(required = true, value = "Can be empty")  public String b_program_version_name;
     }
+
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -280,7 +284,7 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_progress(){
         try {
 
-            if(state_fraction().equals("0/1"))return;
+            if(state_fraction().equals("0/1")) return;
 
             Model_Notification notification = new Model_Notification();
 
@@ -302,13 +306,52 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_complete(){
         try {
 
-            Model_Notification notification =  new Model_Notification()
-                    .setImportance( Enum_Notification_importance.normal )
-                    .setLevel( Enum_Notification_level.success )
-                    .setText(new Notification_Text().setText("Update Procedure "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" is done."))
-                    .send_under_project(get_project_id());
+            Model_Notification notification =  new Model_Notification();
+
+            notification.setImportance( Enum_Notification_importance.normal )
+                        .setLevel( Enum_Notification_level.success );
+
+            // Individual update
+            if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
+
+                if(state == Enum_Update_group_procedure_state.successful_complete) {
+                    notification.setText(new Notification_Text().setText("Update Procedure "))
+                            .setObject(this)
+                            .setText(new Notification_Text().setText(" is complete."));
+                } else{
+                    notification.setText(new Notification_Text().setText("Update Procedure "))
+                            .setObject(this)
+                            .setText(new Notification_Text().setText(" is set as complete but something is wrong. Check Update procedure details."));
+                }
+
+                notification.send_under_project(get_project_id());
+                return;
+            }
+
+            if(state == Enum_Update_group_procedure_state.successful_complete) {
+
+                notification.setText( new Notification_Text().setText("Update Procedure "))
+                        .setObject(this)
+                        .setText(new Notification_Text().setText(" started at: "))
+                        .setDate(date_of_create)
+                        .setText(new Notification_Text().setText(" is done with no errors or other issues."));
+
+                notification.send_under_project(get_project_id());
+                return;
+            }
+
+            if(state == Enum_Update_group_procedure_state.complete) {
+
+                notification.setText( new Notification_Text().setText("Update Procedure "))
+                            .setObject(this)
+                            .setText(new Notification_Text().setText(" started at: "))
+                            .setDate(date_of_create)
+                            .setText(new Notification_Text().setText(" is done but something is not right. For more information, please visit the update procedure details."));
+
+                notification.send_under_project(get_project_id());
+                return;
+
+            }
 
         }catch (Exception e){
             Loggy.internalServerError("Model_ActualizationProcedure:: notification_update_procedure_complete", e);
@@ -327,6 +370,9 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Transient   public boolean read_permission()      {  return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id",id ).findUnique().read_permission() || Controller_Security.getPerson().has_permission("Actualization_procedure_read"); }
 
     public enum permissions{Actualization_procedure_read}
+
+
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_ActualizationProcedure> find = new Model.Finder<>(Model_ActualizationProcedure.class);

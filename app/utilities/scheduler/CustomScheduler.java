@@ -6,6 +6,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import utilities.Server;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.loggy.Loggy;
 import utilities.scheduler.jobs.*;
 
@@ -127,7 +128,7 @@ public class CustomScheduler {
                 // Přidání úkolů do scheduleru
 
                 // 0) Přesouvání logu z tyriona do BLOB serveru
-                if(!Server.server_mode.equals("developer")) {
+                if(Server.server_mode != Enum_Tyrion_Server_mode.developer ) {
                     logger.debug("CustomScheduler:: start: Scheduling new Job - Log_Azure_Upload");
                     scheduler.scheduleJob(newJob(Job_LogAzureUpload.class).withIdentity(JobKey.jobKey("log_azure_upload")).build(), every_day_0);
                 }
@@ -152,7 +153,7 @@ public class CustomScheduler {
                 scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_5);
 
                 // 6) Obnovení certifikátu od Lets Encrypt
-                if(Server.server_mode.equals("production")) {
+                if(Server.server_mode != Enum_Tyrion_Server_mode.production ) {
                     logger.debug("CustomScheduler:: start: Scheduling new Job - Certificate_Renewal");
                     scheduler.scheduleJob(newJob(Job_CertificateRenewal.class).withIdentity(JobKey.jobKey("certificate_renewal")).build(), every_day_6);
                 }

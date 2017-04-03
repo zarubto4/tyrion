@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.Server;
 import utilities.enums.Enum_Homer_instance_type;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_B_Program_State;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
@@ -70,7 +72,14 @@ public class Model_BProgram extends Model {
         // Je nahrán
         state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
         state.instance_online = instance.instance_online();
-        state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url  + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
+
+        if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
+            // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
+            state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url  + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
+        }else {
+            state.instance_remote_url = "wss://" + instance.cloud_homer_server.server_url  + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
+        }
+
 
 
         // Jaká verze Blocko Programu?

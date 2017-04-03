@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.loggy.Loggy;
 import utilities.notifications.NotificationHandler;
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
-
 
 
     public static CloudStorageAccount storageAccount;
@@ -55,7 +55,8 @@ public class Server {
 
     //-------------------------------------------------------------------
 
-    public static String server_mode;
+    public static Enum_Tyrion_Server_mode server_mode;
+
     public static String server_version;
 
     //-------------------------------------------------------------------
@@ -95,11 +96,13 @@ public class Server {
          * Zatím se zdá vhodnější varianta přepínání v configuračním souboru. Tomáš Záruba 15.2.16
          */
 
-        server_mode = Configuration.root().getString("Server.mode");
+        String server_mode_string = Configuration.root().getString("Server.mode");
         server_version = Configuration.root().getString("api.version");
 
-        switch (server_mode) {
+        switch (server_mode_string) {
             case "developer" : {
+
+                server_mode = Enum_Tyrion_Server_mode.developer;
 
                 // Nastavení pro Tyrion Adresy
                 tyrion_serverAddress = "http://" + Configuration.root().getString("Server.localhost");
@@ -152,9 +155,10 @@ public class Server {
             }
             case "production" : {
 
+                server_mode = Enum_Tyrion_Server_mode.production;
                 // Nastavení pro Tyrion Adresy
                 tyrion_serverAddress = "http://" + Configuration.root().getString("Server.production");
-                tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.production");
+                tyrion_webSocketAddress = "wss://" + Configuration.root().getString("Server.production");
 
                 // Nastavení pro Becki Adresy
                 becki_mainUrl                   = "http://" + Configuration.root().getString("Becki.production.mainUrl");
@@ -203,9 +207,11 @@ public class Server {
             }
             case "stage" : {
 
+                server_mode = Enum_Tyrion_Server_mode.stage;
+
                 // Nastavení pro Tyrion Adresy
                 tyrion_serverAddress        = "http://" + Configuration.root().getString("Server.stage");
-                tyrion_webSocketAddress     = "ws://" + Configuration.root().getString("Server.stage");
+                tyrion_webSocketAddress     = "wss://" + Configuration.root().getString("Server.stage");
 
                 // Nastavení pro Becki Adresy
                 becki_mainUrl               = "http://" + Configuration.root().getString("Becki.stage.mainUrl");
@@ -254,14 +260,17 @@ public class Server {
             }
             default: throw new NullPointerException("Server mode is null or unknown");
         }
+
         /**
          * 2)
          * Nastavení Azure připojení
          * jelikož v době vývoje nebylo možné realizovat různá připojení, bylo nutné zajistit pouze jedno připojení v počátku
          */
-        String azureConnection;
-        if(server_mode.equals("developer")||server_mode.equals("stage")) azureConnection = Configuration.root().getString("Azure.developer.azureConnectionSecret");
-        else                                                             azureConnection = Configuration.root().getString("Azure.production.azureConnectionSecret");
+        String azureConnection = "";
+
+        if(server_mode ==Enum_Tyrion_Server_mode.developer)     azureConnection = Configuration.root().getString("Azure.developer.azureConnectionSecret");
+        if(server_mode ==Enum_Tyrion_Server_mode.stage)         azureConnection = Configuration.root().getString("Azure.stage.azureConnectionSecret");
+        if(server_mode ==Enum_Tyrion_Server_mode.production)    azureConnection = Configuration.root().getString("Azure.production.azureConnectionSecret");
 
         storageAccount = CloudStorageAccount.parse(azureConnection);
         blobClient = storageAccount.createCloudBlobClient();

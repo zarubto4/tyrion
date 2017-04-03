@@ -4,6 +4,7 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
+import javafx.stage.Stage;
 import models.Model_FileRecord;
 import models.Model_VersionObject;
 import models.Model_Person;
@@ -19,8 +20,11 @@ import models.Model_MProject;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
+import utilities.Server;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_Cloud_HomerServer_type;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
@@ -708,7 +712,13 @@ public class Controller_Grid extends Controller {
             if(record.actual_running_instance == null)  return GlobalResult.notFoundObject("Instance not found or not running in cloud!");
 
             Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-            summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.main_instance_history.b_program_name() + "/";
+
+            if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
+                summary.url = "ws://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.main_instance_history.b_program_name() + "/";
+            }else{
+                summary.url = "wss://" + record.actual_running_instance.cloud_homer_server.server_url + record.actual_running_instance.cloud_homer_server.grid_port + "/" + record.main_instance_history.b_program_name() + "/";
+            }
+
             summary.m_program = Model_MProgram.get_m_code(record.version_object);
 
             return GlobalResult.result_ok(Json.toJson(summary));
@@ -834,7 +844,13 @@ public class Controller_Grid extends Controller {
 
 
             Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-            summary.url = "ws://" + server.server_url + ":" +server.grid_port + "/" + record.actual_running_instance.blocko_instance_name + "/";
+
+            if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
+                summary.url = "ws://" + server.server_url + ":" + server.grid_port + "/" + record.actual_running_instance.blocko_instance_name + "/";
+            }else {
+                summary.url = "wss://" + server.server_url + ":" + server.grid_port + "/" + record.actual_running_instance.blocko_instance_name + "/";
+            }
+
             summary.m_program = Model_MProgram.get_m_code(version_object);
 
             return GlobalResult.created(Json.toJson(summary));

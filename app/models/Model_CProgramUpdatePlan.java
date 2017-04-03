@@ -6,9 +6,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Enum_CProgram_updater_state;
-import utilities.enums.Enum_Firmware_type;
+import org.ehcache.Cache;
+import utilities.enums.*;
+import utilities.loggy.Loggy;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
+import web_socket.message_objects.homer_instance.WS_Message_UpdateProcedure_progress;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -145,6 +148,8 @@ public class Model_CProgramUpdatePlan extends Model {
             if (Model_CProgramUpdatePlan.find.byId(this.id) == null) break;
         }
         super.save();
+
+        cache_model_update_plan.put(id, this);
     }
 
     @JsonIgnore @Override
@@ -152,7 +157,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
         super.update();
         actualization_procedure.update_state();
-
+        cache_model_update_plan.put(id, this);
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -180,13 +185,150 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+
+/* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient  static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
+    @JsonIgnore @Transient
+    public static void update_procedure_progress(WS_Message_UpdateProcedure_progress progress_message){
+
+        Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_model(progress_message.updatePlanId);
+
+        if(plan == null){
+            logger.error("Model_CProgramUpdatePlan:: update_procedure_progress:: Error:: Model_CProgramUpdatePlan id " + progress_message.updatePlanId + " not found");
+            return;
+        }
+
+        if(Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.MAKING_BACKUP){
+
+                try {
+
+                    Model_Notification notification = new Model_Notification();
+
+                    notification.setId(UUID.randomUUID().toString())
+                            .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                            .setId(plan.actualization_procedure.id)
+                            .setImportance( Enum_Notification_importance.normal)
+                            .setLevel( Enum_Notification_level.info);
+
+                    notification.setText(new Notification_Text().setText("Update of Procedure "))
+                            .setObject(plan.actualization_procedure)
+                            .setText(new Notification_Text().setText(". We are making backup on board " ))
+                            .setObject(plan.board)
+                            .setText(new Notification_Text().setText("finished:: " + progress_message.percentageProgress + "%" ))
+                            .send_under_project(plan.actualization_procedure.get_project_id());
+
+                }catch (Exception e){
+                    Loggy.internalServerError("Model_CProgramUpdatePlan:: notification_update_procedure_progress", e);
+                }
+
+        }
+
+        else if(Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_TO_YODA){
+
+            try {
+
+                Model_Notification notification = new Model_Notification();
+
+                notification.setId(UUID.randomUUID().toString())
+                        .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                        .setId(plan.actualization_procedure.id)
+                        .setImportance( Enum_Notification_importance.normal)
+                        .setLevel( Enum_Notification_level.info);
+
+                notification.setText(new Notification_Text().setText("Update of Procedure "))
+                        .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                        .setObject(plan.actualization_procedure)
+                        .setText(new Notification_Text().setText(". Transfer firmware to " ))
+                        .setObject(plan.board)
+                        .setText(new Notification_Text().setText(" finished:: " + progress_message.percentageProgress + "%"))
+                        .send_under_project(plan.actualization_procedure.get_project_id());
+
+            }catch (Exception e){
+                Loggy.internalServerError("Model_CProgramUpdatePlan:: notification_update_procedure_progress", e);
+            }
+
+        }
+
+        else if(Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_FROM_YODA_TO_DEVICE){
+
+            try {
+
+                Model_Notification notification = new Model_Notification();
+
+                notification.setId(UUID.randomUUID().toString())
+                        .setId(plan.actualization_procedure.id)
+                        .setImportance( Enum_Notification_importance.normal)
+                        .setLevel( Enum_Notification_level.info);
+
+                notification.setText(new Notification_Text().setText("Update of Procedure "))
+                        .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                        .setObject(plan.actualization_procedure)
+                        .setText(new Notification_Text().setText(". We are transfer data from Master device " ))
+                        .setObject(plan.board) // TODO Master yoda device???
+                        .setText(new Notification_Text().setText(" to final device " ))
+                        .setObject(plan.board)
+                        .setText(new Notification_Text().setText(" finished:: " + progress_message.percentageProgress + "%"))
+                        .send_under_project(plan.actualization_procedure.get_project_id());
+
+            }catch (Exception e){
+                Loggy.internalServerError("Model_CProgramUpdatePlan:: notification_update_procedure_progress", e);
+            }
+
+        }
+
+        else if(Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.CHECKING_RESULT){
+            // TODO Tom - rozmyslet zda neskipnout pro prozatimní nevyužitelnost ??
+            System.err.println("Model_CProgramUpdatePlan:: Checking devie TODOO");
+        }
+
+        else {
+            logger.error("Model_CProgramUpdatePlan:: update_procedure_progress:: Error:: Enum_UpdateProcedure_progress_type id " + progress_message.typeOfProgress + " not recognize");
+        }
+
+    }
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE = Model_CProgramUpdatePlan.class.getName() + "_MODEL";
+
+    public static Cache<String, Model_CProgramUpdatePlan> cache_model_update_plan = null; // Server_cache Override during server initialization
+
+    public static Model_CProgramUpdatePlan get_model(String id){
+
+        if(cache_model_update_plan == null){
+            logger.error("Model_CProgramUpdatePlan:: get_model:: cache_model_homer_server is null");
+            return null;
+        }
+
+
+        Model_CProgramUpdatePlan model = cache_model_update_plan.get(id);
+
+        if(model == null){
+
+            model = Model_CProgramUpdatePlan.find.byId(id);
+            if (model == null)
+                return  null;
+
+            cache_model_update_plan.put(id, model);
+        }
+
+        if(model == null){
+            logger.error("Model_CProgramUpdatePlan:: get_model:: id not found:: " + id);
+        }
+
+        return model;
+    }
+
+
+    /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_CProgramUpdatePlan> find = new Model.Finder<>(Model_CProgramUpdatePlan.class);
 
 }
