@@ -206,7 +206,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
                     Model_Notification notification = new Model_Notification();
 
-                    notification.setId(UUID.randomUUID().toString())
+                    notification
                             .setChainType(Enum_Notification_type.CHAIN_UPDATE)
                             .setId(plan.actualization_procedure.id)
                             .setImportance( Enum_Notification_importance.normal)
@@ -231,14 +231,13 @@ public class Model_CProgramUpdatePlan extends Model {
 
                 Model_Notification notification = new Model_Notification();
 
-                notification.setId(UUID.randomUUID().toString())
+                notification
                         .setChainType(Enum_Notification_type.CHAIN_UPDATE)
                         .setId(plan.actualization_procedure.id)
                         .setImportance( Enum_Notification_importance.normal)
                         .setLevel( Enum_Notification_level.info);
 
                 notification.setText(new Notification_Text().setText("Update of Procedure "))
-                        .setChainType(Enum_Notification_type.CHAIN_UPDATE)
                         .setObject(plan.actualization_procedure)
                         .setText(new Notification_Text().setText(". Transfer firmware to " ))
                         .setObject(plan.board)
@@ -257,13 +256,14 @@ public class Model_CProgramUpdatePlan extends Model {
 
                 Model_Notification notification = new Model_Notification();
 
-                notification.setId(UUID.randomUUID().toString())
+                notification
                         .setId(plan.actualization_procedure.id)
+                        .setChainType(Enum_Notification_type.CHAIN_UPDATE)
                         .setImportance( Enum_Notification_importance.normal)
                         .setLevel( Enum_Notification_level.info);
 
                 notification.setText(new Notification_Text().setText("Update of Procedure "))
-                        .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+
                         .setObject(plan.actualization_procedure)
                         .setText(new Notification_Text().setText(". We are transfer data from Master device " ))
                         .setObject(plan.board) // TODO Master yoda device???

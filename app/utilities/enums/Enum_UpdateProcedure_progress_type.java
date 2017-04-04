@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
  * Vytvořeno speciálně pro příchozí zprávy z Homer serveru o tom, jak probíhá update hardwaru
  *
  */
-
-
 public enum Enum_UpdateProcedure_progress_type {
 
     @EnumValue("MAKING_BACKUP")                     MAKING_BACKUP,
@@ -28,7 +26,6 @@ public enum Enum_UpdateProcedure_progress_type {
 
         return null;
     }
-
 
 }
 

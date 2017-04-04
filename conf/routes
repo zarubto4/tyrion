@@ -47,7 +47,9 @@ PUT             /notification/confirm/:notification_id      @controllers.Control
 
 PUT             /notification/read                          @controllers.Controller_Notification.mark_as_read_notification()
 
-POST            /notification/test                          @controllers.Controller_Notification.test_notifications()
+## Test - Private Api
+POST            /notification/individual               @utilities.notifications.Notification_Tester.test_notifications()
+POST            /notification/chain/:email             @utilities.notifications.Notification_Tester.test_chain_notifications(email)
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################

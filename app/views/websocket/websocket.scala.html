@@ -62,6 +62,7 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                    <button class="btn btn-warning" type="button" onclick="test_chain_notification()">Send Chain Notification</button>
                     <button class="btn btn-success" type="button" onclick="test_notification()">Send</button>
                 </div>
             </div>
@@ -75,8 +76,6 @@
                     <h3 class="box-title">Connected Becki-Terminals</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-
-
                         </div>
                         <div class="btn-group">
                             <button type="button" class="btn btn-danger btn-sm">    Disconnect All   </button>
@@ -306,13 +305,30 @@
             model_data = $("#testNotification").serializeObject();
             model_data.mail = email;
             $.ajax({
-                url: '@routes.Controller_Notification.test_notifications()',
+                url: '/notification/individual',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(model_data),
                 dataType: 'json',
                 success:function(e){
-                    $('#testNotificationModal').modal('hide');
+                   // $('#testNotificationModal').modal('hide');
+                },
+                error:function(json){
+                    alert(json.responseText);
+                }
+            })}
+
+        function test_chain_notification(){
+
+
+            $.ajax({
+                url: '/notification/chain/' + email,
+                type: 'POST',
+                contentType: 'application/json',
+                data: "{}",
+                dataType: 'json',
+                success:function(e){
+                    //$('#testNotificationModal').modal('hide');
                 },
                 error:function(json){
                     alert(json.responseText);

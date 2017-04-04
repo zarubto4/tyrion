@@ -90,7 +90,6 @@ public class NotificationHandler {
 
             ObjectNode message = Json.newObject();
             message.put("messageType", Model_Notification.messageType);
-
             message.put("messageChannel", WS_Becki_Website.CHANNEL);
             message.put("notification_type", notification.notification_type.name());
             message.put("notification_level", notification.notification_level.name());
@@ -102,7 +101,7 @@ public class NotificationHandler {
             message.put("was_read", notification.was_read);
             message.put("created", notification.created.getTime());
             message.set("buttons", Json.toJson(notification.buttons()) );
-            message.set("notification_body", Json.toJson(notification.notification_body()));
+
 
             for (String person_id : notification.list_of_ids_receivers) {
 
