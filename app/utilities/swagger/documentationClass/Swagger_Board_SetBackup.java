@@ -13,16 +13,7 @@ import java.util.List;
 public class Swagger_Board_SetBackup {
 
     @Valid @ApiModelProperty(value = "List of Pairs for settings of Backup C_Program Version on boards", required = true)
-    public List<Board_backup_pair> board_backup_pair_list  = new ArrayList<>();
+    public List<Swagger_Board_CProgram_Pair> board_backup_pair_list  = new ArrayList<>();
 
-    @ApiModel(value = "Hardware_group_IN")
-    public static class Board_backup_pair {
-
-        public Board_backup_pair(){}
-
-        @Constraints.Required @ApiModelProperty(required = true)  public String c_program_version_id;
-        @Constraints.Required @ApiModelProperty(required = true)  public String board_id;
-
-    }
 
 }

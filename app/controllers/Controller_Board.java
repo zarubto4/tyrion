@@ -435,7 +435,7 @@ public class Controller_Board extends Controller {
 
             if(help.board_pairs.isEmpty()) return GlobalResult.badRequest("List is Empty");
 
-            for(Swagger_UploadBinaryFileToBoard.Board_pair board_update_pair : help.board_pairs) {
+            for(Swagger_Board_CProgram_Pair board_update_pair : help.board_pairs) {
 
                 // Ověření objektu
                 Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_update_pair.c_program_version_id);
@@ -1993,7 +1993,7 @@ public class Controller_Board extends Controller {
 
             List<Model_BPair> board_pairs = new ArrayList<>();
 
-            for(Swagger_Board_SetBackup.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
+            for(Swagger_Board_CProgram_Pair board_backup_pair : help.board_backup_pair_list) {
 
                 // Kotrola objektu
                 Model_Board board = Model_Board.get_byId(board_backup_pair.board_id);

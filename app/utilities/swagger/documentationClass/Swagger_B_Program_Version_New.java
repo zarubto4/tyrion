@@ -45,25 +45,12 @@ public class Swagger_B_Program_Version_New {
         public Hardware_group(){}
 
         @Valid @ApiModelProperty(value = "This board must be connectible_to_internet = true! User can create new B_Program version without Main Board, but its not possible to upload that to cloud like new Instance", required = true)
-        public Connected_Board main_board_pair;
+        public Swagger_Board_CProgram_Pair main_board_pair;
 
         @Valid @ApiModelProperty(required = false)
-        public List<Connected_Board> device_board_pairs = new ArrayList<>();
+        public List<Swagger_Board_CProgram_Pair> device_board_pairs = new ArrayList<>();
 
     }
-
-    @ApiModel(value = "Connected_Board_IN")
-    public static class Connected_Board {
-
-        public Connected_Board(){}
-
-        @Constraints.Required @ApiModelProperty(required = true)
-        public String board_id;
-
-        @Constraints.Required @ApiModelProperty(required = true)
-        public String c_program_version_id;
-    }
-
 
     public static class M_Project_SnapShot {
 

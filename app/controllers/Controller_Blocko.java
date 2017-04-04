@@ -386,7 +386,7 @@ public class Controller_Blocko extends Controller{
 
                 if(group.device_board_pairs != null && !group.device_board_pairs.isEmpty() ) {
 
-                    for(Swagger_B_Program_Version_New.Connected_Board connected_board : group.device_board_pairs ){
+                    for(Swagger_Board_CProgram_Pair connected_board : group.device_board_pairs ){
 
                         Model_BPair b_pair = new Model_BPair();
 

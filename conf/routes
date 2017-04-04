@@ -23,8 +23,8 @@ GET              /websocket/access_token                       @controllers.Cont
 ###################################################################################f##################################################################################
 
 #Login page
-POST            /login          @controllers.Controller_Security.login()
-POST            /logout         @controllers.Controller_Security.logout()
+POST            /login                                      @controllers.Controller_Security.login()
+POST            /logout                                     @controllers.Controller_Security.logout()
 
 GET             /login/facebook/*url                        @controllers.Controller_Security.GET_facebook_oauth(url)
 GET             /login/github/*url                          @controllers.Controller_Security.GET_github_oauth(url)

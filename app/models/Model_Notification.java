@@ -36,7 +36,7 @@ public class Model_Notification extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                             @Id @ApiModelProperty(required = true) public String id;
+             @Id   @JsonProperty @ApiModelProperty(required = true) public String id;
 
     @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_level notification_level;   // Typ zprávy
     @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_importance notification_importance; // Důležitost (podbarvení zprávy)
@@ -59,8 +59,8 @@ public class Model_Notification extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true) @JsonProperty public static final String messageType = "notification";
-    @ApiModelProperty(required = true) @JsonProperty public static final String messageChannel = WS_Becki_Website.CHANNEL;
+    @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";
+    @ApiModelProperty(required = true, example =  WS_Becki_Website.CHANNEL) @JsonProperty public static final String messageChannel = WS_Becki_Website.CHANNEL;
 
     @JsonProperty @ApiModelProperty(required = true) public String messageType(){ return messageType;}
     @JsonProperty @ApiModelProperty(required = true) public String messageChannel(){ return messageChannel;}

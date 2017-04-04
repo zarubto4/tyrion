@@ -15,7 +15,6 @@ public class Swagger_Board_Backup_settings {
     @Valid @ApiModelProperty(value = "List of Pairs for settings of Backup on boards", required = true)
     public List<Board_backup_pair> board_backup_pair_list  = new ArrayList<>();
 
-    @ApiModel(value = "Hardware_group_IN")
     public static class Board_backup_pair {
 
         public Board_backup_pair(){}

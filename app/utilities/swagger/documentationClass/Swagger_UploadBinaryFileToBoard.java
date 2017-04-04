@@ -12,18 +12,8 @@ import java.util.List;
         value = "List of Boards")
 public class Swagger_UploadBinaryFileToBoard {
 
-
     @Valid
     @ApiModelProperty(value = "List of Pairs for settings of Backup C_Program Version on boards", required = true)
-    public List<Board_pair> board_pairs  = new ArrayList<>();
+    public List<Swagger_Board_CProgram_Pair> board_pairs  = new ArrayList<>();
 
-    @ApiModel(value = "Hardware_IN")
-    public static class Board_pair {
-
-        public Board_pair(){}
-
-        @Constraints.Required @ApiModelProperty(required = true)  public String c_program_version_id;
-        @Constraints.Required @ApiModelProperty(required = true)  public String board_id;
-
-    }
 }
