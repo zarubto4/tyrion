@@ -51,7 +51,7 @@ public class Job_SpendingCredit implements Job {
 
                 Date created = new Date(new Date().getTime() - TimeUnit.HOURS.toMillis(16));
 
-                int total =  Model_Product.find.where().lt("date_of_create", created)
+                int total =  Model_Product.find.where().lt("created", created)
                         .isNotNull("extensions.id")
                         .findRowCount();
 
@@ -72,8 +72,8 @@ public class Job_SpendingCredit implements Job {
                      */
                         List<Model_Product> products = Model_Product.find.where()
                                 .isNotNull("extensions.id")
-                                .lt("date_of_create", created)
-                                .order("date_of_create")
+                                .lt("created", created)
+                                .order("created")
                                 .findPagedList(page, 25)
                                 .getList();
 
@@ -210,7 +210,7 @@ public class Job_SpendingCredit implements Job {
         logger.debug("Starting with procedure ON_DEMAND - taking money from Credit-Card");
 
         Calendar cal = Calendar.getInstance();
-        List<Model_Product> products_with_on_Demands = Model_Product.find.where().eq("on_demand_active", true).where().eq("monthly_day_period", (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7)  ).findList();
+        List<Model_Product> products_with_on_Demands = Model_Product.find.where().eq("on_demand", true).where().eq("monthly_day_period", (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7)  ).findList();
 
         logger.debug("Founded " + products_with_on_Demands.size() + " procedures with 4 days to end of Account");
 
@@ -221,7 +221,7 @@ public class Job_SpendingCredit implements Job {
 
         for(Model_Product product : products_with_on_Demands){
 
-            logger.debug("Updating procedure on user product " + product.product_individual_name + " id " + product.id);
+            logger.debug("Updating procedure on user product " + product.name + " id " + product.id);
 
             logger.debug("Creating Invoice");
 
@@ -230,18 +230,18 @@ public class Job_SpendingCredit implements Job {
 
 
             logger.debug("Creating Invoice in Database");
-            Model_InvoiceItem invoice_item_1 = new Model_InvoiceItem();
+            Model_InvoiceItem invoice_item = new Model_InvoiceItem();
 
-            invoice_item_1.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
-            invoice_item_1.unit_price = product.general_tariff.price_in_usd;
-            invoice_item_1.quantity = (long) 1;
-            invoice_item_1.unit_name = "Currency";
-            invoice_item_1.currency = Enum_Currency.USD;
+            invoice_item.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
+            invoice_item.unit_price = product.tariff.total_per_month(); // TODO
+            invoice_item.quantity = (long) 1;
+            invoice_item.unit_name = "Currency";
+            invoice_item.currency = Enum_Currency.USD;
 
-            invoice.invoice_items.add(invoice_item_1);
+            invoice.invoice_items.add(invoice_item);
             invoice.proforma = true;
             invoice.status = Enum_Payment_status.sent;
-            invoice.date_of_create = new Date();
+            invoice.created = new Date();
             invoice.method = product.method;
 
             product.invoices.add(invoice);
@@ -254,7 +254,7 @@ public class Job_SpendingCredit implements Job {
 
             logger.debug("Creating GoPay_Recurrence");
             GoPay_Recurrence recurrence = new GoPay_Recurrence();
-            recurrence.amount = Math.round(product.general_tariff.price_in_usd*100);
+            recurrence.amount = Math.round(product.tariff.total_per_month()*100); // TODO
             recurrence.currency = Enum_Currency.USD;
             recurrence.setItems(invoice.invoice_items);
             recurrence.order_number  = invoice.invoice_number;

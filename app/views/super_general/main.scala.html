@@ -7,7 +7,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Tyrion cloud_blocko_server - Byzance </title>
+        <title>Tyrion | Byzance </title>
 
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("../../../../public/images/favicon.png")">
@@ -15,7 +15,7 @@
         <link rel="stylesheet" href="@routes.Assets.at("../../../../public/bootstrap/css/bootstrap-dialog.min.css")">
         <link rel="stylesheet" href="@routes.Assets.at("../../../../public/bootstrap/css/admin.css")">
 
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
         <link rel="stylesheet" href="@routes.Assets.at("../../../../public/dist/css/AdminLTE.min.css")">
         <link rel="stylesheet" href="@routes.Assets.at("../../../../public/dist/css/skins/_all-skins.min.css")">
@@ -118,6 +118,22 @@
             text-align: left;
             vertical-align: middle;
         }
+
+        .no-margin-top {
+            margin-top: 0!important;
+        }
+
+        .no-margin-bottom {
+            margin-bottom: 0!important;
+        }
+
+        .no-padding-top {
+            padding-top: 0!important;
+        }
+
+        .no-padding-bottom {
+            padding-bottom: 0!important;
+        }
         </style>
 
         <style type="text/css" media="screen">
@@ -148,9 +164,9 @@
                         <!-- Logo -->
                     <a href="http://www.byzance.cz" class="logo">
                             <!-- mini logo for sidebar mini 50x50 pixels -->
-                        <span class="logo-mini">TSE</span>
+                        <span class="logo-mini">T</span>
                             <!-- logo for regular state and mobile devices -->
-                        <span class="logo-lg"><b>Tyrion - Server</b></span>
+                        <span class="logo-lg"><b>Tyrion</b></span>
                     </a>
                         <!-- Header Navbar: style can be found in header.less -->
                     <nav class="navbar navbar-static-top" role="navigation">
@@ -182,16 +198,9 @@
 
                     <!-- Content Wrapper. Contains page content -->
                 <div class="content-wrapper">
-
-                        <!-- Content Header (Page header) -->
-
-<!-- ----------------------------------------------------------------------------------------------------------------------- -->
                    <!-- Main content -->
 
                     @content
-
-
- <!-- ------------------------------------------------------------------------------------------------------------------ -->
 
                 </div><!-- /.content-wrapper -->
                 <footer class="main-footer">
@@ -205,7 +214,7 @@
 
 
 
-           <script> $.widget.bridge('uibutton', $.ui.button);</script>
+           <script> //$.widget.bridge('uibutton', $.ui.button);</script>
            <script src="@routes.Assets.at("../../../../public/bootstrap/js/bootstrap.min.js")"></script>
            <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
            <script src="@routes.Assets.at("../../../../public/plugins/knob/jquery.knob.js")"></script>
@@ -226,11 +235,6 @@
            <script src="@routes.Assets.versioned("../../../../public/bootstrap/js/bootstrap-dialog.min.js")" type="text/javascript"></script>
            <script src="@routes.Assets.versioned("../../../../public/plugins/morris/morris.min.js")"></script>
            <script src="@routes.Assets.at("../../../../public/plugins/ace-builds/src-noconflict/ace.js")" type="text/javascript" charset="utf-8"></script>
-           <script>
-                var editor = ace.edit("editor");
-                //editor.setTheme("ace/theme/eclipse");
-                editor.getSession().setMode("ace/mode/c_cpp");
-           </script>
     </body>
     <div id="loading_overlay" style="visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index:5000;background:rgba(255,255,255,0.7);">
         <i style="position:absolute;top:50%;left:50%;margin-left:-15px;margin-top:-15px;color:#000;font-size:30px" class="fa fa-refresh fa-spin"></i>

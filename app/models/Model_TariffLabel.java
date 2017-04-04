@@ -8,9 +8,9 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of GeneralTariffLabel",
-        value = "GeneralTariffLabel")
-public class Model_GeneralTariffLabel extends Model {
+@ApiModel(description = "Model of TariffLabel",
+        value = "TariffLabel")
+public class Model_TariffLabel extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -18,8 +18,7 @@ public class Model_GeneralTariffLabel extends Model {
 
                                                          @JsonIgnore @Id public String id;
 
-                                                @JsonIgnore @ManyToOne   public Model_GeneralTariff general_tariff;
-
+                                                @JsonIgnore @ManyToOne   public Model_Tariff tariff;
 
                                                                          public String label;
                                                                          public String description;
@@ -37,8 +36,8 @@ public class Model_GeneralTariffLabel extends Model {
             this.id = UUID.randomUUID().toString().substring(0,8);
             if (find.byId(this.id) == null) break;
         }
-        if(general_tariff != null) {
-            order_position = find.where().eq("general_tariff.id", general_tariff.id).findRowCount() + 1;
+        if(tariff != null) {
+            order_position = find.where().eq("tariff.id", tariff.id).findRowCount() + 1;
         }
         super.save();
     }
@@ -48,8 +47,8 @@ public class Model_GeneralTariffLabel extends Model {
 
         int pointer = 1;
 
-        if(general_tariff!=null) {
-            for (Model_GeneralTariffLabel label : general_tariff.labels) {
+        if(tariff !=null) {
+            for (Model_TariffLabel label : tariff.labels) {
 
                 if (!label.id.equals(this.id)) {
                     label.order_position = pointer++;
@@ -63,9 +62,9 @@ public class Model_GeneralTariffLabel extends Model {
     @JsonIgnore @Transient
     public void up(){
 
-        if(general_tariff != null) {
-            general_tariff.labels.get(order_position - 2).order_position = this.order_position;
-            general_tariff.labels.get(order_position - 2).update();
+        if(tariff != null) {
+            tariff.labels.get(order_position - 2).order_position = this.order_position;
+            tariff.labels.get(order_position - 2).update();
         }
 
         this.order_position -= 1;
@@ -75,9 +74,9 @@ public class Model_GeneralTariffLabel extends Model {
     @JsonIgnore @Transient
     public void down(){
 
-        if(general_tariff != null) {
-            general_tariff.labels.get(order_position).order_position =  general_tariff.labels.get(order_position).order_position-1;
-            general_tariff.labels.get(order_position).update();
+        if(tariff != null) {
+            tariff.labels.get(order_position).order_position =  tariff.labels.get(order_position).order_position-1;
+            tariff.labels.get(order_position).update();
         }
 
         this.order_position += 1;
@@ -96,7 +95,7 @@ public class Model_GeneralTariffLabel extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_GeneralTariffLabel> find = new Finder<>(Model_GeneralTariffLabel.class);
+    public static Model.Finder<String, Model_TariffLabel> find = new Finder<>(Model_TariffLabel.class);
 
 
 }

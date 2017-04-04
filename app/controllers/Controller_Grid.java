@@ -829,7 +829,7 @@ public class Controller_Grid extends Controller {
 
             logger.debug("Controller_Grid:: get_conection_url:: record ID:: "           + record.id);
             logger.debug("Controller_Grid:: get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance.blocko_instance_name);
-            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server identificator::"             + server.unique_identificator);
+            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server identifier::"             + server.unique_identificator);
             logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server Grid Port::"                 + server.grid_port);
 
 

@@ -209,39 +209,6 @@ create table model_floating_person_token (
   constraint pk_model_floating_person_token primary key (connection_id))
 ;
 
-create table model_general_tariff (
-  id                        varchar(255) not null,
-  tariff_name               varchar(255),
-  tariff_description        varchar(255),
-  identificator             varchar(255),
-  active                    boolean,
-  order_position            integer,
-  company_details_required  boolean,
-  required_payment_mode     boolean,
-  required_payment_method   boolean,
-  required_paid_that        boolean,
-  credit_for_beginning      float,
-  price_in_usd              float,
-  color                     varchar(255),
-  bank_transfer_support     boolean,
-  credit_card_support       boolean,
-  mode_annually             boolean,
-  mode_credit               boolean,
-  free_tariff               boolean,
-  constraint uq_model_general_tariff_identifi unique (identificator),
-  constraint pk_model_general_tariff primary key (id))
-;
-
-create table model_general_tariff_label (
-  id                        varchar(255) not null,
-  general_tariff_id         varchar(255),
-  label                     varchar(255),
-  description               varchar(255),
-  icon                      varchar(255),
-  order_position            integer,
-  constraint pk_model_general_tariff_label primary key (id))
-;
-
 create table model_grid_terminal (
   terminal_token            varchar(255) not null,
   user_agent                varchar(255),
@@ -355,7 +322,7 @@ create table model_invoice (
   gopay_id                  bigint,
   gopay_order_number        varchar(255),
   proforma                  boolean,
-  date_of_create            timestamp,
+  created                   timestamp,
   product_id                varchar(255),
   status                    varchar(14),
   method                    varchar(13),
@@ -523,22 +490,24 @@ create table model_producer (
 
 create table model_product (
   id                        varchar(255) not null,
-  product_individual_name   varchar(255),
-  general_tariff_id         varchar(255),
+  name                      varchar(255),
+  tariff_id                 varchar(255),
   mode                      varchar(10),
   method                    varchar(13),
+  business_model            varchar(8),
   subscription_id           varchar(255),
   fakturoid_subject_id      varchar(255),
   gopay_id                  bigint,
   active                    boolean,
   monthly_day_period        integer,
   monthly_year_period       integer,
-  date_of_create            timestamp,
-  on_demand_active          boolean,
+  created                   timestamp,
+  on_demand                 boolean,
   remaining_credit          float,
   azure_product_link        varchar(255),
   constraint ck_model_product_mode check (mode in ('per_credit','monthly','annual','free')),
   constraint ck_model_product_method check (method in ('credit_card','bank_transfer','free')),
+  constraint ck_model_product_business_model check (business_model in ('saas','lifelong','fee')),
   constraint pk_model_product primary key (id))
 ;
 
@@ -554,8 +523,8 @@ create table model_product_extension (
   removed                   boolean,
   created                   timestamp,
   product_id                varchar(255),
-  general_tariff_included_id varchar(255),
-  general_tariff_optional_id varchar(255),
+  tariff_included_id        varchar(255),
+  tariff_optional_id        varchar(255),
   constraint ck_model_product_extension_type check (type in ('Project','Log','Database')),
   constraint pk_model_product_extension primary key (id))
 ;
@@ -594,6 +563,38 @@ create table model_security_role (
   name                      varchar(255),
   description               varchar(255),
   constraint pk_model_security_role primary key (id))
+;
+
+create table model_tariff (
+  id                        varchar(255) not null,
+  name                      varchar(255),
+  description               varchar(255),
+  identifier                varchar(255),
+  active                    boolean,
+  order_position            integer,
+  company_details_required  boolean,
+  payment_mode_required     boolean,
+  payment_method_required   boolean,
+  payment_required          boolean,
+  credit_for_beginning      float,
+  color                     varchar(255),
+  bank_transfer_support     boolean,
+  credit_card_support       boolean,
+  mode_annually             boolean,
+  mode_credit               boolean,
+  free_tariff               boolean,
+  constraint uq_model_tariff_identifier unique (identifier),
+  constraint pk_model_tariff primary key (id))
+;
+
+create table model_tariff_label (
+  id                        varchar(255) not null,
+  tariff_id                 varchar(255),
+  label                     varchar(255),
+  description               varchar(255),
+  icon                      varchar(255),
+  order_position            integer,
+  constraint pk_model_tariff_label primary key (id))
 ;
 
 create table model_type_of_block (
@@ -781,70 +782,70 @@ alter table model_file_record add constraint fk_model_file_record_version__35 fo
 create index ix_model_file_record_version__35 on model_file_record (version_object_id);
 alter table model_floating_person_token add constraint fk_model_floating_person_toke_36 foreign key (person_id) references model_person (id);
 create index ix_model_floating_person_toke_36 on model_floating_person_token (person_id);
-alter table model_general_tariff_label add constraint fk_model_general_tariff_label_37 foreign key (general_tariff_id) references model_general_tariff (id);
-create index ix_model_general_tariff_label_37 on model_general_tariff_label (general_tariff_id);
-alter table model_grid_terminal add constraint fk_model_grid_terminal_person_38 foreign key (person_id) references model_person (id);
-create index ix_model_grid_terminal_person_38 on model_grid_terminal (person_id);
-alter table model_grid_widget add constraint fk_model_grid_widget_author_39 foreign key (author_id) references model_person (id);
-create index ix_model_grid_widget_author_39 on model_grid_widget (author_id);
-alter table model_grid_widget add constraint fk_model_grid_widget_type_of__40 foreign key (type_of_widget_id) references model_type_of_widget (id);
-create index ix_model_grid_widget_type_of__40 on model_grid_widget (type_of_widget_id);
-alter table model_grid_widget add constraint fk_model_grid_widget_producer_41 foreign key (producer_id) references model_producer (id);
-create index ix_model_grid_widget_producer_41 on model_grid_widget (producer_id);
-alter table model_grid_widget_version add constraint fk_model_grid_widget_version__42 foreign key (author_id) references model_person (id);
-create index ix_model_grid_widget_version__42 on model_grid_widget_version (author_id);
-alter table model_grid_widget_version add constraint fk_model_grid_widget_version__43 foreign key (grid_widget_id) references model_grid_widget (id);
-create index ix_model_grid_widget_version__43 on model_grid_widget_version (grid_widget_id);
-alter table model_homer_instance add constraint fk_model_homer_instance_cloud_44 foreign key (cloud_homer_server_unique_identificator) references model_homer_server (unique_identificator);
-create index ix_model_homer_instance_cloud_44 on model_homer_instance (cloud_homer_server_unique_identificator);
-alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_45 foreign key (main_instance_history_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-create index ix_model_homer_instance_recor_45 on model_homer_instance_record (main_instance_history_blocko_instance_name);
-alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_46 foreign key (version_object_id) references model_version_object (id);
-create index ix_model_homer_instance_recor_46 on model_homer_instance_record (version_object_id);
-alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_47 foreign key (actual_running_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-create index ix_model_homer_instance_recor_47 on model_homer_instance_record (actual_running_instance_blocko_instance_name);
-alter table model_invitation add constraint fk_model_invitation_owner_48 foreign key (owner_id) references model_person (id);
-create index ix_model_invitation_owner_48 on model_invitation (owner_id);
-alter table model_invitation add constraint fk_model_invitation_project_49 foreign key (project_id) references model_project (id);
-create index ix_model_invitation_project_49 on model_invitation (project_id);
-alter table model_invoice add constraint fk_model_invoice_product_50 foreign key (product_id) references model_product (id);
-create index ix_model_invoice_product_50 on model_invoice (product_id);
-alter table model_invoice_item add constraint fk_model_invoice_item_invoice_51 foreign key (invoice_id) references model_invoice (id);
-create index ix_model_invoice_item_invoice_51 on model_invoice_item (invoice_id);
-alter table model_log add constraint fk_model_log_file_52 foreign key (file_id) references model_file_record (id);
-create index ix_model_log_file_52 on model_log (file_id);
-alter table model_mprogram add constraint fk_model_mprogram_m_project_53 foreign key (m_project_id) references model_mproject (id);
-create index ix_model_mprogram_m_project_53 on model_mprogram (m_project_id);
-alter table model_mproject add constraint fk_model_mproject_project_54 foreign key (project_id) references model_project (id);
-create index ix_model_mproject_project_54 on model_mproject (project_id);
-alter table model_mproject_program_snap_shot add constraint fk_model_mproject_program_sna_55 foreign key (m_project_id) references model_mproject (id);
-create index ix_model_mproject_program_sna_55 on model_mproject_program_snap_shot (m_project_id);
-alter table model_notification add constraint fk_model_notification_person_56 foreign key (person_id) references model_person (id);
-create index ix_model_notification_person_56 on model_notification (person_id);
-alter table model_password_recovery_token add constraint fk_model_password_recovery_to_57 foreign key (person_id) references model_person (id);
-create index ix_model_password_recovery_to_57 on model_password_recovery_token (person_id);
-alter table model_payment_details add constraint fk_model_payment_details_pers_58 foreign key (person_id) references model_person (id);
-create index ix_model_payment_details_pers_58 on model_payment_details (person_id);
-alter table model_payment_details add constraint fk_model_payment_details_prod_59 foreign key (productidpaymentdetails) references model_product (id);
-create index ix_model_payment_details_prod_59 on model_payment_details (productidpaymentdetails);
-alter table model_person add constraint fk_model_person_picture_60 foreign key (picture_id) references model_file_record (id);
-create index ix_model_person_picture_60 on model_person (picture_id);
-alter table model_product add constraint fk_model_product_general_tari_61 foreign key (general_tariff_id) references model_general_tariff (id);
-create index ix_model_product_general_tari_61 on model_product (general_tariff_id);
-alter table model_product_extension add constraint fk_model_product_extension_pr_62 foreign key (product_id) references model_product (id);
-create index ix_model_product_extension_pr_62 on model_product_extension (product_id);
-alter table model_product_extension add constraint fk_model_product_extension_ge_63 foreign key (general_tariff_included_id) references model_general_tariff (id);
-create index ix_model_product_extension_ge_63 on model_product_extension (general_tariff_included_id);
-alter table model_product_extension add constraint fk_model_product_extension_ge_64 foreign key (general_tariff_optional_id) references model_general_tariff (id);
-create index ix_model_product_extension_ge_64 on model_product_extension (general_tariff_optional_id);
-alter table model_project add constraint fk_model_project_private_inst_65 foreign key (private_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-create index ix_model_project_private_inst_65 on model_project (private_instance_blocko_instance_name);
-alter table model_project add constraint fk_model_project_product_66 foreign key (product_id) references model_product (id);
-create index ix_model_project_product_66 on model_project (product_id);
-alter table model_project_participant add constraint fk_model_project_participant__67 foreign key (project_id) references model_project (id);
-create index ix_model_project_participant__67 on model_project_participant (project_id);
-alter table model_project_participant add constraint fk_model_project_participant__68 foreign key (person_id) references model_person (id);
-create index ix_model_project_participant__68 on model_project_participant (person_id);
+alter table model_grid_terminal add constraint fk_model_grid_terminal_person_37 foreign key (person_id) references model_person (id);
+create index ix_model_grid_terminal_person_37 on model_grid_terminal (person_id);
+alter table model_grid_widget add constraint fk_model_grid_widget_author_38 foreign key (author_id) references model_person (id);
+create index ix_model_grid_widget_author_38 on model_grid_widget (author_id);
+alter table model_grid_widget add constraint fk_model_grid_widget_type_of__39 foreign key (type_of_widget_id) references model_type_of_widget (id);
+create index ix_model_grid_widget_type_of__39 on model_grid_widget (type_of_widget_id);
+alter table model_grid_widget add constraint fk_model_grid_widget_producer_40 foreign key (producer_id) references model_producer (id);
+create index ix_model_grid_widget_producer_40 on model_grid_widget (producer_id);
+alter table model_grid_widget_version add constraint fk_model_grid_widget_version__41 foreign key (author_id) references model_person (id);
+create index ix_model_grid_widget_version__41 on model_grid_widget_version (author_id);
+alter table model_grid_widget_version add constraint fk_model_grid_widget_version__42 foreign key (grid_widget_id) references model_grid_widget (id);
+create index ix_model_grid_widget_version__42 on model_grid_widget_version (grid_widget_id);
+alter table model_homer_instance add constraint fk_model_homer_instance_cloud_43 foreign key (cloud_homer_server_unique_identificator) references model_homer_server (unique_identificator);
+create index ix_model_homer_instance_cloud_43 on model_homer_instance (cloud_homer_server_unique_identificator);
+alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_44 foreign key (main_instance_history_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+create index ix_model_homer_instance_recor_44 on model_homer_instance_record (main_instance_history_blocko_instance_name);
+alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_45 foreign key (version_object_id) references model_version_object (id);
+create index ix_model_homer_instance_recor_45 on model_homer_instance_record (version_object_id);
+alter table model_homer_instance_record add constraint fk_model_homer_instance_recor_46 foreign key (actual_running_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+create index ix_model_homer_instance_recor_46 on model_homer_instance_record (actual_running_instance_blocko_instance_name);
+alter table model_invitation add constraint fk_model_invitation_owner_47 foreign key (owner_id) references model_person (id);
+create index ix_model_invitation_owner_47 on model_invitation (owner_id);
+alter table model_invitation add constraint fk_model_invitation_project_48 foreign key (project_id) references model_project (id);
+create index ix_model_invitation_project_48 on model_invitation (project_id);
+alter table model_invoice add constraint fk_model_invoice_product_49 foreign key (product_id) references model_product (id);
+create index ix_model_invoice_product_49 on model_invoice (product_id);
+alter table model_invoice_item add constraint fk_model_invoice_item_invoice_50 foreign key (invoice_id) references model_invoice (id);
+create index ix_model_invoice_item_invoice_50 on model_invoice_item (invoice_id);
+alter table model_log add constraint fk_model_log_file_51 foreign key (file_id) references model_file_record (id);
+create index ix_model_log_file_51 on model_log (file_id);
+alter table model_mprogram add constraint fk_model_mprogram_m_project_52 foreign key (m_project_id) references model_mproject (id);
+create index ix_model_mprogram_m_project_52 on model_mprogram (m_project_id);
+alter table model_mproject add constraint fk_model_mproject_project_53 foreign key (project_id) references model_project (id);
+create index ix_model_mproject_project_53 on model_mproject (project_id);
+alter table model_mproject_program_snap_shot add constraint fk_model_mproject_program_sna_54 foreign key (m_project_id) references model_mproject (id);
+create index ix_model_mproject_program_sna_54 on model_mproject_program_snap_shot (m_project_id);
+alter table model_notification add constraint fk_model_notification_person_55 foreign key (person_id) references model_person (id);
+create index ix_model_notification_person_55 on model_notification (person_id);
+alter table model_password_recovery_token add constraint fk_model_password_recovery_to_56 foreign key (person_id) references model_person (id);
+create index ix_model_password_recovery_to_56 on model_password_recovery_token (person_id);
+alter table model_payment_details add constraint fk_model_payment_details_pers_57 foreign key (person_id) references model_person (id);
+create index ix_model_payment_details_pers_57 on model_payment_details (person_id);
+alter table model_payment_details add constraint fk_model_payment_details_prod_58 foreign key (productidpaymentdetails) references model_product (id);
+create index ix_model_payment_details_prod_58 on model_payment_details (productidpaymentdetails);
+alter table model_person add constraint fk_model_person_picture_59 foreign key (picture_id) references model_file_record (id);
+create index ix_model_person_picture_59 on model_person (picture_id);
+alter table model_product add constraint fk_model_product_tariff_60 foreign key (tariff_id) references model_tariff (id);
+create index ix_model_product_tariff_60 on model_product (tariff_id);
+alter table model_product_extension add constraint fk_model_product_extension_pr_61 foreign key (product_id) references model_product (id);
+create index ix_model_product_extension_pr_61 on model_product_extension (product_id);
+alter table model_product_extension add constraint fk_model_product_extension_ta_62 foreign key (tariff_included_id) references model_tariff (id);
+create index ix_model_product_extension_ta_62 on model_product_extension (tariff_included_id);
+alter table model_product_extension add constraint fk_model_product_extension_ta_63 foreign key (tariff_optional_id) references model_tariff (id);
+create index ix_model_product_extension_ta_63 on model_product_extension (tariff_optional_id);
+alter table model_project add constraint fk_model_project_private_inst_64 foreign key (private_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+create index ix_model_project_private_inst_64 on model_project (private_instance_blocko_instance_name);
+alter table model_project add constraint fk_model_project_product_65 foreign key (product_id) references model_product (id);
+create index ix_model_project_product_65 on model_project (product_id);
+alter table model_project_participant add constraint fk_model_project_participant__66 foreign key (project_id) references model_project (id);
+create index ix_model_project_participant__66 on model_project_participant (project_id);
+alter table model_project_participant add constraint fk_model_project_participant__67 foreign key (person_id) references model_person (id);
+create index ix_model_project_participant__67 on model_project_participant (person_id);
+alter table model_tariff_label add constraint fk_model_tariff_label_tariff_68 foreign key (tariff_id) references model_tariff (id);
+create index ix_model_tariff_label_tariff_68 on model_tariff_label (tariff_id);
 alter table model_type_of_block add constraint fk_model_type_of_block_projec_69 foreign key (project_id) references model_project (id);
 create index ix_model_type_of_block_projec_69 on model_type_of_block (project_id);
 alter table model_type_of_board add constraint fk_model_type_of_board_produc_70 foreign key (producer_id) references model_producer (id);
@@ -938,10 +939,6 @@ drop table if exists model_file_record cascade;
 
 drop table if exists model_floating_person_token cascade;
 
-drop table if exists model_general_tariff cascade;
-
-drop table if exists model_general_tariff_label cascade;
-
 drop table if exists model_grid_terminal cascade;
 
 drop table if exists model_grid_widget cascade;
@@ -1011,6 +1008,10 @@ drop table if exists model_project_participant cascade;
 drop table if exists model_request_log cascade;
 
 drop table if exists model_security_role cascade;
+
+drop table if exists model_tariff cascade;
+
+drop table if exists model_tariff_label cascade;
 
 drop table if exists model_type_of_block cascade;
 

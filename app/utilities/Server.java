@@ -382,6 +382,7 @@ public class Server {
                 // global
                     for(Enum en : Model_Project.permissions.values())             permissions.add(en.name());
                     for(Enum en : Model_Product.permissions.values())             permissions.add(en.name());
+                    for(Enum en : Model_ProductExtension.permissions.values())    permissions.add(en.name());
                 // m_project
                     for(Enum en : Model_MProject.permissions.values())            permissions.add(en.name());
                     for(Enum en : Model_MProgram.permissions.values())            permissions.add(en.name());

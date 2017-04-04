@@ -421,25 +421,25 @@ public class Utilities_Demo_data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if (Model_GeneralTariff.find.where().eq("tariff_name", "Alfa account").findUnique() != null)
+            if (Model_Tariff.find.where().eq("name", "Alfa account").findUnique() != null)
                 return GlobalResult.result_BadRequest("Its Already done!");
 
             // Alfa
-            Model_GeneralTariff tariff_1 = new Model_GeneralTariff();
+            Model_Tariff tariff_1 = new Model_Tariff();
             tariff_1.order_position = 1;
             tariff_1.active = true;
-            tariff_1.tariff_name = "Alfa account";
-            tariff_1.tariff_description = "Temporary account only for next 3 months";
-            tariff_1.identificator = "alpha";
+            tariff_1.name = "Alfa account";
+            tariff_1.description = "Temporary account only for next 3 months";
+            tariff_1.identifier = "alpha";
 
             tariff_1.color = "blue";
             tariff_1.credit_for_beginning = 0.0;
 
-            tariff_1.required_paid_that = false;
+            tariff_1.payment_required = false;
 
             tariff_1.company_details_required = false;
-            tariff_1.required_payment_mode = true;
-            tariff_1.required_payment_method = false;
+            tariff_1.payment_mode_required = true;
+            tariff_1.payment_method_required = false;
 
             tariff_1.credit_card_support = false;
             tariff_1.bank_transfer_support = false;
@@ -448,39 +448,37 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.mode_credit = false;
             tariff_1.free_tariff = true;
 
-            tariff_1.price_in_usd = 0.0;
-
             tariff_1.save();
             tariff_1.refresh();
 
-            Model_GeneralTariffLabel label_1 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_1 = new Model_TariffLabel();
             label_1.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_1.icon = "fa-bullhorn";
             label_1.label = "Super koment bla bla bla";
-            label_1.general_tariff = tariff_1;
+            label_1.tariff = tariff_1;
             label_1.save();
 
-            Model_GeneralTariffLabel label_2 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_2 = new Model_TariffLabel();
             label_2.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_2.icon = "fa-bullhorn";
             label_2.label = "Super koment 2";
-            label_2.general_tariff = tariff_1;
+            label_2.tariff = tariff_1;
             label_2.save();
 
 
-            Model_GeneralTariffLabel label_3 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_3 = new Model_TariffLabel();
             label_3.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_3.icon = "fa-bullhorn";
             label_3.label = "Super koment 3 ";
-            label_3.general_tariff = tariff_1;
+            label_3.tariff = tariff_1;
             label_3.save();
 
 
-            Model_GeneralTariffLabel label_4 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_4 = new Model_TariffLabel();
             label_4.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_4.icon = "fa-bullhorn";
             label_4.label = "Super koment 4";
-            label_4.general_tariff = tariff_1;
+            label_4.tariff = tariff_1;
             label_4.save();
 
 
@@ -491,7 +489,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_1.active = true;
             extensions_1.removed = false;
             extensions_1.color = "blue-madison";
-            extensions_1.general_tariff_included = tariff_1;
+            extensions_1.tariff_included = tariff_1;
             extensions_1.config = "{\"price\":0.6,\"count\":5}";
             extensions_1.save();
 
@@ -503,27 +501,27 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_2.active = true;
             extensions_2.removed = false;
             extensions_2.color = "blue-chambray";
-            extensions_2.general_tariff_optional = tariff_1;
+            extensions_2.tariff_optional = tariff_1;
             extensions_2.config = "{\"price\":0.6,\"count\":5}";
             extensions_2.save();
 
             // Pro geeky
 
-            Model_GeneralTariff geek_tariff = new Model_GeneralTariff();
+            Model_Tariff geek_tariff = new Model_Tariff();
             tariff_1.order_position = 2;
             geek_tariff.active = true;
-            geek_tariff.tariff_name = "For true Geeks";
-            geek_tariff.tariff_description = "Temporary account only for next 3 months";
-            geek_tariff.identificator = "geek";
+            geek_tariff.name = "For true Geeks";
+            geek_tariff.description = "Temporary account only for next 3 months";
+            geek_tariff.identifier = "geek";
 
             geek_tariff.color = "green-jungle";
 
-            geek_tariff.required_paid_that = false;
+            geek_tariff.payment_required = false;
             geek_tariff.credit_for_beginning = 5.00;
 
             geek_tariff.company_details_required = false;
-            geek_tariff.required_payment_mode = true;
-            geek_tariff.required_payment_method = false;
+            geek_tariff.payment_mode_required = true;
+            geek_tariff.payment_method_required = false;
 
             geek_tariff.credit_card_support = true;
             geek_tariff.bank_transfer_support = true;
@@ -532,60 +530,58 @@ public class Utilities_Demo_data_Controller extends Controller {
             geek_tariff.mode_credit = false;
             geek_tariff.free_tariff = true;
 
-            geek_tariff.price_in_usd = 4.99;
-
             geek_tariff.save();
             geek_tariff.refresh();
 
 
-            Model_GeneralTariffLabel label_5 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_5 = new Model_TariffLabel();
             label_5.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_5.icon = "fa-bullhorn";
             label_5.label = "Super koment bla bla bla";
-            label_5.general_tariff = geek_tariff;
+            label_5.tariff = geek_tariff;
             label_5.save();
 
-            Model_GeneralTariffLabel label_6 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_6 = new Model_TariffLabel();
             label_6.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_6.icon = "fa-bullhorn";
             label_6.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
-            label_6.general_tariff = geek_tariff;
+            label_6.tariff = geek_tariff;
             label_6.save();
 
 
-            Model_GeneralTariffLabel label_7 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_7 = new Model_TariffLabel();
             label_7.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_7.icon = "fa-bullhorn";
             label_7.label = "Super koment 3 ";
-            label_7.general_tariff = geek_tariff;
+            label_7.tariff = geek_tariff;
             label_7.save();
 
 
-            Model_GeneralTariffLabel label_8 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_8 = new Model_TariffLabel();
             label_8.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_8.icon = "fa-bullhorn";
             label_8.label = "Super koment 4";
-            label_8.general_tariff = geek_tariff;
+            label_8.tariff = geek_tariff;
             label_8.save();
 
 
             // Placená
 
-            Model_GeneralTariff business_tariff = new Model_GeneralTariff();
+            Model_Tariff business_tariff = new Model_Tariff();
             tariff_1.order_position = 3;
             business_tariff.active = true;
-            business_tariff.tariff_name = "For true Business";
-            business_tariff.tariff_description = "Best for true business";
-            business_tariff.identificator = "business_1";
+            business_tariff.name = "For true Business";
+            business_tariff.description = "Best for true business";
+            business_tariff.identifier = "business_1";
 
             business_tariff.color = "green-jungle";
 
-            business_tariff.required_paid_that = false;
+            business_tariff.payment_required = false;
             business_tariff.credit_for_beginning = 100.0;
 
             business_tariff.company_details_required = true;
-            business_tariff.required_payment_mode = true;
-            business_tariff.required_payment_method = true;
+            business_tariff.payment_mode_required = true;
+            business_tariff.payment_method_required = true;
 
             business_tariff.credit_card_support = true;
             business_tariff.bank_transfer_support = true;
@@ -594,59 +590,57 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff.mode_credit = true;
             business_tariff.free_tariff = false;
 
-            business_tariff.price_in_usd = 72.0;
-
             business_tariff.save();
             business_tariff.refresh();
 
-            Model_GeneralTariffLabel label_9 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_9 = new Model_TariffLabel();
             label_9.description = "Kredit zdarma Trololo!";
             label_9.icon = "fa-bullhorn";
             label_9.label = "Super koment bla bla bla";
-            label_9.general_tariff = business_tariff;
+            label_9.tariff = business_tariff;
             label_9.save();
 
-            Model_GeneralTariffLabel label_10 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_10 = new Model_TariffLabel();
             label_10.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_10.icon = "fa-bullhorn";
             label_10.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
-            label_10.general_tariff = business_tariff;
+            label_10.tariff = business_tariff;
             label_10.save();
 
 
-            Model_GeneralTariffLabel label_11 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_11 = new Model_TariffLabel();
             label_11.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_11.icon = "fa-bullhorn";
             label_11.label = "Super koment 3 ";
-            label_11.general_tariff = business_tariff;
+            label_11.tariff = business_tariff;
             label_11.save();
 
-            Model_GeneralTariffLabel label_12 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_12 = new Model_TariffLabel();
             label_12.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_12.icon = "fa-bullhorn";
             label_12.label = "Super koment 4";
-            label_12.general_tariff = business_tariff;
+            label_12.tariff = business_tariff;
             label_12.save();
 
-            Model_GeneralTariffLabel label_13 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_13 = new Model_TariffLabel();
             label_13.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_13.icon = "fa-bullhorn";
             label_13.label = "Super koment 4";
-            label_13.general_tariff = business_tariff;
+            label_13.tariff = business_tariff;
             label_13.save();
 
-            Model_GeneralTariffLabel label_14 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_14 = new Model_TariffLabel();
             label_14.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_14.icon = "fa-bullhorn";
             label_14.label = "Super koment 4";
-            label_14.general_tariff = business_tariff;
+            label_14.tariff = business_tariff;
             label_14.save();
 
-            Model_GeneralTariffLabel label_15 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_15 = new Model_TariffLabel();
             label_15.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_15.icon = "fa-bullhorn";
             label_15.label = "Super koment 4";
-            label_15.general_tariff = business_tariff;
+            label_15.tariff = business_tariff;
             label_15.save();
 
 
@@ -657,7 +651,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_5.active = true;
             business_tariff_extensions_5.removed = false;
             business_tariff_extensions_5.color = "blue-chambray";
-            business_tariff_extensions_5.general_tariff_included = business_tariff;
+            business_tariff_extensions_5.tariff_included = business_tariff;
             business_tariff_extensions_5.config = "{\"price\":0.6,\"count\":5}";
             business_tariff_extensions_5.save();
 
@@ -668,7 +662,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_4.active = true;
             business_tariff_extensions_4.removed = false;
             business_tariff_extensions_4.color = "blue-chambray";
-            business_tariff_extensions_4.general_tariff_included = business_tariff;
+            business_tariff_extensions_4.tariff_included = business_tariff;
             business_tariff_extensions_4.config = "{\"price\":0.6,\"count\":5}";
             business_tariff_extensions_4.save();
 
@@ -680,7 +674,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_3.active = true;
             business_tariff_extensions_3.removed = false;
             business_tariff_extensions_3.color = "blue-chambray";
-            business_tariff_extensions_3.general_tariff_included = business_tariff;
+            business_tariff_extensions_3.tariff_included = business_tariff;
             business_tariff_extensions_3.config = "{\"price\":0.6,\"count\":5}";
             business_tariff_extensions_3.save();
 
@@ -692,7 +686,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_2.active = true;
             business_tariff_extensions_2.removed = false;
             business_tariff_extensions_2.color = "blue-chambray";
-            business_tariff_extensions_2.general_tariff_optional = business_tariff;
+            business_tariff_extensions_2.tariff_optional = business_tariff;
             business_tariff_extensions_2.config = "{\"price\":0.6,\"count\":5}";
             business_tariff_extensions_2.save();
 
@@ -704,28 +698,28 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_1.active = true;
             business_tariff_extensions_1.removed = false;
             business_tariff_extensions_1.color = "blue-chambray";
-            business_tariff_extensions_1.general_tariff_optional = business_tariff;
+            business_tariff_extensions_1.tariff_optional = business_tariff;
             business_tariff_extensions_1.config = "{\"price\":0.6,\"count\":5}";
             business_tariff_extensions_1.save();
 
 
             // Další placený
 
-            Model_GeneralTariff business_tariff_2 = new Model_GeneralTariff();
+            Model_Tariff business_tariff_2 = new Model_Tariff();
             tariff_1.order_position = 4;
             business_tariff_2.active = true;
-            business_tariff_2.tariff_name = "Enterprise";
-            business_tariff_2.tariff_description = "You know what you need!";
-            business_tariff_2.identificator = "business_2";
+            business_tariff_2.name = "Enterprise";
+            business_tariff_2.description = "You know what you need!";
+            business_tariff_2.identifier = "business_2";
 
             business_tariff_2.color = "green-sharp";
 
-            business_tariff_2.required_paid_that = true;
+            business_tariff_2.payment_required = true;
             business_tariff_2.credit_for_beginning = 0.0;
 
             business_tariff_2.company_details_required = true;
-            business_tariff_2.required_payment_mode = true;
-            business_tariff_2.required_payment_method = true;
+            business_tariff_2.payment_mode_required = true;
+            business_tariff_2.payment_method_required = true;
 
             business_tariff_2.credit_card_support = true;
             business_tariff_2.bank_transfer_support = true;
@@ -734,39 +728,37 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_2.mode_credit = true;
             business_tariff_2.free_tariff = false;
 
-            business_tariff_2.price_in_usd = 1399.99;
-
             business_tariff_2.save();
             business_tariff_2.refresh();
 
 
-            Model_GeneralTariffLabel label_16 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_16 = new Model_TariffLabel();
             label_16.description = "Už prvního měsíce je to placený";
             label_16.icon = "fa-bullhorn";
             label_16.label = "Super koment bla bla bla";
-            label_16.general_tariff = business_tariff_2;
+            label_16.tariff = business_tariff_2;
             label_16.save();
 
-            Model_GeneralTariffLabel label_17 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_17 = new Model_TariffLabel();
             label_17.description = "Tento tarif je na odzkoušení kreditky";
             label_17.icon = "fa-bullhorn";
             label_17.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
-            label_17.general_tariff = business_tariff_2;
+            label_17.tariff = business_tariff_2;
             label_17.save();
 
 
-            Model_GeneralTariffLabel label_18 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_18 = new Model_TariffLabel();
             label_18.description = "kreditkaaa!!!";
             label_18.icon = "fa-bullhorn";
             label_18.label = "Super koment 3 ";
-            label_18.general_tariff = business_tariff_2;
+            label_18.tariff = business_tariff_2;
             label_18.save();
 
-            Model_GeneralTariffLabel label_19 = new Model_GeneralTariffLabel();
+            Model_TariffLabel label_19 = new Model_TariffLabel();
             label_19.description = "Kreditkaaaaa";
             label_19.icon = "fa-bullhorn";
             label_19.label = "Super koment 4";
-            label_19.general_tariff = business_tariff_2;
+            label_19.tariff = business_tariff_2;
             label_19.save();
 
 
@@ -777,7 +769,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_5.active = true;
             business_tariff2_extensions_5.removed = false;
             business_tariff2_extensions_5.color = "blue-chambray";
-            business_tariff2_extensions_5.general_tariff_included = business_tariff_2;
+            business_tariff2_extensions_5.tariff_included = business_tariff_2;
             business_tariff2_extensions_5.config = "{\"price\":0.6,\"count\":5}";
             business_tariff2_extensions_5.save();
 
@@ -789,7 +781,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_4.active = true;
             business_tariff2_extensions_4.removed = false;
             business_tariff2_extensions_4.color = "blue-chambray";
-            business_tariff2_extensions_4.general_tariff_included = business_tariff_2;
+            business_tariff2_extensions_4.tariff_included = business_tariff_2;
             business_tariff2_extensions_4.config = "{\"price\":0.6,\"count\":5}";
             business_tariff2_extensions_4.save();
 
@@ -802,7 +794,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_3.active = true;
             business_tariff2_extensions_3.removed = false;
             business_tariff2_extensions_3.color = "blue-chambray";
-            business_tariff2_extensions_3.general_tariff_optional = business_tariff_2;
+            business_tariff2_extensions_3.tariff_optional = business_tariff_2;
             business_tariff2_extensions_3.config = "{\"price\":0.6,\"count\":5}";
             business_tariff2_extensions_3.save();
 
@@ -816,7 +808,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_2.active = true;
             business_tariff2_extensions_2.removed = false;
             business_tariff2_extensions_2.color = "blue-chambray";
-            business_tariff2_extensions_2.general_tariff_optional = business_tariff_2;
+            business_tariff2_extensions_2.tariff_optional = business_tariff_2;
             business_tariff2_extensions_2.config = "{\"price\":0.6,\"count\":5}";
             business_tariff2_extensions_2.save();
 
@@ -828,12 +820,12 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_1.active = true;
             business_tariff2_extensions_1.removed = false;
             business_tariff2_extensions_1.color = "blue-chambray";
-            business_tariff2_extensions_1.general_tariff_optional = business_tariff_2;
+            business_tariff2_extensions_1.tariff_optional = business_tariff_2;
             business_tariff2_extensions_1.config = "{\"price\":0.6,\"count\":5}";
             business_tariff2_extensions_1.save();
 
 
-            Model_GeneralTariff ilegal_tariff = new Model_GeneralTariff();
+            Model_Tariff ilegal_tariff = new Model_Tariff();
             tariff_1.order_position = 5;
             ilegal_tariff.active = false;
             ilegal_tariff.save();
@@ -874,8 +866,8 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Vytvoří tarif
             Model_Product product = new Model_Product();
-            product.general_tariff = Model_GeneralTariff.find.where().eq("identificator","alpha").findUnique();
-            product.product_individual_name = "Pepkova velkolepá Alfa";
+            product.tariff = Model_Tariff.find.where().eq("identifier","alpha").findUnique();
+            product.name = "Pepkova velkolepá Alfa";
             product.active  = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.method  = Enum_Payment_method.free;
             product.mode    = Enum_Payment_mode.free;
@@ -891,7 +883,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             product.payment_details = payment_details;
             product.save();
 
-            for( Model_ProductExtension e : Model_GeneralTariff.find.where().eq("identificator","alpha").findUnique().extensions_included ){
+            for( Model_ProductExtension e : Model_Tariff.find.where().eq("identifier","alpha").findUnique().extensions_included ){
                 e.product = product;
                 e.update();
             }

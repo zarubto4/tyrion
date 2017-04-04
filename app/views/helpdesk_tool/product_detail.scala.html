@@ -1,20 +1,13 @@
-@import models.Model_Project
-@import models.Model_Board
-@import models.Model_Person
 @import models.Model_Product
-@import models.Model_Invoice
-@import models.Model_InvoiceItem
-@import utilities.Server
-
 
 @(product: Model_Product)
 
 <section class="content-header">
-    <h1> @product.product_individual_name : ID: @product.subscription_id  </h1>
+    <h1> @product.name : ID: @product.subscription_id  </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-wrench"></i> Helpdesk Tool </li>
-        <li class="active"><i class="fa fa-wrench"></i> @product.product_individual_name : ID: @product.subscription_id </li>
+        <li class="active"><i class="fa fa-wrench"></i> @product.name : ID: @product.subscription_id </li>
     </ol>
 
 </section>
@@ -57,7 +50,7 @@
                                         <table class="table table-bordered table-hover">
                                             <tr>
                                                 <td>Individual name</td>
-                                                <td>@product.product_individual_name</td>
+                                                <td>@product.name</td>
                                             </tr>
 
                                             <tr>
@@ -67,7 +60,7 @@
 
                                             <tr>
                                                 <td>General Tariff Name</td>
-                                                <td>@product.general_tariff.tariff_name</td>
+                                                <td>@product.tariff.name</td>
                                             </tr>
 
                                             <tr>
@@ -249,7 +242,7 @@
                                         @for( invoice <- product.invoices ) {
                                             <tr>
                                                 <td>@invoice.id</td>
-                                                <td>@invoice.date_of_create</td>
+                                                <td>@invoice.created</td>
 
                                                 <td>@invoice.facturoid_invoice_id</td>
                                                 <td>@invoice.invoice_number</td>

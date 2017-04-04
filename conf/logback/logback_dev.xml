@@ -32,7 +32,7 @@
     <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="DEBUG" />
     <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="DEBUG" />
     <logger name="com.gargoylesoftware.htmlunit.javascript" level="DEBUG" />
-    <logger name="org.avaje.ebean.SQL" level="TRACE" />
+    <logger name="org.avaje.ebean.SQL" level="DEBUG" />
 
 
     <logger name="play" level="INFO" />

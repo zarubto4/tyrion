@@ -751,7 +751,7 @@ public class Controller_Dashboard extends Controller {
 
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result general_tariffs_list(){
+    public Result tariffs(){
         try {
 
             Html list_of_tariffs = tariffs.render();
@@ -764,10 +764,10 @@ public class Controller_Dashboard extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result general_tariff_edit(String general_tariff_id){
+    public Result tariff_edit(String general_tariff_id){
         try {
 
-            Model_GeneralTariff tariff = Model_GeneralTariff.find.byId(general_tariff_id);
+            Model_Tariff tariff = Model_Tariff.find.byId(general_tariff_id);
 
             Html list_of_tariffs = tariff_edit.render(tariff);
             return return_page(list_of_tariffs);
@@ -780,7 +780,7 @@ public class Controller_Dashboard extends Controller {
 
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result general_tariff_extension_edit(String extension_id){
+    public Result extension_edit(String extension_id){
         try {
 
             Model_ProductExtension extensions = Model_ProductExtension.find.byId(extension_id);
@@ -808,9 +808,6 @@ public class Controller_Dashboard extends Controller {
             return ok();
         }
     }
-
-
-
 
 // LOGIN ###############################################################################################################
 

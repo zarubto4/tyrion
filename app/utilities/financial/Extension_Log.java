@@ -7,6 +7,7 @@ public class Extension_Log implements Extension {
     public static final String name = "Log";
     public static final String description = "This is an extension for log.";
     public static final Double price = 0.6;
+    public static final Integer count = 1;
 
     public Double getPrice(Config config) {
 
@@ -15,8 +16,16 @@ public class Extension_Log implements Extension {
         return config.price * config.count;
     }
 
-    public Double getMonthlyPrice() {
-        return price * 30;
+    public Double getDefaultMonthlyPrice() {
+        return price *  30;
+    }
+
+    public Double getDefaultDailyPrice() {
+        return price;
+    }
+
+    public Integer getDefaultCount() {
+        return count;
     }
 
     public boolean isActive() {

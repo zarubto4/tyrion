@@ -125,9 +125,9 @@
                         @for( product <- Model_Product.get_byOwner(person.id)) {
 
                             <tr>
-                                <td> @product.product_individual_name</td>
+                                <td> @product.name</td>
                                 <td> @product.active</td>
-                                <td> @product.general_tariff.tariff_name</td>
+                                <td> @product.tariff.name</td>
 
                                 <td> @product.mode.name()</td>
                                 <td> @product.method.name()</td>
@@ -228,7 +228,7 @@
                     <select style="display: block;" name="product_id">
                         <option selected disabled>Select Product</option>
                         @for(product <- Model_Product.get_byOwner(person.id)) {
-                            <option value="@product.id">@product.product_individual_name</option>
+                            <option value="@product.id">@product.name</option>
                         }
                     </select>
 

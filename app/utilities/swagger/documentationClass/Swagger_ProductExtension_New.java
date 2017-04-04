@@ -31,6 +31,6 @@ public class Swagger_ProductExtension_New {
     public Enum_ExtensionType type;
 
     @Constraints.Required
-    @ApiModelProperty(required = true, value = "Configuration of individual extension")
-    public Config config;
+    @ApiModelProperty(required = true)
+    public Integer count;
 }

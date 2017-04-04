@@ -1,21 +1,20 @@
 package utilities.swagger.documentationClass;
 
-import io.swagger.annotations.ApiModelProperty;
-import models.Model_ProductExtension.Config;
 import play.data.validation.Constraints;
 import utilities.enums.Enum_ExtensionType;
 
-public class Swagger_Tariff_General_Extension_Create {
+public class Swagger_TariffExtension_New {
 
     @Constraints.Required
-    public String tariff_id;
+    public String id;
 
     @Constraints.Required
-    @ApiModelProperty(required = true, value = "Name of extension")
     public String name;
 
-    @ApiModelProperty(required = false, value = "Description")
     public String description;
+
+    @Constraints.Required
+    public String color;
 
     @Constraints.Required
     public boolean included;
@@ -24,5 +23,8 @@ public class Swagger_Tariff_General_Extension_Create {
     public Enum_ExtensionType type;
 
     @Constraints.Required
-    public Config config;
+    public Double price;
+
+    @Constraints.Required
+    public Integer count;
 }

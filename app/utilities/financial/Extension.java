@@ -6,7 +6,11 @@ public interface Extension {
 
     Double getPrice(Config config);
 
-    Double getMonthlyPrice();
+    Double getDefaultMonthlyPrice();
+
+    Double getDefaultDailyPrice();
+
+    Integer getDefaultCount();
 
     boolean isActive();
 

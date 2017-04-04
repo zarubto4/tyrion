@@ -52,7 +52,7 @@ public class Utilities_GoPay_Controller extends Controller {
 
 
                 // Pouze
-                if(!product.on_demand_active) {
+                if(!product.on_demand) {
                     if (product.mode.name().equals(Enum_Payment_mode.monthly.name())) {
                         payment.recurrence = new Recurrence();
 
@@ -62,7 +62,7 @@ public class Utilities_GoPay_Controller extends Controller {
 
                         Calendar cal = Calendar.getInstance();
                         product.monthly_day_period = (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7) > 28 ? 28 : (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7);
-                        product.on_demand_active = true;
+                        product.on_demand = true;
                         product.update();
                     } else if (product.mode.name().equals(Enum_Payment_mode.annual.name())) {
                         payment.recurrence = new Recurrence();

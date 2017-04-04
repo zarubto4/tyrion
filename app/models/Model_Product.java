@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.Configuration;
 import play.libs.Json;
 import utilities.Server;
+import utilities.enums.Enum_BusinessModel;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
 
@@ -32,11 +33,13 @@ public class Model_Product extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                          @Id @ApiModelProperty(required = true) public String id;
-                                             @ApiModelProperty(required = true) public String product_individual_name;
+                                             @ApiModelProperty(required = true) public String name;
 
-    @JsonIgnore                              @ManyToOne(fetch = FetchType.LAZY) public Model_GeneralTariff general_tariff;
-    @JsonIgnore @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Payment_mode mode;
-    @JsonIgnore @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Payment_method method;
+                                 @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Tariff tariff;
+                                       @JsonIgnore @Enumerated(EnumType.STRING) public Enum_Payment_mode mode;
+                                       @JsonIgnore @Enumerated(EnumType.STRING) public Enum_Payment_method method;
+
+                                       @JsonIgnore @Enumerated(EnumType.STRING) public Enum_BusinessModel business_model;
 
                                              @ApiModelProperty(required = true) public String subscription_id;
                                                                     @JsonIgnore public String fakturoid_subject_id; // ID účtu ve fakturoidu
@@ -47,8 +50,8 @@ public class Model_Product extends Model {
                                                                     @JsonIgnore public Integer monthly_day_period;  // Den v měsíci, kdy bude obnovována platba // Nejvyšší možné číslo je 28!!!
                                                                     @JsonIgnore public Integer monthly_year_period; // Měsíc v roce, kdy bude obnovována platba // Nejvyšší možné číslo je 12!!!
 
-                                            @ApiModelProperty(required = true) public Date date_of_create;
-                                                                    @JsonIgnore public boolean on_demand_active;    // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
+                                             @ApiModelProperty(required = true) public Date created;
+                                                                    @JsonIgnore public boolean on_demand;    // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 
                                              @ApiModelProperty(required = true) public double remaining_credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
 
@@ -56,11 +59,9 @@ public class Model_Product extends Model {
    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Project> projects = new ArrayList<>();
    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Invoice> invoices = new ArrayList<>();
 
+                                          @OneToOne(mappedBy="product", cascade = CascadeType.ALL)  public Model_PaymentDetails payment_details;
 
-               @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)                           public Model_PaymentDetails payment_details;
-
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="product") public List<Model_ProductExtension> extensions = new ArrayList<>();
+                                          @OneToMany(mappedBy="product", cascade = CascadeType.ALL) public List<Model_ProductExtension> extensions = new ArrayList<>();
 
 
  /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
@@ -68,7 +69,7 @@ public class Model_Product extends Model {
     @ApiModelProperty(required = true)
     @JsonProperty public List<Model_Invoice> invoices(){
 
-        if(this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.where().eq("product.id", this.id).order().desc("date_of_create").findList();
+        if(this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.where().eq("product.id", this.id).order().desc("created").findList();
         return invoices;
     }
 
@@ -80,7 +81,7 @@ public class Model_Product extends Model {
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String product_type(){
-        return Model_GeneralTariff.find.where().eq("product.id", id).select("tariff_name").findUnique().tariff_name;
+        return Model_Tariff.find.where().eq("product.id", id).select("name").findUnique().name;
     }
 
 
@@ -111,6 +112,17 @@ public class Model_Product extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    public double price(){
+        double total = 0.0;
+        for(Model_ProductExtension extension : this.extensions){
+            Double price = extension.getPrice();
+
+            if(price != null)
+                total += price;
+        }
+        return  total;
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     @ApiModel(description = "Model for Proforma Details for next invoice",
@@ -128,7 +140,7 @@ public class Model_Product extends Model {
 
     @JsonIgnore @Override public void save() {
 
-        date_of_create = new Date();
+        created = new Date();
 
         while(true){ // I need Unique Value
             this.azure_product_link = get_Container().getName() + "/" + UUID.randomUUID().toString();
@@ -186,7 +198,7 @@ public class Model_Product extends Model {
     }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public JsonNode create_new_project_if_not(){
         ObjectNode result = Json.newObject();
-            result.put("tariff", general_tariff.tariff_name);
+            result.put("tariff", tariff.name);
 
         if(! active) result.put("message", Configuration.root().getInt("Your Product is not Paid for this moment"));
         return  result;
@@ -217,7 +229,7 @@ public class Model_Product extends Model {
 
     @JsonIgnore
     public static Model_Product get_byNameAndOwner(String name) {
-        return find.where().eq("product_individual_name", name).eq("payment_details.person.id", Controller_Security.getPerson().id).findUnique();
+        return find.where().eq("name", name).eq("payment_details.person.id", Controller_Security.getPerson().id).findUnique();
     }
 
     @JsonIgnore
@@ -232,7 +244,7 @@ public class Model_Product extends Model {
 
     @JsonIgnore
     public static List<Model_Product> get_applicableByOwner(String owner_id) {
-        return find.where().eq("active",true).eq("payment_details.person.id", owner_id).select("id").select("product_individual_name").select("general_tariff.tariff_name").findList();
+        return find.where().eq("active",true).eq("payment_details.person.id", owner_id).select("id").select("name").select("tariff").findList();
     }
 }
 

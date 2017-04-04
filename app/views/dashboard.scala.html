@@ -3,7 +3,6 @@
 @import models.Model_Person
 @import models.Model_HomerServer
 @import models.Model_Project
-@import models.Model_RequestLog
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
@@ -15,30 +14,39 @@
     </ol>
 </section>
 
+<!--  Content ###################################################################################################### -->
+
 <section class="content"  style="min-height: 150px;">
-<!-- ----------------------------------------------------------------------------------------------------------------------- -->
           <div class="row">
-
-            <div class="col-lg-3 col-xs-6"><div class="small-box bg-aqua"><div class="inner">
-                  <h3>@Model_Person.find.findRowCount()</h3>
-                  <p>Persons registered</p>
-                  </div><div class="icon"><i class="ion ion-person"></i></div> </div>
+            <div class="col-lg-3 col-xs-6">
+                <div class="small-box bg-aqua">
+                    <div class="inner">
+                        <h3>@Model_Person.find.findRowCount()</h3>
+                        <p>Persons registered</p>
+                    </div>
+                    <div class="icon"><i class="ion ion-person"></i></div>
+                </div>
             </div>
-
-            <div class="col-lg-3 col-xs-6"><div class="small-box bg-aqua"><div class="inner">
-                  <h3>@Model_Project.find.findRowCount()</h3>
-                  <p>Project created</p>
-                  </div><div class="icon"><i class="ion ion-person"></i></div> </div>
+            <div class="col-lg-3 col-xs-6">
+                <div class="small-box bg-aqua">
+                    <div class="inner">
+                        <h3>@Model_Project.find.findRowCount()</h3>
+                        <p>Projects created</p>
+                    </div>
+                    <div class="icon"><i class="ion ion-folder"></i></div>
+                </div>
             </div>
-
-            <div class="col-lg-3 col-xs-6"><div class="small-box bg-aqua"><div class="inner">
-                  <h3>@Model_Board.find.findRowCount()</h3>
-                  <p>Board registered</p>
-                  </div><div class="icon"><i class="ion ion-person"></i></div> </div>
+            <div class="col-lg-3 col-xs-6">
+                <div class="small-box bg-aqua">
+                    <div class="inner">
+                        <h3>@Model_Board.find.findRowCount()</h3>
+                        <p>Boards registered</p>
+                    </div>
+                    <div class="icon"><i class="fa fa-microchip"></i></div>
+                </div>
             </div>
-          </div><!-- /.row -->
-<!-- ------------------------------------------------------------------------------------------------------------------ -->
-</section><!-- /.content -->
+          </div>
+</section>
 
 <section class="content-header">
     <h1> Homer cloud servers <small>Control panel</small> </h1>
@@ -61,13 +69,13 @@
                     Instances: @x.get_homer_server_number_of_instance().value
                 }
                 <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  x.unique_identificator )' >
-                    <button class="btn btn-block btn-info btn-xs">All Instancies</button>
+                    <button class="btn btn-block btn-info btn-xs">All Instances</button>
                 </a>
             </p>
              </div><div class="icon"><i class="ion fa-cloud_blocko_server"></i></div> </div>
         </div>
     }
-    </div><!-- /.row -->
+    </div>
 </section>
 
 <section class="content-header">
@@ -89,7 +97,7 @@
         </div>
     }
 
-    </div><!-- /.row -->
+    </div>
 </section>
 
 <section class="content" style="min-height: 150px;">
@@ -113,6 +121,8 @@
         </div>
     </div>
 </section>
+
+<!--  JavaScript ################################################################################################### -->
 
 <script type="text/javascript">
 

@@ -36,7 +36,7 @@ public class Model_Invoice extends Model {
 
                                                    @JsonIgnore  public boolean proforma;
 
-                                                                public Date date_of_create;               // 4.5.2016
+                                                                public Date created;               // 4.5.2016
 
 
 

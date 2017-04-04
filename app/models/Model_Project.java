@@ -54,7 +54,7 @@ public class Model_Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()       { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    for( Model_HomerInstance m   : Model_HomerInstance.find.where().isNotNull("actual_instance").eq("b_program.project.id", id).findList()) l.add(m.get_instance_short_detail());  return l;}
 
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.name;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public String   product_id() { return product.id;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}

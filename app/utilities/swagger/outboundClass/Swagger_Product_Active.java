@@ -6,14 +6,14 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Json Model for selecting Product for registration new project",
              value = "Applicable_Product")
-public class Swagged_Applicable_Product {
+public class Swagger_Product_Active {
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String product_id;
+    public String id;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String product_individual_name;
+    public String name;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String product_type;
+    public String tariff;
 }

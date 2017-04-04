@@ -11,6 +11,7 @@ import com.microsoft.azure.storage.blob.ListBlobItem;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
+import utilities.loggy.Loggy;
 
 import javax.persistence.*;
 import java.io.*;
@@ -61,18 +62,17 @@ public class Model_FileRecord extends Model {
         return  file_path;
     }
 
-    @JsonIgnore @Transient  public String get_fileRecord_from_Azure_inString(){
+    @JsonIgnore @Transient
+    public String get_fileRecord_from_Azure_inString(){
         try {
 
-            logger.trace("FileRecord: get_fileRecord_from_Azure_inString");
+            logger.trace("Model_FileRecord:: get_fileRecord_from_Azure_inString");
 
             int slash = file_path.indexOf("/");
             String container_name = file_path.substring(0,slash);
             String real_file_path = file_path.substring(slash+1);
 
             logger.trace("Azure load path: " + file_path );
-            logger.trace("Azure Container: " + container_name);
-            logger.trace("Real File  Path: " + real_file_path);
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
 
@@ -86,8 +86,8 @@ public class Model_FileRecord extends Model {
             return utf8str;
 
         }catch (Exception e){
-            logger.error("Get File from Azure in string ", e);
-            e.printStackTrace();
+            Loggy.internalServerError("Model_FileRecord:: get_fileRecord_from_Azure_inString:", e);
+
             return null;
         }
     }
@@ -107,7 +107,6 @@ public class Model_FileRecord extends Model {
     public static Model_FileRecord uploadAzure_Version(String file_content, String file_name, String file_path, Model_VersionObject version_object) throws Exception{
 
         logger.debug("Azure upload: "+ file_path + version_object.get_path() + "/" + file_name );
-
 
         int slash = file_path.indexOf("/");
         String container_name = file_path.substring(0,slash);
