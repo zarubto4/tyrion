@@ -142,16 +142,11 @@ public class Notification_Tester extends Controller {
                     }catch (Exception e){
                         logger.error("Check_update_for_hw_under_homer_ws:: Error", e);
                     }
-
-
                 }
             };
 
-
             notification_test_thread.start();
-
-
-
+            
             return GlobalResult.result_ok();
 
         }catch (Exception e){
