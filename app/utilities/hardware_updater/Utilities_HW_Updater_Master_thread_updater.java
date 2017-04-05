@@ -139,7 +139,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
             procedure.state = Enum_Update_group_procedure_state.complete_with_error;
             procedure.update();
-            logger.error("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " is empty and not set to any updates!!!");
+            logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " is empty and not set to any updates!!!");
             return;
         }
 

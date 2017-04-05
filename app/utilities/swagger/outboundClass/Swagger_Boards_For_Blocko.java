@@ -7,6 +7,7 @@ import models.Model_VersionObject;
 import models.Model_CProgram;
 import models.Model_MProgram;
 import models.Model_MProject;
+import utilities.loggy.Loggy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,28 +38,37 @@ public class Swagger_Boards_For_Blocko {
 
         for(Model_CProgram c_program : real_c_programs){
 
-            Swagger_C_Program_Short_Detail_For_Blocko c_program_short_detail_for_blocko = new Swagger_C_Program_Short_Detail_For_Blocko();
-            c_program_short_detail_for_blocko.id = c_program.id;
-            c_program_short_detail_for_blocko.name = c_program.name;
-            c_program_short_detail_for_blocko.description = c_program.description;
-            c_program_short_detail_for_blocko.type_of_board_id = c_program.type_of_board_id();
+            try {
+                Swagger_C_Program_Short_Detail_For_Blocko c_program_short_detail_for_blocko = new Swagger_C_Program_Short_Detail_For_Blocko();
+                c_program_short_detail_for_blocko.id = c_program.id;
+                c_program_short_detail_for_blocko.name = c_program.name;
+                c_program_short_detail_for_blocko.description = c_program.description;
+                c_program_short_detail_for_blocko.type_of_board_id = c_program.type_of_board_id();
 
-            for(Model_VersionObject version_object : c_program.version_objects){
+                for (Model_VersionObject version_object : c_program.version_objects) {
 
-                Swagger_C_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_C_Program_Versions_Short_Detail_For_Blocko();
-                versions_short_detail_for_blocko.id = version_object.id;
-                versions_short_detail_for_blocko.version_name = version_object.version_name;
-                versions_short_detail_for_blocko.version_description = version_object.version_description == null ? null : version_object.version_description;
-                versions_short_detail_for_blocko.virtual_input_output = version_object.c_compilation.virtual_input_output == null ? null : version_object.c_compilation.virtual_input_output ;
+                    Swagger_C_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_C_Program_Versions_Short_Detail_For_Blocko();
+                    versions_short_detail_for_blocko.id = version_object.id;
+                    versions_short_detail_for_blocko.version_name = version_object.version_name;
+                    versions_short_detail_for_blocko.version_description = version_object.version_description;
 
-                c_program_short_detail_for_blocko.versions.add(versions_short_detail_for_blocko);
+                    if(version_object.c_compilation != null) {
+                        versions_short_detail_for_blocko.virtual_input_output = version_object.c_compilation.virtual_input_output;
+                    }
 
+                    c_program_short_detail_for_blocko.versions.add(versions_short_detail_for_blocko);
+
+                }
+
+                c_programs.add(c_program_short_detail_for_blocko);
+
+            }catch (Exception e){
+                Loggy.internalServerError("Swagger_Boards_For_Blocko:: add_C_Programs", e);
             }
-
-            c_programs.add(c_program_short_detail_for_blocko);
         }
     }
 
+    @ApiModel( value = "C_Program_Short_Detail_For_Blocko")
     class Swagger_C_Program_Short_Detail_For_Blocko {
 
         @ApiModelProperty(required = true, readOnly = true)
@@ -77,7 +87,7 @@ public class Swagger_Boards_For_Blocko {
         public List<Swagger_C_Program_Versions_Short_Detail_For_Blocko> versions = new ArrayList<>();
     }
 
-
+    @ApiModel( value = "C_Program_Versions_Short_Detail_For_Blocko")
     class Swagger_C_Program_Versions_Short_Detail_For_Blocko {
 
         @ApiModelProperty(required = true, readOnly = true)
@@ -89,7 +99,7 @@ public class Swagger_Boards_For_Blocko {
         @ApiModelProperty(required = true, readOnly = true)
         public String version_description;
 
-        @ApiModelProperty(required = true, readOnly = true)
+        @ApiModelProperty(required = false, value = "It can be null if server has not image of compilation restored in database", readOnly = true)
         public String virtual_input_output;
 
     }

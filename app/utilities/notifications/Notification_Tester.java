@@ -146,7 +146,7 @@ public class Notification_Tester extends Controller {
             };
 
             notification_test_thread.start();
-            
+
             return GlobalResult.result_ok();
 
         }catch (Exception e){

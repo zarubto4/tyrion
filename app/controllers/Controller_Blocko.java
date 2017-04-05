@@ -359,7 +359,6 @@ public class Controller_Blocko extends Controller{
                 // Definuji Main Board - Tedy yodu pokud v Json přišel (není podmínkou)
                 if(group.main_board_pair != null) {
 
-                    System.out.println("Mám main Board ID: " + group.main_board_pair.board_id);
                     Model_BPair b_pair = new Model_BPair();
 
                     b_pair.board = Model_Board.get_byId(group.main_board_pair.board_id);

@@ -15,6 +15,7 @@ import play.i18n.Lang;
 import utilities.Server;
 import utilities.enums.*;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
+import utilities.loggy.Loggy;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
@@ -88,17 +89,22 @@ public class Model_HomerInstance extends Model {
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @Transient @JsonIgnore public Swagger_Instance_Short_Detail get_instance_short_detail(){
-        Swagger_Instance_Short_Detail help = new Swagger_Instance_Short_Detail();
-        help.id = blocko_instance_name;
-        help.b_program_id = getB_program().id;
-        help.b_program_name = getB_program().name;
-        help.b_program_description = this.getB_program().description;
+        try {
+            Swagger_Instance_Short_Detail help = new Swagger_Instance_Short_Detail();
+            help.id = blocko_instance_name;
+            help.b_program_id = getB_program().id;
+            help.b_program_name = getB_program().name;
+            help.b_program_description = this.getB_program().description;
 
-        help.server_name = cloud_homer_server.unique_identificator;
-        help.server_id = cloud_homer_server.unique_identificator;
-        help.instance_is_online = online_state();
-        help.server_is_online = server_is_online();
-        return help;
+            help.server_name = cloud_homer_server.unique_identificator;
+            help.server_id = cloud_homer_server.unique_identificator;
+            help.instance_is_online = online_state();
+            help.server_is_online = server_is_online();
+            return help;
+        }catch (Exception e){
+            Loggy.internalServerError("Model_HomerInstance:: get_instance_short_detail", e);
+            return null;
+        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -309,8 +315,6 @@ public class Model_HomerInstance extends Model {
             logger.error("Homer_Instance:: Incoming message:: Error", e.getMessage());
         }
     }
-
-
 
 
 

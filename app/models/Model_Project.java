@@ -45,9 +45,8 @@ public class Model_Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_ProjectParticipant>      participants      = new ArrayList<>();
 
     // reference na Fake Instanci - kam připojuji Yody q- pokud nejsou připojení do vlastní instnace vytvořené v blocko programu
-    @JsonIgnore @OneToOne(fetch = FetchType.EAGER)                        public Model_HomerInstance private_instance;
-
-    @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                       public Model_Product product;
+    @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Model_HomerInstance private_instance;
+    @JsonIgnore @ManyToOne(fetch = FetchType.EAGER) public Model_Product product;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -61,7 +60,7 @@ public class Model_Project extends Model {
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String   product_id() { return product.id;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id() { return product.id;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}
 
