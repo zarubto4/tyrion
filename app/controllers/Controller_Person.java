@@ -818,10 +818,10 @@ public class Controller_Person extends Controller {
 
                     try {
 
-                        logger.debug("Controller_Person:: person_validateProperty:: Link:: " + "http://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
+                        logger.debug("Controller_Person:: person_validateProperty:: Link:: " + "https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
 
 
-                        F.Promise<WSResponse> responsePromise = ws.url("http://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
+                        F.Promise<WSResponse> responsePromise = ws.url("https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
                                 .setHeader("Accept", "application/json")
                                 .get();
 

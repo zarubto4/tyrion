@@ -157,11 +157,11 @@ public class Server {
 
                 server_mode = Enum_Tyrion_Server_mode.production;
                 // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress = "http://" + Configuration.root().getString("Server.production");
+                tyrion_serverAddress = "https://" + Configuration.root().getString("Server.production");
                 tyrion_webSocketAddress = "wss://" + Configuration.root().getString("Server.production");
 
                 // Nastavení pro Becki Adresy
-                becki_mainUrl                   = "http://" + Configuration.root().getString("Becki.production.mainUrl");
+                becki_mainUrl                   = "https://" + Configuration.root().getString("Becki.production.mainUrl");
                 becki_redirectOk                = Configuration.root().getString("Becki.redirectOk");
                 becki_redirectFail              = Configuration.root().getString("Becki.redirectFail");
                 becki_accountAuthorizedSuccessful = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
@@ -201,7 +201,7 @@ public class Server {
 
                 azureLink           = Configuration.root().getString("Azure.production.azureLink");
 
-                link_api_swagger    = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
+                link_api_swagger    = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
                 break;
             }
@@ -210,11 +210,11 @@ public class Server {
                 server_mode = Enum_Tyrion_Server_mode.stage;
 
                 // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress        = "http://" + Configuration.root().getString("Server.stage");
+                tyrion_serverAddress        = "https://" + Configuration.root().getString("Server.stage");
                 tyrion_webSocketAddress     = "wss://" + Configuration.root().getString("Server.stage");
 
                 // Nastavení pro Becki Adresy
-                becki_mainUrl               = "http://" + Configuration.root().getString("Becki.stage.mainUrl");
+                becki_mainUrl               = "https://" + Configuration.root().getString("Becki.stage.mainUrl");
                 becki_redirectOk            = Configuration.root().getString("Becki.redirectOk");
                 becki_redirectFail          = Configuration.root().getString("Becki.redirectFail");
                 becki_accountAuthorizedSuccessful   = Configuration.root().getString("Becki.accountAuthorizedSuccessful");
@@ -254,7 +254,7 @@ public class Server {
 
                 azureLink               = Configuration.root().getString("Azure.stage.azureLink");
 
-                link_api_swagger        = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
+                link_api_swagger        = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
                 break;
             }
