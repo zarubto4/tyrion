@@ -527,7 +527,7 @@ public class Model_HomerServer extends Model{
 
         if(cache_model_homer_server == null){
             logger.error("Model_HomerServer:: get_model:: cache_model_homer_server is null");
-            return null;
+            return find.byId(unique_identificator);
         }
 
         Model_HomerServer model = cache_model_homer_server.get(unique_identificator);

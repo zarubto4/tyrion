@@ -84,6 +84,11 @@ public class Server_Cache {
 
 
 
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Update procedure");
+            Model_CProgramUpdatePlan.cache_model_update_plan = cacheManager.createCache(Model_CProgramUpdatePlan.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_CProgramUpdatePlan.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_CProgramUpdatePlan.CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(7, TimeUnit.MINUTES))).build());
 
         /*
          *  Model_Instance
