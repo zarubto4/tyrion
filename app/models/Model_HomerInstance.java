@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
+
 @Entity
 @ApiModel(description = "Model of HomerInstance",
         value = "HomerInstance")
@@ -45,9 +46,9 @@ public class Model_HomerInstance extends Model {
                              @JsonIgnore @ManyToOne()               public Model_HomerServer cloud_homer_server;
 
 
-    @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                     //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
+    @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
-                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)         public Model_HomerInstanceRecord actual_instance; // Aktuálně běžící instnace na Serveru
+                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)         public Model_HomerInstanceRecord actual_instance;  // Aktuálně běžící instnace na Serveru
 
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
@@ -57,7 +58,7 @@ public class Model_HomerInstance extends Model {
 
 
     @JsonIgnore @OneToMany(mappedBy="virtual_instance_under_project", cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Board> boards_in_virtual_instance = new ArrayList<>();
-    //@JsonIgnore @OneToMany(mappedBy="homer_instance",                 cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
@@ -71,18 +72,24 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return cloud_homer_server.server_is_online();}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
+        try {
 
-        if(actual_instance != null) {
+            if(actual_instance != null) {
 
-            if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-                return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
-            }else{
-                return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+                if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
+                    return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+                }else{
+                    return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+                }
+
             }
 
-        }
+            return null;
 
-        return null;
+        }catch (Exception e){
+            Loggy.internalServerError("Model_HomerInstance:: instance_remote_url", e);
+            return null;
+        }
     }
 
 
@@ -141,6 +148,7 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore @Transient
     public void notification_instance_start_upload(){
+        try {
 
         new Model_Notification()
                 .setImportance(Enum_Notification_importance.low)
@@ -152,49 +160,67 @@ public class Model_HomerInstance extends Model {
                 .setObject(this.actual_instance.version_object.b_program)
                 .send(Controller_Security.getPerson());
 
+        }catch (Exception e){
+            Loggy.internalServerError("Model_HomerInstance:: notification_instance_start_upload", e);
+        }
     }
 
     @JsonIgnore @Transient
     public void notification_instance_successful_upload(){
+        try {
 
-        new Model_Notification()
-                .setImportance(Enum_Notification_importance.low)
-                .setLevel(Enum_Notification_level.success)
-                .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
-                .setObject(this.actual_instance.version_object)
-                .setText(new Notification_Text().setText(" from Blocko program "))
-                .setObject(this.actual_instance.version_object.b_program)
-                .send_under_project(project.id);
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.low)
+                    .setLevel(Enum_Notification_level.success)
+                    .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
+                    .setObject(this.actual_instance.version_object)
+                    .setText(new Notification_Text().setText(" from Blocko program "))
+                    .setObject(this.actual_instance.version_object.b_program)
+                    .send_under_project(project.id);
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_HomerInstance:: notification_instance_start_upload", e);
+        }
     }
 
     @JsonIgnore @Transient
     public void notification_instance_unsuccessful_upload(String reason){
+        try {
 
-        new Model_Notification()
-                .setImportance(Enum_Notification_importance.low)
-                .setLevel(Enum_Notification_level.warning)
-                .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
-                .setText( new Notification_Text().setText(this.actual_instance.version_object.version_name ).setBoltText())
-                .setText( new Notification_Text().setText(" from Blocko program "))
-                .setText( new Notification_Text().setText(this.b_program.name).setBoltText())
-                .setText( new Notification_Text().setText(" for reason: ").setBoltText() )
-                .setText( new Notification_Text().setText(reason + " ").setBoltText())
-                .setObject(this.actual_instance.version_object)
-                .setText( new Notification_Text().setText(" from Blocko program "))
-                .setObject(this.b_program)
-                .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
-                .send_under_project(project.id);
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.low)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
+                    .setText( new Notification_Text().setText(this.actual_instance.version_object.version_name ).setBoltText())
+                    .setText( new Notification_Text().setText(" from Blocko program "))
+                    .setText( new Notification_Text().setText(this.b_program.name).setBoltText())
+                    .setText( new Notification_Text().setText(" for reason: ").setBoltText() )
+                    .setText( new Notification_Text().setText(reason + " ").setBoltText())
+                    .setObject(this.actual_instance.version_object)
+                    .setText( new Notification_Text().setText(" from Blocko program "))
+                    .setObject(this.b_program)
+                    .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
+                    .send_under_project(project.id);
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_HomerInstance:: notification_instance_start_upload", e);
+        }
     }
 
     @JsonIgnore @Transient
     public void notification_new_actualization_request_instance(){
+        try {
 
-        new Model_Notification()
-                .setImportance(Enum_Notification_importance.low)
-                .setLevel(Enum_Notification_level.info)
-                .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
-                .setObject(this.actual_instance.version_object)
-                .send_under_project(b_program.project_id());
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.low)
+                    .setLevel(Enum_Notification_level.info)
+                    .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
+                    .setObject(this.actual_instance.version_object)
+                    .send_under_project(b_program.project_id());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_HomerInstance:: notification_instance_start_upload", e);
+        }
     }
 
 
@@ -326,7 +352,7 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public WS_Message_Instance_status get_instance_status(){
         try{
-
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node =  send_to_instance().write_with_confirmation( new WS_Message_Instance_status().make_request(this), 1000*3, 0, 2);
 
             final Form<WS_Message_Instance_status> form = Form.form(WS_Message_Instance_status.class).bind(node);
@@ -334,7 +360,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Instance_status();
         }catch (Exception e){
             logger.error("Model_HomerServer:: get_instance_status:: Error:: ", e);
@@ -345,7 +371,7 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public WS_Message_Ping_instance ping() {
         try{
-
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Ping_instance().make_request(this), 1000*3, 0, 2);
 
             final Form<WS_Message_Ping_instance> form = Form.form(WS_Message_Ping_instance.class).bind(node);
@@ -353,7 +379,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Ping_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: ping:: Error:: ", e);
@@ -364,10 +390,10 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public JsonNode devices_commands(String targetId, Enum_type_of_command command) {
         try{
-
+            if(!server_is_online()) throw new InterruptedException();
            return send_to_instance().write_with_confirmation(new WS_Message_Basic_command_for_device().make_request(this, targetId, command), 1000*10, 0, 4);
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return null;
         }catch (Exception e){
             logger.error("Model_HomerServer:: devices_commands:: Error:: ", e);
@@ -388,6 +414,7 @@ public class Model_HomerInstance extends Model {
                 }
             }
 
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node =  send_to_instance().write_with_confirmation(new WS_Message_Add_yoda_to_instance().make_request(this, yoda_id), 1000*3, 0, 4);
 
             final Form<WS_Message_Add_yoda_to_instance> form = Form.form(WS_Message_Add_yoda_to_instance.class).bind(node);
@@ -395,7 +422,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Add_yoda_to_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: add_Yoda_to_instance:: Error:: ", e);
@@ -407,6 +434,7 @@ public class Model_HomerInstance extends Model {
     public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(String yoda_id) {
         try{
 
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_yoda_from_instance().make_request(this, yoda_id), 1000*3, 0, 4);
 
             final Form<WS_Message_Remove_yoda_from_instance> form = Form.form(WS_Message_Remove_yoda_from_instance.class).bind(node);
@@ -414,7 +442,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Remove_yoda_from_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: remove_Yoda_from_instance:: Error:: ", e);
@@ -426,6 +454,8 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(Model_Board yoda) {
         try{
+
+            if(!server_is_online()) throw new InterruptedException();
 
             JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_yoda_from_instance().make_request(this, yoda.id), 1000*3, 0, 4);
 
@@ -444,7 +474,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Remove_yoda_from_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: remove_Yoda_from_instance:: Error:: ", e);
@@ -456,13 +486,15 @@ public class Model_HomerInstance extends Model {
     public WS_Message_Add_device_to_instance add_Device_to_instance(String yoda_id, List<String> devices_id){
         try{
 
+            if(!server_is_online()) throw new InterruptedException();
+
             JsonNode node =   send_to_instance().write_with_confirmation(new WS_Message_Add_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
 
             final Form<WS_Message_Add_device_to_instance> form = Form.form(WS_Message_Add_device_to_instance.class).bind(node);
             if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Add_device_to_instance();}
 
             return form.get();
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Add_device_to_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: add_Device_to_instance:: Error:: ", e);
@@ -474,6 +506,7 @@ public class Model_HomerInstance extends Model {
     public WS_Message_Remove_device_from_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
         try {
 
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_device_from_instance().make_request(this, yoda_id, devices_id), 1000 * 3, 0, 4);
 
             final Form<WS_Message_Remove_device_from_instance> form = Form.form(WS_Message_Remove_device_from_instance.class).bind(node);
@@ -484,7 +517,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Remove_device_from_instance();
         }catch (Exception e){
             logger.error("Model_HomerServer:: remove_Device_from_instance:: Error:: ", e);
@@ -731,8 +764,7 @@ public class Model_HomerInstance extends Model {
         try {
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
 
-            if (fileRecord == null) return new WS_Message_Upload_blocko_program();
-
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = this.send_to_instance().write_with_confirmation(new WS_Message_Upload_blocko_program().make_request(this, fileRecord, actual_instance.version_object.id), 1000 * 3, 0, 4);
 
             final Form<WS_Message_Upload_blocko_program> form = Form.form(WS_Message_Upload_blocko_program.class).bind(node);
@@ -740,7 +772,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return  new WS_Message_Upload_blocko_program();
         }catch (Exception e){
             logger.error("Model_HomerServer:: upload_blocko_program:: Error:: ", e);
@@ -888,6 +920,9 @@ public class Model_HomerInstance extends Model {
 
 
                 if (!hw_groups.isEmpty()) {
+
+                    if(!server_is_online()) throw new InterruptedException();
+
                     ObjectNode node = send_to_instance().write_with_confirmation( new WS_Message_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
 
                     final Form<WS_Message_Update_device_summary_collection> form = Form.form(WS_Message_Update_device_summary_collection.class).bind(node);
@@ -930,7 +965,7 @@ public class Model_HomerInstance extends Model {
                 }
 
             }
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return;
         }catch (Exception e){
             logger.error("Model_HomerInstance:: update_device_summary_collection:: Error:: ", e);
@@ -948,7 +983,8 @@ public class Model_HomerInstance extends Model {
     public WS_Message_Online_states_devices get_devices_online_state(List<String> device_id){
         try{
 
-            if(!online_state()) return new WS_Message_Online_states_devices();
+            if(!server_is_online()) throw new InterruptedException();
+
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
 
 
@@ -957,7 +993,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Online_states_devices();
         }catch (Exception e){
             logger.error("Model_HomerInstance:: get_devices_online_state: Error:: ", e);
@@ -969,6 +1005,8 @@ public class Model_HomerInstance extends Model {
     public WS_Message_Get_summary_information get_summary_information(){
         try {
 
+            if(!server_is_online()) throw new InterruptedException();
+
             ObjectNode node = send_to_instance().write_with_confirmation(new WS_Message_Get_summary_information().make_request(this), 1000 * 5, 0, 1);
 
             final Form<WS_Message_Get_summary_information> form = Form.form(WS_Message_Get_summary_information.class).bind(node);
@@ -979,7 +1017,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Get_summary_information();
         }catch (Exception e){
             logger.error("Model_HomerInstance:: get_summary_information: Error:: ", e);
@@ -991,6 +1029,7 @@ public class Model_HomerInstance extends Model {
     public WS_Message_Get_Hardware_list get_hardware_list(){
         try {
 
+            if(!server_is_online()) throw new InterruptedException();
             ObjectNode node = send_to_instance().write_with_confirmation( new WS_Message_Get_Hardware_list().make_request(this), 1000*5, 0, 1);
 
             final Form<WS_Message_Get_Hardware_list> form = Form.form(WS_Message_Get_Hardware_list.class).bind(node);
@@ -998,7 +1037,7 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (TimeoutException e){
+        }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Get_Hardware_list();
         }catch (Exception e){
             logger.error("Model_HomerInstance:: get_hardware_list: Error:: ", e);

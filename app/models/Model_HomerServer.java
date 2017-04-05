@@ -25,10 +25,12 @@ import utilities.independent_threads.SynchronizeHomerServer;
 import web_socket.message_objects.homerServer_with_tyrion.*;
 import web_socket.message_objects.homer_instance.WS_Message_Add_new_instance;
 import web_socket.message_objects.homer_instance.WS_Message_Is_instance_exist;
+import web_socket.message_objects.homer_instance.WS_Message_Remove_yoda_from_instance;
 import web_socket.services.WS_HomerServer;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 @Entity
 @ApiModel(description = "Model of HomerServer",
@@ -298,12 +300,14 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Transient  public WS_Message_Get_instance_list get_homer_server_listOfInstance(){
         try {
-
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Get_instance_list().make_request(), 1000 * 4, 0, 3);
             final Form<WS_Message_Get_instance_list> form = Form.form(WS_Message_Get_instance_list.class).bind(node);
             if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Get_instance_list:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return  new WS_Message_Get_instance_list();}
             return form.get();
 
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Get_instance_list();
         }catch (Exception e){
             logger.error("Model_HomerServer:: get_homer_server_listOfInstance:: Error", e);
             return new WS_Message_Get_instance_list();
@@ -312,7 +316,7 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Transient  public WS_Message_Number_of_instances_homer_server get_homer_server_number_of_instance(){
         try {
-
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Number_of_instances_homer_server().make_request(), 1000 * 4, 0, 3);
             final Form<WS_Message_Number_of_instances_homer_server> form = Form.form(WS_Message_Number_of_instances_homer_server.class).bind(node);
             if(form.hasErrors()){
@@ -324,6 +328,8 @@ public class Model_HomerServer extends Model{
             }
 
             return form.get();
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Number_of_instances_homer_server();
         }catch (Exception e){
             logger.error("Model_HomerServer:: set_new_configuration_on_homer:: Error", e);
             return new WS_Message_Number_of_instances_homer_server();
@@ -333,7 +339,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public boolean is_instance_exist(String instance_name){
         try {
 
-            if(!server_is_online()) return false;
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Is_instance_exist().make_request(instance_name), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Is_instance_exist> form = Form.form(WS_Message_Is_instance_exist.class).bind(node);
@@ -344,6 +350,8 @@ public class Model_HomerServer extends Model{
 
             return (help.status.equals("success") && help.exist);
 
+        }catch (InterruptedException|TimeoutException e){
+            return false;
         }catch (Exception e){
             logger.error("Model_HomerServer:: is_instance_exist:: Error", e);
             return false;
@@ -354,7 +362,7 @@ public class Model_HomerServer extends Model{
         try {
 
             if ( is_instance_exist(instance.blocko_instance_name) ) return new WS_Message_Add_new_instance();
-
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Add_new_instance().make_request(instance), 1000 * 5, 0, 3);
 
             final Form<WS_Message_Add_new_instance> form = Form.form(WS_Message_Add_new_instance.class).bind(node);
@@ -362,6 +370,8 @@ public class Model_HomerServer extends Model{
 
             return form.get();
 
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Add_new_instance();
         }catch (Exception e){
             logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
             return new WS_Message_Add_new_instance();
@@ -372,6 +382,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Destroy_instance remove_instance(String instance_name) {
         try {
 
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node =  get_server_webSocket_connection().write_with_confirmation( new WS_Message_Destroy_instance().make_request(instance_name), 1000 * 5, 0, 3);
 
             final Form<WS_Message_Destroy_instance> form = Form.form(WS_Message_Destroy_instance.class).bind(node);
@@ -379,6 +390,8 @@ public class Model_HomerServer extends Model{
 
             return form.get();
 
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Destroy_instance();
         }catch (Exception e){
             logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
             return new WS_Message_Destroy_instance();
@@ -402,17 +415,18 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public  void ask_for_verificationToken(){
         try {
 
-         WS_HomerServer homer_server = (WS_HomerServer) get_server_webSocket_connection();
-         homer_server.security_token_confirm_procedure();
-            
+            WS_HomerServer homer_server = (WS_HomerServer) get_server_webSocket_connection();
+            homer_server.security_token_confirm_procedure();
+
         }catch (Exception e){
-            logger.error("Model-HomerServer:: Server::" + unique_identificator + " is offline");
+            logger.warn("Model-HomerServer:: Server::" + unique_identificator + " is offline");
         }
     }
 
     @JsonIgnore @Transient  public WS_Message_Ping_server ping(){
         try {
 
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Ping_server().make_request(), 1000 * 2, 0, 2);
 
             final Form<WS_Message_Ping_server> form = Form.form(WS_Message_Ping_server.class).bind(node);
@@ -420,6 +434,8 @@ public class Model_HomerServer extends Model{
 
            return form.get();
 
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Ping_server();
         }catch (Exception e){
             logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
             return new WS_Message_Ping_server();
@@ -429,7 +445,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Is_device_connected is_device_connected(String device_id){
         try{
 
-
+            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Is_device_connected().make_request(device_id), 1000*10, 0, 2);
 
             final Form<WS_Message_Is_device_connected> form = Form.form(WS_Message_Is_device_connected.class).bind(node);
@@ -437,6 +453,8 @@ public class Model_HomerServer extends Model{
 
             return form.get();
 
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Is_device_connected();
         }catch (Exception e){
             logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
             return new WS_Message_Is_device_connected();
@@ -511,18 +529,6 @@ public class Model_HomerServer extends Model{
             logger.error("Model_HomerServer:: get_model:: cache_model_homer_server is null");
             return null;
         }
-
-        /**
-        ClassLoader classLoader = Model_HomerServer.class.getClassLoader();
-
-        if (classLoader == null) {
-            classLoader  = Thread.currentThread().getContextClassLoader();
-        }
-
-        if (classLoader == null) {
-            classLoader = Model_HomerServer.class.getClassLoader();
-        }
-        */
 
         Model_HomerServer model = cache_model_homer_server.get(unique_identificator);
 

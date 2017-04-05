@@ -46,61 +46,6 @@ public class Model_Board extends Model {
 
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-/* CACHE  -------------------------------------------------------------------------------------------------------------*/
-    /**
-    public void set_cache(){
-        try {
-
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            String text = "This is some text";
-
-            md.update(text.getBytes("UTF-8")); // Change this to "UTF-16" if needed
-            byte[] digest = md.digest();
-
-            final String hashed = Hashing.sha256()
-                    .hashString("your input", StandardCharsets.UTF_8)
-                    .toString();
-
-        }catch (NoSuchAlgorithmException e){
-
-        }catch (UnsupportedEncodingException e){
-
-        }
-
-        CacheManagerBuilder<PersistentCacheManager> cacheManagerBuilderAutoCreate = CacheManagerBuilder.newCacheManagerBuilder()
-                .with(ClusteringServiceConfigurationBuilder.cluster(URI.create("terracotta://localhost:9510/my-application"))
-                        .autoCreate()
-                        .resourcePool("resource-pool", 32, MemoryUnit.MB, "primary-server-resource"));
-
-        final PersistentCacheManager cacheManager1 = cacheManagerBuilderAutoCreate.build(false);
-        cacheManager1.init();
-
-        CacheConfiguration<Long, String> cacheConfigDedicated = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, String.class,
-                ResourcePoolsBuilder.newResourcePoolsBuilder()
-                        .with(ClusteredResourcePoolBuilder.clusteredDedicated("primary-server-resource", 8, MemoryUnit.MB)))
-                .add(ClusteredStoreConfigurationBuilder.withConsistency(Consistency.STRONG))
-                .build();
-
-        Cache<Long, String> cacheDedicated = cacheManager1.createCache("my-dedicated-cache", cacheConfigDedicated);
-
-        CacheManagerBuilder<PersistentCacheManager> cacheManagerBuilderExpecting = CacheManagerBuilder.newCacheManagerBuilder()
-                .with(ClusteringServiceConfigurationBuilder.cluster(URI.create("terracotta://localhost:9510/my-application"))
-                        .expecting()
-                        .resourcePool("resource-pool", 32, MemoryUnit.MB, "primary-server-resource"));
-
-        final PersistentCacheManager cacheManager2 = cacheManagerBuilderExpecting.build(false);
-        cacheManager2.init();
-
-        CacheConfiguration<Long, String> cacheConfigUnspecified = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, String.class,
-                ResourcePoolsBuilder.newResourcePoolsBuilder()
-                        .with(ClusteredResourcePoolBuilder.clustered()))
-                .add(ClusteredStoreConfigurationBuilder.withConsistency(Consistency.STRONG))
-                .build();
-
-        Cache<Long, String> cacheUnspecified = cacheManager2.createCache("my-dedicated-cache", cacheConfigUnspecified);
-    }
-    */
-
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                    @Id @ApiModelProperty(required = true)   public String id;                   // Full_Id procesoru přiřazené Garfieldem
@@ -296,51 +241,67 @@ public class Model_Board extends Model {
 
     @Transient @JsonIgnore public Swagger_Board_Short_Detail get_short_board(){
 
-        Swagger_Board_Short_Detail swagger_board_short_detail = new Swagger_Board_Short_Detail();
-        swagger_board_short_detail.id = id;
-        swagger_board_short_detail.personal_description = personal_description;
-        swagger_board_short_detail.type_of_board_id = type_of_board_id();
-        swagger_board_short_detail.type_of_board_name = type_of_board_name();
+        try {
 
-        swagger_board_short_detail.edit_permission   = edit_permission();
-        swagger_board_short_detail.delete_permission = delete_permission();
-        swagger_board_short_detail.update_permission = update_permission();
+            Swagger_Board_Short_Detail swagger_board_short_detail = new Swagger_Board_Short_Detail();
+            swagger_board_short_detail.id = id;
+            swagger_board_short_detail.personal_description = personal_description;
+            swagger_board_short_detail.type_of_board_id = type_of_board_id();
+            swagger_board_short_detail.type_of_board_name = type_of_board_name();
 
-        swagger_board_short_detail.update_boot_loader_required = update_boot_loader_required();
-        swagger_board_short_detail.board_online_status = is_online();
+            swagger_board_short_detail.edit_permission = edit_permission();
+            swagger_board_short_detail.delete_permission = delete_permission();
+            swagger_board_short_detail.update_permission = update_permission();
 
-        return swagger_board_short_detail;
+            swagger_board_short_detail.update_boot_loader_required = update_boot_loader_required();
+            swagger_board_short_detail.board_online_status = is_online();
+
+            return swagger_board_short_detail;
+
+        }catch (Exception e){
+            Loggy.internalServerError( this.getClass().getSimpleName() +  ":: get_short_board", e);
+            return null;
+        }
 
     }
 
-    @Transient @JsonIgnore public Swagger_Board_for_fast_upload_detail get_short_board_for_fast_upload(){
+    @Transient @JsonIgnore public Swagger_Board_for_fast_upload_detail get_short_board_for_fast_upload() {
 
-        Swagger_Board_for_fast_upload_detail board_for_fast_upload_detail = new Swagger_Board_for_fast_upload_detail();
-        board_for_fast_upload_detail.id = id;
-        board_for_fast_upload_detail.personal_description = personal_description;
+        try {
 
-        System.out.println("Board " + id );
+            Swagger_Board_for_fast_upload_detail board_for_fast_upload_detail = new Swagger_Board_for_fast_upload_detail();
+            board_for_fast_upload_detail.id = id;
+            board_for_fast_upload_detail.personal_description = personal_description;
 
-        if(this.get_instance() == null){
+            System.out.println("Board " + id);
 
-            System.out.println("Board nemá instanci " );
-            board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;
+            if (this.get_instance() == null) {
 
-        }else {
+                System.out.println("Board nemá instanci ");
+                board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;
 
-            System.out.println("Aktuální instance == " + this.get_instance().blocko_instance_name);
-            System.out.println("Aktuální instance typ " + this.get_instance().instance_type);
+            } else {
+
+                System.out.println("Aktuální instance == " + this.get_instance().blocko_instance_name);
+                System.out.println("Aktuální instance typ " + this.get_instance().instance_type);
 
 
-            if(this.get_instance().instance_type == Enum_Homer_instance_type.VIRTUAL) board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;
-            else                                     board_for_fast_upload_detail.collision = Enum_Board_update_collision.ALREADY_IN_INSTANCE;
+                if (this.get_instance().instance_type == Enum_Homer_instance_type.VIRTUAL)
+                    board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;
+                else board_for_fast_upload_detail.collision = Enum_Board_update_collision.ALREADY_IN_INSTANCE;
 
+            }
+
+            board_for_fast_upload_detail.type_of_board_id = type_of_board_id();
+            board_for_fast_upload_detail.type_of_board_name = type_of_board_name();
+
+            return board_for_fast_upload_detail;
+
+         }catch (Exception e){
+            Loggy.internalServerError( this.getClass().getSimpleName() +  ":: get_short_board", e);
+            return null;
         }
 
-        board_for_fast_upload_detail.type_of_board_id = type_of_board_id();
-        board_for_fast_upload_detail.type_of_board_name = type_of_board_name();
-
-        return board_for_fast_upload_detail;
     }
 
     @Transient @JsonIgnore public Model_HomerServer get_connected_server(){
@@ -431,8 +392,8 @@ public class Model_Board extends Model {
             Model_Board device = Model_Board.get_byId(help.deviceId);
 
             if(device == null){
-                logger.error("Board:: master_device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
-                logger.error("Board:: master_device_Connected:: Unregistered Hardware:: ",  help.deviceId);
+                logger.error("Board:: device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
+                logger.error("Board:: device_Connected:: Unregistered Hardware:: ",  help.deviceId);
                 return;
             }
 

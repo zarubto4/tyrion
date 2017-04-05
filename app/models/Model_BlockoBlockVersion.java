@@ -7,6 +7,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Approval_state;
+import utilities.loggy.Loggy;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
@@ -58,16 +59,22 @@ public class Model_BlockoBlockVersion extends Model {
 
     @JsonIgnore
     public Swagger_BlockoBlock_Version_Short_Detail get_short_blockoblock_version(){
+        try {
 
-        Swagger_BlockoBlock_Version_Short_Detail help = new Swagger_BlockoBlock_Version_Short_Detail();
-        help.id = this.id;
-        help.name = this.version_name;
-        help.description = this.version_description;
-        help.date_of_create = this.date_of_create;
-        help.design_json = this.design_json;
-        help.author = this.author.get_short_person();
+            Swagger_BlockoBlock_Version_Short_Detail help = new Swagger_BlockoBlock_Version_Short_Detail();
+            help.id = this.id;
+            help.name = this.version_name;
+            help.description = this.version_description;
+            help.date_of_create = this.date_of_create;
+            help.design_json = this.design_json;
+            help.author = this.author.get_short_person();
 
-        return help;
+            return help;
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_BlockoBlockVersion:: get_short_blockoblock_version", e);
+            return null;
+        }
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

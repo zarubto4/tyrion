@@ -94,7 +94,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
                 logger.warn("Security_WS_token_confirm_procedure:: run:: ClosedChannelException");
                 break;
             }catch(ExecutionException e){
-                logger.error("Security_WS_token_confirm_procedure:: run:: ExecutionException");
+                logger.warn("Security_WS_token_confirm_procedure:: run:: ExecutionException");
                 break;
             }catch(TimeoutException e){
                 logger.warn("Security_WS_token_confirm_procedure:: run:: TimeoutException");

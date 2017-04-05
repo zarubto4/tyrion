@@ -114,9 +114,8 @@ public class WS_Send_message {
                 }
 
                 throw new TimeoutException();
-            }catch (CancellationException e){
-                throw e;
-            }catch (InterruptedException e){
+
+            }catch (InterruptedException|CancellationException e){
                 throw e;
             } catch (Exception e) {
                 e.printStackTrace();

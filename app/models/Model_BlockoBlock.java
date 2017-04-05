@@ -8,6 +8,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Approval_state;
+import utilities.loggy.Loggy;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Blocko_Block_Short_Detail;
 
@@ -74,17 +75,23 @@ public class Model_BlockoBlock extends Model {
 
     @Transient @JsonIgnore
     public Swagger_Blocko_Block_Short_Detail get_blocko_block_short_detail(){
+        try {
 
-        Swagger_Blocko_Block_Short_Detail help = new Swagger_Blocko_Block_Short_Detail();
-        help.id = id;
-        help.name = name;
-        help.description = description;
+            Swagger_Blocko_Block_Short_Detail help = new Swagger_Blocko_Block_Short_Detail();
+            help.id = id;
+            help.name = name;
+            help.description = description;
 
-        help.edit_permission = edit_permission();
-        help.delete_permission = delete_permission();
-        help.update_permission = update_permission();
+            help.edit_permission = edit_permission();
+            help.delete_permission = delete_permission();
+            help.update_permission = update_permission();
 
-        return help;
+            return help;
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_BlockoBlock:: get_blocko_block_short_detail", e);
+            return null;
+        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

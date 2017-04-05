@@ -54,16 +54,23 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String state_fraction(){
 
-        int all = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id)
-                .findRowCount();
+        try {
 
-        int complete = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id).where()
-                .eq("state", Enum_CProgram_updater_state.complete)
-                .findRowCount();
+            int all = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id)
+                    .findRowCount();
 
-        return complete + "/" +  all;
+            int complete = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .eq("state", Enum_CProgram_updater_state.complete)
+                    .findRowCount();
+
+            return complete + "/" + all;
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_ActualizationProcedure:: state_fraction", e);
+            return null;
+        }
 
     }
 
@@ -86,79 +93,84 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Transient
     public void update_state(){
 
-        System.out.println("Actualization procedure - update state");
+        try {
+            System.out.println("Actualization procedure - update state");
 
-        // Metoda je vyvolána, pokud chceme synchronizovat Aktualizační proceduru a nějakým způsobem jí označit
-        // Třeba kolik procent už je vykonáno
+            // Metoda je vyvolána, pokud chceme synchronizovat Aktualizační proceduru a nějakým způsobem jí označit
+            // Třeba kolik procent už je vykonáno
 
-        int all = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id)
-                .findRowCount();
+            int all = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id)
+                    .findRowCount();
 
-        int complete = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id).where()
-                .eq("state", Enum_CProgram_updater_state.complete)
-                .findRowCount();
+            int complete = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .eq("state", Enum_CProgram_updater_state.complete)
+                    .findRowCount();
 
-        if( ( ( complete ) * 1.0 / all ) == 1.0 ){
-            date_of_finish = new Date();
-            state = Enum_Update_group_procedure_state.successful_complete;
+            if (((complete) * 1.0 / all) == 1.0) {
+                date_of_finish = new Date();
+                state = Enum_Update_group_procedure_state.successful_complete;
 
-            this.notification_update_procedure_complete();
+                this.notification_update_procedure_complete();
 
-            this.update();
-            return;
-        }
+                this.update();
+                return;
+            }
 
-        int canceled = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id).where()
-                .eq("state", Enum_CProgram_updater_state.canceled)
-                .findRowCount();
+            int canceled = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .eq("state", Enum_CProgram_updater_state.canceled)
+                    .findRowCount();
 
 
-        int override = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id).where()
-                .eq("state", Enum_CProgram_updater_state.overwritten)
-                .findRowCount();
+            int override = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .eq("state", Enum_CProgram_updater_state.overwritten)
+                    .findRowCount();
 
-        if( ( ( complete + canceled + override) * 1.0 / all ) == 1.0 ){
-            date_of_finish = new Date();
-            state = Enum_Update_group_procedure_state.complete;
+            if (((complete + canceled + override) * 1.0 / all) == 1.0) {
+                date_of_finish = new Date();
+                state = Enum_Update_group_procedure_state.complete;
 
-            this.notification_update_procedure_complete();
+                this.notification_update_procedure_complete();
 
-            this.update();
-            return;
-        }
+                this.update();
+                return;
+            }
 
-        int in_progress = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id).where()
-                .eq("state", Enum_CProgram_updater_state.in_progress)
-                .findRowCount();
+            int in_progress = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .eq("state", Enum_CProgram_updater_state.in_progress)
+                    .findRowCount();
 
-        if(in_progress != 0){
-            state = Enum_Update_group_procedure_state.in_progress;
+            if (in_progress != 0) {
+                state = Enum_Update_group_procedure_state.in_progress;
 
-            notification_update_procedure_progress();
+                notification_update_procedure_progress();
 
-            this.update();
-        }
+                this.update();
+            }
 
-        int critical_error = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id).where()
-                .eq("state", Enum_CProgram_updater_state.critical_error)
-                .findRowCount();
+            int critical_error = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .eq("state", Enum_CProgram_updater_state.critical_error)
+                    .findRowCount();
 
-        int not_updated = Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id",id).where()
-                .eq("state", Enum_CProgram_updater_state.not_updated)
-                .findRowCount();
+            int not_updated = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .eq("state", Enum_CProgram_updater_state.not_updated)
+                    .findRowCount();
 
-        if( ( (critical_error + override + canceled + complete  + not_updated) * 1.0 / all ) == 1.0 ){
-            date_of_finish = new Date();
-            state = Enum_Update_group_procedure_state.complete_with_error;
-            this.update();
-            return;
+            if (((critical_error + override + canceled + complete + not_updated) * 1.0 / all) == 1.0) {
+                date_of_finish = new Date();
+                state = Enum_Update_group_procedure_state.complete_with_error;
+                this.update();
+                return;
+            }
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_ActualizationProcedure:: update_state", e);
         }
     }
 
