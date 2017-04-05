@@ -90,6 +90,7 @@ public class Model_HomerInstance extends Model {
 
     @Transient @JsonIgnore public Swagger_Instance_Short_Detail get_instance_short_detail(){
         try {
+
             Swagger_Instance_Short_Detail help = new Swagger_Instance_Short_Detail();
             help.id = blocko_instance_name;
             help.b_program_id = getB_program().id;
@@ -101,6 +102,7 @@ public class Model_HomerInstance extends Model {
             help.instance_is_online = online_state();
             help.server_is_online = server_is_online();
             return help;
+
         }catch (Exception e){
             Loggy.internalServerError("Model_HomerInstance:: get_instance_short_detail", e);
             return null;

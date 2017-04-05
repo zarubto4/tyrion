@@ -133,17 +133,15 @@ public class Swagger_Boards_For_Blocko {
                     m_program_short_detail_for_blocko.versions.add(versions_short_detail_for_blocko);
                 }
 
-
                 m_project_short_detail_for_blocko.m_programs.add(m_program_short_detail_for_blocko);
             }
-
 
             m_projects.add(m_project_short_detail_for_blocko);
         }
 
     }
 
-
+    @ApiModel( value = "M_Project_Short_Detail_For_Blocko")
     class Swagger_M_Project_Short_Detail_For_Blocko {
 
         @ApiModelProperty(required = true, readOnly = true)
@@ -160,7 +158,7 @@ public class Swagger_Boards_For_Blocko {
 
     }
 
-
+    @ApiModel( value = "M_Program_Short_Detail_For_Blocko")
     class Swagger_M_Program_Short_Detail_For_Blocko {
 
         @ApiModelProperty(required = true, readOnly = true)
@@ -176,7 +174,7 @@ public class Swagger_Boards_For_Blocko {
         public List<Swagger_M_Program_Versions_Short_Detail_For_Blocko> versions = new ArrayList<>();
     }
 
-
+    @ApiModel( value = "M_Program_Versions_Short_Detail_For_Blocko")
     class Swagger_M_Program_Versions_Short_Detail_For_Blocko {
 
         @ApiModelProperty(required = true, readOnly = true)
