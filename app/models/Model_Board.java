@@ -277,14 +277,9 @@ public class Model_Board extends Model {
 
             if (this.get_instance() == null) {
 
-                System.out.println("Board nemá instanci ");
-                board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;
+                 board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;
 
             } else {
-
-                System.out.println("Aktuální instance == " + this.get_instance().blocko_instance_name);
-                System.out.println("Aktuální instance typ " + this.get_instance().instance_type);
-
 
                 if (this.get_instance().instance_type == Enum_Homer_instance_type.VIRTUAL)
                     board_for_fast_upload_detail.collision = Enum_Board_update_collision.NO_COLLISION;

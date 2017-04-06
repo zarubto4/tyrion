@@ -105,9 +105,6 @@ public class NotificationHandler {
 
             for (String person_id : notification.list_of_ids_receivers) {
 
-                System.out.print("Komu notifikaci posílám? " + person_id);
-
-
                 try {
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
                     if ((notification.notification_importance != Enum_Notification_importance.low) && (notification.id == null)) {

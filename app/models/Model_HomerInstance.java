@@ -329,9 +329,7 @@ public class Model_HomerInstance extends Model {
 
                     return;
                 }
-
-
-
+                
                 default: {
                     logger.error("Homer_Instance:: Incoming message:: Chanel tyrion:: not recognize messageType ->" + json.get("messageType").asText());
                     return;
