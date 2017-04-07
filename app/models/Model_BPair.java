@@ -29,15 +29,16 @@ public class Model_BPair extends Model {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty   @Transient public String c_program_version_id()     { return c_program_version == null ? null : c_program_version.id;}
-    @JsonProperty   @Transient public String c_program_version_name()   { return c_program_version == null ? null : c_program_version.version_name;}
+    @JsonProperty   @Transient public String c_program_version_id()         { return c_program_version == null ? null : c_program_version.id;}
+    @JsonProperty   @Transient public String c_program_version_name()       { return c_program_version == null ? null : c_program_version.version_name;}
+    @JsonProperty   @Transient public String c_program_version_description(){ return c_program_version == null ? null : c_program_version.version_description;}
 
+    @JsonProperty   @Transient public String c_program_id()                 { return c_program_version.c_program.id;}
+    @JsonProperty   @Transient public String c_program_name()               { return c_program_version.c_program.name;}
+    @JsonProperty   @Transient public String c_program_description()        { return c_program_version.c_program.description;}
 
-    @JsonProperty   @Transient public String c_program_name()           { return c_program_version.c_program.name;}
-    @JsonProperty   @Transient public String c_program_description()    { return c_program_version.c_program.description;}
-
-    @JsonProperty   @Transient public String type_of_board_id()         { return board.type_of_board_name();}
-    @JsonProperty   @Transient public String type_of_board_name()       { return board.type_of_board_id();  }
+    @JsonProperty   @Transient public String type_of_board_id()             { return board.type_of_board_name();}
+    @JsonProperty   @Transient public String type_of_board_name()           { return board.type_of_board_id();  }
 
     @JsonProperty   @Transient public String board_id()                     { return board.id;}
     @JsonProperty   @Transient public String board_personal_description()   { return board.personal_description;}

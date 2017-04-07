@@ -223,15 +223,10 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-
-
-
-
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER---------------------------------------------------------------------------------*/
 
     public static final String CHANNEL = "instance";
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
 
     // Messenger
     @JsonIgnore @Transient

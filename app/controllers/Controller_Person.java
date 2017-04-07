@@ -3,6 +3,9 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.*;
+import play.api.Play;
+import play.api.libs.ws.WSClientConfig;
+import play.api.libs.ws.ssl.SSLConfigFactory;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -12,6 +15,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import scala.concurrent.duration.Duration;
 import utilities.Server;
 import utilities.emails.Email;
 import utilities.loggy.Loggy;
@@ -22,9 +26,11 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Entity_Validation_Out;
 
 import javax.inject.Inject;
+import javax.xml.ws.Response;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
 public class Controller_Person extends Controller {
@@ -775,13 +781,12 @@ public class Controller_Person extends Controller {
     public  Result person_validateProperty(){
         try{
 
-            logger.debug("Příchoí JSON PRO OVĚŘENÍ JE "+  request().body().toString());
 
             final Form<Swagger_Entity_Validation_In> form = Form.form(Swagger_Entity_Validation_In.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Entity_Validation_In help = form.get();
 
-            logger.debug("Příchoí JSON PRO OVĚŘENÍ JE " + help.toString());
+            logger.debug("Příchoí JSON PRO OVĚŘENÍ JE " + Json.toJson(help));
 
             Swagger_Entity_Validation_Out validation = new Swagger_Entity_Validation_Out();
 
@@ -820,24 +825,19 @@ public class Controller_Person extends Controller {
 
                         logger.debug("Controller_Person:: person_validateProperty:: Link:: " + "https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
 
-
-                        F.Promise<WSResponse> responsePromise = ws.url("https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
-                                .setHeader("Accept", "application/json")
+                        F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class)
+                                .url("https://www.isvat.eu/CZ/28496639")
+                                .setHeader("cache-control", "no-cache")
                                 .get();
 
-
+                        logger.debug("Controller_Person:: person_validateProperty:: Link:: Promise zavolán");
 
                         WSResponse wsResponse = responsePromise.get(10000);
 
                         logger.debug("Controller_Person:: person_validateProperty:: http request:: " + wsResponse.getStatus());
-
-
                         logger.debug("Controller_Person:: person_validateProperty:: vat_number:: " + wsResponse.getBody());
 
-
-
-
-                        JsonNode body = responsePromise.get(1000).asJson();
+                        JsonNode body = wsResponse.asJson();
 
                         if (body.get("valid").asBoolean()) {
 
@@ -850,7 +850,8 @@ public class Controller_Person extends Controller {
                             return GlobalResult.result_ok(Json.toJson(validation));
                         }
                     }catch (Exception e){
-                        Loggy.internalServerError("Controller_Person:: person_validateProperty()::", e);
+                        e.printStackTrace();
+                   //     Loggy.internalServerError("Controller_Person:: person_validateProperty()::", e);
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";
                     }
