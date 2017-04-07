@@ -113,6 +113,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
         public Enum_Firmware_type firmware_type;
         public Model_FileRecord file_record;
         public String name;
+        public String version;
         public Enum_Update_type_of_update type_of_update;
 
         public List<Utilities_HW_Updater_Target_pair> target_pairs = new ArrayList<>();
@@ -286,6 +287,8 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
 
 
+
+
                    if(program_identificator == null){
                        logger.error("Master_Updater:: actualization_update_procedure:: C_program updateter has not any object for uploud! (Program, Bootloader, File) ");
                        continue;
@@ -304,7 +307,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                       program.firmware_type  = plan.firmware_type;
                       program.file_record = file_record;
                       program.name = name;
-                      program.name = version;
+                      program.version = version;
                       structure.instances.get(homer_instance.blocko_instance_name).programs.put(program_identificator, program);
 
                   }
