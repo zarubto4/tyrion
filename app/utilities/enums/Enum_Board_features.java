@@ -6,5 +6,5 @@ public enum Enum_Board_features {
 
     @EnumValue("ethernet")   ethernet,
     @EnumValue("wifi")       wifi,
-    @EnumValue("nothing")    nothing
+    @EnumValue("i2c")        i2c
 }

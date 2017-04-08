@@ -346,7 +346,7 @@ public class Model_Board extends Model {
         try {
 
             logger.debug("Updating device status " +  help.deviceId + " on online ");
-            cache_status.put(help.deviceId, true);
+
 
             Model_Board master_device = Model_Board.get_byId(help.deviceId);
 
@@ -357,8 +357,12 @@ public class Model_Board extends Model {
             }
 
             System.out.println("Zasílám pokyn k notifikaci o tom, že device je online");
-            master_device.notification_board_connect();
 
+            if(!cache_status.get(help.deviceId)){
+                cache_status.put(help.deviceId, true);
+                master_device.notification_board_connect();
+            }
+            
             Model_Board.hardware_firmware_state_check(server, master_device, help);
 
         }catch (Exception e){
@@ -382,7 +386,7 @@ public class Model_Board extends Model {
             System.out.println("Zasílám pokyn k notifikaci o tom, že device je offline");
             master_device.notification_board_disconnect();
 
-            Server_Cache.cacheManager.getCache( Model_Board.CACHE_STATUS, String.class, Boolean.class).put(help.deviceId, false);
+            Model_Board.cache_status.put(help.deviceId, false);
 
         }catch (Exception e){
             logger.error("Board:: master_device_Disconnected:: ERROR:: ", e);
@@ -421,7 +425,7 @@ public class Model_Board extends Model {
 
 
             Model_Board.get_byId(help.deviceId).notification_board_disconnect();
-            Server_Cache.cacheManager.getCache( Model_Board.CACHE_STATUS, String.class, Boolean.class).put(help.deviceId, false);
+            Model_Board.cache_status.put(help.deviceId, false);
 
         }catch (Exception e){
             logger.error("Board:: device_Disconnected:: ERROR:: ", e);
@@ -978,10 +982,10 @@ public class Model_Board extends Model {
         try{
             new Model_Notification()
                     .setImportance( Enum_Notification_importance.low )
-                    .setLevel( Enum_Notification_level.info)
-                    .setText( new Notification_Text().setText("One of your Boards " + this.personal_description ))
+                    .setLevel( Enum_Notification_level.success)
+                    .setText( new Notification_Text().setText("Device " + this.id ))
                     .setObject(this)
-                    .setText( new Notification_Text().setText("is connected."))
+                    .setText( new Notification_Text().setText(" has just connected"))
                     .send_under_project(project_id());
 
         }catch (Exception e){
@@ -999,10 +1003,10 @@ public class Model_Board extends Model {
 
             new Model_Notification()
                 .setImportance( Enum_Notification_importance.low )
-                .setLevel( Enum_Notification_level.info)
-                .setText(  new Notification_Text().setText("One of your Boards " + this.personal_description))
+                .setLevel( Enum_Notification_level.warning)
+                .setText(  new Notification_Text().setText("Device" + this.id ))
                 .setObject(this)
-                .setText( new Notification_Text().setText(" is disconnected."))
+                .setText( new Notification_Text().setText(" has disconnected."))
                 .send_under_project(project_id());
 
         }catch (Exception e){

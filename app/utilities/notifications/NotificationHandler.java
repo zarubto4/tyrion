@@ -86,6 +86,8 @@ public class NotificationHandler {
 
         try {
 
+            System.out.println("Odesílám Notifikaci");
+
             logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
             ObjectNode message = Json.newObject();
@@ -103,20 +105,28 @@ public class NotificationHandler {
             message.set("buttons", Json.toJson(notification.buttons()) );
 
 
+            System.out.println("  Počet příjemců je " + notification.list_of_ids_receivers.size());
+
             for (String person_id : notification.list_of_ids_receivers) {
 
                 try {
+
+                    System.out.println("      Odesílám příjemcovi " + person_id);
+
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
                     if ((notification.notification_importance != Enum_Notification_importance.low) && (notification.id == null)) {
+
 
 
                         notification.person = Model_Person.get_byId(person_id); // Get Person Model from Cache
                         notification.save_object();
 
-
                         message.put("id", notification.id);
 
+                        System.out.println("      Notifikaci k tomu ještě ukládám pod notification id " +notification.id);
+
                         try {
+                            // TODO Lexa - co jsi touhle čístí kodu chtěl říci??? Tohle by tu vůbec být nemělo - ale mělo by se to zařídit na jiném místě v kodu
                             if ((!notification.buttons().isEmpty()) && (notification.buttons().get(0).action == Enum_Notification_action.accept_project_invitation)) {
                                 Model_Invitation invitation = Model_Invitation.find.byId(notification.buttons().get(0).payload);
                                 invitation.notification_id = notification.id;
@@ -127,13 +137,18 @@ public class NotificationHandler {
                         }
 
                     }else {
-                        message.put("id", UUID.randomUUID().toString());
+                        if(notification.id != null) {
+                            message.put("id", UUID.randomUUID().toString());
+                            System.out.println("      Notifikaci k tomu ještě něměla vlastní id a nebude ukládánáa a tak tvořím nové id " +  message.get("id").asText());
+                        }else {
+                            System.out.println("      Notifikaci měla už vlastní id ale nebude ukládáná " +  notification.id);
+                        }
                     }
+
 
                     // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
                     if (Controller_WebSocket.becki_website.containsKey(person_id)) {
                         WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person_id);
-
                         becki.write_without_confirmation( message );
                     }
 

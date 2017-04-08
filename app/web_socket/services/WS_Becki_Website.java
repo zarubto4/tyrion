@@ -42,7 +42,11 @@ public class WS_Becki_Website extends WS_Interface_type {
     public void write_without_confirmation(ObjectNode json) {
         try {
 
+            System.out.println("          Reálné odesílání notifikace na počet odběrů jednoho uživatele Becki_Website:: " + all_person_Connections.size());
+
             for (Map.Entry<String,WS_Interface_type> entry : all_person_Connections.entrySet()) {
+                System.out.println("          Reálné odesílání notifikace na Identifikator WS odběru :: " + entry.getValue().identifikator);
+
                entry.getValue().write_without_confirmation(json);
             }
 

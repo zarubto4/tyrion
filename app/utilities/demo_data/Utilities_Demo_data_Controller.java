@@ -228,6 +228,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             yodas.add(new Pair("001B00453533510B34353732", "[Q]"));
             yodas.add(new Pair("002300513533510B34353732", "[R]"));
             yodas.add(new Pair("003B00313533510B34353732", "[S]"));
+            yodas.add(new Pair("002300453533510B34353732", "[T]"));
 
             for (Pair yoda_pair : yodas) {
                 Model_Board yoda = new Model_Board();
@@ -991,25 +992,10 @@ public class Utilities_Demo_data_Controller extends Controller {
             participant_1.save();
 
             // Zaregistruji pod ně Yody
-            Model_Board yoda_F  = Model_Board.find.where().eq("personal_description","[F]").findUnique();
-            yoda_F.project = project_1;
-            yoda_F.virtual_instance_under_project = project_1.private_instance;
-            yoda_F.update();
-
             Model_Board yoda_G  = Model_Board.find.where().eq("personal_description","[Q]").findUnique();
             yoda_G.project = project_1;
             yoda_G.virtual_instance_under_project = project_1.private_instance;
             yoda_G.update();
-
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[69]").findUnique());
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[67]").findUnique());
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[66]").findUnique());
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[65]").findUnique());
-
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[73]").findUnique());
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[74]").findUnique());
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[75]").findUnique());
-            project_1.boards.add( Model_Board.find.where().eq("personal_description","[76]").findUnique());
 
            for(Model_Board board :project_1.boards  ) {
                board.project = project_1;

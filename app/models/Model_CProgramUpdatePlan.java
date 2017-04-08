@@ -49,6 +49,7 @@ public class Model_CProgramUpdatePlan extends Model {
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_FileRecord binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
     @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public Enum_CProgram_updater_state state;
+                                                                     @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer errorCode;

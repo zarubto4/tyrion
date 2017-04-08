@@ -116,7 +116,7 @@ create table model_ccompilation (
   firmware_version_lib      varchar(255),
   firmware_build_id         varchar(255),
   firmware_build_datetime   varchar(255),
-  constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined')),
+  constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','hardware_unstable','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined')),
   constraint uq_model_ccompilation_c_compilat unique (c_compilation_version),
   constraint uq_model_ccompilation_bin_compil unique (bin_compilation_file_id),
   constraint pk_model_ccompilation primary key (id))
@@ -148,6 +148,7 @@ create table model_cprogram_update_plan (
   bootloader_id             varchar(255),
   binary_file_id            varchar(255),
   state                     varchar(23),
+  count_of_tries            integer,
   error                     varchar(255),
   error_code                integer,
   constraint ck_model_cprogram_update_plan_firmware_type check (firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),

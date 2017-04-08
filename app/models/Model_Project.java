@@ -256,7 +256,7 @@ public class Model_Project extends Model {
     public static final String CACHE                          = Model_Project.class.getSimpleName();
     public static final String CACHE_BECKI_CONNECTED_PERSONS  = Model_Project.class.getSimpleName() + "_BECKI_CONNECTED_PERSONS_ID";
 
-    // TODO public static Cache<String, Model_Project> cache = null;       // < Project_Id, Model_Project>
+    // TODO přidat další chache >>> public static Cache<String, Model_Project> cache = null;       // < Project_Id, Model_Project>
     public static Cache<String, IdsList> token_cache = null;  // < Project_Id, List<Person_id>> // Only connected on Websocket with Becki
 
 
@@ -269,8 +269,6 @@ public class Model_Project extends Model {
 
 
     public static void becki_person_id_subscribe(String person_id){
-
-        Model_Person person = Model_Person.get_byId(person_id);
 
         List<Model_Project> list_of_projects = Model_Project.find.where().eq("participants.person.id", person_id).disjunction()
                     .eq("state", Enum_Participant_status.admin)
@@ -286,11 +284,11 @@ public class Model_Project extends Model {
             if(idlist == null){
 
                 idlist = new IdsList();
-                idlist.list.add(person_id);
+                if(!idlist.list.contains(person_id)) idlist.list.add(person_id);
                 token_cache.put(project.id, idlist);
 
             }else {
-                idlist.list.add(person_id);
+                if(!idlist.list.contains(person_id)) idlist.list.add(person_id);
             }
 
         }
@@ -326,16 +324,17 @@ public class Model_Project extends Model {
 
             idlist = new IdsList();
 
-            for(Model_ProjectParticipant participant :get_byId(project_id).participants){
+            for(Model_ProjectParticipant participant : get_byId(project_id).participants){
 
-               if(Controller_WebSocket.becki_website.containsKey(participant.person.id)){
-                   idlist.list.add(participant.person.id);
-               }
+                if(participant.state == Enum_Participant_status.invited ) continue;
+
+                if(Controller_WebSocket.becki_website.containsKey(participant.person.id)){
+                   if(!idlist.list.contains(participant.person.id))  idlist.list.add(participant.person.id);
+                 }
 
             }
 
             token_cache.put(project_id, idlist);
-
         }
 
         return idlist.list;
