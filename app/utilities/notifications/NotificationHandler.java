@@ -86,7 +86,7 @@ public class NotificationHandler {
 
         try {
 
-            logger.debug("NotificationHandler:: sendNotification:: sending notification");
+            logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
             ObjectNode message = Json.newObject();
             message.put("messageType", Model_Notification.messageType);
@@ -144,8 +144,6 @@ public class NotificationHandler {
                     logger.error("NotificationHandler:: SendNotification inside for void Error:: ", e);
                 }
             }
-
-            System.out.print("Všem ze seznamu byla odeslána notifikace - its done");
 
         }catch (Exception e){
             logger.error("NotificationHandler:: SendNotification void Error: ", e);

@@ -11,11 +11,12 @@ import java.util.List;
 
 public class Utilities_HW_Updater_Actualization_procedure {
 
-    /**
-     *   In this Class is Code Standard by HOMER - Please Visit Wiki for that!!!!
-     */
-
-
+    /*******************************************************************************************************************
+     *
+     *   In this Class is Code Standard by HOMER - Labels are used in Json for communications,
+     *   Please Visit Wiki for that!!!!
+     *
+     *******************************************************************************************************************/
 
     @JsonProperty public List<Utilities_HW_Updater_Target_pair> targetPairs = new ArrayList<>();
 
@@ -32,7 +33,6 @@ public class Utilities_HW_Updater_Actualization_procedure {
     public String program(){
         return file_record.get_fileRecord_from_Azure_inString();
     }
-
 
 
     @JsonProperty

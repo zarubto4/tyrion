@@ -63,6 +63,9 @@ public class Server_Cache {
 
 
 
+
+
+
         /*
          *  Model_Board
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -80,7 +83,10 @@ public class Server_Cache {
             Model_Board.cache_status = cacheManager.createCache(Model_Board.CACHE_STATUS,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
                     ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_Board.CACHE_STATUS")))
-                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
+
+
+
 
         /*
          *  Updates
@@ -94,6 +100,9 @@ public class Server_Cache {
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_CProgramUpdatePlan.CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(7, TimeUnit.MINUTES))).build());
 
+
+
+
         /*
          *  Model_Instance
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -104,7 +113,13 @@ public class Server_Cache {
             Model_HomerInstance.cache_status = cacheManager.createCache(Model_HomerInstance.CACHE_STATUS,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerInstance.CACHE_STATUS")))
-                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
+
+            logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Instance status");
+            Model_HomerInstance.cache = cacheManager.createCache(Model_HomerInstance.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerInstance.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerInstance.CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(30, TimeUnit.MINUTES))).build());
 
 
 
@@ -119,9 +134,10 @@ public class Server_Cache {
          *
          */
             logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Homer Server Models");
-            Model_HomerServer.cache_model_homer_server = cacheManager.createCache(Model_HomerServer.CACHE, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerServer.class,
+            Model_HomerServer.cache = cacheManager.createCache(Model_HomerServer.CACHE, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerServer.class,
                     ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerServer.CACHE")))
-                    .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
+                    .withExpiry(Expirations.timeToIdleExpiration(Duration.of(12, TimeUnit.HOURS))).build());
+
 
 
 

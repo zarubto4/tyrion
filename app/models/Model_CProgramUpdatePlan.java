@@ -12,6 +12,7 @@ import utilities.loggy.Loggy;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
 import web_socket.message_objects.homer_instance.WS_Message_UpdateProcedure_progress;
+import web_socket.message_objects.homer_instance.WS_Message_UpdateProcedure_result;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -193,14 +194,15 @@ public class Model_CProgramUpdatePlan extends Model {
     @JsonIgnore @Transient
     public static void update_procedure_progress(WS_Message_UpdateProcedure_progress progress_message){
 
-        Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_model(progress_message.updatePlanId);
+        try {
+            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_model(progress_message.updatePlanId);
 
-        if(plan == null){
-            logger.error("Model_CProgramUpdatePlan:: update_procedure_progress:: Error:: Model_CProgramUpdatePlan id " + progress_message.updatePlanId + " not found");
-            return;
-        }
+            if (plan == null) {
+                logger.error("Model_CProgramUpdatePlan:: update_procedure_progress:: Error:: Model_CProgramUpdatePlan id " + progress_message.updatePlanId + " not found");
+                return;
+            }
 
-        if(Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.MAKING_BACKUP){
+            if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.MAKING_BACKUP) {
 
                 try {
 
@@ -209,86 +211,137 @@ public class Model_CProgramUpdatePlan extends Model {
                     notification
                             .setChainType(Enum_Notification_type.CHAIN_UPDATE)
                             .setId(plan.actualization_procedure.id)
-                            .setImportance( Enum_Notification_importance.normal)
-                            .setLevel( Enum_Notification_level.info);
+                            .setImportance(Enum_Notification_importance.low)
+                            .setLevel(Enum_Notification_level.info);
 
                     notification.setText(new Notification_Text().setText("Update of Procedure "))
                             .setObject(plan.actualization_procedure)
-                            .setText(new Notification_Text().setText(". We are making backup on board " ))
+                            .setText(new Notification_Text().setText(". We are making backup on board "))
                             .setObject(plan.board)
-                            .setText(new Notification_Text().setText("finished:: " + progress_message.percentageProgress + "%" ))
+                            .setText(new Notification_Text().setText("finished:: " + progress_message.percentageProgress + "%"))
                             .send_under_project(plan.actualization_procedure.get_project_id());
 
-                }catch (Exception e){
-                    Loggy.internalServerError("Model_CProgramUpdatePlan:: notification_update_procedure_progress", e);
+                } catch (Exception e) {
+                    Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_progress", e);
                 }
 
-        }
+            } else if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_TO_YODA) {
 
-        else if(Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_TO_YODA){
+                try {
 
-            try {
+                    Model_Notification notification = new Model_Notification();
 
-                Model_Notification notification = new Model_Notification();
+                    notification
+                            .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                            .setId(plan.actualization_procedure.id)
+                            .setImportance(Enum_Notification_importance.low)
+                            .setLevel(Enum_Notification_level.info);
 
-                notification
-                        .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                        .setId(plan.actualization_procedure.id)
-                        .setImportance( Enum_Notification_importance.normal)
-                        .setLevel( Enum_Notification_level.info);
+                    notification.setText(new Notification_Text().setText("Update of Procedure "))
+                            .setObject(plan.actualization_procedure)
+                            .setText(new Notification_Text().setText(". Transfer firmware to "))
+                            .setObject(plan.board)
+                            .setText(new Notification_Text().setText(" finished:: " + progress_message.percentageProgress + "%"))
+                            .send_under_project(plan.actualization_procedure.get_project_id());
 
-                notification.setText(new Notification_Text().setText("Update of Procedure "))
-                        .setObject(plan.actualization_procedure)
-                        .setText(new Notification_Text().setText(". Transfer firmware to " ))
-                        .setObject(plan.board)
-                        .setText(new Notification_Text().setText(" finished:: " + progress_message.percentageProgress + "%"))
-                        .send_under_project(plan.actualization_procedure.get_project_id());
+                } catch (Exception e) {
+                    Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_progress", e);
+                }
 
-            }catch (Exception e){
-                Loggy.internalServerError("Model_CProgramUpdatePlan:: notification_update_procedure_progress", e);
+            } else if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_FROM_YODA_TO_DEVICE) {
+
+                try {
+
+                    Model_Notification notification = new Model_Notification();
+
+                    notification
+                            .setId(plan.actualization_procedure.id)
+                            .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                            .setImportance(Enum_Notification_importance.low)
+                            .setLevel(Enum_Notification_level.info);
+
+                    notification.setText(new Notification_Text().setText("Update of Procedure "))
+
+                            .setObject(plan.actualization_procedure)
+                            .setText(new Notification_Text().setText(". We are transfer data from Master device "))
+                            .setObject(plan.board) // TODO Master yoda device???
+                            .setText(new Notification_Text().setText(" to final device "))
+                            .setObject(plan.board)
+                            .setText(new Notification_Text().setText(" finished:: " + progress_message.percentageProgress + "%"))
+                            .send_under_project(plan.actualization_procedure.get_project_id());
+
+                } catch (Exception e) {
+                    Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_progress", e);
+                }
+
+            } else if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.CHECKING_RESULT) {
+                // TODO Tom - rozmyslet zda neskipnout pro prozatimní nevyužitelnost ??
+                System.err.println("Model_CProgramUpdatePlan:: Checking devie TODOO");
+            } else {
+                logger.error("Model_CProgramUpdatePlan:: update_procedure_progress:: Error:: Enum_UpdateProcedure_progress_type id " + progress_message.typeOfProgress + " not recognize");
             }
 
+        }catch (Exception e) {
+            Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_progress", e);
         }
-
-        else if(Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_FROM_YODA_TO_DEVICE){
-
-            try {
-
-                Model_Notification notification = new Model_Notification();
-
-                notification
-                        .setId(plan.actualization_procedure.id)
-                        .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                        .setImportance( Enum_Notification_importance.normal)
-                        .setLevel( Enum_Notification_level.info);
-
-                notification.setText(new Notification_Text().setText("Update of Procedure "))
-
-                        .setObject(plan.actualization_procedure)
-                        .setText(new Notification_Text().setText(". We are transfer data from Master device " ))
-                        .setObject(plan.board) // TODO Master yoda device???
-                        .setText(new Notification_Text().setText(" to final device " ))
-                        .setObject(plan.board)
-                        .setText(new Notification_Text().setText(" finished:: " + progress_message.percentageProgress + "%"))
-                        .send_under_project(plan.actualization_procedure.get_project_id());
-
-            }catch (Exception e){
-                Loggy.internalServerError("Model_CProgramUpdatePlan:: notification_update_procedure_progress", e);
-            }
-
-        }
-
-        else if(Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.CHECKING_RESULT){
-            // TODO Tom - rozmyslet zda neskipnout pro prozatimní nevyužitelnost ??
-            System.err.println("Model_CProgramUpdatePlan:: Checking devie TODOO");
-        }
-
-        else {
-            logger.error("Model_CProgramUpdatePlan:: update_procedure_progress:: Error:: Enum_UpdateProcedure_progress_type id " + progress_message.typeOfProgress + " not recognize");
-        }
-
     }
 
+    @JsonIgnore @Transient
+    public static void update_procedure_state(WS_Message_UpdateProcedure_result procedure_result){
+        try{
+
+            System.out.println("Příšel mi rychlý update o progresu větší update procedury");
+
+            Model_CProgramUpdatePlan plan = get_model(procedure_result.updatePlanId);
+
+            if(plan == null){
+                logger.error("Model_CProgramUpdatePlan:: update_procedure_state:: Error: Model_CProgramUpdatePlan not found under id:: " + procedure_result.updatePlanId);
+                return;
+            }
+
+            if(plan.state == Enum_CProgram_updater_state.overwritten){
+                return;
+            }
+
+            Enum_Hardware_update_state_from_Homer update_state = Enum_Hardware_update_state_from_Homer.getUpdate_state(procedure_result.updateState);
+
+            if(update_state == null){
+                logger.error("Model_CProgramUpdatePlan:: update_procedure_state:: Error: Enum_Hardware_update_state_from_Homer not recognize:: " + procedure_result.updateState);
+                return;
+            }
+
+            if(update_state == Enum_Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE){
+
+                plan.state = Enum_CProgram_updater_state.complete;
+                plan.update();
+                plan.actualization_procedure.notification_update_procedure_progress();
+                return;
+
+            }
+
+            if(update_state == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || update_state == Enum_Hardware_update_state_from_Homer.YODA_WAS_OFFLINE ){
+                plan.state = Enum_CProgram_updater_state.waiting_for_device;
+                plan.update();
+                return;
+            }
+
+            if(update_state == Enum_Hardware_update_state_from_Homer.TRANSMISSION_CRC_ERROR
+                || update_state == Enum_Hardware_update_state_from_Homer.UPDATE_PROGRESS_STACK
+                || update_state == Enum_Hardware_update_state_from_Homer.INVALID_DEVICE_STATE
+                || update_state == Enum_Hardware_update_state_from_Homer.ERROR
+                || update_state == Enum_Hardware_update_state_from_Homer.DEVICE_NOT_RECONNECTED
+              ){
+                plan.state = Enum_CProgram_updater_state.critical_error;
+                plan.update();
+                return;
+            }
+
+
+
+        }catch (Exception e) {
+            Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_state", e);
+        }
+    }
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
@@ -314,14 +367,13 @@ public class Model_CProgramUpdatePlan extends Model {
         if(model == null){
 
             model = Model_CProgramUpdatePlan.find.byId(id);
-            if (model == null)
-                return  null;
+
+            if (model == null) {
+                logger.error("Model_CProgramUpdatePlan:: get_model:: id not found:: " + id);
+                return null;
+            }
 
             cache_model_update_plan.put(id, model);
-        }
-
-        if(model == null){
-            logger.error("Model_CProgramUpdatePlan:: get_model:: id not found:: " + id);
         }
 
         return model;

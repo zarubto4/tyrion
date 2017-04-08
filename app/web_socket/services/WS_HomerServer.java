@@ -225,23 +225,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
                         if(task.instance != null){
 
-                            System.out.println("Odesílám Task:: ");
-
                             WS_Message_Update_device_firmware result = Model_Board.update_devices_firmware(task.instance, task.procedures);
-
-
-
-                            for(Utilities_HW_Updater_Actualization_procedure procedure : task.procedures){
-                                System.out.println("Procedure K updatu:: id" + procedure.actualizationProcedureId);
-
-                                for(Utilities_HW_Updater_Target_pair pair : procedure.targetPairs) {
-                                    System.out.println("Procedure K updatu:: Target id:: " + pair.targetId);
-                                }
-                            }
-
-
-
-
                             task_list.remove(task);
                         }
                         else {

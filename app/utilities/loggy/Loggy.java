@@ -88,6 +88,8 @@ public class Loggy{
 
         String id;
 
+        exception.printStackTrace();
+
         while (true) { // I need Unique Value
             id = UUID.randomUUID().toString();
             if (Model_LoggyError.find.byId(id) == null) break;

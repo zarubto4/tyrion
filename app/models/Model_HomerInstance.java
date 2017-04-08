@@ -56,6 +56,7 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)       public Model_Project project;
 
+                                                                                          @JsonIgnore              public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
     @JsonIgnore @OneToMany(mappedBy="virtual_instance_under_project", cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Board> boards_in_virtual_instance = new ArrayList<>();
 
@@ -134,13 +135,30 @@ public class Model_HomerInstance extends Model {
             if (Model_HomerInstance.find.where().eq("blocko_instance_name", blocko_instance_name ).findUnique() == null) break;
         }
 
+
         super.save();
+
+
+        cache.put(this.blocko_instance_name, this);
     }
 
     @Override
     public void delete(){
-        super.delete();
+
+        this.removed_by_user = true;
+        super.update();
+
+        cache.put(this.blocko_instance_name, this);
     }
+
+
+    @Override
+    public void update(){
+
+        super.update();
+        cache.put(this.blocko_instance_name, this);
+    }
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -292,6 +310,18 @@ public class Model_HomerInstance extends Model {
                     Model_Board.update_report_from_homer(form.get());
                     return;
                     
+                }
+
+                case WS_Message_UpdateProcedure_result.messageType : {
+
+                    final Form<WS_Message_UpdateProcedure_result> form = Form.form(WS_Message_UpdateProcedure_result.class).bind(json);
+                    if (form.hasErrors()) {
+                        logger.error("Homer_Instance:: WS_Message_UpdateProcedure_result:: Incoming Json from Homer server has not right Form:: " + form.errorsAsJson(new Lang(new play.api.i18n.Lang("en", "US"))).toString());
+                        return;
+                    }
+
+                    Model_CProgramUpdatePlan.update_procedure_state(form.get());
+                    return;
                 }
 
                 case WS_Message_Get_summary_information.messageType: {
@@ -560,6 +590,13 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public WS_Message_Destroy_instance remove_instance_from_server() {
         try{
+
+            // In this case - instance was created but never created on homer server - so its nothing to remove
+            if(actual_instance == null){
+                WS_Message_Destroy_instance response = new WS_Message_Destroy_instance();
+                response.status = "success";
+                return response;
+            }
 
             if(!actual_instance.hardware_group().isEmpty()){
 
@@ -1145,6 +1182,31 @@ public class Model_HomerInstance extends Model {
 
     public static Cache<String, Model_HomerInstance> cache; // Server_cache Override during server initialization
     public static Cache<String, Boolean> cache_status; // Server_cache Override during server initialization
+
+
+    public static Model_HomerInstance get_model(String blocko_instance_name){
+
+        if(cache == null){
+            logger.error("Model_HomerInstance:: get_model:: cache is null");
+            return null;
+        }
+
+        Model_HomerInstance model = cache.get(blocko_instance_name);
+
+        if(model == null){
+
+            model = Model_HomerInstance.find.byId(blocko_instance_name);
+            if (model == null){
+                logger.error("Model_HomerInstance:: get_model:: unique_identificator not found:: " + blocko_instance_name);
+                return  null;
+            }
+
+            cache.put(blocko_instance_name, model);
+        }
+
+
+        return model;
+    }
 
     public boolean get_status(){
 

@@ -298,6 +298,7 @@ create table model_homer_instance (
   blocko_instance_name      varchar(255) not null,
   cloud_homer_server_unique_identificator varchar(255),
   instance_type             varchar(10),
+  removed_by_user           boolean,
   constraint ck_model_homer_instance_instance_type check (instance_type in ('INDIVIDUAL','VIRTUAL')),
   constraint pk_model_homer_instance primary key (blocko_instance_name))
 ;

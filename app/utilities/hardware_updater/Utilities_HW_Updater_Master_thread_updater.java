@@ -132,7 +132,6 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
         if(procedure.state == Enum_Update_group_procedure_state.in_progress){
             logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " already in progress");
-            return;
         }
 
 
@@ -299,8 +298,6 @@ public class Utilities_HW_Updater_Master_thread_updater {
                   if(!structure.instances.get(homer_instance.blocko_instance_name).programs.containsKey(program_identificator)){
 
                       Program program = new Program();
-
-                      System.out.print("Typ procedury k updatu je:: " + plan.actualization_procedure.type_of_update.name());
 
                       program.type_of_update = plan.actualization_procedure.type_of_update;
                       program.program_identificator = program_identificator;

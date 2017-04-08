@@ -92,9 +92,8 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Transient
     public void update_state(){
-
         try {
-            System.out.println("Actualization procedure - update state");
+            logger.debug("Actualization procedure - update state");
 
             // Metoda je vyvolána, pokud chceme synchronizovat Aktualizační proceduru a nějakým způsobem jí označit
             // Třeba kolik procent už je vykonáno
@@ -199,14 +198,10 @@ public class Model_ActualizationProcedure extends Model {
     public String get_project_id(){
 
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
-
-            System.out.println("Hledám pod public instance");
             return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id", id).select("id").findUnique().id;
         }
 
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
-
-            System.out.println("Hledám pod private instance");
             return Model_Project.find.where().eq("boards.c_program_update_plans.actualization_procedure.id", id).findUnique().id;
         }
 

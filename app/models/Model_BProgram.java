@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.enums.Enum_Homer_instance_type;
 import utilities.enums.Enum_Tyrion_Server_mode;
+import utilities.loggy.Loggy;
 import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_B_Program_State;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
@@ -61,56 +62,68 @@ public class Model_BProgram extends Model {
     }
 
     @JsonProperty @Transient public Swagger_B_Program_State instance_details(){
+        try {
 
-        Swagger_B_Program_State state = new Swagger_B_Program_State();
+            Swagger_B_Program_State state = new Swagger_B_Program_State();
 
-        if(instance.actual_instance == null) {
-            state.uploaded = false;
-            return  state;
+            if (instance.actual_instance == null) {
+                state.uploaded = false;
+                return state;
+            }
+
+            // Je nahrán
+            state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
+            state.instance_online = instance.instance_online();
+
+            if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
+                // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
+                state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
+            } else {
+                state.instance_remote_url = "wss://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
+            }
+
+
+            // Jaká verze Blocko Programu?
+            state.version_id = instance.actual_instance.version_object.id;
+            state.version_name = instance.actual_instance.version_object.version_name;
+
+            // Instnace ID
+            state.instance_id = instance.blocko_instance_name;
+
+            // Informace o Serveru
+            state.server_id = instance.cloud_homer_server.unique_identificator;
+            state.server_name = instance.cloud_homer_server.personal_server_name;
+            state.server_online = instance.cloud_homer_server.server_is_online();
+
+            return state;
+
+        }catch (Exception e){
+            Loggy.internalServerError(this.getClass().getSimpleName() + "get_b_program_short_detail", e);
+            return null;
         }
-
-        // Je nahrán
-        state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
-        state.instance_online = instance.instance_online();
-
-        if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-            // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
-            state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url  + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
-        }else {
-            state.instance_remote_url = "wss://" + instance.cloud_homer_server.server_url  + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
-        }
-
-
-
-        // Jaká verze Blocko Programu?
-        state.version_id = instance.actual_instance.version_object.id;
-        state.version_name = instance.actual_instance.version_object.version_name;
-
-        // Instnace ID
-        state.instance_id = instance.blocko_instance_name;
-
-        // Informace o Serveru
-        state.server_id = instance.cloud_homer_server.unique_identificator;
-        state.server_name = instance.cloud_homer_server.personal_server_name;
-        state.server_online = instance.cloud_homer_server.server_is_online();
-
-        return state;
     }
 
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @Transient @JsonIgnore public Swagger_B_Program_Short_Detail get_b_program_short_detail(){
-        Swagger_B_Program_Short_Detail help = new Swagger_B_Program_Short_Detail();
-        help.id = id;
-        help.name = name;
-        help.description = description;
+        try {
 
-        help.edit_permission = edit_permission();
-        help.delete_permission = delete_permission();
-        help.update_permission = update_permission();
+            Swagger_B_Program_Short_Detail help = new Swagger_B_Program_Short_Detail();
+            help.id = id;
+            help.name = name;
+            help.description = description;
 
-        return help;
+            help.edit_permission = edit_permission();
+            help.delete_permission = delete_permission();
+            help.update_permission = update_permission();
+
+            return help;
+
+        }catch (Exception e){
+            Loggy.internalServerError(this.getClass().getSimpleName() + "get_b_program_short_detail", e);
+            return null;
+        }
     }
 
 /* Private Documentation Class -----------------------------------------------------------------------------------------*/
@@ -170,7 +183,11 @@ public class Model_BProgram extends Model {
     @JsonIgnore @Override public void delete() {
 
       instance.remove_instance_from_server();
+      instance.removed_by_user = true;
+      instance.update();
+
       this.removed_by_user = true;
+
       super.update();
 
     }

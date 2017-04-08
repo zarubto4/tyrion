@@ -19,6 +19,7 @@ import utilities.enums.Enum_Log_level;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.enums.Enum_Where_logged_tag;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_Task;
+import utilities.independent_threads.Check_Board_Status_after_homer_connection;
 import utilities.independent_threads.Check_Homer_instance_after_connection;
 import utilities.independent_threads.Check_Update_for_hw_on_homer;
 import utilities.independent_threads.SynchronizeHomerServer;
@@ -98,13 +99,13 @@ public class Model_HomerServer extends Model{
         super.save();
 
         //Cache Update
-        cache_model_homer_server.put(this.unique_identificator, this);
+        cache.put(this.unique_identificator, this);
     }
 
     @JsonIgnore @Override public void update() {
 
         //Cache Update
-        cache_model_homer_server.put(this.unique_identificator, this);
+        cache.put(this.unique_identificator, this);
 
         super.update();
         this.set_new_configuration_on_homer();
@@ -207,6 +208,13 @@ public class Model_HomerServer extends Model{
 
                 default: {
                     logger.error("Model_HomerServer:: Incoming message:: Chanel homer-server:: not recognize messageType ->" + json.get("messageType").asText());
+
+                    if(!Model_HomerServer.get_model(homer.identifikator).server_is_online()) {
+                        logger.error("Model_HomerServer:: Incoming message:: Chanel homer-server:: Prerequisite invalidly terminate of connection ");
+
+                    }
+
+
                     return;
                 }
             }
@@ -486,6 +494,16 @@ public class Model_HomerServer extends Model{
 
     }
 
+    @JsonIgnore @Transient  public void synchronize_all_device_state_with_cache(){
+
+        logger.debug("Blocko Server: Starting connection control procedure for devices - synchronize with cache");
+
+        Check_Board_Status_after_homer_connection check = new Check_Board_Status_after_homer_connection(get_server_webSocket_connection(), this);
+        check.start();
+
+    }
+
+
     @JsonIgnore @Transient  public void check_HW_updates_on_server(){
 
         logger.debug("Blocko Server: Starting connection control procedure for hardware updates");
@@ -521,28 +539,26 @@ public class Model_HomerServer extends Model{
 
     public static final String CACHE = Model_HomerServer.class.getName() + "_MODEL";
 
-    public static Cache<String, Model_HomerServer> cache_model_homer_server = null; // Server_cache Override during server initialization
+    public static Cache<String, Model_HomerServer> cache = null; // Server_cache Override during server initialization
 
     public static Model_HomerServer get_model(String unique_identificator){
 
-        if(cache_model_homer_server == null){
+        if(cache == null){
             logger.error("Model_HomerServer:: get_model:: cache_model_homer_server is null");
             return null;
         }
 
-        Model_HomerServer model = cache_model_homer_server.get(unique_identificator);
+        Model_HomerServer model = cache.get(unique_identificator);
 
         if(model == null){
 
             model = Model_HomerServer.find.byId(unique_identificator);
-            if (model == null)
+            if (model == null){
+                logger.error("Model_HomerServer:: get_model:: unique_identificator not found:: " + unique_identificator);
                 return  null;
+            }
 
-            cache_model_homer_server.put(unique_identificator, model);
-        }
-
-        if(model == null){
-            logger.error("Model_HomerServer:: get_model:: unique_identificator not found:: " + unique_identificator);
+            cache.put(unique_identificator, model);
         }
 
         return model;

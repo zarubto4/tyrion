@@ -3,6 +3,7 @@ package utilities.independent_threads;
 import models.Model_HomerInstance;
 import models.Model_HomerServer;
 import utilities.enums.Enum_Homer_instance_type;
+import utilities.loggy.Loggy;
 import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homer_instance.WS_Message_Update_device_summary_collection;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
@@ -29,111 +30,118 @@ public class Check_Homer_instance_after_connection extends Thread {
 
     @Override
     public void run(){
-        Long interrupter = (long) 6000;
+
+        Long interrupter = (long) 15000;
+
         try {
 
             while (interrupter > 0) {
 
-                sleep(1000);
-                interrupter -= 500;
+                try {
 
-                if (ws_homerServer.isReady()){
+                    sleep(3000);
+                    interrupter -= 3000;
 
-                    logger.trace("Check_Homer_instance_after_connection:: run:: Tyrion send to Homer Server request for listInstances");
+                    if (ws_homerServer.isReady()) {
 
-                    WS_Message_Get_instance_list list_instances = model_server.get_homer_server_listOfInstance();
+                        logger.info("Check_Homer_instance_after_connection:: run:: Tyrion send to Homer Server request for listInstances");
+
+                        WS_Message_Get_instance_list list_instances = model_server.get_homer_server_listOfInstance();
 
 
-                    // Vylistuji si seznam instnancí, které by měli běžet na serveru
+                        // Vylistuji si seznam instnancí, které by měli běžet na serveru
 
-                    List<Model_HomerInstance> instances_in_database_for_uploud = new ArrayList<>();
+                        List<Model_HomerInstance> instances_in_database_for_uploud = new ArrayList<>();
 
-                    // Přidám všechny reálné instance, které mají běžet.
-                    instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator).eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL).isNotNull("actual_instance").select("blocko_instance_name").findList());
+                        // Přidám všechny reálné instance, které mají běžet.
+                        instances_in_database_for_uploud.addAll(Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator).ne("removed_by_user", true).eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL).isNotNull("actual_instance").select("blocko_instance_name").findList());
 
-                    // Přidám všechny virtuální instance, kde je ještě alespoň jeden Yoda
-                    instances_in_database_for_uploud.addAll( Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator).eq("instance_type",  Enum_Homer_instance_type.VIRTUAL).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList());
+                        // Přidám všechny virtuální instance, kde je ještě alespoň jeden Yoda
+                        instances_in_database_for_uploud.addAll(Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator).ne("removed_by_user", true).eq("instance_type", Enum_Homer_instance_type.VIRTUAL).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList());
 
-                    logger.trace("Check_Homer_instance_after_connection:: run::  The number of instances that would have run on the server:: " + instances_in_database_for_uploud.size());
+                        logger.trace("Check_Homer_instance_after_connection:: run::  The number of instances that would have run on the server:: " + instances_in_database_for_uploud.size());
 
-                    List<String> instances_for_removing = new ArrayList<>();
+                        List<String> instances_for_removing = new ArrayList<>();
 
-                    // Vytvořím kopii seznamu instancí, které by měli běžet na Homer Serveru
-                    for(String  identificator : list_instances.instances){
+                        // Vytvořím kopii seznamu instancí, které by měli běžet na Homer Serveru
+                        for (String identificator : list_instances.instances) {
 
-                        // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
-                        Integer size = Model_HomerInstance.find.where().eq("blocko_instance_name", identificator)
-                                .disjunction()
+                            // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
+                            Integer size = Model_HomerInstance.find.where().eq("blocko_instance_name", identificator)
+                                    .disjunction()
                                     .conjunction()
-                                        .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL)
-                                        .isNotNull("actual_instance")
+                                    .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL)
+                                    .isNotNull("actual_instance")
                                     .endJunction()
                                     .conjunction()
-                                        .eq("instance_type", Enum_Homer_instance_type.VIRTUAL)
-                                        .isNotNull("boards_in_virtual_instance")
+                                    .eq("instance_type", Enum_Homer_instance_type.VIRTUAL)
+                                    .isNotNull("boards_in_virtual_instance")
                                     .endJunction()
-                                .endJunction().findRowCount();
+                                    .endJunction().ne("removed_by_user", true).findRowCount();
 
-                        if(size < 1){
-                            logger.warn("Blocko Server: removing instance:: ", identificator);
-                            instances_for_removing.add(identificator);
+                            if (size < 1) {
+                                logger.warn("Blocko Server: removing instance:: ", identificator);
+                                instances_for_removing.add(identificator);
+                            }
                         }
-                    }
 
-                    logger.trace("Check_Homer_instance_after_connection:: run::  The number of instances for removing from homer server:: " + instances_for_removing.size());
+                        logger.trace("Check_Homer_instance_after_connection:: run::  The number of instances for removing from homer server:: " + instances_for_removing.size());
 
-                    if (!instances_for_removing.isEmpty()) {
-                        for (String identificator : instances_for_removing) {
-                            WS_Message_Destroy_instance remove_result = model_server.remove_instance(identificator);
-                            if(!remove_result.status.equals("success"))   logger.error("Blocko Server: Removing instance Error: "+ remove_result.toString());
+                        if (!instances_for_removing.isEmpty()) {
+                            for (String identificator : instances_for_removing) {
+                                WS_Message_Destroy_instance remove_result = model_server.remove_instance(identificator);
+                                if (!remove_result.status.equals("success"))
+                                    logger.error("Blocko Server: Removing instance Error: " + remove_result.toString());
+                            }
                         }
-                    }
 
 
-                    // Nahraji tam ty co tam patří
-                    logger.trace("Check_Homer_instance_after_connection:: run:: Connection::Starting to uploud new instances to cloud_blocko_server" + instances_in_database_for_uploud.size());
+                        // Nahraji tam ty co tam patří
+                        logger.trace("Check_Homer_instance_after_connection:: run:: Connection::Starting to uploud new instances to cloud_blocko_server" + instances_in_database_for_uploud.size());
 
-                    for (Model_HomerInstance instance : instances_in_database_for_uploud) {
+                        for (Model_HomerInstance instance : instances_in_database_for_uploud) {
 
-                        logger.debug("Check_Homer_instance_after_connection:: run::  Connection:: Procedure for " + instance.blocko_instance_name);
+                            logger.trace("Check_Homer_instance_after_connection:: run::  Connection:: Procedure for " + instance.blocko_instance_name);
 
-                        if(list_instances.instances.contains(instance.blocko_instance_name)){
-                            logger.trace("Check_Homer_instance_after_connection:: run::  " + instance.blocko_instance_name + " is on server already");
-                        }else {
+                            if (list_instances.instances.contains(instance.blocko_instance_name)) {
+                                logger.trace("Check_Homer_instance_after_connection:: run::  " + instance.blocko_instance_name + " is on server already");
+                            } else {
 
-                            if(instance.instance_type == Enum_Homer_instance_type.VIRTUAL){
-                                logger.trace("Check_Homer_instance_after_connection:: run:: Instance:: " + instance.blocko_instance_name + " its Virtual instance");
-                                if(instance.getBoards_in_virtual_instance().size() == 0) {
-                                    logger.debug("Check_Homer_instance_after_connection:: run:: Instance " + instance.blocko_instance_name + " its Virtual instance and is empty - for cycle continue");
-                                    continue;
+                                if (instance.instance_type == Enum_Homer_instance_type.VIRTUAL) {
+                                    logger.trace("Check_Homer_instance_after_connection:: run:: Instance:: " + instance.blocko_instance_name + " its Virtual instance");
+                                    if (instance.getBoards_in_virtual_instance().size() == 0) {
+                                        logger.trace("Check_Homer_instance_after_connection:: run:: Instance " + instance.blocko_instance_name + " its Virtual instance and is empty - for cycle continue");
+                                        continue;
+                                    }
                                 }
-                            }
 
-                            logger.trace("Check_Homer_instance_after_connection:: run:: "+   instance.blocko_instance_name +" add instance to server");
-                            WS_Message_Update_device_summary_collection add_instance = instance.add_instance_to_server();
+                                logger.trace("Check_Homer_instance_after_connection:: run:: " + instance.blocko_instance_name + " add instance to server");
+                                WS_Message_Update_device_summary_collection add_instance = instance.add_instance_to_server();
 
-                            if (add_instance.status.equals("success")) {
-                                logger.trace("Check_Homer_instance_after_connection:: run::Upload instance was successful");
-                            }
-                            else if (add_instance.status.equals("error")) {
-                                logger.warn("Check_Homer_instance_after_connection:: run:: Fail when Tyrion try to add instance from Blocko cloud_blocko_server:: "+ add_instance.toString());
-                            }
+                                if (add_instance.status.equals("success")) {
+                                    logger.trace("Check_Homer_instance_after_connection:: run::Upload instance was successful");
+                                } else if (add_instance.status.equals("error")) {
+                                    logger.warn("Check_Homer_instance_after_connection:: run:: Fail when Tyrion try to add instance from Blocko cloud_blocko_server:: " + add_instance.toString());
+                                }
 
-                            sleep(50); // Abych Homer server tolik nevytížil
+                                sleep(50); // Abych Homer server tolik nevytížil
+                            }
                         }
+
+                        logger.trace("Check_Homer_instance_after_connection:: run:: Successfully finished connection procedure");
+                        break;
+
                     }
 
-
-                    logger.debug("Check_Homer_instance_after_connection:: run:: Successfully finished connection procedure");
-                    break;
-
+                } catch (Exception e) {
+                    Loggy.internalServerError(this.getClass().getSimpleName() + ":: run:: ", e);
                 }
             }
 
-            model_server.check_HW_updates_on_server();
+            model_server.synchronize_all_device_state_with_cache();
 
         }catch(Exception e){
-            e.printStackTrace();
+            Loggy.internalServerError(this.getClass().getSimpleName() + ":: run:: ", e);
         }
     }
 }

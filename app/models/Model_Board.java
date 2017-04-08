@@ -134,7 +134,7 @@ public class Model_Board extends Model {
 
 
             // 3) Je ve Virtuální instanci
-            if(instance != null && instance.instance_type != Enum_Homer_instance_type.VIRTUAL) {
+            if(instance != null && instance.instance_type == Enum_Homer_instance_type.INDIVIDUAL) {
 
                 board_status.where = Enum_Board_type_of_connection.in_person_instance;
                 board_status.instance_id = instance.blocko_instance_name;
@@ -351,10 +351,12 @@ public class Model_Board extends Model {
             Model_Board master_device = Model_Board.get_byId(help.deviceId);
 
             if(master_device == null){
-                logger.error("Board:: master_device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: ", server.identifikator);
+                logger.error("Board:: master_device_Connected:: Hardware not found:: Message from Homer server:: ", server.identifikator);
                 logger.error("Board:: master_device_Connected:: Unregistered Hardware:: ",  help.deviceId);
                 return;
             }
+
+            System.out.println("Zasílám pokyn k notifikaci o tom, že device je online");
             master_device.notification_board_connect();
 
             Model_Board.hardware_firmware_state_check(server, master_device, help);
@@ -370,7 +372,16 @@ public class Model_Board extends Model {
             logger.debug("Updating device status " +  help.deviceId + " on offline ");
             cache_status.put(help.deviceId, false);
 
-            Model_Board.get_byId(help.deviceId).notification_board_disconnect();
+            Model_Board master_device =  Model_Board.get_byId(help.deviceId);
+
+            if(master_device == null){
+                logger.error("Board:: master_device_Disconnected:: Hardware not found:: Id:" + help.deviceId);
+                return;
+            }
+
+            System.out.println("Zasílám pokyn k notifikaci o tom, že device je offline");
+            master_device.notification_board_disconnect();
+
             Server_Cache.cacheManager.getCache( Model_Board.CACHE_STATUS, String.class, Boolean.class).put(help.deviceId, false);
 
         }catch (Exception e){
@@ -391,6 +402,7 @@ public class Model_Board extends Model {
                 logger.error("Board:: device_Connected:: Unregistered Hardware:: ",  help.deviceId);
                 return;
             }
+
 
             device.notification_board_connect();
 
@@ -551,112 +563,93 @@ public class Model_Board extends Model {
 
             logger.debug("Model_Board:: hardware_firmware_state_check:: Summary information of connected master board: ", board.id);
 
-            System.out.println("Kontrola Board:: ");
-            System.out.println("Kontrola Board Id:: " + board.id);
-            System.out.println("Aktuální firmware_id dle HW:: " + report.firmware_build_id);
+            System.out.println("Kontrola Board");
+            System.out.println("    Board Id:: " + board.id);
+            System.out.println("    Aktuální firmware_id dle HW:: " + report.firmware_build_id);
 
             if (board.actual_c_program_version == null) System.out.println("Aktuální firmware_id dle DB není znám - ještě není žádný vypálen :( ");
-            else System.out.println("Aktuální firmware_id dle DB:: " + board.actual_c_program_version.id);
+            else System.out.println("   Aktuální firmware_id dle DB:: " + board.actual_c_program_version.c_compilation.firmware_build_id);
 
             if (board.actual_boot_loader == null) System.out.println("Aktuální bootlader_id dle DB není znám :: " + report.bootloader_build_id);
-            else System.out.println("Aktuální bootlader_id dle DB:: " + board.actual_boot_loader.version_identificator);
+            else System.out.println("   Aktuální bootlader_id dle DB:: " + board.actual_boot_loader.version_identificator);
 
 
             // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
 
-            Integer plans_count = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).disjunction()
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                    .endJunction().findRowCount();
+            List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", board.id)
+                    .disjunction()
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .endJunction()
+                    .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
+                    .findList();
 
+            System.out.println("    Kolik mám aktualizačních procedur nažhavených pro dané zařízení:: " + firmware_plans.size());
 
-            System.out.println("Kolik mám aktualizačních procedur nažhavených pro dané zařízení:: " + plans_count);
+            if(firmware_plans.size() == 0){
 
-            if (plans_count > 0) {
+                if( board.actual_c_program_version != null && !report.firmware_build_id.equals( board.actual_c_program_version.c_compilation.firmware_build_id)){
+                    System.out.println("    Mám rozhozený stav o tom, co očekává databáze a co na Devicu opravdu je... Lze hádat, že Yoda se vrátil na předchozí funčkní firmware!! ");
+                    System.out.println("    Mám hardware autobackup?? :: " + board.backup_mode );
 
-                System.out.println("Mám jich více než 0");
+                    for(Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).order().asc("date_of_create").findList()){
+                        System.out.println("    Co měl HArdware předtím??? :: " + plan.c_program_version_for_update.c_compilation.firmware_build_id );
+                    }
 
-                List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.where()
-                        .eq("board.id", board.id)
-                        .disjunction()
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                        .endJunction().order().desc("date_of_create").findList();
+                }
+            }
 
-                if(plans.size() > 1){
-                    for(int i = 1; i < plans.size(); i++) {
-                        plans.get(i).state = Enum_CProgram_updater_state.overwritten;
-                        plans.get(i).update();
+            if (firmware_plans.size() > 0) {
+
+                System.out.println("    Mám firmware_plans jich více než 0");
+
+                if (firmware_plans.size() > 1) {
+                    for (int i = 1; i < firmware_plans.size(); i++) {
+                        System.out.println("    Jelikož firmware_plans bylo víc - overwritnu ty nejstarší");
+                        firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                        firmware_plans.get(i).update();
                     }
                 }
 
-                System.out.println("Bubu kontrolovat na co mám plán");
+                logger.trace("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+                System.out.println("    Bubu kontrolovat FIRMWARE");
 
-                if (plans.get(0).firmware_type == Enum_Firmware_type.FIRMWARE) {
+                // Mám shodu oproti očekávánemů
+                if (firmware_plans.get(0).board.actual_c_program_version != null) {
 
-                    logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
+                    // Verze se rovnají
+                    if (firmware_plans.get(0).board.actual_c_program_version.c_compilation.firmware_build_id.equals(firmware_plans.get(0).c_program_version_for_update.c_compilation.firmware_build_id)) {
+                        System.out.println("    Verze Firmwaru se rovnají a tak potvrzuji");
 
-
-                    // Mám shodu oproti očekávánemů
-                    if(plans.get(0).board.actual_c_program_version != null ){
-
-                        // Verze se rovnají
-                        if (plans.get(0).board.actual_c_program_version.c_compilation.firmware_build_id.equals(plans.get(0).c_program_version_for_update.c_compilation.firmware_build_id) ) {
-                            plans.get(0).state = Enum_CProgram_updater_state.complete;
-                            plans.get(0).update();
-                        }else {
-
-                            plans.get(0).state = Enum_CProgram_updater_state.in_progress;
-                            plans.get(0).update();
-                            Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
-                        }
-
-                    }else {
-
-                        logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware - Hardware has Un-databased Value");
-                        plans.get(0).state = Enum_CProgram_updater_state.in_progress;
-                        plans.get(0).update();
-
-                        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
-
-                    }
-
-                } else if (plans.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER) {
-
-                    logger.debug("Homer_Instance_Record:: check_hardware:: Checking Firmware");
-
-                    // Mám shodu oproti očekávánemů
-                    if (plans.get(0).bootloader.version_identificator.equals(report.bootloader_build_id)) {
-
-                        plans.get(0).state = Enum_CProgram_updater_state.complete;
-                        plans.get(0).update();
+                        firmware_plans.get(0).state = Enum_CProgram_updater_state.complete;
+                        firmware_plans.get(0).update();
 
                     } else {
-
-                        plans.get(0).state = Enum_CProgram_updater_state.in_progress;
-                        plans.get(0).update();
-
-                        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plans.get(0).actualization_procedure);
+                        System.out.println("    Verze Firmwaru se nerovnají a tak úkoluji nový update");
+                        firmware_plans.get(0).state = Enum_CProgram_updater_state.not_start_yet;
+                        firmware_plans.get(0).update();
+                        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(firmware_plans.get(0).actualization_procedure);
                     }
 
-                } else if (plans.get(0).firmware_type == Enum_Firmware_type.BACKUP) {
+                } else {
 
-                    logger.debug("Homer_Instance_Record:: check_hardware:: Checking Backup");
+                    logger.debug("     Verze Firmwaru se nerovnají protože Hardware ještě žádnou nemá a tak úkoluji nový update");
+                    firmware_plans.get(0).state = Enum_CProgram_updater_state.not_start_yet;
+                    firmware_plans.get(0).update();
 
-                    plans.get(0).state = Enum_CProgram_updater_state.complete;
-                    plans.get(0).update();
+                    Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(firmware_plans.get(0).actualization_procedure);
+
                 }
-
-
-            } else {
-                logger.debug("No actualization plan found for Master Device: " + board.id);
             }
+
+
+            // TODO Bootloader
+
+            // TODO Backup
+
 
             if(report instanceof WS_Message_Yoda_connected){
 
@@ -665,7 +658,6 @@ public class Model_Board extends Model {
                     device_Connected(server, ws_device_connected);
                 }
             }
-
 
         }catch (Exception e){
             e.printStackTrace();
@@ -828,7 +820,6 @@ public class Model_Board extends Model {
         Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
         procedure.state = Enum_Update_group_procedure_state.not_start_yet;
         procedure.type_of_update = type_of_update;
-
 
         procedure.save();
 
@@ -1131,7 +1122,7 @@ public class Model_Board extends Model {
 
                 if( result.status.equals("error")){
 
-                    logger.warn("Board::"+  id + " Checking online state! status is Error:: ");
+                    logger.debug("Model_Board:: is_online:: deviceId:: "+  id + " Checking online state! Device is offline");
                     cache_status.put(id, false);
                     return false;
 

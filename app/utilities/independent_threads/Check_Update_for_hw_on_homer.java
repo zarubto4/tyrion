@@ -48,7 +48,8 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
         // Musím najít klasické instnace s Blockem a také virtuální instance
         Model_HomerInstance.find
-                .where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator)
+                .where().ne("removed_by_user", true)
+                        .eq("cloud_homer_server.unique_identificator", model_server.unique_identificator)
                         .disjunction()
                             .conjunction()
                                 .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL.name())
@@ -105,7 +106,6 @@ public class Check_Update_for_hw_on_homer extends Thread {
                 logger.error("Check_Update_for_hw_on_homer:: unknow Device!!! ");
             }
 
-            System.out.print("Zasílám ke kontrole Yoda Device State:: ");
             Model_Board.hardware_firmware_state_check(homer_server, yoda, yoda_connected);
 
         }
