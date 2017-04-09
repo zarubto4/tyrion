@@ -16,6 +16,5 @@ public class WS_Message_Yoda_connected extends WS_AbstractMessage_Board {
 
     @Constraints.Required public String deviceId;
 
-    @Valid
-    public List<WS_Message_Device_connected> deviceList  = new ArrayList<>();
+    @Valid public List<WS_Message_Device_connected> deviceList  = new ArrayList<>();
 }

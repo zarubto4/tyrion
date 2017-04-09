@@ -86,6 +86,7 @@ public class Model_ActualizationProcedure extends Model {
             if (Model_ActualizationProcedure.find.byId(this.id) == null) break;
         }
 
+        this.state = Enum_Update_group_procedure_state.not_start_yet;
         super.save();
     }
 
@@ -93,6 +94,9 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Transient
     public void update_state(){
         try {
+
+            System.out.println(".............. Byl zavolán Model_ActualizationProcedure :::-->>>>>>>> update_state");
+
             logger.debug("Actualization procedure - update state");
 
             // Metoda je vyvolána, pokud chceme synchronizovat Aktualizační proceduru a nějakým způsobem jí označit
@@ -107,7 +111,10 @@ public class Model_ActualizationProcedure extends Model {
                     .eq("state", Enum_CProgram_updater_state.complete)
                     .findRowCount();
 
-            if (((complete) * 1.0 / all) == 1.0) {
+            if (complete == all) {
+
+                System.out.println("Actualization procedure  ---  Mám Všechno successful_complete hotové ");
+
                 date_of_finish = new Date();
                 state = Enum_Update_group_procedure_state.successful_complete;
 
@@ -128,9 +135,12 @@ public class Model_ActualizationProcedure extends Model {
                     .eq("state", Enum_CProgram_updater_state.overwritten)
                     .findRowCount();
 
-            if (((complete + canceled + override) * 1.0 / all) == 1.0) {
+
+            if ((complete + canceled + override) == all) {
                 date_of_finish = new Date();
                 state = Enum_Update_group_procedure_state.complete;
+
+                System.out.println("Actualization procedure  ---  Mám Všechno complete hotové ");
 
                 this.notification_update_procedure_complete();
 
@@ -228,9 +238,11 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_start(){
         try {
 
+            System.out.println(".............. Byl zavolán obejkt notification_update_procedure_start");
+
             Model_Notification notification = new Model_Notification();
 
-            notification.setImportance(Enum_Notification_importance.normal)
+            notification.setImportance(Enum_Notification_importance.low)
                         .setLevel(Enum_Notification_level.info);
 
             if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
@@ -252,7 +264,7 @@ public class Model_ActualizationProcedure extends Model {
                     notification.setText(new Notification_Text().setText(" for " + updates.size()  + " devices from Code Editor"));
                 }
 
-                notification.setText(new Notification_Text().setText(" just begun. We will keep you informed of the progress."));
+                notification.setText(new Notification_Text().setText(" just begun. We will keep you informed about progress."));
 
             }else if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ){
 
@@ -269,7 +281,7 @@ public class Model_ActualizationProcedure extends Model {
                     notification.setText(new Notification_Text().setText(" with " + updates.size()  + " devices from Blocko Snapshot "));
                 }
 
-                notification.setText(new Notification_Text().setText(" just begun. We will keep you informed of the progress."));
+                notification.setText(new Notification_Text().setText(" just begun. We will keep you informed about progress."));
 
             }else {
 
@@ -291,12 +303,22 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_progress(){
         try {
 
-            if(state_fraction().equals("0/1")) return;
+            System.out.println(".............. Byl zavolán obejkt notification_update_procedure_progress");
+
+            if(state_fraction().contains("0/")){
+                System.out.println(".............. Byl zavolán NEVHODNE!!!! notification_update_procedure_progress");
+                return;
+            }
+
+            if(state == Enum_Update_group_procedure_state.complete || state == Enum_Update_group_procedure_state.successful_complete  || state == Enum_Update_group_procedure_state.complete_with_error ){
+                System.out.println(".............. Byl zavolán NEVHODNE!!!! notification_update_procedure_progress state is complete");
+                return;
+            }
 
             Model_Notification notification = new Model_Notification();
 
             notification.setId(UUID.randomUUID().toString())
-                        .setImportance( Enum_Notification_importance.normal)
+                        .setImportance( Enum_Notification_importance.low)
                         .setLevel( Enum_Notification_level.info);
 
             notification.setText(new Notification_Text().setText("Update of Procedure "))
@@ -310,8 +332,65 @@ public class Model_ActualizationProcedure extends Model {
     }
 
     @JsonIgnore @Transient
+    public void notification_update_procedure_final_report(){
+        try {
+
+            System.out.println(".............. Byl zavolán obejkt notification_update_procedure_final_report");
+
+            Model_Notification notification =  new Model_Notification();
+
+            notification.setImportance( Enum_Notification_importance.low )
+                        .setLevel( Enum_Notification_level.success );
+
+
+            int successfully_updated = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .eq("state", Enum_CProgram_updater_state.complete)
+                    .findRowCount();
+
+            int waiting_for_device = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .disjunction()
+                        .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                        .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                        .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
+                    .endJunction()
+                    .findRowCount();
+
+            int error_device = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id).where()
+                    .disjunction()
+                        .eq("state", Enum_CProgram_updater_state.critical_error)
+                        .eq("state", Enum_CProgram_updater_state.not_updated)
+                    .endJunction()
+                    .findRowCount();
+
+            notification.setText(new Notification_Text().setText("Update Procedure "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" is complete. \n"))
+                    .setText(new Notification_Text().setText("Number of Total devices for update: " + updates.size() + ". "))
+                    .setText(new Notification_Text().setText("Successfully updated: " + successfully_updated + ". " ));
+
+            if(waiting_for_device != 0){
+                notification.setText(new Notification_Text().setText("Unavailable \"offline\" devices: "  + waiting_for_device + ". " ));
+            }
+
+            if(error_device != 0){
+                notification.setText(new Notification_Text().setText("Unsuccessful updates "  + error_device + ". " ));
+            }
+            
+            notification.send_under_project(get_project_id());
+
+        }catch (Exception e){
+            Loggy.internalServerError("Model_ActualizationProcedure:: notification_update_procedure_final_report", e);
+        }
+    }
+
+    @JsonIgnore @Transient
     public void notification_update_procedure_complete(){
         try {
+
+            System.out.println(".............. Byl zavolán obejkt notification_update_procedure_complete");
 
             Model_Notification notification =  new Model_Notification();
 

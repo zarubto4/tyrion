@@ -331,6 +331,13 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
         procedure.notification_update_procedure_start();
 
+        if(procedure.state != Enum_Update_group_procedure_state.in_progress){
+
+            System.out.println("Přepisuji stav update procedury na in progress");
+            procedure.state = Enum_Update_group_procedure_state.in_progress;
+            procedure.update();
+        }
+
         for (Instance instance : structure.instances.values()) {
 
             logger.debug("Master_Updater:: Summary: Instance ::" + instance.instance.blocko_instance_name);

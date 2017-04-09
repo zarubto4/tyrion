@@ -374,7 +374,7 @@
              content += "<td>" + v.personal_description +"</td>";
 
 
-             if(v.online == true) {
+             if(v.status.status == "online") {
                  content += "<td><span class=\"label label-success\">Online</span></td>";
              }else{
                  content += "<td><span class=\"label label-danger\">Offline</span></td>";

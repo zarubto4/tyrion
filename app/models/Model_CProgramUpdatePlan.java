@@ -158,7 +158,21 @@ public class Model_CProgramUpdatePlan extends Model {
     public void update() {
 
         super.update();
-        actualization_procedure.update_state();
+
+        if(actualization_procedure.state == Enum_Update_group_procedure_state.not_start_yet || actualization_procedure.state == Enum_Update_group_procedure_state.in_progress){
+
+            if(this.state == Enum_CProgram_updater_state.overwritten
+               || this.state  == Enum_CProgram_updater_state.complete
+               || this.state  == Enum_CProgram_updater_state.not_updated
+               || this.state  == Enum_CProgram_updater_state.critical_error
+               ){
+
+                System.out.println("***************** Budu updatovat Acutalization procedure! ************************* ");
+                actualization_procedure.update_state();
+            }
+
+        }
+
         cache_model_update_plan.put(id, this);
     }
 
@@ -315,9 +329,25 @@ public class Model_CProgramUpdatePlan extends Model {
 
                 plan.state = Enum_CProgram_updater_state.complete;
                 plan.update();
-                plan.actualization_procedure.notification_update_procedure_progress();
-                return;
 
+                Model_Board board =  plan.board;
+
+                if(plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
+
+                    board.actual_c_program_version = plan.c_program_version_for_update;
+                    board.update();
+
+                }else if(plan.firmware_type == Enum_Firmware_type.BOOTLOADER){
+
+                    board.actual_boot_loader = plan.bootloader;
+                    board.update();
+
+                }else if(plan.firmware_type == Enum_Firmware_type.BACKUP){
+                    board.actual_backup_c_program_version = plan.c_program_version_for_update;
+                    board.update();
+                }
+
+                return;
             }
 
             if(update_state == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || update_state == Enum_Hardware_update_state_from_Homer.YODA_WAS_OFFLINE ){

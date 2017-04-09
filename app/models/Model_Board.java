@@ -356,13 +356,14 @@ public class Model_Board extends Model {
                 return;
             }
 
-            System.out.println("Zasílám pokyn k notifikaci o tom, že device je online");
+            if(cache_status.get(help.deviceId) == null || !cache_status.get(help.deviceId) ){
 
-            if(!cache_status.get(help.deviceId)){
+                System.out.println("Zasílám pokyn k notifikaci o tom, že device je online");
+
                 cache_status.put(help.deviceId, true);
                 master_device.notification_board_connect();
             }
-            
+
             Model_Board.hardware_firmware_state_check(server, master_device, help);
 
         }catch (Exception e){
@@ -466,6 +467,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static void update_report_from_homer(WS_Message_Update_device_firmware report){
 
         try {
+
             for (WS_Message_Update_device_firmware.UpdateDeviceInformation updateDeviceInformation : report.procedure_list) {
 
 
@@ -543,7 +545,6 @@ public class Model_Board extends Model {
                         }
 
                         // Na závěr vše ostatní je chyba
-
                         plan.state = Enum_CProgram_updater_state.critical_error;
                         plan.error = updateDeviceInformation_device.error;
                         plan.errorCode = updateDeviceInformation_device.errorCode;
@@ -554,6 +555,20 @@ public class Model_Board extends Model {
                         logger.error("Model_Board:: update_report_from_homer:: Error:: ", e);
                     }
                 }
+
+
+               Model_ActualizationProcedure procedure = Model_ActualizationProcedure.find.byId( updateDeviceInformation.actualizationProcedureId );
+
+               if(procedure == null) {
+                   logger.error("Model_board:: update_report_from_homer:: Model_ActualizationProcedure not found under id:: " +updateDeviceInformation.actualizationProcedureId  );
+                   continue;
+               }
+
+               if(procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP){
+                   procedure.notification_update_procedure_final_report();
+               }
+
+
             }
         }catch (Exception e){
             logger.error("Model_Board:: update_report_from_homer Error:: ", e);

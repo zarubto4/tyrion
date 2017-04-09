@@ -648,15 +648,17 @@ public class Model_HomerInstance extends Model {
 
                     if( instance.actual_instance != null) {
 
-                        logger.debug("Model_HomerInstance:: upload_Record_immediately:: Record overwriting previous instance record:: " + instance.actual_instance .id);
+                        logger.debug("Model_HomerInstance:: upload_Record_immediately:: Record overwriting previous instance record:: " + instance.actual_instance.id);
 
                         instance.actual_instance.running_to = new Date();
                         instance.actual_instance.actual_running_instance = null;
                         instance.actual_instance.update();
+
                     }else {
                         logger.debug("Model_HomerInstance:: upload_Record_immediately:: First uploading of instnace:: ");
                     }
 
+                    instance.refresh();
                     instance.actual_instance = record;
                     record.actual_running_instance = instance;
                     record.update();
