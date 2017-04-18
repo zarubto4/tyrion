@@ -6,8 +6,6 @@ import models.Model_Board;
 import models.Model_HomerInstance;
 import models.Model_HomerServer;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_Task;
-import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
-import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Target_pair;
 import utilities.independent_threads.Check_update_for_hw_under_homer_ws;
 import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.independent_threads.SynchronizeHomerServer;
@@ -16,7 +14,6 @@ import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Rejection_h
 
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -26,15 +23,27 @@ public class WS_HomerServer extends WS_Interface_type {
 
     public Check_update_for_hw_under_homer_ws check_update_for_hw_under_homer_ws = null;
 
-    public WS_HomerServer(Model_HomerServer server, Map<String, WS_Interface_type> blocko_servers) {
+    public String identifikator;
+
+    public WS_HomerServer(Model_HomerServer server) {
         super();
-        super.identifikator = server != null ? server.unique_identificator : null;
-        super.maps = blocko_servers;
-        super.webSCtype = this;
+
+        identifikator = server != null ? server.unique_identificator : null;
+        super.webSCtype =  this;
         this.update_thread.start();
         this.check_update_for_hw_under_homer_ws = new Check_update_for_hw_under_homer_ws(this);
     }
 
+
+    @Override
+    public void add_to_map() {
+        Controller_WebSocket.homer_servers.put(identifikator, this);
+    }
+
+    @Override
+    public String get_identificator() {
+        return identifikator;
+    }
 
     @Override
     public void onClose() {
@@ -42,14 +51,14 @@ public class WS_HomerServer extends WS_Interface_type {
         logger.warn("WS_HomerServer:: onClose - Starting cancaled procedure with virtual Homers");
 
         this.update_thread.stop();
-        Controller_WebSocket.homer_servers.remove(super.identifikator);
+        Controller_WebSocket.homer_servers.remove(identifikator);
         Model_HomerServer.get_model(identifikator).is_disconnect();
     }
 
     @Override
     public void onMessage(ObjectNode json) {
 
-        logger.trace("WS_HomerServer:: "+ super.identifikator + " onMessage:: " + json.toString());
+        logger.trace("WS_HomerServer:: "+ identifikator + " onMessage:: " + json.toString());
 
         // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj
         if(!security_token_confirm){
@@ -103,7 +112,7 @@ public class WS_HomerServer extends WS_Interface_type {
                 }
 
             }else {
-                logger.error("Homer Server:: "+ super.identifikator + " Incoming message has not messageChannel!!!!");
+                logger.error("Homer Server:: "+ identifikator + " Incoming message has not messageChannel!!!!");
             }
 
     }

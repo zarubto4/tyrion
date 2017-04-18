@@ -19,6 +19,8 @@ GET              /websocket/becki/:secure_token                @controllers.Cont
 GET              /websocket/access_token                       @controllers.Controller_WebSocket.get_Websocket_token()
 
 
+
+
 #API - CoreClient ####################################################################################################################################################
 ###################################################################################f##################################################################################
 
@@ -88,6 +90,8 @@ PUT            /person/picture/remove                            @controllers.Co
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
+GET            /secure/rest_api_token_validation                           @controllers.Controller_Permission.get_status_request_token()
+
 PUT            /secure/permission/person/:person_id/:permission_id         @controllers.Controller_Permission.add_Permission_Person(person_id,permission_id)
 DELETE         /secure/permission/person/:person_id/:permission_id         @controllers.Controller_Permission.remove_Permission_Person(person_id,permission_id)
 PUT            /secure/permission/:permission_id                           @controllers.Controller_Permission.edit_permission_desciption(permission_id)
@@ -105,7 +109,7 @@ POST           /secure/role                                                @cont
 DELETE         /secure/role/:role_id                                       @controllers.Controller_Permission.delete_Role(role_id)
 PUT            /secure/role/:role_id                                       @controllers.Controller_Permission.edit_Role(role_id)
 
-GET            /secure/person/system_acces/:person_id                      @controllers.Controller_Permission.get_System_Acces(person_id)
+GET            /secure/person/system_acces/:person_id                      @controllers.Controller_Permission.get_System_Access(person_id)
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################

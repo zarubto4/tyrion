@@ -36,13 +36,15 @@ public class Model_TypeOfBoard extends Model {
                                                                           @JsonIgnore @OneToOne public Model_FileRecord picture;
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL)                 public List<Model_Board>       boards      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="type_of_board")                                            public List<Model_CProgram>   c_programs  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board")                                            public List<Model_CProgram>    c_programs  = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL)                 public List<Model_BootLoader>  boot_loaders = new ArrayList<>();
                 @OneToOne (mappedBy="main_type_of_board")                                       public Model_BootLoader main_boot_loader;
     @JsonIgnore @OneToOne(mappedBy="type_of_board_default", cascade = CascadeType.ALL)          public Model_CProgram version_scheme;
 
+    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_TypeOfBoardFeatures> features = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_ImportLibrary> libraries = new ArrayList<>();
+
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -53,6 +55,7 @@ public class Model_TypeOfBoard extends Model {
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_id       (){ return producer  == null ? null : producer.id;}
 
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name       (){ return compiler_target_name;}
+
 
     @JsonProperty @ApiModelProperty(required = true)
     public String picture_link(){

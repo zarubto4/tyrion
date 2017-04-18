@@ -5,21 +5,32 @@ import controllers.Controller_WebSocket;
 
 public class WS_Becki_Single_Connection extends WS_Interface_type {
 
-    WS_Becki_Website person_connection;
+    public WS_Becki_Website person_connection;
     public boolean notification_subscriber = false;
+
+    public String identifikator;
 
     public WS_Becki_Single_Connection(String person_id, WS_Becki_Website person_connection) {
         super();
         this.person_connection = person_connection;
-        super.identifikator = person_id;
-        super.maps =  person_connection.all_person_Connections ;
+        identifikator = person_id;
         super.webSCtype = this;
+    }
+
+    @Override
+    public void add_to_map() {
+        person_connection.all_person_Connections.put(identifikator, this);
+    }
+
+    @Override
+    public String get_identificator() {
+        return identifikator;
     }
 
     @Override
     public void onClose() {
 
-        logger.trace("WS_Becki_Single_Connection::  onClose::  " + super.identifikator);
+        logger.trace("WS_Becki_Single_Connection::  onClose::  " + identifikator);
 
         this.close();
 
@@ -28,6 +39,7 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
         if(person_connection.all_person_Connections.isEmpty()){
             Controller_WebSocket.becki_website.remove(person_connection.identifikator);
         }
+
     }
 
 

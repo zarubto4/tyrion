@@ -2,7 +2,10 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Enum_Board_features;
+import models.Model_TypeOfBoardFeatures;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @ApiModel(description = "Json Model with settings and firwmare and bootloader for Embedded hardware",
         value = "Hardware_New_Settings_Result")
@@ -31,7 +34,7 @@ public class Swagger_Hardware_New_Settings_Result {
     @ApiModelProperty(required = false, readOnly = true) public String   type_of_board;
 
     @ApiModelProperty(required = true, readOnly = true)  public boolean  autobackup;             // - hodnota 0, nebo 1 (povolit/zakázat)
-    @ApiModelProperty(required = true, readOnly = true)  public Enum_Board_features netsource;              // 0 = nic, 1 = ethernet, 2 = wifi
+    @ApiModelProperty(required = true, readOnly = true)  public List<Model_TypeOfBoardFeatures> features = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)  public String   firmware_version_id;
     @ApiModelProperty(required = true, readOnly = true)  public String   bootloader_id;

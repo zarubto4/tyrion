@@ -21,18 +21,18 @@ public abstract class WS_Interface_type {
     // Loger
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    public Map<String, WS_Interface_type> maps;
-
     public WS_Interface_type webSCtype;
     public WebSocket.Out<String> out;
-    public String identifikator;
 
     public abstract void onClose(); //  Určeno pro možnost výběru, přes kterou metodu v controlleru se pokyn vykoná. Především proto, aby na to mohl cloud_blocko_server globálně reagovat, uzavřel ostatní vlákna atd.
     public void close(){ if(out != null) out.close(); }
     public abstract void onMessage(ObjectNode json);
+    public abstract String get_identificator();
     public boolean isReady(){
         return out != null;
     }
+    public abstract void add_to_map();
+
 
 
     public void onMessage(String message){
@@ -75,7 +75,7 @@ public abstract class WS_Interface_type {
 
             public void onReady(final WebSocket.In<String> in, final WebSocket.Out<String> o) {
 
-                maps.put(identifikator, webSCtype);
+                add_to_map();
                 out = o;
 
                 in.onMessage(message -> {  onMessage(message);  });

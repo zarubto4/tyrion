@@ -1,4 +1,5 @@
 import controllers.Controller_WebSocket;
+import models.Model_TypeOfBoardFeatures;
 import play.Application;
 import play.GlobalSettings;
 import play.mvc.Action;
@@ -52,6 +53,7 @@ public class Global extends GlobalSettings {
            logger.warn("Global:: onStart: Initializing the cache layer");
            Server.initCache();
 
+           //8
            logger.warn("Global:: onStart: Creating Administrator");
            Server.setAdministrator();
 

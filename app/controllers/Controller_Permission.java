@@ -10,6 +10,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.enums.Enum_Token_type;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
@@ -17,9 +18,8 @@ import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
-import utilities.swagger.documentationClass.Swagger_Permission_Edit;
-import utilities.swagger.documentationClass.Swagger_Role_Edit;
-import utilities.swagger.documentationClass.Swagger_SecurityRole_New;
+import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.outboundClass.Swagger_System_Access;
 
 import java.util.List;
@@ -303,12 +303,7 @@ public class Controller_Permission extends Controller {
             produces = "application/json",
             response =  Model_SecurityRole.class,
             protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SecurityRole_create", value = "true"),
-                    })
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -489,12 +484,7 @@ public class Controller_Permission extends Controller {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SecurityRole_update", value = "true"),
-                    })
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
@@ -530,12 +520,7 @@ public class Controller_Permission extends Controller {
             produces = "application/json",
             response =  Model_SecurityRole.class,
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Public", value = "Without Permisison"),
-                    })
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_SecurityRole.class, responseContainer = "List"),
@@ -563,15 +548,7 @@ public class Controller_Permission extends Controller {
             produces = "application/json",
             response =  Swagger_System_Access.class,
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Person.all_permission", value = "Its public information"),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "public", value = "true"),
-                    })
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_System_Access.class),
@@ -580,7 +557,7 @@ public class Controller_Permission extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_System_Acces(@ApiParam(required = true) String person_id){
+    public Result get_System_Access(@ApiParam(required = true) String person_id){
         try {
 
             Model_Person person = Model_Person.find.byId(person_id);
@@ -597,6 +574,78 @@ public class Controller_Permission extends Controller {
         }
 
 
+    }
+
+
+//######################################################################################################################
+
+    @ApiOperation(value = "check Request Token for blocko REST-API blocks",
+            tags = {"Blocko"},
+            notes = "",
+            produces = "application/json",
+            response =  Swagger_System_Access.class,
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Blocko_Token_validation_request",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Blocko_Token_validation_result.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_status_request_token(){
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Blocko_Token_validation_request> form = Form.form(Swagger_Blocko_Token_validation_request.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Blocko_Token_validation_request help = form.get();
+
+
+            Enum_Token_type token_type = Enum_Token_type.getType(help.type_of_token);
+
+
+            Swagger_Blocko_Token_validation_result result = new Swagger_Blocko_Token_validation_result();
+
+
+            if(token_type == Enum_Token_type.PERSON_TOKEN){
+
+                Model_Person person = Model_Person.get_byAuthToken(help.token);
+                if(person == null) return GlobalResult.forbidden_Permission("Token not found");
+
+                result.token = help.token;
+                result.available_requests = 500L; // LEXA TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-495
+
+                return GlobalResult.result_ok(Json.toJson(result));
+
+            }
+
+
+            if( token_type == Enum_Token_type.INSTANCE_TOKEN){
+
+                result.token = help.token;
+                result.available_requests = 500L;   // LEXA TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-495
+
+                return GlobalResult.result_ok(Json.toJson(result));
+            }
+
+
+            return GlobalResult.result_BadRequest("Missing or wrong type of tokkend Type");
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
     }
 
 }

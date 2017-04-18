@@ -2,6 +2,7 @@ package web_socket.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.Controller_WebSocket;
 import models.Model_HomerServer;
 import models.Model_Notification;
 import models.Model_Person;
@@ -21,11 +22,22 @@ public class WS_Becki_Website extends WS_Interface_type {
 
     public Map<String, WS_Interface_type> all_person_Connections = new HashMap<>();
     public Model_Person person;
+    public String identifikator;
 
     public WS_Becki_Website(Model_Person person) {
         super();
         this.person = person;
-        super.identifikator = person.id;
+        identifikator = person.id;
+    }
+
+    @Override
+    public void add_to_map() {
+        Controller_WebSocket.becki_website.put(identifikator, this);
+    }
+
+    @Override
+    public String get_identificator() {
+        return identifikator;
     }
 
     @Override
@@ -33,7 +45,7 @@ public class WS_Becki_Website extends WS_Interface_type {
 
     @Override
     public void onClose() {
-        logger.trace("Local_Terminal onClose " + super.identifikator);
+        logger.trace("Local_Terminal onClose " + identifikator);
         this.close();
     }
 
@@ -45,7 +57,7 @@ public class WS_Becki_Website extends WS_Interface_type {
             System.out.println("          Reálné odesílání notifikace na počet odběrů jednoho uživatele Becki_Website:: " + all_person_Connections.size());
 
             for (Map.Entry<String,WS_Interface_type> entry : all_person_Connections.entrySet()) {
-                System.out.println("          Reálné odesílání notifikace na Identifikator WS odběru :: " + entry.getValue().identifikator);
+                System.out.println("          Reálné odesílání notifikace na Identifikator WS odběru :: " + entry.getValue().get_identificator());
 
                entry.getValue().write_without_confirmation(json);
             }

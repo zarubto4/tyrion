@@ -100,11 +100,12 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = false) public String avaible_bootloader_version_name()   { if(type_of_board.main_boot_loader != null && type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return type_of_board.main_boot_loader.name; else return null;}
     @JsonProperty  @Transient @ApiModelProperty(required = false) public String avaible_bootloader_id()             { if(type_of_board.main_boot_loader != null && type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return type_of_board.main_boot_loader.id; else return null;}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public boolean update_boot_loader_required(){
+    @JsonProperty  @Transient @ApiModelProperty(required = true) List<Enum_Board_Alert> alert_list(){
+        List<Enum_Board_Alert> list = new ArrayList<>();
 
-       if(type_of_board.main_boot_loader == null || actual_boot_loader == null) return true;
-       return (!this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id));
+        if(update_boot_loader_required()) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
 
+        return list;
     }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
@@ -116,7 +117,6 @@ public class Model_Board extends Model {
 
         return plans;
     }
-
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status()       {
 
@@ -253,7 +253,8 @@ public class Model_Board extends Model {
             swagger_board_short_detail.delete_permission = delete_permission();
             swagger_board_short_detail.update_permission = update_permission();
 
-            swagger_board_short_detail.update_boot_loader_required = update_boot_loader_required();
+            if(update_boot_loader_required()) swagger_board_short_detail.alert_list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
+
             swagger_board_short_detail.board_online_status = is_online();
 
             return swagger_board_short_detail;
@@ -262,7 +263,6 @@ public class Model_Board extends Model {
             Loggy.internalServerError( this.getClass().getSimpleName() +  ":: get_short_board", e);
             return null;
         }
-
     }
 
     @Transient @JsonIgnore public Swagger_Board_for_fast_upload_detail get_short_board_for_fast_upload() {
@@ -315,6 +315,14 @@ public class Model_Board extends Model {
         }
 
         return virtual_instance_under_project;
+    }
+
+
+    @JsonIgnore @Transient  public boolean update_boot_loader_required(){
+
+        if(type_of_board.main_boot_loader == null || actual_boot_loader == null) return true;
+        return (!this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id));
+
     }
 
 

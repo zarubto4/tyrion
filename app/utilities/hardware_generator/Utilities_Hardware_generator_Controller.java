@@ -11,7 +11,6 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.Enum_Garfield_burning_state;
 import utilities.enums.Enum_Cloud_HomerServer_type;
-import utilities.enums.Enum_Board_features;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
@@ -19,7 +18,7 @@ import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_PermissionRequired;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.response.response_objects.Result_ok;
-import utilities.swagger.documentationClass.Swagger_Hardware_New_Hardware_Result;
+import utilities.swagger.documentationClass.Swagger_Hardware_New_Hardware_Request;
 import utilities.swagger.documentationClass.Swagger_Hardware_New_Settings_Request;
 import utilities.swagger.outboundClass.Swagger_Hardware_New_Settings_Result;
 
@@ -197,7 +196,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
                 result.devlist_counter          = 0;
                 result.bootloader_report        = false;
                 result.autobackup               = Configuration.root().getBoolean( "MacAddressForBoards." + typeOfBoard.compiler_target_name + ".autobackup" );
-                result.netsource                = Enum_Board_features.ethernet;
+                result.features                 = typeOfBoard.features;
                 result.mac_address              = record.mac_address;
 
                 result.type_of_board            = typeOfBoard.target_name();
@@ -250,7 +249,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Hardware_New_Hardware_Result",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Hardware_New_Hardware_Request",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -268,9 +267,9 @@ public class Utilities_Hardware_generator_Controller extends Controller {
     public Result new_hardware_result() {
         try{
 
-            final Form<Swagger_Hardware_New_Hardware_Result> form = Form.form(Swagger_Hardware_New_Hardware_Result.class).bindFromRequest();
+            final Form<Swagger_Hardware_New_Hardware_Request> form = Form.form(Swagger_Hardware_New_Hardware_Request.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Hardware_New_Hardware_Result help = form.get();
+            Swagger_Hardware_New_Hardware_Request help = form.get();
 
             // Ověřím Record
             Model_MacAddressRegisterRecord record = Model_MacAddressRegisterRecord.find.byId(help.uuid_request_number);

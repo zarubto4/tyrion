@@ -105,7 +105,7 @@
                             @if( !x.all_person_Connections.isEmpty) {
                                 @for((k,v) <- x.all_person_Connections) {
                                     <tr>
-                                        <td> @x.all_person_Connections.get(k).identifikator      </td>
+                                        <td> @x.identifikator </td>
 
                                         <td>
                                             <button onclick="ping_becki('@x.identifikator', '@k' )" class="btn btn-block btn-info btn-xs">Ping</button>

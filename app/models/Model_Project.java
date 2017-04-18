@@ -256,6 +256,7 @@ public class Model_Project extends Model {
     public static final String CACHE                          = Model_Project.class.getSimpleName();
     public static final String CACHE_BECKI_CONNECTED_PERSONS  = Model_Project.class.getSimpleName() + "_BECKI_CONNECTED_PERSONS_ID";
 
+
     // TODO přidat další chache >>> public static Cache<String, Model_Project> cache = null;       // < Project_Id, Model_Project>
     public static Cache<String, IdsList> token_cache = null;  // < Project_Id, List<Person_id>> // Only connected on Websocket with Becki
 

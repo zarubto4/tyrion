@@ -17,16 +17,24 @@ public class WS_CompilerServer extends WS_Interface_type {
     public Map<String, ObjectNode> compilation_request = new HashMap<>();
     public Model_CompilationServer server;
     public boolean security_token_confirm = true;
+    public String identifikator;
 
-
-    public WS_CompilerServer(Model_CompilationServer server, Map<String, WS_Interface_type> compiler_cloud_servers) {
+    public WS_CompilerServer(Model_CompilationServer server) {
         super();
         this.server_address = server.server_url;
-        super.identifikator = server.unique_identificator;
-        super.maps = compiler_cloud_servers;
+        identifikator = server.unique_identificator;
         super.webSCtype = this;
     }
 
+    @Override
+    public void add_to_map() {
+        Controller_WebSocket.compiler_cloud_servers.put(identifikator, this);
+    }
+
+    @Override
+    public String get_identificator() {
+        return identifikator;
+    }
 
     @Override
     public void onClose() {
@@ -108,7 +116,7 @@ public class WS_CompilerServer extends WS_Interface_type {
             }
 
         }else {
-            logger.error("WS_CompilerServer:: onMessage:: "+ super.identifikator + " Incoming message has not messageChannel!!!!");
+            logger.error("WS_CompilerServer:: onMessage:: "+ identifikator + " Incoming message has not messageChannel!!!!");
         }
 
     }

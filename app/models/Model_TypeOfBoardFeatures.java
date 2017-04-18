@@ -1,0 +1,74 @@
+package models;
+
+import com.avaje.ebean.Model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import play.data.validation.Constraints;
+
+import javax.persistence.*;
+import java.util.*;
+
+@Entity
+@ApiModel(description = "Model of TypeOfBoard Features ",
+         value = "BoardFeature")
+public class Model_TypeOfBoardFeatures extends Model {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+    @Id @ApiModelProperty(required = true)   public String id;
+                    @Constraints.Required    public String name;
+
+    @ManyToMany(fetch = FetchType.LAZY) @JsonIgnore public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
+
+
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    // FOR LIST
+    @JsonIgnore @Transient
+    public static Map<String, String> selectOptions() {
+
+        Map<String, String> options = new LinkedHashMap<>();
+
+        for (Model_TypeOfBoardFeatures features : find.all()) {
+            options.put(features.id, features.name);
+        }
+
+        return options;
+    }
+
+
+/* CRUD CLASSES --------------------------------------------------------------------------------------------------------*/
+
+
+    @JsonIgnore @Override
+    public void save() {
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (Model_TypeOfBoard.find.byId(this.id) == null) break;
+        }
+        super.save();
+    }
+
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+    public static  Model.Finder<String, Model_TypeOfBoardFeatures> find = new Finder<>(Model_TypeOfBoardFeatures.class);
+
+
+
+}

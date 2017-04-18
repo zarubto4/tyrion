@@ -620,6 +620,12 @@ create table model_type_of_board (
   constraint pk_model_type_of_board primary key (id))
 ;
 
+create table model_type_of_board_features (
+  id                        varchar(255) not null,
+  name                      varchar(255),
+  constraint pk_model_type_of_board_features primary key (id))
+;
+
 create table model_type_of_widget (
   id                        varchar(255) not null,
   name                      varchar(255),
@@ -698,6 +704,12 @@ create table model_security_role_model_permis (
   model_security_role_id         varchar(255) not null,
   model_permission_value         varchar(255) not null,
   constraint pk_model_security_role_model_permis primary key (model_security_role_id, model_permission_value))
+;
+
+create table model_type_of_board_features_mod (
+  model_type_of_board_features_id varchar(255) not null,
+  model_type_of_board_id         varchar(255) not null,
+  constraint pk_model_type_of_board_features_mod primary key (model_type_of_board_features_id, model_type_of_board_id))
 ;
 
 create table model_c_program_library_version (
@@ -904,6 +916,10 @@ alter table model_security_role_model_permis add constraint fk_model_security_ro
 
 alter table model_security_role_model_permis add constraint fk_model_security_role_model__02 foreign key (model_permission_value) references model_permission (value);
 
+alter table model_type_of_board_features_mod add constraint fk_model_type_of_board_featur_01 foreign key (model_type_of_board_features_id) references model_type_of_board_features (id);
+
+alter table model_type_of_board_features_mod add constraint fk_model_type_of_board_featur_02 foreign key (model_type_of_board_id) references model_type_of_board (id);
+
 alter table model_c_program_library_version add constraint fk_model_c_program_library_ve_01 foreign key (library_version_id) references model_version_object (id);
 
 alter table model_c_program_library_version add constraint fk_model_c_program_library_ve_02 foreign key (c_program_version_id) references model_version_object (id);
@@ -1027,6 +1043,10 @@ drop table if exists model_security_role cascade;
 drop table if exists model_type_of_block cascade;
 
 drop table if exists model_type_of_board cascade;
+
+drop table if exists model_type_of_board_features_mod cascade;
+
+drop table if exists model_type_of_board_features cascade;
 
 drop table if exists model_type_of_widget cascade;
 

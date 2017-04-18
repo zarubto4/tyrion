@@ -39,13 +39,13 @@ public class Controller_WebSocket extends Controller {
     // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jednoduché čisté spojení a
     // několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
     // je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
-    public static Map<String, WS_Interface_type> homer_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
+    public static Map<String, WS_HomerServer> homer_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
 
     // Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
-    public static Map<String, WS_Interface_type> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
+    public static Map<String, WS_CompilerServer> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
 
     // Becki (frontend) spojení na synchronizaci blocka atd.. - Podporován režim multipřihlášení.
-    public static Map<String, WS_Interface_type> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
+    public static Map<String, WS_Becki_Website> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
 
     public static TokenCache tokenCache = new TokenCache( (long) 5, (long) 500, 50000); // Tokeny pro ověření uživatele
 
@@ -98,34 +98,7 @@ public class Controller_WebSocket extends Controller {
 
                 // Připojím se
                 logger.warn("Homer Server:: Connection:: Incoming connection: Server:  " + unique_identificator + " is not registred in database!!!!!");
-
-                WS_HomerServer server = new WS_HomerServer(null, homer_servers);
-                WebSocket<String> webSocket = server.connection();
-
-                Thread not_valid = new Thread() {
-
-                    @Override
-                    public void run() {
-                        try {
-
-                            sleep(2000);
-                            logger.warn("Controller_WebSocket:: homer_cloud_server_connection::  Incoming connection: Server:  " + unique_identificator + " Sending message about validation");
-                            server.unique_connection_name_not_valid();
-
-                            logger.warn("Controller_WebSocket:: homer_cloud_server_connection:: Incoming connection: Server:  " + unique_identificator + " Message sent");
-                            sleep(1000 * 60);
-
-                            logger.warn("Controller_WebSocket:: homer_cloud_server_connection::  Incoming connection: Server:  " + unique_identificator + " Closing connection");
-                            server.close();
-
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                };
-
-                not_valid.start();
-                return webSocket;
+                return WebSocket.reject(forbidden("Server side error - already connected"));
             }
 
             if(homer_servers.containsKey(unique_identificator)) {
@@ -147,7 +120,7 @@ public class Controller_WebSocket extends Controller {
 
 
             logger.trace("Controller_WebSocket:: homer_cloud_server_connection:: Tyrion initialize connection for Homer Server");
-            WS_HomerServer server = new WS_HomerServer(homer_server, homer_servers);
+            WS_HomerServer server = new WS_HomerServer(homer_server);
             homer_servers.put(unique_identificator, server);
 
             // Připojím se
@@ -226,7 +199,7 @@ public class Controller_WebSocket extends Controller {
             }
 
             // Inicializuji Websocket pro Homera
-            WS_CompilerServer server = new WS_CompilerServer(cloud_compilation_server, compiler_cloud_servers );
+            WS_CompilerServer server = new WS_CompilerServer(cloud_compilation_server);
 
             cloud_compilation_server.check_after_connection();
 
@@ -308,8 +281,7 @@ public class Controller_WebSocket extends Controller {
 
         logger.warn("Controller_WebSocket:: disconnect_all_Blocko_Servers::  Trying to safely disconnect all Blocko Servers");
 
-        for (Map.Entry<String, WS_Interface_type> entry :  Controller_WebSocket.homer_servers.entrySet())
-        {
+        for (Map.Entry<String, WS_HomerServer> entry :  Controller_WebSocket.homer_servers.entrySet()) {
             server_violently_terminate_terminal(entry.getValue());
         }
     }
@@ -318,8 +290,7 @@ public class Controller_WebSocket extends Controller {
 
         logger.warn("Controller_WebSocket:: disconnect_all_Blocko_Servers:: Trying to safety disconnect all Compilation Servers");
 
-        for (Map.Entry<String, WS_Interface_type> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet())
-        {
+        for (Map.Entry<String, WS_CompilerServer> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet()) {
             server_violently_terminate_terminal(entry.getValue());
         }
     }

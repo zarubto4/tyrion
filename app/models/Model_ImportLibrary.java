@@ -41,7 +41,7 @@ public class Model_ImportLibrary extends Model{
 
     @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_VersionObject> versions        = new ArrayList<>();
 
-                                                                                                @ManyToMany public List<Model_TypeOfBoard>   type_of_boards  = new ArrayList<>();
+                                                                                                 @ManyToMany public List<Model_TypeOfBoard>  type_of_boards  = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/

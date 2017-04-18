@@ -106,6 +106,28 @@ public class Utilities_Demo_data_Controller extends Controller {
     public Result type_of_board() {
         try {
 
+
+            Model_TypeOfBoardFeatures features_i2c = new Model_TypeOfBoardFeatures();
+            features_i2c.name = "i2c";
+            features_i2c.save();
+
+            Model_TypeOfBoardFeatures wifi = new Model_TypeOfBoardFeatures();
+            wifi.name = "wifi";
+            wifi.save();
+
+            Model_TypeOfBoardFeatures ethernet = new Model_TypeOfBoardFeatures();
+            ethernet.name = "ethernet";
+            ethernet.save();
+
+            Model_TypeOfBoardFeatures bus = new Model_TypeOfBoardFeatures();
+            bus.name = "bus";
+            bus.save();
+
+            Model_TypeOfBoardFeatures wireless = new Model_TypeOfBoardFeatures();
+            wireless.name = "wireless";
+            wireless.save();
+
+
             // Ochranná zarážka proti znovu vytvoření
             Model_Producer producer = Model_Producer.find.where().eq("name", "Byzance ltd").findUnique();
             if (producer == null) return GlobalResult.result_BadRequest("Create Producer first");
@@ -145,6 +167,8 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_1.processor = processor_1;
             typeOfBoard_1.producer = producer;
             typeOfBoard_1.connectible_to_internet = true;
+            typeOfBoard_1.features.add(ethernet);
+            typeOfBoard_1.features.add(wifi);
             typeOfBoard_1.save();
 
 
@@ -156,6 +180,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_2.processor = processor_2;
             typeOfBoard_2.producer = producer;
             typeOfBoard_2.connectible_to_internet = false;
+            typeOfBoard_2.features.add(wireless);
             typeOfBoard_2.save();
 
 
@@ -167,6 +192,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_3.processor = processor_2;
             typeOfBoard_3.producer = producer;
             typeOfBoard_3.connectible_to_internet = false;
+            typeOfBoard_3.features.add(bus);
             typeOfBoard_3.save();
 
 
@@ -178,6 +204,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_4.processor = processor_3;
             typeOfBoard_4.producer = producer;
             typeOfBoard_4.connectible_to_internet = false;
+            typeOfBoard_4.features.add(bus);
             typeOfBoard_4.save();
 
 
