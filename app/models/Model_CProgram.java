@@ -249,14 +249,14 @@ public class Model_CProgram extends Model {
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read C_program on this Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create C_program on this Project - Or you need static/dynamic permission key";
 
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return project != null ? ( project.update_permission() ) : Controller_Security.getPerson().has_permission("C_program_create");      }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.getPerson().id).eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("C_program_update"); }
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return project != null ? ( project.update_permission() ) : Controller_Security.get_person().has_permission("C_program_create");      }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_update"); }
     @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {
         if(project == null) return true;
-        return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.getPerson().id).eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("C_program_read");
+        return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_read");
     }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.getPerson().id).eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("C_program_edit"); }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.getPerson().id).eq("id", id).findRowCount() > 0) || Controller_Security.getPerson().has_permission("C_program_delete"); }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_edit"); }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_delete"); }
 
     public enum permissions{  C_program_create,  C_program_update, C_program_read ,  C_program_edit, C_program_delete; }
 

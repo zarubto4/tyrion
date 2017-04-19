@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.*;
 import play.api.Play;
-import play.api.libs.ws.WSClientConfig;
-import play.api.libs.ws.ssl.SSLConfigFactory;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -15,7 +13,6 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import scala.concurrent.duration.Duration;
 import utilities.Server;
 import utilities.emails.Email;
 import utilities.loggy.Loggy;
@@ -26,11 +23,9 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Entity_Validation_Out;
 
 import javax.inject.Inject;
-import javax.xml.ws.Response;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
 public class Controller_Person extends Controller {
@@ -714,7 +709,7 @@ public class Controller_Person extends Controller {
     public  Result person_getAllConnections(){
         try{
 
-           return GlobalResult.result_ok(Json.toJson( Controller_Security.getPerson().floatingPersonTokens ));
+           return GlobalResult.result_ok(Json.toJson( Controller_Security.get_person().floatingPersonTokens ));
 
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
@@ -903,7 +898,7 @@ public class Controller_Person extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Person_ChangeProperty help = form.get();
 
-            if(Model_ChangePropertyToken.find.where().eq("person.id", Controller_Security.getPerson().id).findUnique() != null)
+            if(Model_ChangePropertyToken.find.where().eq("person.id", Controller_Security.get_person().id).findUnique() != null)
                 return GlobalResult.result_BadRequest("You can request only one change at this time.");
 
             // Proměnné mailu
@@ -921,7 +916,7 @@ public class Controller_Person extends Controller {
 
                     // Vytvoření tokenu pro podržení hesla
                     Model_ChangePropertyToken changePropertyToken = new Model_ChangePropertyToken();
-                    changePropertyToken.person = Controller_Security.getPerson();
+                    changePropertyToken.person = Controller_Security.get_person();
                     changePropertyToken.property = help.property;
                     changePropertyToken.time_of_creation = new Date();
                     changePropertyToken.value = help.password;
@@ -940,7 +935,7 @@ public class Controller_Person extends Controller {
 
                     // Vytvoření tokenu pro podržení emailu
                     Model_ChangePropertyToken changePropertyToken = new Model_ChangePropertyToken();
-                    changePropertyToken.person = Controller_Security.getPerson();
+                    changePropertyToken.person = Controller_Security.get_person();
                     changePropertyToken.property = help.property;
                     changePropertyToken.time_of_creation = new Date();
                     changePropertyToken.value = help.email;
@@ -965,7 +960,7 @@ public class Controller_Person extends Controller {
                         .text("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password there, because it was probably stolen.")
                         .divider()
                         .link("Authorize change",link)
-                        .send(Controller_Security.getPerson().mail, subject);
+                        .send(Controller_Security.get_person().mail, subject);
 
             } catch (Exception e) {
                 Loggy.internalServerError("Controller_Person:: person_changeLoginProperty()::", e);
@@ -1077,7 +1072,7 @@ public class Controller_Person extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_BASE64_FILE help = form.get();
 
-            Model_Person person = Controller_Security.getPerson();
+            Model_Person person = Controller_Security.get_person();
 
             if(!person.edit_permission()) return GlobalResult.forbidden_Permission();
 
@@ -1152,7 +1147,7 @@ public class Controller_Person extends Controller {
     public Result person_removePicture(){
         try {
 
-            Model_Person person = Controller_Security.getPerson();
+            Model_Person person = Controller_Security.get_person();
 
             if(!(person.picture == null)) {
                 Model_FileRecord fileRecord = person.picture;

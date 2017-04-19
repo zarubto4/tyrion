@@ -68,7 +68,7 @@ public class Loggy{
         description.append("\n");
         description.append("    Tyrion mode: " + Server.server_mode.name());
         description.append("\n");
-        description.append("    User: " + (Controller_Security.getPerson() != null ? Controller_Security.getPerson().mail : "null"));
+        description.append("    User: " + (Controller_Security.get_person() != null ? Controller_Security.get_person().mail : "null"));
         description.append("\n");
 
         description.append("    Stack trace: \n");

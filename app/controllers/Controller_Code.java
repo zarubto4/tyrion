@@ -115,10 +115,10 @@ public class Controller_Code extends Controller{
                 Model_VersionObject version_object = new Model_VersionObject();
                 version_object.version_name = "First default version of C_Program.";
                 version_object.version_description = "This is default description.";
-                version_object.author = Controller_Security.getPerson();
+                version_object.author = Controller_Security.get_person();
                 version_object.date_of_create = new Date();
                 version_object.c_program = c_program;
-                version_object.public_version = (help.c_program_public_admin_create && Controller_Security.getPerson().admin_permission());
+                version_object.public_version = (help.c_program_public_admin_create && Controller_Security.get_person().admin_permission());
 
                 // Zkontroluji oprávnění
                 if (!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
@@ -242,7 +242,7 @@ public class Controller_Code extends Controller{
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.getPerson().id);
+            query.where().eq("project.participants.person.id", Controller_Security.get_person().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if((help.project_id != null)&&!(help.project_id.equals(""))){
@@ -453,7 +453,7 @@ public class Controller_Code extends Controller{
         try {
 
             Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.getPerson().id).eq("project.id",project_id);
+            query.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("project.id",project_id);
 
             Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
 
@@ -517,7 +517,7 @@ public class Controller_Code extends Controller{
             Model_VersionObject version_object = new Model_VersionObject();
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
-            version_object.author              = Controller_Security.getPerson();
+            version_object.author              = Controller_Security.get_person();
             version_object.date_of_create      = new Date();
             version_object.c_program           = c_program;
             version_object.public_version      = false;
@@ -737,7 +737,7 @@ public class Controller_Code extends Controller{
 
 
             if(Model_VersionObject.find.where().eq("approval_state", Enum_Approval_state.pending.name())
-                    .eq("c_program.project.participants.person.id", Controller_Security.getPerson().id)
+                    .eq("c_program.project.participants.person.id", Controller_Security.get_person().id)
                     .findList().size() > 3) return GlobalResult.result_BadRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
 
             if(version.approval_state != null)  return GlobalResult.result_BadRequest("You cannot publish same program twice!");
@@ -864,7 +864,7 @@ public class Controller_Code extends Controller{
                                         Email.bold("Version Description: ") +   c_program_old.name + Email.newLine() )
                                 .divider()
                                 .text("We will publish it as soon as possible.")
-                                .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.getPerson().full_name)
+                                .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
                                 .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                     } catch (Exception e) {
@@ -887,7 +887,7 @@ public class Controller_Code extends Controller{
                                 .divider()
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
-                                .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.getPerson().full_name)
+                                .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
                                 .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                     } catch (Exception e) {
@@ -914,7 +914,7 @@ public class Controller_Code extends Controller{
                             .text("We are sorry, but we found some problems in your program, so we did not publish it. But do not worry and do not give up! " +
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
-                            .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.getPerson().full_name)
+                            .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
                             .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                 } catch (Exception e) {

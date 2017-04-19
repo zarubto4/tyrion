@@ -176,7 +176,7 @@ public class Model_HomerInstance extends Model {
                 .setObject(this.actual_instance.version_object)
                 .setText( new Notification_Text().setText(" from Blocko program "))
                 .setObject(this.actual_instance.version_object.b_program)
-                .send(Controller_Security.getPerson());
+                .send(Controller_Security.get_person());
 
         }catch (Exception e){
             Loggy.internalServerError("Model_HomerInstance:: notification_instance_start_upload", e);

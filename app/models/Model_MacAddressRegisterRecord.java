@@ -48,7 +48,7 @@ public class Model_MacAddressRegisterRecord extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient  public boolean admin_permission(){  return Controller_Security.getPerson().has_permission("MacAddressRegister"); }
+    @JsonIgnore   @Transient  public boolean admin_permission(){  return Controller_Security.get_person().has_permission("MacAddressRegister"); }
 
     public enum permissions{MacAddressRegister}
 

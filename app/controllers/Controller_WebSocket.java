@@ -31,31 +31,53 @@ import java.util.UUID;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_WebSocket extends Controller {
 
-    // Loger
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
-    // Values  --------------------------------------------- ----------------------------------------------------------------
+/* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
-    // Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jednoduché čisté spojení a
-    // několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
-    // je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
-    public static Map<String, WS_HomerServer> homer_servers = new HashMap<>(); // (<Server-Identificator, Websocket> >)
+    /*
+     *      Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jednoduché čisté spojení
+     *      a několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
+     *      je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
+     *
+     *      <Model_HomerServer.unique_identificator, WS_HomerServer>
+     */
+    public static Map<String, WS_HomerServer> homer_servers = new HashMap<>();
 
-    // Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
-    public static Map<String, WS_CompilerServer> compiler_cloud_servers = new HashMap<>(); // (Server-Identificator, Websocket)
+    /*
+     *      Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
+     *
+     *      <Model_CompilationServer.unique_identificator, WS_CompilerServer>
+     */
+    public static Map<String, WS_CompilerServer> compiler_cloud_servers = new HashMap<>();
 
-    // Becki (frontend) spojení na synchronizaci blocka atd.. - Podporován režim multipřihlášení.
-    public static Map<String, WS_Becki_Website> becki_website = new HashMap<>(); // (Person_id - Identificator, List of Websocket connections - Identificator je Token)
+    /*
+     *      Becki (frontend) spojení na realtime synchronizaci blocka, objektů, notifikací atd.
+     *      Je zde podporován režim multipřihlášení. To znamená, že Uživatel se přihlásí na dvou počítačích. Objekt WS_Becki_Website obsahuje pole připojení
+     *      jednotlivých počítačů a je vrstvou, zakrývající exekutivitu odeslání - udělá to že když má odeslat zprávu, jen projede for cyklem všechny obejkty.
+     *
+     *      <Person.id, WS_Becki_Website>
+     *
+     *     (Person_id - Identificator, List of Websocket connections kde Identificator je Token přihlášeného uživatele, který Becki dostane při login)
+     */
+    public static Map<String, WS_Becki_Website> becki_website = new HashMap<>();
 
-    public static TokenCache tokenCache = new TokenCache( (long) 5, (long) 500, 50000); // Tokeny pro ověření uživatele
+
+    /*
+     *      Tokeny pro ověření uživatele
+     */
+    public static TokenCache tokenCache = new TokenCache( (long) 5, (long) 500, 50000);
 
 
 
-    // PUBLIC API -------------------------------------------------------------------------------------------------------------------
+/* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "get temporary Connection Token",
             tags = {"Access", "WebSocket"},
-            notes = "for connection to websocket, you have to connect with temporary unique token. This Api return ",
+            notes = "For connection to websocket, you have to connect with temporary unique token. This Api return Token" +
+                    " with a maximum lifetime of 5 seconds. After the token is deactivated. After logging in, or the connection" +
+                    " lost is token deactivated also. ",
             produces = "application/json",
             consumes = "text/plain",
             protocols = "https",
@@ -74,7 +96,7 @@ public class Controller_WebSocket extends Controller {
 
             WS_Token token = new WS_Token();
             token.token = web_socket_token;
-            token.person_id = Controller_Security.getPerson().id;
+            token.person_id = Controller_Security.get_person().id;
 
             tokenCache.put(web_socket_token, token);
 
@@ -86,6 +108,10 @@ public class Controller_WebSocket extends Controller {
             return Loggy.result_internalServerError(e, request());
         }
     }
+
+
+
+/* WEB-SOCKET CONNECTION -----------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "Homer Server Connection", tags = {"WebSocket"})
     public  WebSocket<String>  homer_cloud_server_connection(String unique_identificator){
@@ -131,7 +157,7 @@ public class Controller_WebSocket extends Controller {
             logger.trace("Controller_WebSocket:: homer_cloud_server_connection:: Tyrion have to control what is on the cloud_blocko_server side ");
 
 
-            // Ověřím IDentitiu serveru na jeho long_hash---------
+            // Ověřím IDentitiu serveru na jeho long_hash
             // Separatní vlákno je z důvodů nutnosti nejdříve vrátit (return webSocket) a nezávisle poté spustit ověření
             Thread check = new Thread() {
 
@@ -166,6 +192,7 @@ public class Controller_WebSocket extends Controller {
     @ApiOperation(value = "Compilation Server Connection", tags = {"WebSocket"})
     public  WebSocket<String>  compilator_server_connection (String unique_identificator){
         try{
+
             logger.debug("Controller_WebSocket:: compilator_server_connection:: Server is connecting. Server: " + unique_identificator);
 
             logger.trace("Controller_WebSocket:: compilator_server_connection:: Control Server and its unique names!");
@@ -266,7 +293,8 @@ public class Controller_WebSocket extends Controller {
 
 
 
-// Test & Control API ---------------------------------------------------------------------------------------------------------
+
+/* Test & Control API --------------------------------------------------------------------------------------------------*/
 
     public static void server_violently_terminate_terminal(WS_Interface_type terminal){
 
@@ -277,9 +305,9 @@ public class Controller_WebSocket extends Controller {
         }catch(Exception e){}
     }
 
-    public static void disconnect_all_Blocko_Servers() {
+    public static void disconnect_all_homer_Servers() {
 
-        logger.warn("Controller_WebSocket:: disconnect_all_Blocko_Servers::  Trying to safely disconnect all Blocko Servers");
+        logger.warn("Controller_WebSocket:: disconnect_all_Homer_Servers::  Trying to safely disconnect all Homer Servers");
 
         for (Map.Entry<String, WS_HomerServer> entry :  Controller_WebSocket.homer_servers.entrySet()) {
             server_violently_terminate_terminal(entry.getValue());
@@ -288,7 +316,7 @@ public class Controller_WebSocket extends Controller {
 
     public static void disconnect_all_Compilation_Servers() {
 
-        logger.warn("Controller_WebSocket:: disconnect_all_Blocko_Servers:: Trying to safety disconnect all Compilation Servers");
+        logger.warn("Controller_WebSocket:: disconnect_all_Compilation_Servers:: Trying to safety disconnect all Compilation Servers");
 
         for (Map.Entry<String, WS_CompilerServer> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet()) {
             server_violently_terminate_terminal(entry.getValue());

@@ -435,7 +435,7 @@ PUT             /admin/embedded_hardware/result                       @utilities
 
 # Basic Page Requests
 GET             /                                               @controllers.Controller_Dashboard.index()
-GET             /admin/login                                    @controllers.Controller_Dashboard.login()
+GET             /admin/login                                    @controllers.Controller_Security.admin_login()
 GET             /admin/bugs                                     @controllers.Controller_Dashboard.show_all_logs()
 GET             /admin/websocket/summary                        @controllers.Controller_Dashboard.show_web_socket_stats()
 GET             /admin/websocket/server_detail/:server_name     @controllers.Controller_Dashboard.show_websocket_server_detail(server_name)

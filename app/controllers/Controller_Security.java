@@ -31,6 +31,7 @@ import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
+import views.html.super_general.login;
 import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;
@@ -42,32 +43,59 @@ import static utilities.response.GlobalResult.result_ok;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Security extends Controller {
 
-    // Rest Api call client
+/*  Rest Api call client -----------------------------------------------------------------------------------------------*/
     @Inject WSClient ws;
 
-    // Logger
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
     static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
+
+/** ######################################################################################################################
+ *
+ *   Třída Controller_Security slouží k ověřování uživatelů pro přihlášení i odhlášení a to jak pro Becki, tak i Administraci Tyriona.
+ *
+ *   Dále ověřuje validitu tokenů na Homer serveru, na Compilačním serveru, platnost Rest-API reqest tokenů (a jejich počet)
+ *
+ *   Na třídě se volá nejčastěji get_person a getPerson_id() které pomáhají z HTTP contextu vytáhnout token z cookie a díky
+ *   tomu rozpoznat uživatele a co za operace dělá.
+ *
+ */
 
 //######################################################################################################################
 
     public static boolean has_token() {
-        return getPerson() != null;
+        return get_person() != null;
     }
 
-
-    public static Model_Person getPerson() {
+    public static String getPerson_id() {
         try {
-            return (Model_Person) Http.Context.current().args.get("person");
+
+            String token = (String) Http.Context.current().args.get("person_token");
+            if(token == null){
+                return null;
+            }
+
+            String person_id = Model_Person.token_cache.get( token  );
+
+             return person_id;
+
         }catch (Exception e){
-            Loggy.internalServerError("Controller_Security:: getPerson:", e);
+            Loggy.internalServerError("Controller_Security:: get_person:", e);
             return null;
         }
     }
-    public static Model_Person getPerson(Http.Context context) {
+
+    public static Model_Person get_person() {
         try {
-            return (Model_Person) Http.Context.current().args.get("person");
+
+            String person_id = getPerson_id();
+
+            if (person_id == null) return null;
+
+            return Model_Person.get_byId(person_id );
+
         }catch (Exception e){
-            Loggy.internalServerError("Controller_Security:: getPerson:", e);
+            Loggy.internalServerError("Controller_Security:: get_person:", e);
             return null;
         }
     }
@@ -103,31 +131,41 @@ public class Controller_Security extends Controller {
     public Result login() {
         try {
 
+            // Kontrola JSON
             final Form<Login_IncomingLogin> form = Form.form(Login_IncomingLogin.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Login_IncomingLogin help = form.get();
 
+            // Ověření Person - Heslo a email
             Model_Person person = Model_Person.findByEmailAddressAndPassword(help.mail, help.password);
             if (person == null) return GlobalResult.forbidden_Permission("Email or password are wrong");
 
-
+            // Kontrola validity - jestli byl ověřen přes email
+            // Jestli není účet blokován
             if (!person.mailValidated) return GlobalResult.result_NotValidated();
             if (person.freeze_account) return GlobalResult.result_BadRequest("Your account has been temporarily suspended");
 
-
+            // Vytvářim objekt tokenu pro přihlášení (na něj jsou vázány co uživatel kde a jak dělá) - Historie pro využití v MongoDB widgety atd..
             Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
             floatingPersonToken.person = person;
             floatingPersonToken.where_logged  = Enum_Where_logged_tag.BECKI_WEBSITE;
 
+            // Zjistím kde je přihlášení (user-Agent je třeba "Safari v1.30" nebo "Chrome 12.43" atd..)
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
 
+            // Ukládám do databáze
             floatingPersonToken.save();
 
+            // Ukládám do Cahce pamětí pro další operace
+            Model_Person.token_cache.put(floatingPersonToken.authToken, person.id);
+            Model_Person.cache.put(person.id, person);
+
+            // Vytvářím objekt, který zasílám zpět frontendu
             Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();
             swagger_login_token.authToken = floatingPersonToken.authToken;
 
-
+            // Odesílám odpověď
             return result_ok( Json.toJson( swagger_login_token ) );
 
         } catch (Exception e) {
@@ -135,6 +173,39 @@ public class Controller_Security extends Controller {
         }
     }
 
+
+
+    // LOGIN ###############################################################################################################
+
+    @ApiOperation(value = "login",
+            tags = {"Access", "Person"},
+            notes = "Get access Token",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            hidden = true
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully logged",       response = Swagger_Login_Token.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error"),
+            @ApiResponse(code = 705, message = "Account not validated",     response = Result_NotValidated.class)
+    })
+    public Result admin_login(){
+        try {
+
+            logger.debug("Trying to get login page");
+            return ok(login.render());
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+
+    // Když se uživatel přihlásí, dostane pouze Token. Ale aby mohl načíst základní projekty, atd. Tato metoda
+    // mu výměnou za Token vrátí celkový přehled (práva atd.)
     @ApiOperation(value = "get Person by token (after Oauth2 Login -> Facebook, GitHub, Twitter)",
             tags = {"Access", "Person", "Social-GitHub", "Social-Facebook"},
             notes = "If you want login to system with social networks - you can used facebook, github or twitter api " +
@@ -156,9 +227,10 @@ public class Controller_Security extends Controller {
     public  Result getPersonByToken(){
         try{
 
+            // Get token from Request
             String token = request().getHeader("X-AUTH-TOKEN");
 
-            Model_Person person = Model_Person.findByAuthToken(token);
+            Model_Person person = Model_Person.get_byAuthToken(token);
             if(person == null) return GlobalResult.forbidden_Permission("Account is not authorized");
 
             Swagger_Person_All_Details result = new Swagger_Person_All_Details();
@@ -202,6 +274,8 @@ public class Controller_Security extends Controller {
                 String token = request().getHeader("X-AUTH-TOKEN");
                 if(token == null) return GlobalResult.result_ok();
 
+                Model_Person.token_cache.remove(token);
+
                 Model_FloatingPersonToken token_model = Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique();
 
                 //Pokud token existuje jednak ho smažu - ale pořeší i odpojení websocketu
@@ -210,11 +284,13 @@ public class Controller_Security extends Controller {
                     // Úklid přihlášených websocketů
                     WS_Becki_Website becki_website = (WS_Becki_Website) Controller_WebSocket.becki_website.get(token_model.person.id);
 
+                    if ( becki_website.all_person_Connections != null)
                     for(String key : becki_website.all_person_Connections.keySet() ){
                         becki_website.all_person_Connections.get(key).onClose();
                     }
 
                     token_model .deleteAuthToken();
+
                 }
 
 

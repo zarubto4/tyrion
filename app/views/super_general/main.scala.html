@@ -92,7 +92,7 @@
                     "X-AUTH-TOKEN":getCookie("authToken")
                 },
                 success:function(e){
-                    location.href = '@routes.Controller_Dashboard.login()';
+                    location.href = '@routes.Controller_Security.admin_login()';
                 },
                 error:function(e) {
                     alert(e.responseText);

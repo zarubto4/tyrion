@@ -82,7 +82,7 @@ public class Model_CCompilation extends Model {
                     .setLevel(Enum_Notification_level.info)
                     .setText(new Notification_Text().setText("Server starts compilation of Version "))
                     .setObject(this)
-                    .send(Controller_Security.getPerson());
+                    .send(Controller_Security.get_person());
 
         }catch (Exception e){
             Loggy.internalServerError("Model_CCompilation:: notification_compilation_start", e);
@@ -99,7 +99,7 @@ public class Model_CCompilation extends Model {
                     .setText(new Notification_Text().setText("Compilation of Version "))
                     .setObject(this)
                     .setText(new Notification_Text().setText("was successful."))
-                    .send(Controller_Security.getPerson());
+                    .send(Controller_Security.get_person());
 
         }catch (Exception e){
             Loggy.internalServerError("Model_CCompilation:: notification_compilation_success", e);
@@ -117,7 +117,7 @@ public class Model_CCompilation extends Model {
                     .setObject(this)
                     .setText(new Notification_Text().setText("was unsuccessful, for reason:"))
                     .setText(new Notification_Text().setText(reason).setBoltText())
-                    .send(Controller_Security.getPerson());
+                    .send(Controller_Security.get_person());
         }catch (Exception e){
             Loggy.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_warn", e);
         }
@@ -133,7 +133,7 @@ public class Model_CCompilation extends Model {
                     .setObject(this)
                     .setText(new Notification_Text().setText("with critical Error:"))
                     .setText(new Notification_Text().setText(result).setBoltText())
-                    .send(Controller_Security.getPerson());
+                    .send(Controller_Security.get_person());
         }catch (Exception e){
             Loggy.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_error", e);
         }
@@ -149,7 +149,7 @@ public class Model_CCompilation extends Model {
                     .setObject(this)
                     .setText(new Notification_Text().setText(" from Program "))
                     .setObject(this.version_object.c_program)
-                    .send(Controller_Security.getPerson());
+                    .send(Controller_Security.get_person());
         }catch (Exception e){
             Loggy.internalServerError("Model_CCompilation:: notification_new_actualization_request_on_version", e);
         }

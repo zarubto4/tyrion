@@ -112,11 +112,11 @@ public class Model_TypeOfBoard extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.getPerson().has_permission("TypeOfBoard_create"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.get_person().has_permission("TypeOfBoard_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.getPerson().has_permission("TypeOfBoard_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.getPerson().has_permission("TypeOfBoard_delete"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean register_new_device_permission(){ return Controller_Security.getPerson().has_permission("TypeOfBoard_register_new_device"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("TypeOfBoard_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("TypeOfBoard_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean register_new_device_permission(){ return Controller_Security.get_person().has_permission("TypeOfBoard_register_new_device"); }
 
     public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_delete, TypeOfBoard_register_new_device}
 

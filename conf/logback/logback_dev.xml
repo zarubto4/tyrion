@@ -28,22 +28,26 @@
       The logger name is typically the Java/Scala package name.
       This configures the log level to log at for a package and its children packages.
     -->
-    <logger name="com.avaje.ebean.config.PropertyMapLoader" level="WARN" />
-    <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="WARN" />
-    <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="WARN" />
-    <logger name="com.gargoylesoftware.htmlunit.javascript" level="WARN" />
-    <logger name="org.avaje.ebean.SQL" level="WARN" />
+    <logger name="com.avaje.ebean.config.PropertyMapLoader"                 level="WARN" />
+    <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader"      level="WARN" />
+    <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread"      level="WARN" />
+    <logger name="com.gargoylesoftware.htmlunit.javascript"                 level="WARN" />
+    <logger name="org.avaje.ebean.SQL"                                      level="WARN" />
 
 
-    <logger name="play" level="WARN" />
-    <logger name="application" level="DEBUG" />
-    <logger name="com.jolbox.bonecp" level="INFO" additivity = "false"/>
+    <logger name="play"                 level="WARN" />
+    <logger name="application"          level="DEBUG" />
+    <logger name="com.jolbox.bonecp"    level="INFO"        additivity = "false"/>
 
 
     <logger name="Loggy" level="DEBUG" additivity = "false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="allLog" />
     </logger>
+
+
+
+
 
     <logger name="junit.framework.TestCase" level="ERROR" additivity = "false">
         <appender-ref ref="testLog" />

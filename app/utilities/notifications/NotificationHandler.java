@@ -122,7 +122,7 @@ public class NotificationHandler {
                         notification.save_object();
 
                         message.put("id", notification.id);
-
+                        message.put("notification_id", notification.id); // TODO Smazat - určeno jen pro testování
                         System.out.println("      Notifikaci k tomu ještě ukládám pod notification id " +notification.id);
 
                         try {
@@ -137,11 +137,14 @@ public class NotificationHandler {
                         }
 
                     }else {
-                        if(notification.id != null) {
+                        if(notification.id == null) {
                             message.put("id", UUID.randomUUID().toString());
+                            message.put("notification_id", UUID.randomUUID().toString());  // TODO Smazat - určeno jen pro testování
                             System.out.println("      Notifikaci k tomu ještě něměla vlastní id a nebude ukládánáa a tak tvořím nové id " +  message.get("id").asText());
                         }else {
                             System.out.println("      Notifikaci měla už vlastní id ale nebude ukládáná " +  notification.id);
+                            message.put("id", notification.id);
+                            message.put("notification_id", notification.id);
                         }
                     }
 
@@ -153,7 +156,7 @@ public class NotificationHandler {
                     }
 
 
-                    notification.id = null;
+                   // notification.id = null;
 
                 } catch (NullPointerException e) {
                     logger.error("NotificationHandler:: SendNotification inside for void Error:: ", e);

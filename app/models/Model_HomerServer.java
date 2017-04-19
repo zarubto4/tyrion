@@ -26,7 +26,6 @@ import utilities.independent_threads.SynchronizeHomerServer;
 import web_socket.message_objects.homerServer_with_tyrion.*;
 import web_socket.message_objects.homer_instance.WS_Message_Add_new_instance;
 import web_socket.message_objects.homer_instance.WS_Message_Is_instance_exist;
-import web_socket.message_objects.homer_instance.WS_Message_Remove_yoda_from_instance;
 import web_socket.services.WS_HomerServer;
 
 import javax.persistence.*;
@@ -261,7 +260,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public static void check_person_token_for_homer_server(WS_HomerServer homer, WS_Message_Valid_person_token_homer_server message){
         try{
 
-            Model_Person person =  Model_Person.findByAuthToken(message.token);
+            Model_Person person =  Model_Person.get_byAuthToken(message.token);
 
             if (person == null) {
                 homer.write_without_confirmation(message.make_request_unsuccess());
@@ -520,10 +519,10 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User (Admin with privileges) can create public cloud cloud_blocko_server where the system uniformly creating Blocko instantiates or (Customer) can create private cloud_blocko_server for own projects";
 
                                                                       // TODO oprávnění bude komplikovanější až se budou podporovat lokální servery
-    @JsonIgnore                                                       @Transient public boolean create_permission()  {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_create");  }
-    @JsonIgnore                                                       @Transient public boolean read_permission()    {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_read");    }
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean edit_permission()    {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_edit");    }
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean delete_permission()  {  return Controller_Security.getPerson().has_permission("Cloud_Homer_Server_delete");  }
+    @JsonIgnore                                                       @Transient public boolean create_permission()  {  return Controller_Security.get_person().has_permission("Cloud_Homer_Server_create");  }
+    @JsonIgnore                                                       @Transient public boolean read_permission()    {  return Controller_Security.get_person().has_permission("Cloud_Homer_Server_read");    }
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean edit_permission()    {  return Controller_Security.get_person().has_permission("Cloud_Homer_Server_edit");    }
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean delete_permission()  {  return Controller_Security.get_person().has_permission("Cloud_Homer_Server_delete");  }
 
     // Speciální řízení oprávnění z důvodů ověřování identit na homer serveru
     // Tyrion v contextu nemá Http.Context.current().args.get("person"); podle kterého se běžně všude ověřuje identita!!!

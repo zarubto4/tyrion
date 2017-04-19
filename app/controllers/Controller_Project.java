@@ -129,7 +129,7 @@ public class Controller_Project extends Controller {
         try {
 
             // Získání seznamu
-            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", Controller_Security.getPerson().id).eq("product.active", true).order().asc("name").findList();
+            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person().id).eq("product.active", true).order().asc("name").findList();
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson( projects ));
@@ -166,6 +166,7 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result project_get(@ApiParam(value = "project_id String path", required = true)  String project_id){
+
         try {
 
             // Kontrola objektu
@@ -176,6 +177,7 @@ public class Controller_Project extends Controller {
             if (!project.read_permission())   return GlobalResult.forbidden_Permission();
 
             /*
+
             Swagger_Project_Individual_DashBoard object = new Swagger_Project_Individual_DashBoard();
             object.project = project;
 
@@ -191,6 +193,7 @@ public class Controller_Project extends Controller {
          } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
+
     }
 
     @ApiOperation(value = "delete Project",
@@ -375,7 +378,7 @@ public class Controller_Project extends Controller {
                     invitation = new Model_Invitation();
                     invitation.mail = mail;
                     invitation.date_of_creation = new Date();
-                    invitation.owner = Controller_Security.getPerson();
+                    invitation.owner = Controller_Security.get_person();
                     invitation.project = project;
                     invitation.save();
                 }
@@ -386,7 +389,7 @@ public class Controller_Project extends Controller {
                 try {
 
                     new Email()
-                            .text("User " + Email.bold(Controller_Security.getPerson().full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
+                            .text("User " + Email.bold(Controller_Security.get_person().full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
                             .divider()
                             .link("Register here and collaborate",link)
                             .send(mail, "Invitation to Collaborate");
@@ -404,7 +407,7 @@ public class Controller_Project extends Controller {
                     invitation = new Model_Invitation();
                     invitation.mail = person.mail;
                     invitation.date_of_creation = new Date();
-                    invitation.owner = Controller_Security.getPerson();
+                    invitation.owner = Controller_Security.get_person();
                     invitation.project = project;
                     invitation.save();
                 }

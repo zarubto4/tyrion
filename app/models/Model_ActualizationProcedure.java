@@ -7,11 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import utilities.enums.*;
 import utilities.loggy.Loggy;
 import utilities.notifications.helps_objects.Notification_Text;
-import web_socket.message_objects.homer_instance.WS_Message_UpdateProcedure_progress;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -453,7 +451,7 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Transient   public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
 
-    @JsonIgnore @Transient   public boolean read_permission()      {  return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id",id ).findUnique().read_permission() || Controller_Security.getPerson().has_permission("Actualization_procedure_read"); }
+    @JsonIgnore @Transient   public boolean read_permission()      {  return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id",id ).findUnique().read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read"); }
 
     public enum permissions{Actualization_procedure_read}
 

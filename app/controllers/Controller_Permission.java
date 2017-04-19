@@ -612,12 +612,9 @@ public class Controller_Permission extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Blocko_Token_validation_request help = form.get();
 
-
             Enum_Token_type token_type = Enum_Token_type.getType(help.type_of_token);
 
-
             Swagger_Blocko_Token_validation_result result = new Swagger_Blocko_Token_validation_result();
-
 
             if(token_type == Enum_Token_type.PERSON_TOKEN){
 

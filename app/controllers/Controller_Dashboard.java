@@ -48,9 +48,6 @@ import views.html.websocket.websocket_homer_server_detail;
 import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
 import web_socket.message_objects.homer_instance.WS_Message_Ping_instance;
 import web_socket.services.WS_Becki_Website;
-import web_socket.services.WS_CompilerServer;
-import web_socket.services.WS_HomerServer;
-import web_socket.services.WS_Interface_type;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -60,9 +57,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -74,6 +69,7 @@ import java.util.stream.Collectors;
  *
  * */
 @Api(value = "Dashboard Private Api", hidden = true)
+@Security.Authenticated(Secured_Admin.class)
 public class Controller_Dashboard extends Controller {
 
     @Inject Application application;
@@ -93,7 +89,6 @@ public class Controller_Dashboard extends Controller {
 // Index (úvod) ########################################################################################################
 
     // Úvodní zobrazení Dashboard
-    @Security.Authenticated(Secured_Admin.class)
     public Result index() {
 
         Html content_html = dashboard.render();
@@ -103,7 +98,7 @@ public class Controller_Dashboard extends Controller {
 // README ###############################################################################################################
 
     // Zobrazení readme podle MarkDown
-    @Security.Authenticated(Secured_Admin.class)
+ 
     public Result show_readme() throws IOException {
         try {
 
@@ -123,7 +118,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result show_wiki(String file_name) throws IOException {
         try {
 
@@ -153,7 +148,6 @@ public class Controller_Dashboard extends Controller {
 // API DIFF ###############################################################################################################
 
     // Zobrazení rozdílu mezi verzemi
-    @Security.Authenticated(Secured_Admin.class)
     public Result show_diff_on_Api(String file_name_old, String file_name_new) throws IOException, NullPointerException {
         try {
 
@@ -181,7 +175,7 @@ public class Controller_Dashboard extends Controller {
 
 // WEBSOCKET STATS ######################################################################################################
 
-    @Security.Authenticated(Secured_Admin.class)
+     
     public Result disconnect_becki(String person_id, String token){
         try {
 
@@ -209,7 +203,7 @@ public class Controller_Dashboard extends Controller {
     }
 
 
-    @Security.Authenticated(Secured_Admin.class)
+     
     public Result disconnect_blocko_server(String identificator) {
         try {
 
@@ -233,7 +227,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result disconnect_compilation_server(String identificator){
         try {
             if (Controller_WebSocket.compiler_cloud_servers.containsKey(identificator)) {
@@ -258,7 +251,6 @@ public class Controller_Dashboard extends Controller {
     }
 
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result ping_becki(String person_id, String token) throws TimeoutException, InterruptedException {
         try {
 
@@ -291,7 +283,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result ping_homer_server(String identificator) {
         try {
 
@@ -303,7 +295,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result ping_homer_instance(String instance_id) {
         try {
 
@@ -315,7 +306,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result ping_compilation_server(String identificator) {
         try {
 
@@ -369,7 +360,7 @@ public class Controller_Dashboard extends Controller {
 
 // ADMIN ###############################################################################################################
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result show_web_socket_stats() {
 
         List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(Controller_WebSocket.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
@@ -377,7 +368,7 @@ public class Controller_Dashboard extends Controller {
         return return_page(content);
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result  show_instance_detail(String instance_id) {
 
         Model_HomerInstance instance = Model_HomerInstance.find.byId(instance_id);
@@ -389,7 +380,7 @@ public class Controller_Dashboard extends Controller {
     }
 
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result  show_websocket_server_detail(String server_identificator) {
 
         Model_HomerServer server = Model_HomerServer.get_model(server_identificator);
@@ -400,7 +391,6 @@ public class Controller_Dashboard extends Controller {
         return return_page(content);
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result basic_board_management(){
         try {
 
@@ -412,7 +402,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result board_summary(){
         try {
 
@@ -424,7 +414,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result board_detail(String board_id){
         try {
 
@@ -436,8 +426,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-
-    @Security.Authenticated(Secured_Admin.class)
     public Result bootloader_management(String type_of_board_id){
         try {
 
@@ -457,9 +445,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-
-
-    @Security.Authenticated(Secured_Admin.class)
     public Result external_servers(){
         try {
 
@@ -471,7 +456,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result user_summary(String user_email){
         try {
 
@@ -479,10 +464,10 @@ public class Controller_Dashboard extends Controller {
             if(user_email != null && !user_email.equals("")){
 
                 person = Model_Person.find.where().eq("mail", user_email).findUnique();
-                if(person == null) person = Controller_Security.getPerson();
+                if(person == null) person = Controller_Security.get_person();
 
             }else {
-                person = Controller_Security.getPerson();
+                person = Controller_Security.get_person();
             }
 
             Html user_summary_content = user_summary.render( person );
@@ -493,7 +478,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result permissions_summary(){
         try {
 
@@ -506,7 +491,6 @@ public class Controller_Dashboard extends Controller {
     }
 
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result role(String role_id){
         try {
 
@@ -520,7 +504,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result blocko_objects(){
         try {
 
@@ -532,7 +516,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result blocko_management(){
         try {
 
@@ -544,7 +527,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result public_code(){
         try {
 
@@ -556,7 +539,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result public_code_management(){
         try {
 
@@ -569,7 +551,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result public_code_approve_procedure(){
         try {
 
@@ -581,7 +562,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result libraries(){
         try {
 
@@ -593,7 +574,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result grid_public(){
         try {
 
@@ -605,7 +585,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result mac_adress_generator(){
         try {
 
@@ -617,7 +596,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result grid_management(){
         try {
 
@@ -629,7 +607,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result project_detail(String id){
         try {
 
@@ -644,7 +621,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result product_detail(String id){
         try {
 
@@ -661,7 +637,7 @@ public class Controller_Dashboard extends Controller {
 
 // TEST ################################################################################################################
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result test(){
         try {
 
@@ -700,7 +676,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result demo_data(){
         try {
 
@@ -713,10 +688,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-
-
-
-    @Security.Authenticated(Secured_Admin.class)
     public Result general_tariffs_list(){
         try {
 
@@ -729,7 +700,7 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result general_tariff_edit(String general_tariff_id){
         try {
 
@@ -744,8 +715,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-
-    @Security.Authenticated(Secured_Admin.class)
     public Result general_tariff_extension_edit(String extension_id){
         try {
 
@@ -762,7 +731,6 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    @Security.Authenticated(Secured_Admin.class)
     public Result not_found(){
         try {
 
@@ -776,20 +744,6 @@ public class Controller_Dashboard extends Controller {
     }
 
 
-
-
-// LOGIN ###############################################################################################################
-
-    public Result login(){
-        try {
-
-            logger.debug("Trying to get login page");
-            return ok(login.render());
-
-        }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
-        }
-    }
 
 }
 

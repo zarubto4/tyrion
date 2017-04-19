@@ -107,11 +107,11 @@ public class Model_ImportLibrary extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.getPerson().has_permission("ImportLibrary_create"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.get_person().has_permission("ImportLibrary_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.getPerson().has_permission("ImportLibrary_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.getPerson().has_permission("ImportLibrary_delete"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return Controller_Security.getPerson().has_permission("ImportLibrary_update"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("ImportLibrary_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("ImportLibrary_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return Controller_Security.get_person().has_permission("ImportLibrary_update"); }
 
     public enum permissions{ImportLibrary_create, ImportLibrary_edit, ImportLibrary_delete, ImportLibrary_update}
 

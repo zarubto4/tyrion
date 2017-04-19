@@ -4,7 +4,6 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
-import javafx.stage.Stage;
 import models.Model_FileRecord;
 import models.Model_VersionObject;
 import models.Model_Person;
@@ -23,7 +22,6 @@ import play.mvc.*;
 import utilities.Server;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
-import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
@@ -422,7 +420,7 @@ public class Controller_Grid extends Controller {
             version_object.version_description = help.version_description;
             version_object.version_name        = help.version_name;
             version_object.m_program           = main_m_program;
-            version_object.author              = Controller_Security.getPerson();
+            version_object.author              = Controller_Security.get_person();
             version_object.public_version      = help.public_mode;
             version_object.qr_token            = UUID.randomUUID().toString() + UUID.randomUUID().toString();
             version_object.m_program_virtual_input_output =  help.virtual_input_output;
@@ -747,7 +745,7 @@ public class Controller_Grid extends Controller {
 
             List<Model_HomerInstanceRecord> list = Model_HomerInstanceRecord.find.where()
                     .isNotNull("actual_running_instance")
-                        .eq("main_instance_history.b_program.project.participants.person.id",  Controller_Security.getPerson().id)
+                        .eq("main_instance_history.b_program.project.participants.person.id",  Controller_Security.get_person().id)
                         .select("version_object")
                         .select("main_instance_history")
                     .select("id")
@@ -945,7 +943,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    //@Security.Authenticated(Secured_API.class) - Není záměrně!!!! - Ověřuje se v read permision program může být public!
+    //@Security.Authenticated(Secured_API.class) - Není záměrně!!!! - Ověřuje se v read_permision program může být public!
     public Result get_identificator(){
         try{
 
@@ -968,7 +966,7 @@ public class Controller_Grid extends Controller {
 
             if ((token_values != null) && (token_values.length == 1) && (token_values[0] != null)) {
                 logger.debug("Controller_Grid :: get_identificator :: HTTP request containts X-AUTH-TOKEN");
-                Model_Person person = Model_Person.findByAuthToken(token_values[0]);
+                Model_Person person = Model_Person.get_byAuthToken(token_values[0]);
                 if (person != null) {
                     logger.debug("Controller_Grid :: get_identificator :: Person with X-AUTH-TOKEN found");
                   terminal.person = person;
@@ -1303,7 +1301,7 @@ public class Controller_Grid extends Controller {
             Query<Model_TypeOfWidget> query = Ebean.find(Model_TypeOfWidget.class);
 
             if(help.private_type){
-                query.where().eq("project.participants.person.id", Controller_Security.getPerson().id);
+                query.where().eq("project.participants.person.id", Controller_Security.get_person().id);
             }else{
                 query.where().eq("project", null);
             }
@@ -1387,7 +1385,7 @@ public class Controller_Grid extends Controller {
 
             gridWidget.description         = help.description;
             gridWidget.name                = help.name;
-            gridWidget.author              = Controller_Security.getPerson();
+            gridWidget.author              = Controller_Security.get_person();
             gridWidget.type_of_widget      = typeOfWidget;
 
             // Kontrola oprávnění těsně před uložením
@@ -1616,7 +1614,7 @@ public class Controller_Grid extends Controller {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_GridWidget> query = Ebean.find(Model_GridWidget.class);
-            query.where().eq("author.id", Controller_Security.getPerson().id);
+            query.where().eq("author.id", Controller_Security.get_person().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
@@ -1780,7 +1778,7 @@ public class Controller_Grid extends Controller {
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.grid_widget = gridWidget;
-            version.author = Controller_Security.getPerson();
+            version.author = Controller_Security.get_person();
 
             // Kontrola oprávnění
             if (! version.create_permission()) return GlobalResult.forbidden_Permission();

@@ -58,8 +58,6 @@ public class Model_FloatingPersonToken extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
-
-
     @JsonIgnore @Override
     public void save() {
 
@@ -72,7 +70,6 @@ public class Model_FloatingPersonToken extends Model {
         }
         super.save();
     }
-
 
 
     @JsonIgnore
@@ -98,7 +95,9 @@ public class Model_FloatingPersonToken extends Model {
 
     @JsonIgnore @Transient
     public static Model_FloatingPersonToken setProviderKey(String typeOfConnection ){
+
         Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
+
         while(true){ // I need Unique Value
             String key = UUID.randomUUID().toString();
             if (Model_FloatingPersonToken.find.where().eq("provider_key",key).findUnique() == null) {
@@ -115,10 +114,10 @@ public class Model_FloatingPersonToken extends Model {
             }
         }
 
-
         floatingPersonToken.type_of_connection = typeOfConnection;
         floatingPersonToken.created = new Date();
         floatingPersonToken.save();
+
         return floatingPersonToken;
     }
 
@@ -153,8 +152,8 @@ public class Model_FloatingPersonToken extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return ( person.id.equals( Controller_Security.getPerson().id) ) || Controller_Security.getPerson().has_permission("FloatingPersonToken_read");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return ( person.id.equals( Controller_Security.getPerson().id) ) || Controller_Security.getPerson().has_permission("FloatingPersonToken_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().has_permission("FloatingPersonToken_read");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().has_permission("FloatingPersonToken_delete"); }
 
     public enum permissions{ FloatingPersonToken_read, FloatingPersonToken_delete }
 

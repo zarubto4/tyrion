@@ -325,7 +325,7 @@ public class Controller_Blocko extends Controller{
             version_object.version_description     = help.version_description;
             version_object.date_of_create          = new Date();
             version_object.b_program               = b_program;
-            version_object.author                  = Controller_Security.getPerson();
+            version_object.author                  = Controller_Security.get_person();
 
 
 
@@ -575,7 +575,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.getPerson().id);
+            query.where().eq("project.participants.person.id", Controller_Security.get_person().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
@@ -1404,7 +1404,7 @@ public class Controller_Blocko extends Controller{
             Query<Model_TypeOfBlock> query = Ebean.find(Model_TypeOfBlock.class);
 
             if(help.private_type){
-                query.where().eq("project.participants.person.id", Controller_Security.getPerson().id);
+                query.where().eq("project.participants.person.id", Controller_Security.get_person().id);
             }else{
                 query.where().isNull("project");
             }
@@ -1486,7 +1486,7 @@ public class Controller_Blocko extends Controller{
 
             blockoBlock.description = help.general_description;
             blockoBlock.name                = help.name;
-            blockoBlock.author              = Controller_Security.getPerson();
+            blockoBlock.author              = Controller_Security.get_person();
             blockoBlock.type_of_block       = typeOfBlock;
 
             // Kontrola oprávnění těsně před uložením
@@ -1711,7 +1711,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_BlockoBlock> query = Ebean.find(Model_BlockoBlock.class);
-            query.where().eq("author.id", Controller_Security.getPerson().id);
+            query.where().eq("author.id", Controller_Security.get_person().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
@@ -1872,7 +1872,7 @@ public class Controller_Blocko extends Controller{
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.blocko_block = blockoBlock;
-            version.author = Controller_Security.getPerson();
+            version.author = Controller_Security.get_person();
 
             // Kontrola oprávnění
             if (! version.create_permission()) return GlobalResult.forbidden_Permission();

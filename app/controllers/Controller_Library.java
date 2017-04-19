@@ -383,7 +383,7 @@ public class Controller_Library extends Controller {
             Model_VersionObject version_object = new Model_VersionObject();
             version_object.version_name        = help.version_name;
             version_object.version_description = help.version_description;
-            version_object.author              = Controller_Security.getPerson();
+            version_object.author              = Controller_Security.get_person();
             version_object.date_of_create      = new Date();
             version_object.library             = library;
             version_object.public_version      = true;

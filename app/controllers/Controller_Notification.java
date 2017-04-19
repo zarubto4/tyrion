@@ -3,36 +3,22 @@ package controllers;
 import com.avaje.ebean.Query;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
-import models.Model_Board;
-import models.Model_VersionObject;
 import models.Model_Notification;
-import models.Model_Person;
-import models.Model_BProgram;
-import models.Model_CProgram;
-import models.Model_Project;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
-import utilities.enums.Enum_Notification_level;
 import utilities.enums.Enum_Notification_state;
 import utilities.loggy.Loggy;
 import utilities.login_entities.Secured_API;
-import utilities.notifications.helps_objects.Becki_color;
-import utilities.notifications.helps_objects.Notification_Button;
-import utilities.notifications.helps_objects.Notification_Link;
-import utilities.notifications.helps_objects.Notification_Text;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
 import utilities.swagger.documentationClass.Swagger_Notification_Read;
-import utilities.swagger.documentationClass.Swagger_Notification_Test;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
 
-import java.util.Date;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -67,7 +53,7 @@ public class Controller_Notification extends Controller {
   public Result get_notification_page(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number){
      try {
 
-        Query<Model_Notification> query =  Model_Notification.find.where().eq("person.id", Controller_Security.getPerson().id).order().desc("created");
+        Query<Model_Notification> query =  Model_Notification.find.where().eq("person.id", Controller_Security.get_person().id).order().desc("created");
 
         Swagger_Notification_List result = new Swagger_Notification_List(query, page_number);
 
@@ -178,7 +164,7 @@ public class Controller_Notification extends Controller {
   public Result get_unconfirmed_notifications(){
     try{
 
-      List<Model_Notification> notifications = Model_Notification.find.where().eq("person.id", Controller_Security.getPerson().id).eq("notification_importance", Enum_Notification_importance.high).eq("confirmed", false).findList();
+      List<Model_Notification> notifications = Model_Notification.find.where().eq("person.id", Controller_Security.get_person().id).eq("notification_importance", Enum_Notification_importance.high).eq("confirmed", false).findList();
       if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
 
       for (Model_Notification notification : notifications){

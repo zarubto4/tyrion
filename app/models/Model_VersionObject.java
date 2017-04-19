@@ -385,7 +385,7 @@ public class Model_VersionObject extends Model {
 
         WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request( typeOfBoard ,this.id, code_file.main, includes   ));
 
-        // Controller_Notification.successful_compilation(Controller_Security.getPerson(), this); TODO Notifikace
+        // Controller_Notification.successful_compilation(Controller_Security.get_person(), this); TODO Notifikace
 
         // Když obsahuje chyby - vrátím rovnou Becki
         if(!compilation.buildErrors.isEmpty()) {
@@ -538,7 +538,7 @@ public class Model_VersionObject extends Model {
 
         try {
             if(this.author == null)
-            this.author = Controller_Security.getPerson();
+            this.author = Controller_Security.get_person();
         }catch (Exception e){
             // this.author = null;
         }

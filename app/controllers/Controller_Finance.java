@@ -555,7 +555,7 @@ public class Controller_Finance extends Controller {
 
                 product.mode = Enum_Payment_mode.free;
 
-                Model_Person person = Controller_Security.getPerson();
+                Model_Person person = Controller_Security.get_person();
 
                 Model_PaymentDetails payment_details = new Model_PaymentDetails();
                     payment_details.person = person;
@@ -768,7 +768,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            List<Model_Product> products = Model_Product.get_byOwner(Controller_Security.getPerson().id);
+            List<Model_Product> products = Model_Product.get_byOwner(Controller_Security.get_person().id);
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(products));
@@ -1113,7 +1113,7 @@ public class Controller_Finance extends Controller {
             // Slouží k získání možností pod jaký produkt lze vytvořit nějaký projekt
 
             // Vyhledání všech objektů, které se týkají přihlášeného uživatele
-            List<Model_Product> list = Model_Product.get_applicableByOwner(Controller_Security.getPerson().id);
+            List<Model_Product> list = Model_Product.get_applicableByOwner(Controller_Security.get_person().id);
 
             List<Swagged_Applicable_Product> products = new ArrayList<>();
 

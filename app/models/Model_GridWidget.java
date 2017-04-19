@@ -55,7 +55,7 @@ public class Model_GridWidget extends Model{
 
         for( Model_GridWidgetVersion v : grid_widget_versions){
 
-            if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.getPerson().id)))) {
+            if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.get_person().id)))) {
 
                 list.add(v.get_short_gridwidget_version());
             }

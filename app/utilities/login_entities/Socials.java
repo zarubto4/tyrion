@@ -41,7 +41,6 @@ public class Socials {
     }
 
 
-
     public static OAuthService GitHub(String state){
 
         final OAuthService GitHub = new ServiceBuilder()

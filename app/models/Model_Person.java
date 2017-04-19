@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Person",
-        value = "Person")
+          value = "Person")
 public class Model_Person extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -154,10 +154,10 @@ public class Model_Person extends Model {
 
     @JsonIgnore   @Transient public boolean create_permission(){  return true;  }
     @JsonIgnore   @Transient public boolean read_permission()  {  return true;  }
-    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.getPerson() != null && (Controller_Security.getPerson().id.equals(this.id) || Controller_Security.getPerson().has_permission("Person_edit"));}
-    @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.getPerson().has_permission("Person_activation");}
-    @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.getPerson().has_permission("Person_delete");}
-    @JsonIgnore   @Transient public boolean admin_permission()     {  return Controller_Security.getPerson().has_permission("Byzance_employee");}
+    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person() != null && (Controller_Security.get_person().id.equals(this.id) || Controller_Security.get_person().has_permission("Person_edit"));}
+    @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().has_permission("Person_activation");}
+    @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().has_permission("Person_delete");}
+    @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().has_permission("Byzance_employee");}
 
     public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
 
@@ -167,22 +167,7 @@ public class Model_Person extends Model {
 
     public static Model_Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
 
-    public static Model_Person findByAuthToken(String authToken) {
-        if (authToken == null) return null;
-
-        try  {
-            Model_FloatingPersonToken token = Model_FloatingPersonToken.find.where().eq("authToken", authToken).findUnique();
-
-            if (token != null && token.isValid()) return get_byAuthToken(authToken);
-
-            return null;
-        } catch (Exception e) {
-           e.printStackTrace();
-           return null;
-        }
-    }
-
-      public static Model.Finder<String,Model_Person>  find = new Model.Finder<>(Model_Person.class);
+    public static Model.Finder<String,Model_Person>  find = new Model.Finder<>(Model_Person.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -210,7 +195,6 @@ public class Model_Person extends Model {
 
     @JsonIgnore
     public static Model_Person get_byAuthToken(String authToken) {
-
 
         String person_id = token_cache.get(authToken);
         if (person_id == null){

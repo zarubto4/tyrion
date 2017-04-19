@@ -1,5 +1,4 @@
 import controllers.Controller_WebSocket;
-import models.Model_TypeOfBoardFeatures;
 import play.Application;
 import play.GlobalSettings;
 import play.mvc.Action;
@@ -21,7 +20,8 @@ public class Global extends GlobalSettings {
 
     @Override
     public void onStart(Application app) {
-       try {
+
+        try {
 
            logger.warn("Global:: onStart: Starting the server on {}", new Date());
 
@@ -60,6 +60,7 @@ public class Global extends GlobalSettings {
        }catch (Exception e){
            Loggy.internalServerError("Global:: onStart:",e);
        }
+
     }
 
     @Override
@@ -68,7 +69,7 @@ public class Global extends GlobalSettings {
         logger.warn("Global:: onStop: Shutting down the server on {}", new Date());
 
         logger.warn("Global:: onStop: Disconnecting all Blocko Servers");
-        Controller_WebSocket.disconnect_all_Blocko_Servers();
+        Controller_WebSocket.disconnect_all_homer_Servers();
 
         logger.warn("Global:: onStop: Disconnecting all Compilation Servers");
         Controller_WebSocket.disconnect_all_Compilation_Servers();
@@ -111,7 +112,7 @@ public class Global extends GlobalSettings {
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
 
-        // logger.debug(request.path());
+        logger.debug(request.path());
         RequestCounter.count(actionMethod.getName());
 
         return super.onRequest(request, actionMethod);

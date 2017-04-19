@@ -176,10 +176,10 @@ public class Model_Product extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                    public boolean create_permission()              {  return true;  }
-    @JsonIgnore   @Transient                                    public boolean read_permission()                {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_read");  }
-                  @Transient                                    public boolean edit_permission()                {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_edit");  }
-                  @Transient                                    public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_act_deactivate"); }
-    @JsonIgnore   @Transient                                    public boolean delete_permission()              {  return Controller_Security.getPerson().has_permission("Product_delete");}
+    @JsonIgnore   @Transient                                    public boolean read_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Product_read");  }
+                  @Transient                                    public boolean edit_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Product_edit");  }
+                  @Transient                                    public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
+    @JsonIgnore   @Transient                                    public boolean delete_permission()              {  return Controller_Security.get_person().has_permission("Product_delete");}
 
     // Project
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean  create_new_project()             {
@@ -218,7 +218,7 @@ public class Model_Product extends Model {
 
     @JsonIgnore
     public static Model_Product get_byNameAndOwner(String name) {
-        return find.where().eq("product_individual_name", name).eq("payment_details.person.id", Controller_Security.getPerson().id).findUnique();
+        return find.where().eq("product_individual_name", name).eq("payment_details.person.id", Controller_Security.get_person().id).findUnique();
     }
 
     @JsonIgnore

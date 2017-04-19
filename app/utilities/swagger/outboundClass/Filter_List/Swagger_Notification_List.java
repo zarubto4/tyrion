@@ -35,7 +35,7 @@ public class Swagger_Notification_List {
 
 
     @ApiModelProperty(required = true, readOnly = true, value = "Total unread subjects")
-    public int unread_total = Model_Notification.find.where().eq("was_read", false).eq("person.id", Controller_Security.getPerson().id).findRowCount();
+    public int unread_total = Model_Notification.find.where().eq("was_read", false).eq("person.id", Controller_Security.get_person().id).findRowCount();
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
