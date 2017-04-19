@@ -4,6 +4,8 @@ package utilities.swagger.documentationClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.enums.Enum_Payment_method;
+import utilities.enums.Enum_Payment_mode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +26,10 @@ public class Swagger_Product_New {
 
 
     @ApiModelProperty(required = false, value =  "Required: only in if payment_mode_required is true")
-    public String payment_mode;
+    public Enum_Payment_mode payment_mode;
 
     @ApiModelProperty(required = false, value =  "Required: only in if payment_method_required is true  values =>[bank_transfer, credit_card]")
-    public String payment_method;
+    public Enum_Payment_method payment_method;
 
     @Constraints.MinLength(value = 4, message = "The full_name must have at least 4 characters")
     @ApiModelProperty(required = false, value =  "Can be null")
@@ -100,4 +102,7 @@ public class Swagger_Product_New {
 
     @ApiModelProperty(required = false, value = "List of Ids of Extensions")
     public List<String> extension_ids = new ArrayList<>();
+
+    @ApiModelProperty(hidden = true)
+    public String person_id;      // For administration, when creating product for another user
 }

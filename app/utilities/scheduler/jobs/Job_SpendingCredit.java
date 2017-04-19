@@ -1,6 +1,5 @@
 package utilities.scheduler.jobs;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import models.Model_Product;
 import models.Model_Invoice;
 import models.Model_InvoiceItem;
@@ -8,21 +7,13 @@ import models.Model_ProductExtension;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.api.Play;
-import play.libs.F;
-import play.libs.Json;
-import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
-import utilities.Server;
 import utilities.enums.Enum_Currency;
 import utilities.enums.Enum_Payment_method;
-import utilities.enums.Enum_Payment_status;
+import utilities.enums.Enum_Payment_warning;
 import utilities.fakturoid.Utilities_Fakturoid_Controller;
 import utilities.goPay.Utilities_GoPay_Controller;
-import utilities.goPay.helps_objects.GoPay_Recurrence;
 import utilities.loggy.Loggy;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +43,7 @@ public class Job_SpendingCredit implements Job {
                 Date created = new Date(new Date().getTime() - TimeUnit.HOURS.toMillis(16));
 
                 int total =  Model_Product.find.where().lt("created", created)
-                        .isNotNull("extensions.id")
+                        .isNotNull("extensions.id").eq("active", true)
                         .findRowCount();
 
                 if (total != 0) {
@@ -68,16 +59,15 @@ public class Job_SpendingCredit implements Job {
                     /*
                      * Filter slouží k hledání těch produktů, kde by mělo dojít ke stržení kreditu
                      * Kredit se strhává u všech produktů, starších než 16 hodin (Aby někdo před půlnocí nezaložil produkt a hned se mu nestrhla raketa)
-                     *
                      */
                         List<Model_Product> products = Model_Product.find.where()
-                                .isNotNull("extensions.id")
+                                .isNotNull("extensions.id").eq("active", true)
                                 .lt("created", created)
                                 .order("created")
                                 .findPagedList(page, 25)
                                 .getList();
 
-                        products.forEach(Job_SpendingCredit::spending_credit);
+                        products.forEach(Job_SpendingCredit::spend);
                     }
                 }
             } catch (Exception e) {
@@ -89,257 +79,238 @@ public class Job_SpendingCredit implements Job {
     };
 
     /**
-     * Vezmou se všechny připojené Extensions sečte se jejich cena a odečte se z účtu. Pak se IFem porovná co sá má dít dál.
+     * Vezmou se všechny připojené Extensions sečte se jejich cena a odečte se z účtu.
      */
-    private static void spending_credit(Model_Product product){
+    private static void spend(Model_Product product){
+        try {
 
-        logger.info("Job_SpendingCredit:: spending_credit: Product ID: ", product.id );
-        double total_spending = 0.0;
+            logger.info("Job_SpendingCredit:: spend: product ID: {}", product.id );
+            double total_spending = 0.0;
+            int daily = 1; //The number "1" determines how many times on one day is credit spent.
 
-        for(Model_ProductExtension extension : product.extensions){
+            for(Model_ProductExtension extension : product.extensions){
                 total_spending += extension.getPrice();
-        }
-
-        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: {} total spending: {}", product.id, total_spending);
-        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: " + product.id + " state before: " + product.remaining_credit );
-        product.remaining_credit -= total_spending;
-        product.update();
-
-        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: " + product.id + " actual state: " + product.remaining_credit );
-
-
-        // Režim bankovního převodu - vše musí být ve výrazném přehstihnu
-        if(product.method == Enum_Payment_method.bank_transfer) {
-
-            logger.debug("Job_SpendingCredit:: spending_credit: Product ID:: " +product.id + " bank transfer");
-
-            if(product.remaining_credit < 0 && ((-product.remaining_credit)*20 > total_spending) ){
-                logger.warn("Job_SpendingCredit:: spending_credit: Product ID:: bank transfer::" +product.id + " The account is in the minus 20 times the average spending");
-                // Pošlu notifikaci a Email
-
-                // Zablokuji účet
-                return;
             }
 
-            if(product.remaining_credit < 0){
-                logger.warn("Job_SpendingCredit:: spending_credit: Product ID:: bank transfer:: " +product.id + " The account is in the minus");
-                // Pošlu notifikaci a Email
+            logger.debug("Job_SpendingCredit:: spend: total spending: {}", total_spending);
+            logger.debug("Job_SpendingCredit:: spend: state before: {}", product.credit);
 
-                return;
+            product.credit -= total_spending;
+            product.update();
+
+            logger.debug("Job_SpendingCredit:: spend: actual state: {}", product.credit);
+
+            double daily_spending = daily * total_spending;
+
+            double double_days = product.credit / daily_spending;
+
+            int days; // Determines how many days will credit suffice.
+
+            if (double_days >= 0) days = (int) (double_days + 0.5);
+            else days = (int) (double_days - 0.5);
+
+            switch (product.business_model){
+                case saas:{
+
+                    spendCreditSaas(product, daily_spending, days);
+                    break;
+                }
+                case fee:{
+
+                    spendCreditFee(product, days);
+                    break;
+                }
+                case lifelong:{
+
+                    spendCreditLifelong(product);
+                    break;
+                }
+                default: {
+                    throw new Exception("Could not determine the business model. Fail to check credit on product: " + product.name +  " with id: " + product.id);
+                }
             }
-
-            if(product.remaining_credit < 10 * total_spending){
-                logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " The Product is close to zero in financial balance");
-                // Pošlu notifikaci a Email
-
-                return;
-            }
-
-
-            // Pokud mi zbývá kreditu na méně než 14 dní - vytvořím fakturu
-            if (product.remaining_credit < 14 * total_spending) {
-
-                logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " It is time to send an invoice");
-                // Vytvořím zálohovou fakturu
-
-                // Pošlu notifikaci
-
-                // Pošlu email
-
-                return;
-            }
-
-            logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " The financial reserves are sufficient. Just send a notification");
-
-
-        }else if(product.method == Enum_Payment_method.credit_card){
-
-            logger.debug("Spending_Credit_Every_Day:: Product ID: " +product.id + " credit card");
-
-            if(product.remaining_credit < 0 && ((-product.remaining_credit)*10 > total_spending) ){
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " The account is in the minus 10 times the average spending");
-                // Pošlu notifikaci a Email
-
-                // Zablokuji účet
-                return;
-            }
-
-            if(product.remaining_credit < 0){
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card:: " +product.id + " The account is in the minus");
-                // Pošlu notifikaci a Email
-
-                return;
-            }
-
-            if(product.remaining_credit < 5 * total_spending && product.invoices().size() > 0 && product.invoices().get(0).status == Enum_Payment_status.created_waited){
-
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " Close to zero. Invoice created - but failed to pay the credit card before");
-
-                // pošlu email
-
-                // pošlu notifikaci
-
-                return;
-            }
-
-            if(product.remaining_credit < 5 * total_spending){
-
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " The Product is close to zero in financial balance");
-
-                // Vytvořím zálohovou fakturu
-
-                // Strhnu prachy
-
-                // Pokud se povede
-
-                // Pokud se nepovede
-
-                // Pošlu notifikaci
-
-                // Pošlu email
-
-                return;
-            }
-
+        } catch (Exception e) {
+            Loggy.internalServerError("Job_SpendingCredit:: spend:", e);
         }
 
     }
-    
-    
-    public void do_on_Demand_payment(){
-        logger.debug("Starting with procedure ON_DEMAND - taking money from Credit-Card");
 
-        Calendar cal = Calendar.getInstance();
-        List<Model_Product> products_with_on_Demands = Model_Product.find.where().eq("on_demand", true).where().eq("monthly_day_period", (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7)  ).findList();
+    private static void spendCreditSaas(Model_Product product, double daily_spending, int days){
 
-        logger.debug("Founded " + products_with_on_Demands.size() + " procedures with 4 days to end of Account");
+        logger.debug("Job_SpendingCredit:: spendCreditSaas: daily_spending: {}, days: {}", daily_spending, days);
 
+        Model_Invoice invoice = product.pending_invoice();
 
-        // String[] monthNames_cz = {"Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"};
-        String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+        // Bank transfer - invoice and reminders must be sent in advance
+        if(product.method == Enum_Payment_method.bank_transfer) {
 
+            logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer");
 
-        for(Model_Product product : products_with_on_Demands){
+            // If credit will suffice only for 14 days - make new invoice
+            if (invoice == null && days < 14){
 
-            logger.debug("Updating procedure on user product " + product.name + " id " + product.id);
+                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer: It is time to send an invoice");
 
-            logger.debug("Creating Invoice");
+                invoice = new Model_Invoice();
+                invoice.method = product.method;
+                invoice.product = product;
 
-            // Vytovřím fakturu
-            Model_Invoice invoice = new Model_Invoice();
+                Model_InvoiceItem invoice_item = new Model_InvoiceItem();
+                invoice_item.name = product.product_type() + " in Mode(" + product.mode.name() + ")";
+                invoice_item.unit_price = daily_spending * 30;
+                invoice_item.quantity = (long) 1;
+                invoice_item.unit_name = "Currency";
+                invoice_item.currency = Enum_Currency.USD;
 
+                invoice.invoice_items.add(invoice_item);
 
-            logger.debug("Creating Invoice in Database");
-            Model_InvoiceItem invoice_item = new Model_InvoiceItem();
+                invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
 
-            invoice_item.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
-            invoice_item.unit_price = product.tariff.total_per_month(); // TODO
-            invoice_item.quantity = (long) 1;
-            invoice_item.unit_name = "Currency";
-            invoice_item.currency = Enum_Currency.USD;
+                // TODO Pošlu notifikaci
 
-            invoice.invoice_items.add(invoice_item);
-            invoice.proforma = true;
-            invoice.status = Enum_Payment_status.sent;
-            invoice.created = new Date();
-            invoice.method = product.method;
+                Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
 
-            product.invoices.add(invoice);
-            product.update();
-
-
-            logger.debug("Creating Invoice on Fakturoid");
-            Utilities_Fakturoid_Controller.create_proforma(product, invoice);
-
-
-            logger.debug("Creating GoPay_Recurrence");
-            GoPay_Recurrence recurrence = new GoPay_Recurrence();
-            recurrence.amount = Math.round(product.tariff.total_per_month()*100); // TODO
-            recurrence.currency = Enum_Currency.USD;
-            recurrence.setItems(invoice.invoice_items);
-            recurrence.order_number  = invoice.invoice_number;
-            recurrence.order_description =  "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
-
-            // Token
-            logger.debug("Taking Token");
-            String local_token = Utilities_GoPay_Controller.getToken();
-
-            if(local_token == null) {
-                logger.error("Local Token is null!!!");
-                break;
+                return;
             }
 
+            if (invoice == null) {
+                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer: The financial reserves are sufficient. Just send a notification");
+                return;
+            }
 
-            // Odeslánížádosti o stržení platby
-            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-            F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url +  "/payments/payment/" + product.gopay_id + "/create-recurrence")
-                    .setContentType("application/json")
-                    .setHeader("Accept", "application/json")
-                    .setHeader("Authorization" , "Bearer " + local_token)
-                    .setRequestTimeout(2500)
-                    .post(Json.toJson(recurrence));
+            if(invoice.warning == Enum_Payment_warning.zero_balance && product.credit < 0 && days < -20) {
+                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer: The product is in minus 20 times the average spending");
 
-            logger.debug("Sending request for new payment!");
-            WSResponse response = responsePromise.get(1000);
-
-            /**
-             350	Stržení platby selhalo
-             351	Stržení platby provedeno
-             352	Zrušení přeautorizace selhalo
-             353	Zrušení předautorizace provedeno
-             340	Provedení opakované platby selhalo
-             341	Provedení opakované platby není podporováno
-             342	Opakování platby zastaveno
-             343	Překročen časový limit počtu provedení opakované platby
-             330	Platbu nelze vrátit
-             331	Platbu nelze vrátit
-             332	Chybná částka
-             333	Nedostatek peněz na účtu
-             301	Platbu nelze vytvořit
-             302	Platbu nelze provést
-             303	Platba v chybném stavu
-             304	Platba nebyla nalezena
-             */
-
-            // Platba byla úspěšná
-            if(response.getStatus() ==  500 ) {
-
-                JsonNode json_response =  response.asJson();
-                logger.debug("Request was successful");
-
-                invoice.gopay_id = json_response.get("parent_id").asLong();
-                invoice.gopay_order_number = json_response.get("order_number").asText();
-
-                logger.debug("Removing proforma from Fakturoid");
-                if( !Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  logger.error("Error Removing proforma from Fakturoid");
-
-                // Vytvořit fakturu
-                logger.debug("Creating invoice from proforma in Fakturoid");
-                Utilities_Fakturoid_Controller.create_paid_invoice(product,invoice);
-
-                // Uhradit Fakturu
-                logger.debug("Changing state on Invoice to paid");
-                if(! Utilities_Fakturoid_Controller.fakturoid_post("/invoices/"+  invoice.facturoid_invoice_id +  "/fire.json?event=pay")) logger.error("Faktura nebyla změněna na uhrazenou dojde tedy k inkonzistenntímu stavu");
-                invoice.proforma = false;
+                invoice.warning = Enum_Payment_warning.deactivation;
                 invoice.update();
 
-                Utilities_Fakturoid_Controller.send_Invoice_to_Email(invoice);
+                // TODO Pošlu notifikaci
 
-            }
-            else if(response.getStatus() == 200) {
+                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                        "We are sorry to inform you, that you have reached negative credit limit. Your services are no longer supported. We activate your product again, when we receive payment for your invoice.");
 
-                logger.warn("Not enough money on Account");
-                logger.warn("Set a time limit protection for account");
-                logger.warn("Sending email with Proforma and with request for MONEY!!!! MONEY!!! ");
-
-                Utilities_Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
-            }
-            else{
-                logger.error("Unknown Error");
-                logger.error("Request status: " + response.getStatus() );
-                logger.error("Request Body: "   + response.getBody() );
+                product.active = false;
+                product.update();
+                return;
             }
 
+            if(invoice.warning == Enum_Payment_warning.first && product.credit < 0){
+                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer: The product is in negative credit balance");
+
+                invoice.warning = Enum_Payment_warning.zero_balance;
+                invoice.update();
+
+                // TODO Pošlu notifikaci
+
+                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                        "You have reached zero credit balance. Your services will be supported for next 20 days. If we do not receive your payment till then, we will have to deactivate your services.");
+
+                return;
+            }
+
+            if(invoice.warning == Enum_Payment_warning.none && days < 7 ){
+                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer:  The Product is close to zero in financial balance");
+
+                invoice.warning = Enum_Payment_warning.first;
+                invoice.update();
+
+                // TODO Pošlu notifikaci
+
+                Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
+            }
+
+        }else if(product.method == Enum_Payment_method.credit_card){
+
+            logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card");
+
+            if(invoice == null && days < 5){
+
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card: The Product is close to zero in financial balance. Credit will suffice for {}", days);
+
+                invoice = new Model_Invoice();
+                invoice.method = product.method;
+                invoice.product = product;
+
+                Model_InvoiceItem invoice_item = new Model_InvoiceItem();
+                invoice_item.name = product.product_type() + " in Mode(" + product.mode.name() + ")";
+                invoice_item.unit_price = daily_spending * 30;
+                invoice_item.quantity = (long) 1;
+                invoice_item.unit_name = "Currency";
+                invoice_item.currency = Enum_Currency.USD;
+
+                invoice.invoice_items.add(invoice_item);
+
+                // TODO Pošlu notifikaci
+
+                invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
+
+                if (product.on_demand) {
+                    try {
+
+                        Utilities_GoPay_Controller.onDemandPayment(invoice);
+
+                    } catch (Exception e) {
+                        Loggy.internalServerError("Job_SpendingCredit:: spendCreditSaas:", e);
+
+                        invoice = Utilities_GoPay_Controller.singlePayment("Substitute payment", product, invoice);
+
+                        Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                                "We could not take money from your credit card due to some problems. Please use the manual substitute payment through financial section of your Byzance account.");
+                    }
+                } else {
+
+                    invoice = Utilities_GoPay_Controller.singlePayment("First Payment", product, invoice);
+
+                    // TODO notifikace autorizace platby
+
+                    Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
+                }
+
+                return;
+            }
+
+            if (invoice == null){
+                logger.warn("Job_SpendingCredit:: spendCreditSaas: credit card: The financial reserves are sufficient. Just send a notification");
+                return;
+            }
+
+            if(invoice.warning == Enum_Payment_warning.zero_balance && product.credit < 0 && days < -10 ){
+                logger.warn("Job_SpendingCredit:: spendCreditSaas: credit card: The product is in the minus 10 times the average spending");
+
+                invoice.warning = Enum_Payment_warning.deactivation;
+                invoice.update();
+
+                // TODO Pošlu notifikaci
+
+                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                        "We are sorry to inform you, that you have reached negative credit limit. Your services are no longer supported. We activate your product again, when we receive payment for your invoice.");
+
+                product.active = false;
+                product.update();
+                return;
+            }
+
+            if(invoice.warning == Enum_Payment_warning.none && product.credit < 0){
+                logger.warn("Job_SpendingCredit:: spendCreditSaas: credit card: The account is in the minus");
+
+                invoice.warning = Enum_Payment_warning.zero_balance;
+                invoice.update();
+
+                // TODO Pošlu notifikaci
+
+                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                        "You have reached zero credit balance. Your services will be supported for next 10 days. If we do not receive your payment till then, we will have to deactivate your services.");
+            }
         }
+    }
+
+    private static void spendCreditFee(Model_Product product, int days){
+
+        // TODO
+    }
+
+    private static void spendCreditLifelong(Model_Product product){
+
+        // TODO
     }
 }

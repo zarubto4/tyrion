@@ -34,6 +34,7 @@ import views.html.hardware_generator.generator_main;
 import views.html.helpdesk_tool.project_detail;
 import views.html.helpdesk_tool.user_summary;
 import views.html.helpdesk_tool.product_detail;
+import views.html.helpdesk_tool.invoice;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
 import views.html.publiccprograms.approvalprocedurecprogram;
@@ -640,11 +641,11 @@ public class Controller_Dashboard extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result mac_adress_generator(){
+    public Result mac_address_generator(){
         try {
 
-            Html mac_adress_content = generator_main.render();
-            return return_page(mac_adress_content);
+            Html content = generator_main.render();
+            return return_page(content);
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -683,10 +684,25 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_Product product = Model_Product.get_byId(id);
-            if (product == null) return GlobalResult.notFoundObject("Project not found");
+            if (product == null) return GlobalResult.notFoundObject("Product not found");
 
             Html product_detail_content = product_detail.render(product);
             return return_page(product_detail_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result invoice(String id){
+        try {
+
+            Model_Invoice inv = Model_Invoice.find.byId(id);
+            if (inv == null) return GlobalResult.notFoundObject("Invoice not found");
+
+            Html content = invoice.render(inv);
+            return return_page(content);
 
         }catch (Exception e){
             return ok();
@@ -764,13 +780,13 @@ public class Controller_Dashboard extends Controller {
     }
 
     @Security.Authenticated(Secured_Admin.class)
-    public Result tariff_edit(String general_tariff_id){
+    public Result tariff_edit(String tariff_id){
         try {
 
-            Model_Tariff tariff = Model_Tariff.find.byId(general_tariff_id);
+            Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
 
-            Html list_of_tariffs = tariff_edit.render(tariff);
-            return return_page(list_of_tariffs);
+            Html content = tariff_edit.render(tariff);
+            return return_page(content);
 
         }catch (Exception e){
             e.printStackTrace();

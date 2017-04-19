@@ -23,7 +23,7 @@ public class Swagger_ProductExtension_New {
     public String description;
 
     @Constraints.Required
-    @ApiModelProperty(required = true, value = "Name of extension")
+    @ApiModelProperty(required = true, value = "Color of extension")
     public String color;
 
     @Constraints.Required

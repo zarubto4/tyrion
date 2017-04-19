@@ -438,7 +438,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.payment_required = false;
 
             tariff_1.company_details_required = false;
-            tariff_1.payment_mode_required = true;
+            tariff_1.payment_mode_required = false;
             tariff_1.payment_method_required = false;
 
             tariff_1.credit_card_support = false;
@@ -490,7 +490,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_1.removed = false;
             extensions_1.color = "blue-madison";
             extensions_1.tariff_included = tariff_1;
-            extensions_1.config = "{\"price\":0.6,\"count\":5}";
+            extensions_1.config = "{\"price\":1.0,\"count\":1}";
             extensions_1.save();
 
 
@@ -502,7 +502,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_2.removed = false;
             extensions_2.color = "blue-chambray";
             extensions_2.tariff_optional = tariff_1;
-            extensions_2.config = "{\"price\":0.6,\"count\":5}";
+            extensions_2.config = "{\"price\":0.4,\"count\":2}";
             extensions_2.save();
 
             // Pro geeky
@@ -517,7 +517,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             geek_tariff.color = "green-jungle";
 
             geek_tariff.payment_required = false;
-            geek_tariff.credit_for_beginning = 5.00;
+            geek_tariff.credit_for_beginning = 20.00;
 
             geek_tariff.company_details_required = false;
             geek_tariff.payment_mode_required = true;
@@ -643,27 +643,15 @@ public class Utilities_Demo_data_Controller extends Controller {
             label_15.tariff = business_tariff;
             label_15.save();
 
-
-            Model_ProductExtension business_tariff_extensions_5 = new Model_ProductExtension();
-            business_tariff_extensions_5.name = "Extension sadas";
-            business_tariff_extensions_5.description = "description extension 1";
-            business_tariff_extensions_5.type = Enum_ExtensionType.Project;
-            business_tariff_extensions_5.active = true;
-            business_tariff_extensions_5.removed = false;
-            business_tariff_extensions_5.color = "blue-chambray";
-            business_tariff_extensions_5.tariff_included = business_tariff;
-            business_tariff_extensions_5.config = "{\"price\":0.6,\"count\":5}";
-            business_tariff_extensions_5.save();
-
             Model_ProductExtension business_tariff_extensions_4 = new Model_ProductExtension();
-            business_tariff_extensions_4.name = "Extension asdd";
+            business_tariff_extensions_4.name = "Extension Project";
             business_tariff_extensions_4.description = "description extension sadafdfv";
             business_tariff_extensions_4.type = Enum_ExtensionType.Project;
             business_tariff_extensions_4.active = true;
             business_tariff_extensions_4.removed = false;
             business_tariff_extensions_4.color = "blue-chambray";
             business_tariff_extensions_4.tariff_included = business_tariff;
-            business_tariff_extensions_4.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff_extensions_4.config = "{\"price\":2.6,\"count\":4}";
             business_tariff_extensions_4.save();
 
 
@@ -714,8 +702,8 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             business_tariff_2.color = "green-sharp";
 
-            business_tariff_2.payment_required = true;
-            business_tariff_2.credit_for_beginning = 0.0;
+            business_tariff_2.payment_required = false;
+            business_tariff_2.credit_for_beginning = 500.0;
 
             business_tariff_2.company_details_required = true;
             business_tariff_2.payment_mode_required = true;
@@ -867,12 +855,15 @@ public class Utilities_Demo_data_Controller extends Controller {
             // Vytvoří tarif
             Model_Product product = new Model_Product();
             product.tariff = Model_Tariff.find.where().eq("identifier","alpha").findUnique();
+            product.business_model = Enum_BusinessModel.saas;
             product.name = "Pepkova velkolepá Alfa";
             product.active  = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.method  = Enum_Payment_method.free;
             product.mode    = Enum_Payment_mode.free;
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
             payment_details.person = person;
+            payment_details.full_name = person.full_name;
+            payment_details.invoice_email = person.mail;
             payment_details.company_account = false;
             payment_details.street = "Karlovo náměsí";
             payment_details.street_number = "457";

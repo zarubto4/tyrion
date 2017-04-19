@@ -4,11 +4,13 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_status;
+import utilities.enums.Enum_Payment_warning;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -25,52 +27,69 @@ public class Model_Invoice extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                           @Id  public String id;                         // 5
+        @ApiModelProperty(required = true, readOnly = true) @Id public String id;                         // 5
 
-                                                   @JsonIgnore  public Long   facturoid_invoice_id;       // Id určené ze strany Fakturid
-                                                   @JsonIgnore  public String facturoid_pdf_url;          // Adresa ke stáhnutí faktury
-                                                                public String invoice_number;             // 2016-0001 - Generuje Fakutoid
+                                                   @JsonIgnore  public Long   fakturoid_id;                 // Id určené ze strany Fakturoid
+                                                   @JsonIgnore  public String fakturoid_pdf_url;          // Adresa ke stáhnutí faktury
+            @ApiModelProperty(required = true, readOnly = true) public String invoice_number;             // 2016-0001 - Generuje Fakturoid
 
                                                    @JsonIgnore  public Long   gopay_id;                   // 1213231123
                                                    @JsonIgnore  public String gopay_order_number;         // ON-783837426-1469877748551
+                                                   @JsonIgnore  public String gw_url;
 
                                                    @JsonIgnore  public boolean proforma;
 
-                                                                public Date created;               // 4.5.2016
+                                                   @JsonIgnore  public Long   proforma_id;                 // Id proformy ze které je faktura
+                                                   @JsonIgnore  public String proforma_pdf_url;
 
+    @ApiModelProperty(required = true, readOnly = true,
+            dataType = "integer", value = "UNIX time in ms",
+            example = "1466163478925")                          public Date created;
 
+    @ApiModelProperty(required = false, readOnly = true,
+            dataType = "integer", value = "UNIX time in ms",
+            example = "1466163478925")                          public Date paid;
+
+    @ApiModelProperty(required = true, readOnly = true,
+            dataType = "integer", value = "UNIX time in ms",
+            example = "1466163478925")                          public Date overdue;
+
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)              public Model_Product product;
 
     @JsonIgnore @OneToMany(mappedBy="invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_InvoiceItem> invoice_items = new ArrayList<>();
 
-    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)                       public Model_Product product;
-
                                                         @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_status status;
                                                         @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_method method;
+                                                        @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_warning warning;
 
 
 /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
 
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
-    public String pdf_link()  {  return facturoid_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/" + id : null; }
+    public String pdf_link()  {  return fakturoid_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/" + id : null; }
 
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
     public boolean require_payment()  {
-        return status.name().equals(Enum_Payment_status.sent.name())
-               || status.name().equals(Enum_Payment_status.created_waited.name()
-        )  ;
+        return status == Enum_Payment_status.pending || status == Enum_Payment_status.overdue;
     }
 
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
+    public String gw_url()  {
+        if (status == Enum_Payment_status.pending || status == Enum_Payment_status.overdue) return this.gw_url;
+
+        return null;
+    }
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
     public String payment_status(){
 
         switch (status) {
-            case paid           : return  "Paid";
-            case sent           : return  "Please pay this invoices.";
-            case created_waited : return  "Sent to your accounting officer we are waiting for confirmation from the bank_transfer.";
-            case cancelled      : return  "Invoice is canceled.";
+            case paid           : return  "Invoice is paid.";
+            case pending        : return  "Invoice needs to be paid.";
+            case overdue        : return  "Invoice is overdue.";
+            case canceled       : return  "Invoice is canceled.";
             default             : return  "Undefined state";
         }
     }
@@ -80,13 +99,16 @@ public class Model_Invoice extends Model {
         switch (method) {
             case bank_transfer : return  "Bank transfer.";
             case credit_card   : return  "Credit Card Payment.";
-            default            : return   "Undefined state";
+            default            : return  "Undefined state";
         }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public List<Model_InvoiceItem> getInvoice_items() {
-        return invoice_items;
+    public List<Model_InvoiceItem> getInvoiceItems() {
+
+        if(invoice_items != null) return invoice_items;
+
+        return Model_InvoiceItem.find.where().eq("invoice.id", this.id).findList();
     }
 
 
@@ -105,6 +127,7 @@ public class Model_Invoice extends Model {
 
     @JsonIgnore
     public Model_Product getProduct() {
+        if (product == null) product = Model_Product.get_byInvoice(this.id);
         return product;
     }
 
@@ -115,6 +138,8 @@ public class Model_Invoice extends Model {
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save() {
+
+        this.created = new Date();
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
@@ -128,8 +153,8 @@ public class Model_Invoice extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission() {  return true;  }
-    @JsonIgnore @Transient public boolean read_permission()   {  return true;  }
+    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().payment_details.person.id.equals(Controller_Security.getPerson().id);}
+    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().payment_details.person.id.equals(Controller_Security.getPerson().id);}
     @JsonIgnore @Transient public boolean send_reminder()     {  return true;  }
     @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
     @JsonIgnore @Transient public boolean delete_permission() {  return true;  }

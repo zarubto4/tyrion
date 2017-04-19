@@ -1,91 +1,87 @@
 @import models.Model_Product
+@import utilities.enums.Enum_ExtensionType
 
 @(product: Model_Product)
 
 <section class="content-header">
-    <h1> @product.name : ID: @product.subscription_id  </h1>
+    <h1> @product.name </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
-        <li class="active"><i class="fa fa-wrench"></i> Helpdesk Tool </li>
-        <li class="active"><i class="fa fa-wrench"></i> @product.name : ID: @product.subscription_id </li>
+        <li><a href="/admin/helpdesk_tool?email=@product.payment_details.invoice_email"><i class="fa fa-wrench"></i> Helpdesk Tool </a></li>
+        <li class="active"><i class="fa fa-wrench"></i> @product.name </li>
     </ol>
-
 </section>
 
 <section class="content">
-
     <div class="row">
-
         <div class="col-md-12">
             <div class="box box-default">
-
                 <div class="nav-tabs-custom">
                     <ul class="nav nav-tabs">
                         <li class="active"><a href="#product_details" data-toggle="tab">Product Details</a></li>
                         <li><a href="#extensions" data-toggle="tab">Extensions</a></li>
                         <li><a href="#invoices" data-toggle="tab">Invoices</a></li>
-                        <li><a href="#projects" data-toggle="tab">Project</a></li>
+                        <li><a href="#history" data-toggle="tab">Financial History</a></li>
+                        <li><a href="#projects" data-toggle="tab">Projects</a></li>
                         <li class="dropdown">
                             <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                                Dropdown <span class="caret"></span>
+                                Actions <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Action</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Another action</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Something else here</a></li>
+                                @if(product.active){
+                                    <li role="presentation"><a id="activationButton" role="menuitem" tabindex="-1" onclick="deactivateProduct()">Deactivate</a></li>
+                                } else {
+                                    <li role="presentation"><a id="activationButton" role="menuitem" tabindex="-1" onclick="activateProduct()">Activate</a></li>
+                                }
+                                <li role="presentation"><a role="menuitem" tabindex="-1" onclick="terminateOnDemand()">Terminate On Demand</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" data-toggle="modal" data-target="#newExtensionModal">Add extension</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" data-toggle="modal" data-target="#newProjectModal">Create Project</a></li>
                                 <li role="presentation" class="divider"></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Separated link</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" onclick="alert('TODO');">Open in Becki</a></li>
                             </ul>
                         </li>
-                        <li class="pull-right"><a href="#" class="text-muted"><i class="fa fa-gear"></i></a></li>
                     </ul>
                     <div class="tab-content">
-
                         <div class="tab-pane active" id="product_details">
-
                             <div class="row">
-
                                 <div class="col-md-4">
                                     <div class="box box-default">
                                         <table class="table table-bordered table-hover">
                                             <tr>
-                                                <td>Individual name</td>
+                                                <td>Name</td>
                                                 <td>@product.name</td>
                                             </tr>
-
                                             <tr>
                                                 <td>Is Active</td>
-                                                <td>@product.active</td>
+                                                <td>@if(product.active){
+                                                    <small id="activity" class="label bg-green">true</small>
+                                                } else {
+                                                    <small id="activity" class="label bg-red">false</small>
+                                                }</td>
                                             </tr>
-
                                             <tr>
-                                                <td>General Tariff Name</td>
+                                                <td>Tariff</td>
                                                 <td>@product.tariff.name</td>
                                             </tr>
-
                                             <tr>
                                                 <td>Payment Mode</td>
                                                 <td>@product.mode.name()</td>
                                             </tr>
-
                                             <tr>
                                                 <td>Payment Method</td>
                                                 <td>@product.method.name()</td>
                                             </tr>
-
                                             <tr>
                                                 <td>Subscription ID</td>
                                                 <td>@product.subscription_id</td>
                                             </tr>
-
                                             <tr>
                                                 <td>Fakturoid ID</td>
                                                 <td>@product.fakturoid_subject_id</td>
                                             </tr>
-
                                             <tr>
                                                 <td>GoPay ID</td>
-                                                <td>@product.gopay_id</td>
+                                                <td id="gopay_id">@product.gopay_id</td>
                                             </tr>
                                         </table>
                                     </div>
@@ -95,30 +91,24 @@
 
                                         <table class="table table-bordered table-hover">
                                             <tr>
-                                                <td>Remaing Credit</td>
-                                                <td>@product.remaining_credit</td>
+                                                <td>Credit</td>
+                                                <td>@product.credit</td>
                                             </tr>
-
                                             <tr>
                                                 <td>Paid until</td>
                                                 <td>TODO</td>
                                             </tr>
-
                                             <tr>
                                                 <td>Currency</td>
                                                 <td>TODO</td>
                                             </tr>
-
                                         </table>
                                     </div>
                                 </div>
-
                                 <div class="col-md-4">
                                     <div class="box box-success">
-
-
                                             <table class="table table-bordered table-hover">
-                                                @if(product.payment_details.company_account == true) {
+                                                @if(product.payment_details.company_account) {
                                                     <tr>
                                                         <td>Owner</td>
                                                         <td>@product.payment_details.person.mail</td>
@@ -155,7 +145,7 @@
                                                     </tr>
                                                 }
                                                 <tr>
-                                                    <td>Invoice EMail</td>
+                                                    <td>Invoice Email</td>
                                                     <td>@product.payment_details.invoice_email</td>
                                                 </tr>
                                                 <tr>
@@ -163,7 +153,7 @@
                                                     <td>@product.payment_details.street</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Steet Number</td>
+                                                    <td>Street Number</td>
                                                     <td>@product.payment_details.street_number</td>
                                                 </tr>
                                                 <tr>
@@ -178,142 +168,269 @@
                                                     <td>Country</td>
                                                     <td>@product.payment_details.country</td>
                                                 </tr>
-
-
                                             </table>
-
                                     </div>
                                 </div>
-
                             </div>
                         </div>
-
-
                         <div class="tab-pane" id="extensions">
-
-                            <table id="role_table" class="table table-bordered table-hover">
-
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Price</th>
-                                    <th>Active</th>
-                                </tr>
-
-                                @for( extension <- product.extensions) {
+                            <div id="extensionTableWrapper">
+                                <table id="extensionTable" class="table table-bordered table-hover">
                                     <tr>
-                                        <td>@extension.id</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td>@extension.active</td>
-                                        <td><button value="" class="btn btn-primary" type="button" onclick="">Open</button></td>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Count</th>
+                                        <th>Price (daily)</th>
+                                        <th>Active</th>
+                                        <th>Delete</th>
                                     </tr>
-                                }
-                            </table>
-
+                                    @for(extension <- product.extensions) {
+                                        <tr>
+                                            <td>@extension.id</td>
+                                            <td>@extension.getExtensionTypeName</td>
+                                            <td>@extension.getExtensionType.getDescription</td>
+                                            <td>@extension.getConfig.count</td>
+                                            <td>@extension.getPrice</td>
+                                            <td>@if(extension.active){
+                                                <button class="btn btn-xs btn-block btn-success" type="button" onclick="deactivateExtension('@extension.id')" title="Deactivate">Activated</button>
+                                            } else {
+                                                <button class="btn btn-xs btn-block btn-danger" type="button" onclick="activateExtension('@extension.id')" title="Activate">Deactivated</button>
+                                            }</td>
+                                            <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteExtension('@extension.id')"><i class="fa fa-times"></i></button></td>
+                                        </tr>
+                                    }
+                                </table>
+                            </div>
                         </div>
-
-
                         <div class="tab-pane" id="invoices">
                             <div class="box-body">
-
-                                    <table id="invoice_table" class="table table-bordered table-hover">
-
+                                <table id="invoice_table" class="table table-bordered table-hover">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Invoice number</th>
+                                        <th>Status</th>
+                                        <th>Created (date)</th>
+                                        <th>Paid (date)</th>
+                                        <th>Overdue (date)</th>
+                                        <th>Settings</th>
+                                    </tr>
+                                    @for(invoice <- product.invoices ) {
                                         <tr>
-                                            <th>DB ID</th>
-                                            <th>Date</th>
-
-                                            <th>Fakturoid ID</th>
-                                            <th>Invoice number</th>
-
-                                            <th>Go Pay ID</th>
-                                            <th>Go Pay ON</th>
-
-                                            <th>Proforma</th>
-
-                                            <th>Status</th>
-                                            <th>Payment Method</th>
-
-                                            <th>Setting</th>
+                                            <td>@invoice.id</td>
+                                            <td>@invoice.invoice_number</td>
+                                            <td>@invoice.status.name()</td>
+                                            <td>@invoice.created</td>
+                                            <td>@invoice.paid</td>
+                                            <td>@invoice.overdue</td>
+                                            <td>
+                                                <a href="@routes.Controller_Dashboard.invoice(invoice.id)"><button class="btn btn-xs btn-primary btn-block" type="button" title="Open Invoice"><i class="fa fa-wrench"></i></button></a>
+                                            </td>
                                         </tr>
-
-                                        @for( invoice <- product.invoices ) {
-                                            <tr>
-                                                <td>@invoice.id</td>
-                                                <td>@invoice.created</td>
-
-                                                <td>@invoice.facturoid_invoice_id</td>
-                                                <td>@invoice.invoice_number</td>
-
-                                                <td>@invoice.gopay_id</td>
-                                                <td>@invoice.gopay_order_number</td>
-
-                                                <td>@invoice.proforma</td>
-
-                                                <td>@invoice.status.name()</td>
-                                                <td>@invoice.method.name()</td>
-
-                                                <td>
-                                                    <div class="btn-group">
-                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                            <span class="caret"></span>
-                                                            <span class="sr-only">Toggle Dropdown</span>
-                                                        </button>
-                                                        <ul class="dropdown-menu" role="menu">
-                                                            <li><a href="#">Remove</a></li>
-                                                            <li><a href="#">Mark As Paid</a></li>
-                                                            <li><a href="#">Edit Invoice</a></li>
-                                                            @if(invoice.facturoid_pdf_url != null) {
-                                                                <li class="divider"></li>
-                                                                <li>
-                                                                    <a href="/invoice/pdf/@invoice.id" target="_blank">Download Invoice</a>
-                                                                </li>
-                                                            }
-                                                        </ul>
-                                                    </div>
-
-                                                </td>
-
-                                            </tr>
-                                        }
-
-                                    </table>
-
+                                    }
+                                </table>
                             </div>
                         </div>
-
-
-
+                        <div class="tab-pane" id="history">
+                            <div class="box-body">
+                                <table class="table table-bordered table-hover">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Event</th>
+                                        <th>Description</th>
+                                        <th>Invoice ID</th>
+                                    </tr>
+                                    @for(event <- product.getFinancialHistory.history ) {
+                                        <tr>
+                                            <td>@event.date</td>
+                                            <td>@event.event</td>
+                                            <td>@event.description</td>
+                                            <td>@event.invoice_id</td>
+                                        </tr>
+                                    }
+                                </table>
+                            </div>
+                        </div>
                         <div class="tab-pane" id="projects">
-
                             <table id="role_table" class="table table-bordered table-hover">
-
                                 <tr>
                                     <th>ID</th>
                                     <th>Name</th>
                                     <th>Settings</th>
                                 </tr>
-
                                 @for( project <- product.projects) {
                                     <tr>
                                         <td>@project.id</td>
                                         <td>@project.name</td>
-                                        <td><button value="" class="btn btn-primary" type="button" onclick="">Open</button></td>
+                                        <td><button class="btn btn-xs btn-block btn-primary" type="button" onclick="openProject()">Open</button></td>
                                     </tr>
                                 }
                             </table>
-
                         </div>
-                            <!-- /.tab-pane -->
                     </div>
-                        <!-- /.tab-content -->
                 </div>
-
             </div>
         </div>
-
     </div>
 </section>
 
+<div id="invoiceModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="invoiceModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="invoiceModalTitle" class="modal-title">Invoice</h4>
+            </div>
+            <div class="modal-body">
+                <form id="invoice">
+
+                </form>
+                <div id="invoiceModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="importLibrary()">Import</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newExtensionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newExtensionModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newExtensionModalTitle" class="modal-title">New Extension</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newExtensionForm">
+                    <input type="text" class="form-control form-group" name="name" placeholder="Name">
+                    <input type="text" class="form-control form-group" name="description" placeholder="Description">
+                    <input type="text" class="form-control form-group" name="color" placeholder="Color">
+                    <select name="type" class="form-control form-group select2" title="Type of Extension">
+                        <option selected="selected" disabled>Choose one</option>
+                        @for(etype <- Enum_ExtensionType.values()){
+                            <option value="@etype.name()">@etype.name()</option>
+                        }
+                    </select>
+                    <input type="text" class="form-control form-group" name="count" placeholder="Count">
+                </form>
+                <div id="newExtensionModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newExtension()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newProjectModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newProjectModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newProjectModalTitle" class="modal-title">New Project</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newProject">
+                    <input placeholder="Name" type="text" name="project_name" >
+
+                    <input placeholder="Description" type="text" name="project_description" >
+
+                </form>
+                <div id="newProjectModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newProject()">New project</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    var id = "@product.id";
+
+    function activateProduct(){
+        $.ajax({
+            url: '/product/activate/' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+
+                $('#activity').removeClass('bg-red').addClass('bg-green').text('true');
+                $('#activationButton').attr('onclick', 'deactivateProduct()').text('Deactivate');
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        });
+    }
+
+    function deactivateProduct(){
+        $.ajax({
+            url: '/product/deactivate/' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+
+                $('#activity').removeClass('bg-green').addClass('bg-red').text('false');
+                $('#activationButton').attr('onclick', 'activateProduct()').text('Activate');
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        });
+    }
+
+    function terminateOnDemand(){
+        $.ajax({
+            url: '/product/terminate_ondemand/' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+
+                $('#gopay_id').text('');
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        });
+    }
+
+    function newExtension(){
+        var model_data = $("#newExtensionForm").serializeObject();
+        model_data.product_id = id;
+        $.ajax({
+            url: '@routes.Controller_Finance.productExtension_create()',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken"),
+                "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+                $("#newExtensionForm input[type=text]").val("");
+                $("#newExtensionModal").modal("hide");
+                $("#newExtensionModalMessage").css("display", "none");
+                $('#extensionTableWrapper').load(document.URL +  ' #extensionTable');
+            },
+            error:function(e) {
+                $("#newExtensionModalMessage").css("display", "block");
+                $("#newExtensionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+        })
+    }
+
+
+</script>

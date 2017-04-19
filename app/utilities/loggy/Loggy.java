@@ -49,7 +49,7 @@ public class Loggy{
 
         StringBuilder description = new StringBuilder();     // stavění obsahu
 
-        String summary = "Internal Server Error - " + exception.getClass().getName() + " - " + request.method() + " " + request.path();
+        String summary = "Internal Server Error - " + request.method() + " " + request.path();
 
         description.append("\n");
         description.append("    Exception type: " + exception.getClass().getName());
@@ -95,10 +95,12 @@ public class Loggy{
 
         StringBuilder description = new StringBuilder();     // stavění obsahu
 
-        String summary = "Internal Server Error - " + origin + " - " + exception.getClass().getName();
+        String summary = "Internal Server Error - " + origin;
 
         description.append("\n");
         description.append("    Exception type: " + exception.getClass().getName());
+        description.append("\n");
+        description.append("    Exception message: " + exception.getMessage());
         description.append("\n");
         description.append("    Time: " + new Date().toString());
         description.append("\n");

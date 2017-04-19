@@ -22,7 +22,6 @@ public class GoPay_Recurrence {
     public void setItems(List<Model_InvoiceItem> invoice_items){
 
         for(Model_InvoiceItem item :invoice_items){
-            amount += Math.round(item.unit_price*100);
 
             GoPay_Items go_item = new GoPay_Items();
             go_item.name = item.name;

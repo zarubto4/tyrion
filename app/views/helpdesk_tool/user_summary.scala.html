@@ -1,5 +1,7 @@
 @import models.Model_Person
 @import models.Model_Product
+@import utilities.enums.Enum_Payment_method
+@import utilities.enums.Enum_Payment_mode
 @import utilities.Server
 
 @(person: Model_Person)
@@ -34,7 +36,7 @@
                             <script>
                                 function findPerson(){
                                     var mail = document.getElementById("findPerson").elements.namedItem("exampleInputEmail").value;
-                                    window.location.replace("@Server.tyrion_serverAddress" + "/admin/user_summary/" + mail );
+                                    window.location.replace("@Server.tyrion_serverAddress" + "/admin/helpdesk_tool?email=" + mail );
                                 }
                             </script>
                     </div>
@@ -79,85 +81,137 @@
                                     <a onclick="validPerson('@edit_person.id')"  class="btn btn-success btn-block"><b>Valid Account</b></a>
                                 }
                             }
-
-
                         </div>
-                        <!-- /.box-body -->
                  </div>
-
             </div>
         <div class="col-md-9">
             <div class="box">
-            <div class="box-header">
-                <h3 class="box-title">Person Products</h3>
-                <div class="pull-right">
-                    <div class="btn-group">
-                            <!-- <button type="button" class="btn btn-danger btn-sm"> Disconnect All </button> -->
-                    </div><!-- /.btn-group -->
-                </div><!-- /.pull-right -->
-            </div>
-
-            <div class="box-body table-responsive no-padding">
-                <div id="products">
-
-                    <table id="products_table" class="table table-bordered">
-
-                        <tr>
-                            <th>Name</th>
-                            <th>Active</th>
-                            <th>Tariff Name</th>
-
-                            <th>Mode </th>
-                            <th>Method</th>
-
-                            <th>Subs. Id</th>
-                            <th>Fakturoid ID</th>
-                            <th>Go Pay ID</th>
-
-                            <th>Rem. Credit</th>
-
-                            <th>Paid until</th>
-
-                            <th>Open</th>
-                        </tr>
-
-
-                        @for( product <- Model_Product.get_byOwner(person.id)) {
-
-                            <tr>
-                                <td> @product.name</td>
-                                <td> @product.active</td>
-                                <td> @product.tariff.name</td>
-
-                                <td> @product.mode.name()</td>
-                                <td> @product.method.name()</td>
-
-                                <td> @product.subscription_id</td>
-                                <td> @product.fakturoid_subject_id</td>
-                                <td> @product.gopay_id</td>
-
-                                <td> @product.remaining_credit</td>
-
-                                <td> TODO </td>
-
-                                <td align="center">
-                                    <a href='@routes.Controller_Dashboard.product_detail(product.id)'><button class="btn btn-block btn-info" type="button">Show</button></a>
-                                </td>
-                            </tr>
-                        }
-
-                    </table>
+                <div class="box-header">
+                    <h3 class="box-title">Person Products</h3>
+                    <button type="button" class="btn btn-primary btn-xs pull-right" data-toggle="modal" data-target="#newProductModal"> Create new one </button>
                 </div>
-
-
-            </div>
+                <div class="box-body table-responsive no-padding">
+                    <div id="products">
+                        <table id="products_table" class="table table-bordered">
+                            <tr>
+                                <th>Name</th>
+                                <th>Active</th>
+                                <th>Tariff Name</th>
+                                <th>Mode </th>
+                                <th>Method</th>
+                                <th>Subs. Id</th>
+                                <th>Fakturoid ID</th>
+                                <th>Go Pay ID</th>
+                                <th>Rem. Credit</th>
+                                <th>Paid until</th>
+                                <th>Open</th>
+                            </tr>
+                            @for( product <- Model_Product.get_byOwner(person.id)) {
+                                <tr>
+                                    <td> @product.name</td>
+                                    <td> @product.active</td>
+                                    <td> @product.tariff.name</td>
+                                    <td> @product.mode.name()</td>
+                                    <td> @product.method.name()</td>
+                                    <td> @product.subscription_id</td>
+                                    <td> @product.fakturoid_subject_id</td>
+                                    <td> @product.gopay_id</td>
+                                    <td> @product.credit</td>
+                                    <td> TODO </td>
+                                    <td align="center">
+                                        <a href='@routes.Controller_Dashboard.product_detail(product.id)'><button class="btn btn-block btn-info btn-xs" type="button">Open</button></a>
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
 </section>
 
+<!--  Modals ####################################################################################################### -->
 
+<div id="newProductModal"  class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newProductModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newProductModalTitle" class="modal-title">New Product</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newProductForm">
+                    <select name="tariff_id" class="form-control form-group select2" title="Tariff">
+                        <option selected="selected" disabled>Choose tariff</option>
+                        @for(tariff <- Model_Tariff.find.where().eq("active", true).order().asc("order_position").findList()){
+                            <option value="@tariff.id">@tariff.name</option>
+                        }
+                    </select>
+                    <input type="text" class="form-control form-group" name="name" placeholder="Name of product">
+
+
+                    <select name="payment_mode" class="form-control form-group select2" title="Payment mode">
+                        <option selected="selected" disabled>Choose mode</option>
+                        @for(payment_mode <- Enum_Payment_mode.values()){
+                            <option value="@payment_mode.name()">@payment_mode.name()</option>
+                        }
+                    </select>
+                    <select name="payment_method" class="form-control form-group select2" title="Payment method">
+                        <option selected="selected" disabled>Choose method</option>
+                        @for(method <- Enum_Payment_method.values()){
+                            <option value="@method.name()">@method.name()</option>
+                        }
+                    </select>
+                    <div class="box-group" id="accordion">
+                        <div class="panel box">
+                            <div class="box-header with-border">
+                                <h4 class="box-title">
+                                    <a class="collapsed" aria-expanded="false" href="#collapsePersonal" data-toggle="collapse" data-parent="#accordion">
+                                        Personal details
+                                    </a>
+                                </h4>
+                            </div>
+                            <div class="panel-collapse collapse" id="collapsePersonal" aria-expanded="false">
+                                <div class="box-body">
+                                    <input type="text" class="form-control form-group" name="full_name" placeholder="Full name of user">
+                                    <input type="text" class="form-control form-group" name="invoice_email" placeholder="Invoice email">
+                                    <input type="text" class="form-control form-group" name="street" placeholder="Street">
+                                    <input type="text" class="form-control form-group" name="street_number" placeholder="Street number">
+                                    <input type="text" class="form-control form-group" name="city" placeholder="City">
+                                    <input type="text" class="form-control form-group" name="zip_code" placeholder="ZIP code">
+                                    <input type="text" class="form-control form-group" name="country" placeholder="Country">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel box">
+                            <div class="box-header with-border">
+                                <h4 class="box-title">
+                                    <a class="collapsed" aria-expanded="false" href="#collapseCompany" data-toggle="collapse" data-parent="#accordion">
+                                        Company details
+                                    </a>
+                                </h4>
+                            </div>
+                            <div class="panel-collapse collapse" id="collapseCompany" aria-expanded="false">
+                                <div class="box-body">
+                                    <input type="text" class="form-control form-group" name="vat_no" placeholder="VAT number">
+                                    <input type="text" class="form-control form-group" name="registration_no" placeholder="REG number">
+                                    <input type="text" class="form-control form-group" name="company_name" placeholder="Name of company ">
+                                    <input type="text" class="form-control form-group" name="company_authorized_email" placeholder="Company email">
+                                    <input type="text" class="form-control form-group" name="company_authorized_phone" placeholder="Company phone">
+                                    <input type="text" class="form-control form-group" name="company_web" placeholder="Web">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button value="" class="btn btn-success" type="button" onclick="newProduct()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="editPersonModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editPersonModalTitle">
     <div  class="modal-dialog">
@@ -167,7 +221,7 @@
             </div>
 
             <div class="modal-body">
-                <form id="editPerson")>
+                <form id="editPerson">
 
                     <label id="person_id" style="display: block">ID</label>
                     <label>Full Name</label>   <input style="display: block" type="text" name="full_name" >
@@ -184,67 +238,58 @@
     </div>
 </div>
 
-
-<div id="editCompilationServerModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCompilationServerModalTitle">
-    <div style="margin-top: 15%;" class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 id="editCompilationServerModalTitle" class="modal-title">Edit Type of Board</h4>
-            </div>
-            <div class="modal-body">
-                <form id="editCompilationServer">
-
-                    <label id="typeOfBoardId" style="display: block">ID</label>
-                    <label>Server name</label> <input style="display: block" type="text" name="name" >
-
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
-                <button id="editCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="editCompilationServer(this.value)">Save changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="newProjectModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newProjectModalTitle">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 id="newProjectModalTitle" class="modal-title">New Project</h4>
-            </div>
-            <div class="modal-body">
-                <form id="newProject">
-
-                    <div style="float: left; width: 30%;">
-                        <label>Name</label>
-                        <input placeholder="Name" style="display: block" id="new_project_name" type="text" name="project_name" >
-                    </div>
-                    <div style="width: 100%;">
-                        <label>Description</label>
-                        <input placeholder="Description" style="display: block; width: 70%;" id="new_project_description" type="text" name="project_description" >
-                    </div>
-                    <label>Product</label>
-                    <select style="display: block;" name="product_id">
-                        <option selected disabled>Select Product</option>
-                        @for(product <- Model_Product.get_byOwner(person.id)) {
-                            <option value="@product.id">@product.name</option>
-                        }
-                    </select>
-
-                </form>
-                <div id="newProjectModalMessage" style="display: none"><p class="text-red"></p></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
-                <button class="btn btn-success" type="button" onclick="newProject()">New project</button>
-            </div>
-        </div>
-    </div>
-</div>
-
+<!--  JavaScript ################################################################################################### -->
 
 <script>
+
+    var tariffs = [];
+
+    var person_id = '@person.id';
+
+    function getTariffs() {
+
+        $.ajax({
+            url: '/tariff',
+            type: 'GET',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(json){
+                tariffs = json;
+            },
+            error:function(e) {
+                alert("Unable to load tariffs, creating new product will probably fail.");
+            }
+        })
+    }
+
+    function newProduct() {
+
+        var model_data = $("#newProductForm").serializeObject();
+        model_data.person_id = person_id;
+
+        $.ajax({
+            url: '@routes.Controller_Finance.product_create()' ,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken"),
+                "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+                $("#newProductModalMessage").css("display", "none");
+                $("#newProductModal").modal('hide');
+                $('#products').load(document.URL +  ' #products_table');
+            },
+            error:function(e) {
+                $("#newProjectModalMessage").css("display", "block");
+                $("#newProjectModalMessage p").text(JSON.parse(e.responseText).message);
+                $("#newProjectModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+        })
+    }
 
             function editPerson(id){
                 model_data = $("#editPerson").serializeObject();

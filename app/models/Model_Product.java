@@ -11,11 +11,15 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.Configuration;
+import play.data.Form;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.Enum_BusinessModel;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
+import utilities.enums.Enum_Payment_status;
+import utilities.goPay.Utilities_GoPay_Controller;
+import utilities.loggy.Loggy;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -53,11 +57,13 @@ public class Model_Product extends Model {
                                              @ApiModelProperty(required = true) public Date created;
                                                                     @JsonIgnore public boolean on_demand;    // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 
-                                             @ApiModelProperty(required = true) public double remaining_credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
+                                                                    @JsonIgnore public double credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
+
+                                 @Column(columnDefinition = "TEXT") @JsonIgnore public String financial_history;
 
 
-   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Project> projects = new ArrayList<>();
-   @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Invoice> invoices = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Project> projects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Invoice> invoices = new ArrayList<>();
 
                                           @OneToOne(mappedBy="product", cascade = CascadeType.ALL)  public Model_PaymentDetails payment_details;
 
@@ -73,15 +79,19 @@ public class Model_Product extends Model {
         return invoices;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty @ApiModelProperty(required = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @ApiModelProperty(required = false)
     public Double remaining_credit(){
-       return this.remaining_credit;
+
+        if (this.mode == Enum_Payment_mode.per_credit) return this.credit;
+        return null;
     }
 
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String product_type(){
-        return Model_Tariff.find.where().eq("product.id", id).select("name").findUnique().name;
+        if (tariff == null) return Model_Tariff.find.where().eq("product.id", id).select("name").findUnique().name;
+
+        return tariff.name;
     }
 
 
@@ -112,6 +122,7 @@ public class Model_Product extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
     public double price(){
         double total = 0.0;
         for(Model_ProductExtension extension : this.extensions){
@@ -120,21 +131,124 @@ public class Model_Product extends Model {
             if(price != null)
                 total += price;
         }
-        return  total;
+        return total;
+    }
+
+    @JsonIgnore
+    public Model_Invoice pending_invoice(){
+
+        return Model_Invoice.find.where().eq("product.id", this.id).eq("status", Enum_Payment_status.pending).findUnique();
+    }
+
+    @JsonIgnore
+    public void credit_upload(double credit){
+        try {
+
+            this.credit += credit;
+
+            if (!this.active && this.credit > 0) this.active = true; // TODO notifikace - různé stavy
+
+            this.update();
+
+            // TODO notifikace - nahrál se credit/nepovedlo se
+
+        } catch (Exception e) {
+            Loggy.internalServerError("Model_Product:: credit_upload:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void credit_remove(double credit){
+        try {
+
+            this.credit -= credit;
+
+            if (this.active && this.credit < 0) this.active = false; // TODO notifikace - různé stavy
+
+            this.update();
+
+            // TODO notifikace - odečetl se credit/nepovedlo se
+
+        } catch (Exception e) {
+            Loggy.internalServerError("Model_Product:: credit_remove:", e);
+        }
+    }
+
+    @JsonIgnore
+    public boolean terminateOnDemand(){
+        try {
+
+            Utilities_GoPay_Controller.terminateOnDemand(this);
+
+            this.gopay_id = null;
+            this.on_demand = false;
+            this.mode = Enum_Payment_mode.per_credit;
+            this.update();
+
+            return true;
+
+        } catch (Exception e) {
+            Loggy.internalServerError("Model_Product:: terminateOnDemand:", e);
+            return false;
+        }
+    }
+
+    @JsonIgnore
+    public History getFinancialHistory(){
+        try {
+
+            if (this.financial_history == null) return new History();
+
+            Form<History> form = Form.form(History.class).bind(Json.parse(this.financial_history));
+            if(form.hasErrors()) throw new Exception("Error parsing product financial history");
+            return form.get();
+
+        } catch (Exception e) {
+            Loggy.internalServerError("Model_Product:: getFinancialHistory:", e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public void archiveEvent(String event_name, String description, String invoice_id){
+        try {
+
+            History history = getFinancialHistory();
+            if (history == null) return;
+
+            HistoryEvent event = new HistoryEvent();
+            event.event = event_name;
+            event.description = description;
+            event.invoice_id = invoice_id;
+            event.date = new Date();
+
+            history.history.add(event);
+
+            this.financial_history = Json.toJson(history).toString();
+            this.update();
+
+        } catch (Exception e) {
+            Loggy.internalServerError("Model_Product:: archiveEvent:", e);
+        }
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    @ApiModel(description = "Model for Proforma Details for next invoice",
-            value = "Next_Invoice_Product")
-    public class Next_Invoice_Product{
-        @ApiModelProperty(required = true, readOnly = true) public String id;
+    public class HistoryEvent{
 
+        public Date date;
+        public String event;
+        public String description;
+        public String invoice_id;
     }
 
+    public class History{
+
+        public List<HistoryEvent> history = new ArrayList<>();
+    }
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA -----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore private String azure_product_link;
 
@@ -173,7 +287,7 @@ public class Model_Product extends Model {
 
     @JsonIgnore @Transient
     public String get_path(){
-        return  azure_product_link;
+        return azure_product_link;
     }
 
 
@@ -228,8 +342,8 @@ public class Model_Product extends Model {
     }
 
     @JsonIgnore
-    public static Model_Product get_byNameAndOwner(String name) {
-        return find.where().eq("name", name).eq("payment_details.person.id", Controller_Security.getPerson().id).findUnique();
+    public static Model_Product get_byNameAndOwner(String name, String person_id) {
+        return find.where().eq("name", name).eq("payment_details.person.id", person_id).findUnique();
     }
 
     @JsonIgnore

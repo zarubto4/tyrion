@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
+import utilities.goPay.GoPay_PaymentCheck;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.loggy.Loggy;
 import utilities.notifications.NotificationHandler;
@@ -238,13 +239,13 @@ public class Server {
                 Fakturoid_secret_combo = Configuration.root().getString("Fakturoid.secret_combo");
 
 
-                GoPay_api_url = Configuration.root().getString("GOPay.localhost.api_url");
-                GoPay_client_id = Configuration.root().getString("GOPay.localhost.client_id");
-                GoPay_client_secret = Configuration.root().getString("GOPay.localhost.client_secret");
-                GoPay_go_id = Configuration.root().getLong("GOPay.localhost.go_id");
+                GoPay_api_url = Configuration.root().getString("GOPay.stage.api_url");
+                GoPay_client_id = Configuration.root().getString("GOPay.stage.client_id");
+                GoPay_client_secret = Configuration.root().getString("GOPay.stage.client_secret");
+                GoPay_go_id = Configuration.root().getLong("GOPay.stage.go_id");
 
-                GoPay_return_url = Configuration.root().getString("GOPay.localhost.return_url");
-                GoPay_notification_url = Configuration.root().getString("GOPay.localhost.notification_url");
+                GoPay_return_url = Configuration.root().getString("GOPay.stage.return_url");
+                GoPay_notification_url = Configuration.root().getString("GOPay.stage.notification_url");
 
                 azureLink = Configuration.root().getString("Azure.localhost.azureLink");
 
@@ -411,6 +412,7 @@ public class Server {
         //1. Nastartovat notifikační vlákno
         NotificationHandler.startNotificationThread();
 
+        GoPay_PaymentCheck.startPaymentCheckThread();
     }
 
     public static void startSchedulingProcedures() {
