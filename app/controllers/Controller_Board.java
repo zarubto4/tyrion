@@ -1469,7 +1469,7 @@ public class Controller_Board extends Controller {
             if((!file_type.equals(".jpg"))&&(!file_type.equals(".png"))) return GlobalResult.result_BadRequest("Wrong type of File - '.jpg' or '.png' required! ");
             if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("Picture is bigger than 500 KB");
             BufferedImage bimg = ImageIO.read(file);
-            if((bimg.getWidth() < 50)||(bimg.getWidth() > 400)||(bimg.getHeight() < 50)||(bimg.getHeight() > 400)) return GlobalResult.result_BadRequest("Picture height or width is not between 50 and 400 pixels.");
+           // if((bimg.getWidth() < 50)||(bimg.getWidth() > 400)||(bimg.getHeight() < 50)||(bimg.getHeight() > 400)) return GlobalResult.result_BadRequest("Picture height or width is not between 50 and 400 pixels.");
 
             // Odebrání předchozího obrázku
             if(!(type_of_board.picture == null)){
@@ -2307,6 +2307,7 @@ public class Controller_Board extends Controller {
 
             // uprava desky
             board.project = project;
+            board.date_of_user_registration = new Date();
             project.boards.add(board);
             board.update();
             project.update();

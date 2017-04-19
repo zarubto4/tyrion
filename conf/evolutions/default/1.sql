@@ -80,6 +80,7 @@ create table model_board (
   is_active                 boolean,
   backup_mode               boolean,
   date_of_create            timestamp,
+  date_of_user_registration timestamp,
   project_id                varchar(255),
   actual_c_program_version_id varchar(255),
   actual_backup_c_program_version_id varchar(255),

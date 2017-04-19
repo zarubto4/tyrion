@@ -1,7 +1,6 @@
 package models;
 
-import com.avaje.ebean.Expr;
-import com.avaje.ebean.Model;
+import com.avaje.ebean.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
@@ -9,6 +8,7 @@ import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import org.springframework.core.annotation.Order;
 import utilities.cache.helps_objects.IdsList;
 import utilities.enums.*;
 import utilities.notifications.helps_objects.Becki_color;
@@ -17,10 +17,12 @@ import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.*;
 
 import javax.persistence.*;
+import javax.persistence.OrderBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.avaje.ebean.Query;
 
 @Entity
 @ApiModel(description = "Model of Project",
@@ -38,11 +40,11 @@ public class Model_Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgram>                b_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgram>                c_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_MProject>                m_projects        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_TypeOfBlock>             type_of_blocks    = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_TypeOfWidget>            type_of_widgets   = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_Board>                   boards            = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_Invitation>              invitations       = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) public List<Model_ProjectParticipant>      participants      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("UPPER(name) ASC")                   public List<Model_TypeOfBlock>             type_of_blocks    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("UPPER(name) ASC")                   public List<Model_TypeOfWidget>            type_of_widgets   = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("date_of_user_registration desc")    public List<Model_Board>                   boards            = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("date_of_creation desc")             public List<Model_Invitation>              invitations       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")                            public List<Model_ProjectParticipant>      participants      = new ArrayList<>();
 
     // reference na Fake Instanci - kam připojuji Yody q- pokud nejsou připojení do vlastní instnace vytvořené v blocko programu
     @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Model_HomerInstance private_instance;
@@ -98,19 +100,20 @@ public class Model_Project extends Model {
     @JsonIgnore
     public List<Model_CProgram> get_c_program_not_deleted(){
 
-        return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).findList();
+        return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
     }
 
     @JsonIgnore
     public List<Model_BProgram> get_b_program_not_deleted(){
 
-        return Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).findList();
+        return Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+
     }
 
     @JsonIgnore
     public List<Model_MProject> get_m_project_not_deleted(){
 
-        return Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).findList();
+        return Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
 
     }
 

@@ -113,8 +113,8 @@ public class Controller_Code extends Controller{
             if (typeOfBoard.version_scheme != null && typeOfBoard.version_scheme.default_main_version != null) {
 
                 Model_VersionObject version_object = new Model_VersionObject();
-                version_object.version_name = "First default version of C_Program.";
-                version_object.version_description = "This is default description.";
+                version_object.version_name = typeOfBoard.version_scheme.name;
+                version_object.version_description = typeOfBoard.version_scheme.description;
                 version_object.author = Controller_Security.get_person();
                 version_object.date_of_create = new Date();
                 version_object.c_program = c_program;

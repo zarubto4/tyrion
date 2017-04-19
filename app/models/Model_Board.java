@@ -60,6 +60,7 @@ public class Model_Board extends Model {
                                        @JsonIgnore                          public boolean is_active;
                                        @ApiModelProperty(required = true)   public boolean backup_mode;
                                                                             public Date date_of_create;
+                                       @JsonIgnore                          public Date date_of_user_registration;
 
                       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)   public Model_Project project;
 

@@ -15,10 +15,10 @@ public class Swagger_TypeOfBlock_New {
     @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters.")
     public String name;
 
-    @Constraints.Required
+
     @Constraints.MinLength(value = 0, message = "The description must have at least 0 characters")
     @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
-    @ApiModelProperty(required = true, value = "Length must be between 24 and 255 characters.")
+    @ApiModelProperty(required = false, value = "Length must be between 24 and 255 characters.")
     public String description;
 
     @ApiModelProperty(required = false, value = "If you want make private TypeOfBlock group. You have to have \"project_id\" parameter in Json., Value can be null or contains project_id")
