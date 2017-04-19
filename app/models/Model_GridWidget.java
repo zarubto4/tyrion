@@ -35,6 +35,7 @@ public class Model_GridWidget extends Model{
 
     @JsonIgnore @OneToMany(mappedBy="grid_widget", cascade = CascadeType.ALL) @OrderBy("date_of_create desc") public List<Model_GridWidgetVersion> grid_widget_versions = new ArrayList<>();
 
+    @JsonIgnore  public Integer order_position;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -88,6 +89,32 @@ public class Model_GridWidget extends Model{
         super.save();
     }
 
+    @JsonIgnore @Transient
+    public void up(){
+
+        Model_GridWidget up = Model_GridWidget.find.where().eq("order_position", (order_position-1) ).eq("type_of_block.id", type_of_widget.id).findUnique();
+        if(up == null)return;
+
+        up.order_position += 1;
+        up.update();
+
+        this.order_position -= 1;
+        this.update();
+    }
+
+    @JsonIgnore @Transient
+    public void down(){
+
+        Model_GridWidget down = Model_GridWidget.find.where().eq("order_position", (order_position+1) ).eq("type_of_block.id", type_of_widget.id).findUnique();
+        if(down == null)return;
+
+        down.order_position -= 1;
+        down.update();
+
+        this.order_position += 1;
+        this.update();
+
+    }
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

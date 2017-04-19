@@ -32,6 +32,10 @@ public class Model_TypeOfBlock extends Model {
 
     @OneToMany(mappedBy="type_of_block", cascade=CascadeType.ALL) @ApiModelProperty(required = true) public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
 
+    @JsonIgnore  public Integer order_position;
+
+
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!", readOnly = true, required = false)
@@ -63,6 +67,33 @@ public class Model_TypeOfBlock extends Model {
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
         return help;
+    }
+
+    @JsonIgnore @Transient
+    public void up(){
+
+        Model_TypeOfBlock up = Model_TypeOfBlock.find.where().eq("order_position", (order_position-1) ).isNull("project").findUnique();
+        if(up == null)return;
+
+        up.order_position += 1;
+        up.update();
+
+        this.order_position -= 1;
+        this.update();
+    }
+
+    @JsonIgnore @Transient
+    public void down(){
+
+        Model_TypeOfBlock down = Model_TypeOfBlock.find.where().eq("order_position", (order_position+1) ).isNull("project").findUnique();
+        if(down == null)return;
+
+        down.order_position -= 1;
+        down.update();
+
+        this.order_position += 1;
+        this.update();
+
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

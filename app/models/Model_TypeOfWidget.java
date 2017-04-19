@@ -32,6 +32,7 @@ public class Model_TypeOfWidget extends Model{
 
     @OneToMany(mappedBy="type_of_widget", cascade = CascadeType.ALL) @ApiModelProperty(required = true)  public List<Model_GridWidget> grid_widgets = new ArrayList<>();
 
+    @JsonIgnore  public Integer order_position;
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfWidget is private!", readOnly = true, required = false)
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project_id() {  return project == null ? null : this.project.id; }
@@ -48,6 +49,33 @@ public class Model_TypeOfWidget extends Model{
             if (Model_TypeOfWidget.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore @Transient
+    public void up(){
+
+        Model_TypeOfWidget up = Model_TypeOfWidget.find.where().eq("order_position", (order_position-1) ).isNull("project").findUnique();
+        if(up == null)return;
+
+        up.order_position += 1;
+        up.update();
+
+        this.order_position -= 1;
+        this.update();
+    }
+
+    @JsonIgnore @Transient
+    public void down(){
+
+        Model_TypeOfWidget down = Model_TypeOfWidget.find.where().eq("order_position", (order_position+1) ).isNull("project").findUnique();
+        if(down == null)return;
+
+        down.order_position -= 1;
+        down.update();
+
+        this.order_position += 1;
+        this.update();
+
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

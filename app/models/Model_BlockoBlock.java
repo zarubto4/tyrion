@@ -36,6 +36,7 @@ public class Model_BlockoBlock extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL) @OrderBy("date_of_create desc") public List<Model_BlockoBlockVersion> blocko_versions = new ArrayList<>();
 
+    @JsonIgnore  public Integer order_position;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -104,6 +105,34 @@ public class Model_BlockoBlock extends Model {
             if (get_byId(this.id) == null) break;
         }
         super.save();
+    }
+
+
+    @JsonIgnore @Transient
+    public void up(){
+
+        Model_BlockoBlock up = Model_BlockoBlock.find.where().eq("order_position", (order_position-1) ).eq("type_of_block.id", type_of_block.id).findUnique();
+        if(up == null)return;
+
+        up.order_position += 1;
+        up.update();
+
+        this.order_position -= 1;
+        this.update();
+    }
+
+    @JsonIgnore @Transient
+    public void down(){
+
+        Model_BlockoBlock down = Model_BlockoBlock.find.where().eq("order_position", (order_position+1) ).eq("type_of_block.id", type_of_block.id).findUnique();
+        if(down == null)return;
+
+        down.order_position -= 1;
+        down.update();
+
+        this.order_position += 1;
+        this.update();
+
     }
 
 
