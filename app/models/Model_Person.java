@@ -136,7 +136,6 @@ public class Model_Person extends Model {
             throw new NullPointerException();
         }
     }
-    
 
     @JsonIgnore @Transient
     public String get_picture_path(){
@@ -162,8 +161,6 @@ public class Model_Person extends Model {
 
     public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
 
-
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model_Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
@@ -180,7 +177,6 @@ public class Model_Person extends Model {
 
     @JsonIgnore
     public static Model_Person get_byId(String id) {
-
 
         Model_Person person = cache.get(id);
         if (person == null){
