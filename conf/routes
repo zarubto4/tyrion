@@ -21,6 +21,7 @@ GET              /websocket/access_token                       @controllers.Cont
 
 
 
+
 #API - CoreClient ####################################################################################################################################################
 ###################################################################################f##################################################################################
 
@@ -38,6 +39,7 @@ GET             /login/person                               @controllers.Control
 
 
 
+
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ################################################################
 ######################################################################################################################################################################
 
@@ -52,6 +54,10 @@ PUT             /notification/read                          @controllers.Control
 ## Test - Private Api
 POST            /notification/individual               @utilities.notifications.Notification_Tester.test_notifications()
 POST            /notification/chain/:email             @utilities.notifications.Notification_Tester.test_chain_notifications(email)
+
+
+
+
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
@@ -87,6 +93,10 @@ PUT            /person/password/recovery                         @controllers.Co
 PUT            /person/picture/upload                            @controllers.Controller_Person.person_uploadPicture()
 PUT            /person/picture/remove                            @controllers.Controller_Person.person_removePicture()
 
+
+
+
+
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
@@ -110,6 +120,10 @@ DELETE         /secure/role/:role_id                                       @cont
 PUT            /secure/role/:role_id                                       @controllers.Controller_Permission.edit_Role(role_id)
 
 GET            /secure/person/system_acces/:person_id                      @controllers.Controller_Permission.get_System_Access(person_id)
+
+
+
+
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
@@ -146,6 +160,7 @@ PUT             /invoice/set_pay/:invoice_id                                    
 PUT             /invoice/send_remainder/:invoice_id                                         @controllers.Controller_Finance.send_remainder_to_custumer(invoice_id)
 DELETE          /invoice/:invoice_id                                                        @controllers.Controller_Finance.invoice_remove(invoice_id)
 
+
 #Project
 POST           /project                                                                     @controllers.Controller_Project.project_create()
 PUT            /project/:project_id                                                         @controllers.Controller_Project.project_update(project_id)
@@ -156,6 +171,7 @@ PUT            /project/shareProject/:project_id                                
 PUT            /project/unshareProject/:project_id                                          @controllers.Controller_Project.project_removeParticipant(project_id)
 PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.Controller_Project.project_addParticipant(invitation_id, decision: Boolean)
 PUT            /project/change_participant_state/:project_id                                @controllers.Controller_Project.project_changeParticipantStatus(project_id)
+
 
 #Program
 POST           /b_program/:project_id                                                       @controllers.Controller_Blocko.new_b_Program(project_id)
@@ -168,9 +184,8 @@ PUT            /b_program/version/:b_program_id                                 
 GET            /b_program/version/:version_id                                               @controllers.Controller_Blocko.get_b_Program_version(version_id)
 DELETE         /b_program/version/:version_id                                               @controllers.Controller_Blocko.remove_b_Program_version(version_id)
 
+
 #Instance
-
-
 GET            /instance/project/:project_id                            @controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
 GET            /instance/get/:instance_id                               @controllers.Controller_Blocko.get_b_program_instance(instance_id)
 PUT            /instance/filter                                         @controllers.Controller_Blocko.get_b_program_instance_by_filter()
@@ -190,6 +205,8 @@ PUT            /instance/shut_down/:instance_name                       @control
 
 #Blocks
 POST           /blockoBlock                                                         @controllers.Controller_Blocko.blockoBlock_create()
+PUT            /blockoBlock/order/up/:blocko_block_id                               @controllers.Controller_Blocko.blockoBlock_order_up(blocko_block_id)
+PUT            /blockoBlock/order/down/:blocko_block_id                             @controllers.Controller_Blocko.blockoBlock_order_down(blocko_block_id)
 PUT            /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_update(blocko_block_id)
 GET            /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_get(blocko_block_id)
 DELETE         /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_delete(blocko_block_id)
@@ -206,17 +223,22 @@ POST           /blockoBlock/scheme/version                                      
 GET            /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_getScheme()
 PUT            /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_editScheme()
 
+
 #TypeOfBlocko
 POST           /typeOfBlock                                                         @controllers.Controller_Blocko.typeOfBlock_create()
 GET            /typeOfBlock                                                         @controllers.Controller_Blocko.typeOfBlock_getAll
 PUT            /typeOfBlock/list/:page_number                                       @controllers.Controller_Blocko.typeOfBlock_getByFilter(page_number: Int)
+PUT            /typeOfBlock/order/up/:type_of_block_id                              @controllers.Controller_Blocko.typeOfBlock_order_up(type_of_block_id)
+PUT            /typeOfBlock/order/down/:type_of_block_id                            @controllers.Controller_Blocko.typeOfBlock_order_down(type_of_block_id)
 GET            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_get(type_of_block_id)
 PUT            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_update(type_of_block_id)
 DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_delete(type_of_block_id)
 
+
 #Blocko General
 PUT             /blocko/disapprove                                                  @controllers.Controller_Blocko.blockoDisapprove()
 PUT             /blocko/approval                                                    @controllers.Controller_Blocko.blockoApproval()
+
 
 #Homer Server
 POST            /homer_server                                                      @controllers.Controller_ExternalServer.create_Homer_Server()
@@ -225,6 +247,7 @@ PUT             /homer_server/set_backup/:server_id                             
 PUT             /homer_server/set_main/:server_id                                  @controllers.Controller_ExternalServer.set_main_server(server_id)
 GET             /homer_server                                                      @controllers.Controller_ExternalServer.get_All_Homer_Server()
 DELETE          /homer_server/:server_id                                           @controllers.Controller_ExternalServer.delete_Homer_Server(server_id)
+
 
 #Board on Project
 GET             /blocko/all_details/:project_id                                     @controllers.Controller_Board.board_allDetailsForBlocko(project_id)
@@ -267,10 +290,12 @@ PUT             /c_program/default/mark/:c_program_id/:version_id               
 
 GET             /c_program/version/public/list/:page_number                     @controllers.Controller_Code.c_program_getPublicList(page_number: Int)
 
+
 #C_Program/Public
 GET             /c_program/version_for_decision/:version_id                     @controllers.Controller_Code.get_version_for_decision(version_id)
 PUT             /c_program/version_for_aprove/approve_decision                  @controllers.Controller_Code.approve_decision()
 PUT             /c_program/version/make_public/:version_id                      @controllers.Controller_Code.c_programVersion_makePublic(version_id)
+
 
 #Libraries
 POST            /library                                                        @controllers.Controller_Library.importLibrary_create()
@@ -291,10 +316,12 @@ PUT             /library/version/remove_file/:version_id                        
 POST            /library/version/upload_example/:version_id                     @controllers.Controller_Library.importLibraryVersion_uploadExample(version_id)
 DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_Library.importLibraryVersion_removeExample(example_id)
 
+
 #Actualization
 GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_Board.board_getForFastUpload(project_id)
 PUT             /c_program/version/upload                                       @controllers.Controller_Board.uploadCompilationToBoard()
 #POST           /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
+
 
 #Processor
 POST            /processor                                                      @controllers.Controller_Board.processor_create()
@@ -302,6 +329,7 @@ GET             /processor/:processor_id                                        
 GET             /processor                                                      @controllers.Controller_Board.processor_getAll()
 PUT             /processor/:processor_id                                        @controllers.Controller_Board.processor_update(processor_id)
 DELETE          /processor/:processor_id                                        @controllers.Controller_Board.processor_delete(processor_id)
+
 
 #Board
 POST            /board                                                          @controllers.Controller_Board.board_create()
@@ -381,6 +409,8 @@ PUT             /websocket/terminal/identificator/:terminal_id                  
 
 # Wigets
 POST           /grid_widget                                                            @controllers.Controller_Grid.gridWidget_create()
+PUT            /grid_widget/order/up/:grid_widget_id                                   @controllers.Controller_Grid.gridWidget_order_up(grid_widget_id)
+PUT            /grid_widget/order/down/:grid_widget_id                                 @controllers.Controller_Grid.gridWidget_order_down(grid_widget_id)
 PUT            /grid_widget/:grid_widget_id                                            @controllers.Controller_Grid.gridWidget_update(grid_widget_id)
 GET            /grid_widget/:grid_widget_id                                            @controllers.Controller_Grid.gridWidget_get(grid_widget_id)
 DELETE         /grid_widget/:grid_widget_id                                            @controllers.Controller_Grid.gridWidget_delete(grid_widget_id)
@@ -400,6 +430,8 @@ PUT            /grid_widget/scheme/version                                      
 #TypeOfWidget
 POST           /type_of_widget                                                         @controllers.Controller_Grid.typeOfWidget_create()
 GET            /type_of_widget                                                         @controllers.Controller_Grid.typeOfWidget_getAll()
+PUT            /type_of_widget/order/up/:type_of_widget_id                             @controllers.Controller_Grid.typeOfWidget_order_up(type_of_widget_id)
+PUT            /type_of_widget/order/down/:type_of_widget_id                           @controllers.Controller_Grid.typeOfWidget_order_down(type_of_widget_id)
 PUT            /type_of_widget/list/:page_number                                       @controllers.Controller_Grid.typeOfWidget_getByFilter(page_number: Int)
 GET            /type_of_widget/:type_of_widget_id                                      @controllers.Controller_Grid.typeOfWidget_get(type_of_widget_id)
 PUT            /type_of_widget/:type_of_widget_id                                      @controllers.Controller_Grid.typeOfWidget_update(type_of_widget_id)

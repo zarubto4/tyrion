@@ -116,43 +116,91 @@ public class Model_HomerServer extends Model{
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public WS_HomerServer get_server_webSocket_connection(){
-        return (WS_HomerServer) Controller_WebSocket.homer_servers.get(this.unique_identificator);
+        return Controller_WebSocket.homer_servers.get(this.unique_identificator);
     }
 
     @JsonIgnore @Transient public static Model_HomerServer get_destination_server(){
 
 
-        if(Server.server_mode == Enum_Tyrion_Server_mode.developer || Server.server_mode == Enum_Tyrion_Server_mode.stage) {
+        String unique_identificator = null;
+        Integer count = null;
 
-            return Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.test_server).setMaxRows(1).findUnique();
 
-        }else {
 
-            String unique_identificator = null;
-            Integer count = null;
+        if(Server.server_mode == Enum_Tyrion_Server_mode.production){
 
-            for (Object unique_identificator_help :  Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findIds()) {
+            logger.debug("Model_HomerServer:: get_destination_server:: Creating new instance in production mode on production server");
+
+            for (Object unique_identificator_help : Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findIds()) {
 
                 Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", unique_identificator).findRowCount();
 
-                if(actual_Server_count == 0){
+                if (actual_Server_count == 0) {
                     unique_identificator = unique_identificator_help.toString();
                     break;
-                }
-                else if(unique_identificator == null) {
+                } else if (unique_identificator == null) {
 
                     unique_identificator = unique_identificator_help.toString();
                     count = actual_Server_count;
 
-                }else if(actual_Server_count < count ){
-                    unique_identificator  = unique_identificator_help.toString();
+                } else if (actual_Server_count < count) {
+                    unique_identificator = unique_identificator_help.toString();
                     count = actual_Server_count;
-
                 }
             }
 
-            return  Model_HomerServer.get_model(unique_identificator);
+            logger.debug("Model_HomerServer:: get_destination_server:: Detination server is " + unique_identificator);
+            return Model_HomerServer.find.byId(unique_identificator);
+
         }
+
+
+        /*
+            Pro stage server platí komplikovanější vyjímka - v případě že má stejné možnosti jako production server se chová jako production,
+            to jest přiděluje instance na public servery. Pokud nejsou k dispozici - registrují se všechny na main.
+        */
+        if(Server.server_mode == Enum_Tyrion_Server_mode.stage){
+
+
+            if(Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findRowCount() < 1){
+
+                return  Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
+
+            }else {
+
+                for (Object unique_identificator_help : Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findIds()) {
+
+                    Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", unique_identificator).findRowCount();
+
+                    if (actual_Server_count == 0) {
+                        unique_identificator = unique_identificator_help.toString();
+                        break;
+                    } else if (unique_identificator == null) {
+
+                        unique_identificator = unique_identificator_help.toString();
+                        count = actual_Server_count;
+
+                    } else if (actual_Server_count < count) {
+                        unique_identificator = unique_identificator_help.toString();
+                        count = actual_Server_count;
+
+                    }
+                }
+
+                return Model_HomerServer.find.byId(unique_identificator);
+            }
+        }
+
+        /*
+                V Developer režimu se instance a vše další přiděluje na Test server, který je vytvořen pomocí demodat. Spoléhá se na to,
+                že se vytváří jen jeden server.
+         */
+        if(Server.server_mode == Enum_Tyrion_Server_mode.developer) {
+            return Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.test_server).setMaxRows(1).findUnique();
+        }
+
+        return null;
+
     }
 
 
@@ -422,7 +470,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public  void ask_for_verificationToken(){
         try {
 
-            WS_HomerServer homer_server = (WS_HomerServer) get_server_webSocket_connection();
+            WS_HomerServer homer_server = get_server_webSocket_connection();
             homer_server.security_token_confirm_procedure();
 
         }catch (Exception e){
@@ -476,7 +524,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public  void add_task(Utilities_HW_Updater_Actualization_Task task){
         try {
 
-           WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(this.unique_identificator);
+           WS_HomerServer server =  Controller_WebSocket.homer_servers.get(this.unique_identificator);
            server.add_task(task);
 
         } catch (Exception e){

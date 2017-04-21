@@ -1499,7 +1499,6 @@ public class Controller_Board extends Controller {
             type_of_board.picture = Model_FileRecord.uploadAzure_File(file, file_name, file_path);
             type_of_board.update();
 
-
             return GlobalResult.result_ok(Json.toJson(type_of_board));
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());

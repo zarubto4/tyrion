@@ -82,6 +82,8 @@ public class Model_GridWidget extends Model{
     @JsonIgnore @Override
     public void save() {
 
+        order_position = Model_GridWidget.find.where().eq("type_of_widget.id", type_of_widget.id).findRowCount() + 1;
+
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             if (get_byId(this.id) == null) break;
@@ -92,7 +94,7 @@ public class Model_GridWidget extends Model{
     @JsonIgnore @Transient
     public void up(){
 
-        Model_GridWidget up = Model_GridWidget.find.where().eq("order_position", (order_position-1) ).eq("type_of_block.id", type_of_widget.id).findUnique();
+        Model_GridWidget up = Model_GridWidget.find.where().eq("order_position", (order_position-1) ).eq("type_of_widget.id", type_of_widget.id).findUnique();
         if(up == null)return;
 
         up.order_position += 1;
@@ -105,7 +107,7 @@ public class Model_GridWidget extends Model{
     @JsonIgnore @Transient
     public void down(){
 
-        Model_GridWidget down = Model_GridWidget.find.where().eq("order_position", (order_position+1) ).eq("type_of_block.id", type_of_widget.id).findUnique();
+        Model_GridWidget down = Model_GridWidget.find.where().eq("order_position", (order_position+1) ).eq("type_of_widget.id", type_of_widget.id).findUnique();
         if(down == null)return;
 
         down.order_position -= 1;

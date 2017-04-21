@@ -100,6 +100,8 @@ public class Model_BlockoBlock extends Model {
     @JsonIgnore @Override
     public void save() {
 
+        order_position = Model_BlockoBlock.find.where().eq("type_of_block.id", type_of_block.id).findRowCount() + 1;
+
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             if (get_byId(this.id) == null) break;
@@ -111,8 +113,13 @@ public class Model_BlockoBlock extends Model {
     @JsonIgnore @Transient
     public void up(){
 
+        System.out.println("Změna Order Possition! UP");
+
         Model_BlockoBlock up = Model_BlockoBlock.find.where().eq("order_position", (order_position-1) ).eq("type_of_block.id", type_of_block.id).findUnique();
-        if(up == null)return;
+        if(up == null){
+            System.out.println("UP - Nejde :(");
+            return;
+        }
 
         up.order_position += 1;
         up.update();
@@ -124,8 +131,13 @@ public class Model_BlockoBlock extends Model {
     @JsonIgnore @Transient
     public void down(){
 
+        System.out.println("Změna Order Possition! DOWN");
+
         Model_BlockoBlock down = Model_BlockoBlock.find.where().eq("order_position", (order_position+1) ).eq("type_of_block.id", type_of_block.id).findUnique();
-        if(down == null)return;
+        if(down == null){
+            System.out.println("DOWN - Nejde :(");
+            return;
+        }
 
         down.order_position -= 1;
         down.update();
@@ -161,7 +173,7 @@ public class Model_BlockoBlock extends Model {
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    private static Model.Finder<String,Model_BlockoBlock> find = new Finder<>(Model_BlockoBlock.class);
+    public static Model.Finder<String,Model_BlockoBlock> find = new Finder<>(Model_BlockoBlock.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

@@ -25,6 +25,7 @@ import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -158,6 +159,9 @@ public class Utilities_Demo_data_Controller extends Controller {
             processor_3.speed = 3000;
             processor_3.save();
 
+            File file = new File(System.getProperty("user.dir") + "/conf/demo_data/yoda.png");
+
+
             // Nastavím Type of Boards - YODA
             Model_TypeOfBoard typeOfBoard_1 = new Model_TypeOfBoard();
             typeOfBoard_1.name = "Yoda G2";
@@ -172,6 +176,14 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_1.save();
 
 
+            typeOfBoard_1.azure_picture_link = typeOfBoard_1.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+            typeOfBoard_1.update();
+
+            typeOfBoard_1.picture = Model_FileRecord.uploadAzure_File(file,  typeOfBoard_1.azure_picture_link.substring( typeOfBoard_1.azure_picture_link.indexOf("/") +1) , typeOfBoard_1.azure_picture_link);
+            typeOfBoard_1.update();
+
+
+
             Model_TypeOfBoard typeOfBoard_2 = new Model_TypeOfBoard();
             typeOfBoard_2.name = "Wireless G2";
             typeOfBoard_2.description = " Wireless kit second generation";
@@ -182,6 +194,12 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_2.connectible_to_internet = false;
             typeOfBoard_2.features.add(wireless);
             typeOfBoard_2.save();
+
+            typeOfBoard_2.azure_picture_link = typeOfBoard_2.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+            typeOfBoard_2.update();
+
+            typeOfBoard_2.picture = Model_FileRecord.uploadAzure_File(file,  typeOfBoard_2.azure_picture_link.substring( typeOfBoard_2.azure_picture_link.indexOf("/") +1) , typeOfBoard_2.azure_picture_link);
+            typeOfBoard_2.update();
 
 
             Model_TypeOfBoard typeOfBoard_3 = new Model_TypeOfBoard();
@@ -195,6 +213,12 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_3.features.add(bus);
             typeOfBoard_3.save();
 
+            typeOfBoard_3.azure_picture_link = typeOfBoard_3.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+            typeOfBoard_3.update();
+
+            typeOfBoard_3.picture = Model_FileRecord.uploadAzure_File(file,  typeOfBoard_3.azure_picture_link.substring( typeOfBoard_3.azure_picture_link.indexOf("/") +1) , typeOfBoard_3.azure_picture_link);
+            typeOfBoard_3.update();
+
 
             Model_TypeOfBoard typeOfBoard_4 = new Model_TypeOfBoard();
             typeOfBoard_4.name = "Quad BUS HUB G1";
@@ -207,6 +231,11 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_4.features.add(bus);
             typeOfBoard_4.save();
 
+            typeOfBoard_4.azure_picture_link = typeOfBoard_4.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+            typeOfBoard_4.update();
+
+            typeOfBoard_4.picture = Model_FileRecord.uploadAzure_File(file,  typeOfBoard_4.azure_picture_link.substring( typeOfBoard_4.azure_picture_link.indexOf("/") +1) , typeOfBoard_4.azure_picture_link);
+            typeOfBoard_4.update();
 
             return GlobalResult.result_ok();
         } catch (Exception e) {

@@ -52,6 +52,7 @@ create table model_blocko_block (
   author_id                 varchar(255),
   type_of_block_id          varchar(255),
   producer_id               varchar(255),
+  order_position            integer,
   constraint pk_model_blocko_block primary key (id))
 ;
 
@@ -279,6 +280,7 @@ create table model_grid_widget (
   author_id                 varchar(255),
   type_of_widget_id         varchar(255),
   producer_id               varchar(255),
+  order_position            integer,
   constraint pk_model_grid_widget primary key (id))
 ;
 
@@ -602,6 +604,7 @@ create table model_type_of_block (
   name                      varchar(255),
   description               TEXT,
   project_id                varchar(255),
+  order_position            integer,
   constraint pk_model_type_of_block primary key (id))
 ;
 
@@ -632,6 +635,7 @@ create table model_type_of_widget (
   name                      varchar(255),
   description               TEXT,
   project_id                varchar(255),
+  order_position            integer,
   constraint pk_model_type_of_widget primary key (id))
 ;
 

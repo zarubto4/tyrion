@@ -4,22 +4,7 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
-import models.Model_BlockoBlock;
-import models.Model_BlockoBlockVersion;
-import models.Model_TypeOfBlock;
-import models.Model_Board;
-import models.Model_FileRecord;
-import models.Model_TypeOfBoard;
-import models.Model_VersionObject;
-import models.Model_BPair;
-import models.Model_BProgram;
-import models.Model_BProgramHwGroup;
-import models.Model_HomerInstance;
-import models.Model_HomerInstanceRecord;
-import models.Model_HomerServer;
-import models.Model_Project;
-import models.Model_MProject;
-import models.Model_MProjectProgramSnapShot;
+import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -1427,6 +1412,70 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    @ApiOperation(value = "manual order UP for Type of Block list",
+            tags = {"Type-of-Block"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result typeOfBlock_order_up(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+        try{
+
+            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.find.byId(blocko_block_id);
+            if(typeOfBlocks == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            // Kontrola oprávnění
+            if (! typeOfBlocks.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            typeOfBlocks.up();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "manual order Down for Type of Block list",
+            tags = {"Type-of-Block"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result typeOfBlock_order_down(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+        try{
+
+            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.find.byId(blocko_block_id);
+            if(typeOfBlocks == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            // Kontrola oprávnění
+            if (! typeOfBlocks.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            typeOfBlocks.down();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
 // BLOCK ###############################################################################################################
 
     @ApiOperation(value = "create new Block",
@@ -2046,6 +2095,70 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
 
         }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "manual order UP for Blocko Block list",
+            tags = {"Blocko-Block"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result blockoBlock_order_up(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
+        try{
+
+            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.find.byId(blocko_block_id);
+            if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock not found");
+
+            // Kontrola oprávnění
+            if (! blockoBlock.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            blockoBlock.up();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "manual order Down for Blocko Block list",
+            tags = {"Blocko-Block"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result blockoBlock_order_down(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
+        try{
+
+            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.find.byId(blocko_block_id);
+            if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock not found");
+
+            // Kontrola oprávnění
+            if (!blockoBlock.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            blockoBlock.down();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }

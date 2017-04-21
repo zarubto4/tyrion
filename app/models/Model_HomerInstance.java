@@ -1096,7 +1096,7 @@ public class Model_HomerInstance extends Model {
         try {
 
             logger.debug("Homer_Instance:: cloud_GRID verification_token::  Checking Token");
-            WS_HomerServer server = (WS_HomerServer) Controller_WebSocket.homer_servers.get(server_id());
+            WS_HomerServer server = Controller_WebSocket.homer_servers.get(server_id());
 
             Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
 

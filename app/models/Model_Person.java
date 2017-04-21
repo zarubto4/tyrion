@@ -136,6 +136,7 @@ public class Model_Person extends Model {
             throw new NullPointerException();
         }
     }
+    
 
     @JsonIgnore @Transient
     public String get_picture_path(){

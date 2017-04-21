@@ -137,7 +137,6 @@ public class Controller_Project extends Controller {
         } catch (Exception e) {
             return Loggy.result_internalServerError(e, request());
         }
-
     }
 
     @ApiOperation(value = "get Project",

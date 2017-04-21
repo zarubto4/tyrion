@@ -4,18 +4,7 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
-import models.Model_FileRecord;
-import models.Model_VersionObject;
-import models.Model_Person;
-import models.Model_GridWidget;
-import models.Model_GridWidgetVersion;
-import models.Model_TypeOfWidget;
-import models.Model_HomerInstanceRecord;
-import models.Model_HomerServer;
-import models.Model_Project;
-import models.Model_GridTerminal;
-import models.Model_MProgram;
-import models.Model_MProject;
+import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
@@ -1030,13 +1019,13 @@ public class Controller_Grid extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_TypeOfWidget_New help = form.get();
 
-            if(Model_TypeOfWidget.get_publicByName(help.name) != null)
-                return GlobalResult.result_BadRequest("Type of Widget with this name already exists, type a new one.");
+            if(Model_TypeOfWidget.get_publicByName(help.name) != null) return GlobalResult.result_BadRequest("Type of Widget with this name already exists, type a new one.");
 
             // Vytvoření objektu
             Model_TypeOfWidget typeOfWidget = new Model_TypeOfWidget();
             typeOfWidget.description = help.description;
-            typeOfWidget.name                = help.name;
+            typeOfWidget.name        = help.name;
+
 
             // Nejedná se o privátní Typ Widgetu
             if(help.project_id != null){
@@ -1325,6 +1314,71 @@ public class Controller_Grid extends Controller {
     }
 
 
+    @ApiOperation(value = "manual order UP for Type of Block list",
+            tags = {"Type-of-Block"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result typeOfWidget_order_up(@ApiParam(value = "type_of_widget_id String path",   required = true) String type_of_widget_id){
+        try{
+
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
+            if(typeOfWidget == null) return GlobalResult.notFoundObject("Tariff not found ");
+
+            // Kontrola oprávnění
+            if (! typeOfWidget.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            typeOfWidget.up();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "manual order Down for Type of Block list",
+            tags = {"Type-of-Block"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result typeOfWidget_order_down(@ApiParam(value = "type_of_widget_id String path",   required = true) String type_of_widget_id){
+        try{
+
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
+            if(typeOfWidget == null) return GlobalResult.notFoundObject("Tariff not found");
+
+            // Kontrola oprávnění
+            if (! typeOfWidget.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            typeOfWidget.down();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
 // GRID_WIDGET #########################################################################################################
 
     @ApiOperation(value = "create new Widget",
@@ -1955,6 +2009,72 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(gridWidgetVersion));
 
         }catch (Exception e) {
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "manual order UP for grid Widget list",
+            tags = {"Grid-Widget"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result gridWidget_order_up(@ApiParam(value = "grid_widget_id String path",   required = true) String grid_widget_id){
+        try{
+
+            Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
+            if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget not found");
+
+            // Kontrola oprávnění
+            if (! gridWidget.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            gridWidget.up();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Loggy.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "manual order Down for  grid Widgetlist",
+            tags = {"Grid-Widget"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result gridWidget_order_down(@ApiParam(value = "grid_widget_id String path",   required = true) String grid_widget_id){
+        try{
+
+            Model_GridWidget gridWidget =  Model_GridWidget.get_byId(grid_widget_id);
+            if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget not found");
+
+            // Kontrola oprávnění
+            if (!gridWidget.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            gridWidget.down();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
         }
     }

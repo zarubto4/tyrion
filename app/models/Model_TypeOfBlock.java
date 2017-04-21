@@ -30,7 +30,7 @@ public class Model_TypeOfBlock extends Model {
 
                                                                         @JsonIgnore @ManyToOne public Model_Project project;
 
-    @OneToMany(mappedBy="type_of_block", cascade=CascadeType.ALL) @ApiModelProperty(required = true) public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
+    @OneToMany(mappedBy="type_of_block", cascade=CascadeType.ALL) @ApiModelProperty(required = true) @OrderBy("order_position asc") public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
 
     @JsonIgnore  public Integer order_position;
 
@@ -45,6 +45,12 @@ public class Model_TypeOfBlock extends Model {
 
     @JsonIgnore @Override
     public void save() {
+
+        if(project == null){
+            order_position = Model_TypeOfBlock.find.where().isNull("project").findRowCount() + 1;
+        }else {
+            order_position = Model_TypeOfBlock.find.where().eq("project.id", project.id).findRowCount() + 1;
+        }
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
@@ -71,6 +77,8 @@ public class Model_TypeOfBlock extends Model {
 
     @JsonIgnore @Transient
     public void up(){
+
+        // Čísla mohou být shodná!! TODO
 
         Model_TypeOfBlock up = Model_TypeOfBlock.find.where().eq("order_position", (order_position-1) ).isNull("project").findUnique();
         if(up == null)return;
@@ -120,7 +128,7 @@ public class Model_TypeOfBlock extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    private static Model.Finder<String,Model_TypeOfBlock> find = new Finder<>(Model_TypeOfBlock.class);
+    public static Model.Finder<String,Model_TypeOfBlock> find = new Finder<>(Model_TypeOfBlock.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -134,7 +142,6 @@ public class Model_TypeOfBlock extends Model {
 
         List<Model_TypeOfBlock> typeOfBlocks = find.where().isNull("project").findList();
         typeOfBlocks.addAll( find.where().eq("project.participants.person.id", Controller_Security.get_person().id ).findList() );
-
         return typeOfBlocks;
     }
 
@@ -145,6 +152,6 @@ public class Model_TypeOfBlock extends Model {
 
     @JsonIgnore
     public static List<Model_TypeOfBlock> get_public() {
-        return find.where().isNull("project").findList();
+        return find.where().isNull("project").order().asc("order_position").findList();
     }
 }

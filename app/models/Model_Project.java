@@ -209,18 +209,9 @@ public class Model_Project extends Model {
 
         Model_HomerInstance instance = new Model_HomerInstance();
         instance.instance_type = Enum_Homer_instance_type.VIRTUAL;
-
-        // Máme Privátní server pod projektem  // TODO - Doplnit možnost registrace přímo na privátní server
-        if(12 > 19){
-
-            // TODO
-
-        // Server je v Developer Modu
-        }else{
-            instance.cloud_homer_server = Model_HomerServer.get_destination_server();
-        }
-
+        instance.cloud_homer_server = Model_HomerServer.get_destination_server();
         instance.save();
+
         this.private_instance = instance;
         super.save();
     }

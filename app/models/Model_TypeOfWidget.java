@@ -27,10 +27,9 @@ public class Model_TypeOfWidget extends Model{
                                                             @ApiModelProperty(required = true) public String name;
                     @Column(columnDefinition = "TEXT")      @ApiModelProperty(required = true) public String description;
 
+                                                                       @JsonIgnore @ManyToOne  public Model_Project project;
 
-    @JsonIgnore @ManyToOne  public Model_Project project;
-
-    @OneToMany(mappedBy="type_of_widget", cascade = CascadeType.ALL) @ApiModelProperty(required = true)  public List<Model_GridWidget> grid_widgets = new ArrayList<>();
+    @OneToMany(mappedBy="type_of_widget", cascade = CascadeType.ALL) @ApiModelProperty(required = true) @OrderBy("order_position asc") public List<Model_GridWidget> grid_widgets = new ArrayList<>();
 
     @JsonIgnore  public Integer order_position;
 
@@ -44,10 +43,18 @@ public class Model_TypeOfWidget extends Model{
     @JsonIgnore @Override
     public void save() {
 
+
+        if(project == null){
+            order_position = Model_TypeOfWidget.find.where().isNull("project").findRowCount() + 1;
+        }else {
+            order_position = Model_TypeOfWidget.find.where().eq("project.id", project.id).findRowCount() + 1;
+        }
+
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             if (Model_TypeOfWidget.find.byId(this.id) == null) break;
         }
+
         super.save();
     }
 
@@ -118,7 +125,7 @@ public class Model_TypeOfWidget extends Model{
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    private static Model.Finder<String,Model_TypeOfWidget> find = new Finder<>(Model_TypeOfWidget.class);
+    public static Model.Finder<String,Model_TypeOfWidget> find = new Finder<>(Model_TypeOfWidget.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -143,6 +150,6 @@ public class Model_TypeOfWidget extends Model{
 
     @JsonIgnore
     public static List<Model_TypeOfWidget> get_public() {
-        return find.where().isNull("project").findList();
+        return find.where().isNull("project").order().asc("order_position").findList();
     }
 }
