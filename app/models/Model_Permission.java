@@ -7,17 +7,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@ApiModel(description = "Model of Permission",
-        value = "Permission")
+@ApiModel( value = "Permission", description = "Model of Permission")
 public class Model_Permission extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+private static final Class_Logger terminal_logger = new Class_Logger(Model_Permission.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -42,6 +44,35 @@ public class Model_Permission extends Model {
         this.description = description;
         this.save();
     }
+
+
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+
+        super.save();
+
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.value);
+
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+
+    }
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

@@ -9,6 +9,7 @@ import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualizati
 import utilities.independent_threads.Check_update_for_hw_under_homer_ws;
 import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.independent_threads.SynchronizeHomerServer;
+import utilities.logger.Class_Logger;
 import web_socket.message_objects.homer_instance.WS_Message_Update_device_firmware;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Rejection_homer_server;
 
@@ -19,11 +20,19 @@ import java.util.concurrent.TimeoutException;
 
 public class WS_HomerServer extends WS_Interface_type {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_HomerServer.class);
+
+
+/* VALUES  -------------------------------------------------------------------------------------------------------------*/
+
     public boolean security_token_confirm;
 
     public Check_update_for_hw_under_homer_ws check_update_for_hw_under_homer_ws = null;
 
     public String identifikator;
+
 
     public WS_HomerServer(Model_HomerServer server) {
         super();
@@ -48,7 +57,7 @@ public class WS_HomerServer extends WS_Interface_type {
     @Override
     public void onClose() {
 
-        logger.warn("WS_HomerServer:: onClose - Starting cancaled procedure with virtual Homers");
+        terminal_logger.warn("WS_HomerServer:: onClose - Starting cancaled procedure with virtual Homers");
 
         this.update_thread.stop();
         Controller_WebSocket.homer_servers.remove(identifikator);
@@ -58,11 +67,11 @@ public class WS_HomerServer extends WS_Interface_type {
     @Override
     public void onMessage(ObjectNode json) {
 
-        logger.trace("WS_HomerServer:: "+ identifikator + " onMessage:: " + json.toString());
+        terminal_logger.trace("WS_HomerServer:: "+ identifikator + " onMessage:: " + json.toString());
 
         // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj
         if(!security_token_confirm){
-            logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
+            terminal_logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
             security_token_confirm_procedure();
 
             super.write_without_confirmation(new WS_Message_Rejection_homer_server().make_request());
@@ -97,7 +106,7 @@ public class WS_HomerServer extends WS_Interface_type {
                             }
 
                             default: {
-                                logger.error("WS_HomerServer:: onMessage:: Chanel becki:: not recognize messageType ->" + json.get("messageType").asText());
+                                terminal_logger.error("WS_HomerServer:: onMessage:: Chanel becki:: not recognize messageType ->" + json.get("messageType").asText());
                                 return;
                             }
 
@@ -105,14 +114,14 @@ public class WS_HomerServer extends WS_Interface_type {
                     }
 
                     default: {
-                        logger.error("WS_HomerServer:: onMessage:: message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
+                        terminal_logger.error("WS_HomerServer:: onMessage:: message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
 
                     }
 
                 }
 
             }else {
-                logger.error("Homer Server:: "+ identifikator + " Incoming message has not messageChannel!!!!");
+                terminal_logger.error("Homer Server:: "+ identifikator + " Incoming message has not messageChannel!!!!");
             }
 
     }
@@ -124,17 +133,17 @@ public class WS_HomerServer extends WS_Interface_type {
     public void security_token_confirm_procedure(){
         if(procedure == null ){
             procedure = new Security_WS_token_confirm_procedure(this);
-            logger.trace("WS_HomerServer:: " + this.identifikator + " security_token_confirm_procedure: Independent Thread for secure starting");
+            terminal_logger.trace("WS_HomerServer:: " + this.identifikator + " security_token_confirm_procedure: Independent Thread for secure starting");
             procedure.start();
         }else {
-            logger.trace("WS_HomerServer:: " + this.identifikator + " security_token_confirm_procedure: Independent Thread for secure was started already");
+            terminal_logger.trace("WS_HomerServer:: " + this.identifikator + " security_token_confirm_procedure: Independent Thread for secure was started already");
         }
     }
 
     //
     public ObjectNode super_write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries)  throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException {
         if(procedure == null) {
-            logger.error("WS_HomerServer:: " + this.identifikator + " Its prohybited send WS message to Homer server witch Super - its allowed only for Security_WS_token_confirm_procedure");
+            terminal_logger.error("WS_HomerServer:: " + this.identifikator + " Its prohybited send WS message to Homer server witch Super - its allowed only for Security_WS_token_confirm_procedure");
         }
         return super.write_with_confirmation(json,time,delay, number_of_retries);
     }
@@ -143,10 +152,10 @@ public class WS_HomerServer extends WS_Interface_type {
     public void synchronize_configuration(){
         if(synchronize == null ){
             synchronize = new SynchronizeHomerServer(this);
-            logger.trace("WS_HomerServer:: " + this.identifikator + " synchronize_configuration: Independent Thread for secure starting");
+            terminal_logger.trace("WS_HomerServer:: " + this.identifikator + " synchronize_configuration: Independent Thread for secure starting");
             synchronize.start();
         }else {
-            logger.trace("WS_HomerServer:: " + this.identifikator + " synchronize_configuration: Independent Thread for secure was started already");
+            terminal_logger.trace("WS_HomerServer:: " + this.identifikator + " synchronize_configuration: Independent Thread for secure was started already");
         }
     }
 
@@ -161,7 +170,7 @@ public class WS_HomerServer extends WS_Interface_type {
     public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries)  throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{
 
         if(!security_token_confirm){
-            logger.warn("WS_HomerServer:: " + this.identifikator + " write_with_confirmation:: This Websocket is not confirm");
+            terminal_logger.warn("WS_HomerServer:: " + this.identifikator + " write_with_confirmation:: This Websocket is not confirm");
             security_token_confirm_procedure();
             throw new InterruptedException();
         }
@@ -174,7 +183,7 @@ public class WS_HomerServer extends WS_Interface_type {
     public void write_without_confirmation(ObjectNode json){
 
         if(!security_token_confirm){
-            logger.warn("WS_HomerServer:: write_without_confirmation:: This Websocket is not confirm");
+            terminal_logger.warn("WS_HomerServer:: write_without_confirmation:: This Websocket is not confirm");
             security_token_confirm_procedure();
         }
 
@@ -185,7 +194,7 @@ public class WS_HomerServer extends WS_Interface_type {
     public void write_without_confirmation(String messageId, ObjectNode json){
 
         if(!security_token_confirm){
-            logger.warn("WS_HomerServer:: " + this.identifikator + " write_without_confirmation:: This Websocket is not confirm");
+            terminal_logger.warn("WS_HomerServer:: " + this.identifikator + " write_without_confirmation:: This Websocket is not confirm");
             security_token_confirm_procedure();
         }
 
@@ -228,7 +237,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
                     if (!task_list.isEmpty()) {
 
-                        logger.debug("WS_HomerServer:: update_thread:: Task List:: " + task_list.size());
+                        terminal_logger.debug("WS_HomerServer:: update_thread:: Task List:: " + task_list.size());
 
                         Utilities_HW_Updater_Actualization_Task task = task_list.get(0);
 
@@ -238,7 +247,7 @@ public class WS_HomerServer extends WS_Interface_type {
                             task_list.remove(task);
                         }
                         else {
-                            logger.error("WS_HomerServer:: update_thread:: Instance noc Exxist ");
+                            terminal_logger.error("WS_HomerServer:: update_thread:: Instance noc Exxist ");
                         }
 
                     } else {
@@ -247,7 +256,7 @@ public class WS_HomerServer extends WS_Interface_type {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    logger.error("WS_HomerServer:: update_thread:: Error", e);
+                    terminal_logger.error("WS_HomerServer:: update_thread:: Error", e);
                 }
             }
         }

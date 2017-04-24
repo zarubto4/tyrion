@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -14,6 +17,8 @@ import java.util.UUID;
 public class Model_Invitation extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(_Model_ExampleModelName.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -29,16 +34,35 @@ public class Model_Invitation extends Model{
     @JsonProperty @ApiModelProperty(required = true)
     public Model_Person invited_person(){return Model_Person.find.where().eq("mail", this.mail).findUnique();}
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
+ /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+   @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             if (Model_Invitation.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+
+        super.update();
+
+        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Invitation.class, project.id, id))).start();
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -50,6 +74,8 @@ public class Model_Invitation extends Model{
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_Invitation> find = new Finder<>(Model_Invitation.class);

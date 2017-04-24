@@ -11,7 +11,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_state;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -26,11 +27,11 @@ public class Controller_Notification extends Controller {
 
   @Inject Controller_Project controllerProgramingPackage;
 
-  //####################################################################################################################
-  static play.Logger.ALogger logger = play.Logger.of("Loggy");
+// LOGGER ##############################################################################################################
 
+  private static final Class_Logger terminal_logger = new Class_Logger(Controller_Notification.class);
 
-
+///###################################################################################################################*/
 
     // Public REST-API (Zdokumentované ve SWAGGER)  #######################################################################
 
@@ -61,7 +62,7 @@ public class Controller_Notification extends Controller {
 
      } catch (Exception e) {
        e.printStackTrace();
-       return Loggy.result_internalServerError(e, request());
+       return Server_Logger.result_internalServerError(e, request());
      }
   }
 
@@ -95,7 +96,7 @@ public class Controller_Notification extends Controller {
       return GlobalResult.result_ok();
 
     } catch (Exception e) {
-      return Loggy.result_internalServerError(e, request());
+      return Server_Logger.result_internalServerError(e, request());
     }
   }
 
@@ -143,7 +144,7 @@ public class Controller_Notification extends Controller {
       return GlobalResult.result_ok();
 
     } catch (Exception e) {
-      return Loggy.result_internalServerError(e, request());
+      return Server_Logger.result_internalServerError(e, request());
     }
   }
 
@@ -175,7 +176,7 @@ public class Controller_Notification extends Controller {
       return GlobalResult.result_ok("Notifications were sent again");
 
     }catch (Exception e){
-      return Loggy.result_internalServerError(e, request());
+      return Server_Logger.result_internalServerError(e, request());
     }
   }
 
@@ -237,7 +238,7 @@ public class Controller_Notification extends Controller {
       }
 
     }catch (Exception e){
-      return Loggy.result_internalServerError(e, request());
+      return Server_Logger.result_internalServerError(e, request());
     }
   }
 

@@ -11,7 +11,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.Enum_Garfield_burning_state;
 import utilities.enums.Enum_Cloud_HomerServer_type;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
@@ -28,8 +29,9 @@ import java.util.Date;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Utilities_Hardware_generator_Controller extends Controller {
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Utilities_Hardware_generator_Controller.class);
 
 // - Oblužné metody - primárně pro Wiev Tyriona ------------------------------------------------------------------------
 
@@ -85,7 +87,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             return address;
 
         }catch (NullPointerException e){
-            logger.error("HardwareGeneratorController:: get_macAddress_type_of_board_from:: ERROR! targetName is not set in configuration file!!",e);
+            terminal_logger.error("HardwareGeneratorController:: get_macAddress_type_of_board_from:: ERROR! targetName is not set in configuration file!!",e);
             return "ERROR! targetName is not set in configuration file!!";
         }
     }
@@ -150,7 +152,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
 
             // Ověřím full_id - pokud už existuje a je shodný s MacAdressou - pak zašlu jen novou konfiguraci
             if( Model_Board.get_byId(help.full_id) != null){
-                logger.debug("HardwareGeneratorController:: new_hardware_request:: Full_Id is used - Just new Configuration!");
+                terminal_logger.debug("HardwareGeneratorController:: new_hardware_request:: Full_Id is used - Just new Configuration!");
             }
 
 
@@ -231,7 +233,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             }
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -353,7 +355,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 }

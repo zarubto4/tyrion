@@ -7,7 +7,8 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
@@ -20,8 +21,9 @@ import java.util.List;
 @Security.Authenticated(Secured_API.class)
 public class Controller_Actualization extends Controller {
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+// LOGGER ##############################################################################################################
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Actualization.class);
 
 // REST - API ----------------------------------------------------------------------------------------------------------
 
@@ -53,8 +55,7 @@ public class Controller_Actualization extends Controller {
             return GlobalResult.result_ok(Json.toJson(procedure));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -88,7 +89,7 @@ public class Controller_Actualization extends Controller {
             return GlobalResult.result_ok(Json.toJson(procedures));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -130,7 +131,7 @@ public class Controller_Actualization extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(procedure));
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

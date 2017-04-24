@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.enums.*;
+import utilities.logger.Class_Logger;
 import utilities.notifications.NotificationHandler;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Date;
@@ -26,13 +27,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of Notification",
-        value = "Notification")
+@ApiModel( value = "Notification", description = "Model of Notification" )
 public class Model_Notification extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    static play.Logger.ALogger logger = play.Logger.of("Notification");
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Notification.class);
+
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -73,7 +74,7 @@ public class Model_Notification extends Model {
             return array;
 
         }catch (Exception e){
-            logger.error("Parsing notification body error", e);
+            terminal_logger.error("notification_body:: Parsing notification body error", e);
             return new ArrayList<Swagger_Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
         }
     }
@@ -88,7 +89,7 @@ public class Model_Notification extends Model {
             return buttons;
 
         }catch (Exception e){
-            logger.error("Parsing notification buttons error", e);
+            terminal_logger.error("buttons:: Parsing notification buttons error", e);
             return new ArrayList<Swagger_Notification_Button>();   // Vracím prázdný list - ale reportuji chybu
         }
 
@@ -245,7 +246,7 @@ public class Model_Notification extends Model {
 
 
             default:{
-                logger.error("Model_Notification:: setObject:: Error:: Notification Unsupported Object " + class_name);
+                terminal_logger.error("Model_Notification:: setObject:: Error:: Notification Unsupported Object " + class_name);
             }
         }
 
@@ -273,7 +274,7 @@ public class Model_Notification extends Model {
     @Override
     public void save(){
         // Notifikace je automaticky uložena pomocí save_object()
-        logger.info("Notifikace je automaticky uložena pomocí save_object()");
+        terminal_logger.info("Notifikace je automaticky uložena pomocí save_object()");
         try {
             throw new Exception("Not supported! Notifications are saved automatically using save_object()");
         } catch (Exception e) {
@@ -351,7 +352,7 @@ public class Model_Notification extends Model {
         try {
             NotificationHandler.addToQueue(this);
         }catch (NullPointerException npe){
-            logger.error("Method probably misused, use this method only when you resend notifications. If notification contains person.");
+            terminal_logger.error("Method probably misused, use this method only when you resend notifications. If notification contains person.");
         }
 
     }

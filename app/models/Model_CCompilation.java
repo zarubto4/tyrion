@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Compile_status;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.helps_objects.Notification_Text;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
@@ -24,6 +24,8 @@ public class Model_CCompilation extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_CCompilation.class);
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                                          @Id public String id;
@@ -32,7 +34,7 @@ public class Model_CCompilation extends Model {
     @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
                                    @JoinColumn(name="c_compilation_version") public Model_VersionObject version_object;
 
-                                                                @JsonIgnore  public Enum_Compile_status status; // Používáme jako flag pro mezičas kdy se verze kompiluje a uživatel vyvolá get Version
+                                                                @JsonIgnore  public Enum_Compile_status status;
 
     @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")                public String virtual_input_output;
                                                             @JsonIgnore   @Column(columnDefinition = "TEXT")                public String c_comp_build_url;
@@ -42,14 +44,25 @@ public class Model_CCompilation extends Model {
     @JsonIgnore  public String firmware_version_mbed;
     @JsonIgnore  public String firmware_version_lib;
     @JsonIgnore  public String firmware_build_id;
-    @JsonIgnore  public String firmware_build_datetime;   // Kdy bylo vybylděno
+    @JsonIgnore  public String firmware_build_datetime;
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public Model_FileRecord compilation(){
+        return Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findUnique();
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
@@ -60,14 +73,21 @@ public class Model_CCompilation extends Model {
     }
 
     @JsonIgnore @Override public void update() {
-        Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_VersionObject.class, version_object.c_program.project_id(), this.version_object.id));
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+
+        // Call notification about model update
+        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_VersionObject.class, version_object.c_program.project_id(), version_object.id))).start();
+
         super.update();
     }
 
-    @JsonIgnore @Transient
-    public Model_FileRecord compilation(){
-        return Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findUnique();
+
+    @JsonIgnore @Override public void delete() {
+        terminal_logger.error("delete:: This object is not legitimate to remove. ");
+
     }
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -85,7 +105,7 @@ public class Model_CCompilation extends Model {
                     .send(Controller_Security.get_person());
 
         }catch (Exception e){
-            Loggy.internalServerError("Model_CCompilation:: notification_compilation_start", e);
+            terminal_logger.internalServerError("Model_CCompilation:: notification_compilation_start", e);
         }
     }
 
@@ -102,7 +122,7 @@ public class Model_CCompilation extends Model {
                     .send(Controller_Security.get_person());
 
         }catch (Exception e){
-            Loggy.internalServerError("Model_CCompilation:: notification_compilation_success", e);
+            terminal_logger.internalServerError("Model_CCompilation:: notification_compilation_success", e);
         }
 
     }
@@ -119,7 +139,7 @@ public class Model_CCompilation extends Model {
                     .setText(new Notification_Text().setText(reason).setBoltText())
                     .send(Controller_Security.get_person());
         }catch (Exception e){
-            Loggy.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_warn", e);
+            terminal_logger.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_warn", e);
         }
     }
 
@@ -135,24 +155,27 @@ public class Model_CCompilation extends Model {
                     .setText(new Notification_Text().setText(result).setBoltText())
                     .send(Controller_Security.get_person());
         }catch (Exception e){
-            Loggy.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_error", e);
+            terminal_logger.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_error", e);
         }
     }
 
     @JsonIgnore @Transient
     public void notification_new_actualization_request_on_version(){
-        try {
-            new Model_Notification()
-                    .setImportance(Enum_Notification_importance.normal)
-                    .setLevel(Enum_Notification_level.info)
-                    .setText(new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" from Program "))
-                    .setObject(this.version_object.c_program)
-                    .send(Controller_Security.get_person());
-        }catch (Exception e){
-            Loggy.internalServerError("Model_CCompilation:: notification_new_actualization_request_on_version", e);
-        }
+
+        new Thread(() -> {
+            try {
+                new Model_Notification()
+                        .setImportance(Enum_Notification_importance.normal)
+                        .setLevel(Enum_Notification_level.info)
+                        .setText(new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
+                        .setObject(this)
+                        .setText(new Notification_Text().setText(" from Program "))
+                        .setObject(this.version_object.c_program)
+                        .send(Controller_Security.get_person());
+            } catch (Exception e) {
+                terminal_logger.internalServerError("Model_CCompilation:: notification_new_actualization_request_on_version", e);
+            }
+        }).start();
     }
 
 

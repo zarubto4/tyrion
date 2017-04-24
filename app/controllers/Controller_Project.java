@@ -17,7 +17,8 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.Email;
 import utilities.enums.*;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -34,8 +35,8 @@ public class Controller_Project extends Controller {
 
 // LOGGER ##############################################################################################################
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Person.class);
+    
 // GENERAL PROJECT #####################################################################################################
 
     @ApiOperation(value = "create new Project",
@@ -106,7 +107,7 @@ public class Controller_Project extends Controller {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -135,7 +136,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok(Json.toJson( projects ));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -190,7 +191,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
          } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -237,7 +238,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -300,7 +301,7 @@ public class Controller_Project extends Controller {
 
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -394,7 +395,7 @@ public class Controller_Project extends Controller {
                             .send(mail, "Invitation to Collaborate");
 
                 } catch (Exception e) {
-                    logger.error ("Sending mail -> critical error", e);
+                    terminal_logger.error ("project_invite:: Sending mail -> critical error", e);
                     e.printStackTrace();
                 }
             }
@@ -421,7 +422,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -477,7 +478,7 @@ public class Controller_Project extends Controller {
 
             return GlobalResult.result_ok();
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -535,7 +536,7 @@ public class Controller_Project extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(participant));
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -627,7 +628,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

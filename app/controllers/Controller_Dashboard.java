@@ -11,7 +11,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.twirl.api.Html;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
@@ -74,9 +75,9 @@ public class Controller_Dashboard extends Controller {
 
     @Inject Application application;
 
-    // Logger pro zaznamenávání chyb
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+// LOGGER ##############################################################################################################
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Board.class);
 
 
 // Index (úvod) ########################################################################################################
@@ -85,8 +86,6 @@ public class Controller_Dashboard extends Controller {
     public Result return_page( Html content){
         return ok( main.render(content) );
     }
-
-// Index (úvod) ########################################################################################################
 
     // Úvodní zobrazení Dashboard
     public Result index() {
@@ -102,19 +101,19 @@ public class Controller_Dashboard extends Controller {
     public Result show_readme() throws IOException {
         try {
 
-            logger.debug("Creating show_readme.html content");
+            terminal_logger.debug("show_readme:: Creating show_readme.html content");
 
             String text = "";
             for (String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8)) text += line + "\n";
 
             Html readme_html = readme.render(new Html(new PegDownProcessor().markdownToHtml(text)));
 
-            logger.debug("Return show_readme.html content");
+            terminal_logger.debug("show_readme:: Return show_readme.html content");
 
             return return_page(readme_html);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -122,7 +121,7 @@ public class Controller_Dashboard extends Controller {
     public Result show_wiki(String file_name) throws IOException {
         try {
 
-            logger.debug("Creating wiki content");
+            terminal_logger.debug("show_wiki:: Creating wiki content");
 
             String text = "";
 
@@ -141,7 +140,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(wiki_html);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -151,7 +150,7 @@ public class Controller_Dashboard extends Controller {
     public Result show_diff_on_Api(String file_name_old, String file_name_new) throws IOException, NullPointerException {
         try {
 
-            logger.debug("show_diff_on_Api diff_html content");
+            terminal_logger.debug("show_diff_on_Api:: diff_html content");
 
             List<String> fileNames = new ArrayList<>();
             File[] files = new File(application.path() + "/conf/swagger_history").listFiles();
@@ -164,11 +163,11 @@ public class Controller_Dashboard extends Controller {
             Swagger_Diff swagger_diff = Swagger_diff_Controller.set_API_Changes(file_name_old, file_name_new);
             Html content = Api_Div.render(swagger_diff, fileNames);
 
-            logger.debug("Return Api_Div.html content");
+            terminal_logger.debug("show_diff_on_Api:: eturn Api_Div.html content");
             return return_page(content);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -198,7 +197,7 @@ public class Controller_Dashboard extends Controller {
             }
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -223,7 +222,7 @@ public class Controller_Dashboard extends Controller {
             }
 
         } catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -246,7 +245,7 @@ public class Controller_Dashboard extends Controller {
             }
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -279,7 +278,7 @@ public class Controller_Dashboard extends Controller {
             }
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -291,7 +290,7 @@ public class Controller_Dashboard extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(server.ping()));
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -302,7 +301,7 @@ public class Controller_Dashboard extends Controller {
             WS_Message_Ping_instance result = instance.ping();
             return GlobalResult.result_ok(Json.toJson(result));
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -317,46 +316,10 @@ public class Controller_Dashboard extends Controller {
 
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
-
-// LOGGY ###############################################################################################################
-
-    // Vykreslí šablonu s bugy
-    public Result show_all_logs() {
-
-        logger.debug("Trying to render loggy.html content");
-
-        Html content =  loggy.render( Loggy.getErrors() );
-        return return_page(content);
-
-    }
-
-    // Nahraje konkrétní bug na Youtrack
-    public F.Promise<Result> loggy_report_bug_to_youtrack(String bug_id) {
-        logger.debug("Trying to upload bug to youtrack");
-
-        F.Promise<Result> p = Loggy.upload_to_youtrack(bug_id);
-        return p.map((result) -> redirect("/admin/bugs"));
-    }
-
-    // Odstraní konkrétní bug ze seznamu (souboru)
-    public Result loggy_remove_bug(String bug_id) {
-        logger.debug("Removing bug");
-
-        Loggy.remove_error(bug_id);
-        return redirect("/admin/bugs");
-    }
-
-    // Vyprázdní soubory se záznamem chyb
-    public Result loggy_remove_all_bugs() {
-        logger.debug("Trying to remove all bugs");
-        Loggy.remove_all_errors();
-
-        return redirect("/admin/bugs");
-    }
 
 // ADMIN ###############################################################################################################
 
@@ -398,7 +361,7 @@ public class Controller_Dashboard extends Controller {
             return return_page ( content );
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -410,7 +373,7 @@ public class Controller_Dashboard extends Controller {
             return return_page ( content );
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -422,7 +385,7 @@ public class Controller_Dashboard extends Controller {
             return return_page ( content );
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -441,7 +404,7 @@ public class Controller_Dashboard extends Controller {
             }
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -452,7 +415,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(external_servers_content);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -474,7 +437,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(user_summary_content);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -486,7 +449,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(permissions_content);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -500,7 +463,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(permissions_content);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -512,7 +475,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(blocko_objects_content);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -546,7 +509,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(public_code_content);
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }
@@ -581,7 +544,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(grid_public_content);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -592,7 +555,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(mac_adress_content);
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -671,7 +634,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(test_content);
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }
@@ -683,7 +646,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(test_content);
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);   
             return ok();
         }
     }
@@ -695,7 +658,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(list_of_tariffs);
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }
@@ -710,7 +673,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(list_of_tariffs);
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }
@@ -726,7 +689,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(extension_page);
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }
@@ -738,7 +701,7 @@ public class Controller_Dashboard extends Controller {
             return index();
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }

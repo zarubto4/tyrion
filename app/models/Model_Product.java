@@ -15,6 +15,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ import java.util.UUID;
 public class Model_Product extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Product.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -64,7 +67,7 @@ public class Model_Product extends Model {
 
 
 
- /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true)
     @JsonProperty public List<Model_Invoice> invoices(){
@@ -110,22 +113,10 @@ public class Model_Product extends Model {
         }
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @ApiModel(description = "Model for Proforma Details for next invoice",
-            value = "Next_Invoice_Product")
-    public class Next_Invoice_Product{
-        @ApiModelProperty(required = true, readOnly = true) public String id;
-
-    }
-
-/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
-
-/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore private String azure_product_link;
 
     @JsonIgnore @Override public void save() {
 
@@ -149,6 +140,38 @@ public class Model_Product extends Model {
         super.save();
     }
 
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+
+    }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+    @ApiModel(description = "Model for Proforma Details for next invoice",
+            value = "Next_Invoice_Product")
+    public class Next_Invoice_Product{
+        @ApiModelProperty(required = true, readOnly = true) public String id;
+
+    }
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+
+/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore private String azure_product_link;
+
     @JsonIgnore @Transient
     public CloudBlobContainer get_Container(){
         try {
@@ -170,8 +193,8 @@ public class Model_Product extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public static final String read_permission_docs   = "read: Bla bla bla";
-    public static final String create_permission_docs   = "read: Bla bla bla";
+    public static final String read_permission_docs   = "read: Bla bla bla";    // TODO
+    public static final String create_permission_docs   = "read: Bla bla bla";  // TODO
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
@@ -205,9 +228,6 @@ public class Model_Product extends Model {
 
     public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
-
-    public static Model.Finder<String,Model_Product> find = new Finder<>(Model_Product.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -235,6 +255,11 @@ public class Model_Product extends Model {
     public static List<Model_Product> get_applicableByOwner(String owner_id) {
         return find.where().eq("active",true).eq("payment_details.person.id", owner_id).select("id").select("product_individual_name").select("general_tariff.tariff_name").findList();
     }
+
+    /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
+    public static Model.Finder<String,Model_Product> find = new Finder<>(Model_Product.class);
+
 }
 
 

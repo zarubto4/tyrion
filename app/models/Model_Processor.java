@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ public class Model_Processor extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Processor.class);
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                         @Id @ApiModelProperty(required = true)  public String id;
@@ -29,9 +32,12 @@ public class Model_Processor extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
 
     @JsonIgnore @Override
     public void save() {
@@ -41,6 +47,21 @@ public class Model_Processor extends Model {
             if (Model_Processor.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

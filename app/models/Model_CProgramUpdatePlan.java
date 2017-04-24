@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.enums.*;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
 import web_socket.message_objects.homer_instance.WS_Message_UpdateProcedure_progress;
@@ -29,6 +29,8 @@ import java.util.UUID;
 public class Model_CProgramUpdatePlan extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_CProgramUpdatePlan.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -53,6 +55,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer errorCode;
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
@@ -113,8 +116,7 @@ public class Model_CProgramUpdatePlan extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore
-    public Swagger_C_Program_Update_plan_Short_Detail get_short_version_for_board(){
+    @JsonIgnore public Swagger_C_Program_Update_plan_Short_Detail get_short_version_for_board(){
 
         Swagger_C_Program_Update_plan_Short_Detail detail = new Swagger_C_Program_Update_plan_Short_Detail();
         detail.id = this.id;
@@ -139,8 +141,13 @@ public class Model_CProgramUpdatePlan extends Model {
         return detail;
     }
 
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
     @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         if(this.state == null) this.state = Enum_CProgram_updater_state.not_start_yet;
         this.date_of_create = new Date();
@@ -157,6 +164,8 @@ public class Model_CProgramUpdatePlan extends Model {
     @JsonIgnore @Override
     public void update() {
 
+        terminal_logger.trace("update :: operation");
+
         super.update();
 
         if(actualization_procedure.state == Enum_Update_group_procedure_state.not_start_yet || actualization_procedure.state == Enum_Update_group_procedure_state.in_progress){
@@ -167,13 +176,20 @@ public class Model_CProgramUpdatePlan extends Model {
                || this.state  == Enum_CProgram_updater_state.critical_error
                ){
 
-                System.out.println("***************** Budu updatovat Acutalization procedure! ************************* ");
-                actualization_procedure.update_state();
+                terminal_logger.trace("update :: call in new thread actualization_procedure.update_state()");
+                new Thread(() -> actualization_procedure.update_state()).start();
+
             }
 
         }
 
         cache_model_update_plan.put(id, this);
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -204,8 +220,6 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
     @JsonIgnore @Transient
     public static void update_procedure_progress(WS_Message_UpdateProcedure_progress progress_message){
 
@@ -213,7 +227,7 @@ public class Model_CProgramUpdatePlan extends Model {
             Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_model(progress_message.updatePlanId);
 
             if (plan == null) {
-                logger.error("Model_CProgramUpdatePlan:: update_procedure_progress:: Error:: Model_CProgramUpdatePlan id " + progress_message.updatePlanId + " not found");
+                terminal_logger.error( "update_procedure_progress:: Error:: Model_CProgramUpdatePlan id " + progress_message.updatePlanId + " not found");
                 return;
             }
 
@@ -237,7 +251,7 @@ public class Model_CProgramUpdatePlan extends Model {
                             .send_under_project(plan.actualization_procedure.get_project_id());
 
                 } catch (Exception e) {
-                    Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_progress", e);
+                    terminal_logger.internalServerError("update_procedure_progress", e);
                 }
 
             } else if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_TO_YODA) {
@@ -260,7 +274,7 @@ public class Model_CProgramUpdatePlan extends Model {
                             .send_under_project(plan.actualization_procedure.get_project_id());
 
                 } catch (Exception e) {
-                    Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_progress", e);
+                    terminal_logger.internalServerError("update_procedure_progress", e);
                 }
 
             } else if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_FROM_YODA_TO_DEVICE) {
@@ -286,18 +300,18 @@ public class Model_CProgramUpdatePlan extends Model {
                             .send_under_project(plan.actualization_procedure.get_project_id());
 
                 } catch (Exception e) {
-                    Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_progress", e);
+                    terminal_logger.internalServerError("update_procedure_progress", e);
                 }
 
             } else if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.CHECKING_RESULT) {
                 // TODO Tom - rozmyslet zda neskipnout pro prozatimní nevyužitelnost ??
-                System.err.println("Model_CProgramUpdatePlan:: Checking devie TODOO");
+                System.err.println("Checking devie TODOO");
             } else {
-                logger.error("Model_CProgramUpdatePlan:: update_procedure_progress:: Error:: Enum_UpdateProcedure_progress_type id " + progress_message.typeOfProgress + " not recognize");
+                terminal_logger.error("update_procedure_progress:: Error:: Enum_UpdateProcedure_progress_type id " + progress_message.typeOfProgress + " not recognize");
             }
 
         }catch (Exception e) {
-            Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_progress", e);
+            terminal_logger.internalServerError("update_procedure_progress", e);
         }
     }
 
@@ -310,7 +324,7 @@ public class Model_CProgramUpdatePlan extends Model {
             Model_CProgramUpdatePlan plan = get_model(procedure_result.updatePlanId);
 
             if(plan == null){
-                logger.error("Model_CProgramUpdatePlan:: update_procedure_state:: Error: Model_CProgramUpdatePlan not found under id:: " + procedure_result.updatePlanId);
+                terminal_logger.error("update_procedure_state:: Error: Model_CProgramUpdatePlan not found under id:: " + procedure_result.updatePlanId);
                 return;
             }
 
@@ -321,7 +335,7 @@ public class Model_CProgramUpdatePlan extends Model {
             Enum_Hardware_update_state_from_Homer update_state = Enum_Hardware_update_state_from_Homer.getUpdate_state(procedure_result.updateState);
 
             if(update_state == null){
-                logger.error("Model_CProgramUpdatePlan:: update_procedure_state:: Error: Enum_Hardware_update_state_from_Homer not recognize:: " + procedure_result.updateState);
+                terminal_logger.error( "update_procedure_state:: Error: Enum_Hardware_update_state_from_Homer not recognize:: " + procedure_result.updateState);
                 return;
             }
 
@@ -370,7 +384,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
 
         }catch (Exception e) {
-            Loggy.internalServerError("Model_CProgramUpdatePlan:: update_procedure_state", e);
+            terminal_logger.internalServerError(Model_CProgramUpdatePlan.class.getClass().getSimpleName() + ":: update_procedure_state :: Error", e);
         }
     }
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
@@ -387,12 +401,6 @@ public class Model_CProgramUpdatePlan extends Model {
 
     public static Model_CProgramUpdatePlan get_model(String id){
 
-        if(cache_model_update_plan == null){
-            logger.error("Model_CProgramUpdatePlan:: get_model:: cache_model_homer_server is null");
-            return null;
-        }
-
-
         Model_CProgramUpdatePlan model = cache_model_update_plan.get(id);
 
         if(model == null){
@@ -400,7 +408,7 @@ public class Model_CProgramUpdatePlan extends Model {
             model = Model_CProgramUpdatePlan.find.byId(id);
 
             if (model == null) {
-                logger.error("Model_CProgramUpdatePlan:: get_model:: id not found:: " + id);
+                terminal_logger.error( ":: get_model :: id not found:: " + id);
                 return null;
             }
 
@@ -411,7 +419,7 @@ public class Model_CProgramUpdatePlan extends Model {
     }
 
 
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_CProgramUpdatePlan> find = new Model.Finder<>(Model_CProgramUpdatePlan.class);
 
 }

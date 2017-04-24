@@ -17,7 +17,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
@@ -32,13 +32,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of Version_Object",
-        value = "Version_Object")
+@ApiModel( value = "Version_Object", description = "Model of Version_Object")
 public class Model_VersionObject extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_ValidationToken.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
                                                                 @Id @ApiModelProperty(required = true) public String id;
@@ -164,7 +163,7 @@ public class Model_VersionObject extends Model {
             return help;
 
         }catch (Exception e){
-            Loggy.internalServerError("Model_VersionObject:: get_short_c_program_version", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -184,7 +183,7 @@ public class Model_VersionObject extends Model {
            return help;
 
        }catch (Exception e){
-           Loggy.internalServerError("Model_VersionObject:: get_short_b_program_version", e);
+           terminal_logger.internalServerError(e);
            return null;
        }
     }
@@ -204,7 +203,7 @@ public class Model_VersionObject extends Model {
             return help;
 
         }catch (Exception e){
-            Loggy.internalServerError("Model_VersionObject:: get_short_m_program_version", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -242,7 +241,7 @@ public class Model_VersionObject extends Model {
         Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", this.c_program.id).findUnique();
         if(typeOfBoard == null){
 
-            logger.error("Version Object:: compile_program_procedure:: Type_of_Board not found!!! - Not found way how to compile that");
+            terminal_logger.error("compile_program_procedure:: Type_of_Board not found!!! - Not found way how to compile that");
 
             ObjectNode result = Json.newObject();
             result.put("status", "error");
@@ -267,7 +266,7 @@ public class Model_VersionObject extends Model {
         Model_FileRecord file = Model_FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", id).findUnique();
         if(file == null){
 
-            logger.error("Version Object:: compile_program_procedure:: File not found!!! - Version is not compilable!");
+            terminal_logger.error("compile_program_procedure:: File not found!!! - Version is not compilable!");
 
             c_compilation.status = Enum_Compile_status.file_with_code_not_found;
             c_compilation.update();
@@ -285,7 +284,7 @@ public class Model_VersionObject extends Model {
         Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
         if(form.hasErrors()){
 
-            logger.error("Version Object:: compile_program_procedure:: File found but json is not parsable!!! - Version!");
+            terminal_logger.error("compile_program_procedure:: File found but json is not parsable!!! - Version!");
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
 
@@ -369,7 +368,7 @@ public class Model_VersionObject extends Model {
         // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
         if (!Model_CompilationServer.is_online()) {
 
-            logger.warn("Version Object:: compile_program_procedure:: Server is offline!!!");
+            terminal_logger.warn("compile_program_procedure:: Server is offline!!!");
 
             c_compilation.status = Enum_Compile_status.server_was_offline;
             c_compilation.update();
@@ -390,7 +389,7 @@ public class Model_VersionObject extends Model {
         // Když obsahuje chyby - vrátím rovnou Becki
         if(!compilation.buildErrors.isEmpty()) {
 
-            logger.trace("Version Object:: compile_program_procedure:: compilation contains user Errors");
+            terminal_logger.trace("compile_program_procedure:: compilation contains user Errors");
 
             c_compilation.status = Enum_Compile_status.compiled_with_code_errors;
             c_compilation.update();
@@ -400,7 +399,7 @@ public class Model_VersionObject extends Model {
 
         if(compilation.interface_code == null || compilation.buildUrl == null){
 
-            logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
+            terminal_logger.error("compile_program_procedure:: Json Result from Compilation server has not required labels!");
 
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
@@ -414,7 +413,7 @@ public class Model_VersionObject extends Model {
 
         if(compilation.error != null || !compilation.status.equals("success")){
 
-            logger.error("Version Object:: compile_program_procedure:: Json Result from Compilation server has not required labels!");
+            terminal_logger.error("compile_program_procedure:: Json Result from Compilation server has not required labels!");
 
 
             c_compilation.status = Enum_Compile_status.compilation_server_error;
@@ -429,11 +428,11 @@ public class Model_VersionObject extends Model {
 
         if(compilation.status.equals("success")) {
 
-            logger.trace("Version Object:: compile_program_procedure:: compilation was successfull");
+            terminal_logger.trace("compile_program_procedure:: compilation was successfull");
 
             try {
 
-                logger.trace("Version Object:: compile_program_procedure:: try to download file");
+                terminal_logger.trace("compile_program_procedure:: try to download file");
 
 
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -449,12 +448,12 @@ public class Model_VersionObject extends Model {
                     throw new FileExistsException();
                 }
 
-                logger.trace("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure");
+                terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure");
 
                 // Daný soubor potřebuji dostat na Azure a Propojit s verzí
                 c_compilation.bin_compilation_file = Model_FileRecord.create_Binary_file(c_compilation.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(body), "compilation.bin");
 
-                logger.trace("Version Object:: compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
+                terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
                 c_compilation.status = Enum_Compile_status.successfully_compiled_and_restored;
                 c_compilation.c_comp_build_url = compilation.buildUrl;
                 c_compilation.firmware_build_id = compilation.buildId;
@@ -466,7 +465,7 @@ public class Model_VersionObject extends Model {
 
             }catch (ConnectException e){
 
-                logger.error("Version Object:: compile_program_procedure:: Compilation Server is probably offline on URL:: " + compilation.buildUrl );
+                terminal_logger.error("compile_program_procedure:: Compilation Server is probably offline on URL:: " + compilation.buildUrl );
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
 
@@ -479,7 +478,7 @@ public class Model_VersionObject extends Model {
 
             }catch (FileExistsException e){
 
-                logger.error("Version Object:: compile_program_procedure:: FileExistsException - Body is empty");
+                terminal_logger.error("compile_program_procedure:: FileExistsException - Body is empty");
 
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();

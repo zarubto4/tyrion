@@ -17,8 +17,14 @@
  * pattern: *Swagger_NameOfObject_Operation*
  * e.g. **Swagger_TypeOfBlock_New**
 
+
+#### Scheduler jobs
+ * name is prefixed with **Swagger_**
+ * pattern: *Job__Name_of_Class*
+  * e.g. **Job_LogAzureUpload**
+
 #### Others
- * Other classes like scheduler jobs or other utilities should just use CamelCase.
+ * Other classes in utilities should just use CamelCase.
 
 # Methods
  * **Every** method name should start with lowercase letter and use camelCase.

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import utilities.enums.Enum_Garfield_burning_state;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -17,6 +18,8 @@ import java.util.Date;
 public class Model_MacAddressRegisterRecord extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_MacAddressRegisterRecord.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -35,6 +38,27 @@ public class Model_MacAddressRegisterRecord extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public void save() {
+        terminal_logger.debug("save :: Creating new Object");
+        super.save();
+    }
+
+    @JsonIgnore @Override
+    public void update() {
+        terminal_logger.debug("update :: Update object Id: {}",  this.uuid_request_number);
+        super.update();
+    }
+
+    @JsonIgnore @Override
+    public void delete() {
+        terminal_logger.debug("update :: Delete object Id: {} ", this.uuid_request_number);
+        super.delete();
+    }
+
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -43,15 +67,13 @@ public class Model_MacAddressRegisterRecord extends Model {
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
-
-
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient  public boolean admin_permission(){  return Controller_Security.get_person().has_permission("MacAddressRegister"); }
 
     public enum permissions{MacAddressRegister}
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_MacAddressRegisterRecord> find = new Finder<>(Model_MacAddressRegisterRecord.class);

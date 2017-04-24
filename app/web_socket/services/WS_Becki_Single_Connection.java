@@ -2,8 +2,15 @@ package web_socket.services;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
+import utilities.logger.Class_Logger;
 
 public class WS_Becki_Single_Connection extends WS_Interface_type {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Becki_Single_Connection.class);
+
+/* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
     public WS_Becki_Website person_connection;
     public boolean notification_subscriber = false;
@@ -30,7 +37,7 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
     @Override
     public void onClose() {
 
-        logger.trace("WS_Becki_Single_Connection::  onClose::  " + identifikator);
+        terminal_logger.trace("WS_Becki_Single_Connection::  onClose::  " + identifikator);
 
         this.close();
 

@@ -11,6 +11,7 @@ import utilities.enums.Enum_Update_type_of_update;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_Task;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Target_pair;
+import utilities.logger.Class_Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +19,10 @@ import java.util.List;
 
 public class Utilities_HW_Updater_Master_thread_updater {
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Utilities_HW_Updater_Master_thread_updater.class);
+
 
     private static Utilities_HW_Updater_Master_thread_updater instance = null;
     protected Utilities_HW_Updater_Master_thread_updater() {/** Exists only to defeat instantiation.*/}
@@ -31,7 +34,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
 
     public static void start_thread_box(){
-        logger.trace("Master_Updater:: start_thread_box:: will be started");
+        terminal_logger.trace("start_thread_box:: will be started");
 
         if(!comprimator_thread.isAlive()) comprimator_thread.start();
     }
@@ -39,12 +42,12 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
     public static void add_new_Procedure(Model_ActualizationProcedure procedure){
 
-        logger.trace("Master_Updater:: start_thread_box:: new incoming procedure");
+        terminal_logger.trace("start_thread_box:: new incoming procedure");
 
         procedures.add(procedure);
 
         if(comprimator_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.trace("Master_Updater:: start_thread_box::  wait for interrupt!");
+            terminal_logger.trace("start_thread_box::  wait for interrupt!");
             comprimator_thread.interrupt();
         }
     }
@@ -59,14 +62,14 @@ public class Utilities_HW_Updater_Master_thread_updater {
         public void run() {
 
 
-            logger.info("Master_Updater:: run:: run") ;
+            terminal_logger.info("run:: run") ;
 
             while(true){
                 try{
 
                     if(!procedures.isEmpty()) {
 
-                        logger.debug("Master_Updater:: run:: Tasks to solve: " + procedures.size() );
+                        terminal_logger.debug("run:: Tasks to solve: " + procedures.size() );
 
                         new Utilities_HW_Updater_Master_thread_updater().actualization_update_procedure( procedures.get(0) );
                         procedures.remove( procedures.get(0) );
@@ -74,7 +77,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                     }
 
                     else{
-                        logger.trace("Master_Updater:: run:: Going to sleep!");
+                        terminal_logger.trace("run:: Going to sleep!");
                         sleep(500000000);
                     }
 
@@ -83,7 +86,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    logger.error("Master_Updater:: run:: Error", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         }
@@ -126,12 +129,12 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
 
         if(procedure.state == Enum_Update_group_procedure_state.complete || procedure.state == Enum_Update_group_procedure_state.successful_complete ){
-            logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " is done");
+            terminal_logger.debug("actualization_update_procedure:: Procedure id:: " +procedure.id + " is done");
             return;
         }
 
         if(procedure.state == Enum_Update_group_procedure_state.in_progress){
-            logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " already in progress");
+            terminal_logger.debug("actualization_update_procedure:: Procedure id:: " +procedure.id + " already in progress");
         }
 
 
@@ -139,13 +142,13 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
             procedure.state = Enum_Update_group_procedure_state.complete_with_error;
             procedure.update();
-            logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " is empty and not set to any updates!!!");
+            terminal_logger.debug("actualization_update_procedure:: Procedure id:: " +procedure.id + " is empty and not set to any updates!!!");
             return;
         }
 
-        logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " state::  " + procedure.state);
+        terminal_logger.debug("actualization_update_procedure:: Procedure id:: " +procedure.id + " state::  " + procedure.state);
 
-        logger.debug("Master_Updater:: actualization_update_procedure:: Procedure Number of C_Procedures:: " + procedure.updates.size());
+        terminal_logger.debug("actualization_update_procedure:: Procedure Number of C_Procedures:: " + procedure.updates.size());
 
 
         Actualization_structure structure = new Actualization_structure();
@@ -161,23 +164,21 @@ public class Utilities_HW_Updater_Master_thread_updater {
                 .findList();
 
             if(plans.isEmpty()){
-                logger.debug("Master_Updater:: actualization_update_procedure:: Procedure id:: " +procedure.id + " all updates is done or in progress");
+                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} all updates is done or in progress", procedure.id );
                 return;
             }
 
-        logger.debug("Master_Updater:: actualization_update_procedure:: Procedure Number of C_Procedures By database for execution:: " + plans.size());
+        terminal_logger.debug("actualization_update_procedure:: Procedure Number of C_Procedures By database for execution:: {}" , plans.size());
 
            for (Model_CProgramUpdatePlan plan : plans) {
                try {
 
-                   logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: " + Json.toJson(plan));
-                   logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: ID:: " + plan.id);
-                   logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: Board ID:: " +  plan.board.id);
-                   logger.debug("Master_Updater:: actualization_update_procedure:: Json CProgramUpdatePlan:: Status:: " +  plan.state);
-
+                   terminal_logger.debug("actualization_update_procedure:: Json CProgramUpdatePlan::  {} ", Json.toJson(plan));
+                   terminal_logger.debug("actualization_update_procedure:: Json CProgramUpdatePlan:: ID:: {} ", plan.id);
+                   terminal_logger.debug("actualization_update_procedure:: Json CProgramUpdatePlan:: Board ID:: {}",  plan.board.id);
+                   terminal_logger.debug("actualization_update_procedure:: Json CProgramUpdatePlan:: Status:: {} ",  plan.state);
 
                    Model_Board board  = plan.board;
-
 
                    // Najdu instanci - pod kterou deska běží
                    Model_HomerInstance homer_instance = Model_HomerInstance.find.where()
@@ -189,35 +190,35 @@ public class Utilities_HW_Updater_Master_thread_updater {
                    .findUnique();
 
                    if (homer_instance == null) {
-                       logger.error("Master_Updater:: actualization_update_procedure:: Device has not own instance!");
+                       terminal_logger.error("actualization_update_procedure:: Device has not own instance!");
                        plan.state = Enum_CProgram_updater_state.instance_inaccessible;
                        plan.update();
                        continue;
                    }
 
-                   logger.debug("Master_Updater:: actualization_update_procedure:: Homer_instance id: "+ homer_instance.blocko_instance_name);
+                   terminal_logger.debug("actualization_update_procedure:: Homer_instance id:{} "+ homer_instance.blocko_instance_name);
 
 
-                   logger.debug("Master_Updater:: actualization_update_procedure:: Hardware (board) is running under cloud blocko program");
-                   logger.debug("Master_Updater:: actualization_update_procedure:: Blocko Instance: "+ homer_instance.blocko_instance_name);
-                   logger.debug("Master_Updater:: actualization_update_procedure:: Server: "+ homer_instance.cloud_homer_server.unique_identificator) ;
+                   terminal_logger.debug("actualization_update_procedure:: Hardware (board) is running under cloud blocko program");
+                   terminal_logger.debug("actualization_update_procedure:: Blocko Instance: {}", homer_instance.blocko_instance_name);
+                   terminal_logger.debug("actualization_update_procedure:: Server:{} ",homer_instance.cloud_homer_server.unique_identificator) ;
 
 
                    if(! Controller_WebSocket.homer_servers.containsKey( homer_instance.cloud_homer_server.unique_identificator )){
-                      logger.warn("Master_Updater:: actualization_update_procedure:: Server is offline. Putting off the task for later ");
+                       terminal_logger.warn("actualization_update_procedure:: Server is offline. Putting off the task for later ");
                       plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
                       plan.update();
                       continue;
                    }
 
                    if (!homer_instance.instance_online()) {
-                        logger.warn("Master_Updater:: actualization_update_procedure:: Homer is offline. Putting off the task for later ");
+                       terminal_logger.warn("actualization_update_procedure:: Homer is offline. Putting off the task for later ");
                         plan.state = Enum_CProgram_updater_state.instance_inaccessible;
                         plan.update();
                         continue;
                    }
 
-                   logger.debug("Master_Updater:: actualization_update_procedure::  Instance of blocko program is online and connected with Tyrion");
+                   terminal_logger.debug("actualization_update_procedure::  Instance of blocko program is online and connected with Tyrion");
 
 
                    // Založím ve Struktuře seznam instnací
@@ -238,15 +239,15 @@ public class Utilities_HW_Updater_Master_thread_updater {
                             program_identificator = "firmware_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
 
                             if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
-                                logger.debug("Master_Updater:: actualization_update_procedure for Firmware:: User create own C_program and cloud_blocko_server has bin file of that");
+                                terminal_logger.debug("actualization_update_procedure for Firmware:: User create own C_program and cloud_blocko_server has bin file of that");
                                 file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
                                 name = plan.c_program_version_for_update.c_program.name;
                                 version =   plan.c_program_version_for_update.version_name;
                             }
                             else{
-                                logger.error("..........V Blob serveru nebyla - musí se vytvořit");
-                                logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
-                                logger.error("..........Tato procedura chybí!");
+                                terminal_logger.error("..........V Blob serveru nebyla - musí se vytvořit");
+                                terminal_logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
+                                terminal_logger.error("..........Tato procedura chybí!");
                                 plan.state = Enum_CProgram_updater_state.bin_file_not_found;
                                 plan.update();
                                 continue;
@@ -257,15 +258,15 @@ public class Utilities_HW_Updater_Master_thread_updater {
                        program_identificator = "backup_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
 
                        if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
-                           logger.debug("Master_Updater:: actualization_update_procedure for Backup:: User create own C_program and cloud_blocko_server has bin file of that");
+                           terminal_logger.debug("actualization_update_procedure for Backup:: User create own C_program and cloud_blocko_server has bin file of that");
                            file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
                            name = plan.c_program_version_for_update.c_program.name;
                            version =   plan.c_program_version_for_update.version_name;
                        }
                        else{
-                           logger.error("..........V Blob serveru nebyla - musí se vytvořit");
-                           logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
-                           logger.error("..........Tato procedura chybí!");
+                           terminal_logger.error("..........V Blob serveru nebyla - musí se vytvořit");
+                           terminal_logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
+                           terminal_logger.error("..........Tato procedura chybí!");
                            plan.state = Enum_CProgram_updater_state.bin_file_not_found;
                            plan.update();
                            continue;
@@ -289,7 +290,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
 
                    if(program_identificator == null){
-                       logger.error("Master_Updater:: actualization_update_procedure:: C_program updateter has not any object for uploud! (Program, Bootloader, File) ");
+                       terminal_logger.error("actualization_update_procedure:: C_program updateter has not any object for uploud! (Program, Bootloader, File) ");
                        continue;
                    }
 
@@ -319,7 +320,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                    plan.update();
 
                }catch(Exception e) {
-                   logger.error("Master_Updater:: actualization_update_procedure:: Error:: ", e);
+                   terminal_logger.internalServerError(e);
                    plan.state = Enum_CProgram_updater_state.critical_error;
                    plan.update();
                    break;
@@ -327,9 +328,9 @@ public class Utilities_HW_Updater_Master_thread_updater {
            }
 
 
-        logger.debug("Master_Updater:: Summary for actualizations");
+        terminal_logger.debug("Summary for actualizations");
 
-        procedure.notification_update_procedure_start();
+        new Thread(procedure::notification_update_procedure_start).start();
 
         if(procedure.state != Enum_Update_group_procedure_state.in_progress){
 
@@ -340,15 +341,15 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
         for (Instance instance : structure.instances.values()) {
 
-            logger.debug("Master_Updater:: Summary: Instance ::" + instance.instance.blocko_instance_name);
+            terminal_logger.debug("Summary: Instance ::" + instance.instance.blocko_instance_name);
 
             Utilities_HW_Updater_Actualization_Task task = new Utilities_HW_Updater_Actualization_Task();
             task.instance = instance.instance;
 
             for(Program program : instance.programs.values()){
 
-                logger.debug("  Master_Updater:: Summary: Program ::" + program.program_identificator);
-                logger.debug("  Master_Updater:: Summary: Type of Update ::" + program.type_of_update);
+                terminal_logger.debug("  Summary: Program :: {} " , program.program_identificator);
+                terminal_logger.debug("  Summary: Type of Update :: {} " , program.type_of_update);
 
 
                 Utilities_HW_Updater_Actualization_procedure actualization_procedure = new Utilities_HW_Updater_Actualization_procedure();
@@ -358,10 +359,10 @@ public class Utilities_HW_Updater_Master_thread_updater {
                 actualization_procedure.file_record = program.file_record;
                 actualization_procedure.firmwareType = program.firmware_type;
 
-                logger.debug("       Master_Updater:: Summary: Targets ::");
+                terminal_logger.debug("       Summary: Targets ::");
 
                 for(Utilities_HW_Updater_Target_pair pair : program.target_pairs){
-                    logger.debug("       Master_Updater:: Summary: Targets :: " + pair.targetId + " update_procedure_id:: " + pair.c_program_update_plan_id);
+                    terminal_logger.debug("       Summary: Targets :: " + pair.targetId + " update_procedure_id:: " + pair.c_program_update_plan_id);
                 }
 
 

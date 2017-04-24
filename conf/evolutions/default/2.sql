@@ -7,11 +7,18 @@ ALTER TABLE model_board ADD date_of_user_registration timestamp;
 
 ALTER TABLE model_blocko_block DROP FOREIGN KEY ck_model_ccompilation_status;
 
-
 ALTER TABLE model_cprogram_update_plan ADD count_of_tries integer;
+
 ALTER TABLE model_grid_widget ADD order_position integer;
+ALTER TABLE model_type_of_widget ADD removed_by_user integer;
+
 ALTER TABLE model_homer_instance ADD removed_by_user boolean;
+
 ALTER TABLE model_type_of_block ADD order_position integer;
+ALTER TABLE model_type_of_block ADD removed_by_user integer;
+
+
+ALTER TABLE model_mprogram ADD removed_by_user boolean;
 
 create table model_type_of_board_features (
   id                        varchar(255) not null,

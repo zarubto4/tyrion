@@ -15,7 +15,8 @@ import utilities.enums.Enum_Payment_mode;
 import utilities.enums.Enum_Payment_status;
 import utilities.fakturoid.Utilities_Fakturoid_Controller;
 import utilities.goPay.Utilities_GoPay_Controller;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
@@ -38,8 +39,11 @@ import java.util.List;
 @Security.Authenticated(Secured_API.class)
 public class Controller_Finance extends Controller {
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+// LOGGER ##############################################################################################################
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Finance.class);
+
+///###################################################################################################################*/
 
     // ADMIN - GENERAL PRODUCT TARIFF SETTINGS ##########################################################################
 
@@ -79,7 +83,7 @@ public class Controller_Finance extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(general_tariff));
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -121,7 +125,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(general_tariff));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -139,7 +143,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(tariff));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -157,7 +161,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(tariff));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -173,7 +177,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -189,7 +193,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -217,7 +221,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(label));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -242,7 +246,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(label));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -265,7 +269,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(label));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -281,7 +285,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -297,7 +301,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -313,7 +317,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -351,7 +355,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extensions));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -377,7 +381,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extensions));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -392,7 +396,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -408,7 +412,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -424,7 +428,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -441,7 +445,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -458,7 +462,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -492,7 +496,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(general_tariffs));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -530,7 +534,7 @@ public class Controller_Finance extends Controller {
     public Result product_create(){
         try{
 
-            logger.debug("Financial_Controller:: product_create:: Creating new product:: ");
+            terminal_logger.debug("product_create:: Creating new product:: ");
 
             // Zpracování Json
             final Form<Swagger_Tariff_User_Register> form = Form.form(Swagger_Tariff_User_Register.class).bindFromRequest();
@@ -541,7 +545,7 @@ public class Controller_Finance extends Controller {
             Model_GeneralTariff tariff = Model_GeneralTariff.find.byId(help.tariff_id);
             if(tariff == null) return GlobalResult.result_BadRequest("Tariff identificator iD: {" + help.tariff_id  + "} not found or not supported now! Use only supported");
 
-            logger.debug("Financial_Controller:: product_create:: On Tariff:: " +  tariff.tariff_name);
+            terminal_logger.debug("product_create:: On Tariff:: " +  tariff.tariff_name);
 
             if(Model_Product.get_byNameAndOwner(help.product_individual_name) != null) return GlobalResult.result_BadRequest("You cannot use same Product name twice!");
 
@@ -606,12 +610,12 @@ public class Controller_Finance extends Controller {
 
 
 
-                logger.debug("Financial_Controller:: product_create:: Payment details done");
+            terminal_logger.debug("product_create:: Payment details done");
 
                 // payment_mode
                 if(tariff.required_payment_mode) {
 
-                    logger.debug("Financial_Controller:: product_create:: Payment mode Required");
+                    terminal_logger.debug("product_create:: Payment mode Required");
 
                     if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
@@ -626,7 +630,7 @@ public class Controller_Finance extends Controller {
 
                 if(tariff.required_payment_method) {
 
-                    logger.debug("Financial_Controller:: product_create:: Payment method Required");
+                    terminal_logger.debug("product_create:: Payment method Required");
 
                     if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
 
@@ -661,12 +665,12 @@ public class Controller_Finance extends Controller {
                 product.update();
 
                 if(!tariff.required_paid_that) {
-                    logger.debug("Financial_Controller:: product_create:: Its not required pay that!");
+                    terminal_logger.debug("product_create:: Its not required pay that!");
                     return GlobalResult.created(Json.toJson(product));
                 }
 
 
-                logger.debug("Financial_Controller:: product_create:: Creating invoice");
+            terminal_logger.debug("product_create:: Creating invoice");
 
                 Model_Invoice invoice = new Model_Invoice();
                 invoice.date_of_create = new Date();
@@ -691,29 +695,29 @@ public class Controller_Finance extends Controller {
 
                 invoice.product = product;
 
-                logger.debug("Financial_Controller:: product_create:: Saving invoice");
+                terminal_logger.debug("product_create:: Saving invoice");
                 invoice.save();
 
                 Model_Invoice test = Model_Invoice.find.byId(invoice.id);
-                logger.debug("Financial_Controller:: product_create:: " + Json.toJson(test));
+                terminal_logger.debug("product_create:: " + Json.toJson(test));
 
 
-                logger.debug("Financial_Controller:: product_create::  Creating Proforma in fakturoid");
+                terminal_logger.debug("product_create::  Creating Proforma in fakturoid");
                 Utilities_Fakturoid_Controller.create_proforma(product, invoice);
-                logger.debug("Financial_Controller:: product_create::  Proforma done");
+                terminal_logger.debug("product_create::  Proforma done");
 
 
                 if(product.method == Enum_Payment_method.credit_card){
 
-                    logger.debug("Financial_Controller:: product_create::  User want pay it with credit card!");
+                    terminal_logger.debug("product_create::  User want pay it with credit card!");
 
-                    logger.debug("Financial_Controller:: product_create::  Preparing for providing payment");
+                    terminal_logger.debug("product_create::  Preparing for providing payment");
                     JsonNode result = Utilities_GoPay_Controller.provide_payment("First Payment", product, invoice);
 
 
                     if(result.has("id")){
 
-                        logger.debug("Set GoPay ID to Invoice");
+                        terminal_logger.debug("Set GoPay ID to Invoice");
 
                         invoice.refresh();
                         invoice.gopay_id = result.get("id").asLong();
@@ -722,14 +726,14 @@ public class Controller_Finance extends Controller {
 
                         if(product.on_demand_active) {
 
-                            logger.debug("Set GoPay ID to Product because Product has ON_DEMAND - TRUE");
+                            terminal_logger.debug("Set GoPay ID to Product because Product has ON_DEMAND - TRUE");
 
                             product.gopay_id = invoice.gopay_id;
                             product.update();
                         }
 
                     }else {
-                        logger.error("Result from GoPay not contains id for invoice!");
+                        terminal_logger.error("Result from GoPay not contains id for invoice!");
                     }
 
                     Swagger_GoPay_Url swagger_goPay_url = new Swagger_GoPay_Url();
@@ -745,7 +749,7 @@ public class Controller_Finance extends Controller {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -774,7 +778,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(products));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -810,7 +814,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -846,7 +850,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -872,7 +876,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -907,7 +911,7 @@ public class Controller_Finance extends Controller {
 
             if(result.has("id")){
 
-                logger.debug("Set GoPay ID to Invoice");
+                terminal_logger.debug("pay_send_invoice:: Set GoPay ID to Invoice");
 
                 invoice.refresh();
                 invoice.gopay_id = result.get("id").asLong();
@@ -916,14 +920,14 @@ public class Controller_Finance extends Controller {
 
                 if(invoice.product.on_demand_active) {
 
-                    logger.debug("Set GoPay ID to Product because Product has ON_DEMAND - TRUE");
+                    terminal_logger.debug("pay_send_invoice:: Set GoPay ID to Product because Product has ON_DEMAND - TRUE");
 
                     invoice.product.gopay_id = invoice.gopay_id;
                     invoice.product.update();
                 }
 
             }else {
-                logger.error("Result from GoPay not contains id for invoice!");
+                terminal_logger.error("pay_send_invoice:: Result from GoPay not contains id for invoice!");
             }
 
 
@@ -936,7 +940,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(swager_goPay_url));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -990,7 +994,7 @@ public class Controller_Finance extends Controller {
             return  GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -1090,7 +1094,7 @@ public class Controller_Finance extends Controller {
             return  GlobalResult.result_ok(Json.toJson(payment_details));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1130,7 +1134,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok( Json.toJson(products));
 
         }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1166,7 +1170,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1202,7 +1206,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(help));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1260,7 +1264,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1282,7 +1286,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1305,7 +1309,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1328,7 +1332,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(invoices) );
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 }

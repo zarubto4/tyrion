@@ -9,7 +9,8 @@ import models.Model_Person;
 import play.libs.Json;
 import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;
@@ -19,26 +20,30 @@ import java.util.UUID;
 
 public class NotificationHandler {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Update_echo_handler.class);
+
+/* METHOD  -------------------------------------------------------------------------------------------------------------*/
+
     protected NotificationHandler() {/* Exists only to defeat instantiation.*/}
 
-    // Logger
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public static List<Model_Notification> notifications = new ArrayList<>();
 
     public static void startNotificationThread(){
-        logger.trace("NotificationHandler:: startNotificationThread:_ starting");
+        terminal_logger.trace("NotificationHandler:: startNotificationThread:_ starting");
         if(!send_notification_thread.isAlive()) send_notification_thread.start();
     }
 
     public static void addToQueue(Model_Notification notification){
 
-        logger.debug("NotificationHandler:: addToQueue:: adding notification to queue");
+        terminal_logger.debug("NotificationHandler:: addToQueue:: adding notification to queue");
 
         notifications.add(notification);
 
         if(send_notification_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.trace("NotificationHandler:: addToQueue:: thread is sleeping, waiting for interruption!");
+            terminal_logger.trace("NotificationHandler:: addToQueue:: thread is sleeping, waiting for interruption!");
             send_notification_thread.interrupt();
         }
     }
@@ -49,14 +54,14 @@ public class NotificationHandler {
         public void run() {
 
 
-            logger.trace("NotificationHandler:: send_notification_thread:: concurrent thread started on {}", new Date()) ;
+            terminal_logger.trace("NotificationHandler:: send_notification_thread:: concurrent thread started on {}", new Date()) ;
 
             while(true){
                 try{
 
                     if(!notifications.isEmpty()) {
 
-                        logger.debug("Beru notifikaci z Listku:: Počet notifikací v listu je:: " + notifications.size());
+                        terminal_logger.debug("Beru notifikaci z Listku:: Počet notifikací v listu je:: " + notifications.size());
 
                         Model_Notification notification = notifications.get(0);
 
@@ -64,19 +69,19 @@ public class NotificationHandler {
 
                         notifications.remove( notification );
 
-                        logger.debug("Beru notifikaci z Listku:: Smazal jsem odeslanou  notifikací z listu a teď jich je:: " + notifications.size());
+                        terminal_logger.debug("Beru notifikaci z Listku:: Smazal jsem odeslanou  notifikací z listu a teď jich je:: " + notifications.size());
 
 
                     } else {
 
-                        logger.trace("NotificationHandler:: send_notification_thread:: no notifications, thread is going to sleep");
+                        terminal_logger.trace("NotificationHandler:: send_notification_thread:: no notifications, thread is going to sleep");
 
                         sleep(500000000);
                     }
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    Loggy.internalServerError("NotificationHandler:: send_notification_thread: ", e);
+                    terminal_logger.internalServerError("NotificationHandler:: send_notification_thread: ", e);
                 }
             }
         }
@@ -88,7 +93,7 @@ public class NotificationHandler {
 
             System.out.println("Odesílám Notifikaci");
 
-            logger.trace("NotificationHandler:: sendNotification:: sending notification");
+            terminal_logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
             ObjectNode message = Json.newObject();
             message.put("messageType", Model_Notification.messageType);
@@ -133,7 +138,7 @@ public class NotificationHandler {
                                 invitation.update();
                             }
                         } catch (Exception e) {
-                            Loggy.internalServerError("NotificationHandler:: sendNotification:: Error:: ", e);
+                            terminal_logger.internalServerError("NotificationHandler:: sendNotification:: Error:: ", e);
                         }
 
                     }else {
@@ -159,12 +164,12 @@ public class NotificationHandler {
                    // notification.id = null;
 
                 } catch (NullPointerException e) {
-                    logger.error("NotificationHandler:: SendNotification inside for void Error:: ", e);
+                    terminal_logger.error("NotificationHandler:: SendNotification inside for void Error:: ", e);
                 }
             }
 
         }catch (Exception e){
-            logger.error("NotificationHandler:: SendNotification void Error: ", e);
+            terminal_logger.error("NotificationHandler:: SendNotification void Error: ", e);
         }
     }
 }

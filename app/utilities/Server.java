@@ -12,7 +12,7 @@ import play.Play;
 import utilities.cache.Server_Cache;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 import utilities.notifications.NotificationHandler;
 import utilities.scheduler.CustomScheduler;
 
@@ -22,6 +22,11 @@ import java.util.List;
 
 public class Server {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Server.class);
+
+/* SERVER COMMON STATIC VALUE  -----------------------------------------------------------------------------------------------------*/
 
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;
@@ -77,9 +82,6 @@ public class Server {
     public static String GoPay_notification_url;
 
     public static String  link_api_swagger;
-
-
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
     public static void setServerValues() throws Exception{
 
@@ -292,7 +294,7 @@ public class Server {
 
         if (Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null) {
 
-            logger.warn("Server:: setAdministrator: Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
+            terminal_logger.warn("setAdministrator:: Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
 
             Model_Person person = new Model_Person();
             person.full_name = "Admin Byzance";
@@ -312,7 +314,7 @@ public class Server {
 
         }else{
 
-            logger.warn("Server:: setAdministrator: admin is already created");
+            terminal_logger.warn("setAdministrator:: admin is already created");
 
             // updatuji oprávnění
             Model_Person person = Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
@@ -353,7 +355,7 @@ public class Server {
      * @throws Exception
      */
     public static void setPermission() throws Exception{
-        logger.info("Setting Permission");
+        terminal_logger.info("setPermission:: Setting Permission");
 
         List<String> permissions = new ArrayList<>();
 
@@ -396,7 +398,7 @@ public class Server {
                     for(Enum en : Model_MProgram.permissions.values())            permissions.add(en.name());
 
 
-        logger.info("Number of Static Permissions " + permissions.size() );
+        terminal_logger.info("setPermission:: Number of Static Permissions " + permissions.size() );
 
         for(String permission : permissions) new Model_Permission(permission, "description");
 
@@ -427,7 +429,7 @@ public class Server {
             CustomScheduler.startScheduler();
 
         }catch (Exception e){
-            Loggy.internalServerError("Server:: startSchedulingProcedures:", e);
+            terminal_logger.internalServerError(e);
         }
 
     }
@@ -438,7 +440,7 @@ public class Server {
             Server_Cache.initCache();
 
         }catch (Exception e){
-            Loggy.internalServerError("Server:: initCache:", e);
+            terminal_logger.internalServerError(e);
         }
 
     }

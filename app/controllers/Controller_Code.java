@@ -18,7 +18,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
@@ -36,7 +37,9 @@ import java.util.List;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Code extends Controller{
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+// LOGGER ##############################################################################################################
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Board.class);
+
 
 // C_ Program && Version ###############################################################################################
 
@@ -131,7 +134,7 @@ public class Controller_Code extends Controller{
 
                     Form<Swagger_C_Program_Version_Update> scheme_form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
                     if (form.hasErrors()) {
-                        logger.error("Code:: c_program_create:: Error loading first default version of CProgram");
+                        terminal_logger.error("c_program_create:: Error loading first default version of CProgram");
                         break;
                     }
                     Swagger_C_Program_Version_Update scheme_load_form = scheme_form.get();
@@ -156,7 +159,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -198,7 +201,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(c_program));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -257,7 +260,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -288,7 +291,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -313,7 +316,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(programs));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -381,7 +384,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(c_program));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -427,7 +430,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -460,7 +463,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -544,7 +547,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.created(Json.toJson(c_program.program_version(version_object)));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -590,7 +593,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(version_object.c_program.program_version(version_object)));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -653,7 +656,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(version_object));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -700,7 +703,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -755,7 +758,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -786,7 +789,7 @@ public class Controller_Code extends Controller{
 
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -868,8 +871,7 @@ public class Controller_Code extends Controller{
                                 .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                     } catch (Exception e) {
-                        logger.error ("Sending mail -> critical error", e);
-                        e.printStackTrace();
+                        terminal_logger.internalServerError(e);
                     }
 
 
@@ -891,8 +893,7 @@ public class Controller_Code extends Controller{
                                 .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                     } catch (Exception e) {
-                        logger.error ("Sending mail -> critical error", e);
-                        e.printStackTrace();
+                        terminal_logger.internalServerError(e);
                     }
                 }
 
@@ -918,8 +919,7 @@ public class Controller_Code extends Controller{
                             .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                 } catch (Exception e) {
-                    logger.error ("Sending mail -> critical error", e);
-                    e.printStackTrace();
+                    terminal_logger.internalServerError(e);
                 }
 
             }
@@ -929,7 +929,7 @@ public class Controller_Code extends Controller{
             return  GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1000,7 +1000,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.created(Json.toJson(c_program));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1036,7 +1036,7 @@ public class Controller_Code extends Controller{
             return GlobalResult.result_ok(Json.toJson(cProgram));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

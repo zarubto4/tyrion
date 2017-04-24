@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.libs.Json;
 import play.mvc.WebSocket;
+import utilities.logger.Class_Logger;
 import web_socket.message_objects.common.WS_Send_message;
 
 import java.nio.channels.ClosedChannelException;
@@ -18,8 +19,8 @@ import java.util.concurrent.TimeoutException;
 
 public abstract class WS_Interface_type {
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Interface_type.class);
 
     public WS_Interface_type webSCtype;
     public WebSocket.Out<String> out;
@@ -38,7 +39,7 @@ public abstract class WS_Interface_type {
     public void onMessage(String message){
         try {
 
-            logger.debug("Incoming message: " + message);
+            terminal_logger.debug("Incoming message: " + message);
 
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 

@@ -5,6 +5,7 @@ import controllers.Controller_WebSocket;
 import models.Model_CompilationServer;
 import models.Model_VersionObject;
 import utilities.enums.Enum_Compile_status;
+import utilities.logger.Class_Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,11 @@ public class Compilation_After_BlackOut {
      * servery vhodně přidělovat.
      */
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Compilation_After_BlackOut.class);
+
+/*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     private static Compilation_After_BlackOut instance = null;
     private static List<Thread> threads = new ArrayList<>();
@@ -37,14 +41,14 @@ public class Compilation_After_BlackOut {
 
     public void start(Model_CompilationServer server){
 
-        logger.debug("Compilation_After_BlackOut:: start:: creating new 2 threads for compilations");
+        terminal_logger.debug("Compilation_After_BlackOut:: start:: creating new 2 threads for compilations");
         Compilation_Thread thread_1 = new Compilation_Thread(server.unique_identificator + "_1");
         Compilation_Thread thread_2 = new Compilation_Thread(server.unique_identificator + "_2");
 
         threads.add(thread_1);
         threads.add(thread_2);
 
-        logger.trace("Compilation_After_BlackOut:: start:: starting new 2 threads");
+        terminal_logger.trace("Compilation_After_BlackOut:: start:: starting new 2 threads");
         thread_1.start();
         thread_2.start();
     }
@@ -71,7 +75,7 @@ public class Compilation_After_BlackOut {
 
 
                         if(Controller_WebSocket.compiler_cloud_servers.isEmpty()){
-                            logger.warn("Compilation_After_BlackOut:: run:: server is offline again");
+                            terminal_logger.warn("Compilation_After_BlackOut:: run:: server is offline again");
                             break;
                         }
 
@@ -79,7 +83,7 @@ public class Compilation_After_BlackOut {
                         if(version_object == null){
                             break;
                         }
-                        logger.debug("Compilation_After_BlackOut:: run:: " + thread_name + " starting compilation");
+                        terminal_logger.debug("Compilation_After_BlackOut:: run:: " + thread_name + " starting compilation");
                         version_object.c_compilation.status = Enum_Compile_status.compilation_in_progress;
                         version_object.c_compilation.update();
 
@@ -87,7 +91,7 @@ public class Compilation_After_BlackOut {
                         JsonNode jsonNode = version_object.compile_program_procedure();
                     }
                 }catch(Exception e){
-                    e.printStackTrace();
+                    terminal_logger.internalServerError(e);
                 }
             }
     }

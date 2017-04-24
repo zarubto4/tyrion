@@ -2,7 +2,8 @@ package utilities.models_update_echo;
 
 import controllers.Controller_WebSocket;
 import models.Model_Project;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.login_entities.Secured_Admin;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 import web_socket.services.WS_Becki_Website;
 
@@ -12,26 +13,30 @@ import java.util.List;
 
 public class Update_echo_handler {
 
-    protected Update_echo_handler() {/* Exists only to defeat instantiation.*/}
+    
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    // Logger
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Update_echo_handler.class);
+
+/* METHOD  -------------------------------------------------------------------------------------------------------------*/
+
+    protected Update_echo_handler() {/* Exists only to defeat instantiation.*/}
 
     public static List<WS_Message_Update_model_echo> update_messages = new ArrayList<>();
 
     public static void startEchoUpdateThread(){
-        logger.info("UpdateEcho:: startNotificationThread: starting");
+        terminal_logger.info("UpdateEcho:: startNotificationThread: starting");
         if(!send_update_messages_thread.isAlive()) send_update_messages_thread.start();
     }
 
     public static void addToQueue(WS_Message_Update_model_echo message){
 
-        logger.info("UpdateEcho:: addToQueue: adding notification to queue");
+        terminal_logger.info("UpdateEcho:: addToQueue: adding notification to queue");
 
         update_messages.add(message);
 
         if(send_update_messages_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.trace("NotificationHandler:: addToQueue: thread is sleeping, waiting for interruption!");
+            terminal_logger.trace("NotificationHandler:: addToQueue: thread is sleeping, waiting for interruption!");
             send_update_messages_thread.interrupt();
         }
     }
@@ -42,14 +47,14 @@ public class Update_echo_handler {
         public void run() {
 
 
-            logger.info("UpdateEcho:: send_notification_thread: concurrent thread started on {}", new Date()) ;
+            terminal_logger.info("UpdateEcho:: send_notification_thread: concurrent thread started on {}", new Date()) ;
 
             while(true){
                 try{
 
                     if(!update_messages.isEmpty()) {
 
-                        logger.trace("UpdateEcho:: send_update_messages_thread: in que is " + update_messages.size());
+                        terminal_logger.trace("UpdateEcho:: send_update_messages_thread: in que is " + update_messages.size());
 
                         //Get
                         WS_Message_Update_model_echo message = update_messages.get(0);
@@ -65,13 +70,13 @@ public class Update_echo_handler {
 
                     } else {
 
-                        logger.debug("UpdateEcho:: send_update_messages_thread: no notifications, thread is going to sleep");
+                        terminal_logger.debug("UpdateEcho:: send_update_messages_thread: no notifications, thread is going to sleep");
                         sleep(500000000);
                     }
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    Loggy.internalServerError("UpdateEcho:: send_update_messages_thread:", e);
+                    terminal_logger.internalServerError("UpdateEcho:: send_update_messages_thread:", e);
                 }
             }
         }
@@ -80,10 +85,10 @@ public class Update_echo_handler {
 
     private static void sendUpdate(WS_Message_Update_model_echo message){
 
-        logger.trace("NotificationHandler:: sendNotification:: sending notification");
+        terminal_logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
 
-        List<String> list =Model_Project.get_project_becki_person_ids_list(message.project_id);
+        List<String> list = Model_Project.get_project_becki_person_ids_list(message.project_id);
 
         for (String person_id : list) {
 
@@ -100,7 +105,7 @@ public class Update_echo_handler {
                     }
 
                 }catch (Exception e){
-                    Loggy.internalServerError("NotificationHandler:: sendNotification:: Error", e);
+                    terminal_logger.internalServerError("NotificationHandler:: sendNotification:: Error", e);
                 }
         }
 

@@ -8,6 +8,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ import java.util.UUID;
 public class Model_TypeOfBoard extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_TypeOfBoard.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
                                                          @Id @ApiModelProperty(required = true) public String id;
@@ -46,7 +49,9 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_ImportLibrary> libraries = new ArrayList<>();
 
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+    @JsonIgnore              public boolean removed_by_user;
+
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String processor_name    (){ return processor == null ? null : processor.processor_name;}
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String processor_id      (){ return processor == null ? null : processor.id;}
@@ -64,10 +69,16 @@ public class Model_TypeOfBoard extends Model {
     }
 
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+        removed_by_user  = false;
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
@@ -76,21 +87,28 @@ public class Model_TypeOfBoard extends Model {
         super.save();
     }
 
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+
+        super.update();
+
+    }
+
     @JsonIgnore @Override public void delete() {
 
-        for (Model_CProgram c_program : this.c_programs){
-            c_program.type_of_board = null;
-            c_program.update();
-        }
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
-        this.processor = null;
-        this.producer = null;
-        this.update();
-
-        this.picture.delete();
-
-        super.delete();
+        removed_by_user = true;
+        super.update();
     }
+
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public CloudBlobContainer get_Container(){
@@ -101,12 +119,6 @@ public class Model_TypeOfBoard extends Model {
             throw new NullPointerException();
         }
     }
-
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
-/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
-
-/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
@@ -119,6 +131,8 @@ public class Model_TypeOfBoard extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean register_new_device_permission(){ return Controller_Security.get_person().has_permission("TypeOfBoard_register_new_device"); }
 
     public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_delete, TypeOfBoard_register_new_device}
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static  Model.Finder<String, Model_TypeOfBoard> find = new Finder<>(Model_TypeOfBoard.class);

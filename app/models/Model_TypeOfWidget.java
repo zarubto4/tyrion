@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_TypeOfWidget_Short_Detail;
 
 import javax.persistence.*;
@@ -15,34 +16,43 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of TypeOfWidget",
-        value = "TypeOfWidget")
+@ApiModel(  value = "TypeOfWidget", description = "Model of TypeOfWidget")
 public class Model_TypeOfWidget extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_TypeOfWidget.class);
+
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true) public String id;
-                                                            @ApiModelProperty(required = true) public String name;
-                    @Column(columnDefinition = "TEXT")      @ApiModelProperty(required = true) public String description;
+                                                        @Id @ApiModelProperty(required = true)  public String id;
+                                                            @ApiModelProperty(required = true)  public String name;
+                    @Column(columnDefinition = "TEXT")      @ApiModelProperty(required = true)  public String description;
 
-                                                                       @JsonIgnore @ManyToOne  public Model_Project project;
+                                                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Project project;
+                                                                                   @JsonIgnore  public Integer order_position;
 
     @OneToMany(mappedBy="type_of_widget", cascade = CascadeType.ALL) @ApiModelProperty(required = true) @OrderBy("order_position asc") public List<Model_GridWidget> grid_widgets = new ArrayList<>();
 
-    @JsonIgnore  public Integer order_position;
 
+    @JsonIgnore              public boolean removed_by_user;
+
+
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
     @ApiModelProperty(value = "This value will be in Json only if TypeOfWidget is private!", readOnly = true, required = false)
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project_id() {  return project == null ? null : this.project.id; }
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
 
+        terminal_logger.debug("save :: Creating new Object");
+        removed_by_user  = false;
 
         if(project == null){
             order_position = Model_TypeOfWidget.find.where().isNull("project").findRowCount() + 1;
@@ -57,6 +67,24 @@ public class Model_TypeOfWidget extends Model{
 
         super.save();
     }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+
+        removed_by_user = true;
+        super.update();
+    }
+
+
+/* ORDER  -------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void up(){

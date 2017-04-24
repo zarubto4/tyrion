@@ -11,6 +11,7 @@ import org.ehcache.Cache;
 import org.springframework.core.annotation.Order;
 import utilities.cache.helps_objects.IdsList;
 import utilities.enums.*;
+import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
@@ -25,11 +26,12 @@ import java.util.UUID;
 import com.avaje.ebean.Query;
 
 @Entity
-@ApiModel(description = "Model of Project",
-        value = "Project")
+@ApiModel(value = "Project", description = "Model of Project")
 public class Model_Project extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Project.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 

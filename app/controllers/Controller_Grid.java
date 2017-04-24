@@ -12,7 +12,8 @@ import utilities.Server;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Tyrion_Server_mode;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
@@ -30,9 +31,12 @@ import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Grid extends Controller {
+    
+// LOGGER ##############################################################################################################
 
-    // Loger  ##############################################################################################################
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Grid.class);
+
+///###################################################################################################################*/
 
     @ApiOperation(value = "Create new M_Project",
             tags = {"M_Program"},
@@ -94,7 +98,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.created( Json.toJson(m_project));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -133,7 +137,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(m_project));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -189,7 +193,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok( Json.toJson(m_project));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -225,7 +229,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -282,7 +286,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(m_project_interface));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -350,7 +354,7 @@ public class Controller_Grid extends Controller {
 
             return GlobalResult.created(Json.toJson(m_program));
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -426,7 +430,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.created( Json.toJson(  main_m_program.program_version(version_object) ) );
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -477,7 +481,7 @@ public class Controller_Grid extends Controller {
 
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -517,7 +521,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
             e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -567,7 +571,7 @@ public class Controller_Grid extends Controller {
 
         }catch (Exception e) {
             e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -625,7 +629,7 @@ public class Controller_Grid extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -661,7 +665,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -711,7 +715,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(summary));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -757,7 +761,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -824,10 +828,10 @@ public class Controller_Grid extends Controller {
                 return GlobalResult.notFoundObject("Server not found");
             }
 
-            logger.debug("Controller_Grid:: get_conection_url:: record ID:: "           + record.id);
-            logger.debug("Controller_Grid:: get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance.blocko_instance_name);
-            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server identificator::"             + server.unique_identificator);
-            logger.debug("Controller_Grid:: get_conection_url:: cloud_homer_server Grid Port::"                 + server.grid_port);
+            terminal_logger.debug("get_conection_url:: record ID:: "           + record.id);
+            terminal_logger.debug("get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance.blocko_instance_name);
+            terminal_logger.debug("get_conection_url:: cloud_homer_server identificator::"             + server.unique_identificator);
+            terminal_logger.debug("get_conection_url:: cloud_homer_server Grid Port::"                 + server.grid_port);
 
 
             Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
@@ -844,7 +848,7 @@ public class Controller_Grid extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -902,7 +906,7 @@ public class Controller_Grid extends Controller {
             }
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -954,14 +958,14 @@ public class Controller_Grid extends Controller {
 
 
             if ((token_values != null) && (token_values.length == 1) && (token_values[0] != null)) {
-                logger.debug("Controller_Grid :: get_identificator :: HTTP request containts X-AUTH-TOKEN");
+                terminal_logger.debug("get_identificator :: HTTP request containts X-AUTH-TOKEN");
                 Model_Person person = Model_Person.get_byAuthToken(token_values[0]);
                 if (person != null) {
-                    logger.debug("Controller_Grid :: get_identificator :: Person with X-AUTH-TOKEN found");
+                    terminal_logger.debug("get_identificator :: Person with X-AUTH-TOKEN found");
                   terminal.person = person;
 
                 }else {
-                    logger.warn("Controller_Grid :: get_identificator :: Person with X-AUTH-TOKEN not found!");
+                    terminal_logger.warn("get_identificator :: Person with X-AUTH-TOKEN not found!");
                 }
             }
 
@@ -969,7 +973,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.created(Json.toJson(terminal));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1050,7 +1054,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.created( Json.toJson(typeOfWidget));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1094,7 +1098,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfWidget));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
 
@@ -1170,7 +1174,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok( Json.toJson(typeOfWidget));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1213,7 +1217,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1245,7 +1249,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfWidgets));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1309,7 +1313,7 @@ public class Controller_Grid extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1343,7 +1347,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1376,7 +1380,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 // GRID_WIDGET #########################################################################################################
@@ -1469,7 +1473,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.created( Json.toJson(gridWidget) );
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1539,7 +1543,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(gridWidget));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -1582,7 +1586,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(version));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -1624,7 +1628,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(gridWidget));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -1684,7 +1688,7 @@ public class Controller_Grid extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1726,7 +1730,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1768,7 +1772,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1844,7 +1848,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.created(Json.toJson(gridWidget));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1908,7 +1912,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(version));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1961,7 +1965,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(gridWidget.grid_widget_versions));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2009,7 +2013,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(gridWidgetVersion));
 
         }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2042,7 +2046,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2075,7 +2079,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2106,7 +2110,7 @@ public class Controller_Grid extends Controller {
                         .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget disapproved" );
 
             } catch (Exception e) {
-                logger.error ("Sending mail -> critical error", e);
+                terminal_logger.error ("gridDisapprove:: Sending mail -> critical error", e);
                 e.printStackTrace();
             }
 
@@ -2117,7 +2121,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
 
         }
     }
@@ -2175,7 +2179,7 @@ public class Controller_Grid extends Controller {
                             .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget edited");
 
                 } catch (Exception e) {
-                    logger.error ("Sending mail -> critical error", e);
+                    terminal_logger.error ("gridApproval:: Sending mail -> critical error", e);
                     e.printStackTrace();
                 }
             }
@@ -2188,7 +2192,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2216,7 +2220,7 @@ public class Controller_Grid extends Controller {
             // Vrácení výsledku
             return GlobalResult.result_ok();
         }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2237,7 +2241,7 @@ public class Controller_Grid extends Controller {
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
         }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2266,7 +2270,7 @@ public class Controller_Grid extends Controller {
             // Vrácení výsledku
             return GlobalResult.result_ok();
         }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 }

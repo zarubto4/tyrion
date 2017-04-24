@@ -8,6 +8,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ import java.util.UUID;
 public class Model_BootLoader extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_BootLoader.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -41,7 +44,7 @@ public class Model_BootLoader extends Model {
     @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
 
     @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)                public Model_TypeOfBoard type_of_board;
-                                                                        @JsonIgnore  @OneToOne()   public Model_TypeOfBoard main_type_of_board;
+                                                           @JsonIgnore  @OneToOne()                public Model_TypeOfBoard main_type_of_board;
 
     @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", cascade = CascadeType.ALL)              public List<Model_Board> boards  = new ArrayList<>();
 
@@ -56,10 +59,11 @@ public class Model_BootLoader extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-/* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/
-    @JsonIgnore  private String azure_product_link;
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         while(true){
             // I need Unique Value
@@ -67,9 +71,28 @@ public class Model_BootLoader extends Model {
             this.azure_product_link = get_Container().getName() + "/" + this.id;
             if (Model_BootLoader.find.byId(this.id) == null) break;
         }
+
         super.save();
 
     }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: {} ", this.id);
+
+        super.update();
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+
+        super.delete();
+    }
+
+/* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore  private String azure_product_link;
+
 
     @JsonIgnore @Transient
     public CloudBlobContainer get_Container(){

@@ -7,16 +7,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Participant_status;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of Project_participant",
-        value = "Project_participant")
+@ApiModel(value = "Project_participant", description = "Model of Project_participant")
 public class Model_ProjectParticipant extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_ProjectParticipant.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -35,6 +37,8 @@ public class Model_ProjectParticipant extends Model{
 
     @JsonIgnore @Transient  public String user_email;
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
     @JsonIgnore @Override
     public void save() {
 
@@ -43,6 +47,20 @@ public class Model_ProjectParticipant extends Model{
             if (Model_ProjectParticipant.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -54,6 +72,8 @@ public class Model_ProjectParticipant extends Model{
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_ProjectParticipant> find = new Model.Finder<>(Model_ProjectParticipant.class);

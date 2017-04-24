@@ -15,7 +15,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.Email;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -33,7 +34,12 @@ public class Controller_Person extends Controller {
     @Inject
     Controller_Project controllerProgramingPackage;
     @Inject WSClient ws;
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+
+    
+// LOGGER ##############################################################################################################
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Person.class);
+
 
 //######################################################################################################################
 
@@ -104,7 +110,7 @@ public class Controller_Person extends Controller {
                             .send(validationToken.personEmail, "Email Verification");
 
                 } catch (Exception e) {
-                    Loggy.internalServerError("Controller_Person:: person_create()::", e);
+                    terminal_logger.internalServerError(e);
                 }
 
             }else{
@@ -114,13 +120,13 @@ public class Controller_Person extends Controller {
                 try {
                     return controllerProgramingPackage.project_addParticipant(invitation.id, true);
                 }catch(Exception e){
-                    return Loggy.result_internalServerError(e, request());
+                    return Server_Logger.result_internalServerError(e, request());
                 }
             }
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -141,7 +147,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedSuccessful );
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -197,12 +203,12 @@ public class Controller_Person extends Controller {
                         .send(validationToken.personEmail, "Email Verification");
 
             } catch (Exception e) {
-                Loggy.internalServerError("Controller_Person:: person_authenticationSendEmail()::", e);
+                terminal_logger.internalServerError(e);
             }
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -270,11 +276,11 @@ public class Controller_Person extends Controller {
                         .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
-                Loggy.internalServerError("Controller_Person:: person_passwordRecoverySendEmail()::", e);
+                terminal_logger.internalServerError(e);
             }
             return GlobalResult.result_ok();
         }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -344,12 +350,12 @@ public class Controller_Person extends Controller {
                         .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
-                Loggy.internalServerError("Controller_Person:: person_passwordRecovery()::", e);
+                terminal_logger.internalServerError(e);
             }
 
             return GlobalResult.result_ok("Password was changed successfully");
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -376,7 +382,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok(Json.toJson(person));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -401,7 +407,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok(Json.toJson(persons));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -442,7 +448,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -483,7 +489,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -528,7 +534,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -576,7 +582,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -618,7 +624,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -681,7 +687,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok(Json.toJson(person));
 
          } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -712,7 +718,7 @@ public class Controller_Person extends Controller {
            return GlobalResult.result_ok(Json.toJson( Controller_Security.get_person().floatingPersonTokens ));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -747,7 +753,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -775,13 +781,10 @@ public class Controller_Person extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result person_validateProperty(){
         try{
-
-
+            
             final Form<Swagger_Entity_Validation_In> form = Form.form(Swagger_Entity_Validation_In.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Entity_Validation_In help = form.get();
-
-            logger.debug("Příchoí JSON PRO OVĚŘENÍ JE " + Json.toJson(help));
 
             Swagger_Entity_Validation_Out validation = new Swagger_Entity_Validation_Out();
 
@@ -818,19 +821,19 @@ public class Controller_Person extends Controller {
 
                     try {
 
-                        logger.debug("Controller_Person:: person_validateProperty:: Link:: " + "https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
+                        terminal_logger.debug("person_validateProperty:: Link:: " + "https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
 
                         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class)
                                 .url("https://www.isvat.eu/CZ/28496639")
                                 .setHeader("cache-control", "no-cache")
                                 .get();
 
-                        logger.debug("Controller_Person:: person_validateProperty:: Link:: Promise zavolán");
+                        terminal_logger.debug("person_validateProperty:: Link:: Promise zavolán");
 
                         WSResponse wsResponse = responsePromise.get(10000);
 
-                        logger.debug("Controller_Person:: person_validateProperty:: http request:: " + wsResponse.getStatus());
-                        logger.debug("Controller_Person:: person_validateProperty:: vat_number:: " + wsResponse.getBody());
+                        terminal_logger.debug("person_validateProperty:: http request:: {} ", wsResponse.getStatus());
+                        terminal_logger.debug("person_validateProperty:: vat_number:: {} " , wsResponse.getBody());
 
                         JsonNode body = wsResponse.asJson();
 
@@ -846,7 +849,7 @@ public class Controller_Person extends Controller {
                         }
                     }catch (Exception e){
                         e.printStackTrace();
-                   //     Loggy.internalServerError("Controller_Person:: person_validateProperty()::", e);
+                   //     Server_Logger.internalServerError("person_validateProperty()::", e);
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";
                     }
@@ -860,7 +863,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok(Json.toJson(validation));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -963,13 +966,13 @@ public class Controller_Person extends Controller {
                         .send(Controller_Security.get_person().mail, subject);
 
             } catch (Exception e) {
-                Loggy.internalServerError("Controller_Person:: person_changeLoginProperty()::", e);
+                terminal_logger.internalServerError(e);
             }
 
             return GlobalResult.result_ok("Change was requested. You must authorize the change in next 4 hours via your email. Authorization email was sent.");
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1019,7 +1022,7 @@ public class Controller_Person extends Controller {
                                 .send(validationToken.personEmail, "Email Verification");
 
                     } catch (Exception e) {
-                        Loggy.internalServerError("Controller_Person:: person_authorizePropertyChange()::", e);
+                        terminal_logger.internalServerError(e);
                     }
                     break;
                 }
@@ -1035,7 +1038,7 @@ public class Controller_Person extends Controller {
             return redirect(Server.becki_mainUrl);
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1089,7 +1092,7 @@ public class Controller_Person extends Controller {
 
             // Odebrání předchozího obrázku
             if(person.picture != null){
-                logger.debug("Controller_Person:: person_uploadPicture:: Removing previous picture");
+                terminal_logger.debug("person_uploadPicture:: Removing previous picture");
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
                 person.azure_picture_link = "";
@@ -1117,8 +1120,8 @@ public class Controller_Person extends Controller {
             String[] type = parts[0].split(":");
             String[] dataType = type[1].split(";");
 
-            logger.debug("Data Type:" + dataType[0] + ":::");
-            logger.debug("Data: " + parts[1].substring(0, 10) + "......");
+            terminal_logger.debug("person_uploadPicture:: Data Type:" + dataType[0] + ":::");
+            terminal_logger.debug("person_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
 
             person.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, file_path);
             person.update();
@@ -1126,7 +1129,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok("Picture successfully uploaded");
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1161,7 +1164,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok("Picture successfully removed");
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 }

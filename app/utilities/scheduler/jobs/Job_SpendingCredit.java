@@ -20,6 +20,8 @@ import utilities.enums.Enum_Payment_status;
 import utilities.fakturoid.Utilities_Fakturoid_Controller;
 import utilities.goPay.Utilities_GoPay_Controller;
 import utilities.goPay.helps_objects.GoPay_Recurrence;
+import utilities.logger.Class_Logger;
+import web_socket.message_objects.common.WS_Send_message;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -27,14 +29,18 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Job_SpendingCredit implements Job {
+    
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+
+//**********************************************************************************************************************
 
     public Job_SpendingCredit(){}
-
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
+    
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Job_SpendingCredit:: execute: Executing Job_SpendingCredit");
+        terminal_logger.info("execute:: Executing Job_SpendingCredit");
 
         if(!spend_credit_thread.isAlive()) spend_credit_thread.start();
     }
@@ -44,7 +50,7 @@ public class Job_SpendingCredit implements Job {
         @Override
         public void run() {
 
-            logger.debug("Job_SpendingCredit:: spend_credit_thread: concurrent thread started on {}", new Date());
+            terminal_logger.debug("spend_credit_thread:: concurrent thread started on {}", new Date());
 
             Date created = new Date(new Date().getTime() - TimeUnit.HOURS.toMillis(16));
 
@@ -60,7 +66,7 @@ public class Job_SpendingCredit implements Job {
 
                 for (int page = 0; page <= page_total - 1; page++) {
 
-                    logger.debug("Job_SpendingCredit:: spend_credit_thread: procedure for page {} from {}", (page + 1), page_total);
+                    terminal_logger.debug("spend_credit_thread:: procedure for page {} from {}", (page + 1), page_total);
 
                     /*
                      * Filter slouží k hledání těch produktů, kde by mělo dojít ke stržení kreditu
@@ -78,7 +84,7 @@ public class Job_SpendingCredit implements Job {
                 }
             }
 
-            logger.debug("Job_SpendingCredit:: spend_credit_thread: thread stopped on {}", new Date());
+            terminal_logger.debug("spend_credit_thread:: thread stopped on {}", new Date());
         }
     };
 
@@ -87,28 +93,28 @@ public class Job_SpendingCredit implements Job {
      */
     private static void spending_credit(Model_Product product){
 
-        logger.info("Job_SpendingCredit:: spending_credit: Product ID: ", product.id );
+        terminal_logger.info("spending_credit:: Product ID:: ", product.id );
         double total_spending = 0.0;
 
         for(Model_GeneralTariffExtensions extension : product.extensions){
                 total_spending += extension.price_in_usd;
         }
 
-        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: {} total spending: {}", product.id, total_spending);
-        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: " + product.id + " state before: " + product.remaining_credit );
+        terminal_logger.debug("spending_credit:: Product ID: {} total spending: {}", product.id, total_spending);
+        terminal_logger.debug("spending_credit:: Product ID: " + product.id + " state before: " + product.remaining_credit );
         product.remaining_credit -= total_spending;
         product.update();
 
-        logger.debug("Job_SpendingCredit:: spending_credit: Product ID: " + product.id + " actual state: " + product.remaining_credit );
+        terminal_logger.debug("spending_credit:: Product ID: " + product.id + " actual state: " + product.remaining_credit );
 
 
         // Režim bankovního převodu - vše musí být ve výrazném přehstihnu
         if(product.method == Enum_Payment_method.bank_transfer) {
 
-            logger.debug("Job_SpendingCredit:: spending_credit: Product ID:: " +product.id + " bank transfer");
+            terminal_logger.debug("spending_credit:: Product ID:: " +product.id + " bank transfer");
 
             if(product.remaining_credit < 0 && ((-product.remaining_credit)*20 > total_spending) ){
-                logger.warn("Job_SpendingCredit:: spending_credit: Product ID:: bank transfer::" +product.id + " The account is in the minus 20 times the average spending");
+                terminal_logger.warn("spending_credit:: Product ID:: bank transfer::" +product.id + " The account is in the minus 20 times the average spending");
                 // Pošlu notifikaci a Email
 
                 // Zablokuji účet
@@ -116,14 +122,14 @@ public class Job_SpendingCredit implements Job {
             }
 
             if(product.remaining_credit < 0){
-                logger.warn("Job_SpendingCredit:: spending_credit: Product ID:: bank transfer:: " +product.id + " The account is in the minus");
+                terminal_logger.warn("spending_credit:: Product ID:: bank transfer:: " +product.id + " The account is in the minus");
                 // Pošlu notifikaci a Email
 
                 return;
             }
 
             if(product.remaining_credit < 10 * total_spending){
-                logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " The Product is close to zero in financial balance");
+                terminal_logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " The Product is close to zero in financial balance");
                 // Pošlu notifikaci a Email
 
                 return;
@@ -133,7 +139,7 @@ public class Job_SpendingCredit implements Job {
             // Pokud mi zbývá kreditu na méně než 14 dní - vytvořím fakturu
             if (product.remaining_credit < 14 * total_spending) {
 
-                logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " It is time to send an invoice");
+                terminal_logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " It is time to send an invoice");
                 // Vytvořím zálohovou fakturu
 
                 // Pošlu notifikaci
@@ -143,15 +149,15 @@ public class Job_SpendingCredit implements Job {
                 return;
             }
 
-            logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " The financial reserves are sufficient. Just send a notification");
+            terminal_logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " The financial reserves are sufficient. Just send a notification");
 
 
         }else if(product.method == Enum_Payment_method.credit_card){
 
-            logger.debug("Spending_Credit_Every_Day:: Product ID: " +product.id + " credit card");
+            terminal_logger.debug("Spending_Credit_Every_Day:: Product ID: " +product.id + " credit card");
 
             if(product.remaining_credit < 0 && ((-product.remaining_credit)*10 > total_spending) ){
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " The account is in the minus 10 times the average spending");
+                terminal_logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " The account is in the minus 10 times the average spending");
                 // Pošlu notifikaci a Email
 
                 // Zablokuji účet
@@ -159,7 +165,7 @@ public class Job_SpendingCredit implements Job {
             }
 
             if(product.remaining_credit < 0){
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card:: " +product.id + " The account is in the minus");
+                terminal_logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card:: " +product.id + " The account is in the minus");
                 // Pošlu notifikaci a Email
 
                 return;
@@ -167,7 +173,7 @@ public class Job_SpendingCredit implements Job {
 
             if(product.remaining_credit < 5 * total_spending && product.invoices().size() > 0 && product.invoices().get(0).status == Enum_Payment_status.created_waited){
 
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " Close to zero. Invoice created - but failed to pay the credit card before");
+                terminal_logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " Close to zero. Invoice created - but failed to pay the credit card before");
 
                 // pošlu email
 
@@ -178,7 +184,7 @@ public class Job_SpendingCredit implements Job {
 
             if(product.remaining_credit < 5 * total_spending){
 
-                logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " The Product is close to zero in financial balance");
+                terminal_logger.warn("Spending_Credit_Every_Day:: Product ID:: credit card::" +product.id + " The Product is close to zero in financial balance");
 
                 // Vytvořím zálohovou fakturu
 
@@ -201,12 +207,12 @@ public class Job_SpendingCredit implements Job {
     
     
     public void do_on_Demand_payment(){
-        logger.debug("Starting with procedure ON_DEMAND - taking money from Credit-Card");
+        terminal_logger.debug("Starting with procedure ON_DEMAND - taking money from Credit-Card");
 
         Calendar cal = Calendar.getInstance();
         List<Model_Product> products_with_on_Demands = Model_Product.find.where().eq("on_demand_active", true).where().eq("monthly_day_period", (cal.get(Calendar.DAY_OF_WEEK_IN_MONTH) + cal.get(Calendar.WEEK_OF_MONTH)*7)  ).findList();
 
-        logger.debug("Founded " + products_with_on_Demands.size() + " procedures with 4 days to end of Account");
+        terminal_logger.debug("Founded " + products_with_on_Demands.size() + " procedures with 4 days to end of Account");
 
 
         // String[] monthNames_cz = {"Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"};
@@ -215,15 +221,15 @@ public class Job_SpendingCredit implements Job {
 
         for(Model_Product product : products_with_on_Demands){
 
-            logger.debug("Updating procedure on user product " + product.product_individual_name + " id " + product.id);
+            terminal_logger.debug("Updating procedure on user product " + product.product_individual_name + " id " + product.id);
 
-            logger.debug("Creating Invoice");
+            terminal_logger.debug("Creating Invoice");
 
             // Vytovřím fakturu
             Model_Invoice invoice = new Model_Invoice();
 
 
-            logger.debug("Creating Invoice in Database");
+            terminal_logger.debug("Creating Invoice in Database");
             Model_InvoiceItem invoice_item_1 = new Model_InvoiceItem();
 
             invoice_item_1.name = "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
@@ -242,11 +248,11 @@ public class Job_SpendingCredit implements Job {
             product.update();
 
 
-            logger.debug("Creating Invoice on Fakturoid");
+            terminal_logger.debug("Creating Invoice on Fakturoid");
             Utilities_Fakturoid_Controller.create_proforma(product, invoice);
 
 
-            logger.debug("Creating GoPay_Recurrence");
+            terminal_logger.debug("Creating GoPay_Recurrence");
             GoPay_Recurrence recurrence = new GoPay_Recurrence();
             recurrence.amount = Math.round(product.general_tariff.price_in_usd*100);
             recurrence.currency = Enum_Currency.USD;
@@ -255,11 +261,11 @@ public class Job_SpendingCredit implements Job {
             recurrence.order_description =  "Services for " + monthNames_en[ cal.get(Calendar.MONTH) ];
 
             // Token
-            logger.debug("Taking Token");
+            terminal_logger.debug("Taking Token");
             String local_token = Utilities_GoPay_Controller.getToken();
 
             if(local_token == null) {
-                logger.error("Local Token is null!!!");
+                terminal_logger.error("Local Token is null!!!");
                 break;
             }
 
@@ -273,7 +279,7 @@ public class Job_SpendingCredit implements Job {
                     .setRequestTimeout(2500)
                     .post(Json.toJson(recurrence));
 
-            logger.debug("Sending request for new payment!");
+            terminal_logger.debug("Sending request for new payment!");
             WSResponse response = responsePromise.get(1000);
 
             /**
@@ -299,21 +305,21 @@ public class Job_SpendingCredit implements Job {
             if(response.getStatus() ==  500 ) {
 
                 JsonNode json_response =  response.asJson();
-                logger.debug("Request was successful");
+                terminal_logger.debug("Request was successful");
 
                 invoice.gopay_id = json_response.get("parent_id").asLong();
                 invoice.gopay_order_number = json_response.get("order_number").asText();
 
-                logger.debug("Removing proforma from Fakturoid");
-                if( !Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  logger.error("Error Removing proforma from Fakturoid");
+                terminal_logger.debug("Removing proforma from Fakturoid");
+                if( !Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  terminal_logger.error("Error Removing proforma from Fakturoid");
 
                 // Vytvořit fakturu
-                logger.debug("Creating invoice from proforma in Fakturoid");
+                terminal_logger.debug("Creating invoice from proforma in Fakturoid");
                 Utilities_Fakturoid_Controller.create_paid_invoice(product,invoice);
 
                 // Uhradit Fakturu
-                logger.debug("Changing state on Invoice to paid");
-                if(! Utilities_Fakturoid_Controller.fakturoid_post("/invoices/"+  invoice.facturoid_invoice_id +  "/fire.json?event=pay")) logger.error("Faktura nebyla změněna na uhrazenou dojde tedy k inkonzistenntímu stavu");
+                terminal_logger.debug("Changing state on Invoice to paid");
+                if(! Utilities_Fakturoid_Controller.fakturoid_post("/invoices/"+  invoice.facturoid_invoice_id +  "/fire.json?event=pay")) terminal_logger.error("Faktura nebyla změněna na uhrazenou dojde tedy k inkonzistenntímu stavu");
                 invoice.proforma = false;
                 invoice.update();
 
@@ -322,16 +328,16 @@ public class Job_SpendingCredit implements Job {
             }
             else if(response.getStatus() == 200) {
 
-                logger.warn("Not enough money on Account");
-                logger.warn("Set a time limit protection for account");
-                logger.warn("Sending email with Proforma and with request for MONEY!!!! MONEY!!! ");
+                terminal_logger.warn("Not enough money on Account");
+                terminal_logger.warn("Set a time limit protection for account");
+                terminal_logger.warn("Sending email with Proforma and with request for MONEY!!!! MONEY!!! ");
 
                 Utilities_Fakturoid_Controller.send_UnPaidInvoice_to_Email(invoice);
             }
             else{
-                logger.error("Unknown Error");
-                logger.error("Request status: " + response.getStatus() );
-                logger.error("Request Body: "   + response.getBody() );
+                terminal_logger.error("Unknown Error");
+                terminal_logger.error("Request status: " + response.getStatus() );
+                terminal_logger.error("Request Body: "   + response.getBody() );
             }
 
         }

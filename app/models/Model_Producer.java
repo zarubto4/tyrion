@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ public class Model_Producer extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Producer.class);
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                         @Id @ApiModelProperty(required = true)  public String id;
@@ -31,20 +34,39 @@ public class Model_Producer extends Model {
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_GridWidget>  grid_widgets = new ArrayList<>();
 
 
-/* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-   // @JsonProperty @Transient @ApiModelProperty(required = true) public  List<Swagger_Object_detail> type_of_boards()   { List<Swagger_Object_detail> l = new ArrayList<>();  for( TypeOfBoard m  : type_of_boards)   l.add(new Swagger_Object_detail(m.name, m.id)); return l;  }
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             if (Model_Producer.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

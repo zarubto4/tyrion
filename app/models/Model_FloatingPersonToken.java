@@ -7,6 +7,9 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Where_logged_tag;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -15,13 +18,15 @@ import java.util.concurrent.TimeUnit;
 
 
 @Entity
-@ApiModel(description = "Model of FloatingPersonToken",
-        value = "FloatingPersonToken")
+@ApiModel(value = "FloatingPersonToken", description = "Model of FloatingPersonToken")
 public class Model_FloatingPersonToken extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_FloatingPersonToken.class);
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+
 
     @Id @ApiModelProperty(required = true)                  public String connection_id;
                               @JsonIgnore                   public String authToken;
@@ -41,25 +46,50 @@ public class Model_FloatingPersonToken extends Model {
     @ApiModelProperty(required = true)                      public String user_agent;
 
 
-    @ApiModelProperty(required = true)                      public String provider_user_id;          // user_id ze sociální služby (facebook, git atd)
+    @ApiModelProperty(required = true)                      public String provider_user_id;             // user_id ze sociální služby (facebook, git atd)
     @Column(columnDefinition = "TEXT")
-    @ApiModelProperty(required = true)                      public String provider_key;             // provider key - slouží k identifikaci pro oauth2
-    @ApiModelProperty(required = true)                      public String type_of_connection;        // Typ Spojení
-    @ApiModelProperty(required = true)                      public String return_url;               // Url pna které užáivatele přesměruji
+    @ApiModelProperty(required = true)                      public String provider_key;                 // provider key - slouží k identifikaci pro oauth2
+    @ApiModelProperty(required = true)                      public String type_of_connection;           // Typ Spojení
+    @ApiModelProperty(required = true)                      public String return_url;                   // Url pna které užáivatele přesměruji
 
-    @ApiModelProperty(required = true)                      public boolean social_token_verified;  // Pro ověření, že token byl sociální sítí ověřen
+    @ApiModelProperty(required = true)                      public boolean social_token_verified;       // Pro ověření, že token byl sociální sítí ověřen
 
-    @ApiModelProperty(required = true)                      public boolean notification_subscriber;  // Pokud se s tímto tokenem frontend přihlásí k odebírání notifikací nastaví se mu hodnota true
-                                                                                                     // a to z důvodů rychlého filtrování, protože uživatel může být přihlášen na 50 zařízeních a na 15 odebírá notifikace
-                                                                                                     // v případě uzavření notifikačního kanálu se musí token přenastavit na false!
+    @ApiModelProperty(required = true)                      public boolean notification_subscriber;     // Pokud se s tímto tokenem frontend přihlásí k odebírání notifikací nastaví se mu hodnota true
+                                                                                                        // a to z důvodů rychlého filtrování, protože uživatel může být přihlášen na 50 zařízeních a na 15 odebírá notifikace
+                                                                                                        // v případě uzavření notifikačního kanálu se musí token přenastavit na false!
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+@JsonIgnore @Transient
 
-    @JsonIgnore @Override
+    public boolean isValid(){
+        try {
+            if(this.access_age.getTime() < new Date().getTime()){
+                this.delete();
+                return false;
+            }else {
+                this.access_age = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(72));
+                this.update();
+                return true;
+            }
+        } catch (Exception e){
+            return false;
+        }
+    }
+
+    // If userDB/system make log out
+    public void deleteAuthToken() {
+        this.delete();
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+@JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         this.setToken( createToken() );
         this.setDate();
@@ -121,25 +151,21 @@ public class Model_FloatingPersonToken extends Model {
         return floatingPersonToken;
     }
 
-    @JsonIgnore @Transient
-    public boolean isValid(){
-        try {
-            if(this.access_age.getTime() < new Date().getTime()){
-                this.delete();
-                return false;
-            }else {
-                this.access_age = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(72));
-                this.update();
-                return true;
-            }
-        } catch (Exception e){
-            return false;
-        }
+
+    @Override
+    public void update(){
+        terminal_logger.trace("update :: Delete object Id: {} ", this.authToken);
+
+        //Database Update
+        super.update();
     }
 
-    // If userDB/system make log out
-    public void deleteAuthToken() {
-       this.delete();
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.trace("delete :: Delete object Id: {} ", this.authToken);
+
+        //Database Update
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -156,6 +182,10 @@ public class Model_FloatingPersonToken extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().has_permission("FloatingPersonToken_delete"); }
 
     public enum permissions{ FloatingPersonToken_read, FloatingPersonToken_delete }
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    // Override in Model_Person
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static final Finder<String, Model_FloatingPersonToken> find = new Finder<>(Model_FloatingPersonToken.class);

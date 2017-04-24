@@ -5,7 +5,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.loggy.Loggy;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 
@@ -40,8 +40,7 @@ public class RequestCounter extends Controller{
             return GlobalResult.result_ok(Json.toJson(Model_RequestLog.find.order().desc("call_count").findList()));
 
         } catch (Exception e) {
-
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -58,8 +57,7 @@ public class RequestCounter extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 }

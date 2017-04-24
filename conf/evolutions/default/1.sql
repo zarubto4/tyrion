@@ -178,12 +178,6 @@ create table CompilationServer (
   constraint pk_CompilationServer primary key (unique_identificator))
 ;
 
-create table model_example_model_name (
-  id                        varchar(255) not null,
-  date_of_create            timestamp,
-  constraint pk_model_example_model_name primary key (id))
-;
-
 create table model_file_record (
   id                        varchar(255) not null,
   file_name                 varchar(255),
@@ -417,6 +411,7 @@ create table model_mprogram (
   id                        varchar(255) not null,
   name                      varchar(255),
   description               TEXT,
+  removed_by_user           boolean,
   date_of_create            timestamp,
   m_project_id              varchar(255),
   azure_m_program_link      varchar(255),
@@ -429,8 +424,8 @@ create table model_mproject (
   description               TEXT,
   date_of_create            timestamp,
   project_id                varchar(255),
-  azure_m_project_link      varchar(255),
   removed_by_user           boolean,
+  azure_m_project_link      varchar(255),
   constraint pk_model_mproject primary key (id))
 ;
 
@@ -605,6 +600,7 @@ create table model_type_of_block (
   description               TEXT,
   project_id                varchar(255),
   order_position            integer,
+  removed_by_user           boolean,
   constraint pk_model_type_of_block primary key (id))
 ;
 
@@ -619,6 +615,7 @@ create table model_type_of_board (
   processor_id              varchar(255),
   connectible_to_internet   boolean,
   picture_id                varchar(255),
+  removed_by_user           boolean,
   constraint uq_model_type_of_board_compiler_ unique (compiler_target_name),
   constraint uq_model_type_of_board_picture_i unique (picture_id),
   constraint pk_model_type_of_board primary key (id))
@@ -636,6 +633,7 @@ create table model_type_of_widget (
   description               TEXT,
   project_id                varchar(255),
   order_position            integer,
+  removed_by_user           boolean,
   constraint pk_model_type_of_widget primary key (id))
 ;
 
@@ -962,8 +960,6 @@ drop table if exists model_cprogram_update_plan cascade;
 drop table if exists model_change_property_token cascade;
 
 drop table if exists CompilationServer cascade;
-
-drop table if exists model_example_model_name cascade;
 
 drop table if exists model_file_record cascade;
 

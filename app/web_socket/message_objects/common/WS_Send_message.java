@@ -1,14 +1,19 @@
 package web_socket.message_objects.common;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import utilities.logger.Class_Logger;
+import utilities.response.GlobalResult;
 import web_socket.services.WS_Interface_type;
 
 import java.util.concurrent.*;
 
 public class WS_Send_message {
 
-    // Logger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+
+//**********************************************************************************************************************
 
     // Proměnné
     private ObjectNode json;                                                // Zpráva
@@ -40,9 +45,9 @@ public class WS_Send_message {
     public void insert_result(ObjectNode result) {
 
 
-        logger.trace("Sending message: " , messageId , " insert result " , result.toString());
+        terminal_logger.trace("Sending message:  {}  insert result {} " , messageId , result.toString());
 
-        logger.trace("Sending message: " , messageId , " not contains Sub-Message - its regular message");
+        terminal_logger.trace("Sending message:  {} not contains Sub-Message - its regular message",  messageId);
 
 
         // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
@@ -51,10 +56,10 @@ public class WS_Send_message {
         }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
 
 
-        logger.trace("Sending message: " , messageId , " saving result to variable ");
+        terminal_logger.trace("Sending message: {} saving result to variable " , messageId );
         this.result = result;
 
-        logger.trace("Terminating message thread");
+        terminal_logger.trace("Terminating message thread");
         future.cancel(true); // Terminuji zprávu k odeslání
 
     }
@@ -63,10 +68,10 @@ public class WS_Send_message {
 
     public ObjectNode send_with_response() throws TimeoutException, ExecutionException, InterruptedException {
         try {
-            logger.trace("Sending message: " + this.messageId);
+            terminal_logger.trace("Sending message: {} " , this.messageId);
             return future.get();
         }catch (CancellationException e){
-            logger.trace("CancellationException: " + this.messageId +  " result: "+ result.toString() );
+            terminal_logger.trace("CancellationException: {} result: {} " , this.messageId ,  result.toString() );
             return result;
         }
     }
@@ -78,11 +83,9 @@ public class WS_Send_message {
         public ObjectNode call() throws Exception {
             try {
 
-                logger.trace("Sending message: " + messageId +  " -> Delay time: "+ delay );
-                Thread.sleep(delay);
+               Thread.sleep(delay);
 
-                logger.trace("Sending message: " + messageId +  " -> Number of retries: "+ number_of_retries  +  ", Awaiting time: "+ awaiting_time);
-                while (number_of_retries >= 0 || awaiting_time > 0) {
+               while (number_of_retries >= 0 || awaiting_time > 0) {
 
                     // Slouží odsunutí vykonání odeslání další zprávy - awaiting_time je defaultně 0, ale v případě příchozí zprávy,
                     // která odsune terminator (vypršení) zprávy, uloží se do proměné thohoto objektu se čas TimeoutException posunu
@@ -90,7 +93,7 @@ public class WS_Send_message {
                     // Homer požádá o delší čas - pošle submessage s dodatečným časem - vlákno tento čas spí (odmaže čas na nulu) do další iterace
                     // while vlákna - pokud mezi spánkem opět přijde další požadavek na další spaní z nuly se opět stane číslo a vlákno opět upadne do spánku
                     if(awaiting_time > 0) {
-                        logger.debug("Vlákno bylo ze strany příjemce požádáno, aby vyčkalo v milisekundách o něco déle: " + awaiting_time );
+                        terminal_logger.debug("Vlákno bylo ze strany příjemce požádáno, aby vyčkalo v milisekundách o něco déle: " + awaiting_time );
                         Thread.sleep(awaiting_time);
                         awaiting_time = 0;
                     }else {
@@ -106,7 +109,7 @@ public class WS_Send_message {
                                 return result;
                             }
                         }else {
-                            logger.trace("Sending message: " + messageId + "Nothing for sending - just waiting for result");
+                            terminal_logger.trace("Sending message: " + messageId + "Nothing for sending - just waiting for result");
                         }
 
                         Thread.sleep(time);
@@ -118,7 +121,7 @@ public class WS_Send_message {
             }catch (InterruptedException|CancellationException e){
                 throw e;
             } catch (Exception e) {
-                e.printStackTrace();
+                terminal_logger.internalServerError(e);
                 throw e;
             }
         }

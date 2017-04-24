@@ -11,6 +11,7 @@ import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
 import play.data.validation.Constraints;
 import utilities.Server;
+import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.*;
@@ -20,11 +21,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of Person",
-          value = "Person")
+@ApiModel(value = "Person", description = "Model of Person")
 public class Model_Person extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Person.class);
+
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -152,20 +155,15 @@ public class Model_Person extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission(){  return true;  }
-    @JsonIgnore   @Transient public boolean read_permission()  {  return true;  }
-    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person() != null && (Controller_Security.get_person().id.equals(this.id) || Controller_Security.get_person().has_permission("Person_edit"));}
+    @JsonIgnore   @Transient public boolean create_permission()     {  return true;  }
+    @JsonIgnore   @Transient public boolean read_permission()       {  return true;  }
+    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person().id.equals(this.id) || Controller_Security.get_person().has_permission("Person_edit"));}
     @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().has_permission("Person_activation");}
     @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().has_permission("Person_delete");}
     @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().has_permission("Byzance_employee");}
 
     public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
-
-    public static Model_Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
-
-    public static Model.Finder<String,Model_Person>  find = new Model.Finder<>(Model_Person.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -197,7 +195,10 @@ public class Model_Person extends Model {
         if (person_id == null){
 
             Model_Person person = find.where().eq("floatingPersonTokens.authToken", authToken).findUnique();
-            if (person == null) return null;
+            if (person == null){
+                terminal_logger.warn( "get_byAuthToken :: This object authToken:: " + authToken + " wasn't found. ");
+                return null;
+            }
 
             cache.put(person.id, person);
             token_cache.put(authToken, person.id);
@@ -208,4 +209,12 @@ public class Model_Person extends Model {
             return get_byId(person_id);
         }
     }
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+
+    public static Model_Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
+
+    public static Model.Finder<String,Model_Person>  find = new Model.Finder<>(Model_Person.class);
+
+
 }

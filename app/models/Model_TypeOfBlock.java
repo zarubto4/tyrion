@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_TypeOfBlock_Short_Detail;
 
 import javax.persistence.*;
@@ -22,6 +23,8 @@ public class Model_TypeOfBlock extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_SecurityRole.class);
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                         @Id @ApiModelProperty(required = true) public String id;
@@ -34,32 +37,15 @@ public class Model_TypeOfBlock extends Model {
 
     @JsonIgnore  public Integer order_position;
 
-
+    @JsonIgnore              public boolean removed_by_user;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!", readOnly = true, required = false)
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient                        public String project_id() {  return project == null ? null : this.project.id; }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
-
-        if(project == null){
-            order_position = Model_TypeOfBlock.find.where().isNull("project").findRowCount() + 1;
-        }else {
-            order_position = Model_TypeOfBlock.find.where().eq("project.id", project.id).findRowCount() + 1;
-        }
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (get_byId(this.id) == null) break;
-        }
-        super.save();
-    }
-
-    /* GET Variable short type of objects ------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public Swagger_TypeOfBlock_Short_Detail get_type_of_block_short_detail(){
         Swagger_TypeOfBlock_Short_Detail help = new Swagger_TypeOfBlock_Short_Detail();
@@ -74,6 +60,47 @@ public class Model_TypeOfBlock extends Model {
         help.update_permission = update_permission();
         return help;
     }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+
+        if(project == null){
+            order_position = Model_TypeOfBlock.find.where().isNull("project").findRowCount() + 1;
+        }else {
+            order_position = Model_TypeOfBlock.find.where().eq("project.id", project.id).findRowCount() + 1;
+        }
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (get_byId(this.id) == null) break;
+        }
+        super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+
+
+        removed_by_user = true;
+        super.update();
+
+    }
+
+
+/* ORDER ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void up(){

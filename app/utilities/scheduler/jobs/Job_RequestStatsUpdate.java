@@ -4,22 +4,26 @@ import models.Model_RequestLog;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 import utilities.request_counter.RequestCounter;
+import web_socket.message_objects.common.WS_Send_message;
 
 import java.util.Date;
 import java.util.Map.Entry;
 
 public class Job_RequestStatsUpdate implements Job {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+
+//**********************************************************************************************************************
+
     public Job_RequestStatsUpdate(){}
-
-    // Logger
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
+    
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Job_RequestStatsUpdate:: execute: Executing Job_RequestStatsUpdate");
+        terminal_logger.info("execute:: Executing Job_RequestStatsUpdate");
 
         if(!stats_update_thread.isAlive()) stats_update_thread.start();
     }
@@ -30,7 +34,7 @@ public class Job_RequestStatsUpdate implements Job {
         public void run() {
 
             try {
-                logger.trace("Job_RequestStatsUpdate:: stats_update_thread: concurrent thread started on {}", new Date());
+                terminal_logger.trace("stats_update_thread:: concurrent thread started on {}", new Date());
 
                 if (!RequestCounter.requests.isEmpty()) {
 
@@ -56,15 +60,15 @@ public class Job_RequestStatsUpdate implements Job {
 
                     RequestCounter.requests.clear();
 
-                    logger.trace("Job_RequestStatsUpdate:: stats_update_thread: logs successfully updated");
+                    terminal_logger.trace("stats_update_thread:: logs successfully updated");
                 } else {
-                    logger.trace("Job_RequestStatsUpdate:: stats_update_thread: no requests");
+                    terminal_logger.trace("stats_update_thread:: no requests");
                 }
             } catch (Exception e) {
-                Loggy.internalServerError("Job_RequestStatsUpdate:: stats_update_thread:", e);
+                terminal_logger.internalServerError("stats_update_thread:: ", e);
             }
 
-            logger.trace("Job_RequestStatsUpdate:: stats_update_thread: thread stopped on {}", new Date());
+            terminal_logger.trace("stats_update_thread:: thread stopped on {}", new Date());
         }
     };
 }

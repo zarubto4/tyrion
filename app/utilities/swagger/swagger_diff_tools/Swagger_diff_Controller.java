@@ -11,7 +11,9 @@ import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.loggy.Loggy;
+import utilities.hardware_generator.Utilities_Hardware_generator_Controller;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.servise_class.*;
 
@@ -22,7 +24,12 @@ import java.util.*;
 public class Swagger_diff_Controller extends Controller {
 
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Swagger_diff_Controller.class);
+
+// - Oblužné metody - primárně pro Wiev Tyriona ------------------------------------------------------------------------
+
 
     public Result getResources_version(String version){
         try{
@@ -30,7 +37,7 @@ public class Swagger_diff_Controller extends Controller {
 
             return GlobalResult.result_ok(old_api);
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -38,19 +45,19 @@ public class Swagger_diff_Controller extends Controller {
     public static JsonNode read_local_File_for_Swagger(String file_name) throws IOException {
         try {
 
-            logger.debug("Replacing dots in file name");
+            terminal_logger.debug("Replacing dots in file name");
             file_name = file_name.replace(".", "_");
-            logger.debug("File name is " + file_name);
+            terminal_logger.debug("File name is " + file_name);
 
-            logger.debug("Return Json of Swagger Documentation");
+            terminal_logger.debug("Return Json of Swagger Documentation");
             return Json.parse(IOUtils.toString(Play.application().resourceAsStream("/swagger_history/" + file_name + ".json")));
 
         }catch (JsonMappingException a){
-            logger.error("file with Json Documentation is empty or damaged!");
+            terminal_logger.error("file with Json Documentation is empty or damaged!");
             return Json.newObject();
 
         } catch (NullPointerException e) {
-            logger.error("file with Json Documentation not found!");
+            terminal_logger.error("file with Json Documentation not found!");
             return null;
         }
     }
@@ -70,7 +77,7 @@ public class Swagger_diff_Controller extends Controller {
     public static Swagger_Diff set_API_Changes(String file_name_old, String file_name_new) {
         try {
 
-            logger.debug("Creating api_diff.html content");
+            terminal_logger.debug("Creating api_diff.html content");
 
 
 
@@ -93,7 +100,7 @@ public class Swagger_diff_Controller extends Controller {
             api_old.arrange_models(old_api.get("definitions"));
 
             // skupiny v API -------------------------------------------------------------------------------------------
-            logger.debug("Checking API TAGS");
+            terminal_logger.debug("Checking API TAGS");
             for(Swagger_Api.Tag tag_old : api_old.tags) if(! api_new.contains_tag(tag_old.name)) swagger_Dif.removed_groups.add( tag_old.name  );
             for(Swagger_Api.Tag tag_new : api_new.tags) if(! api_old.contains_tag(tag_new.name)) swagger_Dif.add_groups.add( tag_new.name  );
 
@@ -101,7 +108,7 @@ public class Swagger_diff_Controller extends Controller {
 
 
             // modely v API --------------------------------------------------------------------------------------------
-            logger.debug("Checking Models");
+            terminal_logger.debug("Checking Models");
             for(String key : api_new.models.keySet()){
 
 
@@ -166,7 +173,7 @@ public class Swagger_diff_Controller extends Controller {
 
 
 
-            logger.debug("Return swagger_Dif Object");
+            terminal_logger.debug("Return swagger_Dif Object");
             return swagger_Dif;
 
 

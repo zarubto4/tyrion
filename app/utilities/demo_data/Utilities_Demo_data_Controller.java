@@ -1,5 +1,6 @@
 package utilities.demo_data;
 
+import controllers.Controller_Actualization;
 import io.swagger.annotations.Api;
 import models.*;
 import models.Model_FloatingPersonToken;
@@ -20,7 +21,8 @@ import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Enum_Participant_status;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 
@@ -36,6 +38,10 @@ import java.util.UUID;
 @Security.Authenticated(Secured_Admin.class)
 public class Utilities_Demo_data_Controller extends Controller {
 
+// LOGGER ##############################################################################################################
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Utilities_Demo_data_Controller.class);
+
     @Inject
     Application application;
 
@@ -47,10 +53,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             return  ok();
 
         } catch (Exception e) {
-            System.out.println("Demo_Data_Controller :: test :: " + "Došlo k problémům!!!!");
-
-            e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -100,7 +103,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -239,7 +242,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -395,7 +398,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -483,7 +486,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -974,7 +977,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1063,7 +1066,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

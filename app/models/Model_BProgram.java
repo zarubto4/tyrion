@@ -9,11 +9,13 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.enums.Enum_Homer_instance_type;
 import utilities.enums.Enum_Tyrion_Server_mode;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_B_Program_State;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version_Short_Detail;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -23,9 +25,12 @@ import java.util.UUID;
 
 
 @Entity
-@ApiModel(description = "Model of BProgram",
-        value = "BProgram")
+@ApiModel(value = "BProgram", description = "Model of BProgram")
 public class Model_BProgram extends Model {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_BProgram.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -46,7 +51,7 @@ public class Model_BProgram extends Model {
                                     @JsonIgnore              public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
     @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
 
-/* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient public String   project_id() {  return project.id; }
 
@@ -98,7 +103,7 @@ public class Model_BProgram extends Model {
             return state;
 
         }catch (Exception e){
-            Loggy.internalServerError(this.getClass().getSimpleName() + "get_b_program_short_detail", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -121,7 +126,7 @@ public class Model_BProgram extends Model {
             return help;
 
         }catch (Exception e){
-            Loggy.internalServerError(this.getClass().getSimpleName() + "get_b_program_short_detail", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -155,12 +160,15 @@ public class Model_BProgram extends Model {
         return Model_VersionObject.find.where().eq("b_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList();
     }
 
-/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore            private String azure_b_program_link;
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+
         while(true){ // I need Unique Value
             this.id = UUID.randomUUID().toString();
             this.azure_b_program_link = project.get_path() + "/b-programs/"  + this.id;
@@ -180,7 +188,16 @@ public class Model_BProgram extends Model {
         super.save();
     }
 
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+
+        super.update();
+    }
+
     @JsonIgnore @Override public void delete() {
+
+      terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
       instance.remove_instance_from_server();
       instance.removed_by_user = true;
@@ -192,11 +209,17 @@ public class Model_BProgram extends Model {
 
     }
 
+/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore private String azure_b_program_link;
 
     @JsonIgnore @Transient
     public String get_path(){
         return azure_b_program_link;
     }
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
@@ -207,8 +230,6 @@ public class Model_BProgram extends Model {
     @JsonProperty @Transient public boolean delete_permission()  {  return  ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("B_Program_delete");  }
 
     public enum permissions{ B_Program_create, B_Program_update, B_Program_read, B_Program_edit , B_Program_delete}
-
-
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
      public static Model.Finder<String,Model_BProgram> find = new Finder<>(Model_BProgram.class);

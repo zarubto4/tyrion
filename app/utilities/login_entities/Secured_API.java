@@ -5,6 +5,7 @@ import models.Model_Person;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.logger.Class_Logger;
 import utilities.response.GlobalResult;
 
 import static play.mvc.Controller.request;
@@ -13,8 +14,8 @@ import static play.mvc.Controller.request;
 public class Secured_API extends Security.Authenticator {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
+    
+private static final Class_Logger terminal_logger = new Class_Logger(Secured_API.class);
 
 /* METHOD  -------------------------------------------------------------------------------------------------------------*/
 
@@ -31,7 +32,7 @@ public class Secured_API extends Security.Authenticator {
         }
 
         if(token == null){
-            logger.debug("Security Token:: is empty - return null - login required");
+            terminal_logger.debug("is empty - return null - login required");
             return null;
         }
 
@@ -41,7 +42,7 @@ public class Secured_API extends Security.Authenticator {
 
             Model_FloatingPersonToken model_token = Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique();
             if(model_token == null || !model_token.isValid()){
-                logger.warn("Security Token:: " + token + " is not t is no longer valid according time");
+                terminal_logger.warn("" + token + " is not t is no longer valid according time");
                 return null;
             }
 

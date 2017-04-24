@@ -4,7 +4,8 @@ import models.Model_FileRecord;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import web_socket.message_objects.common.WS_Send_message;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -12,14 +13,17 @@ import java.util.Date;
 
 public class Job_LogAzureUpload implements Job {
 
-    public Job_LogAzureUpload(){}
+ /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    // Logger
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+
+//**********************************************************************************************************************
+
+    public Job_LogAzureUpload(){}
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Job_LogAzureUpload:: execute: Executing Job_LogAzureUpload");
+        terminal_logger.info("Job_LogAzureUpload:: execute: Executing Job_LogAzureUpload");
 
         if(!log_upload_thread.isAlive()) log_upload_thread.start();
     }
@@ -30,7 +34,7 @@ public class Job_LogAzureUpload implements Job {
         public void run() {
             try {
 
-                logger.debug("Job_LogAzureUpload:: log_upload_thread: concurrent thread started on {}", new Date());
+                terminal_logger.debug("Job_LogAzureUpload:: log_upload_thread: concurrent thread started on {}", new Date());
 
                 File file = new File(System.getProperty("user.dir") + "/app/logs/all.log");
 
@@ -41,13 +45,13 @@ public class Job_LogAzureUpload implements Job {
 
                 Model_FileRecord.uploadAzure_File(file, file_name, "logs/" + file_name);
 
-                logger.debug("Job_LogAzureUpload:: log_upload_thread: log successfully uploaded");
+                terminal_logger.debug("Job_LogAzureUpload:: log_upload_thread: log successfully uploaded");
 
             } catch (Exception e) {
-                Loggy.internalServerError("Job_LogAzureUpload:: log_upload_thread:", e);
+                terminal_logger.internalServerError("Job_LogAzureUpload:: log_upload_thread:", e);
             }
 
-            logger.debug("Job_LogAzureUpload:: log_upload_thread: thread stopped on {}", new Date());
+            terminal_logger.debug("Job_LogAzureUpload:: log_upload_thread: thread stopped on {}", new Date());
         }
     };
 }

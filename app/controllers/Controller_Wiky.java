@@ -4,12 +4,17 @@ package controllers;
 import io.swagger.annotations.Api;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utilities.logger.Class_Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Wiky extends Controller {
+
+// LOGGER ##############################################################################################################
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_WebSocket.class);
 
      public Result test1(){
 

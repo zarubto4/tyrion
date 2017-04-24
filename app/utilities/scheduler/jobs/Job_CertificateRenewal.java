@@ -4,20 +4,25 @@ package utilities.scheduler.jobs;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import web_socket.message_objects.common.WS_Send_message;
+
 
 import java.util.Date;
 
 public class Job_CertificateRenewal implements Job {
 
-    public Job_CertificateRenewal(){}
+ /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    // Logger
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+
+//**********************************************************************************************************************
+
+    public Job_CertificateRenewal(){}
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Job_CertificateRenewal:: execute: Executing Job_CertificateRenewal");
+        terminal_logger.info("Job_CertificateRenewal:: execute: Executing Job_CertificateRenewal");
 
         if(!renew_certificate_thread.isAlive()) renew_certificate_thread.start();
     }
@@ -27,7 +32,7 @@ public class Job_CertificateRenewal implements Job {
         @Override
         public void run() {
 
-            logger.debug("Job_CertificateRenewal:: renew_certificate_thread: concurrent thread started on {}", new Date());
+            terminal_logger.debug("Job_CertificateRenewal:: renew_certificate_thread: concurrent thread started on {}", new Date());
 
             try {
 
@@ -35,13 +40,13 @@ public class Job_CertificateRenewal implements Job {
 
               int exitVal = pr.waitFor();
 
-              logger.warn("Job_CertificateRenewal:: renew_certificate_thread: renewal script exited with code " + exitVal);
+                terminal_logger.warn("Job_CertificateRenewal:: renew_certificate_thread: renewal script exited with code " + exitVal);
 
             } catch (Exception e) {
-                Loggy.internalServerError("Job_CertificateRenewal:: renew_certificate_thread:", e);
+                terminal_logger.internalServerError(e);
             }
 
-            logger.debug("Job_CertificateRenewal:: renew_certificate_thread: thread stopped on {}", new Date());
+            terminal_logger.debug("Job_CertificateRenewal:: renew_certificate_thread: thread stopped on {}", new Date());
         }
     };
 }

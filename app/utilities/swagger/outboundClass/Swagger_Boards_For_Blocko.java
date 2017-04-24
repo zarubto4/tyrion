@@ -2,12 +2,9 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_TypeOfBoard;
-import models.Model_VersionObject;
-import models.Model_CProgram;
-import models.Model_MProgram;
-import models.Model_MProject;
-import utilities.loggy.Loggy;
+import models.*;
+import utilities.logger.Class_Logger;
+import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +14,11 @@ import java.util.List;
         value = "Boards_For_Blocko")
 public class Swagger_Boards_For_Blocko {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Board.class);
+
+/*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_C_Program_Short_Detail_For_Blocko> c_programs = new ArrayList<>();
@@ -63,7 +65,7 @@ public class Swagger_Boards_For_Blocko {
                 c_programs.add(c_program_short_detail_for_blocko);
 
             }catch (Exception e){
-                Loggy.internalServerError("Swagger_Boards_For_Blocko:: add_C_Programs", e);
+                terminal_logger.internalServerError("Swagger_Boards_For_Blocko:: add_C_Programs", e);
             }
         }
     }

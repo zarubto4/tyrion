@@ -5,21 +5,25 @@ import models.Model_FloatingPersonToken;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import web_socket.message_objects.common.WS_Send_message;
 
 import java.util.Date;
 import java.util.List;
 
 public class Job_OldFloatingTokenRemoval implements Job {
 
-    public Job_OldFloatingTokenRemoval(){}
+    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    // Logger
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+
+//**********************************************************************************************************************
+
+    public Job_OldFloatingTokenRemoval(){}
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Job_OldFloatingTokenRemoval:: execute: Executing Job_OldFloatingTokenRemoval");
+        terminal_logger.info("Job_OldFloatingTokenRemoval:: execute: Executing Job_OldFloatingTokenRemoval");
 
         if(!remove_floating_person_token_thread.isAlive()) remove_floating_person_token_thread.start();
     }
@@ -31,26 +35,26 @@ public class Job_OldFloatingTokenRemoval implements Job {
 
             try {
 
-                logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: concurrent thread started on {}", new Date());
+                terminal_logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: concurrent thread started on {}", new Date());
 
                 while (true) {
 
                     List<Model_FloatingPersonToken> tokens = Model_FloatingPersonToken.find.where().gt("access_age", new Date()).setMaxRows(100).findList();
                     if (tokens.isEmpty()) {
-                        logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: no tokens to remove");
+                        terminal_logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: no tokens to remove");
                         break;
                     }
 
-                    logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: removing old tokens (100 per cycle)");
+                    terminal_logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: removing old tokens (100 per cycle)");
 
                     tokens.forEach(Model_FloatingPersonToken::delete);
                 }
 
             } catch (Exception e) {
-                Loggy.internalServerError("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread:", e);
+                terminal_logger.internalServerError("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread:", e);
             }
 
-            logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: thread stopped on {}", new Date());
+            terminal_logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: thread stopped on {}", new Date());
         }
     };
 }

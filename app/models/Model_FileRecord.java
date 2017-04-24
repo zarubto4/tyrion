@@ -11,6 +11,7 @@ import com.microsoft.azure.storage.blob.ListBlobItem;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.io.*;
@@ -20,13 +21,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of FileRecord",
-        value = "FileRecord")
+@ApiModel( value = "FileRecord", description = "Model of FileRecord")
 public class Model_FileRecord extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_FileRecord.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -42,37 +42,20 @@ public class Model_FileRecord extends Model {
              @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)      public List<Model_CProgramUpdatePlan> c_program_update_plan  = new ArrayList<>();
     @JsonIgnore @OneToOne(mappedBy="bin_compilation_file")                              public Model_CCompilation c_compilations_binary_file;
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_FileRecord.find.byId(this.id) == null) break;
-        }
-        super.save();
-    }
-
-    @JsonIgnore @Transient
-    public String get_path() {
+    @JsonIgnore @Transient public String get_path() {
         return  file_path;
     }
 
-    @JsonIgnore @Transient  public String get_fileRecord_from_Azure_inString(){
+    @JsonIgnore @Transient public String get_fileRecord_from_Azure_inString(){
         try {
-
-            logger.trace("FileRecord: get_fileRecord_from_Azure_inString");
 
             int slash = file_path.indexOf("/");
             String container_name = file_path.substring(0,slash);
             String real_file_path = file_path.substring(slash+1);
-
-            logger.trace("Azure load path: " + file_path );
-            logger.trace("Azure Container: " + container_name);
-            logger.trace("Real File  Path: " + real_file_path);
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
 
@@ -86,8 +69,7 @@ public class Model_FileRecord extends Model {
             return utf8str;
 
         }catch (Exception e){
-            logger.error("Get File from Azure in string ", e);
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -95,79 +77,89 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient public JsonNode get_file_As_Json(){
         try {
 
-            return  new ObjectMapper().readTree(this.get_fileRecord_from_Azure_inString());
+            return new ObjectMapper().readTree(this.get_fileRecord_from_Azure_inString());
 
         }catch (Exception e){
-            logger.error("Error when parsing Json File to Json Node", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_Version(String file_content, String file_name, String file_path, Model_VersionObject version_object) throws Exception{
+        try {
 
-        logger.debug("Azure upload: "+ file_path + version_object.get_path() + "/" + file_name );
+            terminal_logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version_object.get_path() + "/" + file_name );
 
+            int slash = file_path.indexOf("/");
+            String container_name = file_path.substring(0,slash);
+            String real_file_path = file_path.substring(slash+1);
+            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
 
-        int slash = file_path.indexOf("/");
-        String container_name = file_path.substring(0,slash);
-        String real_file_path = file_path.substring(slash+1);
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+            CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
 
-        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
+            InputStream is = new ByteArrayInputStream(file_content.getBytes());
+            blob.upload(is, -1);
 
-        InputStream is = new ByteArrayInputStream(file_content.getBytes());
-        blob.upload(is, -1);
+            Model_FileRecord fileRecord = new Model_FileRecord();
+            fileRecord.file_name = file_name;
+            fileRecord.version_object = version_object;
+            fileRecord.file_path =  file_path   + version_object.get_path() + "/" + file_name;
+            fileRecord.save();
 
-        Model_FileRecord fileRecord = new Model_FileRecord();
-        fileRecord.file_name = file_name;
-        fileRecord.version_object = version_object;
-        fileRecord.file_path =  file_path   + version_object.get_path() + "/" + file_name;
-        fileRecord.save();
+            version_object.files.add(fileRecord);
+            version_object.update();
 
-        version_object.files.add(fileRecord);
-        version_object.update();
+            return fileRecord;
 
-        return fileRecord;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_Version(File file, String file_name, String file_path, Model_VersionObject version_object) throws Exception{
 
-        logger.debug("Azure upload: "+ file_path + version_object.get_path() + "/" + file_name);
-
-
-        int slash = file_path.indexOf("/");
-        String container_name = file_path.substring(0,slash);
-        String real_file_path = file_path.substring(slash+1);
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
-
-        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
-
-        InputStream is = new FileInputStream(file);
-        blob.upload(is, -1);
-
-        Model_FileRecord fileRecord = new Model_FileRecord();
-        fileRecord.file_name = file_name;
-        fileRecord.version_object = version_object;
-        fileRecord.file_path =   file_path + version_object.get_path()+ "/" + file_name;
-        fileRecord.save();
-
-        version_object.files.add(fileRecord);
-        version_object.update();
-
-        // Sobor smažu z adresáře
         try {
-            file.delete();
-        }catch (Exception e){}
 
-        return fileRecord;
+            terminal_logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version_object.get_path() + "/" + file_name);
+
+
+            int slash = file_path.indexOf("/");
+            String container_name = file_path.substring(0,slash);
+            String real_file_path = file_path.substring(slash+1);
+            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+
+            CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
+
+            InputStream is = new FileInputStream(file);
+            blob.upload(is, -1);
+
+            Model_FileRecord fileRecord = new Model_FileRecord();
+            fileRecord.file_name = file_name;
+            fileRecord.version_object = version_object;
+            fileRecord.file_path =   file_path + version_object.get_path()+ "/" + file_name;
+            fileRecord.save();
+
+            version_object.files.add(fileRecord);
+            version_object.update();
+
+            // Sobor smažu z adresáře
+            file.delete();
+
+            return fileRecord;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_File(File file, String file_name, String file_path) throws Exception{
 
-        logger.debug("Azure upload: "+ file_path);
+        terminal_logger.debug("uploadAzure_File:: Azure upload: "+ file_path);
 
         String container_name = file_path.substring(0,file_path.indexOf("/"));
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
@@ -188,13 +180,13 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_File(String file, String contentType, String file_name, String file_path) throws Exception{
 
-        logger.debug("Azure file:"+ file.substring(0,50));
+        terminal_logger.debug("uploadAzure_File:: Azure file:"+ file.substring(0,50));
 
         byte[] bytes = Model_FileRecord.get_decoded_binary_string_from_Base64(file);
 
-        logger.debug("Azure load:"+ file_path);
-        logger.debug("Azure name:" + file_name);
-        logger.debug("Azure contentType:" + contentType);
+        terminal_logger.trace("Azure load:"+ file_path);
+        terminal_logger.trace("Azure name:" + file_name);
+        terminal_logger.trace("Azure contentType:" + contentType);
 
         String container_name = file_path.substring(0,file_path.indexOf("/"));
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
@@ -233,15 +225,15 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient
     public static Model_FileRecord create_Binary_file(String file_path, String file_content, String file_name) throws Exception{
 
-        logger.debug("Azure create_Binary_file: " + file_path +"/"+ file_name );
+        terminal_logger.debug("create_Binary_file:: Azure create_Binary_file: " + file_path +"/"+ file_name );
 
         int slash = file_path.indexOf("/");
         String container_name = file_path.substring(0,slash);
         String real_file_path = file_path.substring(slash+1);
 
-        logger.debug("Azure save path: " + file_path );
-        logger.debug("Azure Container: " + container_name);
-        logger.debug("Real File  Path: " + real_file_path);
+        terminal_logger.trace("Azure save path: " + file_path );
+        terminal_logger.trace("Azure Container: " + container_name);
+        terminal_logger.trace("Real File  Path: " + real_file_path);
 
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
         CloudBlockBlob blob = container.getBlockBlobReference( real_file_path +"/" + file_name );
@@ -261,7 +253,7 @@ public class Model_FileRecord extends Model {
      *  Metoda slouží k rekurzivnímu procháázení úrovně adresáře v Azure data storage a mazání jeho obsahu.
      *  Azure data storage je totiž jednoúrovňové datové skladiště! KJde není možné vytvářet složky, v nich složky
      *  a do nich dávat soubory. Jménbo souboru sice má podobu neco/neco2/něco3/soubor.txt ale je to přímá cesta.
-     *  Proto když je potřeba promazat něco v něco2 a všechno dál, je nutné nasadit rekurzivní algoritmus, který se
+     *  Proto když je potřeba promazat něco v něco a všechno dál, je nutné nasadit rekurzivní algoritmus, který se
      *  podívá na obsah a vše promazává.
      *
      */
@@ -303,11 +295,37 @@ public class Model_FileRecord extends Model {
     }
 
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (Model_FileRecord.find.byId(this.id) == null) break;
+        }
+        super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+
+        super.update();
+    }
+
+
     @Override
     public void delete(){
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+
         this.remove_file_from_Azure();
         super.delete();
     }
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -318,6 +336,8 @@ public class Model_FileRecord extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_FileRecord> find = new Finder<>(Model_FileRecord.class);

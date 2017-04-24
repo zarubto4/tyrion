@@ -18,7 +18,8 @@ import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
 import utilities.enums.Enum_Where_logged_tag;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Socials;
 import utilities.response.CoreResponse;
@@ -46,10 +47,11 @@ public class Controller_Security extends Controller {
 /*  Rest Api call client -----------------------------------------------------------------------------------------------*/
     @Inject WSClient ws;
 
-/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+// LOGGER ##############################################################################################################
 
-
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Security.class);
+    
+    
 /** ######################################################################################################################
  *
  *   Třída Controller_Security slouží k ověřování uživatelů pro přihlášení i odhlášení a to jak pro Becki, tak i Administraci Tyriona.
@@ -80,7 +82,7 @@ public class Controller_Security extends Controller {
              return person_id;
 
         }catch (Exception e){
-            Loggy.internalServerError("Controller_Security:: get_person:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -95,7 +97,7 @@ public class Controller_Security extends Controller {
             return Model_Person.get_byId(person_id );
 
         }catch (Exception e){
-            Loggy.internalServerError("Controller_Security:: get_person:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -169,7 +171,7 @@ public class Controller_Security extends Controller {
             return result_ok( Json.toJson( swagger_login_token ) );
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -195,11 +197,11 @@ public class Controller_Security extends Controller {
     public Result admin_login(){
         try {
 
-            logger.debug("Trying to get login page");
+            terminal_logger.debug("admin_login:: Trying to get login page");
             return ok(login.render());
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -247,7 +249,7 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -296,7 +298,7 @@ public class Controller_Security extends Controller {
 
 
             }catch (Exception e){
-                logger.error("Controller_Security:: logout:: Error:: ", e);
+                terminal_logger.error("logout:: Error:: ", e);
                 e.printStackTrace();
             }
 
@@ -304,7 +306,7 @@ public class Controller_Security extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -340,7 +342,7 @@ public class Controller_Security extends Controller {
                         return redirect(parts[1] + "/" + Server.becki_redirectFail );
                     }
 
-                    else logger.error("Not recognize URL fragment!!!!!! ");
+                    else terminal_logger.error("GET_github_oauth:: Not recognize URL fragment!!!!!! ");
                     floatingPersonToken.delete();
                     return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
 
@@ -365,7 +367,7 @@ public class Controller_Security extends Controller {
                     return redirect(parts[1] + "/" + Server.becki_redirectFail );
                 }
 
-                else logger.error("Not recognize URL fragment!!!!!! ");
+                else terminal_logger.error("GET_github_oauth:: Not recognize URL fragment!!!!!! ");
                 return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
             }
 
@@ -418,7 +420,7 @@ public class Controller_Security extends Controller {
 
             }
 
-            logger.debug("Controller_Security:: GET_github_oauth:: Return URL:: " + floatingPersonToken.return_url);
+            terminal_logger.debug("GET_github_oauth:: Return URL:: " + floatingPersonToken.return_url);
 
             return redirect(floatingPersonToken.return_url);
 
@@ -476,7 +478,7 @@ public class Controller_Security extends Controller {
                     return redirect(parts[1] + "/" + Server.becki_redirectFail );
                 }
 
-                else logger.error("Not recognize URL fragment!!!!!! ");
+                else terminal_logger.error("GET_facebook_oauth:: Not recognize URL fragment!!!!!! ");
                 return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
             }
 
@@ -563,7 +565,7 @@ public class Controller_Security extends Controller {
 
         }catch (Exception e) {
             e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -605,7 +607,7 @@ public class Controller_Security extends Controller {
             return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

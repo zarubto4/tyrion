@@ -9,7 +9,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.Enum_Cloud_HomerServer_type;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_JsonValueMissing;
@@ -24,8 +25,12 @@ import java.util.List;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ExternalServer extends Controller {
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+// LOGGER ##############################################################################################################
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_ExternalServer.class);
+    
+///###################################################################################################################*/
+    
     @ApiOperation(value = "Create new Blocko Server",
             tags = {"External Server"},
             notes = "Create new Gate for Blocko Server",
@@ -83,7 +88,7 @@ public class Controller_ExternalServer extends Controller {
             return GlobalResult.created(Json.toJson(server));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -105,7 +110,7 @@ public class Controller_ExternalServer extends Controller {
             return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -129,7 +134,7 @@ public class Controller_ExternalServer extends Controller {
             return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -201,7 +206,7 @@ public class Controller_ExternalServer extends Controller {
             return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -237,7 +242,7 @@ public class Controller_ExternalServer extends Controller {
             return GlobalResult.result_ok(Json.toJson(servers));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -277,7 +282,7 @@ public class Controller_ExternalServer extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

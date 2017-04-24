@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -13,10 +14,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(value = "M_Project_SnapShot_Detail")
+@ApiModel(value = "M_Project_SnapShot_Detail",  description = "Model of Snapshot of versions of M_Project Snapshots")
 public class Model_MProjectProgramSnapShot extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(_Model_ExampleModelName.class);
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
@@ -54,9 +57,8 @@ public class Model_MProjectProgramSnapShot extends Model {
 
             return list;
         }catch (Exception e){
-
-            e.printStackTrace();
-            return null;
+            terminal_logger.internalServerError(e);
+            return list;
         }
     }
 
@@ -64,7 +66,23 @@ public class Model_MProjectProgramSnapShot extends Model {
 
     @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
         super.save();
+    }
+
+    @JsonIgnore @Override
+    public void update() {
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+        super.update();
+    }
+
+    @JsonIgnore @Override
+    public void delete() {
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -88,6 +106,8 @@ public class Model_MProjectProgramSnapShot extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_MProjectProgramSnapShot> find = new Finder<>(Model_MProjectProgramSnapShot.class);

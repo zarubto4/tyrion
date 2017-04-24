@@ -7,7 +7,9 @@ import com.microtripit.mandrillapp.lutung.view.MandrillMessage.Recipient;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.MergeVar;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.MessageContent;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessageStatus;
+import controllers.Controller_Actualization;
 import play.Configuration;
+import utilities.logger.Class_Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,8 +18,12 @@ import java.util.List;
 
 public class Email {
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Email.class);
+
+/* VALUE  --------------------------------------------------------------------------------------------------------------*/
+
 
     private MandrillApi mandrillApi = new MandrillApi(Configuration.root().getString("mandrillApiKey"));
     private MandrillMessage message = new MandrillMessage();
@@ -26,9 +32,11 @@ public class Email {
     private StringBuilder emailContentHtml = new StringBuilder();
     private StringBuilder emailContentText = new StringBuilder();
 
+/* OPERATION ......-----------------------------------------------------------------------------------------------------*/
+    
     public void send(String email, String subject){
 
-        logger.info("EmailTool:: send():: sending email");
+        terminal_logger.info("send():: sending email");
 
         Recipient recipient = new Recipient();
         recipient.setEmail(email);
@@ -52,16 +60,14 @@ public class Email {
 
         try {
             MandrillMessageStatus[] messageStatusReports = mandrillApi.messages().sendTemplate("byzance-transactional", null ,message, false);
-            logger.info("Email:: send():: status:" + messageStatusReports[0].getStatus());
+            terminal_logger.info("send():: status:" + messageStatusReports[0].getStatus());
             if (messageStatusReports[0].getRejectReason() != null){
-                logger.info("Email:: send():: reject_reason:" + messageStatusReports[0].getRejectReason());
+                terminal_logger.info("send():: reject_reason:" + messageStatusReports[0].getRejectReason());
             }
         } catch (IOException e){
-
-            logger.error("EmailTool:: send():: IOException", e);
+            terminal_logger.internalServerError(e);
         } catch (MandrillApiError e){
-
-            logger.error("EmailTool:: send():: MandrillApiException", e);
+            terminal_logger.internalServerError(e);
         }
 
     }
@@ -86,7 +92,7 @@ public class Email {
         emailContentHtml.append(utilities.emails.templates.html.divider.render().body());
         emailContentText.append("\n----------------------------------------------------------\n");
 
-        logger.info("EmailTool:: divider():: setting divider");
+        terminal_logger.info("divider():: setting divider");
 
         return this;
     }
@@ -105,7 +111,7 @@ public class Email {
         emailContentText.append(text);
         emailContentText.append("\n");
 
-        logger.info("EmailTool:: text():: setting text");
+        terminal_logger.info("text():: setting text");
 
         return this;
     }
@@ -117,7 +123,7 @@ public class Email {
         emailContentText.append(link);
         emailContentText.append("\n");
 
-        logger.info("EmailTool:: link():: setting link");
+        terminal_logger.info("link():: setting link");
 
         return this;
     }

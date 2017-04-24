@@ -7,21 +7,25 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import utilities.enums.Enum_Compile_status;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import web_socket.message_objects.common.WS_Send_message;
 
 import java.util.Date;
 import java.util.List;
 
 public class Job_StuckCompilationCheck implements Job {
 
-    public Job_StuckCompilationCheck(){}
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    // Logger
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+
+//**********************************************************************************************************************
+
+    public Job_StuckCompilationCheck(){}
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Job_StuckCompilationCheck:: execute: Executing Job_StuckCompilationCheck");
+        terminal_logger.info("execute:: Executing Job_StuckCompilationCheck");
 
         if(!compilation_check_thread.isAlive()) compilation_check_thread.start();
     }
@@ -32,7 +36,7 @@ public class Job_StuckCompilationCheck implements Job {
         public void run() {
             try {
 
-                logger.debug("Job_StuckCompilationCheck:: compilation_check_thread: concurrent thread started on {}", new Date());
+                terminal_logger.debug("compilation_check_thread: concurrent thread started on {}", new Date());
 
                 Date created = new Date(new Date().getTime() - (5 * 60 * 1000)); // before 5 minutes
 
@@ -50,11 +54,11 @@ public class Job_StuckCompilationCheck implements Job {
 
                         if (version_objects.isEmpty()){
 
-                            logger.debug("Job_StuckCompilationCheck:: compilation_check_thread: no versions to compile");
+                            terminal_logger.debug("compilation_check_thread:: no versions to compile");
                             break;
                         }
 
-                        logger.debug("Job_StuckCompilationCheck:: compilation_check_thread: compiling versions (100 per cycle)");
+                        terminal_logger.debug("compilation_check_thread:: compiling versions (100 per cycle)");
 
                         // Postupná procházení a kompilování
                         for (Model_VersionObject version_object : version_objects) {
@@ -64,7 +68,7 @@ public class Job_StuckCompilationCheck implements Job {
                                 continue;
                             }
 
-                            logger.debug("Job_StuckCompilationCheck:: compilation_check_thread: starting compilation of version {} with ID: {}", version_object.version_name, version_object.id);
+                            terminal_logger.debug("compilation_check_thread?: starting compilation of version {} with ID: {}", version_object.version_name, version_object.id);
                             version_object.c_compilation.status = Enum_Compile_status.compilation_in_progress;
                             version_object.c_compilation.update();
 
@@ -75,10 +79,10 @@ public class Job_StuckCompilationCheck implements Job {
                 }
 
             }catch(Exception e){
-                Loggy.internalServerError("Job_StuckCompilationCheck:: compilation_check_thread:", e);
+                terminal_logger.internalServerError(e);
             }
 
-            logger.debug("Job_StuckCompilationCheck:: compilation_check_thread: thread stopped on {}", new Date());
+            terminal_logger.debug("compilation_check_thread:: thread stopped on {}", new Date());
         }
     };
 }

@@ -8,8 +8,11 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Approval_state;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -17,11 +20,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of GridWidget",
-        value = "GridWidget")
+@ApiModel( value = "GridWidget", description = "Model of GridWidget")
 public class Model_GridWidget extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_GridWidget.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -79,8 +83,12 @@ public class Model_GridWidget extends Model{
         return help;
     }
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
     @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         order_position = Model_GridWidget.find.where().eq("type_of_widget.id", type_of_widget.id).findRowCount() + 1;
 
@@ -90,6 +98,24 @@ public class Model_GridWidget extends Model{
         }
         super.save();
     }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+
+        super.update();
+
+    }
+
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("delete :: Delete object Id: {}",  this.id);
+
+        super.delete();
+    }
+
+/* ORDER  -------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void up(){

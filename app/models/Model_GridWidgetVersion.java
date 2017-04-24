@@ -7,8 +7,11 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Approval_state;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -16,11 +19,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of GridWidgetVersion",
-        value = "GridWidgetVersion")
+@ApiModel( value = "GridWidgetVersion", description = "Model of GridWidgetVersion")
 public class Model_GridWidgetVersion extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_GridWidgetVersion.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -46,16 +50,6 @@ public class Model_GridWidgetVersion extends Model{
     
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_GridWidgetVersion.find.byId(this.id) == null) break;
-        }
-        super.save();
-    }
-
     @JsonIgnore
     public Swagger_GridWidgetVersion_Short_Detail get_short_gridwidget_version(){
 
@@ -68,6 +62,34 @@ public class Model_GridWidgetVersion extends Model{
         help.author = this.author.get_short_person();
 
         return help;
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (Model_GridWidgetVersion.find.byId(this.id) == null) break;
+        }
+        super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+
+        super.update();
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("delete :: Delete object Id: {}",  this.id);
+
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -90,10 +112,6 @@ public class Model_GridWidgetVersion extends Model{
 
     public enum permissions{GridWidgetVersion_create, GridWidgetVersion_read, GridWidgetVersion_edit, GridWidgetVersion_delete}
 
-/* FINDER -------------------------------------------------------------------------------------------------------------*/
-
-    private static Model.Finder<String,Model_GridWidgetVersion> find = new Finder<>(Model_GridWidgetVersion.class);
-
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -110,4 +128,10 @@ public class Model_GridWidgetVersion extends Model{
     public static List<Model_GridWidgetVersion> get_pending() {
         return find.where().eq("approval_state", Enum_Approval_state.pending).findList();
     }
+
+/* FINDER -------------------------------------------------------------------------------------------------------------*/
+
+    private static Model.Finder<String,Model_GridWidgetVersion> find = new Finder<>(Model_GridWidgetVersion.class);
+
+
 }

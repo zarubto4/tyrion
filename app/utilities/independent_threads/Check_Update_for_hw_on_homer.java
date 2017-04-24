@@ -3,15 +3,20 @@ package utilities.independent_threads;
 import models.Model_Board;
 import models.Model_HomerInstance;
 import models.Model_HomerServer;
+import models._Model_ExampleModelName;
 import utilities.enums.Enum_Homer_instance_type;
+import utilities.logger.Class_Logger;
 import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 import web_socket.message_objects.homer_instance.WS_Message_Yoda_connected;
 
 public class Check_Update_for_hw_on_homer extends Thread {
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Check_Update_for_hw_on_homer.class);
+
+/*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     WS_HomerServer ws_homerServer = null;
     Model_HomerServer model_server = null;
@@ -26,7 +31,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
     @Override
     public void run(){
 
-      logger.debug("Check_Update_for_hw_on_homer:: Independent Thread under server:: " + model_server.unique_identificator + " started");
+        terminal_logger.debug("Check_Update_for_hw_on_homer:: Independent Thread under server:: " + model_server.unique_identificator + " started");
 
 
       /**
@@ -67,14 +72,14 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
                     try {
 
-                        logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
+                        terminal_logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
 
                         WS_Message_Get_summary_information summary_information = instance.get_summary_information();
 
                         // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
                         if(!summary_information.status.equals("success")){
                             if(!model_server.server_is_online()) {
-                                logger.warn("Check_Update_for_hw_on_homer:: Run:: Server is probably offline");
+                                terminal_logger.warn("Check_Update_for_hw_on_homer:: Run:: Server is probably offline");
                                 return false;
                             }
                         }
@@ -92,18 +97,18 @@ public class Check_Update_for_hw_on_homer extends Thread {
 
     public static void check_Update(WS_HomerServer homer_server, WS_Message_Get_summary_information summary_information){
 
-        logger.debug("Check_Update_for_hw_on_homer:: check_Update:: ");
+        terminal_logger.debug("check_Update:: check_Update:: ");
 
         for(WS_Message_Yoda_connected yoda_connected : summary_information.masterDeviceList){
 
             if(!yoda_connected.online_status) {
-                logger.debug("Check_Update_for_hw_on_homer:: Device is offline check is not possible!!!");
+                terminal_logger.debug("check_Update:: Device is offline check is not possible!!!");
                 continue;
             }
 
             Model_Board yoda = Model_Board.get_byId(yoda_connected.deviceId);
             if(yoda == null){
-                logger.error("Check_Update_for_hw_on_homer:: unknow Device!!! ");
+                terminal_logger.error("check_Update:: unknow Device!!! ");
             }
 
             Model_Board.hardware_firmware_state_check(homer_server, yoda, yoda_connected);

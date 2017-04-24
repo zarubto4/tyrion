@@ -7,6 +7,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,11 +17,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of GeneralTariff",
-        value = "GeneralTariff")
+@ApiModel( value = "GeneralTariff", description = "Model of GeneralTariff")
 public class Model_GeneralTariff extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(_Model_ExampleModelName.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -61,7 +65,8 @@ public class Model_GeneralTariff extends Model {
     @JsonIgnore @OneToMany(mappedBy="general_tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_GeneralTariffExtensions> extensions_optional = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="general_tariff",           cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                public List<Model_Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty public List<Pair> payment_methods(){
 
@@ -113,8 +118,19 @@ public class Model_GeneralTariff extends Model {
         return  Model_GeneralTariffExtensions.find.where().eq("general_tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    public double total_per_month(){
+        double total_price = 0.0;
+        for(Model_GeneralTariffExtensions extension : this.extensions_included){
+            if(extension.price_in_usd != null)
+                total_price += extension.price_in_usd;
+        }
+        return  total_price*30;
+    }
+
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
     @JsonIgnore @Override
     public void save() {
 
@@ -127,10 +143,22 @@ public class Model_GeneralTariff extends Model {
         super.save();
     }
 
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+
+        super.update();
+    }
+
     @JsonIgnore @Override
     public void delete(){
-        throw new IllegalAccessError("Delete is not supported under General Tariff");
+
+        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
     }
+
+/* ORDER ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void up(){
@@ -160,14 +188,6 @@ public class Model_GeneralTariff extends Model {
     }
 
 
-    public double total_per_month(){
-        double total_price = 0.0;
-        for(Model_GeneralTariffExtensions extension : this.extensions_included){
-            if(extension.price_in_usd != null)
-            total_price += extension.price_in_usd;
-        }
-        return  total_price*30;
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

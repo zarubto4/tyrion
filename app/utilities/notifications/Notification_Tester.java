@@ -12,7 +12,9 @@ import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
 import utilities.enums.Enum_Notification_type;
 import utilities.independent_threads.Check_Update_for_hw_on_homer;
-import utilities.loggy.Loggy;
+import utilities.independent_threads.Security_WS_token_confirm_procedure;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
@@ -29,16 +31,19 @@ import java.util.UUID;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Notification_Tester extends Controller {
 
-    // Tvroba objektů jednotlivých notifikací ############################################################################
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Notification_Tester.class);
+
+
+/*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "test_notifications", hidden = true)
     @Security.Authenticated(Secured_API.class)
     public Result test_chain_notifications(String mail){
         try {
 
-            logger.debug("Notification_Tester:: test_chain_notifications:: Email:: " + mail);
+            terminal_logger.debug("Notification_Tester:: test_chain_notifications:: Email:: " + mail);
 
             Model_Person person = Model_Person.find.where().eq("mail", mail).findUnique();
             if (person == null) return GlobalResult.notFoundObject("Person not found");
@@ -49,7 +54,7 @@ public class Notification_Tester extends Controller {
                 @Override
                 public void run() {
 
-                    logger.trace("Check_update_for_hw_under_homer_ws:: add_new_Procedure:: Independent Thread in Check_update_for_hw_under_homer_ws now working"); ;
+                    terminal_logger.trace("Check_update_for_hw_under_homer_ws:: add_new_Procedure:: Independent Thread in Check_update_for_hw_under_homer_ws now working"); ;
 
                     try{
 
@@ -140,7 +145,7 @@ public class Notification_Tester extends Controller {
 
 
                     }catch (Exception e){
-                        logger.error("Check_update_for_hw_under_homer_ws:: Error", e);
+                        terminal_logger.error("Check_update_for_hw_under_homer_ws:: Error", e);
                     }
                 }
             };
@@ -150,7 +155,7 @@ public class Notification_Tester extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -161,7 +166,7 @@ public class Notification_Tester extends Controller {
     public Result test_notifications(){
         try {
 
-            logger.debug("Notification_Tester:: test_notifications:: ");
+            terminal_logger.debug("Notification_Tester:: test_notifications:: ");
             final Form<Swagger_Notification_Test> form = Form.form(Swagger_Notification_Test.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Notification_Test help = form.get();
@@ -173,7 +178,7 @@ public class Notification_Tester extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -243,7 +248,7 @@ public class Notification_Tester extends Controller {
                         cProgram.save();
                         cProgram.refresh();
 
-                        logger.info("Setting new C Program");
+                        terminal_logger.info("Setting new C Program");
                     }
 
                     notification.setObject(cProgram);
@@ -261,7 +266,7 @@ public class Notification_Tester extends Controller {
                         version_object.save();
                         version_object.refresh();
 
-                        logger.info("Setting new C Program Version");
+                        terminal_logger.info("Setting new C Program Version");
 
                     } else {
                         version_object = cProgram.getVersion_objects().get(0);
@@ -282,7 +287,7 @@ public class Notification_Tester extends Controller {
                         bProgram.save();
                         bProgram.refresh();
 
-                        logger.info("Setting new B Program");
+                        terminal_logger.info("Setting new B Program");
                     }
 
                     notification.setObject(bProgram);
@@ -299,7 +304,7 @@ public class Notification_Tester extends Controller {
                         b_version_object.save();
                         b_version_object.refresh();
 
-                        logger.info("Setting new B Program Version");
+                        terminal_logger.info("Setting new B Program Version");
 
                     } else {
                         b_version_object = bProgram.getVersion_objects().get(0);

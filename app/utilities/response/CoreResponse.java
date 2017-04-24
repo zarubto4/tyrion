@@ -1,9 +1,15 @@
 package utilities.response;
 
+import models._Model_ExampleModelName;
 import play.mvc.Controller;
 import utilities.Server;
+import utilities.logger.Class_Logger;
 
 public class CoreResponse extends Controller {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(CoreResponse.class);
 
     /**
      * Html hlavička, jež se přikládá ke všem Api požadavkům.
@@ -13,7 +19,6 @@ public class CoreResponse extends Controller {
         try {
 
             // Kontrola Becki verze::
-
             response().setHeader("Access-Control-Allow-Origin", "*"); // Zde bude web se kterým to může komunikovat (url frontendu)
             response().setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
             response().setHeader("Access-Control-Max-Age", "72000");
@@ -21,9 +26,9 @@ public class CoreResponse extends Controller {
             response().setHeader("Byzance-Api-Version", Server.server_version);
             response().setHeader("Accept", "*");
             response().setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type, becki-version");
+
         }catch (Exception e){
-            //TODO dodělat Loggy
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -39,8 +44,7 @@ public class CoreResponse extends Controller {
             response().setHeader("Accept", "*");
             response().setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Content-Type, Content-Type,  api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type, becki-version");
         }catch (Exception e){
-            //TODO dodělat Loggy
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -56,8 +60,7 @@ public class CoreResponse extends Controller {
             response().setHeader("Accept", "*");
             response().setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type, becki-version");
         }catch (Exception e){
-            //TODO dodělat Loggy
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
 
     }

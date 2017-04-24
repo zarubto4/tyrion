@@ -10,6 +10,7 @@ import models.Model_Project;
 import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.WebSocket;
+import utilities.logger.Class_Logger;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Subscribe_Notifications;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
@@ -17,6 +18,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WS_Becki_Website extends WS_Interface_type {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_HomerServer.class);
+
+/* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
     public static final String CHANNEL = "becki";
 
@@ -45,7 +52,7 @@ public class WS_Becki_Website extends WS_Interface_type {
 
     @Override
     public void onClose() {
-        logger.trace("Local_Terminal onClose " + identifikator);
+        terminal_logger.trace("Local_Terminal onClose " + identifikator);
         this.close();
     }
 
@@ -71,7 +78,7 @@ public class WS_Becki_Website extends WS_Interface_type {
     @Override
     public void onMessage(ObjectNode json) {
 
-        logger.trace("WS_Becki_Website:: onMessage " + identifikator + " Incoming message: " + json.toString() );
+        terminal_logger.trace("WS_Becki_Website:: onMessage " + identifikator + " Incoming message: " + json.toString() );
 
         if(json.has("messageChannel")) {
 
@@ -86,15 +93,15 @@ public class WS_Becki_Website extends WS_Interface_type {
                         case WS_Message_UnSubscribe_Notifications.messageType :   {  becki_unsubscribe_notification( json);            return;}    // Becki poslala odpověď, že ví že už ne! subscribe_notification
 
                         default: {
-                            logger.warn("WS_Becki_Website:: onMessage::  "+ identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!" + json.toString());
+                            terminal_logger.warn("WS_Becki_Website:: onMessage::  "+ identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!" + json.toString());
 
                         }
                     }
                 }
 
                 case Model_HomerServer.CHANNEL : {
-                    logger.warn("WS_Becki_Website:: onMessage:: Incoming message: Tyrion: Server receive message: ");
-                    logger.warn("WS_Becki_Website:: onMessage:: Incoming message: Tyrion: Server don't know what to do!");
+                    terminal_logger.warn("WS_Becki_Website:: onMessage:: Incoming message: Tyrion: Server receive message: ");
+                    terminal_logger.warn("WS_Becki_Website:: onMessage:: Incoming message: Tyrion: Server don't know what to do!");
                     return;
                 }
 
@@ -110,7 +117,7 @@ public class WS_Becki_Website extends WS_Interface_type {
             }
 
         }else {
-            logger.warn("WS_Becki_Website:: "+ identifikator + " Incoming message has not messageChannel!!!!" + json.toString());
+            terminal_logger.warn("WS_Becki_Website:: "+ identifikator + " Incoming message has not messageChannel!!!!" + json.toString());
         }
     }
 
@@ -119,7 +126,7 @@ public class WS_Becki_Website extends WS_Interface_type {
         try {
 
             final Form<WS_Message_Subscribe_Notifications> form = Form.form(WS_Message_Subscribe_Notifications.class).bind(json);
-            if(form.hasErrors()){logger.error("WS_Becki_Website:: WS_Message_Subscribe_Notifications:: Incoming Json has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return;}
+            if(form.hasErrors()){terminal_logger.error("WS_Becki_Website:: WS_Message_Subscribe_Notifications:: Incoming Json has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return;}
 
             WS_Message_Subscribe_Notifications subscribe_notifications =  form.get();
 
@@ -131,7 +138,7 @@ public class WS_Becki_Website extends WS_Interface_type {
             single_connection.write_without_confirmation( subscribe_notifications.messageId ,  WS_Message_Subscribe_Notifications.approve_result() );
 
         }catch (Exception e){
-            logger.error("WS_Becki_Website:: becki_subscribe_notification:: Error: ", e);
+            terminal_logger.error("WS_Becki_Website:: becki_subscribe_notification:: Error: ", e);
         }
 
     }
@@ -140,7 +147,7 @@ public class WS_Becki_Website extends WS_Interface_type {
         try{
 
             final Form<WS_Message_UnSubscribe_Notifications> form = Form.form(WS_Message_UnSubscribe_Notifications.class).bind(json);
-            if(form.hasErrors()){logger.error("WS_Becki_Website:: WS_Message_Subscribe_Notifications:: Incoming Json has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return;}
+            if(form.hasErrors()){terminal_logger.error("WS_Becki_Website:: WS_Message_Subscribe_Notifications:: Incoming Json has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return;}
 
             WS_Message_UnSubscribe_Notifications un_subscribe_notifications =  form.get();
 
@@ -152,7 +159,7 @@ public class WS_Becki_Website extends WS_Interface_type {
             single_connection.write_without_confirmation( un_subscribe_notifications.messageId,  WS_Message_UnSubscribe_Notifications.approve_result() );
 
         }catch (Exception e){
-            logger.error("WS_Becki_Website:: becki_unsubscribe_notification:: Error: ", e);
+            terminal_logger.error("WS_Becki_Website:: becki_unsubscribe_notification:: Error: ", e);
         }
     }
 

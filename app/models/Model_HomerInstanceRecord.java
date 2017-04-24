@@ -11,6 +11,7 @@ import utilities.enums.Enum_CProgram_updater_state;
 import utilities.enums.Enum_Firmware_type;
 import utilities.enums.Enum_Update_type_of_update;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
+import utilities.logger.Class_Logger;
 import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 
 import javax.persistence.*;
@@ -20,13 +21,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of HomerInstanceRecord",
-        value = "HomerInstanceRecord")
+@ApiModel( value = "HomerInstanceRecord", description = "Model of HomerInstanceRecord")
 public class Model_HomerInstanceRecord extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_HomerInstanceRecord.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -62,7 +62,8 @@ public class Model_HomerInstanceRecord extends Model {
 
 
 /* JSON IGNORE  ----------------------------------------------------------------------------------------------------*/
-    @ApiModelProperty(required = true, readOnly = true)  @JsonProperty(value = "procedures")
+    
+@ApiModelProperty(required = true, readOnly = true)  @JsonProperty(value = "procedures")
     public List<Model_ActualizationProcedure> getProcedures() {
         if(procedures == null) procedures = Model_ActualizationProcedure.find.where().eq("homer_instance_record.id", id).findList();
         return procedures;
@@ -104,7 +105,7 @@ public class Model_HomerInstanceRecord extends Model {
             return contains > 0;
 
         } catch (Exception e) {
-            logger.error("Model_HomerInstanceRecord:: contains_HW:: Error:: ", e);
+            terminal_logger.internalServerError(e);
             return false;
         }
     }
@@ -114,7 +115,7 @@ public class Model_HomerInstanceRecord extends Model {
     public void create_actualization_request(WS_Message_Get_summary_information summary_information ) {
         try {
 
-            logger.debug("Model_HomerInstanceRecord:: create_actualization_request byl zavolán na Instance Record:: "  + id);
+            terminal_logger.debug("create_actualization_request:: byl zavolán na Instance Record:: {}" , id);
 
             Model_ActualizationProcedure actualization_procedure = new Model_ActualizationProcedure();
             actualization_procedure.date_of_create = new Date();
@@ -132,8 +133,8 @@ public class Model_HomerInstanceRecord extends Model {
                 List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
 
                 //1) Nejdříve Main Boad
-                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Main Board Id " + group.main_board_pair.board.id);
-                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Kontroluji a popřípadě maži předchozí procedury na overwritten");
+                terminal_logger.debug("create_actualization_request:: Main Board Id {}" , group.main_board_pair.board.id);
+                terminal_logger.debug("create_actualization_request:: Kontroluji a popřípadě maži předchozí procedury na overwritten");
 
                 List<Model_CProgramUpdatePlan> old_plans_main_board = Model_CProgramUpdatePlan.find.where()
                         .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
@@ -147,10 +148,10 @@ public class Model_HomerInstanceRecord extends Model {
                         .endJunction()
                         .findList();
 
-                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
+                terminal_logger.debug("create_actualization_request:: The number still valid update plans for Main Board Id:: {}that must be override:: {}",  group.main_board_pair.board.id , old_plans_main_board.size());
 
                 for (Model_CProgramUpdatePlan old_plan : old_plans_main_board) {
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Old plan for override under B_Program in Cloud: " + old_plan.id);
+                    terminal_logger.debug("create_actualization_request:: Old plan for override under B_Program in Cloud: {} ", old_plan.id);
                     old_plan.state = Enum_CProgram_updater_state.overwritten;
                     old_plan.date_of_finish = new Date();
                     old_plan.update();
@@ -162,14 +163,14 @@ public class Model_HomerInstanceRecord extends Model {
 
                 // Zkontroluji jestli je online a co má za verzi - Protože bych mohl proceduru hned označit za vykonanou
                 if(summary_information.deviceIsOnline(group.main_board_pair.board.id)){
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Main Board Id:: " + group.main_board_pair.board.id + " is online");
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Required Firmware id:: " + group.main_board_pair.c_program_version.c_compilation.firmware_build_id);
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Actual Firmware id:: "   + summary_information.getDeviceStats(group.main_board_pair.board.id ).firmware_build_id);
+                    terminal_logger.debug("create_actualization_request:: Main Board Id:: is online", group.main_board_pair.board.id );
+                    terminal_logger.debug("create_actualization_request:: Required Firmware id:: {}", group.main_board_pair.c_program_version.c_compilation.firmware_build_id);
+                    terminal_logger.debug("create_actualization_request:: Actual Firmware id:: {}", summary_information.getDeviceStats(group.main_board_pair.board.id ).firmware_build_id);
 
                     // Verze se rovnají a není třeba proceduru na Homerovi vykonávat - označí se jako hotová
                     if(group.main_board_pair.c_program_version.c_compilation.firmware_build_id.equals(summary_information.getDeviceStats(group.main_board_pair.board.id ).firmware_build_id)){
 
-                        logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Firmware is already on board! - C_ProgramUpdater_State is Complete");
+                        terminal_logger.debug("create_actualization_request:: Firmware is already on board! - C_ProgramUpdater_State is Complete");
                         plan_master_board.state = Enum_CProgram_updater_state.complete;
 
                     }else {
@@ -177,7 +178,7 @@ public class Model_HomerInstanceRecord extends Model {
                     }
 
                 }else {
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
+                    terminal_logger.debug("create_actualization_request:: The number still valid update plans for Main Board Id:: {} that must be override:: {} " , group.main_board_pair.board.id ,  old_plans_main_board.size());
                     plan_master_board.state = Enum_CProgram_updater_state.not_start_yet;
                 }
 
@@ -191,7 +192,7 @@ public class Model_HomerInstanceRecord extends Model {
                 //2) Device
                 for (Model_BPair pair : group.device_board_pairs) {
 
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Device Board Id " + pair.board_id() + " Under Master Device " + group.main_board_pair.board.id);
+                    terminal_logger.debug("create_actualization_request:: Device Board Id {} Under Master Device {} " , pair.board_id(), group.main_board_pair.board.id);
                     // Tady chci zrušit všechny předchozí procedury vázající se na seznam příchozího hardwaru!
 
                     //1. Najdu předchozí procedury, které nejsou nějakým způsobem ukončené
@@ -208,11 +209,11 @@ public class Model_HomerInstanceRecord extends Model {
                             .findList();
 
                     //2 Měl bych zkontrolovat zda ještě nejsou nějaké aktualizace v chodu
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans that must be override: " + old_plans.size());
+                    terminal_logger.debug("create_actualization_request:: The number still valid update plans that must be override: " + old_plans.size());
 
                     //3. Neukončené procedury ukončím
                     for (Model_CProgramUpdatePlan old_plan : old_plans) {
-                        logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
+                        terminal_logger.debug("Old plan for override under B_Program in Cloud: {}", old_plan.id);
                         old_plan.state = Enum_CProgram_updater_state.overwritten;
                         old_plan.date_of_finish = new Date();
                         old_plan.update();
@@ -220,7 +221,7 @@ public class Model_HomerInstanceRecord extends Model {
 
 
                     if(pair.board.actual_c_program_version == null || !pair.c_program_version_id().equals(pair.board.actual_c_program_version.id)) {
-                        logger.debug("Model_HomerInstanceRecord::  create_actualization_request:: Crating new update plan procedure ");
+                        terminal_logger.debug(" create_actualization_request:: Crating new update plan procedure ");
                         // Vytvářím nový aktualizační plán protože požadovaná verze je jiná než aktuální!!
 
                         Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
@@ -231,14 +232,14 @@ public class Model_HomerInstanceRecord extends Model {
 
                             try {
 
-                                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Device Board Id:: " + pair.board.id + " is online");
-                                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Required Firmware id:: " + pair.c_program_version.c_compilation.firmware_build_id);
-                                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Actual Firmware id:: " + summary_information.getDeviceStats(pair.board.id).firmware_build_id);
+                                terminal_logger.trace("create_actualization_request:: Device Board Id:: {} is online",  pair.board.id );
+                                terminal_logger.trace("create_actualization_request:: Required Firmware id:: {}", pair.c_program_version.c_compilation.firmware_build_id);
+                                terminal_logger.trace("create_actualization_request:: Actual Firmware id:: {}", summary_information.getDeviceStats(pair.board.id).firmware_build_id);
 
                                 // Verze se rovnají a není třeba proceduru na Homerovi vykonávat - označí se jako hotoá
                                 if (group.main_board_pair.c_program_version.c_compilation.firmware_build_id.equals(summary_information.getDeviceStats(group.main_board_pair.board.id).firmware_build_id)) {
 
-                                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Firmware is already on board! - C_ProgramUpdater_State is Complete");
+                                    terminal_logger.debug("create_actualization_request:: Firmware is already on board! - C_ProgramUpdater_State is Complete");
                                     plan.state = Enum_CProgram_updater_state.complete;
 
                                 } else {
@@ -246,12 +247,12 @@ public class Model_HomerInstanceRecord extends Model {
                                 }
 
                             }catch (NullPointerException e){
-                                logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Some parameter missing");
+                                terminal_logger.debug("create_actualization_request:: Some parameter missing");
                                 plan.state = Enum_CProgram_updater_state.not_start_yet;
                             }
 
                         }else {
-                            logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
+                            terminal_logger.debug("create_actualization_request:: The number still valid update plans for Main Board Id:: " + group.main_board_pair.board.id + " that must be override:: " + old_plans_main_board.size());
                             plan.state = Enum_CProgram_updater_state.not_start_yet;
                         }
 
@@ -259,7 +260,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                         updates.add(plan);
 
-                        logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Crating update procedure done");
+                        terminal_logger.debug("create_actualization_request:: Crating update procedure done");
                     }
                 }
 
@@ -272,10 +273,10 @@ public class Model_HomerInstanceRecord extends Model {
 
                 for(Model_CProgramUpdatePlan plan_update : actualization_procedure.updates){
 
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Checking Model_CProgramUpdatePlan id:: " + plan_update.state);
+                    terminal_logger.debug("create_actualization_request:: Checking Model_CProgramUpdatePlan id:: " + plan_update.state);
 
                     if(plan_update.state != Enum_CProgram_updater_state.complete && actualization_procedure.state == null) {
-                        logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Set procedure to not_start_yet");
+                        terminal_logger.debug("create_actualization_request:: Set procedure to not_start_yet");
                         actualization_procedure.state = Enum_Update_group_procedure_state.not_start_yet;
                     }
 
@@ -284,7 +285,7 @@ public class Model_HomerInstanceRecord extends Model {
                 }
 
                 if(actualization_procedure.state == null) {
-                    logger.debug("Model_HomerInstanceRecord:: create_actualization_request:: Set procedure to successful_complete");
+                    terminal_logger.debug("create_actualization_request:: Set procedure to successful_complete");
                     actualization_procedure.state = Enum_Update_group_procedure_state.successful_complete;
                     actualization_procedure.update();
                 }
@@ -294,7 +295,7 @@ public class Model_HomerInstanceRecord extends Model {
 
 
         }catch (Exception e){
-            logger.error("Model_HomerInstanceRecord::  create_actualization_request:: add_new_actualization_request:: Error ", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -339,18 +340,18 @@ public class Model_HomerInstanceRecord extends Model {
                             .findList();
 
                     //2 Měl bych zkontrolovat zda ještě nejsou nějaké aktualizace v chodu
-                    logger.debug("The number still valid update plans that must be override: " + old_plans.size());
+                    terminal_logger.debug("add_new_actualization_request_bootloader:: The number still valid update plans that must be override: {}", old_plans.size());
 
                     //3. Neukončené procedury ukončím
                     for (Model_CProgramUpdatePlan old_plan : old_plans) {
-                        logger.debug("Old plan for override under B_Program in Cloud: " + old_plan.id);
+                        terminal_logger.debug("add_new_actualization_request_bootloader:: Old plan for override under B_Program in Cloud: {}", old_plan.id);
                         old_plan.state = Enum_CProgram_updater_state.overwritten;
                         old_plan.update();
                     }
 
 
                     if(!pair.c_program_version_id().equals(pair.board.actual_c_program_version.id)) {
-                        logger.debug("Crating new update plan procedure ");
+                        terminal_logger.debug("add_new_actualization_request_bootloader:: Crating new update plan procedure ");
                         // Vytvářím nový aktualizační plán protože požadovaná verze je jiná než aktuální!!
 
                         Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
@@ -361,7 +362,7 @@ public class Model_HomerInstanceRecord extends Model {
                         plan.actualization_procedure = procedure;
                         procedure.updates.add(plan);
 
-                        logger.debug("Crating update procedure done");
+                        terminal_logger.debug("add_new_actualization_request_bootloader:: Crating update procedure done");
                     }
                 }
 
@@ -370,13 +371,13 @@ public class Model_HomerInstanceRecord extends Model {
                     this.procedures.add(procedure);
                     procedure.save();
 
-                    logger.debug("Sending new Actualization procedure to Master Updater");
+                    terminal_logger.debug("add_new_actualization_request_bootloader:: Sending new Actualization procedure to Master Updater");
                     Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
                 }
             }
 
         }catch (Exception e){
-            logger.error("Homer_Instance_Record:: add_new_actualization_request:: Error ", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -399,6 +400,8 @@ public class Model_HomerInstanceRecord extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_HomerInstanceRecord> find = new Finder<>(Model_HomerInstanceRecord.class);

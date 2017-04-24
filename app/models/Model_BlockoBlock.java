@@ -8,9 +8,11 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Approval_state;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Blocko_Block_Short_Detail;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -18,11 +20,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of BlockoBlock",
-        value = "BlockoBlock")
+@ApiModel( value = "BlockoBlock", description = "Model of BlockoBlock")
 public class Model_BlockoBlock extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_BlockoBlock.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -38,7 +41,7 @@ public class Model_BlockoBlock extends Model {
 
     @JsonIgnore  public Integer order_position;
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    author_id()         { return author != null ? author.id : null;}
@@ -90,15 +93,17 @@ public class Model_BlockoBlock extends Model {
             return help;
 
         }catch (Exception e){
-            Loggy.internalServerError("Model_BlockoBlock:: get_blocko_block_short_detail", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         order_position = Model_BlockoBlock.find.where().eq("type_of_block.id", type_of_block.id).findRowCount() + 1;
 
@@ -109,15 +114,31 @@ public class Model_BlockoBlock extends Model {
         super.save();
     }
 
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: " + this.id);
+
+        super.update();
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("delete :: Delete object Id: " + this.id);
+
+        // Case 1.1 :: We delete the object
+        super.delete();
+    }
+
+/* ORDER ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void up(){
 
-        System.out.println("Změna Order Possition! UP");
+        terminal_logger.trace("up :: Change Order Position! UP ");
 
         Model_BlockoBlock up = Model_BlockoBlock.find.where().eq("order_position", (order_position-1) ).eq("type_of_block.id", type_of_block.id).findUnique();
         if(up == null){
-            System.out.println("UP - Nejde :(");
+            terminal_logger.warn("up :: illegal operation (out of index)! ");
             return;
         }
 
@@ -131,11 +152,11 @@ public class Model_BlockoBlock extends Model {
     @JsonIgnore @Transient
     public void down(){
 
-        System.out.println("Změna Order Possition! DOWN");
+        terminal_logger.trace("down :: Change Order Position! DOWN ");
 
         Model_BlockoBlock down = Model_BlockoBlock.find.where().eq("order_position", (order_position+1) ).eq("type_of_block.id", type_of_block.id).findUnique();
         if(down == null){
-            System.out.println("DOWN - Nejde :(");
+            terminal_logger.warn("down :: illegal operation (out of index)! ");
             return;
         }
 
@@ -168,12 +189,7 @@ public class Model_BlockoBlock extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  type_of_block.update_permission();}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  type_of_block.delete_permission();}
 
-
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
-
-/* FINDER -------------------------------------------------------------------------------------------------------------*/
-
-    public static Model.Finder<String,Model_BlockoBlock> find = new Finder<>(Model_BlockoBlock.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -186,4 +202,9 @@ public class Model_BlockoBlock extends Model {
     public static Model_BlockoBlock get_publicByName(String name) {
         return find.where().isNull("type_of_block.project").eq("name", name).findUnique();
     }
+
+/* FINDER -------------------------------------------------------------------------------------------------------------*/
+
+    public static Model.Finder<String,Model_BlockoBlock> find = new Finder<>(Model_BlockoBlock.class);
+
 }

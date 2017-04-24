@@ -5,14 +5,16 @@ import models.Model_Person;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.independent_threads.Security_WS_token_confirm_procedure;
+import utilities.logger.Class_Logger;
 
 import static play.mvc.Controller.request;
 
 public class Secured_Admin extends Security.Authenticator {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Secured_Admin.class);
 
 /* METHOD  -------------------------------------------------------------------------------------------------------------*/
 
@@ -20,8 +22,6 @@ public class Secured_Admin extends Security.Authenticator {
     public String getUsername(Http.Context ctx) {
 
         try{
-
-            logger.debug("Validity of Admin permissions ");
 
             String token = null;
 
@@ -33,7 +33,7 @@ public class Secured_Admin extends Security.Authenticator {
             }
 
             if(token == null){
-                logger.debug("Security Token:: is empty - return null - login required");
+                terminal_logger.debug("getUsername:: is empty - return null - login required");
                 return null;
             }
 
@@ -46,7 +46,7 @@ public class Secured_Admin extends Security.Authenticator {
 
                 if(model_token == null || !model_token.isValid()){
 
-                    logger.debug("Security Token:: " + token + " is not t is no longer valid according time");
+                    terminal_logger.debug("Security Token:: " + token + " is not t is no longer valid according time");
                     return null;
                 }
 
@@ -58,11 +58,9 @@ public class Secured_Admin extends Security.Authenticator {
             ctx.args.put("person_token", token);
 
             if(!Model_Person.get_byAuthToken(token).admin_permission()){
-                System.out.println("Uživatel nemá oprávnění");
+                terminal_logger.warn("getUsername:: User does not have permissions");
                 return null;
             }
-
-
 
 
             return Model_Person.token_cache.get(token);

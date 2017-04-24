@@ -11,7 +11,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.Enum_Token_type;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
@@ -28,7 +29,12 @@ import java.util.List;
 @Security.Authenticated(Secured_API.class)
 public class Controller_Permission extends Controller {
 
+// LOGGER ##############################################################################################################
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Permission.class);
+
+///###################################################################################################################*/
+    
     @ApiOperation(value = "add Permission to the Person",
             hidden = true,
             tags = {"Permission"},
@@ -71,7 +77,7 @@ public class Controller_Permission extends Controller {
 
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -113,7 +119,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -143,7 +149,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(permissions));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -198,7 +204,7 @@ public class Controller_Permission extends Controller {
            return GlobalResult.result_ok(Json.toJson(permission));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -246,7 +252,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -291,7 +297,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -341,7 +347,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.created(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -379,7 +385,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -433,7 +439,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
     @ApiOperation(value = "add Person to Role (Group) ",
@@ -473,7 +479,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -510,7 +516,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -535,7 +541,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(roles));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -570,7 +576,7 @@ public class Controller_Permission extends Controller {
         return GlobalResult.result_ok(Json.toJson(system_access));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
 
@@ -641,7 +647,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_BadRequest("Missing or wrong type of tokkend Type");
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

@@ -21,6 +21,8 @@ import utilities.goPay.helps_objects.GoPay_Contact;
 import utilities.goPay.helps_objects.GoPay_Payer;
 import utilities.goPay.helps_objects.GoPay_Payment;
 import utilities.goPay.helps_objects.Recurrence;
+import utilities.logger.Class_Logger;
+import utilities.login_entities.Secured_Admin;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,8 +32,9 @@ import java.util.List;
 @Api(value = "Not Documented API - InProgress or Stuck", hidden = true)
 public class Utilities_GoPay_Controller extends Controller {
 
-     // Loger
-     static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Secured_Admin.class);
 
 
 // PRIVATE METHOTD #####################################################################################################
@@ -40,7 +43,7 @@ public class Utilities_GoPay_Controller extends Controller {
 
             //Rozhodnutí jestli jendnorázové nebo měsíční!
 
-            logger.debug("Providing new Payment");
+            terminal_logger.debug("Providing new Payment");
             GoPay_Payment payment = new GoPay_Payment();
 
             payment.setItems(invoice.invoice_items);
@@ -104,11 +107,11 @@ public class Utilities_GoPay_Controller extends Controller {
             String local_token = getToken();
 
             if(local_token == null) {
-                logger.error("Token for API in GoPay_Controller in Provide_payment is null");
+                terminal_logger.error("Token for API in GoPay_Controller in Provide_payment is null");
                 throw new NullPointerException("Token for API in GoPay_Controller in Provide_payment is null");
             }
 
-            logger.debug("Sending Request for new Payment to GoPay with object: " + Json.toJson(payment).toString());
+            terminal_logger.debug("Sending Request for new Payment to GoPay with object: " + Json.toJson(payment).toString());
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
             F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url +  "/payments/payment")
@@ -119,7 +122,7 @@ public class Utilities_GoPay_Controller extends Controller {
                     .post(Json.toJson(payment));
 
             JsonNode response = responsePromise.get(1000).asJson();
-            logger.debug("Response from GoPay: " + response.toString());
+            terminal_logger.debug("Response from GoPay: " + response.toString());
 
             return response;
         }
@@ -137,33 +140,33 @@ public class Utilities_GoPay_Controller extends Controller {
 
     public Result call_back_Return_Url(Long gopay_id){
 
-            logger.debug("Return URL from GoPay on " + gopay_id +" gopay_id");
+            terminal_logger.debug("Return URL from GoPay on " + gopay_id +" gopay_id");
 
             Model_Invoice invoice = Model_Invoice.find.where().eq("gopay_id", gopay_id).findUnique();
 
             if(invoice == null){
-                logger.error("Invoice not exist after payment - redirect to fail page");
+                terminal_logger.error("Invoice not exist after payment - redirect to fail page");
                 return ok();
             }
 
             if(!invoice.proforma){
-                logger.warn("Invoice is already complete");
+                terminal_logger.warn("Invoice is already complete");
                 return redirect(Server.becki_mainUrl + "/financial/"+ invoice.getProduct().id + "/paid/success/" + invoice.id);
             }
 
             Model_Product product = Model_Product.get_byInvoice(invoice.id);
 
             // Smazat proformu
-            logger.debug("Removing proforma from Fakturoid");
-            if( !Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  logger.error("Error Removing proforma from Fakturoid");
+            terminal_logger.debug("Removing proforma from Fakturoid");
+            if( !Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/"+  invoice.facturoid_invoice_id +  ".json") )  terminal_logger.error("Error Removing proforma from Fakturoid");
 
             // Vytvořit fakturu
-            logger.debug("Creating invoice from proforma in Fakturoid");
+            terminal_logger.debug("Creating invoice from proforma in Fakturoid");
             Utilities_Fakturoid_Controller.create_paid_invoice(product,invoice);
 
             // Uhradit Fakturu
-            logger.debug("Changing state on Invoice to paid");
-            if(! Utilities_Fakturoid_Controller.fakturoid_post("/invoices/"+  invoice.facturoid_invoice_id +  "/fire.json?event=pay")) logger.error("Faktura nebyla změněna na uhrazenou dojde tedy k inkonzistenntímu stavu");
+            terminal_logger.debug("Changing state on Invoice to paid");
+            if(! Utilities_Fakturoid_Controller.fakturoid_post("/invoices/"+  invoice.facturoid_invoice_id +  "/fire.json?event=pay")) terminal_logger.error("Faktura nebyla změněna na uhrazenou dojde tedy k inkonzistenntímu stavu");
             invoice.proforma = false;
             invoice.update();
 
@@ -184,13 +187,13 @@ public class Utilities_GoPay_Controller extends Controller {
     public static String getToken(){
         try {
 
-            logger.debug("Asking for GoPay Token");
+            terminal_logger.debug("Asking for GoPay Token");
             if( token != null && last_refresh != null &&( new Date().getTime() - last_refresh.getTime() >= 28*60*1000) ) {
-                logger.debug("Return Token");
+                terminal_logger.debug("Return Token");
                 return token;
             }
 
-            logger.debug("GoPay Token expedite or not yet registred");
+            terminal_logger.debug("GoPay Token expedite or not yet registred");
             last_refresh = new Date();
 
 
@@ -206,15 +209,15 @@ public class Utilities_GoPay_Controller extends Controller {
 
             JsonNode result = responsePromise.get(5000).asJson();
 
-            logger.debug("Result for token:" + result.toString() );
+            terminal_logger.debug("Result for token:" + result.toString() );
 
             if(result.has("access_token")){
                 token = result.get("access_token").asText();
                 return token;
 
             }else {
-                logger.error("incoming Json in GoPay GetToken not contains access_token!");
-                logger.error(responsePromise.get(5000).toString());
+                terminal_logger.error("incoming Json in GoPay GetToken not contains access_token!");
+                terminal_logger.error(responsePromise.get(5000).toString());
                 token = null;
                 return null;
             }

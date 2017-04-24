@@ -7,7 +7,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import utilities.Server;
 import utilities.enums.Enum_Tyrion_Server_mode;
-import utilities.loggy.Loggy;
+import utilities.independent_threads.Security_WS_token_confirm_procedure;
+import utilities.logger.Class_Logger;
 import utilities.scheduler.jobs.*;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
@@ -19,7 +20,11 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 public class CustomScheduler {
 
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(CustomScheduler.class);
+
+/*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     @Inject
     public Scheduler scheduler;
@@ -129,44 +134,44 @@ public class CustomScheduler {
 
                 // 0) Přesouvání logu z tyriona do BLOB serveru
                 if(Server.server_mode != Enum_Tyrion_Server_mode.developer ) {
-                    logger.debug("CustomScheduler:: start: Scheduling new Job - Log_Azure_Upload");
+                    terminal_logger.debug("start: Scheduling new Job - Log_Azure_Upload");
                     scheduler.scheduleJob(newJob(Job_LogAzureUpload.class).withIdentity(JobKey.jobKey("log_azure_upload")).build(), every_day_0);
                 }
                 // 1) Odstraňování starých auth-tokenů z přihlášení, které mají živostnost jen 72h
-                logger.debug("CustomScheduler:: start: Scheduling new Job - Old_Floating_Person_Token_Removal");
+                terminal_logger.debug("start: Scheduling new Job - Old_Floating_Person_Token_Removal");
                 scheduler.scheduleJob( newJob(Job_OldFloatingTokenRemoval.class).withIdentity( JobKey.jobKey("removing_old_floating_person_tokens") ).build(), every_day_1);
 
                 // 2) Odstraňování notifikací starších, než měsíc
-                logger.debug("CustomScheduler:: start: Scheduling new Job - Old_Notification_Removal");
+                terminal_logger.debug("start: Scheduling new Job - Old_Notification_Removal");
                 scheduler.scheduleJob( newJob(Job_OldNotificationRemoval.class).withIdentity( JobKey.jobKey("removing_old_notifications") ).build(), every_day_2);
 
                 // 3) Odstraňování nepřihlášených tokenů ze sociálních sítí, které mají živostnost jen 24h
-                //logger.info("CustomScheduler:: start: Scheduling new Job - Removing_Unused_Tokens");
+                //logger.info("start: Scheduling new Job - Removing_Unused_Tokens");
                 //scheduler.scheduleJob( newJob(Job_RemovingUnusedTokens.class).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day_3);
 
                 // 4) Odstraňování nezvalidovaných účtů, které jsou starší, než měsíc
-                logger.debug("CustomScheduler:: start: Scheduling new Job - Unauthenticated_Person_Removal");
+                terminal_logger.debug("start: Scheduling new Job - Unauthenticated_Person_Removal");
                 scheduler.scheduleJob( newJob(Job_UnauthenticatedPersonRemoval.class).withIdentity( JobKey.jobKey("unauthenticated_person_removal") ).build(), every_day_4);
 
                 // 5) Kontrola a fakturace klientů na měsíční bázi
-                logger.debug("CustomScheduler:: start: Scheduling new Job - Sending_Invoices");
+                terminal_logger.debug("start: Scheduling new Job - Sending_Invoices");
                 scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_5);
 
                 // 6) Obnovení certifikátu od Lets Encrypt
                 if(Server.server_mode != Enum_Tyrion_Server_mode.production ) {
-                    logger.debug("CustomScheduler:: start: Scheduling new Job - Certificate_Renewal");
+                    terminal_logger.debug("start: Scheduling new Job - Certificate_Renewal");
                     scheduler.scheduleJob(newJob(Job_CertificateRenewal.class).withIdentity(JobKey.jobKey("certificate_renewal")).build(), every_day_6);
                 }
                 // 7) Kontrola zaseknutých kompilací - těch co jsou in progress déle než 5 minut.
-                logger.debug("CustomScheduler:: start: Scheduling new Job - Checking stuck compilations");
+                terminal_logger.debug("start: Scheduling new Job - Checking stuck compilations");
                 scheduler.scheduleJob( newJob(Job_StuckCompilationCheck.class).withIdentity( JobKey.jobKey("stuck_compilation_check") ).build(), every_10_minutes_7);
 
                 // 8) Update statistiky o requestech
-                logger.debug("CustomScheduler:: start: Scheduling new Job - Request Stats Update");
+                terminal_logger.debug("start: Scheduling new Job - Request Stats Update");
                 scheduler.scheduleJob( newJob(Job_RequestStatsUpdate.class).withIdentity( JobKey.jobKey("request_stats_update") ).build(), every_hour);
 
             }else {
-                logger.warn("CustomScheduler:: start: CRON (Every-Day) is in RAM yet. Be careful with that!");
+                terminal_logger.warn("start: CRON (Every-Day) is in RAM yet. Be careful with that!");
             }
 
 
@@ -174,7 +179,7 @@ public class CustomScheduler {
             scheduler.start();
 
         }catch (Exception e){
-            Loggy.internalServerError("CustomScheduler:: start:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -184,7 +189,7 @@ public class CustomScheduler {
         try {
             customScheduler.start();
         } catch (SchedulerException e) {
-            Loggy.internalServerError("CustomScheduler:: startScheduler:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -192,7 +197,7 @@ public class CustomScheduler {
         try {
             customScheduler.scheduler.clear();
         } catch (SchedulerException e) {
-            Loggy.internalServerError("CustomScheduler:: stopScheduler:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 }

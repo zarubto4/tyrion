@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ public class Model_SecurityRole extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_SecurityRole.class);
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
     @Id @ApiModelProperty(required = true) public String id;
         @ApiModelProperty(required = true) public String name;
@@ -29,21 +32,39 @@ public class Model_SecurityRole extends Model {
     @JsonIgnore @ManyToMany(mappedBy = "roles")  @JoinTable(name = "person_roles") public List<Model_Person> persons = new ArrayList<>();
     @JsonIgnore @ManyToMany() public List<Model_Permission> person_permissions = new ArrayList<>();
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> persons_id()           {  List<String> l = new ArrayList<>();  for( Model_Person m  : persons)   l.add(m.id); return l;  }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> person_permissions_id(){  List<String> l = new ArrayList<>();  for( Model_Permission m   : person_permissions)   l.add(m.value); return l;  }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
 
+        terminal_logger.debug("save :: Creating new Object");
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             if (Model_SecurityRole.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

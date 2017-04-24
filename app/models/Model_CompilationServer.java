@@ -14,6 +14,7 @@ import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.Enum_Compile_status;
 import utilities.independent_threads.Compilation_After_BlackOut;
+import utilities.logger.Class_Logger;
 import web_socket.message_objects.common.WS_Send_message;
 import web_socket.services.WS_CompilerServer;
 import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
@@ -31,9 +32,10 @@ import java.util.UUID;
         value = "CompilationServer")
 public class Model_CompilationServer extends Model {
 
+
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_CompilationServer.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -42,18 +44,22 @@ public class Model_CompilationServer extends Model {
                           @JsonIgnore                            public String hash_certificate;
     
 
-    @ApiModelProperty(required = true, readOnly = true) @Column(unique=true)    public String server_url; // TODO - Tohle změnit na server_url  // Může být i IP adresa
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+    @ApiModelProperty(required = true, readOnly = true) @Column(unique=true) public String server_url;
+
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online(){
         return Controller_WebSocket.compiler_cloud_servers.containsKey(this.unique_identificator);
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    public void save(){
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override public void save(){
+
+        terminal_logger.debug("save :: Creating new Object");
+        
         if(hash_certificate == null)
         while(true){ // I need Unique Value
             hash_certificate = UUID.randomUUID().toString();
@@ -69,8 +75,21 @@ public class Model_CompilationServer extends Model {
         super.save();
     }
 
+    @JsonIgnore @Override public void update() {
 
-/* SERVER WEBSOCKET CONTROLLING ---------------------------------------------------------------------------------------*/
+        terminal_logger.debug("update :: Update object unique_identificator: {}",  this.unique_identificator);
+        
+        super.update();
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("update :: Delete object unique_identificator: {} ", this.unique_identificator);
+        super.delete();
+    }
+
+
+/* SERVER WEBSOCKET  --------------------------------------------------------------------------------------------------*/
 
     public static String CHANNEL = "compilation-server";
 
@@ -82,13 +101,13 @@ public class Model_CompilationServer extends Model {
         try{
 
             List<String> keys        = new ArrayList<>(Controller_WebSocket.compiler_cloud_servers.keySet());
-            WS_CompilerServer server = (WS_CompilerServer) Controller_WebSocket.compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
+            WS_CompilerServer server = Controller_WebSocket.compiler_cloud_servers.get( keys.get( new Random().nextInt(keys.size())) );
 
             ObjectNode compilation_request = server.write_with_confirmation(request, 1000*5, 0, 3);
 
             if(!compilation_request.get("status").asText().equals("success")) {
 
-                logger.debug("Model_CompilationServer:: make_Compilation:: Incoming message has not contains state = success");
+                terminal_logger.debug("make_Compilation:: Incoming message has not contains state = success");
 
                 WS_Message_Make_compilation make_compilation = new WS_Message_Make_compilation();
 
@@ -97,17 +116,17 @@ public class Model_CompilationServer extends Model {
                 return  make_compilation;
             }
 
-            logger.debug("Model_CompilationServer:: make_Compilation:: Start of compilation was successful - waiting for result");
+            terminal_logger.debug("make_Compilation:: Start of compilation was successful - waiting for result");
 
             WS_Send_message get_compilation = new WS_Send_message(null, null, "compilation_message", 1000 * 35, 0, 1);
             server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
 
             ObjectNode node = get_compilation.send_with_response();
 
-            logger.debug("Model_CompilationServer:: make_Compilation:: Result is here!!! " + node.toString());
+            terminal_logger.trace("make_Compilation:: Result is here!!! ", node.toString());
 
             final Form<WS_Message_Make_compilation> form = Form.form(WS_Message_Make_compilation.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Make_compilation:: Incoming Json from Compilation Server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Make_compilation();}
+            if(form.hasErrors()){terminal_logger.error("WS_Make_compilation:: Incoming Json from Compilation Server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Make_compilation();}
 
             WS_Message_Make_compilation compilation = form.get();
 
@@ -132,7 +151,7 @@ public class Model_CompilationServer extends Model {
             JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
 
             final Form<WS_Message_Ping_compilation_server> form = Form.form(WS_Message_Ping_compilation_server.class).bind(node);
-            if(form.hasErrors()){logger.error("Model_HomerServer:: WS_Ping_compilation_server:: Incoming Json for Yoda has not right Form");return new WS_Message_Ping_compilation_server();}
+            if(form.hasErrors()){terminal_logger.error("WS_Ping_compilation_server:: Incoming Json for Yoda has not right Form");return new WS_Message_Ping_compilation_server();}
 
             return form.get();
 
@@ -142,8 +161,8 @@ public class Model_CompilationServer extends Model {
     }
 
     @JsonIgnore @Transient public void compiler_server_is_disconnect(){
-        logger.debug("Model_CompilationServer:: compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + unique_identificator + " name " + personal_server_name);
-        // Nějaké upozornění???
+        terminal_logger.debug("compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + unique_identificator + " name " + personal_server_name);
+        // TODO -  Nějaké upozornění??? - Aspoň pro nás v režimu stage nebo production - o pádu serveru
     }
 
     @JsonIgnore @Transient public  void check_after_connection(){
@@ -156,7 +175,7 @@ public class Model_CompilationServer extends Model {
 
         Model_VersionObject version_object = Model_VersionObject.find.where().eq("c_compilation.status", Enum_Compile_status.server_was_offline.name()).order().desc("date_of_create").setMaxRows(1).findUnique();
         if(version_object == null){
-            logger.debug("Model_CompilationServer:: check_after_connection:: 0 c_program versions for compilations");
+            terminal_logger.debug("check_after_connection:: 0 c_program versions for compilations");
             return;
         }
 

@@ -4,11 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utilities.independent_threads.Security_WS_token_confirm_procedure;
+import utilities.logger.Class_Logger;
 import utilities.response.response_objects.*;
 
 public class GlobalResult extends Controller {
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(GlobalResult.class);
+
 //**********************************************************************************************************************
 
     // Vracím objekty

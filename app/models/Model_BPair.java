@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -15,6 +16,8 @@ public class Model_BPair extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_BPair.class);
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                           @JsonIgnore @Id public UUID id;
@@ -24,9 +27,9 @@ public class Model_BPair extends Model {
 
     // B_Program - Skupiny HW pod Yodou
                                                                   @JsonIgnore @ManyToOne()  public Model_BProgramHwGroup device_board_pair;  // Devices
-    @JsonIgnore @OneToOne(cascade=CascadeType.ALL)  @JoinColumn(name="main_board_pair_id")  public Model_BProgramHwGroup main_board_pair;    // Master Boards - třeba Yoda
+    @JsonIgnore @OneToOne(cascade=CascadeType.ALL)  @JoinColumn(name="main_board_pair_id")  public Model_BProgramHwGroup main_board_pair;    // Master Boards - for example Yoda
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty   @Transient public String c_program_version_id()          { return c_program_version == null ? null : c_program_version.id;}
     @JsonProperty   @Transient public String c_program_version_name()        { return c_program_version == null ? null : c_program_version.version_name;}
@@ -44,21 +47,29 @@ public class Model_BPair extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
     @JsonIgnore @Override
     public void save() {
         super.save();
     }
 
+    @JsonIgnore @Override public void update() {
+
+        super.update();
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        super.delete();
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
-
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Model_BPair> find = new Finder<>(Model_BPair.class);
 

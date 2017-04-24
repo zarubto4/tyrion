@@ -12,7 +12,8 @@ import play.mvc.*;
 import utilities.enums.Enum_Compile_status;
 import utilities.enums.Enum_Update_type_of_update;
 import utilities.enums.Enum_Board_registration_status;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
@@ -36,11 +37,10 @@ import java.util.UUID;
 @Security.Authenticated(Secured_API.class)
 public class Controller_Board extends Controller {
 
-    // Loger
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
-
-
-
+// LOGGER ##############################################################################################################
+    
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Board.class);
+    
 ///###################################################################################################################*/
 
     @ApiOperation(value = "compile C_program Version",
@@ -73,7 +73,7 @@ public class Controller_Board extends Controller {
     public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
         try{
 
-            logger.debug("CompilationController:: Starting compilation on version_id = " + version_id);
+            terminal_logger.debug("Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
@@ -100,7 +100,7 @@ public class Controller_Board extends Controller {
            return GlobalResult.result_BadRequest("unknown_error");
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -245,7 +245,7 @@ public class Controller_Board extends Controller {
             // Neznámá chyba se kterou nebylo počítání
             return GlobalResult.result_BadRequest("Unknown error");
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -318,7 +318,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
     */
@@ -381,7 +381,7 @@ public class Controller_Board extends Controller {
             }
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
     */
@@ -479,7 +479,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
     
@@ -540,7 +540,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.created(Json.toJson(server));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -601,7 +601,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -633,7 +633,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(servers));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -675,7 +675,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -738,7 +738,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.created(Json.toJson(processor));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -770,7 +770,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(processor));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -800,7 +800,7 @@ public class Controller_Board extends Controller {
            return GlobalResult.result_ok(Json.toJson(processors));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -864,7 +864,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(processor));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -906,7 +906,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -941,7 +941,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson( fileRecord.get_fileRecord_from_Azure_inString()));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1002,7 +1002,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.created(Json.toJson(producer));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1066,7 +1066,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(producer));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1100,7 +1100,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(producers));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1135,7 +1135,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(producer));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1178,7 +1178,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1250,7 +1250,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.created(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1325,7 +1325,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -1368,7 +1368,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1402,7 +1402,7 @@ public class Controller_Board extends Controller {
             return  GlobalResult.result_ok(Json.toJson(typeOfBoards));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1440,7 +1440,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1501,7 +1501,7 @@ public class Controller_Board extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(type_of_board));
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1525,7 +1525,7 @@ public class Controller_Board extends Controller {
 
             return GlobalResult.result_ok("Picture successfully removed");
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1562,7 +1562,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1608,7 +1608,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1641,7 +1641,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1683,7 +1683,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1754,7 +1754,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.created(Json.toJson(board));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1803,7 +1803,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(list));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1865,7 +1865,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1924,7 +1924,7 @@ public class Controller_Board extends Controller {
                 // Uprava desky
 
 
-                logger.debug("Controller_Board:: board_update_backup:: Board has own Static Backup - Removing static backup procedure required");
+                terminal_logger.debug("Controller_Board:: board_update_backup:: Board has own Static Backup - Removing static backup procedure required");
 
                 WS_Message_Board_set_autobackup result =  Model_Board.set_auto_backup(board);
                 if(result.status.equals("success")){
@@ -1934,7 +1934,7 @@ public class Controller_Board extends Controller {
                     board.save();
 
                 }else {
-                    logger.warn("Controller_Board:: board_update_backup:: Something is wrong in message:: Error:: " + result.error + " ErrorCode:: " + result.errorCode);
+                    terminal_logger.warn("Controller_Board:: board_update_backup:: Something is wrong in message:: Error:: " + result.error + " ErrorCode:: " + result.errorCode);
                 }
 
 
@@ -1945,7 +1945,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2034,7 +2034,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2121,7 +2121,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2165,7 +2165,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -2206,8 +2206,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2257,7 +2256,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(status));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2289,7 +2288,7 @@ public class Controller_Board extends Controller {
     public Result board_connectProject(@ApiParam(required = true) String hash_for_adding, @ApiParam(required = true) String project_id){
         try {
 
-            logger.debug("CompilationControler:: Registrace nového zařízení ");
+            terminal_logger.debug("CompilationControler:: Registrace nového zařízení ");
             // Kotrola objektu
             Model_Board board = Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique();
             if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
@@ -2314,7 +2313,7 @@ public class Controller_Board extends Controller {
 
             if(board.type_of_board.connectible_to_internet){
 
-                logger.debug("CompilationController:: board_connectProject:: Deska je připojitelná k internetu");
+                terminal_logger.debug("board_connectProject:: Deska je připojitelná k internetu");
 
                 Model_HomerInstance instance = project.private_instance;
                 instance.boards_in_virtual_instance.add(board);
@@ -2329,7 +2328,7 @@ public class Controller_Board extends Controller {
              return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2378,7 +2377,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -2428,7 +2427,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boards_for_blocko));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 }

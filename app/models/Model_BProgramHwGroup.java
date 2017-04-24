@@ -3,9 +3,13 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
+import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,7 +19,7 @@ public class Model_BProgramHwGroup extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_BProgramHwGroup.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -30,9 +34,8 @@ public class Model_BProgramHwGroup extends Model {
 
 
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
-
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public boolean contains_HW(String board_id) {
@@ -48,9 +51,27 @@ public class Model_BProgramHwGroup extends Model {
             return false;
 
         } catch (Exception e) {
-            logger.error("Model_BProgramHwGroup:: contains_HW:: Error:: ", e);
+            terminal_logger.internalServerError(e);
             return false;
         }
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public void save() {
+
+        super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        super.update();
+    }
+
+
+    @JsonIgnore @Override public void delete() {
+        terminal_logger.error("delete:: This object is not legitimate to remove. ");
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

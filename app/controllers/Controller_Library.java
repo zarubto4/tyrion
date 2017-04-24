@@ -16,7 +16,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.Enum_Library_state;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
@@ -34,6 +35,12 @@ import java.util.List;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Library extends Controller {
 
+// LOGGER ##############################################################################################################
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Library.class);
+
+///###################################################################################################################*/
+    
     @ApiOperation(value = "create new ImportLibrary",
             hidden = true,
             tags = {"ImportLibrary"},
@@ -93,7 +100,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.created(Json.toJson(library));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -128,7 +135,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(library));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -166,7 +173,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(libraries));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -215,7 +222,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -281,7 +288,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.created(Json.toJson(library));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -325,7 +332,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -403,7 +410,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.created(Json.toJson(version_object.get_short_import_library_version()));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -448,7 +455,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -515,7 +522,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -563,7 +570,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -671,7 +678,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -768,7 +775,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -862,7 +869,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -913,7 +920,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(returnObject.get_short_import_library_version()));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

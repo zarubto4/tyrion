@@ -5,12 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.Model_CompilationServer;
+import utilities.logger.Class_Logger;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Rejection_homer_server;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class WS_CompilerServer extends WS_Interface_type {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_CompilerServer.class);
+
+/* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
     public String server_address;
     public Map<String, ObjectNode> compilation_results = new HashMap<>();
@@ -39,15 +46,15 @@ public class WS_CompilerServer extends WS_Interface_type {
     @Override
     public void onClose() {
 
-        logger.debug("WS_CompilerServer:: onClose ");
+        terminal_logger.debug("WS_CompilerServer:: onClose ");
         this.close();
 
-        logger.trace("WS_CompilerServer:: close thread");
+        terminal_logger.trace("WS_CompilerServer:: close thread");
 
-        logger.trace("WS_CompilerServer:: removing object");
+        terminal_logger.trace("WS_CompilerServer:: removing object");
         Controller_WebSocket.compiler_cloud_servers.remove(this.identifikator);
 
-        logger.trace("WS_CompilerServer:: removing on object");
+        terminal_logger.trace("WS_CompilerServer:: removing on object");
         server.compiler_server_is_disconnect();
     }
 
@@ -58,12 +65,12 @@ public class WS_CompilerServer extends WS_Interface_type {
 
         try{
 
-            logger.trace("WS_CompilerServer:: onMessage:: Incoming message:: " + message);
+            terminal_logger.trace("WS_CompilerServer:: onMessage:: Incoming message:: " + message);
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
             if (json.has("buildId") && super.sendMessageMap.containsKey(json.get("buildId").asText())) {
 
-                logger.trace("WS_CompilerServer:: onMessage:: Message with compiled build");
+                terminal_logger.trace("WS_CompilerServer:: onMessage:: Message with compiled build");
 
                 super.sendMessageMap.get(json.get("buildId").asText()).insert_result(json);
                 super.sendMessageMap.remove(json.get("buildId").asText());
@@ -73,7 +80,7 @@ public class WS_CompilerServer extends WS_Interface_type {
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
             if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
 
-                logger.trace("WS_CompilerServer:: onMessage:: Message approve compilation start");
+                terminal_logger.trace("WS_CompilerServer:: onMessage:: Message approve compilation start");
                 sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
                 return;
             }
@@ -82,12 +89,12 @@ public class WS_CompilerServer extends WS_Interface_type {
 
         }catch (JsonParseException e){
 
-            logger.error("WS_CompilerServer:: onMessage:: JsonParseException:: Message:: " + message);
+            terminal_logger.error("WS_CompilerServer:: onMessage:: JsonParseException:: Message:: " + message);
 
 
         }catch (Exception e){
 
-            logger.error("WS_CompilerServer:: onMessage:: JsonParseException:: Message:: " + message , e);
+            terminal_logger.error("WS_CompilerServer:: onMessage:: JsonParseException:: Message:: " + message , e);
 
         }
     }
@@ -96,11 +103,11 @@ public class WS_CompilerServer extends WS_Interface_type {
     @Override
     public void onMessage(ObjectNode json) {
 
-        logger.trace("WS_CompilerServer:: onMessage:: Not requested message:: " + json.toString());
+        terminal_logger.trace("WS_CompilerServer:: onMessage:: Not requested message:: " + json.toString());
 
         // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj
         if(!security_token_confirm){
-            logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
+            terminal_logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
 
             //security_token_confirm_procedure();
             super.write_without_confirmation(new WS_Message_Rejection_homer_server().make_request());
@@ -112,11 +119,11 @@ public class WS_CompilerServer extends WS_Interface_type {
 
             switch (json.get("messageChannel").asText()){
 
-                default: logger.error("WS_CompilerServer:: onMessage:: not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
+                default: terminal_logger.error("WS_CompilerServer:: onMessage:: not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
             }
 
         }else {
-            logger.error("WS_CompilerServer:: onMessage:: "+ identifikator + " Incoming message has not messageChannel!!!!");
+            terminal_logger.error("WS_CompilerServer:: onMessage:: "+ identifikator + " Incoming message has not messageChannel!!!!");
         }
 
     }

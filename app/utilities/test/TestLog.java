@@ -3,7 +3,7 @@ package utilities.test;
 import play.Application;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.loggy.Loggy;
+import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
@@ -27,7 +27,7 @@ public class TestLog extends Controller {
             return GlobalResult.result_ok(content);
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -41,7 +41,7 @@ public class TestLog extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 }

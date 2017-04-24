@@ -468,7 +468,7 @@ PUT             /admin/embedded_hardware/result                       @utilities
 # Basic Page Requests
 GET             /                                               @controllers.Controller_Dashboard.index()
 GET             /admin/login                                    @controllers.Controller_Security.admin_login()
-GET             /admin/bugs                                     @controllers.Controller_Dashboard.show_all_logs()
+GET             /admin/bugs                                     @utilities.logger.Server_Logger.show_all_logs()
 GET             /admin/websocket/summary                        @controllers.Controller_Dashboard.show_web_socket_stats()
 GET             /admin/websocket/server_detail/:server_name     @controllers.Controller_Dashboard.show_websocket_server_detail(server_name)
 GET             /admin/websocket/instance_detail/:instance_id   @controllers.Controller_Dashboard.show_instance_detail(instance_id)
@@ -559,9 +559,9 @@ DELETE          /admin/extension/:extension_id                  @controllers.Con
 #GET             /javascriptRoutes                               @controllers.Controller_Dashboard.javascriptRoutes()
 
 # BUGS SERVISE PAGE
-GET             /admin/bugs/deleteAll                      @controllers.Controller_Dashboard.loggy_remove_all_bugs()
-GET             /admin/bug/remove/:id                      @controllers.Controller_Dashboard.loggy_remove_bug(id: String)
-GET             /admin/bug/report/:id                      @controllers.Controller_Dashboard.loggy_report_bug_to_youtrack(id: String)
+GET             /admin/bugs/deleteAll                      @utilities.logger.Server_Logger.loggy_remove_all_bugs()
+GET             /admin/bug/remove/:id                      @utilities.logger.Server_Logger.loggy_remove_bug(id: String)
+GET             /admin/bug/report/:id                      @utilities.logger.Server_Logger.loggy_report_bug_to_youtrack(id: String)
 
 # WEBSOCKET SERVISE PAGE
 GET             /admin/instance/ping/:id                   @controllers.Controller_Dashboard.ping_homer_instance(id: String)

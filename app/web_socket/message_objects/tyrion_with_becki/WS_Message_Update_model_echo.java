@@ -14,8 +14,7 @@ public class WS_Message_Update_model_echo extends WS_AbstractMessage {
 
     //------------------------------------------------------------------
     @JsonIgnore  public Class cls;
-    @JsonIgnore  public String project_id = null;
-
+    @JsonIgnore  public String project_id;
     //------------------------------------------------------------------
 
     @JsonProperty public String model;
@@ -26,17 +25,16 @@ public class WS_Message_Update_model_echo extends WS_AbstractMessage {
    public WS_Message_Update_model_echo(Class<?> cls, String project_id, String model_id){
         this.cls = cls;
         this.model_id = model_id;
-        this.project_id = project_id;
         this.model = cls.getSimpleName();
+        this.project_id = project_id;
 
    }
 
    public WS_Message_Update_model_echo(Class<?> cls, String project_id, Long model_id){
        this.cls = cls;
        this.model_id = model_id.toString();
-       this.project_id = project_id;
        this.model = cls.getSimpleName();
-
+       this.project_id = project_id;
    }
 
     public ObjectNode get_request(){

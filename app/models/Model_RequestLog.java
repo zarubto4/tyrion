@@ -3,6 +3,7 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,11 +12,12 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of RequestLog",
-        value = "RequestLog")
+@ApiModel(value = "RequestLog", description = "Model of RequestLog")
 public class Model_RequestLog extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_RequestLog.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -28,7 +30,11 @@ public class Model_RequestLog extends Model{
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
@@ -42,6 +48,20 @@ public class Model_RequestLog extends Model{
         super.save();
     }
 
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+
+    }
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -51,6 +71,8 @@ public class Model_RequestLog extends Model{
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_RequestLog> find = new Model.Finder<>(Model_RequestLog.class);

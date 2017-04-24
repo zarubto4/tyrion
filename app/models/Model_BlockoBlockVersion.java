@@ -7,7 +7,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Approval_state;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
@@ -17,11 +17,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of BlockoBlockVersion",
-        value = "BlockoBlockVersion")
+@ApiModel( value = "BlockoBlockVersion", description = "Model of BlockoBlockVersion")
 public class Model_BlockoBlockVersion extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_BlockoBlockVersion.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -42,20 +43,19 @@ public class Model_BlockoBlockVersion extends Model {
 
     @JsonProperty
     public Swagger_Person_Short_Detail author(){
-        return this.author.get_short_person();
-    }
+        try{
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+            return this.author.get_short_person();
 
-    @JsonIgnore @Override
-    public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (get_byId(this.id) == null) break;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
         }
-        super.save();
     }
+
+
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
 
     @JsonIgnore
     public Swagger_BlockoBlock_Version_Short_Detail get_short_blockoblock_version(){
@@ -72,10 +72,39 @@ public class Model_BlockoBlockVersion extends Model {
             return help;
 
         }catch (Exception e){
-            Loggy.internalServerError("Model_BlockoBlockVersion:: get_short_blockoblock_version", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Override
+    public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (get_byId(this.id) == null) break;
+        }
+        super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object Id: " + this.id);
+
+        super.update();
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("delete :: Delete object Id: " + this.id);
+
+        // Case 1.1 :: We delete the object
+        super.delete();
+    }
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
