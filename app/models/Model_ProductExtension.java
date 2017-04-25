@@ -11,7 +11,6 @@ import play.libs.Json;
 import utilities.enums.Enum_ExtensionType;
 import utilities.financial.*;
 import utilities.logger.Class_Logger;
-import utilities.loggy.Loggy;
 import utilities.swagger.outboundClass.Swagger_ProductExtension_Type;
 
 import javax.persistence.*;
@@ -54,6 +53,17 @@ public class Model_ProductExtension extends Model{
                                                     @JsonIgnore @ManyToOne public Model_Tariff tariff_optional;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public Price price(){
+        try {
+            Price price = new Price();
+            price.USD = ((double) getPrice()) / 1000;
+            return price;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -248,6 +258,17 @@ public class Model_ProductExtension extends Model{
 
         public Long price;
         public int count;
+    }
+
+    public class Price {
+        @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK")
+        public Double CZK = 0.0;
+
+        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show €")
+        public Double EUR  = 0.0;
+
+        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $")
+        public Double USD = 0.0;
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

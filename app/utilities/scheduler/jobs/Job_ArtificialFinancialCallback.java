@@ -65,7 +65,7 @@ public class Job_ArtificialFinancialCallback implements Job {
                 for (Model_Invoice invoice : invoices_for_fakturoid) {
 
                     ObjectNode body = Json.newObject();
-                    body.put("invoice_id", invoice.fakturoid_id);
+                    body.put("invoice_id", invoice.proforma_id);
                     body.put("number", invoice.invoice_number);
                     body.put("status", "paid");
                     body.put("total", ((double) invoice.total_price()) / 1000);
@@ -77,7 +77,7 @@ public class Job_ArtificialFinancialCallback implements Job {
 
                     WSResponse response = responsePromise.get(5000);
 
-                    terminal_logger.debug("callback_thread: Sending notification for invoice: {} - response: {}", invoice.fakturoid_id, response.getStatus());
+                    terminal_logger.debug("callback_thread: Sending notification for invoice: {} - response: {}", invoice.proforma_id, response.getStatus());
                 }
 
             } catch (Exception e) {

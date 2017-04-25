@@ -3,6 +3,7 @@
 alter table model_general_tariff_label rename to model_tariff_label;
 alter table model_tariff_label rename general_tariff_id to tariff_id;
 alter table model_tariff_label drop column if exists extensions_id cascade;
+drop index if exists ix_model_general_tariff_label_39 cascade;
 drop index if exists ix_model_general_tariff_label_40 cascade;
 
 alter table model_general_tariff rename to model_tariff;
@@ -130,6 +131,9 @@ alter table model_product add constraint fk_model_product_tariff_64 foreign key 
 
 alter table model_type_of_board_features_mod add constraint fk_model_type_of_board_featur_01 foreign key (model_type_of_board_features_id) references model_type_of_board_features (id);
 alter table model_type_of_board_features_mod add constraint fk_model_type_of_board_featur_02 foreign key (model_type_of_board_id) references model_type_of_board (id);
+
+drop index if exists ix_model_product_general_tari_64;
+create index ix_model_product_tariff_64 on model_product (tariff_id);
 
 # --- !Downs
 
@@ -261,4 +265,6 @@ alter table GeneralTariffExt_model_product add constraint fk_GeneralTariffExt_mo
 alter table GeneralTariffExt_model_product add constraint fk_GeneralTariffExt_model_pro_02 foreign key (model_product_id) references model_product (id);
 
 alter table model_product add constraint fk_model_product_general_tari_64 foreign key (general_tariff_id) references model_general_tariff (id);
+
+drop index if exists ix_model_product_tariff_64;
 create index ix_model_product_general_tari_64 on model_product (general_tariff_id);

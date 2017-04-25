@@ -26,19 +26,19 @@ public class Model_Invoice extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-        @ApiModelProperty(required = true, readOnly = true) @Id public String id;                         // 5
+        @ApiModelProperty(required = true, readOnly = true) @Id public String id;
 
-                                                   @JsonIgnore  public Long   fakturoid_id;                 // Id určené ze strany Fakturoid
-                                                   @JsonIgnore  public String fakturoid_pdf_url;          // Adresa ke stáhnutí faktury
-            @ApiModelProperty(required = true, readOnly = true) public String invoice_number;             // 2016-0001 - Generuje Fakturoid
+                                                   @JsonIgnore  public Long   fakturoid_id;         // Id určené ze strany Fakturoid
+                                                   @JsonIgnore  public String fakturoid_pdf_url;    // Adresa ke stáhnutí faktury
+            @ApiModelProperty(required = true, readOnly = true) public String invoice_number;       // 2016-0001 - Generuje Fakturoid
 
-                                                   @JsonIgnore  public Long   gopay_id;                   // 1213231123
-                                                   @JsonIgnore  public String gopay_order_number;         // ON-783837426-1469877748551
+                                                   @JsonIgnore  public Long   gopay_id;             // 1213231123
+                                                   @JsonIgnore  public String gopay_order_number;   // ON-783837426-1469877748551
                                                    @JsonIgnore  public String gw_url;
 
                                                    @JsonIgnore  public boolean proforma;
 
-                                                   @JsonIgnore  public Long   proforma_id;                 // Id proformy ze které je faktura
+                                                   @JsonIgnore  public Long   proforma_id;          // Id proformy ze které je faktura
                                                    @JsonIgnore  public String proforma_pdf_url;
 
     @ApiModelProperty(required = true, readOnly = true,
@@ -55,26 +55,23 @@ public class Model_Invoice extends Model {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)              public Model_Product product;
 
-    @JsonIgnore @OneToMany(mappedBy="invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_InvoiceItem> invoice_items = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="invoice",
+            cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_InvoiceItem> invoice_items = new ArrayList<>();
 
-                                                        @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_status status;
-                                                        @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_method method;
-                                                        @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_warning warning;
-
+                    @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_status status;
+                    @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_method method;
+                    @JsonIgnore   @Enumerated(EnumType.STRING)  public Enum_Payment_warning warning;
 
 /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
 
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
+    public String invoice_pdf_link()  { return fakturoid_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/invoice/" + id : null; }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
-    public String pdf_link()  {  return fakturoid_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/invoice/" + id : null; }
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
+    public String proforma_pdf_link() { return proforma_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/proforma/" + id : null; }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
-    public String proforma_pdf_link()  {  return proforma_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/proforma/" + id : null; }
-
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
-    public boolean require_payment()  {
-        return status == Enum_Payment_status.pending || status == Enum_Payment_status.overdue;
-    }
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
+    public boolean require_payment()  { return status == Enum_Payment_status.pending || status == Enum_Payment_status.overdue; }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
     public String gw_url()  {
@@ -83,7 +80,7 @@ public class Model_Invoice extends Model {
         return null;
     }
 
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String payment_status(){
 
         switch (status) {
@@ -95,7 +92,7 @@ public class Model_Invoice extends Model {
         }
     }
 
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String payment_method(){
         switch (method) {
             case bank_transfer : return  "Bank transfer.";
@@ -112,22 +109,10 @@ public class Model_Invoice extends Model {
         return Model_InvoiceItem.find.where().eq("invoice.id", this.id).findList();
     }
 
-
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public Long total_price() {
-        Long total_price = (long) 0;
-        for(Model_InvoiceItem  item : invoice_items){
-            total_price += item.unit_price;
-        }
-        return total_price;
-    }
-
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public double double_price() {
+    public double price() {
         return ((double)this.total_price()) / 1000;
     }
-
-
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -137,13 +122,17 @@ public class Model_Invoice extends Model {
         return product;
     }
 
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore
+    public Long total_price() {
+        Long total_price = (long) 0;
+        for(Model_InvoiceItem  item : invoice_items){
+            total_price += item.unit_price;
+        }
+        return total_price;
+    }
 
-/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
-
-/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override public void save() {
+    @JsonIgnore @Override
+    public void save() {
 
         this.created = new Date();
 
@@ -154,6 +143,12 @@ public class Model_Invoice extends Model {
 
         super.save();
     }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
