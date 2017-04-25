@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
+import utilities.fakturoid.Fakturoid_InvoiceCheck;
 import utilities.goPay.GoPay_PaymentCheck;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.loggy.Loggy;
@@ -350,43 +351,32 @@ public class Server {
         List<String> permissions = new ArrayList<>();
 
         // Models
-            // Blocko
-                for(Enum en : Model_BlockoBlock.permissions.values())             permissions.add(en.name());
-                for(Enum en : Model_BlockoBlockVersion.permissions.values())      permissions.add(en.name());
-                for(Enum en : Model_HomerServer.permissions.values())             permissions.add(en.name());
-                for(Enum en : Model_TypeOfBlock.permissions.values())             permissions.add(en.name());
-
-            // compiler
-                for(Enum en : Model_Board.permissions.values())                   permissions.add(en.name());
-                for(Enum en : Model_CompilationServer.permissions.values())       permissions.add(en.name());
-                for(Enum en : Model_ImportLibrary.permissions.values())           permissions.add(en.name());
-                for(Enum en : Model_Processor.permissions.values())               permissions.add(en.name());
-                for(Enum en : Model_Producer.permissions.values())                permissions.add(en.name());
-                for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());
-                for(Enum en : Model_BootLoader.permissions.values())              permissions.add(en.name());
-
-            // person
-                for(Enum en : Model_FloatingPersonToken.permissions.values())     permissions.add(en.name());
-                for(Enum en : Model_Person.permissions.values())                  permissions.add(en.name());
-                for(Enum en : Model_SecurityRole.permissions.values())            permissions.add(en.name());
-                for(Enum en : Model_Permission.permissions.values())              permissions.add(en.name());
-            //grid
-                for(Enum en : Model_GridWidget.permissions.values())              permissions.add(en.name());
-                for(Enum en : Model_GridWidgetVersion.permissions.values())       permissions.add(en.name());
-                for(Enum en : Model_TypeOfWidget.permissions.values())            permissions.add(en.name());
-
-            // project
-                // b_program
-                    for(Enum en : Model_BProgram.permissions.values())            permissions.add(en.name());
-                // c_program
-                    for(Enum en : Model_CProgram.permissions.values())            permissions.add(en.name());
-                // global
-                    for(Enum en : Model_Project.permissions.values())             permissions.add(en.name());
-                    for(Enum en : Model_Product.permissions.values())             permissions.add(en.name());
-                    for(Enum en : Model_ProductExtension.permissions.values())    permissions.add(en.name());
-                // m_project
-                    for(Enum en : Model_MProject.permissions.values())            permissions.add(en.name());
-                    for(Enum en : Model_MProgram.permissions.values())            permissions.add(en.name());
+        for(Enum en : Model_TypeOfBlock.permissions.values())             permissions.add(en.name());
+        for(Enum en : Model_BlockoBlock.permissions.values())             permissions.add(en.name());
+        for(Enum en : Model_BlockoBlockVersion.permissions.values())      permissions.add(en.name());
+        for(Enum en : Model_HomerServer.permissions.values())             permissions.add(en.name());
+        for(Enum en : Model_Board.permissions.values())                   permissions.add(en.name());
+        for(Enum en : Model_CompilationServer.permissions.values())       permissions.add(en.name());
+        for(Enum en : Model_ImportLibrary.permissions.values())           permissions.add(en.name());
+        for(Enum en : Model_Processor.permissions.values())               permissions.add(en.name());
+        for(Enum en : Model_Producer.permissions.values())                permissions.add(en.name());
+        for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());
+        for(Enum en : Model_BootLoader.permissions.values())              permissions.add(en.name());
+        for(Enum en : Model_FloatingPersonToken.permissions.values())     permissions.add(en.name());
+        for(Enum en : Model_Person.permissions.values())                  permissions.add(en.name());
+        for(Enum en : Model_SecurityRole.permissions.values())            permissions.add(en.name());
+        for(Enum en : Model_Permission.permissions.values())              permissions.add(en.name());
+        for(Enum en : Model_GridWidget.permissions.values())              permissions.add(en.name());
+        for(Enum en : Model_GridWidgetVersion.permissions.values())       permissions.add(en.name());
+        for(Enum en : Model_TypeOfWidget.permissions.values())            permissions.add(en.name());
+        for(Enum en : Model_BProgram.permissions.values())                permissions.add(en.name());
+        for(Enum en : Model_CProgram.permissions.values())                permissions.add(en.name());
+        for(Enum en : Model_Project.permissions.values())                 permissions.add(en.name());
+        for(Enum en : Model_Invoice.permissions.values())                 permissions.add(en.name());
+        for(Enum en : Model_Product.permissions.values())                 permissions.add(en.name());
+        for(Enum en : Model_ProductExtension.permissions.values())        permissions.add(en.name());
+        for(Enum en : Model_MProject.permissions.values())                permissions.add(en.name());
+        for(Enum en : Model_MProgram.permissions.values())                permissions.add(en.name());
 
 
         logger.info("Number of Static Permissions " + permissions.size() );
@@ -413,6 +403,8 @@ public class Server {
         NotificationHandler.startNotificationThread();
 
         GoPay_PaymentCheck.startPaymentCheckThread();
+
+        Fakturoid_InvoiceCheck.startInvoiceCheckThread();
     }
 
     public static void startSchedulingProcedures() {

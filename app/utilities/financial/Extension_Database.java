@@ -7,19 +7,19 @@ public class Extension_Database implements Extension {
 
     public static final String name = Enum_ExtensionType.Database.name();
     public static final String description = "This is an extension for database.";
-    public static final Double price = 0.7;
+    public static final Long price = (long) 700;
     public static final Integer count = 1;
 
-    public Double getPrice(Config config) {
+    public Long getPrice(Config config) {
 
         return config.price * config.count;
     }
 
-    public Double getDefaultMonthlyPrice() {
+    public Long getDefaultMonthlyPrice() {
         return price * 30;
     }
 
-    public Double getDefaultDailyPrice() {
+    public Long getDefaultDailyPrice() {
         return price;
     }
 

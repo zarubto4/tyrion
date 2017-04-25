@@ -7,19 +7,19 @@ public class Extension_Project implements Extension {
 
     public static final String name = Enum_ExtensionType.Project.name();
     public static final String description = "This is an extension for project.";
-    public static final Double price = 0.2;
+    public static final Long price = (long) 200;
     public static final Integer count = 5;
 
-    public Double getPrice(Config config) {
+    public Long getPrice(Config config) {
 
         return config.price * config.count;
     }
 
-    public Double getDefaultMonthlyPrice() {
+    public Long getDefaultMonthlyPrice() {
         return price * 30;
     }
 
-    public Double getDefaultDailyPrice() {
+    public Long getDefaultDailyPrice() {
         return price;
     }
 

@@ -67,8 +67,10 @@ public class Model_Invoice extends Model {
 
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
-    public String pdf_link()  {  return fakturoid_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/" + id : null; }
+    public String pdf_link()  {  return fakturoid_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/invoice/" + id : null; }
 
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
+    public String proforma_pdf_link()  {  return proforma_pdf_url != null ?  Server.tyrion_serverAddress + "/invoice/pdf/proforma/" + id : null; }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
     public boolean require_payment()  {
@@ -113,12 +115,17 @@ public class Model_Invoice extends Model {
 
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public double total_price() {
-        double total_price = 0.0;
+    public Long total_price() {
+        Long total_price = (long) 0;
         for(Model_InvoiceItem  item : invoice_items){
             total_price += item.unit_price;
         }
         return total_price;
+    }
+
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public double double_price() {
+        return ((double)this.total_price()) / 1000;
     }
 
 
@@ -153,11 +160,13 @@ public class Model_Invoice extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().payment_details.person.id.equals(Controller_Security.getPerson().id);}
-    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().payment_details.person.id.equals(Controller_Security.getPerson().id);}
-    @JsonIgnore @Transient public boolean send_reminder()     {  return true;  }
+    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Invoice_create");}
+    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Invoice_read");}
+    @JsonIgnore @Transient public boolean remind_permission() {  return true;  }
     @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
     @JsonIgnore @Transient public boolean delete_permission() {  return true;  }
+
+    public enum permissions{Invoice_create, Invoice_update, Invoice_read, Invoice_edit, Invoice_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

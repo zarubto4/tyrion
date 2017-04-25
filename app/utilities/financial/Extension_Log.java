@@ -6,21 +6,21 @@ public class Extension_Log implements Extension {
 
     public static final String name = "Log";
     public static final String description = "This is an extension for log.";
-    public static final Double price = 0.6;
+    public static final Long price = (long) 600;
     public static final Integer count = 1;
 
-    public Double getPrice(Config config) {
+    public Long getPrice(Config config) {
 
         // here some complicated logic which finds out, how much will this extension cost
 
         return config.price * config.count;
     }
 
-    public Double getDefaultMonthlyPrice() {
+    public Long getDefaultMonthlyPrice() {
         return price *  30;
     }
 
-    public Double getDefaultDailyPrice() {
+    public Long getDefaultDailyPrice() {
         return price;
     }
 

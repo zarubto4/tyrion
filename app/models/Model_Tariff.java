@@ -38,7 +38,7 @@ public class Model_Tariff extends Model {
 
                 @JsonIgnore public boolean payment_required; // Říká, zda se po zaregistrování okamžitě vytvoří faktura a další procedury pro zaplacení
 
-                @JsonIgnore public Double credit_for_beginning; // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
+                @JsonIgnore public Long credit_for_beginning; // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
 
                             public String color;
 
@@ -156,15 +156,15 @@ public class Model_Tariff extends Model {
     }
 
 
-    public double total_per_month(){
-        double total_price = 0.0;
+    public Double total_per_month(){
+        Long total_price = (long) 0;
         for(Model_ProductExtension extension : this.extensions_included){
-            Double price = extension.getPrice();
+            Long price = extension.getPrice();
 
             if(price != null)
             total_price += price;
         }
-        return  total_price*30;
+        return ((double) total_price*30) / 1000;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

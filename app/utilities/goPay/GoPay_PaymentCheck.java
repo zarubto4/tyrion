@@ -15,6 +15,7 @@ import utilities.goPay.helps_objects.GoPay_Result;
 import utilities.loggy.Loggy;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class GoPay_PaymentCheck {
@@ -89,10 +90,10 @@ public class GoPay_PaymentCheck {
                     .setContentType("application/x-www-form-urlencoded")
                     .setHeader("Accept", "application/json")
                     .setHeader("Authorization" , "Bearer " + local_token)
-                    .setRequestTimeout(2500)
+                    .setRequestTimeout(5000)
                     .get();
 
-            WSResponse response = responsePromise.get(2500);
+            WSResponse response = responsePromise.get(5000);
 
             JsonNode result = response.asJson();
 
@@ -111,22 +112,22 @@ public class GoPay_PaymentCheck {
 
                         if (invoice.status != Enum_Payment_status.paid) {
 
+                            /*
                             if (!Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/" + invoice.fakturoid_id + ".json"))
                                 Loggy.internalServerError("GoPay_PaymentCheck:: checkPayment:", new Exception("Error removing proforma from Fakturoid"));
 
                             invoice = Utilities_Fakturoid_Controller.create_paid_invoice(invoice);
-                            if (invoice == null) throw new Exception();
+                            */
 
-                            if (!Utilities_Fakturoid_Controller.fakturoid_post("/invoices/" + invoice.fakturoid_id + "/fire.json?event=pay"))
+                            if (!Utilities_Fakturoid_Controller.fakturoid_post("/invoices/" + invoice.fakturoid_id + "/fire.json?event=pay_proforma"))
                                 Loggy.internalServerError("GoPay_PaymentCheck:: checkPayment:", new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
 
-                            logger.debug("GoPay_PaymentCheck:: checkPayment: Uploading credit {}", help.amount / 100);
-
-                            invoice.getProduct().credit_upload(help.amount / 100);
+                            invoice.getProduct().credit_upload(help.amount * 10);
+                            invoice.status = Enum_Payment_status.paid;
+                            invoice.paid = new Date();
+                            invoice.update();
 
                             invoice.getProduct().archiveEvent("Payment", "GoPay payment number: " + invoice.gopay_id + " was successful", invoice.id);
-
-                            Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
 
                             // TODO notifikace
                         }
@@ -147,7 +148,7 @@ public class GoPay_PaymentCheck {
 
                         logger.debug("GoPay_PaymentCheck:: checkPayment: state - REFUNDED");
 
-                        invoice.getProduct().credit_remove(help.amount / 100);
+                        invoice.getProduct().credit_remove(help.amount * 10);
                         invoice.status = Enum_Payment_status.canceled;
                         invoice.update();
 
@@ -164,7 +165,7 @@ public class GoPay_PaymentCheck {
 
                         // TODO úprava ve fakturoidu
 
-                        invoice.getProduct().credit_remove(help.amount / 100);
+                        invoice.getProduct().credit_remove(help.amount * 10);
 
                         break;
                     }
@@ -183,6 +184,15 @@ public class GoPay_PaymentCheck {
                     case  "TIMEOUTED":{
 
                         logger.debug("GoPay_PaymentCheck:: checkPayment: state - TIMEOUTED");
+
+                        // TODO notifikace
+
+                        break;
+                    }
+
+                    case  "CREATED":{
+
+                        logger.debug("GoPay_PaymentCheck:: checkPayment: state - CREATED");
 
                         // TODO notifikace
 

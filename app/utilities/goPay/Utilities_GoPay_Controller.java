@@ -37,7 +37,69 @@ public class Utilities_GoPay_Controller extends Controller {
     // Logger
     private static ALogger logger = Logger.of("Loggy");
 
+    private static String token;        // GoPay Connector - hash token sloužící k volání API k bráně GoPay
+    private static Date last_refresh;   // čas, který hodnotí obnovu bezpečnostního tokenu - jeho živostnost je totiž 30 minut a šetří se tím dotazy!
+
 // PUBLIC METHODS ######################################################################################################
+
+    // Získání Tokenu od goPay - Ten se přidává do všech hlaviček
+    public static String getToken(){
+        try {
+
+            logger.debug("GoPay_Controller:: getToken: Getting Token");
+            if( token != null && last_refresh != null && new Date().getTime() - last_refresh.getTime() <= 28*60*1000) {
+                logger.debug("GoPay_Controller:: getToken: Returning cached token");
+                return token;
+            }
+
+            logger.debug("GoPay_Controller:: getToken: Token is expired or not obtained yet.");
+
+            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
+            int trial = 0;
+
+            while (trial < 5) {
+
+                JsonNode result;
+
+                try {
+
+                    F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/oauth2/token")
+                            .setContentType("application/x-www-form-urlencoded")
+                            .setAuth(Server.GoPay_client_id, Server.GoPay_client_secret)
+                            .setRequestTimeout(5000)
+                            .setBody("grant_type=client_credentials&scope=payment-all")
+                            .post("grant_type=client_credentials&scope=payment-all");
+
+                    result = responsePromise.get(5000).asJson();
+
+                } catch (Exception e){
+
+                    trial++;
+                    continue;
+                }
+
+
+                if (result.has("access_token")) {
+                    token = result.get("access_token").asText();
+                    last_refresh = new Date();
+
+                    logger.debug("GoPay_Controller:: getToken: Returning new token");
+
+                    return token;
+
+                } else {
+                    token = null;
+                    throw new NullPointerException("Incoming Json from GoPay does not contain access_token: " + result);
+                }
+            }
+
+            return null;
+        }catch (Exception e){
+            Loggy.internalServerError("GoPay_Controller:: getToken:", e);
+            return null;
+        }
+    }
 
     public static Model_Invoice singlePayment(String payment_description , Model_Product product, Model_Invoice invoice){
 
@@ -102,41 +164,56 @@ public class Utilities_GoPay_Controller extends Controller {
         logger.debug("GoPay_Controller:: singlePayment: Sending Request for new Payment to GoPay with object: " + Json.toJson(payment).toString());
 
         WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-        F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url +  "/payments/payment")
-                .setContentType("application/json")
-                .setHeader("Accept", "application/json")
-                .setHeader("Authorization" , "Bearer " + local_token)
-                .setRequestTimeout(2500)
-                .post(Json.toJson(payment));
 
-        JsonNode response = responsePromise.get(1000).asJson();
+        JsonNode response;
 
-        logger.debug("GoPay_Controller:: singlePayment: Response from GoPay: " + response.toString());
+        for (int trial = 5; trial > 0; trial--) {
+            try {
 
-        final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(response);
-        if (form.hasErrors()) Loggy.internalServerError("GoPay_Controller:: singlePayment: ", new Exception("Error while binding Json: " + form.errorsAsJson().toString()));
-        else {
-            GoPay_Result help = form.get();
+                F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/payments/payment")
+                        .setContentType("application/json")
+                        .setHeader("Accept", "application/json")
+                        .setHeader("Authorization", "Bearer " + local_token)
+                        .setRequestTimeout(10000)
+                        .post(Json.toJson(payment));
 
-            logger.debug("GoPay_Controller:: singlePayment: Set GoPay ID to Invoice");
+                response = responsePromise.get(10000).asJson();
 
-            invoice.gopay_id = help.id;
-            invoice.gopay_order_number = help.order_number;
-            invoice.gw_url = help.gw_url;
-            invoice.update();
-
-            product.archiveEvent("Single payment", "Single GoPay payment number: " + invoice.gopay_id + " was created", invoice.id);
-
-            if (help.recurrence != null && help.recurrence.recurrence_cycle == Enum_Recurrence_cycle.ON_DEMAND) {
-
-                logger.debug("GoPay_Controller:: singlePayment: Set GoPay ID to Product because it is ON_DEMAND payment");
-
-                product.archiveEvent("On demand payment", "On demand GoPay payment number: " + invoice.gopay_id + " was set", invoice.id);
-
-                product.gopay_id = invoice.gopay_id;
-                product.on_demand = true;
-                product.update();
+            } catch (Exception e) {
+                Loggy.internalServerError("GoPay_Controller:: singlePayment: ", new Exception("Error getting result"));
+                continue;
             }
+
+
+            logger.debug("GoPay_Controller:: singlePayment: Response from GoPay: " + response.toString());
+
+            final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(response);
+            if (form.hasErrors())
+                Loggy.internalServerError("GoPay_Controller:: singlePayment: ", new Exception("Error while binding Json: " + form.errorsAsJson().toString()));
+            else {
+                GoPay_Result help = form.get();
+
+                logger.debug("GoPay_Controller:: singlePayment: Set GoPay ID to Invoice");
+
+                invoice.gopay_id = help.id;
+                invoice.gopay_order_number = help.order_number;
+                invoice.gw_url = help.gw_url;
+                invoice.update();
+
+                product.archiveEvent("Single payment", "Single GoPay payment number: " + invoice.gopay_id + " was created", invoice.id);
+
+                if (help.recurrence != null && help.recurrence.recurrence_cycle == Enum_Recurrence_cycle.ON_DEMAND) {
+
+                    logger.debug("GoPay_Controller:: singlePayment: Set GoPay ID to Product because it is ON_DEMAND payment");
+
+                    product.archiveEvent("On demand payment", "On demand GoPay payment number: " + invoice.gopay_id + " was set", invoice.id);
+
+                    product.gopay_id = invoice.gopay_id;
+                    product.on_demand = true;
+                    product.update();
+                }
+            }
+            break;
         }
         return invoice;
     }
@@ -152,7 +229,6 @@ public class Utilities_GoPay_Controller extends Controller {
 
         logger.debug("GoPay_Controller:: onDemandPayment: Creating GoPay_Recurrence");
         GoPay_Recurrence recurrence = new GoPay_Recurrence();
-        recurrence.amount = Math.round(invoice.total_price()*100); // TODO
         recurrence.currency = Enum_Currency.USD;
         recurrence.setItems(invoice.getInvoiceItems());
         recurrence.order_number  = invoice.invoice_number;
@@ -166,16 +242,27 @@ public class Utilities_GoPay_Controller extends Controller {
 
         // Odeslání žádosti o stržení platby
         WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-        F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url +  "/payments/payment/" + invoice.getProduct().gopay_id + "/create-recurrence")
-                .setContentType("application/json")
-                .setHeader("Accept", "application/json")
-                .setHeader("Authorization" , "Bearer " + local_token)
-                .setRequestTimeout(2500)
-                .post(Json.toJson(recurrence));
 
-        logger.debug("GoPay_Controller:: onDemandPayment: Sending request for new payment!");
-        WSResponse response = responsePromise.get(2500);
+        for (int trial = 5; trial > 0; trial--) {
 
+            WSResponse response;
+
+            try {
+
+                F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/payments/payment/" + invoice.getProduct().gopay_id + "/create-recurrence")
+                        .setContentType("application/json")
+                        .setHeader("Accept", "application/json")
+                        .setHeader("Authorization", "Bearer " + local_token)
+                        .setRequestTimeout(10000)
+                        .post(Json.toJson(recurrence));
+
+                logger.debug("GoPay_Controller:: onDemandPayment: Sending request for new payment!");
+                response = responsePromise.get(10000);
+
+            } catch (Exception e) {
+                Loggy.internalServerError("GoPay_Controller:: onDemandPayment: ", new Exception("Error getting result"));
+                continue;
+            }
         /*
          350	Stržení platby selhalo
          351	Stržení platby provedeno
@@ -195,40 +282,42 @@ public class Utilities_GoPay_Controller extends Controller {
          304	Platba nebyla nalezena
          */
 
-        JsonNode result = response.asJson();
+            JsonNode result = response.asJson();
 
-        logger.debug("GoPay_Controller:: onDemandPayment: Status: {}, Result: {}", response.getStatus(), result);
+            logger.debug("GoPay_Controller:: onDemandPayment: Status: {}, Result: {}", response.getStatus(), result);
 
-        switch (response.getStatus()){
+            switch (response.getStatus()) {
 
-            case 200: {
+                case 200: {
 
-                // Binding Json with help object
-                final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(result);
-                if (form.hasErrors()) throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
-                GoPay_Result help = form.get();
+                    // Binding Json with help object
+                    final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(result);
+                    if (form.hasErrors())
+                        throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
+                    GoPay_Result help = form.get();
 
-                invoice.gopay_id = help.id;
-                invoice.gw_url = null;
-                invoice.update();
+                    invoice.gopay_id = help.id;
+                    invoice.gw_url = null;
+                    invoice.update();
 
-                invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was successful", invoice.id);
+                    invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was successful", invoice.id);
 
-                break;
-            }
+                    return;
+                }
 
-            case 409 : {
+                case 409: {
 
-                invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful due to some validation error", invoice.id);
+                    invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful due to some validation error", invoice.id);
 
-                throw new ValidationException("Payment could not be made due to some validation error. Response: " + result.toString());
-            }
+                    throw new ValidationException("Payment could not be made due to some validation error. Response: " + result.toString());
+                }
 
-            default: {
+                default: {
 
-                invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful", invoice.id);
+                    invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful", invoice.id);
 
-                throw new Exception("Cannot take money from credit card, GoPay service returned error. Response: " + result.toString());
+                    throw new Exception("Cannot take money from credit card, GoPay service returned error. Response: " + result.toString());
+                }
             }
         }
     }
@@ -243,34 +332,49 @@ public class Utilities_GoPay_Controller extends Controller {
 
         // Odeslání žádosti o stržení platby
         WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-        F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url +  "/payments/payment/" + product.gopay_id + "/void-recurrence")
-                .setContentType("application/x-www-form-urlencoded")
-                .setHeader("Accept", "application/json")
-                .setHeader("Authorization" , "Bearer " + local_token)
-                .setMethod("POST")
-                .setRequestTimeout(2500)
-                .post("");
 
-        logger.debug("GoPay_Controller:: terminateOnDemand: Sending request to terminate on demand payment!");
+        for (int trial = 5; trial > 0; trial--) {
 
-        WSResponse response = responsePromise.get(2500);
+            WSResponse response;
 
-        JsonNode result = response.asJson();
+            try {
 
-        if (response.getStatus() == 200 && result.has("result") && result.get("result").asText().equals("FINISHED")) {
+                F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/payments/payment/" + product.gopay_id + "/void-recurrence")
+                        .setContentType("application/x-www-form-urlencoded")
+                        .setHeader("Accept", "application/json")
+                        .setHeader("Authorization", "Bearer " + local_token)
+                        .setMethod("POST")
+                        .setRequestTimeout(10000)
+                        .post("");
 
-            product.archiveEvent("Terminate on demand payment", "GoPay on demand payment number: " + product.gopay_id + " was terminated", null);
-            // TODO notifikace
+                logger.debug("GoPay_Controller:: terminateOnDemand: Sending request to terminate on demand payment!");
 
-        } else {
+                response = responsePromise.get(10000);
 
-            product.archiveEvent("Terminate on demand payment", "GoPay on demand payment number: " + product.gopay_id + " was terminated", null);
+            } catch (Exception e) {
+                Loggy.internalServerError("GoPay_Controller:: terminateOnDemand: ", new Exception("Error getting result"));
+                continue;
+            }
 
-            throw new Exception("Cannot terminate on demand payment. Response from GoPay was: " + result.toString());
+            JsonNode result = response.asJson();
+
+            if (response.getStatus() == 200 && result.has("result") && result.get("result").asText().equals("FINISHED")) {
+
+                product.archiveEvent("Terminate on demand payment", "GoPay on demand payment number: " + product.gopay_id + " was terminated", null);
+                // TODO notifikace
+
+                return;
+
+            } else {
+
+                product.archiveEvent("Terminate on demand payment", "GoPay on demand payment number: " + product.gopay_id + " was terminated", null);
+
+                throw new Exception("Cannot terminate on demand payment. Response from GoPay was: " + result.toString());
+            }
         }
     }
 
-    public static void refundPayment(Model_Invoice invoice, Long amount) throws Exception{
+    private static void refundPayment(Model_Invoice invoice, Long amount) throws Exception{
 
         // Token
         logger.debug("GoPay_Controller:: refundPayment: Asking for token");
@@ -279,35 +383,49 @@ public class Utilities_GoPay_Controller extends Controller {
         if(local_token == null) throw new NullPointerException("Token for API in GoPay_Controller is null");
 
         ObjectNode json = Json.newObject();
-        json.put("amount", amount * 100);
+        json.put("amount", amount / 10); // přepočet na centy
 
         // Odeslání žádosti o stržení platby
         WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
-        F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url +  "/payments/payment/" + invoice.gopay_id + "/refund")
-                .setContentType("application/x-www-form-urlencoded")
-                .setHeader("Accept", "application/json")
-                .setHeader("Authorization" , "Bearer " + local_token)
-                .setRequestTimeout(2500)
-                .post(Json.toJson(json));
+        for (int trial = 5; trial > 0; trial--) {
 
-        logger.debug("GoPay_Controller:: refundPayment: Sending request to refund payment!");
+            WSResponse response;
 
-        WSResponse response = responsePromise.get(2500);
+            try {
 
-        JsonNode result = response.asJson();
+                F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/payments/payment/" + invoice.gopay_id + "/refund")
+                        .setContentType("application/x-www-form-urlencoded")
+                        .setHeader("Accept", "application/json")
+                        .setHeader("Authorization", "Bearer " + local_token)
+                        .setRequestTimeout(10000)
+                        .post(Json.toJson(json));
 
-        if (response.getStatus() == 200 && result.has("result") && result.get("result").asText().equals("FINISHED")) {
+                logger.debug("GoPay_Controller:: refundPayment: Sending request to refund payment!");
 
-            invoice.getProduct().archiveEvent("Refund payment", "Refund GoPay payment number: " + invoice.gopay_id + " was requested", invoice.id);
-            // TODO notifikace
+                response = responsePromise.get(10000);
 
-        } else {
+            } catch (Exception e) {
+                Loggy.internalServerError("GoPay_Controller:: refundPayment: ", new Exception("Error getting result"));
+                continue;
+            }
 
-            invoice.getProduct().archiveEvent("Refund payment", " Refund for GoPay payment number: " + invoice.gopay_id + " was requested, but was not successful", invoice.id);
+            JsonNode result = response.asJson();
 
-            // TODO notifikace
-            throw new Exception("Cannot refund payment. Response from GoPay was: " + result.toString());
+            if (response.getStatus() == 200 && result.has("result") && result.get("result").asText().equals("FINISHED")) {
+
+                invoice.getProduct().archiveEvent("Refund payment", "Refund GoPay payment number: " + invoice.gopay_id + " was requested", invoice.id);
+                // TODO notifikace
+
+                return;
+
+            } else {
+
+                invoice.getProduct().archiveEvent("Refund payment", " Refund for GoPay payment number: " + invoice.gopay_id + " was requested, but was not successful", invoice.id);
+
+                // TODO notifikace
+                throw new Exception("Cannot refund payment. Response from GoPay was: status " + response.getStatus() + ", body: " + result.toString());
+            }
         }
     }
 
@@ -327,10 +445,10 @@ public class Utilities_GoPay_Controller extends Controller {
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
             if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
 
-            invoice.getProduct().archiveEvent("Payment Refund", "Request for refund for this reason: " + help.reason, null);
+            invoice.getProduct().archiveEvent("Refund payment", "Request for refund for this reason: " + help.reason, null);
 
-            if (help.whole) refundPayment(invoice, (long) invoice.total_price());
-            else if (help.amount != null) refundPayment(invoice, help.amount);
+            if (help.whole) refundPayment(invoice, invoice.total_price());
+            else if (help.amount != null) refundPayment(invoice, (long) (help.amount * 1000));
             else return GlobalResult.result_BadRequest("Set 'whole' parameter to true or specify amount.");
 
             return GlobalResult.result_ok();
@@ -363,70 +481,6 @@ public class Utilities_GoPay_Controller extends Controller {
         } catch (Exception e) {
             Loggy.internalServerError("GoPay_Controller:: payment_return:", e);
             return redirect(Server.becki_mainUrl);
-        }
-    }
-
-// PRIVATE METHOD services #############################################################################################
-
-    private static String token;     // GoPay Connector - hash token sloužící k volání API k bráně GoPay
-    private static Date last_refresh;  // čas, který hodnotí obnovu bezpečnostního tokenu - jeho živostnost je totiž 30 minut a šetří se tím dotazy!
-
-    // Získání Tokenu od goPay - Ten se přidává do všech hlaviček
-    public static String getToken(){
-        try {
-
-            logger.debug("GoPay_Controller:: getToken: Getting Token");
-            if( token != null && last_refresh != null && new Date().getTime() - last_refresh.getTime() <= 28*60*1000) {
-                logger.debug("GoPay_Controller:: getToken: Returning cached token");
-                return token;
-            }
-
-            logger.debug("GoPay_Controller:: getToken: Token is expired or not obtained yet.");
-
-            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-
-            int trial = 0;
-
-            while (trial < 5) {
-
-                JsonNode result;
-
-                try {
-
-                    F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/oauth2/token")
-                            .setContentType("application/x-www-form-urlencoded")
-                            .setAuth(Server.GoPay_client_id, Server.GoPay_client_secret)
-                            .setRequestTimeout(5000)
-                            .setBody("grant_type=client_credentials&scope=payment-all")
-                            .post("grant_type=client_credentials&scope=payment-all");
-
-                    result = responsePromise.get(5000).asJson();
-
-                } catch (Exception e){
-
-                    trial++;
-                    continue;
-                }
-
-
-                if (result.has("access_token")) {
-                    token = result.get("access_token").asText();
-                    last_refresh = new Date();
-
-                    logger.debug("GoPay_Controller:: getToken: Returning new token");
-
-                    return token;
-
-                } else {
-                    token = null;
-                    throw new NullPointerException("Incoming Json from GoPay does not contain access_token: " + result);
-                }
-            }
-
-            return null;
-        }catch (Exception e){
-            Loggy.internalServerError("GoPay_Controller:: getToken:", e);
-            return null;
         }
     }
 }

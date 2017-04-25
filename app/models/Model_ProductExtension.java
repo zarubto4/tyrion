@@ -142,7 +142,7 @@ public class Model_ProductExtension extends Model{
     }
 
     @JsonIgnore
-    public Double getPrice() {
+    public Long getPrice() {
         try {
 
             Extension extension = getExtensionType();
@@ -243,7 +243,7 @@ public class Model_ProductExtension extends Model{
 
     public static class Config {
 
-        public double price;
+        public Long price;
         public int count;
     }
 

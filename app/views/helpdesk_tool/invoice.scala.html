@@ -80,7 +80,7 @@
                             <td>@invoice_item.quantity</td>
                             <td>@invoice_item.unit_name</td>
                             <td>@invoice_item.name</td>
-                            <td>$@invoice_item.unit_price</td>
+                            <td>$@invoice_item.unit_price()</td>
                         </tr>
                     }
                 </tbody>
@@ -99,58 +99,77 @@
                     <tbody>
                         <tr>
                             <th>Total:</th>
-                            <td>$@invoice.total_price()</td>
+                            <td>$@invoice.double_price()</td>
                         </tr>
                     </tbody></table>
             </div>
         </div>
     </div>
-    <div class="row no-print">
+    <div class="row">
         <div class="col-xs-12">
-            <button class="btn btn-primary pull-right" style="margin-right: 5px;" type="button">
-                <i class="fa fa-download"></i> Download PDF
-            </button>
+            @if(invoice.fakturoid_pdf_url != null) {
+                <a href="@invoice.pdf_link()" target="_blank"><button style="margin: 0 10px;" class="btn btn-primary pull-right" type="button"><i class="fa fa-download"></i> Download PDF </button></a>
+            }
+            @if(invoice.proforma_pdf_url != null) {
+                <a href="@invoice.proforma_pdf_link()" target="_blank"><button style="margin: 0 0 0 10px;" class="btn btn-primary pull-right" type="button"><i class="fa fa-download"></i> Download proforma PDF </button></a>
+            }
+            @if(invoice.gopay_id != null) {
+                <button class="btn btn-primary pull-right" type="button" data-toggle="modal" data-target="#refundModal"><i class="fa fa-reply"></i> Refund </button>
+            }
         </div>
     </div>
 </section>
 
 <div class="clearfix"></div>
 
-<div id="invoiceModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="invoiceModalTitle">
+<div id="refundModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="refundModalTitle">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 id="invoiceModalTitle" class="modal-title">Invoice</h4>
+                <h4 id="refundModalTitle" class="modal-title">Invoice</h4>
             </div>
             <div class="modal-body">
-                <form id="invoice">
-
+                <form id="refund">
+                    <div class="checkbox no-margin-top">
+                        <label>
+                            <input type="checkbox" name="full_amount" checked>
+                            Full amount (or specify amount smaller than full amount)
+                        </label>
+                    </div>
+                    <input class="form-control form-group" type="text" name="amount" placeholder="Amount (e.g. 17.6)">
+                    <textarea class="form-control form-group" rows="3" name="reason" placeholder="Say why is it refunded..."></textarea>
                 </form>
-                <div id="invoiceModalMessage" style="display: none"><p class="text-red"></p></div>
+                <div id="refundModalMessage" style="display: none"><p class="text-red"></p></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
-                <button class="btn btn-success" type="button" onclick="importLibrary()">Import</button>
+                <button class="btn btn-primary" type="button" onclick="refund()">Refund</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-        function openInvoice(id){
-            $.ajax({
-                url: '/c_program/' + id,
-                type: 'GET',
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken")
-                },
-                dataType: 'json',
-                success:function(json){
-                    openCProgram(json);
-                },
-                error:function(e) {
-                    alert(JSON.stringify(JSON.parse(e.responseText).message));
-                }
-            });
-        }
+
+    var invoice_id = "@invoice.id";
+
+    function refund(){
+        $.ajax({
+            url: '/invoice/refund/' + invoice_id,
+            type: 'PUT',
+            contentType : 'application/json',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken"),
+                "Content-Type": 'application/json'
+            },
+            data: JSON.stringify($('#refund').serializeObject()),
+            dataType: 'json',
+            success:function(json){
+
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        });
+    }
 </script>

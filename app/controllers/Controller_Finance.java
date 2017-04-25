@@ -56,7 +56,7 @@ public class Controller_Finance extends Controller {
             tariff.color                    = help.color;
 
             tariff.payment_required         = help.payment_required;
-            tariff.credit_for_beginning     = help.credit_for_beginning;
+            tariff.credit_for_beginning     = (long) (help.credit_for_beginning * 1000);
 
             tariff.company_details_required = help.company_details_required;
             tariff.payment_mode_required    = help.payment_mode_required;
@@ -623,7 +623,7 @@ public class Controller_Finance extends Controller {
             extension.active = true;
 
             Model_ProductExtension.Config config = new Model_ProductExtension.Config();
-            config.price = help.price;
+            config.price = (long) (help.price * 1000);
             config.count = help.count;
 
             extension.config = Json.toJson(config).toString();
@@ -664,7 +664,7 @@ public class Controller_Finance extends Controller {
             extension.active = true;
 
             Model_ProductExtension.Config config = new Model_ProductExtension.Config();
-            config.price = help.price;
+            config.price = (long) (help.price * 1000);
             config.count = help.count;
 
             extension.config = Json.toJson(config).toString();
@@ -1198,7 +1198,7 @@ public class Controller_Finance extends Controller {
 
             Model_InvoiceItem invoice_item = new Model_InvoiceItem();
             invoice_item.name = product.product_type() + " in Mode(" + product.mode.name() + ")";
-            invoice_item.unit_price = help.credit;
+            invoice_item.unit_price = (long) (help.credit * 1000);
             invoice_item.quantity = (long) 1;
             invoice_item.unit_name = "Currency";
             invoice_item.currency = Enum_Currency.USD;
@@ -1560,7 +1560,7 @@ public class Controller_Finance extends Controller {
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
             if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
 
-            if(!invoice.send_reminder()) return GlobalResult.forbidden_Permission();
+            if(!invoice.remind_permission()) return GlobalResult.forbidden_Permission();
             Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
 
             return GlobalResult.result_ok();

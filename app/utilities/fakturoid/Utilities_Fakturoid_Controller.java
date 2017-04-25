@@ -23,6 +23,7 @@ import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.Email;
 import utilities.enums.Enum_Currency;
+import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_status;
 import utilities.enums.Enum_Payment_warning;
 import utilities.loggy.Loggy;
@@ -59,17 +60,21 @@ public class Utilities_Fakturoid_Controller extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result invoice_get_pdf(String invoice_id){
-
+    public Result invoice_get_pdf(String kind, String invoice_id){
         try {
+
+            if (!kind.equals("proforma") && !kind.equals("invoice")) return GlobalResult.result_BadRequest("kind should be 'proforma' or 'invoice'");
+
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+            if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
+
+            if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return GlobalResult.result_BadRequest("Proforma PDF is unavailable");
 
             if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
 
-            byte[] pdf_in_array = Utilities_Fakturoid_Controller.download_PDF_invoice(invoice);
+            byte[] pdf_in_array = Utilities_Fakturoid_Controller.download_PDF_invoice(kind, invoice);
 
-            return GlobalResult.result_pdf_file(pdf_in_array, invoice.invoice_number + ".pdf");
+            return GlobalResult.result_pdf_file(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
 
         }catch (Exception e){
             return Loggy.result_internalServerError(e, request());
@@ -89,22 +94,16 @@ public class Utilities_Fakturoid_Controller extends Controller {
             logger.warn("Fakturoid_Controller:: fakturoid_callback: Body: {}", request().body().asJson());
 
             // Finding in DB
-            Model_Invoice invoice = Model_Invoice.find.where().eq("fakturoid_id", help.related_id != null ? help.related_id : help.invoice_id).findUnique();
+            Model_Invoice invoice = Model_Invoice.find.where().eq("fakturoid_id", help.invoice_id).findUnique();
             if (invoice == null) throw new NullPointerException("Invoice is null. Cannot find it in database.");
 
             switch (help.status){
 
                 case "paid": {
 
-                    invoice.status = Enum_Payment_status.paid;
-                    invoice.invoice_number = help.number;
-                    invoice.proforma = false;
-                    invoice.paid = new Date();
-                    invoice.update();
+                    Fakturoid_InvoiceCheck.addToQueue(invoice);
 
                     // TODO
-
-                    invoice.getProduct().credit_upload(invoice.total_price());
 
                     break;
                 }
@@ -134,34 +133,34 @@ public class Utilities_Fakturoid_Controller extends Controller {
 // PRIVATE EXECUTIVE METHODS ###########################################################################################
 
     public static Model_Invoice create_proforma(Model_Invoice invoice){
+        try {
 
-        for (int trial = 5; trial > 0; trial--) {
-            try {
+            Utilities_Fakturoid_Invoice fakturoid_invoice = new Utilities_Fakturoid_Invoice();
+            fakturoid_invoice.custom_id = invoice.product.id;
+            fakturoid_invoice.client_name = invoice.product.payment_details.company_account ? invoice.product.payment_details.company_name : invoice.product.payment_details.person.full_name;
+            fakturoid_invoice.currency = Enum_Currency.USD;
+            fakturoid_invoice.lines = invoice.getInvoiceItems();
+            fakturoid_invoice.proforma = true;
+            fakturoid_invoice.partial_proforma = false;
 
-                Utilities_Fakturoid_Invoice fakturoid_invoice = new Utilities_Fakturoid_Invoice();
-                fakturoid_invoice.custom_id = invoice.product.id;
-                fakturoid_invoice.client_name = invoice.product.payment_details.company_account ? invoice.product.payment_details.company_name : invoice.product.payment_details.person.full_name;
-                fakturoid_invoice.currency = Enum_Currency.USD;
-                fakturoid_invoice.lines = invoice.getInvoiceItems();
-                fakturoid_invoice.proforma = true;
-                fakturoid_invoice.partial_proforma = false;
+            if (invoice.product.fakturoid_subject_id == null) {
 
-                if (invoice.product.fakturoid_subject_id == null) {
+                logger.debug("Fakturoid_Controller:: create_proforma:: Client is not registered in Fakturoid");
+                // Ověřím zda tam je - a jestli ano - tak ho jen vytvořím v lokální DB
 
-                    logger.debug("Fakturoid_Controller:: create_proforma:: Client has not registration object in Fakturoid");
-                    // Ověřím zda tam je - a jestli ano - tak ho jen vytvořím v lokální DB
+                // Pokud ne tak ho vytvořím
+                invoice.product.fakturoid_subject_id = create_subject(invoice.product.payment_details);
+                if (invoice.product.fakturoid_subject_id == null) return null;
+                invoice.product.update();
 
-                    // Pokud ne tak ho vytvořím
-                    invoice.product.fakturoid_subject_id = create_subject(invoice.product.payment_details);
-                    if (invoice.product.fakturoid_subject_id == null) return null;
-                    invoice.product.update();
+                logger.debug("Fakturoid_Controller:: create_proforma:: New Client Id in Fakturoid is " + invoice.product.fakturoid_subject_id);
+            }
 
-                    logger.debug("Fakturoid_Controller:: create_proforma:: New Client Id in Fakturoid is " + invoice.product.fakturoid_subject_id);
-                }
+            fakturoid_invoice.subject_id = invoice.product.fakturoid_subject_id;
 
-                fakturoid_invoice.subject_id = invoice.product.fakturoid_subject_id;
+            logger.debug("Fakturoid_Controller:: create_proforma::  Sending Proforma to Fakturoid");
 
-                logger.debug("Fakturoid_Controller:: create_proforma::  Sending Proforma to Fakturoid");
+            for (int trial = 5; trial > 0; trial--) {
 
                 WSResponse response;
 
@@ -219,39 +218,39 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                         // TODO notifikace
 
-                        Loggy.internalServerError("Fakturoid_Controller:: create_proforma:", new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result));
-                        return null;
+                        throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
 
                     default:
                         throw new Exception("Fakturoid returned unhandled status. Response: " + result);
                 }
-            } catch (Exception e) {
-                Loggy.internalServerError("Fakturoid_Controller:: create_proforma:", e);
             }
+        } catch (Exception e) {
+            Loggy.internalServerError("Fakturoid_Controller:: create_proforma:", e);
         }
+
         return null;
     }
 
     public static Model_Invoice create_paid_invoice(Model_Invoice invoice){
+        try {
 
-        for (int trial = 5; trial > 0; trial--) {
-            try {
+            Model_Product product = invoice.getProduct();
 
-                Model_Product product = invoice.getProduct();
+            Utilities_Fakturoid_Invoice fakturoid_invoice = new Utilities_Fakturoid_Invoice();
+            fakturoid_invoice.custom_id = product.id;
+            fakturoid_invoice.client_name = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
+            fakturoid_invoice.currency = Enum_Currency.USD;
+            fakturoid_invoice.lines = invoice.invoice_items;
+            fakturoid_invoice.proforma = false;
+            fakturoid_invoice.partial_proforma = false;
+            fakturoid_invoice.subject_id = product.fakturoid_subject_id;
 
-                Utilities_Fakturoid_Invoice fakturoid_invoice = new Utilities_Fakturoid_Invoice();
-                fakturoid_invoice.custom_id = product.id;
-                fakturoid_invoice.client_name = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
-                fakturoid_invoice.currency = Enum_Currency.USD;
-                fakturoid_invoice.lines = invoice.invoice_items;
-                fakturoid_invoice.proforma = false;
-                fakturoid_invoice.partial_proforma = false;
-                fakturoid_invoice.subject_id = product.fakturoid_subject_id;
+            WSResponse response;
 
-                WSResponse response;
+            JsonNode result;
 
-                JsonNode result;
+            for (int trial = 5; trial > 0; trial--) {
 
                 try {
 
@@ -289,20 +288,21 @@ public class Utilities_Fakturoid_Controller extends Controller {
                             invoice.update();
 
                             invoice.getProduct().archiveEvent("Paid invoice created", "System created paid invoice in Fakturoid", invoice.id);
-                        }
-                        else throw new NullPointerException("Response from Fakturoid does not contain ID.");
+
+                            return invoice;
+                        } else throw new NullPointerException("Response from Fakturoid does not contain ID.");
                     }
 
                     case 400: {
 
                         logger.debug("Fakturoid_Controller:: create_paid_invoice: Status: 400");
-                        throw new Exception("Fakturoid returned 400 - Bad Request. Response: "+ result);
+                        throw new Exception("Fakturoid returned 400 - Bad Request. Response: " + result);
                     }
 
                     case 403: {
 
                         logger.debug("Fakturoid_Controller:: create_paid_invoice: Status: 403");
-                        throw new Exception("Fakturoid returned 403 - Forbidden. Response: "+ result);
+                        throw new Exception("Fakturoid returned 403 - Forbidden. Response: " + result);
                     }
 
                     case 422: {
@@ -311,18 +311,19 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                         // TODO notifikace
 
-                        Loggy.internalServerError("Fakturoid_Controller:: create_paid_invoice:", new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: "+ result));
-                        return null;
+                        throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
 
-                    default: throw new Exception("Fakturoid returned unhandled. Response: "+ result);
+                    default:
+                        throw new Exception("Fakturoid returned unhandled. Response: " + result);
                 }
-
-            } catch (Exception e) {
-                Loggy.internalServerError("Fakturoid_Controller:: create_paid_invoice:", e);
             }
+
+        } catch (Exception e) {
+            Loggy.internalServerError("Fakturoid_Controller:: create_paid_invoice:", e);
         }
-        return null;
+
+        return invoice;
     }
 
     public static void sendInvoiceEmail(Model_Invoice invoice, String mail){
@@ -330,14 +331,14 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
             logger.debug("Fakturoid_Controller:: sendInvoiceEmail:: Trying send PDF Invoice to User Email");
 
-            byte[] body = download_PDF_invoice(invoice);
+            byte[] body = download_PDF_invoice("invoice", invoice);
 
             if(body.length < 1){
                 logger.warn("Incoming File from Fakturoid is empty!");
                 return;
             }
 
-            if (mail == null) mail = invoice.product.payment_details.invoice_email;
+            if (mail == null) mail = invoice.getProduct().payment_details.invoice_email;
 
             logger.debug("Fakturoid_Controller:: sendInvoiceEmail:: PDF with invoice was successfully downloaded from Fakturoid");
 
@@ -361,7 +362,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
     public static void sendInvoiceReminderEmail(Model_Invoice invoice, String message){
         try{
 
-            byte[] body = Utilities_Fakturoid_Controller.download_PDF_invoice(invoice);
+            byte[] body = Utilities_Fakturoid_Controller.download_PDF_invoice("invoice", invoice);
 
             String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
@@ -383,25 +384,25 @@ public class Utilities_Fakturoid_Controller extends Controller {
     }
 
     private static String create_subject(Model_PaymentDetails details){
+        try {
 
-        for (int trial = 5; trial > 0; trial--) {
-            try {
+            ObjectNode request = Json.newObject();
+            request.put("street", details.street + " " + details.street_number);
+            request.put("city", details.city);
+            request.put("zip", details.zip_code);
+            request.put("email", details.invoice_email);
 
-                ObjectNode request = Json.newObject();
-                request.put("street", details.street + " " + details.street_number);
-                request.put("city", details.city);
-                request.put("zip", details.zip_code);
-                request.put("email", details.invoice_email);
+            if (details.company_account) {
+                // request.put("country", product.payment_details.country); (vyžaduje ISO code země - to zatím Tyrion nemá implementováno)
+                request.put("vat_no", details.company_vat_number);
+                request.put("phone", details.company_authorized_phone);
+                request.put("web", details.company_web);
+                request.put("name", details.company_name);
+            } else {
+                request.put("name", details.full_name);
+            }
 
-                if (details.company_account) {
-                    // request.put("country", product.payment_details.country); (vyžaduje ISO code země - to zatím Tyrion nemá implementováno)
-                    request.put("vat_no", details.company_vat_number);
-                    request.put("phone", details.company_authorized_phone);
-                    request.put("web", details.company_web);
-                    request.put("name", details.company_name);
-                } else {
-                    request.put("name", details.full_name);
-                }
+            for (int trial = 5; trial > 0; trial--) {
 
                 WSResponse response;
 
@@ -441,13 +442,13 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     case 400: {
 
                         logger.debug("Fakturoid_Controller:: create_subject: Status: 400");
-                        throw new Exception("Fakturoid returned 400 - Bad Request. Response: "+ result);
+                        throw new Exception("Fakturoid returned 400 - Bad Request. Response: " + result);
                     }
 
                     case 403: {
 
                         logger.debug("Fakturoid_Controller:: create_subject: Status: 403");
-                        throw new Exception("Fakturoid returned 403 - Forbidden. Response: "+ result);
+                        throw new Exception("Fakturoid returned 403 - Forbidden. Response: " + result);
                     }
 
                     case 422: {
@@ -456,17 +457,17 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                         // TODO notifikace
 
-                        Loggy.internalServerError("Fakturoid_Controller:: create_subject:", new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: "+ result));
-                        return null;
+                        throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
 
-                    default: throw new Exception("Fakturoid returned unhandled. Response: "+ result);
+                    default: throw new Exception("Fakturoid returned unhandled status: " + response.getStatus() + ". Response: " + result);
                 }
-
-            } catch (Exception e) {
-                Loggy.internalServerError("Fakturoid_Controller:: create_subject:", e);
             }
+
+        } catch (Exception e) {
+            Loggy.internalServerError("Fakturoid_Controller:: create_subject:", e);
         }
+
         return null;
     }
 
@@ -566,13 +567,14 @@ public class Utilities_Fakturoid_Controller extends Controller {
         // Slouží například k mazáním proformy a transfromace na fakturu
 
         logger.debug("Fakturoid_Controller:: fakturoid_delete::  URL: " + Server.Fakturoid_url + url);
+        try {
 
-        for (int trial = 5; trial > 0; trial--){
-            try {
+            for (int trial = 5; trial > 0; trial--) {
 
                 logger.debug("Fakturoid_Controller: fakturoid_delete: Number of remaining tries: {}", trial);
 
                 WSResponse response;
+
                 try {
 
                     F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + url)
@@ -584,26 +586,38 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     response = responsePromise.get(5000);
 
-                    JsonNode result = response.asJson();
-
-                    logger.debug("Fakturoid_Controller: fakturoid_delete: Response - {}", result);
-
                 } catch (Exception e) {
                     Loggy.internalServerError("Fakturoid_Controller:: fakturoid_delete:", e);
                     Thread.sleep(2500);
                     continue;
                 }
 
-                if (response.getStatus() < 203) return true;
+                switch (response.getStatus()) {
 
-            } catch (Exception e) {
-                Loggy.internalServerError("Fakturoid_Controller:: fakturoid_delete:", e);
+                    case 204: {
+
+                        logger.debug("Fakturoid_Controller:: fakturoid_delete: Status: 204");
+                        return true;
+                    }
+
+                    case 404: {
+
+                        logger.debug("Fakturoid_Controller:: create_subject: Status: 404");
+                        throw new Exception("Fakturoid returned 404 - Not Found. Invoice is probably already deleted or does not exist.");
+                    }
+
+                    default: throw new Exception("Fakturoid returned unhandled status: " + response.getStatus());
+                }
             }
+
+        } catch (Exception e) {
+            Loggy.internalServerError("Fakturoid_Controller:: fakturoid_delete:", e);
         }
-        return  false;
+
+        return false;
     }
 
-    public static byte[] download_PDF_invoice(Model_Invoice invoice){
+    public static byte[] download_PDF_invoice(String type, Model_Invoice invoice){
 
             // Tuto metodu volám když ve fakturoidu pomocí API vytvořím fakturu.
             // U nich může dojít k latenci serveru a zpoždění vytvoření faktury - proto je zde while - který usíná na 2,5s a dává tomu 3x šanci než se rozhodne to zahodit úplně.
@@ -612,9 +626,14 @@ public class Utilities_Fakturoid_Controller extends Controller {
             while (terminator >= 0) {
                 try {
 
-                    logger.debug("Fakturoid_Controller:: download_PDF_invoice::  Trying download PDF invoice from Fakturoid on url: " + invoice.fakturoid_pdf_url);
+                    String url;
 
-                    F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(invoice.fakturoid_pdf_url)
+                    if (type.equals("proforma") && invoice.proforma_pdf_url != null) url = invoice.proforma_pdf_url;
+                    else url = invoice.fakturoid_pdf_url;
+
+                    logger.debug("Fakturoid_Controller:: download_PDF_invoice::  Trying download PDF invoice from Fakturoid on url: " + url);
+
+                    F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(url)
                             .setAuth(Server.Fakturoid_secret_combo)
                             .setHeader("User-Agent", Server.Fakturoid_user_agent)
                             .setRequestTimeout(5000)
@@ -647,5 +666,4 @@ public class Utilities_Fakturoid_Controller extends Controller {
         throw new NullPointerException("File not found");
 
     }
-
 }

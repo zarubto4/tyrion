@@ -4,11 +4,11 @@ import models.Model_ProductExtension.Config;
 
 public interface Extension {
 
-    Double getPrice(Config config);
+    Long getPrice(Config config);
 
-    Double getDefaultMonthlyPrice();
+    Long getDefaultMonthlyPrice();
 
-    Double getDefaultDailyPrice();
+    Long getDefaultDailyPrice();
 
     Integer getDefaultCount();
 

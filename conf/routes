@@ -67,7 +67,7 @@ DELETE         /person/connection/:connection_id                 @controllers.Co
 
 PUT            /person/deactivate/:person_id                     @controllers.Controller_Person.person_deactivate(person_id)
 PUT            /person/activate/:person_id                       @controllers.Controller_Person.person_activate(person_id)
-DELETE         /person/clean_all_tokens/:person_id               @controllers.Controller_Person.person_removeAllConnections(person_id)
+DELETE         /person/connections/:person_id                    @controllers.Controller_Person.person_removeAllConnections(person_id)
 PUT            /person/valid_email/:person_id                    @controllers.Controller_Person.person_validEmail(person_id)
 
 GET            /person/mail_authentication/:token                @controllers.Controller_Person.person_emailAuthentication(token)
@@ -141,7 +141,7 @@ GET            /go_pay/return                                                   
 
 #Fakturoid
 GET            /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_get(invoice_id)
-GET            /invoice/pdf/:invoice_id                                                     @utilities.fakturoid.Utilities_Fakturoid_Controller.invoice_get_pdf(invoice_id)
+GET            /invoice/pdf/:kind/:invoice_id                                               @utilities.fakturoid.Utilities_Fakturoid_Controller.invoice_get_pdf(kind, invoice_id)
 POST           /invoice/reimbursement/:invoice_id                                           @controllers.Controller_Finance.invoice_reimbursement(invoice_id)
 POST           /invoice/resend/:invoice_id                                                  @controllers.Controller_Finance.invoice_resend(invoice_id)
 POST           /fakturoid/callback                                                          @utilities.fakturoid.Utilities_Fakturoid_Controller.fakturoid_callback()
@@ -150,6 +150,7 @@ POST           /fakturoid/callback                                              
 PUT            /invoice/set_pay/:invoice_id                                                 @controllers.Controller_Finance.invoice_set_as_paid(invoice_id)
 PUT            /invoice/send_remainder/:invoice_id                                          @controllers.Controller_Finance.invoice_reminder(invoice_id)
 DELETE         /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_delete(invoice_id)
+PUT            /invoice/refund/:invoice_id                                                  @utilities.goPay.Utilities_GoPay_Controller.payment_refund(invoice_id)
 
 #Project
 POST           /project                                                                     @controllers.Controller_Project.project_create()

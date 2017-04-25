@@ -9,8 +9,6 @@ public class Swagger_Fakturoid_Callback {
     @Constraints.Required
     public Long invoice_id;
 
-    public Long related_id;
-
     @Constraints.Required
     public String number;
 

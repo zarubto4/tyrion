@@ -11,6 +11,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.Configuration;
+import play.Logger;
 import play.data.Form;
 import play.libs.Json;
 import utilities.Server;
@@ -18,14 +19,18 @@ import utilities.enums.Enum_BusinessModel;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
 import utilities.enums.Enum_Payment_status;
+import utilities.financial.history.History;
+import utilities.financial.history.HistoryEvent;
 import utilities.goPay.Utilities_GoPay_Controller;
 import utilities.loggy.Loggy;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(description = "Model of Product",
@@ -33,6 +38,8 @@ import java.util.UUID;
 public class Model_Product extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static Logger.ALogger logger = Logger.of("Loggy");
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -57,7 +64,7 @@ public class Model_Product extends Model {
                                              @ApiModelProperty(required = true) public Date created;
                                                                     @JsonIgnore public boolean on_demand;    // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 
-                                                                    @JsonIgnore public double credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
+                                                                    @JsonIgnore public Long credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
 
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String financial_history;
 
@@ -82,7 +89,7 @@ public class Model_Product extends Model {
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @ApiModelProperty(required = false)
     public Double remaining_credit(){
 
-        if (this.mode == Enum_Payment_mode.per_credit) return this.credit;
+        if (this.mode == Enum_Payment_mode.per_credit) return ((double) this.credit) / 1000;
         return null;
     }
 
@@ -123,10 +130,10 @@ public class Model_Product extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public double price(){
-        double total = 0.0;
+    public Long price(){
+        Long total = (long) 0;
         for(Model_ProductExtension extension : this.extensions){
-            Double price = extension.getPrice();
+            Long price = extension.getPrice();
 
             if(price != null)
                 total += price;
@@ -141,14 +148,23 @@ public class Model_Product extends Model {
     }
 
     @JsonIgnore
-    public void credit_upload(double credit){
+    public Double double_credit(){
+        return ((double) this.credit) / 1000;
+    }
+
+    @JsonIgnore
+    public void credit_upload(Long credit){
         try {
+
+            logger.debug("Model_Product:: credit_upload: {} credit", credit);
 
             this.credit += credit;
 
             if (!this.active && this.credit > 0) this.active = true; // TODO notifikace - různé stavy
 
             this.update();
+
+            this.archiveEvent("Credit Upload", credit + " of credit was uploaded to this product", null);
 
             // TODO notifikace - nahrál se credit/nepovedlo se
 
@@ -158,14 +174,18 @@ public class Model_Product extends Model {
     }
 
     @JsonIgnore
-    public void credit_remove(double credit){
+    public void credit_remove(Long credit){
         try {
+
+            logger.debug("Model_Product:: credit_remove: {} credit", credit);
 
             this.credit -= credit;
 
             if (this.active && this.credit < 0) this.active = false; // TODO notifikace - různé stavy
 
             this.update();
+
+            this.archiveEvent("Credit Remove", credit + " of credit was removed from this product", null);
 
             // TODO notifikace - odečetl se credit/nepovedlo se
 
@@ -197,11 +217,15 @@ public class Model_Product extends Model {
     public History getFinancialHistory(){
         try {
 
-            if (this.financial_history == null) return new History();
+            if (this.financial_history == null || this.financial_history.equals("")) return new History();
 
             Form<History> form = Form.form(History.class).bind(Json.parse(this.financial_history));
-            if(form.hasErrors()) throw new Exception("Error parsing product financial history");
-            return form.get();
+            if(form.hasErrors()) throw new Exception("Error parsing product financial history. Errors: " + form.errorsAsJson());
+            History help = form.get();
+
+            // Sorting the list
+            help.history = help.history.stream().sorted((element1, element2) -> element2.date.compareTo(element1.date)).collect(Collectors.toList());
+            return help;
 
         } catch (Exception e) {
             Loggy.internalServerError("Model_Product:: getFinancialHistory:", e);
@@ -220,7 +244,7 @@ public class Model_Product extends Model {
             event.event = event_name;
             event.description = description;
             event.invoice_id = invoice_id;
-            event.date = new Date();
+            event.date = new Date().toString();
 
             history.history.add(event);
 
@@ -234,18 +258,6 @@ public class Model_Product extends Model {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    public class HistoryEvent{
-
-        public Date date;
-        public String event;
-        public String description;
-        public String invoice_id;
-    }
-
-    public class History{
-
-        public List<HistoryEvent> history = new ArrayList<>();
-    }
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA -----------------------------------------------------------------------------------------------------------*/
@@ -306,18 +318,6 @@ public class Model_Product extends Model {
                   @Transient public boolean act_deactivate_permission() {  return payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Product_act_deactivate"); }
     @JsonIgnore   @Transient public boolean delete_permission()         {  return Controller_Security.getPerson().has_permission("Product_delete");}
 
-    // Project
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean  create_new_project()             {
-        return active;
-    }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public JsonNode create_new_project_if_not(){
-        ObjectNode result = Json.newObject();
-            result.put("tariff", tariff.name);
-
-        if(! active) result.put("message", Configuration.root().getInt("Your Product is not Paid for this moment"));
-        return  result;
-    }
-
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_register_new_Device()     {  return true;  }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_C_Program()           {  return true;  }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_M_Project()           {  return true;  }
@@ -326,7 +326,6 @@ public class Model_Product extends Model {
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_B_program()           {  return true;  }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_Instrance()           {  return true;  }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_own_server()              {  return true;  }
-
 
     public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
 

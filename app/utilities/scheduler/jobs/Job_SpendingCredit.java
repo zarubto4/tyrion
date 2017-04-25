@@ -81,11 +81,11 @@ public class Job_SpendingCredit implements Job {
     /**
      * Vezmou se všechny připojené Extensions sečte se jejich cena a odečte se z účtu.
      */
-    private static void spend(Model_Product product){
+    public static void spend(Model_Product product){
         try {
 
             logger.info("Job_SpendingCredit:: spend: product ID: {}", product.id );
-            double total_spending = 0.0;
+            Long total_spending = (long) 0;
             int daily = 1; //The number "1" determines how many times on one day is credit spent.
 
             for(Model_ProductExtension extension : product.extensions){
@@ -100,9 +100,9 @@ public class Job_SpendingCredit implements Job {
 
             logger.debug("Job_SpendingCredit:: spend: actual state: {}", product.credit);
 
-            double daily_spending = daily * total_spending;
+            Long daily_spending = daily * total_spending;
 
-            double double_days = product.credit / daily_spending;
+            double double_days = (double)product.credit / (double)daily_spending;
 
             int days; // Determines how many days will credit suffice.
 
@@ -135,7 +135,7 @@ public class Job_SpendingCredit implements Job {
 
     }
 
-    private static void spendCreditSaas(Model_Product product, double daily_spending, int days){
+    private static void spendCreditSaas(Model_Product product, Long daily_spending, int days){
 
         logger.debug("Job_SpendingCredit:: spendCreditSaas: daily_spending: {}, days: {}", daily_spending, days);
 
@@ -149,7 +149,7 @@ public class Job_SpendingCredit implements Job {
             // If credit will suffice only for 14 days - make new invoice
             if (invoice == null && days < 14){
 
-                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer: It is time to send an invoice");
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer: It is time to send an invoice");
 
                 invoice = new Model_Invoice();
                 invoice.method = product.method;
@@ -165,6 +165,7 @@ public class Job_SpendingCredit implements Job {
                 invoice.invoice_items.add(invoice_item);
 
                 invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
+                if (invoice == null) return;
 
                 // TODO Pošlu notifikaci
 
@@ -174,12 +175,12 @@ public class Job_SpendingCredit implements Job {
             }
 
             if (invoice == null) {
-                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer: The financial reserves are sufficient. Just send a notification");
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer: The financial reserves are sufficient. Just send a notification");
                 return;
             }
 
             if(invoice.warning == Enum_Payment_warning.zero_balance && product.credit < 0 && days < -20) {
-                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer: The product is in minus 20 times the average spending");
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer: The product is in minus 20 times the average spending");
 
                 invoice.warning = Enum_Payment_warning.deactivation;
                 invoice.update();
@@ -195,7 +196,7 @@ public class Job_SpendingCredit implements Job {
             }
 
             if(invoice.warning == Enum_Payment_warning.first && product.credit < 0){
-                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer: The product is in negative credit balance");
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer: The product is in negative credit balance");
 
                 invoice.warning = Enum_Payment_warning.zero_balance;
                 invoice.update();
@@ -209,7 +210,7 @@ public class Job_SpendingCredit implements Job {
             }
 
             if(invoice.warning == Enum_Payment_warning.none && days < 7 ){
-                logger.warn("Job_SpendingCredit:: spendCreditSaas: bank transfer:  The Product is close to zero in financial balance");
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer:  The Product is close to zero in financial balance");
 
                 invoice.warning = Enum_Payment_warning.first;
                 invoice.update();
@@ -243,6 +244,7 @@ public class Job_SpendingCredit implements Job {
                 // TODO Pošlu notifikaci
 
                 invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
+                if (invoice == null) return;
 
                 if (product.on_demand) {
                     try {
@@ -270,12 +272,12 @@ public class Job_SpendingCredit implements Job {
             }
 
             if (invoice == null){
-                logger.warn("Job_SpendingCredit:: spendCreditSaas: credit card: The financial reserves are sufficient. Just send a notification");
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card: The financial reserves are sufficient. Just send a notification");
                 return;
             }
 
             if(invoice.warning == Enum_Payment_warning.zero_balance && product.credit < 0 && days < -10 ){
-                logger.warn("Job_SpendingCredit:: spendCreditSaas: credit card: The product is in the minus 10 times the average spending");
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card: The product is in the minus 10 times the average spending");
 
                 invoice.warning = Enum_Payment_warning.deactivation;
                 invoice.update();
@@ -291,7 +293,7 @@ public class Job_SpendingCredit implements Job {
             }
 
             if(invoice.warning == Enum_Payment_warning.none && product.credit < 0){
-                logger.warn("Job_SpendingCredit:: spendCreditSaas: credit card: The account is in the minus");
+                logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card: The account is in the minus");
 
                 invoice.warning = Enum_Payment_warning.zero_balance;
                 invoice.update();

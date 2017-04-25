@@ -433,7 +433,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.identifier = "alpha";
 
             tariff_1.color = "blue";
-            tariff_1.credit_for_beginning = 0.0;
+            tariff_1.credit_for_beginning = (long) 0;
 
             tariff_1.payment_required = false;
 
@@ -490,7 +490,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_1.removed = false;
             extensions_1.color = "blue-madison";
             extensions_1.tariff_included = tariff_1;
-            extensions_1.config = "{\"price\":1.0,\"count\":1}";
+            extensions_1.config = "{\"price\":1000,\"count\":1}";
             extensions_1.save();
 
 
@@ -502,7 +502,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_2.removed = false;
             extensions_2.color = "blue-chambray";
             extensions_2.tariff_optional = tariff_1;
-            extensions_2.config = "{\"price\":0.4,\"count\":2}";
+            extensions_2.config = "{\"price\":400,\"count\":2}";
             extensions_2.save();
 
             // Pro geeky
@@ -517,7 +517,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             geek_tariff.color = "green-jungle";
 
             geek_tariff.payment_required = false;
-            geek_tariff.credit_for_beginning = 20.00;
+            geek_tariff.credit_for_beginning = (long) 20000;
 
             geek_tariff.company_details_required = false;
             geek_tariff.payment_mode_required = true;
@@ -577,7 +577,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff.color = "green-jungle";
 
             business_tariff.payment_required = false;
-            business_tariff.credit_for_beginning = 100.0;
+            business_tariff.credit_for_beginning = (long) 100000;
 
             business_tariff.company_details_required = true;
             business_tariff.payment_mode_required = true;
@@ -651,7 +651,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_4.removed = false;
             business_tariff_extensions_4.color = "blue-chambray";
             business_tariff_extensions_4.tariff_included = business_tariff;
-            business_tariff_extensions_4.config = "{\"price\":2.6,\"count\":4}";
+            business_tariff_extensions_4.config = "{\"price\":2600,\"count\":4}";
             business_tariff_extensions_4.save();
 
 
@@ -663,7 +663,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_3.removed = false;
             business_tariff_extensions_3.color = "blue-chambray";
             business_tariff_extensions_3.tariff_included = business_tariff;
-            business_tariff_extensions_3.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff_extensions_3.config = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_3.save();
 
 
@@ -675,7 +675,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_2.removed = false;
             business_tariff_extensions_2.color = "blue-chambray";
             business_tariff_extensions_2.tariff_optional = business_tariff;
-            business_tariff_extensions_2.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff_extensions_2.config = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_2.save();
 
 
@@ -687,7 +687,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_1.removed = false;
             business_tariff_extensions_1.color = "blue-chambray";
             business_tariff_extensions_1.tariff_optional = business_tariff;
-            business_tariff_extensions_1.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff_extensions_1.config = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_1.save();
 
 
@@ -703,7 +703,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_2.color = "green-sharp";
 
             business_tariff_2.payment_required = false;
-            business_tariff_2.credit_for_beginning = 500.0;
+            business_tariff_2.credit_for_beginning = (long) 500000;
 
             business_tariff_2.company_details_required = true;
             business_tariff_2.payment_mode_required = true;
@@ -758,7 +758,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_5.removed = false;
             business_tariff2_extensions_5.color = "blue-chambray";
             business_tariff2_extensions_5.tariff_included = business_tariff_2;
-            business_tariff2_extensions_5.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff2_extensions_5.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_5.save();
 
 
@@ -770,7 +770,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_4.removed = false;
             business_tariff2_extensions_4.color = "blue-chambray";
             business_tariff2_extensions_4.tariff_included = business_tariff_2;
-            business_tariff2_extensions_4.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff2_extensions_4.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_4.save();
 
 
@@ -783,7 +783,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_3.removed = false;
             business_tariff2_extensions_3.color = "blue-chambray";
             business_tariff2_extensions_3.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_3.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff2_extensions_3.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_3.save();
 
 
@@ -797,7 +797,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_2.removed = false;
             business_tariff2_extensions_2.color = "blue-chambray";
             business_tariff2_extensions_2.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_2.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff2_extensions_2.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_2.save();
 
 
@@ -809,14 +809,14 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_1.removed = false;
             business_tariff2_extensions_1.color = "blue-chambray";
             business_tariff2_extensions_1.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_1.config = "{\"price\":0.6,\"count\":5}";
+            business_tariff2_extensions_1.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_1.save();
 
 
-            Model_Tariff ilegal_tariff = new Model_Tariff();
+            Model_Tariff illegal_tariff = new Model_Tariff();
             tariff_1.order_position = 5;
-            ilegal_tariff.active = false;
-            ilegal_tariff.save();
+            illegal_tariff.active = false;
+            illegal_tariff.save();
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
@@ -856,6 +856,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_Product product = new Model_Product();
             product.tariff = Model_Tariff.find.where().eq("identifier","alpha").findUnique();
             product.business_model = Enum_BusinessModel.saas;
+            product.credit = (long) 0;
             product.name = "Pepkova velkolepá Alfa";
             product.active  = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.method  = Enum_Payment_method.free;

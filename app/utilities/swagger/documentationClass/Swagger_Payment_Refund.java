@@ -6,7 +6,7 @@ public class Swagger_Payment_Refund {
 
     public boolean whole;
 
-    public Long amount;
+    public Double amount;
 
     @Constraints.Required
     public String reason;

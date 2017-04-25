@@ -33,7 +33,9 @@
                                 } else {
                                     <li role="presentation"><a id="activationButton" role="menuitem" tabindex="-1" onclick="activateProduct()">Activate</a></li>
                                 }
-                                <li role="presentation"><a role="menuitem" tabindex="-1" onclick="terminateOnDemand()">Terminate On Demand</a></li>
+                                @if(product.on_demand){
+                                    <li role="presentation"><a role="menuitem" tabindex="-1" onclick="terminateOnDemand()">Terminate On Demand</a></li>
+                                }
                                 <li role="presentation"><a role="menuitem" tabindex="-1" data-toggle="modal" data-target="#newExtensionModal">Add extension</a></li>
                                 <li role="presentation"><a role="menuitem" tabindex="-1" data-toggle="modal" data-target="#newProjectModal">Create Project</a></li>
                                 <li role="presentation" class="divider"></li>
@@ -92,7 +94,7 @@
                                         <table class="table table-bordered table-hover">
                                             <tr>
                                                 <td>Credit</td>
-                                                <td>@product.credit</td>
+                                                <td>@product.double_credit()</td>
                                             </tr>
                                             <tr>
                                                 <td>Paid until</td>
@@ -252,20 +254,28 @@
                             </div>
                         </div>
                         <div class="tab-pane" id="projects">
-                            <table id="role_table" class="table table-bordered table-hover">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Settings</th>
-                                </tr>
-                                @for( project <- product.projects) {
+                            <div id="projectsTableWrapper">
+                                <table id="projectsTable" class="table table-bordered table-hover">
                                     <tr>
-                                        <td>@project.id</td>
-                                        <td>@project.name</td>
-                                        <td><button class="btn btn-xs btn-block btn-primary" type="button" onclick="openProject()">Open</button></td>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Settings</th>
                                     </tr>
-                                }
-                            </table>
+                                    @for( project <- product.projects) {
+                                        <tr>
+                                            <td>@project.id</td>
+                                            <td>@project.name</td>
+                                            <td>@project.description</td>
+                                            <td>
+                                                <a href="@routes.Controller_Dashboard.project_detail(project.id)">
+                                                    <button class="btn btn-xs btn-block btn-primary" type="button" title="Open Project"><i class="fa fa-wrench"></i></button>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -273,26 +283,6 @@
         </div>
     </div>
 </section>
-
-<div id="invoiceModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="invoiceModalTitle">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 id="invoiceModalTitle" class="modal-title">Invoice</h4>
-            </div>
-            <div class="modal-body">
-                <form id="invoice">
-
-                </form>
-                <div id="invoiceModalMessage" style="display: none"><p class="text-red"></p></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
-                <button class="btn btn-success" type="button" onclick="importLibrary()">Import</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div id="newExtensionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newExtensionModalTitle">
     <div class="modal-dialog" role="document">
@@ -331,10 +321,8 @@
             </div>
             <div class="modal-body">
                 <form id="newProject">
-                    <input placeholder="Name" type="text" name="project_name" >
-
-                    <input placeholder="Description" type="text" name="project_description" >
-
+                    <input placeholder="Name" type="text" name="name" >
+                    <input placeholder="Description" type="text" name="description" >
                 </form>
                 <div id="newProjectModalMessage" style="display: none"><p class="text-red"></p></div>
             </div>
@@ -348,11 +336,11 @@
 
 <script>
 
-    var id = "@product.id";
+    var product_id = "@product.id";
 
     function activateProduct(){
         $.ajax({
-            url: '/product/activate/' + id,
+            url: '/product/activate/' + product_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
@@ -371,7 +359,7 @@
 
     function deactivateProduct(){
         $.ajax({
-            url: '/product/deactivate/' + id,
+            url: '/product/deactivate/' + product_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
@@ -390,7 +378,7 @@
 
     function terminateOnDemand(){
         $.ajax({
-            url: '/product/terminate_ondemand/' + id,
+            url: '/product/terminate_ondemand/' + product_id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
@@ -408,7 +396,7 @@
 
     function newExtension(){
         var model_data = $("#newExtensionForm").serializeObject();
-        model_data.product_id = id;
+        model_data.product_id = product_id;
         $.ajax({
             url: '@routes.Controller_Finance.productExtension_create()',
             type: 'POST',
@@ -432,5 +420,81 @@
         })
     }
 
+    function deactivateExtension(id){
+
+        $.ajax({
+            url: '@routes.Controller_Finance.productExtension_deactivate("")' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+                $('#extensionTableWrapper').load(document.URL +  ' #extensionTable');
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        })
+    }
+
+    function activateExtension(id){
+
+        $.ajax({
+            url: '@routes.Controller_Finance.productExtension_activate("")' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+                $('#extensionTableWrapper').load(document.URL +  ' #extensionTable');
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        })
+    }
+
+    function deleteExtension(id){
+
+        $.ajax({
+            url: '@routes.Controller_Finance.productExtension_delete("")' + id,
+            type: 'DELETE',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+                $('#extensionTableWrapper').load(document.URL +  ' #extensionTable');
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        })
+    }
+
+    function newProject(){
+        var model_data = $("#newProject").serializeObject();
+        model_data.product_id = product_id;
+
+        $.ajax({
+            url: '@routes.Controller_Project.project_create()' ,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken"),
+                "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+                $('#projectsTableWrapper').load(document.URL +  ' #projectsTable');
+                $("#newProjectModalMessage").css("display", "none");
+                $("#newProjectModal").modal('hide');
+            },
+            error:function(e) {
+                $("#newProjectModalMessage").css("display", "block");
+                $("#newProjectModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+        })
+    }
 
 </script>
