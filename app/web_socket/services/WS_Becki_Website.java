@@ -70,7 +70,7 @@ public class WS_Becki_Website extends WS_Interface_type {
             }
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
 
     }

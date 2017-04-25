@@ -61,7 +61,7 @@ public class Controller_Notification extends Controller {
         return GlobalResult.result_ok(Json.toJson(result));
 
      } catch (Exception e) {
-       e.printStackTrace();
+       terminal_logger.internalServerError(e);
        return Server_Logger.result_internalServerError(e, request());
      }
   }

@@ -316,7 +316,7 @@ public class Model_Product extends Model {
         try {
             return Server.blobClient.getContainerReference("product");
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             throw new NullPointerException();
         }
 

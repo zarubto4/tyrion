@@ -278,7 +278,7 @@ public class Model_Notification extends Model {
         try {
             throw new Exception("Not supported! Notifications are saved automatically using save_object()");
         } catch (Exception e) {
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -288,7 +288,7 @@ public class Model_Notification extends Model {
             this.state = Enum_Notification_state.deleted;
             this.send();
         } catch (Exception e) {
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
         super.delete();
     }

@@ -225,7 +225,7 @@ public class Model_VersionObject extends Model {
                     version.compile_program_procedure();
 
                 }catch (Exception e){
-                    e.printStackTrace();
+                    terminal_logger.internalServerError(e);
                 }
 
             }

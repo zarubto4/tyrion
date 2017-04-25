@@ -48,7 +48,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
         try {
             sleep(1000 * 30);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
 
         // Musím najít klasické instnace s Blockem a také virtuální instance

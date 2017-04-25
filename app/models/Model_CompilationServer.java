@@ -137,7 +137,7 @@ public class Model_CompilationServer extends Model {
             return compilation;
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return new WS_Message_Make_compilation();
         }
     }

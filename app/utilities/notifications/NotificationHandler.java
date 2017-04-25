@@ -22,7 +22,7 @@ public class NotificationHandler {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Update_echo_handler.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(NotificationHandler.class);
 
 /* METHOD  -------------------------------------------------------------------------------------------------------------*/
 

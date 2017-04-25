@@ -66,7 +66,7 @@ public class Secured_Admin extends Security.Authenticator {
             return Model_Person.token_cache.get(token);
 
         }catch (NullPointerException e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return null;
         }
     }

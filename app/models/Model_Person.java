@@ -135,7 +135,7 @@ public class Model_Person extends Model {
         try {
             return Server.blobClient.getContainerReference("pictures");
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             throw new NullPointerException();
         }
     }

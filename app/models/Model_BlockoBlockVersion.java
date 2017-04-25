@@ -45,7 +45,7 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty
+    @JsonProperty()
     public Swagger_Person_Short_Detail author(){
         try{
 

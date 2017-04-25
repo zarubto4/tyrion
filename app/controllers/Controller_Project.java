@@ -104,7 +104,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.created(Json.toJson(project));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }

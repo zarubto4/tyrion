@@ -727,7 +727,7 @@ public class Model_HomerInstance extends Model {
                     }
 
                 }catch (Exception e){
-                    e.printStackTrace();
+                    terminal_logger.internalServerError(e);
                 }
             }
         ).start();

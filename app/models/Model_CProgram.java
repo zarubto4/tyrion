@@ -181,7 +181,7 @@ public class Model_CProgram extends Model {
             return c_program_versions;
 
         }catch (Exception e){
-          e.printStackTrace();
+            terminal_logger.internalServerError(e);
           return null;
         }
     }

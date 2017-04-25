@@ -296,7 +296,7 @@ public class Controller_Security extends Controller {
 
             }catch (Exception e){
                 terminal_logger.error("logout:: Error:: ", e);
-                e.printStackTrace();
+                terminal_logger.internalServerError(e);
             }
 
             // JE nutné garantovat vždy odpověď ok za všech situací kromě kritického selhální

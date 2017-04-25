@@ -172,7 +172,7 @@ public class Controller_WebSocket extends Controller {
                         server.security_token_confirm_procedure();
 
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        terminal_logger.internalServerError(e);
                     }
                 }
             };

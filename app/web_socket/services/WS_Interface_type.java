@@ -52,20 +52,19 @@ public abstract class WS_Interface_type {
             onMessage(json);
 
         }catch (JsonParseException e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "JsonUnrecognized");
-
+            result.put("messageType", "JsonUnrecognized JsonParseException");
             webSCtype.write_without_confirmation(result);
 
         }catch (Exception e){
-            e.printStackTrace();
+
+            terminal_logger.internalServerError(e);
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "JsonUnrecognized");
+            result.put("messageType", "JsonUnrecognized " + e.getClass().getSimpleName());
             webSCtype.write_without_confirmation(result);
-            e.printStackTrace();
 
         }
 

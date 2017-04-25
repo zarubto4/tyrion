@@ -122,6 +122,7 @@ public class Server_Logger extends Controller {
 
     public static void internalServerError(Class<?> t_class, String origin, Exception exception){
 
+
         String id = UUID.randomUUID().toString();
 
         StringBuilder description = new StringBuilder();     // stavění obsahu

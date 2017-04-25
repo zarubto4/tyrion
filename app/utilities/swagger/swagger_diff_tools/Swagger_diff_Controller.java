@@ -180,8 +180,8 @@ public class Swagger_diff_Controller extends Controller {
 
 
         }catch (Exception e ) {
-            e.printStackTrace();
-              throw new NullPointerException("Došlo k chybě");
+            terminal_logger.internalServerError(e);
+            throw new NullPointerException("Došlo k chybě");
         }
 
 

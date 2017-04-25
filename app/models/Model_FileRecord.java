@@ -218,7 +218,7 @@ public class Model_FileRecord extends Model {
             blob.delete();
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
     }
 

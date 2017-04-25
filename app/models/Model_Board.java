@@ -696,7 +696,7 @@ public class Model_Board extends Model {
             }
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
         }
     }
 

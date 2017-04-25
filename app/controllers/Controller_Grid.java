@@ -520,7 +520,7 @@ public class Controller_Grid extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -847,7 +847,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.created(Json.toJson(summary));
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -1687,7 +1687,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -2180,7 +2180,7 @@ public class Controller_Grid extends Controller {
 
                 } catch (Exception e) {
                     terminal_logger.error ("gridApproval:: Sending mail -> critical error", e);
-                    e.printStackTrace();
+                    terminal_logger.internalServerError(e);
                 }
             }
             else privateGridWidgetVersion.approval_state = Enum_Approval_state.approved;

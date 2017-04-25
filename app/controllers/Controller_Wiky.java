@@ -27,7 +27,7 @@ public class Controller_Wiky extends Controller {
 
              return ok();
          }catch (Exception e){
-             e.printStackTrace();
+             terminal_logger.internalServerError(e);
              return badRequest();
          }
 

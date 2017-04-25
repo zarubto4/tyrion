@@ -36,14 +36,12 @@ public class Class_Logger{
 
 
     public void internalServerError(String message, Exception e){
-        new Thread(() -> {
-            Server_Logger.internalServerError(t_class, message, e);
-        }).start();
+        e.printStackTrace();
+        Server_Logger.internalServerError(t_class, message, e);
     }
 
     public void internalServerError(Exception e){
-        new Thread(() -> {
-            Server_Logger.internalServerError(t_class, " (Error with Undefined Message) :: ", e);
-        }).start();
+        e.printStackTrace();
+        Server_Logger.internalServerError(t_class, " (Error with Undefined Message) :: ", e);
     }
 }

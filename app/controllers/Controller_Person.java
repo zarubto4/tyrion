@@ -847,8 +847,8 @@ public class Controller_Person extends Controller {
                             return GlobalResult.result_ok(Json.toJson(validation));
                         }
                     }catch (Exception e){
-                        e.printStackTrace();
-                   //     Server_Logger.internalServerError("person_validateProperty()::", e);
+                        terminal_logger.internalServerError(e);
+                        // Server_Logger.internalServerError("person_validateProperty()::", e);
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";
                     }
