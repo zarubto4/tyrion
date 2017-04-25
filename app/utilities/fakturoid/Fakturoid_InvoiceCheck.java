@@ -87,7 +87,7 @@ public class Fakturoid_InvoiceCheck {
                 // Get proforma and check if it has a related_id of new invoice
                 try {
 
-                    F.Promise<WSResponse> responsePromise = ws.url(Server.Fakturoid_url + "/invoices/" + invoice.fakturoid_id + ".json")
+                    F.Promise<WSResponse> responsePromise = ws.url(Server.Fakturoid_url + "/invoices/" + (invoice.proforma ? invoice.proforma_id : invoice.fakturoid_id) + ".json")
                             .setAuth(Server.Fakturoid_secret_combo)
                             .setContentType("application/json")
                             .setHeader("User-Agent", Server.Fakturoid_user_agent)
@@ -155,12 +155,10 @@ public class Fakturoid_InvoiceCheck {
                                             if (form2.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form2.errorsAsJson().toString());
                                             Fakturoid_ResponseInvoice help2 = form2.get();
 
-                                            terminal_logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: local proforma id: {}, from request proforma id: {}", invoice.fakturoid_id, help2.related_id);
+                                            terminal_logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: local proforma id: {}, from request proforma id: {}", invoice.proforma_id, help2.related_id);
                                             terminal_logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: local invoice id: {}, from request invoice id: {}", help.related_id, help2.id);
 
-                                            invoice.proforma_id = invoice.fakturoid_id;
                                             invoice.fakturoid_id = help2.id;
-                                            invoice.proforma_pdf_url = invoice.fakturoid_pdf_url;
                                             invoice.fakturoid_pdf_url = help2.pdf_url;
                                             invoice.invoice_number = help2.number;
                                             invoice.proforma = false;

@@ -99,7 +99,7 @@
                     <tbody>
                         <tr>
                             <th>Total:</th>
-                            <td>$@invoice.double_price()</td>
+                            <td>$@invoice.price()</td>
                         </tr>
                     </tbody></table>
             </div>
@@ -108,7 +108,7 @@
     <div class="row">
         <div class="col-xs-12">
             @if(invoice.fakturoid_pdf_url != null) {
-                <a href="@invoice.pdf_link()" target="_blank"><button style="margin: 0 10px;" class="btn btn-primary pull-right" type="button"><i class="fa fa-download"></i> Download PDF </button></a>
+                <a href="@invoice.invoice_pdf_link()" target="_blank"><button style="margin: 0 10px;" class="btn btn-primary pull-right" type="button"><i class="fa fa-download"></i> Download PDF </button></a>
             }
             @if(invoice.proforma_pdf_url != null) {
                 <a href="@invoice.proforma_pdf_link()" target="_blank"><button style="margin: 0 0 0 10px;" class="btn btn-primary pull-right" type="button"><i class="fa fa-download"></i> Download proforma PDF </button></a>

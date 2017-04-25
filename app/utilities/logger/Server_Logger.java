@@ -99,7 +99,7 @@ public class Server_Logger extends Controller {
     public static void warn(Class<?> t_class, String log_message, Object... args ) {logger.warn(t_class, log_message, args);}
 
     public static void error(Class<?> t_class, String log_message) {
-        error(t_class, log_message,""); 
+        error(t_class, log_message,"");
         logger.error(t_class, log_message);
     }
     public static void error(Class<?> t_class, String log_message, Object... args ) {
@@ -131,10 +131,12 @@ public class Server_Logger extends Controller {
 
         StringBuilder description = new StringBuilder();     // stavění obsahu
 
-        String summary = "Internal Server Error - " + origin + " - " + exception.getClass().getName();
+        String summary = "Internal Server Error - " + origin + " - " + t_class.getName();
 
         description.append("\n");
         description.append("    Exception type: " + exception.getClass().getName());
+        description.append("\n");
+        description.append("    Exception message: " + exception.getMessage());
         description.append("\n");
         description.append("    Time: " + new Date().toString());
         description.append("\n");

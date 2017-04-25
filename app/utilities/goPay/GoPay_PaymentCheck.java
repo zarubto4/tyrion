@@ -118,7 +118,7 @@ public class GoPay_PaymentCheck {
                             invoice = Utilities_Fakturoid_Controller.create_paid_invoice(invoice);
                             */
 
-                            if (!Utilities_Fakturoid_Controller.fakturoid_post("/invoices/" + invoice.fakturoid_id + "/fire.json?event=pay_proforma"))
+                            if (!Utilities_Fakturoid_Controller.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
                                 terminal_logger.internalServerError("checkPayment:", new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
 
                             invoice.getProduct().credit_upload(help.amount * 10);

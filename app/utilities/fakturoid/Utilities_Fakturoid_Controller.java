@@ -90,7 +90,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
             if(form.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form.errorsAsJson().toString());
             Swagger_Fakturoid_Callback help = form.get();
 
-            terminal_logger.warn("Fakturoid_Controller:: fakturoid_callback: Body: {}", request().body().asJson());
+            terminal_logger.warn("fakturoid_callback: Body: {}", request().body().asJson());
 
             // Finding in DB
             Model_Invoice invoice = Model_Invoice.find.where().eq("fakturoid_id", help.invoice_id).findUnique();
@@ -124,7 +124,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
             return ok();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Fakturoid_Controller:: fakturoid_callback:", e);
+            terminal_logger.internalServerError("fakturoid_callback:", e);
             return ok();
         }
     }
@@ -144,7 +144,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
             if (invoice.product.fakturoid_subject_id == null) {
 
-                terminal_logger.debug("Fakturoid_Controller:: create_proforma:: Client is not registered in Fakturoid");
+                terminal_logger.debug("create_proforma:: Client is not registered in Fakturoid");
                 // Ověřím zda tam je - a jestli ano - tak ho jen vytvořím v lokální DB
 
                 // Pokud ne tak ho vytvořím
@@ -152,12 +152,12 @@ public class Utilities_Fakturoid_Controller extends Controller {
                 if (invoice.product.fakturoid_subject_id == null) return null;
                 invoice.product.update();
 
-                terminal_logger.debug("Fakturoid_Controller:: create_proforma:: New Client Id in Fakturoid is " + invoice.product.fakturoid_subject_id);
+                terminal_logger.debug("create_proforma:: New Client Id in Fakturoid is " + invoice.product.fakturoid_subject_id);
             }
 
             fakturoid_invoice.subject_id = invoice.product.fakturoid_subject_id;
 
-            terminal_logger.debug("Fakturoid_Controller:: create_proforma::  Sending Proforma to Fakturoid");
+            terminal_logger.debug("create_proforma::  Sending Proforma to Fakturoid");
 
             for (int trial = 5; trial > 0; trial--) {
 
@@ -179,7 +179,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("Fakturoid_Controller:: create_proforma:", e);
+                    terminal_logger.internalServerError("create_proforma:", e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -188,16 +188,16 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     case 201: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_proforma:: POST: Result: {}", result.toString());
+                        terminal_logger.debug("create_proforma: POST: Result: {}", result.toString());
 
                         if (!result.has("id")) {
-                            terminal_logger.error("Fakturoid_Controller:: create_proforma:: Invoice From fakturoid does not contains ID");
+                            terminal_logger.error("create_proforma: Invoice From fakturoid does not contains ID");
                             throw new NullPointerException("Invoice From fakturoid does not contains ID");
                         }
 
 
-                        invoice.fakturoid_id = result.get("id").asLong();
-                        invoice.fakturoid_pdf_url = result.get("pdf_url").asText();
+                        invoice.proforma_id = result.get("id").asLong();
+                        invoice.proforma_pdf_url = result.get("pdf_url").asText();
                         invoice.invoice_number = result.get("number").asText();
                         invoice.proforma = true;
                         invoice.warning = Enum_Payment_warning.none;
@@ -206,14 +206,14 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                         invoice.getProduct().archiveEvent("Proforma created", "System created proforma", invoice.id);
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_proforma:: Saving Invoice");
+                        terminal_logger.debug("create_proforma: Saving Invoice");
 
                         return invoice;
                     }
 
                     case 422: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_proforma: Status: 422");
+                        terminal_logger.debug("create_proforma: Status: 422");
 
                         // TODO notifikace
 
@@ -225,7 +225,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
                 }
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError("Fakturoid_Controller:: create_proforma:", e);
+            terminal_logger.internalServerError("create_proforma:", e);
         }
 
         return null;
@@ -265,7 +265,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("Fakturoid_Controller:: create_subject:", e);
+                    terminal_logger.internalServerError("create_subject:", e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -274,7 +274,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     case 201: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_paid_invoice: Status: 201");
+                        terminal_logger.debug("create_paid_invoice: Status: 201");
 
                         if (result != null && result.has("id")) {
                             invoice.fakturoid_id = result.get("id").asLong();
@@ -294,19 +294,19 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     case 400: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_paid_invoice: Status: 400");
+                        terminal_logger.debug("create_paid_invoice: Status: 400");
                         throw new Exception("Fakturoid returned 400 - Bad Request. Response: " + result);
                     }
 
                     case 403: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_paid_invoice: Status: 403");
+                        terminal_logger.debug("create_paid_invoice: Status: 403");
                         throw new Exception("Fakturoid returned 403 - Forbidden. Response: " + result);
                     }
 
                     case 422: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_paid_invoice: Status: 422");
+                        terminal_logger.debug("create_paid_invoice: Status: 422");
 
                         // TODO notifikace
 
@@ -319,7 +319,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Fakturoid_Controller:: create_paid_invoice:", e);
+            terminal_logger.internalServerError("create_paid_invoice:", e);
         }
 
         return invoice;
@@ -328,7 +328,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
     public static void sendInvoiceEmail(Model_Invoice invoice, String mail){
         try {
 
-            terminal_logger.debug("Fakturoid_Controller:: sendInvoiceEmail:: Trying send PDF Invoice to User Email");
+            terminal_logger.debug("sendInvoiceEmail:: Trying send PDF Invoice to User Email");
 
             byte[] body = download_PDF_invoice("invoice", invoice);
 
@@ -339,7 +339,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
             if (mail == null) mail = invoice.getProduct().payment_details.invoice_email;
 
-            terminal_logger.debug("Fakturoid_Controller:: sendInvoiceEmail:: PDF with invoice was successfully downloaded from Fakturoid");
+            terminal_logger.debug("sendInvoiceEmail:: PDF with invoice was successfully downloaded from Fakturoid");
 
             String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
@@ -351,10 +351,10 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     .attachmentPDF(invoice.invoice_number + ".pdf", body)
                     .send(mail, "Invoice " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)]);
 
-                terminal_logger.debug("Fakturoid_Controller:: sendInvoiceEmail:: Email was successfully sent");
+                terminal_logger.debug("sendInvoiceEmail:: Email was successfully sent");
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Fakturoid_Controller:: sendInvoiceEmail:", e);
+            terminal_logger.internalServerError("sendInvoiceEmail:", e);
         }
     }
 
@@ -378,7 +378,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Fakturoid_Controller:: sendInvoiceReminderEmail:", e);
+            terminal_logger.internalServerError("sendInvoiceReminderEmail:", e);
         }
     }
 
@@ -421,7 +421,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("Fakturoid_Controller:: create_subject:", e);
+                    terminal_logger.internalServerError("create_subject:", e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -430,7 +430,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     case 201: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_subject: Status: 201");
+                        terminal_logger.debug("create_subject: Status: 201");
 
                         details.product.archiveEvent("Subject created", "System created subject in Fakturoid", null);
 
@@ -440,19 +440,19 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     case 400: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_subject: Status: 400");
+                        terminal_logger.debug("create_subject: Status: 400");
                         throw new Exception("Fakturoid returned 400 - Bad Request. Response: " + result);
                     }
 
                     case 403: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_subject: Status: 403");
+                        terminal_logger.debug("create_subject: Status: 403");
                         throw new Exception("Fakturoid returned 403 - Forbidden. Response: " + result);
                     }
 
                     case 422: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_subject: Status: 422");
+                        terminal_logger.debug("create_subject: Status: 422");
 
                         // TODO notifikace
 
@@ -464,7 +464,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Fakturoid_Controller:: create_subject:", e);
+            terminal_logger.internalServerError("create_subject:", e);
         }
 
         return null;
@@ -478,7 +478,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
     public static JsonNode fakturoid_put(String url, JsonNode node){
 
-        terminal_logger.debug("Fakturoid_Controller:: fakturoid_put:: PUT: URL: " + Server.Fakturoid_url + url + "  Json: " + node.toString());
+        terminal_logger.debug("fakturoid_put:: PUT: URL: " + Server.Fakturoid_url + url + "  Json: " + node.toString());
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + url)
                 .setContentType("application/json")
                 .setHeader("User-Agent", Server.Fakturoid_user_agent)
@@ -488,11 +488,11 @@ public class Utilities_Fakturoid_Controller extends Controller {
         try {
 
             JsonNode response = responsePromise.get(5000).asJson();
-            terminal_logger.debug("Fakturoid_Controller:: fakturoid_put:: Result: " + response.toString() );
+            terminal_logger.debug("fakturoid_put:: Result: " + response.toString() );
             return response;
 
         }catch(Exception e){
-            terminal_logger.error("Fakturoid_Controller:: fakturoid_put::  Error: " + responsePromise.get(5000).toString() );
+            terminal_logger.error("fakturoid_put::  Error: " + responsePromise.get(5000).toString() );
             throw new NullPointerException();
         }
     }
@@ -522,7 +522,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     response = responsePromise.get(5000);
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("Fakturoid_Controller:: fakturoid_post:", e);
+                    terminal_logger.internalServerError("fakturoid_post:", e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -531,7 +531,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     case 200: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: fakturoid_post: Status: 200");
+                        terminal_logger.debug("fakturoid_post: Status: 200");
                         return true;
                     }
 
@@ -539,11 +539,11 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                         result = response.asJson();
 
-                        terminal_logger.debug("Fakturoid_Controller:: fakturoid_post: Status: 422");
+                        terminal_logger.debug("fakturoid_post: Status: 422");
 
                         // TODO notifikace
 
-                        terminal_logger.internalServerError("Fakturoid_Controller:: fakturoid_post:", new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: "+ result));
+                        terminal_logger.internalServerError("fakturoid_post:", new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: "+ result));
                         return false;
                     }
 
@@ -556,7 +556,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("Fakturoid_Controller:: fakturoid_post:", e);
+                terminal_logger.internalServerError("fakturoid_post:", e);
             }
         }
         return false;
@@ -565,7 +565,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
     public static boolean fakturoid_delete(String url){
         // Slouží například k mazáním proformy a transfromace na fakturu
 
-        terminal_logger.debug("Fakturoid_Controller:: fakturoid_delete::  URL: " + Server.Fakturoid_url + url);
+        terminal_logger.debug("fakturoid_delete::  URL: " + Server.Fakturoid_url + url);
         try {
 
             for (int trial = 5; trial > 0; trial--) {
@@ -586,7 +586,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     response = responsePromise.get(5000);
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("Fakturoid_Controller:: fakturoid_delete:", e);
+                    terminal_logger.internalServerError("fakturoid_delete:", e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -595,13 +595,13 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     case 204: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: fakturoid_delete: Status: 204");
+                        terminal_logger.debug("fakturoid_delete: Status: 204");
                         return true;
                     }
 
                     case 404: {
 
-                        terminal_logger.debug("Fakturoid_Controller:: create_subject: Status: 404");
+                        terminal_logger.debug("create_subject: Status: 404");
                         throw new Exception("Fakturoid returned 404 - Not Found. Invoice is probably already deleted or does not exist.");
                     }
 
@@ -610,7 +610,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Fakturoid_Controller:: fakturoid_delete:", e);
+            terminal_logger.internalServerError("fakturoid_delete:", e);
         }
 
         return false;
@@ -630,7 +630,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     if (type.equals("proforma") && invoice.proforma_pdf_url != null) url = invoice.proforma_pdf_url;
                     else url = invoice.fakturoid_pdf_url;
 
-                    terminal_logger.debug("Fakturoid_Controller:: download_PDF_invoice::  Trying download PDF invoice from Fakturoid on url: " + url);
+                    terminal_logger.debug("download_PDF_invoice::  Trying download PDF invoice from Fakturoid on url: " + url);
 
                     F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(url)
                             .setAuth(Server.Fakturoid_secret_combo)
@@ -640,16 +640,16 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     WSResponse promise = responsePromise.get(5000);
 
-                    terminal_logger.debug("Fakturoid_Controller:: download_PDF_invoice:: download_PDF_invoice:: promise status " + promise.getStatus());
+                    terminal_logger.debug("download_PDF_invoice:: download_PDF_invoice:: promise status " + promise.getStatus());
 
                     if (promise.getStatus() == 200) {
-                        terminal_logger.debug("Fakturoid_Controller:: download_PDF_invoice:: PDF Download successfully to byte[]");
+                        terminal_logger.debug("download_PDF_invoice:: PDF Download successfully to byte[]");
                         return promise.asByteArray();
 
                     } else {
 
-                        terminal_logger.warn("Fakturoid_Controller:: download_PDF_invoice:: promise status" + promise.getStatus());
-                        terminal_logger.warn("Fakturoid_Controller:: download_PDF_invoice:: PDF Download un-successfully to byte[]");
+                        terminal_logger.warn("download_PDF_invoice:: promise status" + promise.getStatus());
+                        terminal_logger.warn("download_PDF_invoice:: PDF Download un-successfully to byte[]");
 
                         --terminator;
                         Thread.sleep(2500);
@@ -657,11 +657,11 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     }
 
                 } catch (InterruptedException e) {
-                    terminal_logger.error("Fakturoid_Controller:: download_PDF_invoice::  Error:: Interupted exception", e);
+                    terminal_logger.error("download_PDF_invoice::  Error:: Interupted exception", e);
                 }
             }
 
-        terminal_logger.error("Fakturoid_Controller:: download_PDF_invoice:: Error:: PDF Download un-successfully to byte[]");
+        terminal_logger.error("download_PDF_invoice:: Error:: PDF Download un-successfully to byte[]");
         throw new NullPointerException("File not found");
 
     }
