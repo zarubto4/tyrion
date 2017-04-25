@@ -68,6 +68,19 @@ public class Global extends GlobalSettings {
 
 
        }catch (Exception e){
+            System.out.println("");
+            System.out.println("");
+            System.out.println("");
+            terminal_logger.error("#########################################################################################");
+            terminal_logger.error("##                                                                                     ##");
+            terminal_logger.error("##       Tyrion is not configured properly!!!!                                         ##");
+            terminal_logger.error("##       Please - Check Global Class!!!!                                               ##");
+            terminal_logger.error("##                                                                                     ##");
+            terminal_logger.error("##                                                                                     ##");
+            terminal_logger.error("#########################################################################################");
+            System.out.println("");
+            System.out.println("");
+            System.out.println("");
             terminal_logger.error("onStart Error", e);
        }
 

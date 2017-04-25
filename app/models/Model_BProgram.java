@@ -186,6 +186,8 @@ public class Model_BProgram extends Model {
 
         }
         super.save();
+
+        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -193,6 +195,8 @@ public class Model_BProgram extends Model {
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
 
         super.update();
+
+        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BProgram.class, project_id(), id))).start();
     }
 
     @JsonIgnore @Override public void delete() {
@@ -206,6 +210,8 @@ public class Model_BProgram extends Model {
       this.removed_by_user = true;
 
       super.update();
+
+     if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
 
     }
 

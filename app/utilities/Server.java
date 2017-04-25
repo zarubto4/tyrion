@@ -355,6 +355,7 @@ public class Server {
      * @throws Exception
      */
     public static void setPermission() throws Exception{
+
         terminal_logger.info("setPermission:: Setting Permission");
 
         List<String> permissions = new ArrayList<>();

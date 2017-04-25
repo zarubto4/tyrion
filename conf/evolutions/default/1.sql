@@ -53,6 +53,7 @@ create table model_blocko_block (
   type_of_block_id          varchar(255),
   producer_id               varchar(255),
   order_position            integer,
+  removed_by_user           boolean,
   constraint pk_model_blocko_block primary key (id))
 ;
 
@@ -66,6 +67,7 @@ create table model_blocko_block_version (
   design_json               TEXT,
   logic_json                TEXT,
   blocko_block_id           varchar(255),
+  removed_by_user           boolean,
   constraint ck_model_blocko_block_version_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
   constraint pk_model_blocko_block_version primary key (id))
 ;

@@ -39,6 +39,8 @@ public class Model_RequestLog extends Model{
     @JsonIgnore @Override
     public void save() {
 
+        terminal_logger.debug("save :: Creating new Object");
+
         date_of_create = new Date();
 
         while (true) { // I need Unique Value

@@ -23,7 +23,6 @@ public class Model_TypeOfWidget extends Model{
 
     private static final Class_Logger terminal_logger = new Class_Logger(Model_TypeOfWidget.class);
 
-
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                         @Id @ApiModelProperty(required = true)  public String id;

@@ -70,7 +70,7 @@ public class Notification_Tester extends Controller {
 
                             notification_start.setId(id)
                                     .setChainType(Enum_Notification_type.CHAIN_START)
-                                    .setImportance(Enum_Notification_importance.normal)
+                                    .setImportance(Enum_Notification_importance.low)
                                     .setLevel(Enum_Notification_level.info);
 
                             notification_start.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!"))
@@ -82,7 +82,7 @@ public class Notification_Tester extends Controller {
 
                             notification_start.setId(id)
                                     .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                    .setImportance(Enum_Notification_importance.normal)
+                                    .setImportance(Enum_Notification_importance.low)
                                     .setLevel(Enum_Notification_level.info);
 
                             notification_start.setText(new Notification_Text().setText("CHAIN TEST:: Shit! This Test not send CHAIN_START notification parameter but first message is CHAIN_UPDATE !!!!"))
@@ -98,7 +98,7 @@ public class Notification_Tester extends Controller {
 
                             notification_progress.setId(id)
                                     .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                    .setImportance( Enum_Notification_importance.normal)
+                                    .setImportance( Enum_Notification_importance.low)
                                     .setLevel( Enum_Notification_level.info);
 
                             notification_progress
@@ -120,7 +120,7 @@ public class Notification_Tester extends Controller {
 
                             notification_finish.setId(id)
                                     .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                    .setImportance( Enum_Notification_importance.normal)
+                                    .setImportance( Enum_Notification_importance.low)
                                     .setLevel( Enum_Notification_level.info);
 
                             notification_finish.setText(new Notification_Text().setText("CHAIN TEST:: Shit... This test not send CHAIN_END parameter - Do you know what to do? " ))
@@ -136,7 +136,7 @@ public class Notification_Tester extends Controller {
 
                         notification_finish.setId(id)
                                 .setChainType(Enum_Notification_type.CHAIN_END)
-                                .setImportance( Enum_Notification_importance.normal)
+                                .setImportance( Enum_Notification_importance.low)
                                 .setLevel( Enum_Notification_level.info);
 
                         notification_finish.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!" ))

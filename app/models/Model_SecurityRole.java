@@ -16,8 +16,7 @@ import java.util.UUID;
 
 
 @Entity
-@ApiModel(description = "Model of SecurityRole",
-        value = "SecurityRole")
+@ApiModel(value = "SecurityRole", description = "Model of SecurityRole")
 public class Model_SecurityRole extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

@@ -49,7 +49,7 @@ public class Server_Logger extends Controller {
     private static Interface_Server_Logger logger;                      // Vlastní Loggy objekt definovaný konfigurací
 
 
-    public static  void  set_Logger(){
+    public static void set_Logger(){
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
@@ -88,14 +88,10 @@ public class Server_Logger extends Controller {
     }
     public static void trace(Class<?> t_class, String log_message, Object... args ) { logger.trace(t_class, log_message, args);}
 
-    public static void info(Class<?> t_class, String log_message) {
-        logger.info(t_class, log_message);
-    }
+    public static void info(Class<?> t_class, String log_message) {logger.info(t_class, log_message);}
     public static void info(Class<?> t_class, String log_message, Object... args) {logger.info(t_class, log_message, args);}
 
-    public static void debug(Class<?> t_class, String log_message) {
-        logger.debug(t_class, log_message);
-    }
+    public static void debug(Class<?> t_class, String log_message) {logger.debug(t_class, log_message);}
     public static void debug(Class<?> t_class, String log_message, Object... args ) {logger.debug(t_class, log_message, args);}
 
     public static void warn(Class<?> t_class, String log_message) {

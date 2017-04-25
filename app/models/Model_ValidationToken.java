@@ -53,7 +53,6 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Valid
 
     }
 
-
     @JsonIgnore @Override public void update() {
 
         terminal_logger.debug("update :: Update object email: {}",  this.personEmail);

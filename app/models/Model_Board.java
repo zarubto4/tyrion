@@ -320,7 +320,6 @@ public class Model_Board extends Model {
         return virtual_instance_under_project;
     }
 
-
     @JsonIgnore @Transient  public boolean update_boot_loader_required(){
 
         if(type_of_board.main_boot_loader == null || actual_boot_loader == null) return true;
@@ -372,7 +371,7 @@ public class Model_Board extends Model {
                 System.out.println("Zasílám pokyn k notifikaci o tom, že device je online");
 
                 cache_status.put(help.deviceId, true);
-                new Thread(master_device::notification_board_connect).start();
+                master_device.notification_board_connect();
             }
 
             Model_Board.hardware_firmware_state_check(server, master_device, help);
@@ -395,7 +394,7 @@ public class Model_Board extends Model {
                 return;
             }
 
-            new Thread(master_device::notification_board_disconnect).start();
+            master_device.notification_board_disconnect();
 
             Model_Board.cache_status.put(help.deviceId, false);
 
@@ -417,9 +416,7 @@ public class Model_Board extends Model {
                 terminal_logger.error("device_Connected:: Unregistered Hardware:: "+  help.deviceId);
                 return;
             }
-
-            new Thread(device::notification_board_connect).start();
-
+            device.notification_board_connect();
             Model_Board.hardware_firmware_state_check( server, device, help);
 
         }catch (Exception e){
@@ -441,7 +438,7 @@ public class Model_Board extends Model {
                 return;
             }
 
-            new Thread(device::notification_board_disconnect).start();
+            device.notification_board_disconnect();
 
             Model_Board.cache_status.put(help.deviceId, false);
 
@@ -1040,42 +1037,44 @@ public class Model_Board extends Model {
 
     @JsonIgnore @Transient
     public void notification_board_connect(){
+        new Thread( () -> {
+            if (project == null) return;
 
-        if(project == null) return;
+            try {
+                new Model_Notification()
+                        .setImportance(Enum_Notification_importance.low)
+                        .setLevel(Enum_Notification_level.success)
+                        .setText(new Notification_Text().setText("Device " + this.id))
+                        .setObject(this)
+                        .setText(new Notification_Text().setText(" has just connected"))
+                        .send_under_project(project_id());
 
-        try{
-            new Model_Notification()
-                    .setImportance( Enum_Notification_importance.low )
-                    .setLevel( Enum_Notification_level.success)
-                    .setText( new Notification_Text().setText("Device " + this.id ))
-                    .setObject(this)
-                    .setText( new Notification_Text().setText(" has just connected"))
-                    .send_under_project(project_id());
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
+            } catch (Exception e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
 
     }
 
     @JsonIgnore @Transient
     public void notification_board_disconnect(){
+        new Thread( () -> {
+            if(project == null) return;
+            // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
+            try{
 
-        if(project == null) return;
-        // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
-        try{
+                new Model_Notification()
+                    .setImportance( Enum_Notification_importance.low )
+                    .setLevel( Enum_Notification_level.warning)
+                    .setText(  new Notification_Text().setText("Device" + this.id ))
+                    .setObject(this)
+                    .setText( new Notification_Text().setText(" has disconnected."))
+                    .send_under_project(project_id());
 
-            new Model_Notification()
-                .setImportance( Enum_Notification_importance.low )
-                .setLevel( Enum_Notification_level.warning)
-                .setText(  new Notification_Text().setText("Device" + this.id ))
-                .setObject(this)
-                .setText( new Notification_Text().setText(" has disconnected."))
-                .send_under_project(project_id());
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
+            }catch (Exception e){
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

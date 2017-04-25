@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.*;
@@ -15,6 +16,8 @@ import java.util.*;
 public class Model_TypeOfBoardFeatures extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_TypeOfWidget.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
     @Id @ApiModelProperty(required = true)   public String id;
@@ -48,6 +51,7 @@ public class Model_TypeOfBoardFeatures extends Model {
     @JsonIgnore @Override
     public void save() {
 
+        terminal_logger.debug("save :: Creating new Object");
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             if (Model_TypeOfBoard.find.byId(this.id) == null) break;
@@ -55,6 +59,18 @@ public class Model_TypeOfBoardFeatures extends Model {
         super.save();
     }
 
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        super.update();
+    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

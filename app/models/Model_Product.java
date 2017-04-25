@@ -113,10 +113,11 @@ public class Model_Product extends Model {
         }
     }
 
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save() {
 
@@ -140,7 +141,6 @@ public class Model_Product extends Model {
         super.save();
     }
 
-
     @JsonIgnore @Override public void update() {
 
         terminal_logger.debug("update :: Update object value: {}",  this.id);
@@ -156,10 +156,10 @@ public class Model_Product extends Model {
 
     }
 
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    @ApiModel(description = "Model for Proforma Details for next invoice",
-            value = "Next_Invoice_Product")
+    @ApiModel(description = "Model for Proforma Details for next invoice", value = "Next_Invoice_Product")
     public class Next_Invoice_Product{
         @ApiModelProperty(required = true, readOnly = true) public String id;
 
@@ -187,8 +187,6 @@ public class Model_Product extends Model {
     public String get_path(){
         return  azure_product_link;
     }
-
-
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
@@ -225,9 +223,7 @@ public class Model_Product extends Model {
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_Instrance()           {  return true;  }
     @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_own_server()              {  return true;  }
 
-
     public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
-
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

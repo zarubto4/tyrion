@@ -8,8 +8,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Approval_state;
 import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -38,6 +40,8 @@ public class Model_BlockoBlockVersion extends Model {
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String design_json;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
                                                                         @JsonIgnore @ManyToOne    public Model_BlockoBlock blocko_block;
+
+    @JsonIgnore              public boolean removed_by_user;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -88,6 +92,8 @@ public class Model_BlockoBlockVersion extends Model {
             if (get_byId(this.id) == null) break;
         }
         super.save();
+
+        if(blocko_block.type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, blocko_block.type_of_block.project_id(), blocko_block.id))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -95,14 +101,18 @@ public class Model_BlockoBlockVersion extends Model {
         terminal_logger.debug("update :: Update object Id: " + this.id);
 
         super.update();
+
+        if(blocko_block.type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlockVersion.class, blocko_block.type_of_block.project_id(), id))).start();
     }
 
     @JsonIgnore @Override public void delete() {
 
         terminal_logger.debug("delete :: Delete object Id: " + this.id);
 
-        // Case 1.1 :: We delete the object
-        super.delete();
+        removed_by_user = true;
+        super.update();
+
+        if(blocko_block.type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, blocko_block.type_of_block.project_id(), blocko_block.id))).start();
     }
 
 

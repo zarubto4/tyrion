@@ -52,7 +52,7 @@ public class Model_Project extends Model {
     @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Model_HomerInstance private_instance;
     @JsonIgnore @ManyToOne(fetch = FetchType.EAGER) public Model_Product product;
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()           { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    for( Model_Board m           : boards)         l.add(m.get_short_board());                return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()       { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( Model_BProgram m        : get_b_program_not_deleted()) l.add(m.get_b_program_short_detail()); return l;}
@@ -93,7 +93,42 @@ public class Model_Project extends Model {
 
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+        while(true){ // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            this.blob_project_link = product.get_path() + "/projects/" + this.id;
+            if (Model_Project.find.byId(this.id) == null) break;
+        }
+
+        Model_HomerInstance instance = new Model_HomerInstance();
+        instance.instance_type = Enum_Homer_instance_type.VIRTUAL;
+        instance.cloud_homer_server = Model_HomerServer.get_destination_server();
+        instance.save();
+
+        this.private_instance = instance;
+        super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        super.update();
+
+    }
+
+    @JsonIgnore @Override public void delete() {
+
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        //removed_by_user = true;
+        super.update();
+    }
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -195,28 +230,15 @@ public class Model_Project extends Model {
     }
 
 
+
+
+
+
+
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-
     @JsonIgnore private String blob_project_link;
-
-
-    @JsonIgnore @Override public void save() {
-
-        while(true){ // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            this.blob_project_link = product.get_path() + "/projects/" + this.id;
-            if (Model_Project.find.byId(this.id) == null) break;
-        }
-
-        Model_HomerInstance instance = new Model_HomerInstance();
-        instance.instance_type = Enum_Homer_instance_type.VIRTUAL;
-        instance.cloud_homer_server = Model_HomerServer.get_destination_server();
-        instance.save();
-
-        this.private_instance = instance;
-        super.save();
-    }
 
     @JsonIgnore @Transient
     public String get_path(){
@@ -242,8 +264,6 @@ public class Model_Project extends Model {
 
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin}
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
-   public static Model.Finder<String,Model_Project> find = new Finder<>(Model_Project.class);
 
 
 
@@ -262,8 +282,6 @@ public class Model_Project extends Model {
         // TODO Velký todo pro LEXU!!!
         return Model_Project.find.byId(project_id);
     }
-
-
 
     public static void becki_person_id_subscribe(String person_id){
 
@@ -336,6 +354,10 @@ public class Model_Project extends Model {
 
         return idlist.list;
     }
+
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+    public static Model.Finder<String,Model_Project> find = new Finder<>(Model_Project.class);
 
 
 }

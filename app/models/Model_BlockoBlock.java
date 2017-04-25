@@ -41,6 +41,9 @@ public class Model_BlockoBlock extends Model {
 
     @JsonIgnore  public Integer order_position;
 
+    @JsonIgnore              public boolean removed_by_user;
+
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
@@ -112,6 +115,8 @@ public class Model_BlockoBlock extends Model {
             if (get_byId(this.id) == null) break;
         }
         super.save();
+
+        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -119,14 +124,19 @@ public class Model_BlockoBlock extends Model {
         terminal_logger.debug("update :: Update object Id: " + this.id);
 
         super.update();
+
+        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, type_of_block.project_id(), id))).start();
     }
 
     @JsonIgnore @Override public void delete() {
 
         terminal_logger.debug("delete :: Delete object Id: " + this.id);
 
-        // Case 1.1 :: We delete the object
-        super.delete();
+        removed_by_user = true;
+        super.update();
+
+        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
+
     }
 
 /* ORDER ---------------------------------------------------------------------------------------------------------------*/

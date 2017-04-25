@@ -229,11 +229,11 @@ public class Model_ActualizationProcedure extends Model {
             if (Model_ActualizationProcedure.find.byId(this.id) == null) break;
         }
 
-        // Call notification about model update
-        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_HomerInstance.class, get_project_id(), this.id))).start();
-
         this.state = Enum_Update_group_procedure_state.not_start_yet;
         super.save();
+
+        // Call notification about model update
+        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_HomerInstance.class, get_project_id(), this.id))).start();
     }
 
     @JsonIgnore @Override
@@ -241,10 +241,10 @@ public class Model_ActualizationProcedure extends Model {
 
         terminal_logger.debug("update :: Update object Id: " + this.id);
 
+        super.update();
+
         // Call notification about model update
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_ActualizationProcedure.class, get_project_id(), this.id))).start();
-
-        super.update();
     }
 
     @JsonIgnore @Override

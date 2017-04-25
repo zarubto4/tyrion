@@ -27,13 +27,13 @@ public class Model_ProjectParticipant extends Model{
                                                  @ManyToOne @JsonIgnore public Model_Person person;
         @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Participant_status state;
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String id()          { if (person == null) return null; return person.id;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public String user_email()  { if (person == null) return this.user_email; return person.mail;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public String full_name()   { if (person == null) return "Unregistered user"; return person.full_name;}
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient  public String user_email;
 
@@ -41,6 +41,8 @@ public class Model_ProjectParticipant extends Model{
 
     @JsonIgnore @Override
     public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();

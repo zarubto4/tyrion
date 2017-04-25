@@ -30,6 +30,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
         for(String group_name :  Configuration.root().getStringList("Loggy.general_log_groups")){
             try {
 
+
                 // Get List of all Groups!
                 ArrayList<String> list = (ArrayList<String>) Configuration.root().getStringList("Loggy.groups." + group_name);
 
@@ -104,10 +105,19 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
                 }
 
 
-            }catch (Exception e){
-                e.printStackTrace();
-                System.err.println("ERROR");
-                System.err.println("ERROR:: Server_Logger_Developer:: Group " + group_name + " not found in configuration file!!! (Loggy.groups." + group_name + ")" );
+            }catch (NullPointerException e){
+
+                logger.error("#########################################################################################");
+                logger.error("##                                                                                        ");
+                logger.error("## Server_Logger_Developer:: Group " + group_name + " not found in configuration file!    ");
+                logger.error("## -->>>> (Loggy.groups." + group_name + ")                                               ");
+                logger.error("##  Please check log list in project folder in conf.aplication.conf file                  ");
+                logger.error("##  For more details check Tyrion Wiki documentation.                                     ");
+                logger.error("##                                                                                        ");
+                logger.error("#########################################################################################");
+
+            }catch (Exception e ){
+                logger.error("Error", e);
             }
         }
 
