@@ -7,7 +7,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
-import controllers.Controller_Dashboard;
 import controllers.Controller_Security;
 import models.Model_LoggyError;
 import org.slf4j.LoggerFactory;
@@ -100,7 +99,7 @@ public class Server_Logger extends Controller {
     public static void warn(Class<?> t_class, String log_message, Object... args ) {logger.warn(t_class, log_message, args);}
 
     public static void error(Class<?> t_class, String log_message) {
-        error(t_class, log_message, null);
+        error(t_class, log_message);
         logger.error(t_class, log_message);
     }
     public static void error(Class<?> t_class, String log_message, Object... args ) {

@@ -2,14 +2,14 @@ package utilities.enums;
 
 import com.avaje.ebean.annotation.EnumValue;
 import utilities.financial.Extension;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 
 public enum Enum_ExtensionType {
 
     /*
     !!!
     When you add new enum value, create corresponding class in utilities.financial package.
-    e.g. Pattern for enum Project is "public class Extension_Project implements Extension"
+    e.g. Pattern for enum Project is "public class  Extension_Project implements Extension"
     !!!
      */
 
@@ -26,8 +26,11 @@ public enum Enum_ExtensionType {
             return (Class<? extends Extension>) Class.forName("utilities.financial.Extension_" + this.name());
 
         } catch (Exception e){
-            Loggy.internalServerError("Enum_ExtensionType:: getExtensionClass:", e);
+            terminal_logger.internalServerError("getExtensionClass:", e);
             return null;
         }
     }
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Enum_ExtensionType.class);
+
 }

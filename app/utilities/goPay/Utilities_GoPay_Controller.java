@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_Product;
 import models.Model_Invoice;
 import models.Model_PaymentDetails;
-import play.Logger;
-import play.Logger.ALogger;
 import play.api.Play;
 import play.data.Form;
 import play.libs.F;
@@ -23,7 +21,8 @@ import utilities.enums.Enum_Payment_mode;
 
 import utilities.enums.Enum_Recurrence_cycle;
 import utilities.goPay.helps_objects.*;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.swagger.documentationClass.Swagger_Payment_Refund;
@@ -35,7 +34,7 @@ import java.util.Date;
 public class Utilities_GoPay_Controller extends Controller {
 
     // Logger
-    private static ALogger logger = Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Utilities_GoPay_Controller.class);
 
     private static String token;        // GoPay Connector - hash token sloužící k volání API k bráně GoPay
     private static Date last_refresh;   // čas, který hodnotí obnovu bezpečnostního tokenu - jeho živostnost je totiž 30 minut a šetří se tím dotazy!
@@ -46,13 +45,13 @@ public class Utilities_GoPay_Controller extends Controller {
     public static String getToken(){
         try {
 
-            logger.debug("GoPay_Controller:: getToken: Getting Token");
+            terminal_logger.debug("GoPay_Controller:: getToken: Getting Token");
             if( token != null && last_refresh != null && new Date().getTime() - last_refresh.getTime() <= 28*60*1000) {
-                logger.debug("GoPay_Controller:: getToken: Returning cached token");
+                terminal_logger.debug("GoPay_Controller:: getToken: Returning cached token");
                 return token;
             }
 
-            logger.debug("GoPay_Controller:: getToken: Token is expired or not obtained yet.");
+            terminal_logger.debug("GoPay_Controller:: getToken: Token is expired or not obtained yet.");
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
@@ -84,7 +83,7 @@ public class Utilities_GoPay_Controller extends Controller {
                     token = result.get("access_token").asText();
                     last_refresh = new Date();
 
-                    logger.debug("GoPay_Controller:: getToken: Returning new token");
+                    terminal_logger.debug("GoPay_Controller:: getToken: Returning new token");
 
                     return token;
 
@@ -96,7 +95,7 @@ public class Utilities_GoPay_Controller extends Controller {
 
             return null;
         }catch (Exception e){
-            Loggy.internalServerError("GoPay_Controller:: getToken:", e);
+            terminal_logger.internalServerError("GoPay_Controller:: getToken:", e);
             return null;
         }
     }
@@ -105,7 +104,7 @@ public class Utilities_GoPay_Controller extends Controller {
 
         //Rozhodnutí jestli jendnorázové nebo měsíční!
 
-        logger.debug("GoPay_Controller:: singlePayment: Creating new payment");
+        terminal_logger.debug("GoPay_Controller:: singlePayment: Creating new payment");
 
         GoPay_Payment payment = new GoPay_Payment();
         payment.setItems(invoice.invoice_items);
@@ -161,7 +160,7 @@ public class Utilities_GoPay_Controller extends Controller {
 
         if(local_token == null) throw new NullPointerException("Token for API in GoPay_Controller is null");
 
-        logger.debug("GoPay_Controller:: singlePayment: Sending Request for new Payment to GoPay with object: " + Json.toJson(payment).toString());
+        terminal_logger.debug("GoPay_Controller:: singlePayment: Sending Request for new Payment to GoPay with object: " + Json.toJson(payment).toString());
 
         WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
@@ -180,20 +179,20 @@ public class Utilities_GoPay_Controller extends Controller {
                 response = responsePromise.get(10000).asJson();
 
             } catch (Exception e) {
-                Loggy.internalServerError("GoPay_Controller:: singlePayment: ", new Exception("Error getting result"));
+                terminal_logger.internalServerError("GoPay_Controller:: singlePayment: ", new Exception("Error getting result"));
                 continue;
             }
 
 
-            logger.debug("GoPay_Controller:: singlePayment: Response from GoPay: " + response.toString());
+            terminal_logger.debug("GoPay_Controller:: singlePayment: Response from GoPay: " + response.toString());
 
             final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(response);
             if (form.hasErrors())
-                Loggy.internalServerError("GoPay_Controller:: singlePayment: ", new Exception("Error while binding Json: " + form.errorsAsJson().toString()));
+                terminal_logger.internalServerError("GoPay_Controller:: singlePayment: ", new Exception("Error while binding Json: " + form.errorsAsJson().toString()));
             else {
                 GoPay_Result help = form.get();
 
-                logger.debug("GoPay_Controller:: singlePayment: Set GoPay ID to Invoice");
+                terminal_logger.debug("GoPay_Controller:: singlePayment: Set GoPay ID to Invoice");
 
                 invoice.gopay_id = help.id;
                 invoice.gopay_order_number = help.order_number;
@@ -204,7 +203,7 @@ public class Utilities_GoPay_Controller extends Controller {
 
                 if (help.recurrence != null && help.recurrence.recurrence_cycle == Enum_Recurrence_cycle.ON_DEMAND) {
 
-                    logger.debug("GoPay_Controller:: singlePayment: Set GoPay ID to Product because it is ON_DEMAND payment");
+                    terminal_logger.debug("GoPay_Controller:: singlePayment: Set GoPay ID to Product because it is ON_DEMAND payment");
 
                     product.archiveEvent("On demand payment", "On demand GoPay payment number: " + invoice.gopay_id + " was set", invoice.id);
 
@@ -220,14 +219,14 @@ public class Utilities_GoPay_Controller extends Controller {
 
     public static void onDemandPayment(Model_Invoice invoice) throws Exception{
 
-        logger.debug("GoPay_Controller:: onDemandPayment: Starting with procedure ON_DEMAND - taking money from Credit-Card");
+        terminal_logger.debug("GoPay_Controller:: onDemandPayment: Starting with procedure ON_DEMAND - taking money from Credit-Card");
 
         Calendar cal = Calendar.getInstance();
 
         // String[] monthNames_cz = {"Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"};
         String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-        logger.debug("GoPay_Controller:: onDemandPayment: Creating GoPay_Recurrence");
+        terminal_logger.debug("GoPay_Controller:: onDemandPayment: Creating GoPay_Recurrence");
         GoPay_Recurrence recurrence = new GoPay_Recurrence();
         recurrence.currency = Enum_Currency.USD;
         recurrence.setItems(invoice.getInvoiceItems());
@@ -235,7 +234,7 @@ public class Utilities_GoPay_Controller extends Controller {
         recurrence.order_description =  "Services for " + monthNames_en[cal.get(Calendar.MONTH)];
 
         // Token
-        logger.debug("GoPay_Controller:: onDemandPayment: Asking for token");
+        terminal_logger.debug("GoPay_Controller:: onDemandPayment: Asking for token");
         String local_token = getToken();
 
         if(local_token == null) throw new NullPointerException("Token for API in GoPay_Controller is null");
@@ -256,11 +255,11 @@ public class Utilities_GoPay_Controller extends Controller {
                         .setRequestTimeout(10000)
                         .post(Json.toJson(recurrence));
 
-                logger.debug("GoPay_Controller:: onDemandPayment: Sending request for new payment!");
+                terminal_logger.debug("GoPay_Controller:: onDemandPayment: Sending request for new payment!");
                 response = responsePromise.get(10000);
 
             } catch (Exception e) {
-                Loggy.internalServerError("GoPay_Controller:: onDemandPayment: ", new Exception("Error getting result"));
+                terminal_logger.internalServerError("GoPay_Controller:: onDemandPayment: ", new Exception("Error getting result"));
                 continue;
             }
         /*
@@ -284,7 +283,7 @@ public class Utilities_GoPay_Controller extends Controller {
 
             JsonNode result = response.asJson();
 
-            logger.debug("GoPay_Controller:: onDemandPayment: Status: {}, Result: {}", response.getStatus(), result);
+            terminal_logger.debug("GoPay_Controller:: onDemandPayment: Status: {}, Result: {}", response.getStatus(), result);
 
             switch (response.getStatus()) {
 
@@ -325,7 +324,7 @@ public class Utilities_GoPay_Controller extends Controller {
     public static void terminateOnDemand(Model_Product product) throws Exception{
 
         // Token
-        logger.debug("GoPay_Controller:: terminateOnDemand: Asking for token");
+        terminal_logger.debug("GoPay_Controller:: terminateOnDemand: Asking for token");
         String local_token = getToken();
 
         if(local_token == null) throw new NullPointerException("Token for API in GoPay_Controller is null");
@@ -347,12 +346,12 @@ public class Utilities_GoPay_Controller extends Controller {
                         .setRequestTimeout(10000)
                         .post("");
 
-                logger.debug("GoPay_Controller:: terminateOnDemand: Sending request to terminate on demand payment!");
+                terminal_logger.debug("GoPay_Controller:: terminateOnDemand: Sending request to terminate on demand payment!");
 
                 response = responsePromise.get(10000);
 
             } catch (Exception e) {
-                Loggy.internalServerError("GoPay_Controller:: terminateOnDemand: ", new Exception("Error getting result"));
+                terminal_logger.internalServerError("GoPay_Controller:: terminateOnDemand: ", new Exception("Error getting result"));
                 continue;
             }
 
@@ -377,7 +376,7 @@ public class Utilities_GoPay_Controller extends Controller {
     private static void refundPayment(Model_Invoice invoice, Long amount) throws Exception{
 
         // Token
-        logger.debug("GoPay_Controller:: refundPayment: Asking for token");
+        terminal_logger.debug("GoPay_Controller:: refundPayment: Asking for token");
         String local_token = getToken();
 
         if(local_token == null) throw new NullPointerException("Token for API in GoPay_Controller is null");
@@ -401,12 +400,12 @@ public class Utilities_GoPay_Controller extends Controller {
                         .setRequestTimeout(10000)
                         .post(Json.toJson(json));
 
-                logger.debug("GoPay_Controller:: refundPayment: Sending request to refund payment!");
+                terminal_logger.debug("GoPay_Controller:: refundPayment: Sending request to refund payment!");
 
                 response = responsePromise.get(10000);
 
             } catch (Exception e) {
-                Loggy.internalServerError("GoPay_Controller:: refundPayment: ", new Exception("Error getting result"));
+                terminal_logger.internalServerError("GoPay_Controller:: refundPayment: ", new Exception("Error getting result"));
                 continue;
             }
 
@@ -454,7 +453,7 @@ public class Utilities_GoPay_Controller extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -466,7 +465,7 @@ public class Utilities_GoPay_Controller extends Controller {
             return ok();
 
         } catch (Exception e){
-            Loggy.internalServerError("GoPay_Controller:: payment_notification:", e);
+            terminal_logger.internalServerError("GoPay_Controller:: payment_notification:", e);
             return ok();
         }
     }
@@ -479,7 +478,7 @@ public class Utilities_GoPay_Controller extends Controller {
             return redirect(Server.becki_mainUrl);
 
         } catch (Exception e) {
-            Loggy.internalServerError("GoPay_Controller:: payment_return:", e);
+            terminal_logger.internalServerError("GoPay_Controller:: payment_return:", e);
             return redirect(Server.becki_mainUrl);
         }
     }

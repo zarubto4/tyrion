@@ -10,6 +10,7 @@ import play.data.Form;
 import play.libs.Json;
 import utilities.enums.Enum_ExtensionType;
 import utilities.financial.*;
+import utilities.logger.Class_Logger;
 import utilities.loggy.Loggy;
 import utilities.swagger.outboundClass.Swagger_ProductExtension_Type;
 
@@ -27,6 +28,8 @@ import java.util.UUID;
 public class Model_ProductExtension extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_ProductExtension.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -152,7 +155,7 @@ public class Model_ProductExtension extends Model{
             return extension.getPrice(getConfig());
 
         } catch (Exception e) {
-            Loggy.internalServerError("Model_ProductExtension:: getPrice:", e);
+            terminal_logger.internalServerError("Model_ProductExtension:: getPrice:", e);
             return null;
         }
     }
@@ -184,7 +187,7 @@ public class Model_ProductExtension extends Model{
             return extension;
 
         } catch (Exception e){
-            Loggy.internalServerError("Model_ProductExtension:: getExtensionType:", e);
+            terminal_logger.internalServerError("Model_ProductExtension:: getExtensionType:", e);
             return null;
         }
     }
@@ -219,7 +222,7 @@ public class Model_ProductExtension extends Model{
             return types;
 
         } catch (Exception e){
-            Loggy.internalServerError("Model_ProductExtension:: getExtensionTypes:", e);
+            terminal_logger.internalServerError("Model_ProductExtension:: getExtensionTypes:", e);
             return new ArrayList<>();
         }
     }
@@ -255,11 +258,11 @@ public class Model_ProductExtension extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      @Transient public boolean create_permission()         {  return (product != null && product.payment_details.person.id.equals(Controller_Security.getPerson().id)) || Controller_Security.getPerson().has_permission("ProductExtension_create");}
-    @JsonIgnore                                      @Transient public boolean read_permission()           {  return product == null || product.payment_details.person.id.equals(Controller_Security.getPerson().id)   || Controller_Security.getPerson().has_permission("ProductExtension_read");  }
-    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean edit_permission()           {  return (product != null && product.payment_details.person.id.equals(Controller_Security.getPerson().id)) || Controller_Security.getPerson().has_permission("ProductExtension_edit");  }
-    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean act_deactivate_permission() {  return (product != null && product.payment_details.person.id.equals(Controller_Security.getPerson().id)) || Controller_Security.getPerson().has_permission("ProductExtension_act_deactivate"); }
-    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean delete_permission()         {  return Controller_Security.getPerson().has_permission("ProductExtension_delete");}
+    @JsonIgnore                                      @Transient public boolean create_permission()         {  return (product != null && product.payment_details.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_create");}
+    @JsonIgnore                                      @Transient public boolean read_permission()           {  return product == null || product.payment_details.person.id.equals(Controller_Security.get_person_id())   || Controller_Security.get_person().has_permission("ProductExtension_read");  }
+    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean edit_permission()           {  return (product != null && product.payment_details.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_edit");  }
+    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean act_deactivate_permission() {  return (product != null && product.payment_details.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_act_deactivate"); }
+    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean delete_permission()         {  return Controller_Security.get_person().has_permission("ProductExtension_delete");}
 
     public enum permissions{ProductExtension_create, ProductExtension_read, ProductExtension_edit, ProductExtension_act_deactivate, ProductExtension_delete}
 

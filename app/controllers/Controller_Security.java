@@ -34,7 +34,6 @@ import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 import views.html.super_general.login;
 import web_socket.services.WS_Becki_Website;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,7 @@ public class Controller_Security extends Controller {
  *
  *   Dále ověřuje validitu tokenů na Homer serveru, na Compilačním serveru, platnost Rest-API reqest tokenů (a jejich počet)
  *
- *   Na třídě se volá nejčastěji get_person a getPerson_id() které pomáhají z HTTP contextu vytáhnout token z cookie a díky
+ *   Na třídě se volá nejčastěji get_person a get_person_id() které pomáhají z HTTP contextu vytáhnout token z cookie a díky
  *   tomu rozpoznat uživatele a co za operace dělá.
  *
  */
@@ -69,7 +68,7 @@ public class Controller_Security extends Controller {
         return get_person() != null;
     }
 
-    public static String getPerson_id() {
+    public static String get_person_id() {
         try {
 
             String token = (String) Http.Context.current().args.get("person_token");
@@ -90,7 +89,7 @@ public class Controller_Security extends Controller {
     public static Model_Person get_person() {
         try {
 
-            String person_id = getPerson_id();
+            String person_id = get_person_id();
 
             if (person_id == null) return null;
 

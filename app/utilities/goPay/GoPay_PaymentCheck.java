@@ -2,7 +2,6 @@ package utilities.goPay;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import models.Model_Invoice;
-import play.Logger;
 import play.api.Play;
 import play.data.Form;
 import play.libs.F;
@@ -12,7 +11,7 @@ import utilities.Server;
 import utilities.enums.Enum_Payment_status;
 import utilities.fakturoid.Utilities_Fakturoid_Controller;
 import utilities.goPay.helps_objects.GoPay_Result;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,23 +20,23 @@ import java.util.List;
 public class GoPay_PaymentCheck {
 
     // Logger
-    private static Logger.ALogger logger = Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(GoPay_PaymentCheck.class);
 
     private static List<Long> payments = new ArrayList<>(); // Tady se hromadí id plateb, které je potřeba zkontrolovat
 
     public static void startPaymentCheckThread(){
-        logger.info("GoPay_PaymentCheck:: startPaymentCheckThread: starting");
+        terminal_logger.info("startPaymentCheckThread: starting");
         if(!check_payment_thread.isAlive()) check_payment_thread.start();
     }
 
     public static void addToQueue(Long payment){
 
-        logger.info("GoPay_PaymentCheck:: addToQueue: adding payment to queue");
+        terminal_logger.info("addToQueue: adding payment to queue");
 
         payments.add(payment);
 
         if(check_payment_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.debug("GoPay_PaymentCheck:: addToQueue: thread is sleeping, waiting for interruption!");
+            terminal_logger.debug("addToQueue: thread is sleeping, waiting for interruption!");
             check_payment_thread.interrupt();
         }
     }
@@ -52,7 +51,7 @@ public class GoPay_PaymentCheck {
 
                     if(!payments.isEmpty()) {
 
-                        logger.debug("GoPay_PaymentCheck:: check_payment_thread: checking {} payments ", payments.size());
+                        terminal_logger.debug("check_payment_thread: checking {} payments ", payments.size());
 
                         Long payment = payments.get(0);
 
@@ -62,13 +61,13 @@ public class GoPay_PaymentCheck {
 
                     } else {
 
-                        logger.debug("GoPay_PaymentCheck:: check_payment_thread: no payments, thread is going to sleep");
+                        terminal_logger.debug("check_payment_thread: no payments, thread is going to sleep");
                         sleep(2100000000);
                     }
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    Loggy.internalServerError("GoPay_PaymentCheck:: check_payment_thread:", e);
+                    terminal_logger.internalServerError("check_payment_thread:", e);
                 }
             }
         }
@@ -79,9 +78,9 @@ public class GoPay_PaymentCheck {
 
             String local_token = Utilities_GoPay_Controller.getToken();
 
-            logger.debug("GoPay_PaymentCheck:: checkPayment: Asking for payment state: gopay_id - {}", id);
+            terminal_logger.debug("checkPayment: Asking for payment state: gopay_id - {}", id);
 
-            logger.debug("GoPay_PaymentCheck:: checkPayment: Getting invoice");
+            terminal_logger.debug("checkPayment: Getting invoice");
             Model_Invoice invoice = Model_Invoice.find.where().eq("gopay_id", id).findUnique();
             if (invoice == null) throw new NullPointerException("Invoice is null. Cannot find it in database. Gopay ID was: " + id);
 
@@ -97,7 +96,7 @@ public class GoPay_PaymentCheck {
 
             JsonNode result = response.asJson();
 
-            logger.debug("GoPay_PaymentCheck:: checkPayment: Status: " + response.getStatus() + " Response " + result);
+            terminal_logger.debug("checkPayment: Status: " + response.getStatus() + " Response " + result);
 
             if (response.getStatus() == 200) {
                 final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(result);
@@ -108,19 +107,19 @@ public class GoPay_PaymentCheck {
 
                     case "PAID":{
 
-                        logger.debug("GoPay_PaymentCheck:: checkPayment: state - PAID");
+                        terminal_logger.debug("checkPayment: state - PAID");
 
                         if (invoice.status != Enum_Payment_status.paid) {
 
                             /*
                             if (!Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/" + invoice.fakturoid_id + ".json"))
-                                Loggy.internalServerError("GoPay_PaymentCheck:: checkPayment:", new Exception("Error removing proforma from Fakturoid"));
+                                terminal_logger.internalServerError("checkPayment:", new Exception("Error removing proforma from Fakturoid"));
 
                             invoice = Utilities_Fakturoid_Controller.create_paid_invoice(invoice);
                             */
 
                             if (!Utilities_Fakturoid_Controller.fakturoid_post("/invoices/" + invoice.fakturoid_id + "/fire.json?event=pay_proforma"))
-                                Loggy.internalServerError("GoPay_PaymentCheck:: checkPayment:", new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
+                                terminal_logger.internalServerError("checkPayment:", new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
 
                             invoice.getProduct().credit_upload(help.amount * 10);
                             invoice.status = Enum_Payment_status.paid;
@@ -137,7 +136,7 @@ public class GoPay_PaymentCheck {
 
                     case "PAYMENT_METHOD_CHOSEN":{
 
-                        logger.debug("GoPay_PaymentCheck:: checkPayment: state - PAYMENT_METHOD_CHOSEN");
+                        terminal_logger.debug("checkPayment: state - PAYMENT_METHOD_CHOSEN");
 
                         // TODO notifikace - zdá se že nedokončil platbu
 
@@ -146,7 +145,7 @@ public class GoPay_PaymentCheck {
 
                     case  "REFUNDED":{
 
-                        logger.debug("GoPay_PaymentCheck:: checkPayment: state - REFUNDED");
+                        terminal_logger.debug("checkPayment: state - REFUNDED");
 
                         invoice.getProduct().credit_remove(help.amount * 10);
                         invoice.status = Enum_Payment_status.canceled;
@@ -161,7 +160,7 @@ public class GoPay_PaymentCheck {
 
                     case  "PARTIALLY_REFUNDED":{
 
-                        logger.debug("GoPay_PaymentCheck:: checkPayment: state - PARTIALLY_REFUNDED");
+                        terminal_logger.debug("checkPayment: state - PARTIALLY_REFUNDED");
 
                         // TODO úprava ve fakturoidu
 
@@ -172,7 +171,7 @@ public class GoPay_PaymentCheck {
 
                     case  "CANCELED":{
 
-                        logger.debug("GoPay_PaymentCheck:: checkPayment: state - CANCELED");
+                        terminal_logger.debug("checkPayment: state - CANCELED");
 
                         invoice.status = Enum_Payment_status.canceled;
                         invoice.gw_url = null;
@@ -183,7 +182,7 @@ public class GoPay_PaymentCheck {
 
                     case  "TIMEOUTED":{
 
-                        logger.debug("GoPay_PaymentCheck:: checkPayment: state - TIMEOUTED");
+                        terminal_logger.debug("checkPayment: state - TIMEOUTED");
 
                         // TODO notifikace
 
@@ -192,7 +191,7 @@ public class GoPay_PaymentCheck {
 
                     case  "CREATED":{
 
-                        logger.debug("GoPay_PaymentCheck:: checkPayment: state - CREATED");
+                        terminal_logger.debug("checkPayment: state - CREATED");
 
                         // TODO notifikace
 
@@ -213,7 +212,7 @@ public class GoPay_PaymentCheck {
             }
         } catch (Exception e){
 
-            Loggy.internalServerError("GoPay_PaymentCheck:: checkPayment:", e);
+            terminal_logger.internalServerError("checkPayment:", e);
         }
     }
 }

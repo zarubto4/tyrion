@@ -40,7 +40,6 @@ public class Controller_Person extends Controller {
 
     private static final Class_Logger terminal_logger = new Class_Logger(Controller_Person.class);
 
-
 //######################################################################################################################
 
     @ApiOperation(value = "register new Person",

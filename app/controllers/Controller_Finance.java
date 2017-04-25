@@ -371,7 +371,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -401,7 +401,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -420,10 +420,10 @@ public class Controller_Finance extends Controller {
     public Result productExtension_getAll(){
         try{
 
-            return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.get_byUser(Controller_Security.getPerson().id)));
+            return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.get_byUser(Controller_Security.get_person_id())));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -446,7 +446,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.getExtensionTypes()));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -498,7 +498,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -534,7 +534,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -570,7 +570,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -603,7 +603,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -825,7 +825,7 @@ public class Controller_Finance extends Controller {
     public Result product_create(){
         try{
 
-            terminal_logger.debug("Controller_Finance:: product_create: Creating new product");
+            terminal_logger.debug("product_create: Creating new product");
 
             // Zpracování Json
             final Form<Swagger_Product_New> form = Form.form(Swagger_Product_New.class).bindFromRequest();
@@ -837,7 +837,7 @@ public class Controller_Finance extends Controller {
 
             Model_Person person;
 
-            if(help.person_id == null) person = Controller_Security.getPerson();
+            if(help.person_id == null) person = Controller_Security.get_person();
             else person = Model_Person.get_byId(help.person_id);
 
             if (person == null) return GlobalResult.notFoundObject("Person not found");
@@ -891,11 +891,11 @@ public class Controller_Finance extends Controller {
                 payment_details.company_web              = help.company_web;
             }
 
-            logger.debug("Controller_Finance:: product_create: Payment details are done");
+            terminal_logger.debug("product_create: Payment details are done");
 
             if(tariff.payment_mode_required) {
 
-            terminal_logger.debug("Controller_Finance:: product_create: Payment mode Required");
+            terminal_logger.debug("product_create: Payment mode Required");
 
                 if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
@@ -904,7 +904,7 @@ public class Controller_Finance extends Controller {
 
             if(tariff.payment_method_required) {
 
-        terminal_logger.debug("Controller_Finance:: product_create: Payment method Required");
+        terminal_logger.debug("product_create: Payment method Required");
 
                 if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
 
@@ -955,11 +955,11 @@ public class Controller_Finance extends Controller {
             product.refresh();
 
             if(!tariff.payment_required) {
-                terminal_logger.debug("Controller_Finance:: product_create:: Payment is not required!");
+                terminal_logger.debug("product_create:: Payment is not required!");
                 return GlobalResult.created(Json.toJson(product));
             }
 
-            terminal_logger.debug("Controller_Finance:: product_create:: Creating invoice");
+            terminal_logger.debug("product_create:: Creating invoice");
 
             Model_Invoice invoice = new Model_Invoice();
             invoice.method = product.method;
@@ -975,19 +975,19 @@ public class Controller_Finance extends Controller {
             invoice.invoice_items.add(invoice_item);
 
 
-            terminal_logger.debug("Controller_Finance:: product_create:: Saving invoice");
+            terminal_logger.debug("product_create:: Saving invoice");
 
-            logger.debug("Controller_Finance:: product_create::  Creating Proforma in fakturoid");
+            terminal_logger.debug("product_create::  Creating Proforma in fakturoid");
             invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
             if (invoice == null) return GlobalResult.result_BadRequest("Failed to make an invoice, check your provided payment information");
-            logger.debug("Controller_Finance:: product_create::  Proforma done");
+            terminal_logger.debug("product_create::  Proforma done");
 
             invoice = Utilities_GoPay_Controller.singlePayment("First Payment", product, invoice);
 
             return Controller.ok(Json.toJson(invoice));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -1009,7 +1009,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            List<Model_Product> products = Model_Product.get_byOwner(Controller_Security.get_person().id);
+            List<Model_Product> products = Model_Product.get_byOwner(Controller_Security.get_person_id());
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(products));
@@ -1070,7 +1070,7 @@ public class Controller_Finance extends Controller {
             return  GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -1236,7 +1236,7 @@ public class Controller_Finance extends Controller {
             return  GlobalResult.result_ok(Json.toJson(invoice));
 
         } catch (Exception e) {
-            return Loggy.result_internalServerError(e, request());
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }
@@ -1418,7 +1418,7 @@ public class Controller_Finance extends Controller {
 
             List<Swagger_Product_Active> products = new ArrayList<>();
 
-            for(Model_Product product : Model_Product.get_applicableByOwner(Controller_Security.getPerson().id)){
+            for(Model_Product product : Model_Product.get_applicableByOwner(Controller_Security.get_person().id)){
                 Swagger_Product_Active help = new Swagger_Product_Active();
                 help.id = product.id;
                 help.name = product.name;

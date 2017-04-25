@@ -19,8 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of Invoice",
-        value = "Invoice")
+@ApiModel( value = "Invoice", description = "Model of Invoice")
 public class Model_Invoice extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -160,8 +159,8 @@ public class Model_Invoice extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Invoice_create");}
-    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().payment_details.person.id.equals(Controller_Security.getPerson().id) || Controller_Security.getPerson().has_permission("Invoice_read");}
+    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Invoice_create");}
+    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Invoice_read");}
     @JsonIgnore @Transient public boolean remind_permission() {  return true;  }
     @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
     @JsonIgnore @Transient public boolean delete_permission() {  return true;  }

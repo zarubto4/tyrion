@@ -11,7 +11,7 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.enums.Enum_Payment_status;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 
 import java.util.Date;
 import java.util.List;
@@ -21,11 +21,11 @@ public class Job_ArtificialFinancialCallback implements Job {
     public Job_ArtificialFinancialCallback(){}
 
     // Logger
-    private static play.Logger.ALogger logger = play.Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Job_ArtificialFinancialCallback.class);
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Job_ArtificialFinancialCallback:: execute: Executing Job_ArtificialFinancialCallback");
+        terminal_logger.info("execute: Executing Job_ArtificialFinancialCallback");
 
         if(!callback_thread.isAlive()) callback_thread.start();
     }
@@ -36,7 +36,7 @@ public class Job_ArtificialFinancialCallback implements Job {
         public void run() {
             try {
 
-                logger.debug("Job_ArtificialFinancialCallback:: callback_thread: concurrent thread started on {}", new Date());
+                terminal_logger.debug("callback_thread: concurrent thread started on {}", new Date());
 
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
@@ -59,7 +59,7 @@ public class Job_ArtificialFinancialCallback implements Job {
 
                     WSResponse response = responsePromise.get(5000);
 
-                    logger.debug("Job_ArtificialFinancialCallback:: callback_thread: Sending notification for payment: {} - response: {}", invoice.gopay_id, response.getStatus());
+                    terminal_logger.debug("callback_thread: Sending notification for payment: {} - response: {}", invoice.gopay_id, response.getStatus());
                 }
 
                 for (Model_Invoice invoice : invoices_for_fakturoid) {
@@ -77,14 +77,14 @@ public class Job_ArtificialFinancialCallback implements Job {
 
                     WSResponse response = responsePromise.get(5000);
 
-                    logger.debug("Job_ArtificialFinancialCallback:: callback_thread: Sending notification for invoice: {} - response: {}", invoice.fakturoid_id, response.getStatus());
+                    terminal_logger.debug("callback_thread: Sending notification for invoice: {} - response: {}", invoice.fakturoid_id, response.getStatus());
                 }
 
             } catch (Exception e) {
-                Loggy.internalServerError("Job_ArtificialFinancialCallback:: callback_thread:", e);
+                terminal_logger.internalServerError("callback_thread:", e);
             }
 
-            logger.debug("Job_ArtificialFinancialCallback:: callback_thread: thread stopped on {}", new Date());
+            terminal_logger.debug("callback_thread: thread stopped on {}", new Date());
         }
     };
 }

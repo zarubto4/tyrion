@@ -1,6 +1,5 @@
 # --- !Ups
 
-alter table model_example_model_name rename column date_of_create to created;
 alter table model_general_tariff_label rename to model_tariff_label;
 alter table model_tariff_label rename general_tariff_id to tariff_id;
 alter table model_tariff_label drop column if exists extensions_id cascade;
@@ -65,8 +64,44 @@ alter table model_invoice rename date_of_create to created;
 
 alter table model_invoice_item alter column unit_price type bigint;
 
-drop table if exists GeneralTariffExt cascade;
+alter table model_blocko_block
+  add order_position integer,
+  add removed_by_user boolean;
 
+alter table model_type_of_block
+  add order_position integer,
+  add removed_by_user boolean;
+
+alter table model_type_of_widget
+  add order_position integer,
+  add removed_by_user boolean;
+
+alter table model_blocko_block_version add removed_by_user boolean;
+alter table model_board add date_of_user_registration timestamp;
+alter table model_cprogram_update_plan add count_of_tries integer;
+alter table model_grid_widget add order_position integer;
+alter table model_homer_instance add removed_by_user boolean;
+alter table model_mprogram add removed_by_user boolean;
+alter table model_type_of_board add removed_by_user boolean;
+
+create table model_type_of_board_features (
+  id                        varchar(255) not null,
+  name                      varchar(255),
+  constraint pk_model_type_of_board_features primary key (id))
+;
+
+create table model_type_of_board_features_mod (
+  model_type_of_board_features_id varchar(255) not null,
+  model_type_of_board_id         varchar(255) not null,
+  constraint pk_model_type_of_board_features_mod primary key (model_type_of_board_features_id, model_type_of_board_id))
+;
+
+alter table model_ccompilation
+  drop constraint if exists ck_model_ccompilation_status,
+  add constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','hardware_unstable','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined'));
+
+drop table if exists model_example_model_name cascade;
+drop table if exists GeneralTariffExt cascade;
 drop table if exists GeneralTariffExt_model_product cascade;
 
 alter table model_tariff
@@ -93,45 +128,11 @@ create index ix_model_product_extension_pr_61 on model_product_extension (produc
 
 alter table model_product add constraint fk_model_product_tariff_64 foreign key (tariff_id) references model_tariff (id);
 
-ALTER TABLE model_blocko_block ADD order_position integer;
-ALTER TABLE model_board ADD date_of_user_registration timestamp;
-
-
-ALTER TABLE model_blocko_block DROP FOREIGN KEY ck_model_ccompilation_status;
-
-ALTER TABLE model_cprogram_update_plan ADD count_of_tries integer;
-
-ALTER TABLE model_grid_widget ADD order_position integer;
-ALTER TABLE model_type_of_widget ADD removed_by_user integer;
-
-ALTER TABLE model_homer_instance ADD removed_by_user boolean;
-
-ALTER TABLE model_type_of_block ADD order_position integer;
-ALTER TABLE model_type_of_block ADD removed_by_user integer;
-
-
-ALTER TABLE model_mprogram ADD removed_by_user boolean;
-
-create table model_type_of_board_features (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  constraint pk_model_type_of_board_features primary key (id))
-;
-
-ALTER TABLE model_type_of_widget ADD order_position integer;
-
-create table model_type_of_board_features_mod (
-  model_type_of_board_features_id varchar(255) not null,
-  model_type_of_board_id         varchar(255) not null,
-  constraint pk_model_type_of_board_features_mod primary key (model_type_of_board_features_id, model_type_of_board_id))
-;
-
 alter table model_type_of_board_features_mod add constraint fk_model_type_of_board_featur_01 foreign key (model_type_of_board_features_id) references model_type_of_board_features (id);
 alter table model_type_of_board_features_mod add constraint fk_model_type_of_board_featur_02 foreign key (model_type_of_board_id) references model_type_of_board (id);
 
 # --- !Downs
 
-alter table model_example_model_name rename column created to date_of_create;
 alter table model_tariff_label rename to model_general_tariff_label;
 alter table model_general_tariff_label rename column tariff_id to general_tariff_id;
 alter table model_general_tariff_label add column extensions_id varchar(255);
@@ -193,6 +194,40 @@ create table GeneralTariffExt (
   general_tariff_included_id varchar(255),
   general_tariff_optional_id varchar(255),
   constraint pk_GeneralTariffExt primary key (id));
+
+alter table model_blocko_block
+  drop if exists order_position cascade,
+  drop if exists removed_by_user cascade;
+
+alter table model_type_of_block
+  drop if exists order_position cascade,
+  drop if exists removed_by_user cascade;
+
+alter table model_type_of_widget
+  drop if exists order_position cascade,
+  drop if exists removed_by_user cascade;
+
+alter table model_blocko_block_version drop if exists removed_by_user cascade;
+alter table model_board drop if exists date_of_user_registration cascade;
+alter table model_cprogram_update_plan drop if exists count_of_tries cascade;
+alter table model_grid_widget drop if exists order_position cascade;
+alter table model_homer_instance drop if exists removed_by_user cascade;
+alter table model_mprogram drop if exists removed_by_user cascade;
+alter table model_type_of_board drop if exists removed_by_user cascade;
+
+create table model_example_model_name (
+  id                        varchar(255) not null,
+  date_of_create            timestamp,
+  constraint pk_model_example_model_name primary key (id))
+;
+
+drop table if exists model_type_of_board_features_mod cascade;
+drop table if exists model_type_of_board_features cascade;
+
+alter table model_ccompilation
+  drop constraint if exists ck_model_ccompilation_status,
+  add constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined'));
+
 
 alter table model_general_tariff_label
   drop constraint if exists pk_model_tariff_label cascade,

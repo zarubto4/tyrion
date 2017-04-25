@@ -25,7 +25,6 @@ import utilities.goPay.Utilities_GoPay_Controller;
 import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,8 +32,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
-@ApiModel(description = "Model of Product",
-        value = "Product")
+@ApiModel( value = "Product", description = "Model of Product")
 public class Model_Product extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -155,7 +153,7 @@ public class Model_Product extends Model {
     public void credit_upload(Long credit){
         try {
 
-            logger.debug("Model_Product:: credit_upload: {} credit", credit);
+            terminal_logger.debug("Model_Product:: credit_upload: {} credit", credit);
 
             this.credit += credit;
 
@@ -168,7 +166,7 @@ public class Model_Product extends Model {
             // TODO notifikace - nahrál se credit/nepovedlo se
 
         } catch (Exception e) {
-            Loggy.internalServerError("Model_Product:: credit_upload:", e);
+            terminal_logger.internalServerError("Model_Product:: credit_upload:", e);
         }
     }
 
@@ -176,7 +174,7 @@ public class Model_Product extends Model {
     public void credit_remove(Long credit){
         try {
 
-            logger.debug("Model_Product:: credit_remove: {} credit", credit);
+            terminal_logger.debug("Model_Product:: credit_remove: {} credit", credit);
 
             this.credit -= credit;
 
@@ -189,7 +187,7 @@ public class Model_Product extends Model {
             // TODO notifikace - odečetl se credit/nepovedlo se
 
         } catch (Exception e) {
-            Loggy.internalServerError("Model_Product:: credit_remove:", e);
+            terminal_logger.internalServerError("Model_Product:: credit_remove:", e);
         }
     }
 
@@ -207,7 +205,7 @@ public class Model_Product extends Model {
             return true;
 
         } catch (Exception e) {
-            Loggy.internalServerError("Model_Product:: terminateOnDemand:", e);
+            terminal_logger.internalServerError("Model_Product:: terminateOnDemand:", e);
             return false;
         }
     }
@@ -227,7 +225,7 @@ public class Model_Product extends Model {
             return help;
 
         } catch (Exception e) {
-            Loggy.internalServerError("Model_Product:: getFinancialHistory:", e);
+            terminal_logger.internalServerError("Model_Product:: getFinancialHistory:", e);
             return null;
         }
     }
@@ -251,7 +249,7 @@ public class Model_Product extends Model {
             this.update();
 
         } catch (Exception e) {
-            Loggy.internalServerError("Model_Product:: archiveEvent:", e);
+            terminal_logger.internalServerError("Model_Product:: archiveEvent:", e);
         }
     }
 

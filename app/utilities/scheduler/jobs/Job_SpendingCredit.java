@@ -12,7 +12,7 @@ import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_warning;
 import utilities.fakturoid.Utilities_Fakturoid_Controller;
 import utilities.goPay.Utilities_GoPay_Controller;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 
 import java.util.Date;
 import java.util.List;
@@ -22,7 +22,7 @@ public class Job_SpendingCredit implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger logger = new Class_Logger(WS_Send_message.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Job_SpendingCredit.class);
 
 //**********************************************************************************************************************
 
@@ -30,7 +30,7 @@ public class Job_SpendingCredit implements Job {
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("Job_SpendingCredit:: execute: Executing Job_SpendingCredit");
+        terminal_logger.info("execute: Executing Job_SpendingCredit");
 
         if(!spend_credit_thread.isAlive()) spend_credit_thread.start();
     }
@@ -40,7 +40,7 @@ public class Job_SpendingCredit implements Job {
         @Override
         public void run() {
 
-            logger.debug("Job_SpendingCredit:: spend_credit_thread: concurrent thread started on {}", new Date());
+            terminal_logger.debug("spend_credit_thread: concurrent thread started on {}", new Date());
 
             try {
 
@@ -58,7 +58,7 @@ public class Job_SpendingCredit implements Job {
 
                     for (int page = 0; page <= page_total - 1; page++) {
 
-                        logger.debug("Job_SpendingCredit:: spend_credit_thread: procedure for page {} from {}", (page + 1), page_total);
+                        terminal_logger.debug("spend_credit_thread: procedure for page {} from {}", (page + 1), page_total);
 
                     /*
                      * Filter slouží k hledání těch produktů, kde by mělo dojít ke stržení kreditu
@@ -75,10 +75,10 @@ public class Job_SpendingCredit implements Job {
                     }
                 }
             } catch (Exception e) {
-                Loggy.internalServerError("Job_SpendingCredit:: spend_credit_thread:", e);
+                terminal_logger.internalServerError("spend_credit_thread:", e);
             }
 
-            logger.debug("Job_SpendingCredit:: spend_credit_thread: thread stopped on {}", new Date());
+            terminal_logger.debug("spend_credit_thread: thread stopped on {}", new Date());
         }
     };
 
@@ -88,7 +88,7 @@ public class Job_SpendingCredit implements Job {
     public static void spend(Model_Product product){
         try {
 
-            logger.info("Job_SpendingCredit:: spend: product ID: {}", product.id );
+            terminal_logger.info("spend: product ID: {}", product.id );
             Long total_spending = (long) 0;
             int daily = 1; //The number "1" determines how many times on one day is credit spent.
 
@@ -96,13 +96,13 @@ public class Job_SpendingCredit implements Job {
                 total_spending += extension.getPrice();
             }
 
-            logger.debug("Job_SpendingCredit:: spend: total spending: {}", total_spending);
-            logger.debug("Job_SpendingCredit:: spend: state before: {}", product.credit);
+            terminal_logger.debug("spend: total spending: {}", total_spending);
+            terminal_logger.debug("spend: state before: {}", product.credit);
 
             product.credit -= total_spending;
             product.update();
 
-            logger.debug("Job_SpendingCredit:: spend: actual state: {}", product.credit);
+            terminal_logger.debug("spend: actual state: {}", product.credit);
 
             Long daily_spending = daily * total_spending;
 
@@ -134,26 +134,26 @@ public class Job_SpendingCredit implements Job {
                 }
             }
         } catch (Exception e) {
-            Loggy.internalServerError("Job_SpendingCredit:: spend:", e);
+            terminal_logger.internalServerError("spend:", e);
         }
 
     }
 
     private static void spendCreditSaas(Model_Product product, Long daily_spending, int days){
 
-        logger.debug("Job_SpendingCredit:: spendCreditSaas: daily_spending: {}, days: {}", daily_spending, days);
+        terminal_logger.debug("spendCreditSaas: daily_spending: {}, days: {}", daily_spending, days);
 
         Model_Invoice invoice = product.pending_invoice();
 
         // Bank transfer - invoice and reminders must be sent in advance
         if(product.method == Enum_Payment_method.bank_transfer) {
 
-            logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer");
+            terminal_logger.debug("spendCreditSaas: bank transfer");
 
             // If credit will suffice only for 14 days - make new invoice
             if (invoice == null && days < 14){
 
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer: It is time to send an invoice");
+                terminal_logger.debug("spendCreditSaas: bank transfer: It is time to send an invoice");
 
                 invoice = new Model_Invoice();
                 invoice.method = product.method;
@@ -179,12 +179,12 @@ public class Job_SpendingCredit implements Job {
             }
 
             if (invoice == null) {
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer: The financial reserves are sufficient. Just send a notification");
+                terminal_logger.debug("spendCreditSaas: bank transfer: The financial reserves are sufficient. Just send a notification");
                 return;
             }
 
             if(invoice.warning == Enum_Payment_warning.zero_balance && product.credit < 0 && days < -20) {
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer: The product is in minus 20 times the average spending");
+                terminal_logger.debug("spendCreditSaas: bank transfer: The product is in minus 20 times the average spending");
 
                 invoice.warning = Enum_Payment_warning.deactivation;
                 invoice.update();
@@ -200,13 +200,13 @@ public class Job_SpendingCredit implements Job {
             }
 
             if(invoice.warning == Enum_Payment_warning.first && product.credit < 0){
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer: The product is in negative credit balance");
+                terminal_logger.debug("spendCreditSaas: bank transfer: The product is in negative credit balance");
 
                 invoice.warning = Enum_Payment_warning.zero_balance;
                 invoice.update();
 
                 // TODO Pošlu notifikaci
-                terminal_logger.warn("Spending_Credit_Every_Day:: Product ID::  bank transfer:: " +product.id + " It is time to send an invoice");
+                terminal_logger.warn("Product ID::  bank transfer:: " +product.id + " It is time to send an invoice");
                 // Vytvořím zálohovou fakturu
 
                 Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
@@ -216,7 +216,7 @@ public class Job_SpendingCredit implements Job {
             }
 
             if(invoice.warning == Enum_Payment_warning.none && days < 7 ){
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: bank transfer:  The Product is close to zero in financial balance");
+                terminal_logger.debug("spendCreditSaas: bank transfer:  The Product is close to zero in financial balance");
 
                 invoice.warning = Enum_Payment_warning.first;
                 invoice.update();
@@ -228,11 +228,11 @@ public class Job_SpendingCredit implements Job {
 
         }else if(product.method == Enum_Payment_method.credit_card){
 
-            logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card");
+            terminal_logger.debug("spendCreditSaas: credit card");
 
             if(invoice == null && days < 5){
 
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card: The Product is close to zero in financial balance. Credit will suffice for {}", days);
+                terminal_logger.debug("spendCreditSaas: credit card: The Product is close to zero in financial balance. Credit will suffice for {}", days);
 
                 invoice = new Model_Invoice();
                 invoice.method = product.method;
@@ -258,7 +258,7 @@ public class Job_SpendingCredit implements Job {
                         Utilities_GoPay_Controller.onDemandPayment(invoice);
 
                     } catch (Exception e) {
-                        Loggy.internalServerError("Job_SpendingCredit:: spendCreditSaas:", e);
+                        terminal_logger.internalServerError("spendCreditSaas:", e);
 
                         invoice = Utilities_GoPay_Controller.singlePayment("Substitute payment", product, invoice);
 
@@ -278,12 +278,12 @@ public class Job_SpendingCredit implements Job {
             }
 
             if (invoice == null){
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card: The financial reserves are sufficient. Just send a notification");
+                terminal_logger.debug("spendCreditSaas: credit card: The financial reserves are sufficient. Just send a notification");
                 return;
             }
 
             if(invoice.warning == Enum_Payment_warning.zero_balance && product.credit < 0 && days < -10 ){
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card: The product is in the minus 10 times the average spending");
+                terminal_logger.debug("spendCreditSaas: credit card: The product is in the minus 10 times the average spending");
 
                 invoice.warning = Enum_Payment_warning.deactivation;
                 invoice.update();
@@ -299,7 +299,7 @@ public class Job_SpendingCredit implements Job {
             }
 
             if(invoice.warning == Enum_Payment_warning.none && product.credit < 0){
-                logger.debug("Job_SpendingCredit:: spendCreditSaas: credit card: The account is in the minus");
+                terminal_logger.debug("spendCreditSaas: credit card: The account is in the minus");
 
                 invoice.warning = Enum_Payment_warning.zero_balance;
                 invoice.update();

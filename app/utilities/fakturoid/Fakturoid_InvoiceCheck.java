@@ -2,17 +2,15 @@ package utilities.fakturoid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import models.Model_Invoice;
-import play.Logger;
 import play.api.Play;
 import play.data.Form;
 import play.libs.F;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_status;
-import utilities.loggy.Loggy;
+import utilities.logger.Class_Logger;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,23 +19,23 @@ import java.util.List;
 public class Fakturoid_InvoiceCheck {
 
     // Logger
-    private static Logger.ALogger logger = Logger.of("Loggy");
+    private static final Class_Logger terminal_logger = new Class_Logger(Fakturoid_InvoiceCheck.class);
 
     private static List<Model_Invoice> invoices = new ArrayList<>(); // Tady se hromadí id plateb, které je potřeba zkontrolovat
 
     public static void startInvoiceCheckThread(){
-        logger.info("Fakturoid_InvoiceCheck:: startInvoiceCheckThread: starting");
+        terminal_logger.info("Fakturoid_InvoiceCheck:: startInvoiceCheckThread: starting");
         if(!check_invoice_thread.isAlive()) check_invoice_thread.start();
     }
 
     public static void addToQueue(Model_Invoice invoice){
 
-        logger.info("Fakturoid_InvoiceCheck:: addToQueue: adding payment to queue");
+        terminal_logger.info("Fakturoid_InvoiceCheck:: addToQueue: adding payment to queue");
 
         invoices.add(invoice);
 
         if(check_invoice_thread.getState() == Thread.State.TIMED_WAITING) {
-            logger.debug("GoPay_PaymentCheck:: addToQueue: thread is sleeping, waiting for interruption!");
+            terminal_logger.debug("GoPay_PaymentCheck:: addToQueue: thread is sleeping, waiting for interruption!");
             check_invoice_thread.interrupt();
         }
     }
@@ -52,7 +50,7 @@ public class Fakturoid_InvoiceCheck {
 
                     if(!invoices.isEmpty()) {
 
-                        logger.debug("Fakturoid_InvoiceCheck:: check_invoice_thread: checking {} invoices ", invoices.size());
+                        terminal_logger.debug("Fakturoid_InvoiceCheck:: check_invoice_thread: checking {} invoices ", invoices.size());
 
                         Model_Invoice invoice = invoices.get(0);
 
@@ -62,13 +60,13 @@ public class Fakturoid_InvoiceCheck {
 
                     } else {
 
-                        logger.debug("Fakturoid_InvoiceCheck:: check_invoice_thread: no invoices, thread is going to sleep");
+                        terminal_logger.debug("Fakturoid_InvoiceCheck:: check_invoice_thread: no invoices, thread is going to sleep");
                         sleep(2100000000);
                     }
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    Loggy.internalServerError("Fakturoid_InvoiceCheck:: check_invoice_thread:", e);
+                    terminal_logger.internalServerError("Fakturoid_InvoiceCheck:: check_invoice_thread:", e);
                 }
             }
         }
@@ -101,7 +99,7 @@ public class Fakturoid_InvoiceCheck {
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    Loggy.internalServerError("Fakturoid_InvoiceCheck:: checkInvoice:", e);
+                    terminal_logger.internalServerError("Fakturoid_InvoiceCheck:: checkInvoice:", e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -110,7 +108,7 @@ public class Fakturoid_InvoiceCheck {
 
                     case 200: {
 
-                        logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: GET: Result: {}", result.toString());
+                        terminal_logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: GET: Result: {}", result.toString());
 
                         // Binding Json with help object
                         final Form<Fakturoid_ResponseInvoice> form = Form.form(Fakturoid_ResponseInvoice.class).bind(result);
@@ -138,12 +136,12 @@ public class Fakturoid_InvoiceCheck {
 
                                         response2 = responsePromise2.get(5000);
 
-                                        logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: response statust for related_id {} is {}", help.related_id, response2.getStatus());
+                                        terminal_logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: response statust for related_id {} is {}", help.related_id, response2.getStatus());
 
                                         result2 = response2.asJson();
 
                                     } catch (Exception e) {
-                                        Loggy.internalServerError("Fakturoid_InvoiceCheck:: checkInvoice:", e);
+                                        terminal_logger.internalServerError("Fakturoid_InvoiceCheck:: checkInvoice:", e);
                                         Thread.sleep(2500);
                                         continue;
                                     }
@@ -157,8 +155,8 @@ public class Fakturoid_InvoiceCheck {
                                             if (form2.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form2.errorsAsJson().toString());
                                             Fakturoid_ResponseInvoice help2 = form2.get();
 
-                                            logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: local proforma id: {}, from request proforma id: {}", invoice.fakturoid_id, help2.related_id);
-                                            logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: local invoice id: {}, from request invoice id: {}", help.related_id, help2.id);
+                                            terminal_logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: local proforma id: {}, from request proforma id: {}", invoice.fakturoid_id, help2.related_id);
+                                            terminal_logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: local invoice id: {}, from request invoice id: {}", help.related_id, help2.id);
 
                                             invoice.proforma_id = invoice.fakturoid_id;
                                             invoice.fakturoid_id = help2.id;
@@ -178,7 +176,7 @@ public class Fakturoid_InvoiceCheck {
                                     break;
                                 }
                             } catch (Exception e) {
-                                Loggy.internalServerError("Fakturoid_InvoiceCheck:: checkInvoice:", e);
+                                terminal_logger.internalServerError("Fakturoid_InvoiceCheck:: checkInvoice:", e);
                                 invoice.getProduct().archiveEvent("Proforma paid", "System marked proforma as paid, but cannot transform it to invoice.", invoice.id);
                             }
                         }
@@ -199,7 +197,7 @@ public class Fakturoid_InvoiceCheck {
                             Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
                         }
 
-                        logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: set status to 'paid'");
+                        terminal_logger.debug("Fakturoid_InvoiceCheck:: checkInvoice: set status to 'paid'");
 
                         invoice.status = Enum_Payment_status.paid;
                         invoice.update();
@@ -214,7 +212,7 @@ public class Fakturoid_InvoiceCheck {
                 break;
             }
         } catch (Exception e) {
-            Loggy.internalServerError("Fakturoid_InvoiceCheck:: checkInvoice:", e);
+            terminal_logger.internalServerError("Fakturoid_InvoiceCheck:: checkInvoice:", e);
         }
     }
 }
