@@ -8,7 +8,6 @@ import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import org.springframework.core.annotation.Order;
 import utilities.cache.helps_objects.IdsList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
@@ -16,14 +15,11 @@ import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.*;
-
 import javax.persistence.*;
 import javax.persistence.OrderBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import com.avaje.ebean.Query;
 
 @Entity
 @ApiModel(value = "Project", description = "Model of Project")
@@ -65,9 +61,7 @@ public class Model_Project extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_name() { return product.name;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id() { return product.id;}
-
     @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}
-
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
 
         List<Model_ProjectParticipant> project_participants = this.participants;

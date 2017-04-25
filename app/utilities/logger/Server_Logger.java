@@ -93,15 +93,10 @@ public class Server_Logger extends Controller {
     public static void debug(Class<?> t_class, String log_message) {logger.debug(t_class, log_message);}
     public static void debug(Class<?> t_class, String log_message, Object... args ) {logger.debug(t_class, log_message, args);}
 
-    public static void warn(Class<?> t_class, String log_message) {
-        logger.warn(t_class, log_message);
-    }
+    public static void warn(Class<?> t_class, String log_message) {logger.warn(t_class, log_message);}
     public static void warn(Class<?> t_class, String log_message, Object... args ) {logger.warn(t_class, log_message, args);}
 
-    public static void error(Class<?> t_class, String log_message) {
-        error(t_class, log_message,"");
-        logger.error(t_class, log_message);
-    }
+    public static void error(Class<?> t_class, String log_message) {error(t_class, log_message,"");}
     public static void error(Class<?> t_class, String log_message, Object... args ) {
 
         String id = UUID.randomUUID().toString();

@@ -2239,7 +2239,6 @@ public class Controller_Board extends Controller {
             // Kotrola objektu
             Model_Board board = Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique();
 
-
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
 
             if(board == null ){
@@ -2251,7 +2250,6 @@ public class Controller_Board extends Controller {
             }else{
                 status.status = Enum_Board_registration_status.ALREADY_REGISTERED;
             }
-
 
             return GlobalResult.result_ok(Json.toJson(status));
 

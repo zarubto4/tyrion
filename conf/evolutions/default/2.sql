@@ -16,24 +16,24 @@ alter table model_tariff rename required_paid_that to payment_required;
 
 alter table model_tariff
   alter column credit_for_beginning type bigint,
-  drop column if exists price_in_usd;
+drop column if exists price_in_usd;
 
 create table model_product_extension (
-    id                        varchar(255) not null,
-    name                      varchar(255),
-    description               varchar(255),
-    color                     varchar(255),
-    type                      varchar(8),
-    config                    varchar(255),
-    order_position            integer,
-    active                    boolean,
-    removed                   boolean,
-    created                   timestamp,
-    product_id                varchar(255),
-    tariff_included_id        varchar(255),
-    tariff_optional_id        varchar(255),
-    constraint ck_model_product_extension_type check (type in ('Project','Log','Database')),
-    constraint pk_model_product_extension primary key (id));
+  id                        varchar(255) not null,
+  name                      varchar(255),
+  description               varchar(255),
+  color                     varchar(255),
+  type                      varchar(8),
+  config                    varchar(255),
+  order_position            integer,
+  active                    boolean,
+  removed                   boolean,
+  created                   timestamp,
+  product_id                varchar(255),
+  tariff_included_id        varchar(255),
+  tariff_optional_id        varchar(255),
+  constraint ck_model_product_extension_type check (type in ('Project','Log','Database')),
+  constraint pk_model_product_extension primary key (id));
 
 alter table model_product rename product_individual_name to name;
 alter table model_product rename general_tariff_id to tariff_id;
@@ -42,22 +42,22 @@ alter table model_product rename on_demand_active to on_demand;
 alter table model_product rename remaining_credit to credit;
 
 alter table model_product
-    add column business_model varchar(8),
-    alter credit type bigint,
-    add column financial_history TEXT,
-    add constraint ck_model_product_business_model check (business_model in ('saas','lifelong','fee'));
+  add column business_model varchar(8),
+  alter credit type bigint,
+add column financial_history TEXT,
+add constraint ck_model_product_business_model check (business_model in ('saas','lifelong','fee'));
 
 alter table model_invoice
-    add column gw_url varchar(255),
-    add column proforma_id bigint,
-    add column proforma_pdf_url varchar(255),
-    add column paid timestamp,
-    add column overdue timestamp,
-    alter column status type varchar(8),
-    add column warning varchar(12),
-    drop constraint if exists ck_model_invoice_status,
-    add constraint ck_model_invoice_status check (status in ('canceled','overdue','pending','paid')),
-    add constraint ck_model_invoice_warning check (warning in ('none','first','zero_balance','deactivation','second'));
+  add column gw_url varchar(255),
+  add column proforma_id bigint,
+  add column proforma_pdf_url varchar(255),
+  add column paid timestamp,
+  add column overdue timestamp,
+  alter column status type varchar(8),
+add column warning varchar(12),
+drop constraint if exists ck_model_invoice_status,
+add constraint ck_model_invoice_status check (status in ('canceled','overdue','pending','paid')),
+add constraint ck_model_invoice_warning check (warning in ('none','first','zero_balance','deactivation','second'));
 
 alter table model_invoice rename facturoid_invoice_id to fakturoid_id;
 alter table model_invoice rename facturoid_pdf_url to fakturoid_pdf_url;
@@ -99,7 +99,7 @@ create table model_type_of_board_features_mod (
 
 alter table model_ccompilation
   drop constraint if exists ck_model_ccompilation_status,
-  add constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','hardware_unstable','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined'));
+add constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','hardware_unstable','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined'));
 
 drop table if exists model_example_model_name cascade;
 drop table if exists GeneralTariffExt cascade;
@@ -107,16 +107,16 @@ drop table if exists GeneralTariffExt_model_product cascade;
 
 alter table model_tariff
   drop constraint if exists uq_model_general_tariff_identifi,
-  drop constraint if exists pk_model_general_tariff cascade,
-  add constraint uq_model_tariff_identifier unique (identifier),
-  add constraint pk_model_tariff primary key (id);
+drop constraint if exists pk_model_general_tariff cascade,
+add constraint uq_model_tariff_identifier unique (identifier),
+add constraint pk_model_tariff primary key (id);
 
 alter table model_tariff_label
   drop constraint if exists pk_model_general_tariff_label cascade,
-  drop constraint if exists fk_model_general_tariff_label_39 cascade,
-  add constraint pk_model_tariff_label primary key (id),
-  add constraint fk_model_tariff_label_tariff_39 foreign key (tariff_id) references model_tariff (id),
-  drop constraint if exists fk_model_general_tariff_label_40;
+drop constraint if exists fk_model_general_tariff_label_39 cascade,
+add constraint pk_model_tariff_label primary key (id),
+add constraint fk_model_tariff_label_tariff_39 foreign key (tariff_id) references model_tariff (id),
+drop constraint if exists fk_model_general_tariff_label_40;
 
 create index ix_model_tariff_label_tariff_39 on model_tariff_label (tariff_id);
 
@@ -150,7 +150,7 @@ alter table model_tariff rename payment_required to required_paid_that;
 
 alter table model_tariff
   alter column credit_for_beginning type float,
-  add column price_in_usd float;
+add column price_in_usd float;
 
 alter table model_tariff rename to model_general_tariff;
 
@@ -164,9 +164,9 @@ alter table model_product rename credit to remaining_credit;
 
 alter table model_product
   drop column if exists business_model,
-  alter remaining_credit type float,
-  drop column if exists financial_history,
-  drop constraint if exists ck_model_product_business_model;
+alter remaining_credit type float,
+drop column if exists financial_history,
+drop constraint if exists ck_model_product_business_model;
 
 alter table model_invoice rename fakturoid_id to facturoid_invoice_id;
 alter table model_invoice rename fakturoid_pdf_url to facturoid_pdf_url;
@@ -174,15 +174,15 @@ alter table model_invoice rename created to date_of_create;
 
 alter table model_invoice
   drop column if exists gw_url,
-  drop column if exists proforma_id,
-  drop column if exists proforma_pdf_url,
-  alter column status type varchar(14),
-  drop column if exists warning,
-  drop column if exists paid,
-  drop column if exists overdue,
-  drop constraint if exists ck_model_invoice_status,
-  add constraint ck_model_invoice_status check (status in ('paid','cancelled','created_waited','sent')),
-  drop constraint if exists ck_model_invoice_warning;
+drop column if exists proforma_id,
+drop column if exists proforma_pdf_url,
+alter column status type varchar(14),
+drop column if exists warning,
+drop column if exists paid,
+drop column if exists overdue,
+drop constraint if exists ck_model_invoice_status,
+add constraint ck_model_invoice_status check (status in ('paid','cancelled','created_waited','sent')),
+drop constraint if exists ck_model_invoice_warning;
 
 alter table model_invoice_item
   alter column unit_price type float;
@@ -201,15 +201,15 @@ create table GeneralTariffExt (
 
 alter table model_blocko_block
   drop if exists order_position cascade,
-  drop if exists removed_by_user cascade;
+drop if exists removed_by_user cascade;
 
 alter table model_type_of_block
   drop if exists order_position cascade,
-  drop if exists removed_by_user cascade;
+drop if exists removed_by_user cascade;
 
 alter table model_type_of_widget
   drop if exists order_position cascade,
-  drop if exists removed_by_user cascade;
+drop if exists removed_by_user cascade;
 
 alter table model_blocko_block_version drop if exists removed_by_user cascade;
 alter table model_board drop if exists date_of_user_registration cascade;
@@ -230,26 +230,24 @@ drop table if exists model_type_of_board_features cascade;
 
 alter table model_ccompilation
   drop constraint if exists ck_model_ccompilation_status,
-  add constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined'));
+add constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined'));
 
 
 alter table model_general_tariff_label
   drop constraint if exists pk_model_tariff_label cascade,
-  drop constraint if exists fk_model_tariff_label_39 cascade,
-  add constraint pk_model_general_tariff_label primary key (id),
-  add constraint fk_model_general_tariff_label_39 foreign key (general_tariff_id) references model_general_tariff (id),
-  add constraint fk_model_general_tariff_label_40 foreign key (extensions_id) references GeneralTariffExt (id);
+drop constraint if exists fk_model_tariff_label_39 cascade,
+add constraint pk_model_general_tariff_label primary key (id),
+add constraint fk_model_general_tariff_label_39 foreign key (general_tariff_id) references model_general_tariff (id),
+add constraint fk_model_general_tariff_label_40 foreign key (extensions_id) references GeneralTariffExt (id);
 
-drop index if exists ix_model_tariff_label_tariff_39;
-create index ix_model_general_tariff_label_39 on model_general_tariff_label (general_tariff_id);
 
 create index ix_model_general_tariff_label_40 on model_general_tariff_label (extensions_id);
 
 alter table model_general_tariff
   drop constraint if exists uq_model_tariff_identifier,
-  drop constraint if exists pk_model_tariff cascade,
-  add constraint uq_model_general_tariff_identifi unique (identificator),
-  add constraint pk_model_general_tariff primary key (id);
+drop constraint if exists pk_model_tariff cascade,
+add constraint uq_model_general_tariff_identifi unique (identificator),
+add constraint pk_model_general_tariff primary key (id);
 
 create table GeneralTariffExt_model_product (
   GeneralTariffExt_id            varchar(255) not null,
