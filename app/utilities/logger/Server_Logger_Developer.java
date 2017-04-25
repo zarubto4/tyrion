@@ -131,7 +131,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             Enum_Log_level log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).log_level;
 
-            if(log_level == Enum_Log_level.trace || log_level == Enum_Log_level.info || log_level == Enum_Log_level.debug || log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error ){
+            if(log_level == Enum_Log_level.trace){
 
               logger.trace(t_class.getSimpleName() + ":: " + log_message);
             }
@@ -146,7 +146,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             Enum_Log_level log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).log_level;
 
-            if(log_level == Enum_Log_level.trace || log_level == Enum_Log_level.info || log_level == Enum_Log_level.debug || log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error ){
+            if(log_level == Enum_Log_level.trace){
 
                 logger.trace(t_class.getSimpleName() + ":: " + log_message, args);
             }
@@ -160,7 +160,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             Enum_Log_level log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).log_level;
 
-            if(log_level == Enum_Log_level.info || log_level == Enum_Log_level.debug || log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error){
+            if(log_level == Enum_Log_level.trace || log_level == Enum_Log_level.info ){
 
                 logger.info(t_class.getSimpleName() + ":: " + log_message);
 
@@ -174,7 +174,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             Enum_Log_level log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).log_level;
 
-            if(log_level == Enum_Log_level.info || log_level == Enum_Log_level.debug || log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error){
+            if(log_level == Enum_Log_level.trace || log_level == Enum_Log_level.info){
 
                 logger.info(t_class.getSimpleName() + ":: " + log_message, args);
 
@@ -190,7 +190,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             Enum_Log_level log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).log_level;
 
-            if(log_level == Enum_Log_level.debug || log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error){
+            if(log_level == Enum_Log_level.trace || log_level == Enum_Log_level.info || log_level == Enum_Log_level.debug){
 
                 logger.debug(t_class.getSimpleName() + ":: " + log_message);
 
@@ -204,7 +204,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             Enum_Log_level log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).log_level;
 
-            if(log_level == Enum_Log_level.debug || log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error){
+            if(log_level == Enum_Log_level.trace || log_level == Enum_Log_level.info || log_level == Enum_Log_level.debug){
 
                 logger.debug(t_class.getSimpleName() + ":: " + log_message, args);
 
@@ -219,10 +219,8 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             Enum_Log_level log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).log_level;
 
-            if(log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error){
-
+            if(log_level == Enum_Log_level.trace || log_level == Enum_Log_level.info || log_level == Enum_Log_level.debug || log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error){
                 logger.warn(t_class.getSimpleName() + ":: " + log_message);
-
             }
         }
     }
@@ -233,7 +231,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             Enum_Log_level log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).log_level;
 
-            if(log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error){
+            if( log_level == Enum_Log_level.trace || log_level == Enum_Log_level.info || log_level == Enum_Log_level.debug || log_level == Enum_Log_level.warn || log_level == Enum_Log_level.error){
 
                 logger.warn(t_class.getSimpleName() + ":: " + log_message, args);
 

@@ -76,12 +76,9 @@ public class Model_HomerServer extends Model{
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient  public boolean server_is_online(){ return Controller_WebSocket.homer_servers.containsKey(this.unique_identificator);}
 
-
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
   
@@ -128,7 +125,6 @@ public class Model_HomerServer extends Model{
         cache.remove(this.unique_identificator);
 
         super.delete();
-        
     }
 
 
@@ -614,6 +610,7 @@ public class Model_HomerServer extends Model{
     public static final String CACHE = Model_HomerServer.class.getName() + "_MODEL";
 
     public static Cache<String, Model_HomerServer> cache = null; // Server_cache Override during server initialization
+
 
     public static Model_HomerServer get_model(String unique_identificator){
 

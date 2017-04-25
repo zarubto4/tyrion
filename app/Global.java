@@ -1,4 +1,5 @@
 import controllers.Controller_WebSocket;
+import models.Model_HomerServer;
 import models._Model_ExampleModelName;
 import play.Application;
 import play.GlobalSettings;
@@ -21,7 +22,7 @@ public class Global extends GlobalSettings {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    static play.Logger.ALogger  terminal_logger =  play.Logger.of("TYRION");
+    private static final Class_Logger terminal_logger = new Class_Logger(Global.class);
 
 /* On Start  -----------------------------------------------------------------------------------------------------------*/
 
@@ -31,39 +32,38 @@ public class Global extends GlobalSettings {
         try {
 
             // Set Logs
-            terminal_logger.warn(Enum_Terminal_Color.ANSI_YELLOW + "Global:: onStart: Starting the server on  {}" + Enum_Terminal_Color.ANSI_RESET, new Date());
-           Server_Logger.set_Logger();
+            Server_Logger.set_Logger();
 
            //1
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "Global:: onStart: Setting logback configuration" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Setting logback configuration" + Enum_Terminal_Color.ANSI_RESET);
            Server.setLogback();
 
            //2
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +  "Global:: onStart: Setting global values" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +  "onStart: Setting global values" + Enum_Terminal_Color.ANSI_RESET);
            Server.setServerValues();
 
            //3
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "Global:: onStart: Setting system Permission" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Setting system Permission" + Enum_Terminal_Color.ANSI_RESET);
            Server.setPermission();
 
            //4
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "Global:: onStart: Setting Directory for Files" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Setting Directory for Files" + Enum_Terminal_Color.ANSI_RESET);
            Server.setDirectory();
 
            //5
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "Global:: onStart: Starting threads" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Starting threads" + Enum_Terminal_Color.ANSI_RESET);
            Server.startThreads();
 
            //6
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "Global:: onStart: Starting all scheduler threads" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Starting all scheduler threads" + Enum_Terminal_Color.ANSI_RESET);
            Server.startSchedulingProcedures();
 
            //7
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "Global:: onStart: Initializing the cache layer" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Initializing the cache layer" + Enum_Terminal_Color.ANSI_RESET);
            Server.initCache();
 
            //8
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +"Global:: onStart: Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +"onStart: Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
            Server.setAdministrator();
 
 
@@ -92,21 +92,21 @@ public class Global extends GlobalSettings {
     @Override
     public void onStop(Application app){
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED +"Global:: onStop: Shutting down the server on {}" + Enum_Terminal_Color.ANSI_RESET, new Date());
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Shutting down the server on {}" + Enum_Terminal_Color.ANSI_RESET, new Date());
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "Global:: onStop: Disconnecting all Blocko Servers" + Enum_Terminal_Color.ANSI_RESET);
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Disconnecting all Blocko Servers" + Enum_Terminal_Color.ANSI_RESET);
         Controller_WebSocket.disconnect_all_homer_Servers();
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "Global:: onStop: Disconnecting all Compilation Servers" + Enum_Terminal_Color.ANSI_RESET);
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Disconnecting all Compilation Servers" + Enum_Terminal_Color.ANSI_RESET);
         Controller_WebSocket.disconnect_all_Compilation_Servers();
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "Global:: onStop: Closing cache layer" + Enum_Terminal_Color.ANSI_RESET);
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Closing cache layer" + Enum_Terminal_Color.ANSI_RESET);
         Server_Cache.stopCache();
 
         if(Server.server_mode == Enum_Tyrion_Server_mode.developer || Server.server_mode == Enum_Tyrion_Server_mode.stage){
             try {
 
-                terminal_logger.warn("Global:: onStop: You have developer version - System removes CRON task from your RAM");
+                terminal_logger.warn("onStop: You have developer version - System removes CRON task from your RAM");
                 CustomScheduler.stopScheduler();
 
             } catch (Exception e) {

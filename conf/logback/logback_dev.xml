@@ -34,6 +34,7 @@
     <logger name="com.gargoylesoftware.htmlunit.javascript"                 level="WARN" />
     <logger name="org.avaje.ebean.SQL"                                      level="WARN" />
     <logger name="org.ehcache.core.EhcacheManager"                          level="WARN" />
+    <logger name="org.quartz" level="WARN" />
 
     <logger name="play"                 level="WARN" />
     <logger name="application"          level="DEBUG" />

@@ -1,33 +1,46 @@
 # Classes
  * Names should start with capital letter and should by written in **CamelCase**. (e.g. Model_TypeOfBlock)
  * Classes of models, controllers or swagger documentation classes are **prefixed** with "type" and underscore.
+   ( Controller_ , Model_ , Swagger_)
+    
 
 #### Controllers
  * name is prefixed with **Controller_**
  * pattern: *Controller_NameOfController*
  * e.g. **Controller_Blocko**
 
-#### Models
+#### Models (ORM)
  * name is prefixed with **Model_**
  * pattern: *Model_NameOfModel*
  * e.g. **Model_Person**
+ 
+#### Enums (Java enum class)
+  * name is prefixed with **Enum_**
+  * pattern: *Enum_NameOfEnum_enumType*
+  * e.g. **Enum_Compile_status**
+  * e.g. **Enum_Extension_type**
+  * e.g. **Enum_UpdateProcedureProgress_type** 
+  * e.g. **Enum_Notification_level** 
 
 #### Swagger
  * name is prefixed with **Swagger_**
  * pattern: *Swagger_NameOfObject_Operation*
  * e.g. **Swagger_TypeOfBlock_New**
 
-
 #### Scheduler jobs
  * name is prefixed with **Swagger_**
  * pattern: *Job__Name_of_Class*
-  * e.g. **Job_LogAzureUpload**
+ * e.g. **Job_LogAzureUpload**
 
 #### Others
  * Other classes in utilities should just use CamelCase.
 
+---
+
 # Methods
  * **Every** method name should start with lowercase letter and use camelCase.
+ 
+### In Controllers 
  * Action methods (in Controllers) have following pattern: *givenObject_operationOnObject()*
 
         public Result typeOfBlock_getByFilter(){
@@ -35,19 +48,23 @@
             return Result;
         }
 
-
+### In Models  
  * Methods in model classes which are annotated with **@JsonProperty** should be named like a field. Pattern: *every_letter_lowercase()*
 
         @JsonProperty
         public String project_id(){
             return this.project.id;
         }
-
+        
+### In other classes  
  * other methods should just use camelCase and first lowercase letter. Pattern: *firstLetterLowercase()*
 
         public boolean isValid(){
             return true;
         }
+
+---
+
 
 # Fields and variables
  * Class fields in models have **every** letter lowercase and words are divided by underscore. Pattern: *this_is_field*

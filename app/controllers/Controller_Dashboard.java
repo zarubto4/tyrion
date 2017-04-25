@@ -285,10 +285,10 @@ public class Controller_Dashboard extends Controller {
     }
 
 
-    public Result ping_homer_server(String identificator) {
+    public Result ping_homer_server(String unique_identificator) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.get_model(identificator);
+            Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
 
             return GlobalResult.result_ok(Json.toJson(server.ping()));
         }catch (Exception e){
@@ -346,9 +346,9 @@ public class Controller_Dashboard extends Controller {
 
 
 
-    public Result  show_websocket_server_detail(String server_identificator) {
+    public Result  show_websocket_server_detail(String unique_identificator) {
 
-        Model_HomerServer server = Model_HomerServer.get_model(server_identificator);
+        Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
         if(server == null) return show_web_socket_stats();
 
 

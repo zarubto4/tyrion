@@ -99,7 +99,7 @@ public class Server_Logger extends Controller {
     public static void warn(Class<?> t_class, String log_message, Object... args ) {logger.warn(t_class, log_message, args);}
 
     public static void error(Class<?> t_class, String log_message) {
-        error(t_class, log_message);
+        error(t_class, log_message,""); 
         logger.error(t_class, log_message);
     }
     public static void error(Class<?> t_class, String log_message, Object... args ) {
