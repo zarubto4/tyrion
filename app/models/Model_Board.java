@@ -99,8 +99,8 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_version_name()     { return  actual_boot_loader == null ? null : actual_boot_loader.name; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_id()               { return  actual_boot_loader == null ? null : actual_boot_loader.id;}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = false) public String avaible_bootloader_version_name()   { if(type_of_board.main_boot_loader != null && type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return type_of_board.main_boot_loader.name; else return null;}
-    @JsonProperty  @Transient @ApiModelProperty(required = false) public String avaible_bootloader_id()             { if(type_of_board.main_boot_loader != null && type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return type_of_board.main_boot_loader.id; else return null;}
+    @JsonProperty  @Transient @ApiModelProperty(required = false) public String available_bootloader_version_name()   { if(type_of_board.main_boot_loader != null && type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return type_of_board.main_boot_loader.name; else return null;}
+    @JsonProperty  @Transient @ApiModelProperty(required = false) public String available_bootloader_id()             { if(type_of_board.main_boot_loader != null && type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return type_of_board.main_boot_loader.id; else return null;}
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) List<Enum_Board_Alert> alert_list(){
         List<Enum_Board_Alert> list = new ArrayList<>();
@@ -718,7 +718,7 @@ public class Model_Board extends Model {
 
 
     @JsonIgnore @Transient  public void device_change_server(Model_HomerServer homerServer){
-        
+
         try {
 
             terminal_logger.debug("device_change_server :: operation :: Device Id:: " + this.id);
@@ -796,7 +796,7 @@ public class Model_Board extends Model {
         try {
 
             terminal_logger.debug("update_bootloader :: operation");
-            
+
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
             procedure.state = Enum_Update_group_procedure_state.not_start_yet;
             procedure.type_of_update = type_of_update;
@@ -856,7 +856,7 @@ public class Model_Board extends Model {
 
             procedure.refresh();
             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
-        
+
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
@@ -867,7 +867,7 @@ public class Model_Board extends Model {
         try {
 
             terminal_logger.debug("update_firmware :: operation");
-            
+
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
             procedure.state = Enum_Update_group_procedure_state.not_start_yet;
             procedure.type_of_update = type_of_update;
@@ -918,7 +918,7 @@ public class Model_Board extends Model {
             procedure.refresh();
 
             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
-        
+
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
@@ -929,7 +929,7 @@ public class Model_Board extends Model {
         try {
 
             terminal_logger.debug("update_backup :: operation");
-            
+
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
             procedure.state = Enum_Update_group_procedure_state.not_start_yet;
             procedure.type_of_update = type_of_update;
@@ -991,7 +991,7 @@ public class Model_Board extends Model {
             procedure.update();
 
             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
-        
+
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
@@ -1001,7 +1001,7 @@ public class Model_Board extends Model {
         try{
 
             terminal_logger.debug("set_auto_backup :: operation");
-            
+
             Model_HomerInstance instance = board_for_update.get_instance();
             if(instance == null) {
                 terminal_logger.error("set_auto_backup:: on DeviceId:: " + board_for_update.id + " has not own instance");
@@ -1103,7 +1103,7 @@ public class Model_Board extends Model {
     public void save(){
 
         terminal_logger.debug("save :: Creating new Object");
-        
+
         while(true){ // I need Unique Value
 
             String UUDID = UUID.randomUUID().toString().substring(0,14);
@@ -1121,7 +1121,7 @@ public class Model_Board extends Model {
     public void update(){
 
         terminal_logger.debug("update :: Update object Id: " + this.id);
-        
+
         //Cache Update
         cache.put(this.id, this);
 

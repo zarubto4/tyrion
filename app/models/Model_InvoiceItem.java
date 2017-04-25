@@ -25,19 +25,26 @@ public class Model_InvoiceItem extends Model {
                                                                          public String name; // Jméno položky
                                                                          public Long   quantity; // Počet položek
                                                                          public String unit_name; // Piece,
-                                                                         public Double unit_price; // Cena / Musí být public - zasílá se do fakturoidu
+                                                            @JsonIgnore  public Long unit_price; // Cena / Musí být public - zasílá se do fakturoidu
 
     @Enumerated(EnumType.STRING)   @ApiModelProperty(required = true)    public Enum_Currency currency;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public String vat_rate(){return this.vat.toString();}
+    @JsonProperty @Transient public String vat_rate(){
 
-    @JsonProperty @Transient public Double unit_price_without_vat(){ return  unit_price  - (unit_price * (vat / (100 + vat)) );}
+        Long v = vat / 1000;
+
+        return v.toString();
+    }
+
+    @JsonProperty @Transient public Double unit_price_without_vat(){ return  ((double) (unit_price  - (unit_price * (vat / (100 + vat))))) / 1000;}
+
+    @JsonProperty public Double unit_price() { return ((double) unit_price) / 1000;}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @Transient public Double vat = 21.0;
+    @Transient public Long vat = (long) 21000;
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

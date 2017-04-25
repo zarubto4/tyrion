@@ -1,12 +1,16 @@
-@import models.Model_GeneralTariffExtensions
+@import models.Model_ProductExtension
 
-@(extension: Model_GeneralTariffExtensions)
+@(extension: Model_ProductExtension)
 
 <section class="content-header">
     <h1> Extension - @extension.name </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
-        <li class="active"><i class="fa fa-share"></i> Special Extension </li>
+        <li class="active"><i class="fa fa-share"></i> @if(extension.tariff_included != null){
+        @extension.tariff_included.name
+        }else{
+        @extension.tariff_optional.name
+        }</li>
         <li class="active"><i class="fa fa-wrench"></i> @extension.name </li>
     </ol>
 </section>
@@ -21,105 +25,57 @@
                     <h3 class="box-title">General Extension information</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
+                        </div>
+                    </div>
                 </div>
                 <div class="box-body">
                     <form id="extension_main_form">
 
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">Tariff Id</label>
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Tariff Id</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="id" value="@extension.id"  name="id" readonly>
                             </div>
-                        </div><br>
+                        </div>
 
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Tarif name</label>
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Tarif name</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="name" value="@extension.name"  name="name">
                             </div>
-                        </div><br>
+                        </div>
 
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Tariff description</label>
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Tariff description</label>
 
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" id="description" value="@extension.description"  name="description">
                             </div>
-                        </div><br>
+                        </div>
 
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Color</label>
-
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@extension.color"  name="color">
-                            </div>
-                        </div><br><br>
-
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Price in USD</label>
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Color</label>
 
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@extension.price_in_usd"  name="price_in_usd">
+                                <input type="text" class="form-control" id="name" value="@extension.color"  name="color">
                             </div>
-                        </div><br><br>
+                        </div>
+
+                        <div class="box-body">
+                            <label for="extension_main_form" class="col-sm-2 control-label">Price in USD</label>
+
+                            <div class="col-sm-10">
+
+                            </div>
+                        </div>
 
 
                     </form>
                 </div>
                 <div class="box-footer">
-                    <button id="createCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="updateGeneralTariffExtension()">Save changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Tarifs Labes in Extension Package</h3>
-                    <div class="pull-right">
-                        <div class="btn-group">
-                            <td><button class="btn btn-block btn-info" type="button" onclick="openNewGeneralTariffExtensionLabelModal('@extension.id')">Add New Label</button></td>
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
-                </div>
-                <div class="box-body">
-                    <table id="allGeneralsTariffExtensionLabel" class="table table-bordered">
-                        <tr>
-                            <th>ID</th>
-                            <th>Order</th>
-                            <th>Label</th>
-                            <th>Description (Po najetí myškou)</th>
-                            <th>Icon</th>
-                            <th>Icon</th>
-                            <th>Up</th>
-                            <th>Down</th>
-                            <th>E</th>
-                            <th>X</th>
-                        </tr>
-                        @for(label <- extension.labels){
-                            <tr>
-                                <td>@label.id</td>
-                                <td>@label.order_position</td>
-                                <td>@label.label</td>
-                                <td>@label.description</td>
-                                <td><i class="fa fa-fw @label.icon"></i></td>
-                                <td>@label.icon</td>
-                                <td>@if(label.order_position != 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariffExtensionLabel('@label.id')">Up</button>}</td>
-                                <td>@if(extension.labels.length != label.order_position){<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariffExtensionLabel('@label.id')">Down</button>}</td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="openEditGeneralTariffExtensionLabelModal('@label.id', '@label.label', '@label.description', '@label.icon')">E</button></td>
-                                <td><button class="btn btn-block btn-danger" type="button" onclick="removeGeneralTariffExtensionLabel('@label.id')">X</button></td>
-                            </tr>
-                        }
-
-                    </table>
-                </div>
-                <div class="box-footer">
+                    <button id="updateExtensionButton" value="" class="btn btn-primary" type="button" onclick="updateGeneralTariffExtension()">Save changes</button>
                 </div>
             </div>
         </div>
@@ -200,7 +156,7 @@
             function updateGeneralTariffExtension(){
                 model_data = $("#extension_main_form").serializeObject();
                 $.ajax({
-                    url: '@routes.Controller_Finance.tariff_general_extension_edit()',
+                    url: '@routes.Controller_Finance.tariffExtension_update()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -256,35 +212,13 @@
                 $('#editGeneralTariffExtensionLabelModal_icon').val(icon);
             }
 
-            function newGeneralTariffExtensionLabel(){
-                model_data = $("#newGeneralTariffExtensionLabelForm").serializeObject();
-                $.ajax({
-                    url: '@routes.Controller_Finance.tariff_general_label_extension_create()',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
-                        "Content-Type":"application/json"
-                    },
-                    data: JSON.stringify(model_data),
-                    dataType: 'json',
-                    success:function(e){
-                        $("#newGeneralTariffExtensionLabelForm input[type=text]").val("");
-                        $("#newGeneralTariffExtensionLabelModal").css("display","none");
-                        $('#allGeneralsTariffExtensionLabel').load(document.URL +  ' #allGeneralsTariffExtensionLabel');
-                    },
-                    error:function(e) {
-                        alert("Unsuccessful.");
-                    }
-                })
-            }
 
             function editGeneralTariffExtensionLabel(){
 
                 model_data = $("#editGeneralTariffLabelForm").serializeObject();
 
                 $.ajax({
-                    url: '@routes.Controller_Finance.tariff_general_label_edit()',
+                    url: '@routes.Controller_Finance.tariffLabel_update()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -306,7 +240,7 @@
 
             function removeGeneralTariffExtensionLabel(id){
                 $.ajax({
-                    url: '@routes.Controller_Finance.tariff_general_label_remove("")' + id,
+                    url: '@routes.Controller_Finance.tariffLabel_delete("")' + id,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
@@ -322,7 +256,7 @@
 
             function upGeneralTariffExtensionLabel(id){
                 $.ajax({
-                    url: '@routes.Controller_Finance.tariff_general_label_edit_up("")' + id,
+                    url: '@routes.Controller_Finance.tariffLabel_up("")' + id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
@@ -338,7 +272,7 @@
 
             function downGeneralTariffExtensionLabel(id){
                 $.ajax({
-                    url: '@routes.Controller_Finance.tariff_general_label_edit_down("")' + id,
+                    url: '@routes.Controller_Finance.tariffLabel_down("")' + id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")

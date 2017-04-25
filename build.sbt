@@ -43,7 +43,8 @@ libraryDependencies ++= Seq(
 
   javaJdbc,
   filters,
-  javaWs
+  javaWs,
+  evolutions
 )
 
 resolvers += "JBoss" at "https://repository.jboss.org/"

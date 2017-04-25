@@ -11,7 +11,7 @@
   </ol>
 </section>
 
-@*/*/*  Modals ---------------------------------------------------------------------------------------------   */*/*@
+<!--  Modals ####################################################################################################### -->
 
 <div id="newCProgramModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newCProgramModalTitle">
   <div class="modal-dialog" role="document">
@@ -196,7 +196,7 @@
   </div>
 </div>
 
-@*/*/*  Content ---------------------------------------------------------------------------------------------   */*/*@
+<!--  Content ###################################################################################################### -->
 
 <section class="content">
   <div class="row">
@@ -207,7 +207,7 @@
           <button class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newCProgramModal" title="New CProgram"><i class="fa fa-plus"></i></button>
         </div>
         <div class="box-header with-border">
-          <select id="selectTypeOfBoard" class="form-control select2" style="width: 100%;">
+          <select id="selectTypeOfBoard" class="form-control select2" style="width: 100%;" title="Select Type of Board">
             <option selected="selected" disabled>Choose Type of Board</option>
             @for(typeOfBoard <- Model_TypeOfBoard.find.all()){
               <option onclick="getCProgramsByType('@typeOfBoard.id')">@typeOfBoard.name</option>
@@ -215,7 +215,7 @@
           </select>
         </div>
         <div class="box-header with-border">
-          <select id="selectCProgram" class="form-control select2" style="width: 100%;">
+          <select id="selectCProgram" class="form-control select2" style="width: 100%;" title="Select Code Program">
             <option selected="selected" disabled>Choose Type of Board first(above)</option>
           </select>
         </div>
@@ -229,11 +229,11 @@
           </div>
         </div>
         <div class="box-header with-border">
-          <label>Description</label>
+          <label for="openedCProgramDescription">Description</label>
           <textarea style="width: 100%;" id="openedCProgramDescription" readonly rows="3"></textarea>
         </div>
         <div class="box-header with-border">
-          <select id="selectVersion" class="form-control select2" style="width: 100%;">
+          <select id="selectVersion" class="form-control select2" style="width: 100%;" title="Select Version">
           </select>
         </div>
         <div class="box-header with-border">
@@ -245,9 +245,9 @@
           </div>
         </div>
         <div class="box-body">
-          <label>Compilation Status</label>
+          <label for="openedCProgramVersionCompilationStatus">Compilation Status</label>
           <textarea style="width: 100%;" id="openedCProgramVersionCompilationStatus" readonly rows="1"></textarea>
-          <label>Description</label>
+          <label for="openedCProgramVersionDescription">Description</label>
           <textarea style="width: 100%;" id="openedCProgramVersionDescription" readonly rows="3"></textarea>
         </div>
         <div class="box-footer">
@@ -314,6 +314,7 @@
   </div>
 </section>
 
+<!--  JavaScript ################################################################################################### -->
 
 <script>
 
@@ -1031,4 +1032,11 @@
           }
         }
 
+</script>
+<script>
+    $(function(){
+      var editor = ace.edit("editor");
+      //editor.setTheme("ace/theme/eclipse");
+      editor.getSession().setMode("ace/mode/c_cpp");
+    });
 </script>

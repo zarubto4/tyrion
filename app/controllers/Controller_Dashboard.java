@@ -32,6 +32,8 @@ import views.html.hardware_generator.generator_main;
 import views.html.helpdesk_tool.product_detail;
 import views.html.helpdesk_tool.project_detail;
 import views.html.helpdesk_tool.user_summary;
+import views.html.helpdesk_tool.product_detail;
+import views.html.helpdesk_tool.invoice;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
 import views.html.publiccprograms.approvalprocedurecprogram;
@@ -97,7 +99,7 @@ public class Controller_Dashboard extends Controller {
 // README ###############################################################################################################
 
     // Zobrazení readme podle MarkDown
- 
+
     public Result show_readme() throws IOException {
         try {
 
@@ -174,7 +176,7 @@ public class Controller_Dashboard extends Controller {
 
 // WEBSOCKET STATS ######################################################################################################
 
-     
+
     public Result disconnect_becki(String person_id, String token){
         try {
 
@@ -202,7 +204,7 @@ public class Controller_Dashboard extends Controller {
     }
 
 
-     
+
     public Result disconnect_blocko_server(String identificator) {
         try {
 
@@ -548,11 +550,11 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    public Result mac_adress_generator(){
+    public Result mac_address_generator(){
         try {
 
-            Html mac_adress_content = generator_main.render();
-            return return_page(mac_adress_content);
+            Html content = generator_main.render();
+            return return_page(content);
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -588,10 +590,24 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_Product product = Model_Product.get_byId(id);
-            if (product == null) return GlobalResult.notFoundObject("Project not found");
+            if (product == null) return GlobalResult.notFoundObject("Product not found");
 
             Html product_detail_content = product_detail.render(product);
             return return_page(product_detail_content);
+
+        }catch (Exception e){
+            return ok();
+        }
+    }
+
+    public Result invoice(String id){
+        try {
+
+            Model_Invoice inv = Model_Invoice.find.byId(id);
+            if (inv == null) return GlobalResult.notFoundObject("Invoice not found");
+
+            Html content = invoice.render(inv);
+            return return_page(content);
 
         }catch (Exception e){
             return ok();
@@ -646,12 +662,12 @@ public class Controller_Dashboard extends Controller {
             return return_page(test_content);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);   
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }
 
-    public Result general_tariffs_list(){
+    public Result tariffs(){
         try {
 
             Html list_of_tariffs = tariffs.render();
@@ -663,14 +679,13 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-
-    public Result general_tariff_edit(String general_tariff_id){
+    public Result tariff_edit(String tariff_id){
         try {
 
-            Model_GeneralTariff tariff = Model_GeneralTariff.find.byId(general_tariff_id);
+            Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
 
-            Html list_of_tariffs = tariff_edit.render(tariff);
-            return return_page(list_of_tariffs);
+            Html content = tariff_edit.render(tariff);
+            return return_page(content);
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -678,10 +693,10 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
-    public Result general_tariff_extension_edit(String extension_id){
+    public Result extension_edit(String extension_id){
         try {
 
-            Model_GeneralTariffExtensions extensions = Model_GeneralTariffExtensions.find.byId(extension_id);
+            Model_ProductExtension extensions = Model_ProductExtension.find.byId(extension_id);
 
             if(extensions == null) return not_found();
 

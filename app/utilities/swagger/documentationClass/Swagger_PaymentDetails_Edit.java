@@ -6,7 +6,7 @@ import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model with List of Board ID",
           value = "Tariff_details_edit")
-public class Swagger_Tariff_User_Details_Edit {
+public class Swagger_PaymentDetails_Edit {
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The street must have at least 4 characters")
@@ -60,9 +60,9 @@ public class Swagger_Tariff_User_Details_Edit {
     @ApiModelProperty(required = false, value =  "Required: only if company_account = true" + "The company_web url must be valid ")
     public String company_web;
 
-
-    @Constraints.Email()
-    @ApiModelProperty(required = false, value =  "Required: only if company_account = true" + "Email must be valid")
-    public String company_invoice_email;
+    @Constraints.Required
+    @Constraints.Email
+    @ApiModelProperty(required = true, value =  "Required: always. Email must be valid")
+    public String invoice_email;
 
 }

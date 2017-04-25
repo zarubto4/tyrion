@@ -77,7 +77,7 @@ DELETE         /person/connection/:connection_id                 @controllers.Co
 
 PUT            /person/deactivate/:person_id                     @controllers.Controller_Person.person_deactivate(person_id)
 PUT            /person/activate/:person_id                       @controllers.Controller_Person.person_activate(person_id)
-DELETE         /person/clean_all_tokens/:person_id               @controllers.Controller_Person.person_removeAllConnections(person_id)
+DELETE         /person/connections/:person_id                    @controllers.Controller_Person.person_removeAllConnections(person_id)
 PUT            /person/valid_email/:person_id                    @controllers.Controller_Person.person_validEmail(person_id)
 
 GET            /person/mail_authentication/:token                @controllers.Controller_Person.person_emailAuthentication(token)
@@ -129,36 +129,48 @@ GET            /secure/person/system_acces/:person_id                      @cont
 ################################################################################################################################################################################
 
 #Tarrifs
-GET            /tarifs/for_registration                                                     @controllers.Controller_Finance.get_products_tariffs()
-
+GET            /tariff                                                                      @controllers.Controller_Finance.tariff_getAll()
 
 #CRUD Tarrifs
 POST           /product                                                                     @controllers.Controller_Finance.product_create()
-GET            /product/all                                                                 @controllers.Controller_Finance.product_get_all()
+GET            /product/all                                                                 @controllers.Controller_Finance.product_getAll()
 PUT            /product/deactivate/:product_id                                              @controllers.Controller_Finance.product_deactivate(product_id)
 PUT            /product/activate/:product_id                                                @controllers.Controller_Finance.product_activate(product_id)
+PUT            /product/credit/:product_id                                                  @controllers.Controller_Finance.product_credit(product_id)
+PUT            /product/terminate_ondemand/:product_id                                      @controllers.Controller_Finance.product_terminateOnDemand(product_id)
 DELETE         /product/:product_id                                                         @controllers.Controller_Finance.product_delete(product_id)
 
-GET            /product/user_applicable                                                     @controllers.Controller_Finance.get_applicable_products_for_creating_new_project()
+POST           /product_extension                                                           @controllers.Controller_Finance.productExtension_create()
+GET            /product_extension                                                           @controllers.Controller_Finance.productExtension_getAll()
+GET            /product_extension/types                                                     @controllers.Controller_Finance.productExtension_getAllTypes()
+GET            /product_extension/:extension_id                                             @controllers.Controller_Finance.productExtension_get(extension_id)
+PUT            /product_extension/:extension_id                                             @controllers.Controller_Finance.productExtension_update(extension_id)
+PUT            /product_extension/activate/:extension_id                                    @controllers.Controller_Finance.productExtension_activate(extension_id)
+PUT            /product_extension/deactivate/:extension_id                                  @controllers.Controller_Finance.productExtension_deactivate(extension_id)
+DELETE         /product_extension/:extension_id                                             @controllers.Controller_Finance.productExtension_delete(extension_id)
 
-PUT            /product/details/:payment_details_id                                         @controllers.Controller_Finance.edit_payment_details(payment_details_id: Long)
-PUT            /product/general/:product_id                                                 @controllers.Controller_Finance.edit_general_product_details(product_id)
+GET            /product/user_applicable                                                     @controllers.Controller_Finance.product_getActive()
+
+PUT            /product/details/:payment_details_id                                         @controllers.Controller_Finance.paymentDetails_update(payment_details_id: Long)
+PUT            /product/general/:product_id                                                 @controllers.Controller_Finance.product_update(product_id)
 
 #GoPay
-GET            /go_pay/notification_url                                                     @utilities.goPay.Utilities_GoPay_Controller.call_back_Notification(id: Long)
-GET            /go_pay/return_url                                                           @utilities.goPay.Utilities_GoPay_Controller.call_back_Return_Url(id: Long)
+GET            /go_pay/notification                                                         @utilities.goPay.Utilities_GoPay_Controller.payment_notification(id: Long)
+GET            /go_pay/return                                                               @utilities.goPay.Utilities_GoPay_Controller.payment_return(id: Long)
 
 
 #Fakturoid
-GET             /invoice/get/:invoice_id                                                    @controllers.Controller_Finance.invoice_get(invoice_id)
-GET             /invoice/pdf/:invoice_id                                                    @utilities.fakturoid.Utilities_Fakturoid_Controller.invoice_get_pdf(invoice_id)
-POST            /invoice/reimbursement/:invoice_id                                          @controllers.Controller_Finance.pay_send_invoice(invoice_id)
-POST            /invoice/resend/:invoice_id                                                 @controllers.Controller_Finance.resend_invoice(invoice_id)
+GET            /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_get(invoice_id)
+GET            /invoice/pdf/:kind/:invoice_id                                               @utilities.fakturoid.Utilities_Fakturoid_Controller.invoice_get_pdf(kind, invoice_id)
+POST           /invoice/reimbursement/:invoice_id                                           @controllers.Controller_Finance.invoice_reimbursement(invoice_id)
+POST           /invoice/resend/:invoice_id                                                  @controllers.Controller_Finance.invoice_resend(invoice_id)
+POST           /fakturoid/callback                                                          @utilities.fakturoid.Utilities_Fakturoid_Controller.fakturoid_callback()
 
 # Obsluha pouze pro Byzance zaměstnance
-PUT             /invoice/set_pay/:invoice_id                                                @controllers.Controller_Finance.invoice_set_as_paid(invoice_id)
-PUT             /invoice/send_remainder/:invoice_id                                         @controllers.Controller_Finance.send_remainder_to_custumer(invoice_id)
-DELETE          /invoice/:invoice_id                                                        @controllers.Controller_Finance.invoice_remove(invoice_id)
+PUT            /invoice/set_pay/:invoice_id                                                 @controllers.Controller_Finance.invoice_set_as_paid(invoice_id)
+PUT            /invoice/send_remainder/:invoice_id                                          @controllers.Controller_Finance.invoice_reminder(invoice_id)
+DELETE         /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_delete(invoice_id)
+PUT            /invoice/refund/:invoice_id                                                  @utilities.goPay.Utilities_GoPay_Controller.payment_refund(invoice_id)
 
 
 #Project
@@ -483,17 +495,17 @@ DELETE          /admin/request_stats                            @utilities.reque
 GET             /admin/board_settings                           @controllers.Controller_Dashboard.basic_board_management()
 GET             /admin/board_summary                            @controllers.Controller_Dashboard.board_summary()
 GET             /admin/board_detail/:board_id                   @controllers.Controller_Dashboard.board_detail(board_id)
-GET             /admin/mac_adress_generator                     @controllers.Controller_Dashboard.mac_adress_generator()
+GET             /admin/mac_address_generator                    @controllers.Controller_Dashboard.mac_address_generator()
 GET             /admin/bootloader_settings/:type_of_board_id    @controllers.Controller_Dashboard.bootloader_management(type_of_board_id)
 
 # Admin - External Servers
 GET             /admin/external_servers                         @controllers.Controller_Dashboard.external_servers()
 
 # Admin - Help Desk
-GET             /admin/user_summary/                            @controllers.Controller_Dashboard.user_summary(email: String?="")
-GET             /admin/user_summary/:mail                       @controllers.Controller_Dashboard.user_summary(mail)
+GET             /admin/helpdesk_tool                            @controllers.Controller_Dashboard.user_summary(email: String?="")
 GET             /admin/helpdesk_tool/product/:product_id        @controllers.Controller_Dashboard.product_detail(product_id)
 GET             /admin/helpdesk_tool/project/:project_id        @controllers.Controller_Dashboard.project_detail(project_id)
+GET             /admin/helpdesk_tool/invoice/:invoice_id        @controllers.Controller_Dashboard.invoice(invoice_id)
 
 
 # Admin - Permission
@@ -510,9 +522,9 @@ GET             /admin/libraries                                @controllers.Con
 GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_approve_procedure()
 
 # Admin - Tariff Management
-GET             /admin/general_tariffs                          @controllers.Controller_Dashboard.general_tariffs_list()
-GET             /admin/general_tariffs/:general_tariff_id       @controllers.Controller_Dashboard.general_tariff_edit(general_tariff_id)
-GET             /admin/general_tariff_extension/:extension_id   @controllers.Controller_Dashboard.general_tariff_extension_edit(extension_id)
+GET             /admin/tariff                                   @controllers.Controller_Dashboard.tariffs()
+GET             /admin/tariff/:tariff_id                        @controllers.Controller_Dashboard.tariff_edit(tariff_id)
+GET             /admin/extension/:extension_id                  @controllers.Controller_Dashboard.extension_edit(extension_id)
 
 # Demo Data
 GET             /admin/demo_data                                @controllers.Controller_Dashboard.demo_data()
@@ -534,27 +546,27 @@ GET             /admin/test/log/clear                           @utilities.test.
 
 
 # Tariff
-POST            /admin/tariff                                   @controllers.Controller_Finance.tariff_general_create()
-PUT             /admin/tariff                                   @controllers.Controller_Finance.tariff_general_edit()
-PUT             /admin/tariff/deactive/:general_tariff_id       @controllers.Controller_Finance.tariff_general_deactivate(general_tariff_id)
-PUT             /admin/tariff/active/:general_tariff_id         @controllers.Controller_Finance.tariff_general_activate(general_tariff_id)
-PUT             /admin/tariff/up/:general_tariff_id             @controllers.Controller_Finance.tariff_general_up(general_tariff_id)
-PUT             /admin/tariff/down/:general_tariff_id           @controllers.Controller_Finance.tariff_general_down(general_tariff_id)
+POST            /admin/tariff                                   @controllers.Controller_Finance.tariff_create()
+PUT             /admin/tariff                                   @controllers.Controller_Finance.tariff_update()
+PUT             /admin/tariff/deactive/:tariff_id               @controllers.Controller_Finance.tariff_deactivate(tariff_id)
+PUT             /admin/tariff/active/:tariff_id                 @controllers.Controller_Finance.tariff_activate(tariff_id)
+PUT             /admin/tariff/up/:tariff_id                     @controllers.Controller_Finance.tariff_up(tariff_id)
+PUT             /admin/tariff/down/:tariff_id                   @controllers.Controller_Finance.tariff_down(tariff_id)
 
-POST            /admin/label/tariff                             @controllers.Controller_Finance.tariff_general_label_tariff_create()
-POST            /admin/label/extension                          @controllers.Controller_Finance.tariff_general_label_extension_create()
-PUT             /admin/label                                    @controllers.Controller_Finance.tariff_general_label_edit()
-PUT             /admin/label/up/:label_id                       @controllers.Controller_Finance.tariff_general_label_edit_up(label_id)
-PUT             /admin/label/down/:label_id                     @controllers.Controller_Finance.tariff_general_label_edit_down(label_id)
-DELETE          /admin/label/:label_id                          @controllers.Controller_Finance.tariff_general_label_remove(label_id)
+POST            /admin/label/tariff                             @controllers.Controller_Finance.tariffLabel_create()
+#POST            /admin/label/extension                          @controllers.Controller_Finance.tariff_general_label_extension_create()
+PUT             /admin/label                                    @controllers.Controller_Finance.tariffLabel_update()
+PUT             /admin/label/up/:label_id                       @controllers.Controller_Finance.tariffLabel_up(label_id)
+PUT             /admin/label/down/:label_id                     @controllers.Controller_Finance.tariffLabel_down(label_id)
+DELETE          /admin/label/:label_id                          @controllers.Controller_Finance.tariffLabel_delete(label_id)
 
-POST            /admin/extension                                @controllers.Controller_Finance.tariff_general_extension_create()
-PUT             /admin/extension                                @controllers.Controller_Finance.tariff_general_extension_edit()
-PUT             /admin/extension/up/:extension_id               @controllers.Controller_Finance.tariff_general_extension_edit_up(extension_id)
-PUT             /admin/extension/down/:extension_id             @controllers.Controller_Finance.tariff_general_extension_edit_down(extension_id)
-PUT             /admin/extension/deactive/:extension_id         @controllers.Controller_Finance.tariff_general_extension_deactivate(extension_id)
-PUT             /admin/extension/active/:extension_id           @controllers.Controller_Finance.tariff_general_extension_activate(extension_id)
-DELETE          /admin/extension/:extension_id                  @controllers.Controller_Finance.tariff_general_extension_delete(extension_id)
+POST            /admin/extension                                @controllers.Controller_Finance.tariffExtension_create()
+PUT             /admin/extension                                @controllers.Controller_Finance.tariffExtension_update()
+PUT             /admin/extension/up/:extension_id               @controllers.Controller_Finance.tariffExtension_up(extension_id)
+PUT             /admin/extension/down/:extension_id             @controllers.Controller_Finance.tariffExtension_down(extension_id)
+PUT             /admin/extension/deactive/:extension_id         @controllers.Controller_Finance.tariffExtension_deactivate(extension_id)
+PUT             /admin/extension/active/:extension_id           @controllers.Controller_Finance.tariffExtension_activate(extension_id)
+DELETE          /admin/extension/:extension_id                  @controllers.Controller_Finance.tariffExtension_delete(extension_id)
 
 #GET             /javascriptRoutes                               @controllers.Controller_Dashboard.javascriptRoutes()
 

@@ -14,7 +14,7 @@ public class GoPay_Payment {
     public GoPay_Payer payer;
     public GoPay_Target target = new GoPay_Target();
 
-    public long  amount = 0;
+    public long amount = 0;
     public Enum_Currency currency;
     public String order_number;
 
@@ -32,11 +32,11 @@ public class GoPay_Payment {
     public void setItems(List<Model_InvoiceItem> invoice_items){
 
         for(Model_InvoiceItem item :invoice_items){
-            amount += Math.round(item.unit_price*100);
+            amount += item.unit_price / 10;
 
             GoPay_Items go_item = new GoPay_Items();
             go_item.name = item.name;
-            go_item.amount =Math.round(item.unit_price*100);
+            go_item.amount = item.unit_price / 10;
        //     go_item.fee = (long) 0;
        //     go_item.quantity = item.quantity;
 

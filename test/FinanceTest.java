@@ -3,7 +3,7 @@ import controllers.routes;
 import junit.framework.TestCase;
 import models.Model_Person;
 import models.Model_Product;
-import models.Model_GeneralTariff;
+import models.Model_Tariff;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
@@ -26,8 +26,8 @@ public class FinanceTest extends TestHelper{
 
     public static FakeApplication app;
 
-    public static Model_GeneralTariff tariff_personal;
-    public static Model_GeneralTariff tariff_company;
+    public static Model_Tariff tariff_personal;
+    public static Model_Tariff tariff_company;
 
     public static Model_Product product;
 
@@ -47,8 +47,8 @@ public class FinanceTest extends TestHelper{
 
         adminToken = person_login(Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique());
 
-        tariff_personal = Model_GeneralTariff.find.where().eq("identificator", "geek").findUnique();
-        tariff_company = Model_GeneralTariff.find.where().eq("identificator", "business_1").findUnique();
+        tariff_personal = Model_Tariff.find.where().eq("identifier", "geek").findUnique();
+        tariff_company = Model_Tariff.find.where().eq("identifier", "business_1").findUnique();
 
         person = person_create();
         person_authenticate(person);
@@ -90,7 +90,7 @@ public class FinanceTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.Controller_Finance.get_products_tariffs().toString())
+                .uri(routes.Controller_Finance.tariff_getAll().toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -102,7 +102,7 @@ public class FinanceTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.Controller_Finance.get_applicable_products_for_creating_new_project().toString())
+                .uri(routes.Controller_Finance.product_getActive().toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);
@@ -115,7 +115,7 @@ public class FinanceTest extends TestHelper{
         ObjectNode body = Json.newObject();
 
         body.put("tariff_id", tariff_personal.id);
-        body.put("product_individual_name", UUID.randomUUID().toString());
+        body.put("name", UUID.randomUUID().toString());
         body.put("currency_type", "CZK");
         body.put("payment_mode", "monthly");
         body.put("city", UUID.randomUUID().toString());
@@ -140,7 +140,7 @@ public class FinanceTest extends TestHelper{
         ObjectNode body = Json.newObject();
 
         body.put("tariff_id", tariff_company.id);
-        body.put("product_individual_name", UUID.randomUUID().toString());
+        body.put("name", UUID.randomUUID().toString());
         body.put("currency_type", "CZK");
         body.put("city", UUID.randomUUID().toString());
         body.put("country", UUID.randomUUID().toString());
@@ -182,7 +182,7 @@ public class FinanceTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.Controller_Finance.edit_payment_details(product.payment_details.id).toString())
+                .uri(routes.Controller_Finance.paymentDetails_update(product.payment_details.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -195,12 +195,12 @@ public class FinanceTest extends TestHelper{
 
         ObjectNode body = Json.newObject();
 
-        body.put("product_individual_name", UUID.randomUUID().toString());
+        body.put("name", UUID.randomUUID().toString());
         body.put("currency_type", "EUR");
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.Controller_Finance.edit_general_product_details(product.id).toString())
+                .uri(routes.Controller_Finance.product_update(product.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 
@@ -226,7 +226,7 @@ public class FinanceTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(GET)
-                .uri(routes.Controller_Finance.product_get_all().toString())
+                .uri(routes.Controller_Finance.product_getAll().toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);

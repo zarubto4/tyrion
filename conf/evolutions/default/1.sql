@@ -1,5 +1,3 @@
-# --- Created by Ebean DDL
-# To stop Ebean DDL generation, remove this comment and start using Evolutions
 
 # --- !Ups
 
@@ -52,8 +50,6 @@ create table model_blocko_block (
   author_id                 varchar(255),
   type_of_block_id          varchar(255),
   producer_id               varchar(255),
-  order_position            integer,
-  removed_by_user           boolean,
   constraint pk_model_blocko_block primary key (id))
 ;
 
@@ -67,7 +63,6 @@ create table model_blocko_block_version (
   design_json               TEXT,
   logic_json                TEXT,
   blocko_block_id           varchar(255),
-  removed_by_user           boolean,
   constraint ck_model_blocko_block_version_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
   constraint pk_model_blocko_block_version primary key (id))
 ;
@@ -83,7 +78,6 @@ create table model_board (
   is_active                 boolean,
   backup_mode               boolean,
   date_of_create            timestamp,
-  date_of_user_registration timestamp,
   project_id                varchar(255),
   actual_c_program_version_id varchar(255),
   actual_backup_c_program_version_id varchar(255),
@@ -120,7 +114,7 @@ create table model_ccompilation (
   firmware_version_lib      varchar(255),
   firmware_build_id         varchar(255),
   firmware_build_datetime   varchar(255),
-  constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','hardware_unstable','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined')),
+  constraint ck_model_ccompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined')),
   constraint uq_model_ccompilation_c_compilat unique (c_compilation_version),
   constraint uq_model_ccompilation_bin_compil unique (bin_compilation_file_id),
   constraint pk_model_ccompilation primary key (id))
@@ -152,7 +146,6 @@ create table model_cprogram_update_plan (
   bootloader_id             varchar(255),
   binary_file_id            varchar(255),
   state                     varchar(23),
-  count_of_tries            integer,
   error                     varchar(255),
   error_code                integer,
   constraint ck_model_cprogram_update_plan_firmware_type check (firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),
@@ -178,6 +171,12 @@ create table CompilationServer (
   constraint uq_CompilationServer_personal_se unique (personal_server_name),
   constraint uq_CompilationServer_server_url unique (server_url),
   constraint pk_CompilationServer primary key (unique_identificator))
+;
+
+create table model_example_model_name (
+  id                        varchar(255) not null,
+  date_of_create            timestamp,
+  constraint pk_model_example_model_name primary key (id))
 ;
 
 create table model_file_record (
@@ -276,7 +275,6 @@ create table model_grid_widget (
   author_id                 varchar(255),
   type_of_widget_id         varchar(255),
   producer_id               varchar(255),
-  order_position            integer,
   constraint pk_model_grid_widget primary key (id))
 ;
 
@@ -298,7 +296,6 @@ create table model_homer_instance (
   blocko_instance_name      varchar(255) not null,
   cloud_homer_server_unique_identificator varchar(255),
   instance_type             varchar(10),
-  removed_by_user           boolean,
   constraint ck_model_homer_instance_instance_type check (instance_type in ('INDIVIDUAL','VIRTUAL')),
   constraint pk_model_homer_instance primary key (blocko_instance_name))
 ;
@@ -413,7 +410,6 @@ create table model_mprogram (
   id                        varchar(255) not null,
   name                      varchar(255),
   description               TEXT,
-  removed_by_user           boolean,
   date_of_create            timestamp,
   m_project_id              varchar(255),
   azure_m_program_link      varchar(255),
@@ -426,8 +422,8 @@ create table model_mproject (
   description               TEXT,
   date_of_create            timestamp,
   project_id                varchar(255),
-  removed_by_user           boolean,
   azure_m_project_link      varchar(255),
+  removed_by_user           boolean,
   constraint pk_model_mproject primary key (id))
 ;
 
@@ -601,8 +597,6 @@ create table model_type_of_block (
   name                      varchar(255),
   description               TEXT,
   project_id                varchar(255),
-  order_position            integer,
-  removed_by_user           boolean,
   constraint pk_model_type_of_block primary key (id))
 ;
 
@@ -617,16 +611,9 @@ create table model_type_of_board (
   processor_id              varchar(255),
   connectible_to_internet   boolean,
   picture_id                varchar(255),
-  removed_by_user           boolean,
   constraint uq_model_type_of_board_compiler_ unique (compiler_target_name),
   constraint uq_model_type_of_board_picture_i unique (picture_id),
   constraint pk_model_type_of_board primary key (id))
-;
-
-create table model_type_of_board_features (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  constraint pk_model_type_of_board_features primary key (id))
 ;
 
 create table model_type_of_widget (
@@ -634,8 +621,6 @@ create table model_type_of_widget (
   name                      varchar(255),
   description               TEXT,
   project_id                varchar(255),
-  order_position            integer,
-  removed_by_user           boolean,
   constraint pk_model_type_of_widget primary key (id))
 ;
 
@@ -709,12 +694,6 @@ create table model_security_role_model_permis (
   model_security_role_id         varchar(255) not null,
   model_permission_value         varchar(255) not null,
   constraint pk_model_security_role_model_permis primary key (model_security_role_id, model_permission_value))
-;
-
-create table model_type_of_board_features_mod (
-  model_type_of_board_features_id varchar(255) not null,
-  model_type_of_board_id         varchar(255) not null,
-  constraint pk_model_type_of_board_features_mod primary key (model_type_of_board_features_id, model_type_of_board_id))
 ;
 
 create table model_c_program_library_version (
@@ -921,10 +900,6 @@ alter table model_security_role_model_permis add constraint fk_model_security_ro
 
 alter table model_security_role_model_permis add constraint fk_model_security_role_model__02 foreign key (model_permission_value) references model_permission (value);
 
-alter table model_type_of_board_features_mod add constraint fk_model_type_of_board_featur_01 foreign key (model_type_of_board_features_id) references model_type_of_board_features (id);
-
-alter table model_type_of_board_features_mod add constraint fk_model_type_of_board_featur_02 foreign key (model_type_of_board_id) references model_type_of_board (id);
-
 alter table model_c_program_library_version add constraint fk_model_c_program_library_ve_01 foreign key (library_version_id) references model_version_object (id);
 
 alter table model_c_program_library_version add constraint fk_model_c_program_library_ve_02 foreign key (c_program_version_id) references model_version_object (id);
@@ -962,6 +937,8 @@ drop table if exists model_cprogram_update_plan cascade;
 drop table if exists model_change_property_token cascade;
 
 drop table if exists CompilationServer cascade;
+
+drop table if exists model_example_model_name cascade;
 
 drop table if exists model_file_record cascade;
 
@@ -1046,10 +1023,6 @@ drop table if exists model_security_role cascade;
 drop table if exists model_type_of_block cascade;
 
 drop table if exists model_type_of_board cascade;
-
-drop table if exists model_type_of_board_features_mod cascade;
-
-drop table if exists model_type_of_board_features cascade;
 
 drop table if exists model_type_of_widget cascade;
 

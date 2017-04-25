@@ -63,8 +63,8 @@ public class Model_Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()       { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    for( Model_HomerInstance m   : get_instances_not_deleted()) l.add(m.get_instance_short_detail());  return l;}
 
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.product_individual_name;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id() { return product.id;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_individual_name() { return product.name;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String   product_id() { return product.id;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}
 
@@ -251,16 +251,17 @@ public class Model_Project extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_permission()    {  return true;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()    {  return ( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_update");  }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean read_permission()      {  return ( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_read");}
+    @JsonIgnore   @ApiModelProperty(required = true) public boolean create_permission()    {return true;}
+    @JsonProperty @ApiModelProperty(required = true) public boolean update_permission()    {return (Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_update");}
+    @JsonIgnore   @ApiModelProperty(required = true) public boolean read_permission()      {return (Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_read");}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean unshare_permission()   {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_unshare"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean share_permission ()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_share");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean admin_permission ()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_admin");   }
+    @JsonProperty @ApiModelProperty(required = true) public boolean unshare_permission()   {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_unshare");}
+    @JsonProperty @ApiModelProperty(required = true) public boolean share_permission ()    {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_share");}
+    @JsonProperty @ApiModelProperty(required = true) public boolean admin_permission ()    {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person().id).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_admin");}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()      {  return ( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_edit");    }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()    {  return ( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person().id).where().eq("state", Enum_Participant_status.owner).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_delete");  }
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()      {return (Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_edit");}
+    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission()    {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person().id).where().eq("state", Enum_Participant_status.owner).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_delete");}
+    @JsonProperty @ApiModelProperty(required = true) public boolean financial_permission() {return true;}
 
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin}
 

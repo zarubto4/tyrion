@@ -2,12 +2,13 @@ package controllers;
 
 
 import io.swagger.annotations.Api;
+import models.Model_Product;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.Class_Logger;
+import utilities.response.GlobalResult;
 
-import java.util.ArrayList;
-import java.util.List;
+import static utilities.scheduler.jobs.Job_SpendingCredit.spend;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Wiky extends Controller {
@@ -17,22 +18,12 @@ public class Controller_Wiky extends Controller {
     private static final Class_Logger terminal_logger = new Class_Logger(Controller_WebSocket.class);
 
      public Result test1(){
-
          try {
 
-             List<Long> numbers = new ArrayList<>();
+             Model_Product product = Model_Product.get_byId(request().body().asJson().get("id").asText());
+             if (product == null) return GlobalResult.notFoundObject("Product not found");
 
-             for (int i = 0; i < 10; i++){
-                 numbers.add(new Long(i));
-             }
-
-             numbers.forEach(number->{
-                 if (number % 2 == 0){
-                     System.out.println(number);
-                 }
-             });
-
-             numbers.forEach(System.out::println);
+             spend(product);
 
              return ok();
          }catch (Exception e){

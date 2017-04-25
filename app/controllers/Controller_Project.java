@@ -58,10 +58,10 @@ public class Controller_Project extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response =  Model_Project.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_Project.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -75,17 +75,16 @@ public class Controller_Project extends Controller {
 
             Model_Product product = Model_Product.get_byId(help.product_id);
             if(product == null){return GlobalResult.notFoundObject("Product not found");}
-            if(!product.create_new_project()) return GlobalResult.result_BadRequest(product.create_new_project_if_not());
 
             // Vytvoření objektu
             Model_Project project  = new Model_Project();
-            project.name = help.project_name;
-            project.description = help.project_description;
+            project.name = help.name;
+            project.description = help.description;
             project.product = product;
 
             // Kontrola oprávnění těsně před uložením
             if (!project.create_permission())  return GlobalResult.forbidden_Permission();
-
+            if (!project.financial_permission())  return GlobalResult.result_BadRequest("Cannot create new project because of low financial resources.");
 
             // Uložení objektu
             project.save();
@@ -102,8 +101,7 @@ public class Controller_Project extends Controller {
             project.refresh();
 
             // Vrácení objektu
-            return GlobalResult.created( Json.toJson(project) );
-
+            return GlobalResult.created(Json.toJson(project));
 
         } catch (Exception e) {
             e.printStackTrace();

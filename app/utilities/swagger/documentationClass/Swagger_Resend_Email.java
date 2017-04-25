@@ -9,7 +9,7 @@ import play.data.validation.Constraints;
 public class Swagger_Resend_Email {
 
     @Constraints.Email
-    @ApiModelProperty(required = false, value = "Email is voluntary Value! If is email empty, the system uses the e mail which is in registration.")
+    @ApiModelProperty(required = false, value = "Email is optional value! If it is empty, default invoice email will be used.")
     public String mail;
 
 }

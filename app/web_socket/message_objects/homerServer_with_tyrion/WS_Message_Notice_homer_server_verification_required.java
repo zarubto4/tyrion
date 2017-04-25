@@ -18,7 +18,7 @@ public class WS_Message_Notice_homer_server_verification_required extends WS_Abs
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerServer.CHANNEL);
-        request.put("message", "Unique server identificator is not recognize!");
+        request.put("message", "Unique server identifier is not recognize!");
 
         return request;
     }

@@ -32,7 +32,6 @@ public class CustomScheduler {
     private static CustomScheduler customScheduler;
 
     private void start() throws SchedulerException {
-
         try {
 
             // Nastavení schedulleru (Aktivity, která se pravidelně v časových úsecích vykonává)
@@ -58,7 +57,8 @@ public class CustomScheduler {
 
             // Minutové - hodinové klíče
             TriggerKey every_10_min_key7 = TriggerKey.triggerKey("every_ten_minutes"); // 7)
-            TriggerKey every_fifteen_minute_key = TriggerKey.triggerKey("every_fifteen_minutes");
+            TriggerKey every_five_minute_key = TriggerKey.triggerKey("every_five_minute");
+            TriggerKey every_minute_key2 = TriggerKey.triggerKey("every_minute2");
             TriggerKey every_minute_key = TriggerKey.triggerKey("every_minute");
             TriggerKey every_hour_key = TriggerKey.triggerKey("every_hour");
 
@@ -112,8 +112,12 @@ public class CustomScheduler {
                         .withSchedule(cronSchedule("17 0/10 * * * ?"))// Spuštění každých 10 minut a to v 17 vteřině každé minuty
                         .build();
 
-                Trigger every_fifteen_minute = newTrigger().withIdentity(every_fifteen_minute_key).startNow()
-                        .withSchedule(repeatMinutelyForever(15))// Spuštění každých 15 minut
+                Trigger every_five_minute = newTrigger().withIdentity(every_five_minute_key).startNow()
+                        .withSchedule(cronSchedule("10 0/5 * * * ?"))// Spuštění každých 5 minut
+                        .build();
+
+                Trigger every_minute2 = newTrigger().withIdentity(every_minute_key2).startNow()
+                        .withSchedule(cronSchedule("10 0/1 * * * ?"))// Spuštění každou minutu
                         .build();
 
                 Trigger every_minute = newTrigger().withIdentity(every_minute_key).startNow()
@@ -154,13 +158,13 @@ public class CustomScheduler {
                 scheduler.scheduleJob( newJob(Job_UnauthenticatedPersonRemoval.class).withIdentity( JobKey.jobKey("unauthenticated_person_removal") ).build(), every_day_4);
 
                 // 5) Kontrola a fakturace klientů na měsíční bázi
-                terminal_logger.debug("start: Scheduling new Job - Sending_Invoices");
-                scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_day_5);
+                terminal_logger.debug("CustomScheduler:: start: Scheduling new Job - Sending_Invoices");
+                scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_five_minute);
 
-                // 6) Obnovení certifikátu od Lets Encrypt
-                if(Server.server_mode != Enum_Tyrion_Server_mode.production ) {
-                    terminal_logger.debug("start: Scheduling new Job - Certificate_Renewal");
-                    scheduler.scheduleJob(newJob(Job_CertificateRenewal.class).withIdentity(JobKey.jobKey("certificate_renewal")).build(), every_day_6);
+                // 6) Slouží ke kontrole plateb na localhostu, kam nám gopay nemůže poslat notifikace
+                if(Server.server_mode == Enum_Tyrion_Server_mode.developer ) {
+                    terminal_logger.debug("CustomScheduler:: start: Scheduling new Job - Artificial Financial Callback");
+                    scheduler.scheduleJob(newJob(Job_ArtificialFinancialCallback.class).withIdentity(JobKey.jobKey("artificial_financial_callback")).build(), every_minute2);
                 }
                 // 7) Kontrola zaseknutých kompilací - těch co jsou in progress déle než 5 minut.
                 terminal_logger.debug("start: Scheduling new Job - Checking stuck compilations");
@@ -173,7 +177,6 @@ public class CustomScheduler {
             }else {
                 terminal_logger.warn("start: CRON (Every-Day) is in RAM yet. Be careful with that!");
             }
-
 
             // Nastartování scheduleru
             scheduler.start();

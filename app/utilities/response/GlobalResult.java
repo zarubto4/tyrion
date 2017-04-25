@@ -226,7 +226,7 @@ public class GlobalResult extends Controller {
 
              Result_JsonValueMissing result = new Result_JsonValueMissing();
              result.state     = "Json Unrecognized Values";
-             result.message   = "Your Json had some unrecognized fields. Please look at this example, or you can report it";
+             result.message   = "Your Json had some unrecognized fields. Please look at this example, or you can report it. Example: ";
              result.exception = json;
 
             return Controller.badRequest( Json.toJson(result) );

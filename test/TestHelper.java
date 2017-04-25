@@ -17,7 +17,7 @@ import models.Model_CProgram;
 import models.Model_Product;
 import models.Model_Project;
 import models.Model_ProjectParticipant;
-import models.Model_GeneralTariff;
+import models.Model_Tariff;
 import models.Model_PaymentDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,8 +114,8 @@ public class TestHelper extends Controller{
         try {
 
             Model_Product product = new Model_Product();
-            product.general_tariff = Model_GeneralTariff.find.where().eq("identificator", "geek").findUnique();
-            product.product_individual_name = UUID.randomUUID().toString();
+            product.tariff = Model_Tariff.find.where().eq("identifier", "geek").findUnique();
+            product.name = UUID.randomUUID().toString();
             product.active = true;
             product.mode = Enum_Payment_mode.free;
             product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();

@@ -91,7 +91,7 @@ public class Model_FloatingPersonToken extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
-        this.setToken( createToken() );
+        if (authToken == null || authToken.isEmpty()) this.setToken( createToken() );
         this.setDate();
 
         while (true) { // I need Unique Value

@@ -1,15 +1,15 @@
-@import models.Model_GeneralTariff
+@import models.Model_Tariff
 
 <section class="content-header">
-    <h1> General Tariffs</h1>
+    <h1> Tariffs</h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
-        <li class="active"><i class="fa fa-share"></i> General Tariffs for users </li>
-        <li class="active"><i class="fa fa-wrench"></i> List of tariffs </li>
+        <li class="active"><i class="fa fa-wrench"></i> Server management </li>
+        <li class="active"><i class="fa fa-wrench"></i> Tariff management </li>
     </ol>
 </section>
 
-@*/*/*  General Tariffs -----------------------------------------------------------------------------------------  */*/*@
+<!--  General Tariff ############################################################################################### -->
 
 <section class="content">
 
@@ -17,40 +17,40 @@
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">General Tariffs</h3>
+                    <h3 class="box-title">Tariffs</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button class="btn btn-block btn-info" type="button" onclick="showNewGeneralTariffModal()">Create</button>
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
+                            <button class="btn btn-block btn-success" type="button" data-toggle="modal" data-target="#newTariffModal">New Tariff</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="box-body">
-                    <table id="allGeneralsTariffs" class="table table-bordered">
+                <div id="allTariffsWrapper" class="box-body">
+                    <table id="allTariffs" class="table table-bordered">
                         <tr>
                             <th>ID</th>
                             <th>Order</th>
                             <th>Name</th>
                             <th>Description</th>
-                            <th>EDIT</th>
-                            <th>UP</th>
-                            <th>DOWN</th>
-                            <th>DEACTIVATE</th>
+                            <th>Edit</th>
+                            <th>Up</th>
+                            <th>Down</th>
+                            <th>Active</th>
                         </tr>
 
-                        @for(tariff <- Model_GeneralTariff.find.orderBy("order_position").findList()){
+                        @for(tariff <- Model_Tariff.find.orderBy("order_position").findList()){
                             <tr>
                                 <td>@tariff.id</td>
                                 <td>@tariff.order_position</td>
-                                <td>@tariff.identificator</td>
-                                <td>@tariff.tariff_description</td>
-                                <td><a href='@routes.Controller_Dashboard.general_tariff_edit(tariff.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
-                                <td>@if(tariff.order_position > 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariff('@tariff.id')">Up</button>}</td>
-                                <td>@if(tariff.order_position < (Model_GeneralTariff.find.findRowCount()) ) {<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariff('@tariff.id')">Down</button>}</td>
+                                <td>@tariff.identifier</td>
+                                <td>@tariff.description</td>
+                                <td><a href='@routes.Controller_Dashboard.tariff_edit(tariff.id)'><button class="btn btn-block btn-info"   type="button"> Settings </button></a></td>
+                                <td>@if(tariff.order_position > 1){<button class="btn btn-block btn-success" type="button" onclick="upTariff('@tariff.id')">Up</button>}</td>
+                                <td>@if(tariff.order_position < Model_Tariff.find.findRowCount ) {<button class="btn btn-block btn-warning" type="button" onclick="downTariff('@tariff.id')">Down</button>}</td>
                                 <td>
                                     @if(!tariff.active) {
-                                        <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariff(@tariff.id)">Deactivated</button>
+                                        <button class="btn btn-block btn-danger" type="button" title="Activate" onclick="activateTariff('@tariff.id')">Deactivated</button>
                                     }else{
-                                        <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariff(@tariff.id)">Active</button>
+                                        <button class="btn btn-block btn-success" type="button" title="Deactivate" onclick="deactivateTariff('@tariff.id')">Active</button>
                                     }
                                 </td>
                             </tr>
@@ -64,181 +64,88 @@
     </div>
 </section>
 
+<!--  Modals ####################################################################################################### -->
 
-@*/*/*  Modals ---------------------------------------------------------------------------------------------   */*/*@
-
-
-
-<div id="newGeneralTariffModal" style="display: none;" class="modal">
-    <div style="" class="modal-dialog">
+<div id="newTariffModal"  class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newTariffModalTitle">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Create New LAbel</h4>
+                <h4 id="newTariffModalTitle" class="modal-title">New Tariff</h4>
             </div>
             <div class="modal-body">
-                <form id="newGeneralTariffForm">
-
-
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Tariff Id</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="general_tariff_id" name="general_tariff_id" readonly>
-                        </div>
-                    </div><br>
-
-
-                    <div class="form-group">
-                        <label for="tariff_main_form" class="col-sm-2 control-label">Tarif name</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="tariff_name" value=""  name="tariff_name">
-                        </div>
-                    </div><br>
-
-                    <div class="form-group">
-                        <label for="tariff_main_form" class="col-sm-2 control-label">Tariff description</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="tariff_description" value=""  name="tariff_description">
-                        </div>
-                    </div><br>
-
-                    <div class="form-group">
-                        <label for="tariff_main_form" class="col-sm-2 control-label">Identificator</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="identificator" value=""  name="identificator">
-                        </div>
-                    </div><br><br>
-
-
-                    <div class="form-group">
-                        <label for="tariff_main_form" class="col-sm-2 control-label">Color</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="tariff_name" value=""  name="color">
-                        </div>
-                    </div><br><br>
-
-                    <div class="form-group">
-                        <label for="tariff_main_form" class="col-sm-2 control-label">Number of free months</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="tariff_name" value=""  name="number_of_free_months">
-                        </div>
-                    </div><br><br>
-
-                    <div class="form-group">
-                        <label for="tariff_main_form" class="col-sm-2 control-label">Price in USD</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="tariff_name" value=""  name="price_in_usd">
-                        </div>
-                    </div><br><br>
-
-
-
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <div class="checkbox"><label> <input type="checkbox" name="company_details_required">
-                                Company detaily required
-                            </label>
-                            </div>
-                        </div>
-                    </div><br>
-
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <div class="checkbox"><label><input type="checkbox" name="required_payment_mode">
-                                Payment mode required ( Vyžaduji aby uživatel vybral v jakém modu bude platit)
-                            </label>
-                            </div>
-                        </div>
+                <form id="newTariffForm">
+                    <input type="text" class="form-control form-group" name="name" placeholder="Name">
+                    <input type="text" class="form-control form-group" name="description" placeholder="Description">
+                    <input type="text" class="form-control form-group" name="identifier" placeholder="Identifier">
+                    <input type="text" class="form-control form-group" name="credit_for_beginning" placeholder="Credit for beginning">
+                    <input type="text" class="form-control form-group" name="color" placeholder="Color">
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="company_details_required">
+                            Company details required
+                        </label>
                     </div>
-
-                    <div class="form-group">
-                        <div class="col-sm-offset-3 col-sm-9">
-                            <div class="checkbox"><label> <input type="checkbox" name="mode_annually">
-                                Monthly (estimated costs)
-                            </label>
-                            </div>
-                        </div>
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="payment_mode_required">
+                            Payment mode required (User have to select a mode.)
+                        </label>
                     </div>
-
-                    <div class="form-group">
-                        <div class="col-sm-offset-3 col-sm-9">
-                            <div class="checkbox"><label><input type="checkbox" name="mode_credit">
-                                Přednabytí kreditů
-                            </label>
-                            </div>
-                        </div>
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="mode_annually">
+                            Monthly (estimated costs)
+                        </label>
                     </div>
-
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <div class="checkbox"><label><input type="checkbox" name="required_payment_method">
-                                Payment method required (Vyžaduji aby si uživatel vybral jakou formou bude platit)
-                            </label>
-                            </div>
-                        </div>
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="mode_credit">
+                            Pre-paid credit
+                        </label>
                     </div>
-
-                    <div class="form-group">
-                        <div class="col-sm-offset-3 col-sm-9">
-                            <div class="checkbox"><label><input type="checkbox" name="bank_transfer_support">
-                                Bankovním převodem
-                            </label>
-                            </div>
-                        </div>
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="payment_method_required">
+                            Payment method required (User have to select a method.)
+                        </label>
                     </div>
-
-                    <div class="form-group">
-                        <div class="col-sm-offset-3 col-sm-9">
-                            <div class="checkbox"><label><input type="checkbox" name="credit_card_support">
-                                Mužu platit kartou
-                            </label>
-                            </div>
-                        </div>
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="bank_transfer_support">
+                            Bank Transfer
+                        </label>
                     </div>
-
-
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <div class="checkbox"><label><input type="checkbox" name="free">
-                                Free Tariff
-                            </label>
-                            </div>
-                        </div>
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="credit_card_support">
+                            Credit Card
+                        </label>
                     </div>
-
-
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="free">
+                            Free Tariff
+                        </label>
+                    </div>
                 </form>
             </div>
-
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newGeneralTariffModal').css('display','none')">Close</button>
-                <button id="newGeneralTariffButton" value="" class="btn btn-primary" type="button" onclick="newGeneralTariff()">Create New Label</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button value="" class="btn btn-success" type="button" onclick="newTariff()">Create</button>
             </div>
 
         </div>
     </div>
 </div>
 
-
-@*/*/*  Scripts ---------------------------------------------------------------------------------------------   */*/*@
-
+<!--  JavaScript ################################################################################################### -->
 
 <script>
 
-    function showNewGeneralTariffModal(){
-        $("#newGeneralTariffModal").css("display","block");
-    }
-
-    function newGeneralTariff(){
-        model_data = $("#newGeneralTariffForm").serializeObject();
+    function newTariff(){
+        var model_data = $("#newTariffForm").serializeObject();
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_create()',
+            url: '@routes.Controller_Finance.tariff_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -248,84 +155,76 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
-                $("#newGeneralTariffForm input[type=text]").val("");
-                $("#newGeneralTariffModal").css("display","none");
-                $('#allGeneralsTariffs').load(document.URL +  ' #allGeneralsTariffs');
+                $("#newTariffForm input[type=text]").val("");
+                $("#newTariffModal").modal('hide');
+                $('#allTariffsWrapper').load(document.URL +  ' #allTariffs');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(e.responseText);
             }
     })}
 
 
-    function deactivateGeneralTariff(id){
+    function deactivateTariff(id){
 
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_deactivate("")' + id,
+            url: '@routes.Controller_Finance.tariff_deactivate("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffs').load(document.URL +  ' #allGeneralsTariffs');
+                $('#allTariffsWrapper').load(document.URL +  ' #allTariffs');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(e.responseText);
             }
         })}
 
-    function activateGeneralTariff(id){
+    function activateTariff(id){
 
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_activate("")' + id,
+            url: '@routes.Controller_Finance.tariff_activate("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffs').load(document.URL +  ' #allGeneralsTariffs');
+                $('#allTariffsWrapper').load(document.URL +  ' #allTariffs');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(e.responseText);
             }
         })}
 
-    function showEditGeneralTariff(id, server_name, destination_address){
-        $("#editCompilationServerModal").css("display","block");
-        $('#editCompilationServerButton').val(id);
-        $('#compilationServerId').text("ID = " + id);
-        $("#editCompilationServer input[name=name]").val(server_name);
-        $("#editCompilationServer input[name=destination_address]").val(destination_address);
-    }
-
-    function upGeneralTariff(id){
+    function upTariff(id){
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_up("")' + id,
+            url: '@routes.Controller_Finance.tariff_up("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffs').load(document.URL +  ' #allGeneralsTariffs');
+                $('#allTariffsWrapper').load(document.URL +  ' #allTariffs');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(e.responseText);
             }
         })
     }
 
-    function downGeneralTariff(id){
+    function downTariff(id){
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_down("")' + id,
+            url: '@routes.Controller_Finance.tariff_down("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffs').load(document.URL +  ' #allGeneralsTariffs');
+                $('#allTariffsWrapper').load(document.URL +  ' #allTariffs');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(e.responseText);
             }
         })
     }

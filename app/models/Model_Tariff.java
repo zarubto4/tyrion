@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel( value = "GeneralTariff", description = "Model of GeneralTariff")
-public class Model_GeneralTariff extends Model {
+@ApiModel(value = "Tariff", description = "Model of Tariff")
+public class Model_Tariff extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -28,42 +28,36 @@ public class Model_GeneralTariff extends Model {
 
                         @Id public String id;
 
-                            public String tariff_name;
-                            public String tariff_description;
-    @Column(unique = true)  public String identificator;
+                            public String name;
+                            public String description;
+    @Column(unique = true)  public String identifier;
 
-    @JsonIgnore             public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
+                @JsonIgnore public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
 
+                @JsonIgnore public Integer order_position;
 
-    @JsonIgnore  public Integer order_position;
+                            public boolean company_details_required;
+                            public boolean payment_mode_required;
+                            public boolean payment_method_required;
 
-    public boolean company_details_required;
-    public boolean required_payment_mode;
-    public boolean required_payment_method;
+                @JsonIgnore public boolean payment_required; // Říká, zda se po zaregistrování okamžitě vytvoří faktura a další procedury pro zaplacení
 
-    @JsonIgnore  public boolean required_paid_that; // Říká, zda se po zaregistrování okamžitě vytvoří faktura a další procedury pro zaplacení
+                @JsonIgnore public Long credit_for_beginning; // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
 
-    @JsonIgnore  public Double credit_for_beginning;    // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
-                                                        // Je to V USD!!! - Nutné přepočítávat!!!
+                            public String color;
 
-    @JsonIgnore  public Double price_in_usd;
+                @JsonIgnore public boolean bank_transfer_support;
+                @JsonIgnore public boolean credit_card_support;
 
-
-    public String color;
-
-    @JsonIgnore public boolean bank_transfer_support;
-    @JsonIgnore public boolean credit_card_support;
-
-
-    @JsonIgnore public boolean mode_annually;
-    @JsonIgnore public boolean mode_credit;
-    @JsonIgnore public boolean free_tariff;
+                @JsonIgnore public boolean mode_annually;
+                @JsonIgnore public boolean mode_credit;
+                @JsonIgnore public boolean free_tariff;
 
 
-                @OneToMany(mappedBy="general_tariff",          cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<Model_GeneralTariffLabel> labels = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_GeneralTariffExtensions> extensions_included = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_GeneralTariffExtensions> extensions_optional = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="general_tariff",           cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                public List<Model_Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
+                @OneToMany(mappedBy="tariff",          cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<Model_TariffLabel> labels = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_included = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="tariff",          cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                 public List<Model_Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -104,41 +98,43 @@ public class Model_GeneralTariff extends Model {
     @JsonProperty public Price price(){
 
         Price price = new Price();
-        price.USD = price_in_usd;
+        price.USD = total_per_month();
         return price;
 
     }
 
-    @JsonProperty public List<Model_GeneralTariffExtensions> extensions_included(){
-        return  Model_GeneralTariffExtensions.find.where().eq("general_tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
+    @JsonProperty
+    public List<Model_ProductExtension> extensions_included(){
+        return  Model_ProductExtension.find.where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
     }
 
 
-    @JsonProperty public List<Model_GeneralTariffExtensions> extensions_optional(){
-        return  Model_GeneralTariffExtensions.find.where().eq("general_tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
+    @JsonProperty
+    public List<Model_ProductExtension> extensions_optional(){
+        return  Model_ProductExtension.find.where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    public double total_per_month(){
-        double total_price = 0.0;
-        for(Model_GeneralTariffExtensions extension : this.extensions_included){
-            if(extension.price_in_usd != null)
-                total_price += extension.price_in_usd;
+    public Double total_per_month(){
+        Long total_price = (long) 0;
+        for(Model_ProductExtension extension : this.extensions_included){
+            Long price = extension.getPrice();
+
+            if(price != null)
+                total_price += price;
         }
-        return  total_price*30;
+        return ((double) total_price*30) / 1000;
     }
 
-
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
     @JsonIgnore @Override
     public void save() {
 
-        order_position = Model_GeneralTariff.find.findRowCount() + 1;
+        order_position = Model_Tariff.find.findRowCount() + 1;
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString().substring(0, 8);
-            if (Model_GeneralTariff.find.byId(this.id) == null) break;
+            if (Model_Tariff.find.byId(this.id) == null) break;
         }
         super.save();
     }
@@ -163,7 +159,7 @@ public class Model_GeneralTariff extends Model {
     @JsonIgnore @Transient
     public void up(){
 
-        Model_GeneralTariff up = Model_GeneralTariff.find.where().eq("order_position", (order_position-1) ).findUnique();
+        Model_Tariff up = Model_Tariff.find.where().eq("order_position", (order_position-1) ).findUnique();
         if(up == null)return;
 
         up.order_position += 1;
@@ -176,7 +172,7 @@ public class Model_GeneralTariff extends Model {
     @JsonIgnore @Transient
     public void down(){
 
-        Model_GeneralTariff down = Model_GeneralTariff.find.where().eq("order_position", (order_position+1) ).findUnique();
+        Model_Tariff down = Model_Tariff.find.where().eq("order_position", (order_position+1) ).findUnique();
         if(down == null)return;
 
         down.order_position -= 1;
@@ -186,8 +182,6 @@ public class Model_GeneralTariff extends Model {
         this.update();
 
     }
-
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -204,13 +198,13 @@ public class Model_GeneralTariff extends Model {
 
     public class Pair {
 
-        public Pair(String json_identificator, String user_description){
-            this.json_identificator = json_identificator;
+        public Pair(String json_identifier, String user_description){
+            this.json_identifier = json_identifier;
             this.user_description = user_description;
         }
 
         @ApiModelProperty(required = true, readOnly = true)
-        public String json_identificator;
+        public String json_identifier;
 
         @ApiModelProperty(required = true, readOnly = true)
         public String user_description;
@@ -226,7 +220,7 @@ public class Model_GeneralTariff extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_GeneralTariff> find = new Finder<>(Model_GeneralTariff.class);
+    public static Model.Finder<String, Model_Tariff> find = new Finder<>(Model_Tariff.class);
 
 }
 

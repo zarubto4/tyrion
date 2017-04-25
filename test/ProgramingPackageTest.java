@@ -114,8 +114,8 @@ public class ProgramingPackageTest extends TestHelper{
 
         ObjectNode body = Json.newObject();
 
-        body.put("project_name", UUID.randomUUID().toString());
-        body.put("project_description", UUID.randomUUID().toString());
+        body.put("name", UUID.randomUUID().toString());
+        body.put("description", UUID.randomUUID().toString());
         body.put("product_id", product.id);
 
         RequestBuilder request = new RequestBuilder()
@@ -198,8 +198,8 @@ public class ProgramingPackageTest extends TestHelper{
 
         ObjectNode body = Json.newObject();
 
-        body.put("project_name", UUID.randomUUID().toString());
-        body.put("project_description", UUID.randomUUID().toString());
+        body.put("name", UUID.randomUUID().toString());
+        body.put("description", UUID.randomUUID().toString());
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
@@ -217,8 +217,8 @@ public class ProgramingPackageTest extends TestHelper{
 
         ObjectNode body = Json.newObject();
 
-        body.put("project_name", UUID.randomUUID().toString());
-        body.put("project_description", UUID.randomUUID().toString());
+        body.put("name", UUID.randomUUID().toString());
+        body.put("description", UUID.randomUUID().toString());
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)

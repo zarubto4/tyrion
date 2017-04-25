@@ -32,7 +32,7 @@ import java.util.UUID;
 public class Controller_Person extends Controller {
 
     @Inject
-    Controller_Project controllerProgramingPackage;
+    Controller_Project controllerProject;
     @Inject WSClient ws;
 
     
@@ -65,7 +65,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 200, message = "Successfully created",    response = Result_ok.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result person_create() {
@@ -118,7 +118,7 @@ public class Controller_Person extends Controller {
                 person.update();
 
                 try {
-                    return controllerProgramingPackage.project_addParticipant(invitation.id, true);
+                    return controllerProject.project_addParticipant(invitation.id, true);
                 }catch(Exception e){
                     return Server_Logger.result_internalServerError(e, request());
                 }
@@ -175,7 +175,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 404, message = "Not found object",        response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result person_authenticationSendEmail() {
@@ -232,7 +232,7 @@ public class Controller_Person extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result person_passwordRecoverySendEmail(){
@@ -305,7 +305,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result person_passwordRecovery() {
@@ -371,7 +371,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public  Result person_get(@ApiParam(value = "person_id String query", required = true)  String person_id){
@@ -397,7 +397,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 200, message = "OK Result",               response = Model_Person.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public  Result person_getAll(){
@@ -432,7 +432,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public  Result person_delete(@ApiParam(value = "person_id String query", required = true) String person_id){
@@ -473,7 +473,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public Result person_removeAllConnections(@ApiParam(value = "person_id String query", required = true) String person_id){
@@ -515,7 +515,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public Result person_activate(@ApiParam(value = "person_id String query", required = true) String person_id){
@@ -560,7 +560,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public Result person_deactivate(@ApiParam(value = "person_id String query", required = true) String person_id){
@@ -607,7 +607,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public Result person_validEmail(@ApiParam(value = "person_id String query", required = true) String person_id){
@@ -658,7 +658,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
@@ -670,7 +670,7 @@ public class Controller_Person extends Controller {
             Swagger_Person_Update help = form.get();
 
             Model_Person person = Model_Person.find.byId(person_id);
-            if (person == null) return GlobalResult.notFoundObject("Person person_id not found");
+            if (person == null) return GlobalResult.notFoundObject("Person not found");
             if (!person.edit_permission())  return GlobalResult.forbidden_Permission();
 
             person.nick_name    = help.nick_name;
@@ -679,7 +679,7 @@ public class Controller_Person extends Controller {
             if (help.country != null && (!help.country.equals("")))
                 person.country = help.country;
 
-            if (help.gender != null && (!help.gender.equals(""))&&((help.gender.equals("male"))||(help.gender.equals("female"))))
+            if (help.gender != null && !help.gender.equals("") && (help.gender.equals("male") || help.gender.equals("female")))
                 person.gender = help.gender;
 
             person.update();
@@ -709,7 +709,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Not Found object",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public  Result person_getAllConnections(){
@@ -738,7 +738,7 @@ public class Controller_Person extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK result",               response = Result_ok.class),
             @ApiResponse(code = 404, message = "Not Found object",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public  Result remove_Person_Connection(@ApiParam(value = "connection_id String query", required = true) String connection_id){
@@ -776,7 +776,7 @@ public class Controller_Person extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Result if it is possible to use",       response = Swagger_Entity_Validation_Out.class),
             @ApiResponse(code = 400, message = "Something is wrong",                    response = Result_BadRequest.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public  Result person_validateProperty(){
@@ -888,7 +888,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
@@ -1064,7 +1064,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public Result person_uploadPicture(){
@@ -1144,7 +1144,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public Result person_removePicture(){

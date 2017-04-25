@@ -1205,8 +1205,8 @@ public class Model_HomerInstance extends Model {
     public static final String CACHE        = Model_HomerInstance.class.getSimpleName();
     public static final String CACHE_STATUS = Model_HomerInstance.class.getSimpleName() + "_STATUS";
 
-    public static Cache<String, Model_HomerInstance> cache; // Server_cache Override during server initialization
-    public static Cache<String, Boolean> cache_status; // Server_cache Override during server initialization
+    public static Cache<String, Model_HomerInstance> cache = null; // Server_cache Override during server initialization
+    public static Cache<String, Boolean> cache_status = null; // Server_cache Override during server initialization
 
 
     public static Model_HomerInstance get_model(String blocko_instance_name){

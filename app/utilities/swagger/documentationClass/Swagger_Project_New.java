@@ -13,12 +13,12 @@ public class Swagger_Project_New {
     @Constraints.MinLength(value = 4,  message = "The name must have at least 4 characters, must be unique!")
     @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters, must be unique!")
     @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters, must be unique!")
-    public String project_name;
+    public String name;
 
 
     @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
     @ApiModelProperty(required = true, value = "Length must be between 24 and 255 characters.")
-    public String project_description;
+    public String description;
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Id of Product (Tariff) where the project will be registered")

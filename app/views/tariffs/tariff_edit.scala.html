@@ -1,19 +1,19 @@
-@import models.Model_GeneralTariffLabel
-@import models.Model_GeneralTariff
-@import models.Model_GeneralTariffExtensions
+@import models.Model_Tariff
+@import utilities.enums.Enum_ExtensionType
 
-@(tariff: Model_GeneralTariff)
+@(tariff: Model_Tariff)
 
 <section class="content-header">
-    <h1> General Tariffs - @tariff.tariff_name </h1>
+    <h1> Tariff - @tariff.name </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
-        <li class="active"><i class="fa fa-share"></i> General Tariffs for users </li>
-        <li class="active"><i class="fa fa-wrench"></i> @tariff.tariff_name </li>
+        <li class="active"><i class="fa fa-share"></i> Server management </li>
+        <li><a href="@routes.Controller_Dashboard.tariffs()"><i class="fa fa-wrench"></i> Tariff management </a></li>
+        <li class="active"><i class="fa fa-wrench"></i> @tariff.name </li>
     </ol>
 </section>
 
-@*/*/*  General Tariff -----------------------------------------------------------------------------------------  */*/*@
+<!-- Tariff ############################################################################################### -->
 
 <section class="content">
 
@@ -21,186 +21,148 @@
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">General Tariff information</h3>
+                    <h3 class="box-title">Tariff Information</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
+                        </div>
+                    </div>
                 </div>
                 <div class="box-body">
                     <form id="tariff_main_form">
-
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">Tariff Id</label>
-
+                        <div class="box-body no-padding" style="margin-bottom: 10px;">
+                            <label for="tariff_id" class="col-sm-2 control-label">Id</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="general_tariff_id" value="@tariff.id"  name="id" readonly>
+                                <input type="text" class="form-control" id="tariff_id" value="@tariff.id"  name="id" readonly>
                             </div>
-                        </div><br>
-
-
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Tarif name</label>
-
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.tariff_name"  name="tariff_name">
-                            </div>
-                        </div><br>
-
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Tariff description</label>
-
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_description" value="@tariff.tariff_description"  name="tariff_description">
-                            </div>
-                        </div><br>
-
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Identificator</label>
-
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="identificator" value="@tariff.identificator"  name="identificator">
-                            </div>
-                        </div><br><br>
-
-                        <div class="form-group">
-
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Color (<a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_colors.html">Výběr barev zde</a>)</label>
-
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.color"  name="color">
-                            </div>
-
                         </div>
-
-                        <br><br>
-
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Free credit to beginning</label>
-
+                        <div class="box-body no-padding" style="margin-bottom: 10px;">
+                            <label for="name" class="col-sm-2 control-label">Name</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.credit_for_beginning"  name="credit_for_beginning">
+                                <input type="text" class="form-control" id="name" value="@tariff.name"  name="name">
                             </div>
-                        </div><br><br>
-
-
-                        <div class="form-group">
-                            <label for="tariff_main_form" class="col-sm-2 control-label">Price in USD</label>
-
+                        </div>
+                        <div class="box-body no-padding" style="margin-bottom: 10px;">
+                            <label for="description" class="col-sm-2 control-label">Description</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="tariff_name" value="@tariff.price_in_usd"  name="price_in_usd">
+                                <input type="text" class="form-control" id="description" value="@tariff.description"  name="description">
                             </div>
-                        </div><br><br>
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body no-padding" style="margin-bottom: 10px;">
+                            <label for="identifier" class="col-sm-2 control-label">Identifier</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="identifier" value="@tariff.identifier"  name="identifier">
+                            </div>
+                        </div>
+                        <div class="box-body no-padding" style="margin-bottom: 10px;">
+                            <label for="tariff_color" class="col-sm-2 control-label">Color (<a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_colors.html">Colorpicker</a>)</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="tariff_color" value="@tariff.color"  name="color">
+                            </div>
+                        </div>
+                        <div class="box-body no-padding" style="margin-bottom: 10px;">
+                            <label for="credit_for_beginning" class="col-sm-2 control-label">Free credit</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="credit_for_beginning" value="@tariff.credit_for_beginning"  name="credit_for_beginning">
+                            </div>
+                        </div>
+                        <div class="box-body no-padding">
                             <div class="col-sm-offset-2 col-sm-10">
-                                <div class="checkbox"><label> @if( tariff.company_details_required ){ <input type="checkbox" name="company_details_required" checked>}else{<input type="checkbox" name="company_details_required">}
-                                    Company detaily required
+                                <div class="checkbox  no-margin-top"><label> @if( tariff.company_details_required ){ <input type="checkbox" name="company_details_required" checked>}else{<input type="checkbox" name="company_details_required">}
+                                    Company details required
                                     </label>
                                 </div>
                             </div>
-                        </div><br>
-
-                        <div class="form-group">
+                        </div>
+                        <div class="box-body no-padding">
                             <div class="col-sm-offset-2 col-sm-10">
-                                <div class="checkbox"><label> @if( tariff.required_payment_mode ){ <input type="checkbox" name="required_payment_mode" checked>}else{<input type="checkbox" name="required_payment_mode" >}
-                                    Payment mode required ( Vyžaduji aby uživatel vybral v jakém modu bude platit)
+                                <div class="checkbox  no-margin-top"><label> @if( tariff.payment_mode_required ){ <input type="checkbox" name="payment_mode_required" checked>}else{<input type="checkbox" name="payment_mode_required" >}
+                                    Payment mode required (User have to select a mode.)
                                 </label>
                                 </div>
                             </div>
                         </div>
 
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <div class="checkbox"><label> @if( tariff.mode_annually ){ <input type="checkbox" name="mode_annually" checked>}else{<input type="checkbox" name="mode_annually">}
-                                           Měsíčně (Automatické strhávání)
-                                        </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <div class="checkbox"><label> @if( tariff.mode_credit ){ <input type="checkbox" name="mode_credit" checked>}else{<input type="checkbox" name="mode_credit">}
-                                            Přednabytí kreditů
-                                        </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                        <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <div class="checkbox"><label> @if( tariff.required_payment_method ){ <input type="checkbox" name="required_payment_method" checked>}else{<input type="checkbox" name="required_payment_method">}
-                                    Payment method required (Vyžaduji aby si uživatel vybral jakou formou bude platit)
+                        <div class="box-body no-padding">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <div class="checkbox no-margin-top"><label> @if( tariff.mode_annually ){ <input type="checkbox" name="mode_annually" checked>}else{<input type="checkbox" name="mode_annually">}
+                                    Monthly (estimated costs)
                                 </label>
                                 </div>
                             </div>
                         </div>
-
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <div class="checkbox"><label> @if( tariff.bank_transfer_support ){ <input type="checkbox" name="bank_transfer_support" checked>}else{<input type="checkbox" name="bank_transfer_support">}
-                                            Bankovním převodem
-                                        </label>
-                                        </div>
-                                    </div>
+                        <div class="box-body no-padding">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <div class="checkbox no-margin-top"><label> @if( tariff.mode_credit ){ <input type="checkbox" name="mode_credit" checked>}else{<input type="checkbox" name="mode_credit">}
+                                    Pre-paid credit
+                                </label>
                                 </div>
-
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <div class="checkbox"><label> @if( tariff.credit_card_support ){ <input type="checkbox" name="credit_card_support" checked>}else{<input type="checkbox" name="credit_card_support">}
-                                            Mužu platit kartou
-                                        </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                        <div class="form-group">
+                            </div>
+                        </div>
+                        <div class="box-body no-padding">
                             <div class="col-sm-offset-2 col-sm-10">
-                                <div class="checkbox"><label> @if( tariff.free_tariff ){ <input type="checkbox" name="free_tariff" checked>}else{<input type="checkbox" name="free_tariff">}
+                                <div class="checkbox no-margin-top"><label> @if( tariff.payment_method_required ){ <input type="checkbox" name="payment_method_required" checked>}else{<input type="checkbox" name="payment_method_required">}
+                                    Payment method required (User have to select a method.)
+                                </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-body no-padding">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <div class="checkbox no-margin-top"><label> @if( tariff.bank_transfer_support ){ <input type="checkbox" name="bank_transfer_support" checked>}else{<input type="checkbox" name="bank_transfer_support">}
+                                    Bank Transfer
+                                </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-body no-padding">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <div class="checkbox no-margin-top"><label> @if( tariff.credit_card_support ){ <input type="checkbox" name="credit_card_support" checked>}else{<input type="checkbox" name="credit_card_support">}
+                                    Credit card
+                                </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-body no-padding">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <div class="checkbox no-margin-top"><label> @if( tariff.free_tariff ){ <input type="checkbox" name="free_tariff" checked>}else{<input type="checkbox" name="free_tariff">}
                                     Free Tariff
                                 </label>
                                 </div>
                             </div>
                         </div>
-
                     </form>
                 </div>
                 <div class="box-footer">
-                    <button id="createCompilationServerButton" value="" class="btn btn-primary" type="button" onclick="updateGeneralTariff()">Save changes</button>
+                    <button class="btn btn-xs btn-primary pull-right" type="button" onclick="updateTariff()">Save changes</button>
                 </div>
             </div>
         </div>
     </div>
-
-
     <div class="row">
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Tarifs Labes</h3>
+                    <h3 class="box-title">Labels</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <td><button class="btn btn-block btn-info" type="button" onclick="openNewGeneralTariffLabelModal('@tariff.id')">Add New Label</button></td>
+                            <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#newLabelModal">Add Label</button>
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
-                <div class="box-body">
-                    <table id="allGeneralsTariffsLabel" class="table table-bordered">
+                <div id="allLabelsWrapper" class="box-body">
+                    <table id="allLabels" class="table table-bordered">
                         <tr>
                             <th>ID</th>
                             <th>Order</th>
                             <th>Label</th>
-                            <th>Description (Po najetí myškou)</th>
+                            <th>Description (On mouseover)</th>
                             <th>Icon</th>
                             <th>Icon</th>
                             <th>Up</th>
                             <th>Down</th>
-                            <th>E</th>
-                            <th>X</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
                         </tr>
-
                         @for(label <- tariff.labels){
                             <tr>
                                 <td>@label.id</td>
@@ -209,13 +171,12 @@
                                 <td>@label.description</td>
                                 <td><i class="fa fa-fw @label.icon"></i></td>
                                 <td>@label.icon</td>
-                                <td>@if(label.order_position != 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariffLabel('@label.id')">Up</button>}</td>
-                                <td>@if(tariff.labels.length != label.order_position){<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariffLabel('@label.id')">Down</button>}</td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="openEditGeneralTariffLabelModal('@label.id', '@label.label', '@label.description', '@label.icon')">E</button></td>
-                                <td><button class="btn btn-block btn-danger" type="button" onclick="removeGeneralTariffLabel('@label.id')">X</button></td>
+                                <td>@if(label.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upLabel('@label.id')">Up</button>}</td>
+                                <td>@if(tariff.labels.length != label.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downLabel('@label.id')">Down</button>}</td>
+                                <td><button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editLabelModal" onclick="fillEditLabelModal('@label.id', '@label.label', '@label.description', '@label.icon')">Edit</button></td>
+                                <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteLabel('@label.id')"><i class="fa fa-times"></i></button></td>
                             </tr>
                         }
-
                     </table>
                 </div>
                 <div class="box-footer">
@@ -223,121 +184,117 @@
             </div>
         </div>
     </div>
-
-</section>
-
-
-<section class="content">
-
     <div class="row">
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">External Servicess</h3>
+                    <h3 class="box-title">Extensions</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <td><button class="btn btn-block btn-info" type="button" onclick="openNewGeneralTariffExtensionModal('@tariff.id')">Create new Servicess</button></td>
+                            <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#newExtensionModal">Add Extension</button>
                         </div>
                     </div>
                 </div>
-                <div id="allGeneralsTariffsExtensions" class="box-body">
-
-                    <h3 class="body-title">Included Extensions</h3>
-
-                    <table class="table table-bordered">
-                        <tr>
-                            <th>ID</th>
-                            <th>Order</th>
-                            <th>Name</th>
-                            <th class="col-md-2">Price</th>
-
-                            <th>Color</th>
-                            <th>Description (Po najetí myškou)</th>
-
-                            <th>Up</th>
-                            <th>Down</th>
-                            <th>EDIT</th>
-                            <th>DEACTIVATE</th>
-                        </tr>
-
-                        @for(extension <- tariff.extensions_included){
+                <div id="allExtensionsWrapper">
+                    <div id="allExtensions" class="box-body">
+                        <h3 class="body-title">Included Extensions</h3>
+                        <table class="table table-bordered">
                             <tr>
-                                <td>@extension.id</td>
-                                <td>@extension.order_position</td>
-                                <td>@extension.name</td>
-
-                                <td>$@extension.price_in_usd</td>
-
-                                <td>@extension.color</td>
-                                <td>@extension.description</td>
-
-                                <td>@if(extension.order_position != 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariffExtension('@extension.id')">Up</button>}</td>
-                                <td>@if(tariff.extensions_included.length != extension.order_position){<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariffExtension('@extension.id')">Down</button>}</td>
-
-                                <td><a href='@routes.Controller_Dashboard.general_tariff_extension_edit(extension.id)'><button class="btn btn-block btn-info" type="button">Settings</button></a></td>
-                                <td>
+                                <th>ID</th>
+                                <th>Order</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Price (per month)</th>
+                                <th>Default count </th>
+                                <th>Color</th>
+                                <th>Description (on mouseover)</th>
+                                <th>Up</th>
+                                <th>Down</th>
+                                <th>Edit</th>
+                                <th>Active</th>
+                                <th>Delete</th>
+                            </tr>
+                            @for(extension <- tariff.extensions_included){
+                                <tr>
+                                    <td>@extension.id</td>
+                                    <td>@extension.order_position</td>
+                                    <td>@extension.name</td>
+                                    <td>@extension.getExtensionTypeName</td>
+                                    <td>@{extension.getPrice * 30}</td>
+                                    <td>@extension.getConfig.count</td>
+                                    <td>@extension.color</td>
+                                    <td>@extension.description</td>
+                                    <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')">Up</button>}</td>
+                                    <td>@if(tariff.extensions_included.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')">Down</button>}</td>
+                                    <td><button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', @extension.getConfig.price, @extension.getConfig.count, @{extension.tariff_included != null})">Edit</button></td>
+                                    <td>
+                                        @if(!extension.active) {
+                                            <button class="btn btn-xs btn-block btn-danger" type="button" onclick="activateExtension('@extension.id')" title="Activate">Deactivated</button>
+                                        }else{
+                                            <button class="btn btn-xs btn-block btn-success" type="button" onclick="deactivateExtension('@extension.id')" title="Deactivate">Activated</button>
+                                        }
+                                    </td>
+                                    <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteExtension('@extension.id')"><i class="fa fa-times"></i></button></td>
+                                </tr>
+                            }
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th>Total Per Month</th>
+                                <th>@tariff.total_per_month() USD</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </table>
+                        <h3 class="body-title">Optional Extensions</h3>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>ID</th>
+                                <th>Order</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Price (per month)</th>
+                                <th>Default count </th>
+                                <th>Color</th>
+                                <th>Description (on mouseover)</th>
+                                <th>Up</th>
+                                <th>Down</th>
+                                <th>Edit</th>
+                                <th>Active</th>
+                                <th>Delete</th>
+                            </tr>
+                            @for(extension <- tariff.extensions_optional){
+                                <tr>
+                                    <td>@extension.id</td>
+                                    <td>@extension.order_position</td>
+                                    <td>@extension.name</td>
+                                    <td>@extension.getExtensionTypeName</td>
+                                    <td>@{extension.getPrice * 30}</td>
+                                    <td>@extension.getConfig.count</td>
+                                    <td>@extension.color</td>
+                                    <td>@extension.description</td>
+                                    <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')">Up</button>}</td>
+                                    <td>@if(tariff.extensions_optional.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')">Down</button>}</td>
+                                    <td><button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', @extension.getConfig.price, @extension.getConfig.count, @{extension.tariff_included != null})">Edit</button></td>
+                                    <td>
                                     @if(!extension.active) {
-                                        <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariffExtension('@extension.id')">Deactivate</button>
+                                        <button class="btn btn-xs btn-block btn-danger" type="button" onclick="activateExtension('@extension.id')" title="Activate">Deactivated</button>
                                     }else{
-                                        <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariffExtension('@extension.id')">Activate</button>
+                                        <button class="btn btn-xs btn-block btn-success" type="button" onclick="deactivateExtension('@extension.id')" title="Deactivate">Activated</button>
                                     }
-                                </td>
-                            </tr>
-                        }
-
-                        <tr>
-                            <th></th>
-                            <th></th>
-                            <th>Total Per Month</th>
-                            <th>@tariff.total_per_month() USD</th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                    </table>
-
-                    <h3 class="body-title">Optional Extensions</h3>
-
-                    <table class="table table-bordered">
-                        <tr>
-                            <th>ID</th>
-                            <th>Order</th>
-                            <th>Name</th>
-                            <th class="col-md-2">Price</th>
-                            <th>Color</th>
-                            <th>Description (Po najetí myškou)</th>
-                            <th>Up</th>
-                            <th>Down</th>
-                            <th>EDIT</th>
-                            <th>DEACTIVATE</th>
-                        </tr>
-
-                        @for(extension <- tariff.extensions_optional){
-                            <tr>
-                                <td>@extension.id</td>
-                                <td>@extension.order_position</td>
-                                <td>@extension.name</td>
-                                <td>$@extension.price_in_usd</td>
-
-                                <td>@extension.color</td>
-                                <td>@extension.description</td>
-
-                                <td>@if(extension.order_position != 1){<button class="btn btn-block btn-success" type="button" onclick="upGeneralTariffExtension('@extension.id')">Up</button>}</td>
-                                <td>@if(tariff.extensions_optional.length != extension.order_position){<button class="btn btn-block btn-warning" type="button" onclick="downGeneralTariffExtension('@extension.id')">Down</button>}</td>
-
-                                <td><a href='@routes.Controller_Dashboard.general_tariff_extension_edit(extension.id)'><button class="btn btn-block btn-info" type="button">Settings</button></a></td>
-                                <td>
-                                @if(!extension.active) {
-                                    <button class="btn btn-block btn-danger" type="button" onclick="activateGeneralTariffExtension('@extension.id')">Deactivate</button>
-                                }else{
-                                    <button class="btn btn-block btn-success" type="button" onclick="deactivateGeneralTariffExtension('@extension.id')">Activate</button>
-                                }
-                                </td>
-                            </tr>
-                        }
-                    </table>
+                                    </td>
+                                    <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteExtension('@extension.id')"><i class="fa fa-times"></i></button></td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
                 </div>
                 <div class="box-footer">
                 </div>
@@ -346,162 +303,159 @@
     </div>
 </section>
 
-@*/*/*  ---------------------------------------------------------------------------------------------   */*/*@
+<!--  Modals ####################################################################################################### -->
 
-    <div id="newGeneralTariffLabelModal" style="display: none;" class="modal">
+    <div id="newLabelModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newLabelModalTitle">
         <div style="" class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Create New Label</h4>
+                    <h4 id="newLabelModalTitle" class="modal-title">New Label</h4>
                 </div>
                 <div class="modal-body">
-                    <form id="newGeneralTariffLabelForm">
-
-                        <label style="">Tariff Id:</label>
-                        <input type="text" class="form-control" id="newGeneralTariffLabelModal_id" value="@tariff.id" name="id" readonly>
-
-                        <label style="">Label:</label>
-                        <input type="text" class="form-control" id="label"  name="label">
-
-                        <label ass="control-label">Description:</label>
-                        <input type="text" class="form-control" id="desription"  name="description"><br>
-
-
-                        <label class="control-label">Icon Code: (<a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_icons.html">Výběr barev zde</a>) </label>
-                        <input type="text" class="form-control" placeholder="Font icon" id="label"  name="icon">
-
+                    <form id="newLabelForm">
+                        <input type="text" class="form-control form-group" name="label" placeholder="Label">
+                        <input type="text" class="form-control form-group" name="description" placeholder="Description">
+                        <input type="text" class="form-control" name="icon" placeholder="Font icon">
+                        <a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_icons.html">Icon codes</a>
                     </form>
+                    <div id="newLabelModalMessage" style="display: none"><p class="text-red"></p></div>
                 </div>
-
                 <div class="modal-footer">
-                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newGeneralTariffLabelModal').css('display','none')">Close</button>
-                    <button id="newGeneralTariffButton" value="" class="btn btn-primary" type="button" onclick="newGeneralTariffLabel()">Create New Label</button>
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                    <button class="btn btn-primary" type="button" onclick="newLabel()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="editLabelModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editLabelModalTitle">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 id="editLabelModalTitle" class="modal-title">Edit Label</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="editLabelForm">
+                        <input type="text" class="form-control form-group" id="edit_label_id" name="id" readonly title="Id">
+                        <input type="text" class="form-control form-group" id="edit_label_label" name="label" title="Label">
+                        <input type="text" class="form-control form-group" id="edit_label_description" name="description" title="Description">
+                        <input type="text" class="form-control" id="edit_label_icon" name="icon" title="Font icon">
+                        <a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_icons.html">Icon codes</a>
+                    </form>
+                    <div id="editLabelModalMessage" style="display: none"><p class="text-red"></p></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                    <button class="btn btn-primary" type="button" onclick="editLabel()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="newExtensionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newExtensionModalTitle">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 id="newExtensionModalTitle" class="modal-title">New Extension</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="newExtensionForm">
+                        <input type="text" class="form-control form-group" name="name" placeholder="Name">
+                        <input type="text" class="form-control form-group" name="description" placeholder="Description">
+                        <input type="text" class="form-control form-group" name="color" placeholder="Color">
+                        <select name="type" class="form-control form-group select2" title="Type of Extension">
+                            <option selected="selected" disabled>Choose one</option>
+                            @for(etype <- Enum_ExtensionType.values()){
+                                <option value="@etype.name()">@etype.name()</option>
+                            }
+                        </select>
+                        <input type="text" class="form-control form-group" name="price" placeholder="Price (USD)">
+                        <input type="text" class="form-control form-group" name="count" placeholder="Count">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" class="checkbox" name="included">
+                                Included in tariff
+                            </label>
+                        </div>
+                    </form>
+                    <div id="newExtensionModalMessage" style="display: none"><p class="text-red"></p></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                    <button class="btn btn-success" type="button" onclick="newExtension()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="editExtensionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editExtensionModalTitle">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 id="editExtensionModalTitle" class="modal-title">Edit Extension</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="editExtensionForm">
+                        <input type="text" class="form-control form-group" id="extension_id" name="id" readonly title="Id">
+                        <input type="text" class="form-control form-group" id="extension_name" name="name" title="Name">
+                        <input type="text" class="form-control form-group" id="extension_description" name="description" title="Description">
+                        <input type="text" class="form-control form-group" id="extension_color" name="color" title="Color">
+                        <select name="type" class="form-control form-group select2" id="extension_type" title="Type of Extension">
+                            <option selected="selected" disabled>Choose one</option>
+                            @for(etype <- Enum_ExtensionType.values()){
+                                <option value="@etype.name()">@etype.name()</option>
+                            }
+                        </select>
+                        <input type="text" class="form-control form-group" id="extension_price" name="price" title="Price (USD)">
+                        <input type="text" class="form-control form-group" id="extension_count" name="count" title="Count">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" class="checkbox" id="extension_included" name="included">
+                                Included in tariff
+                            </label>
+                        </div>
+                    </form>
+                    <div id="editExtensionModalMessage" style="display: none"><p class="text-red"></p></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                    <button class="btn btn-primary" type="button" onclick="editExtension()">Save</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="editGeneralTariffLabelModal" style="display: none;" class="modal">
-        <div style="" class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Edit Label</h4>
-                </div>
-                <div class="modal-body">
-                    <form id="editGeneralTariffLabelForm">
-
-                        <label style="">Label Id:</label>
-                        <input type="text" class="form-control" id="editGeneralTariffLabelModal_id"  name="id" readonly>
-
-                        <label style="">Label:</label>
-                        <input type="text" class="form-control" id="editGeneralTariffLabelModal_label"  name="label">
-
-                        <label ass="control-label">Description:</label>
-                        <input type="text" class="form-control" id="editGeneralTariffLabelModal_description"  name="description">
-
-                        <label class="control-label">Icon Code: (<a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_icons.html">Výběr barev zde</a>) </label>
-                        <input type="text" class="form-control" id="editGeneralTariffLabelModal_icon"  name="icon">
-
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editGeneralTariffLabelModal').css('display','none')">Close</button>
-                    <button id="editGeneralTariffLabelButton" value="" class="btn btn-primary" type="button" onclick="editGeneralTariffLabel()">Edit Label</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="newGeneralTariffExtensionModal" style="display: none;" class="modal">
-        <div style="" class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Create New Extension</h4>
-                </div>
-                <div class="modal-body">
-                    <form id="newGeneralTariffExtensionForm">
-
-                        <label style="">Tariff Id:</label>
-                        <input type="text" class="form-control" id="newGeneralTariffExtensionModal_id" name="id" readonly>
-
-                        <label style="">Name:</label>
-                        <input type="text" class="form-control" id="createGeneralTariffExtensionModal_name"  name="name">
-
-                        <label ass="control-label">Description:</label>
-                        <input type="text" class="form-control" id="createGeneralTariffExtensionModal_descritpion"  name="description">
-
-                        <label class="control-label">Color:</label>
-                        <input type="text" class="form-control" id="createtGeneralTariffExtensionModal_color"  name="color">
-
-                        <label class="control-label">Price in USD:</label>
-                        <input type="text" class="form-control" id="price_in_usd"  name="price_in_usd">
-
-
-                    </form>
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newGeneralTariffExtensionModal').css('display','none')">Close</button>
-                    <button id="newGeneralTariffExtensionButton" value="" class="btn btn-primary" type="button" onclick="newGeneralTariffExtension()">Create New Label</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="editGeneralTariffExtensionModal" style="display: none;" class="modal">
-        <div style="" class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Edit Extension</h4>
-                </div>
-                <div class="modal-body">
-                    <form id="editGeneralTariffExtensionForm">
-
-                        <label style="">Extension Id:</label>
-                        <input type="text" class="form-control" id="editGeneralTariffExtensionModal_id"  name="id" readonly>
-
-                        <label style="">Name:</label>
-                        <input type="text" class="form-control" id="editGeneralTariffExtensionModal_name"  name="name">
-
-                        <label ass="control-label">Description:</label>
-                        <input type="text" class="form-control" id="editGeneralTariffExtensionModal_descritpion"  name="description">
-
-                        <label class="control-label">Color:</label>
-                        <input type="text" class="form-control" id="editGeneralTariffExtensionModal_color"  name="color">
-
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editGeneralTariffExtensionModal').css('display','none')">Close</button>
-                    <button id="editGeneralTariffExtensionButton" value="" class="btn btn-primary" type="button" onclick="editGeneralTariffExtension()">Edit Extension</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-@*/*/*  ----------------------------------------------------------------------------------------   */*/*@
-
+<!--  JavaScript ################################################################################################### -->
 
 <script>
 
-    function openNewGeneralTariffLabelModal(tariff_id) {
-        $("#newGeneralTariffLabelModal").css("display", "block");
-        $('#newGeneralTariffLabelModal_id').val(tariff_id);
+    var id = "@tariff.id";
+
+    function fillEditLabelModal(id, label, description, icon) {
+        $('#edit_label_id').val(id);
+        $('#edit_label_label').val(label);
+        $('#edit_label_description').val(description);
+        $('#edit_label_icon').val(icon);
     }
 
-    function openEditGeneralTariffLabelModal(id, label, description, icon) {
-        $("#editGeneralTariffLabelModal").css("display", "block");
+    function fillEditExtensionModal(id, name, description, color, type, price, count, included) {
+        $('#extension_id').val(id);
+        $('#extension_name').val(name);
+        $('#extension_description').val(description);
 
-        $('#editGeneralTariffLabelModal_id').val(id);
-        $('#editGeneralTariffLabelModal_label').val(label);
-        $('#editGeneralTariffLabelModal_description').val(description);
-        $('#editGeneralTariffLabelModal_icon').val(icon);
+        $("#extension_type option[value='" + type + "']").attr("selected", "selected");
+
+        $('#extension_color').val(color);
+        $('#extension_price').val(price);
+        $('#extension_count').val(count);
+        $('#extension_included').prop('checked', included);
+
+
+
+
     }
 
-    function updateGeneralTariff(){
-        model_data = $("#tariff_main_form").serializeObject();
+    function updateTariff(){
+        var model_data = $("#tariff_main_form").serializeObject();
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_edit()',
+            url: '@routes.Controller_Finance.tariff_update()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -542,10 +496,11 @@
 
     // Labels
 
-    function newGeneralTariffLabel(){
-        model_data = $("#newGeneralTariffLabelForm").serializeObject();
+    function newLabel(){
+        var model_data = $("#newLabelForm").serializeObject();
+        model_data.id = id;
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_label_tariff_create()',
+            url: '@routes.Controller_Finance.tariffLabel_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -555,21 +510,23 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
-                $("#newGeneralTariffLabelForm input[type=text]").val("");
-                $("#newGeneralTariffLabelModal").css("display","none");
-                $('#allGeneralsTariffsLabel').load(document.URL +  ' #allGeneralsTariffsLabel');
+                $("#newLabelForm input[type=text]").val("");
+                $("#newLabelModal").modal('hide');
+                $("#newLabelModalMessage").css("display", "none");
+                $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                $("#newLabelModalMessage").css("display", "block");
+                $("#newLabelModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
     })
     }
 
-    function editGeneralTariffLabel(){
-        model_data = $("#editGeneralTariffLabelForm").serializeObject();
+    function editLabel(){
+        var model_data = $("#editLabelForm").serializeObject();
 
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_label_edit()',
+            url: '@routes.Controller_Finance.tariffLabel_update()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -579,76 +536,73 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
-                $("#editGeneralTariffLabelModal").css("display","none");
-                $('#allGeneralsTariffsLabel').load(document.URL +  ' #allGeneralsTariffsLabel');
+                $("#editLabelModal").modal('hide');
+                $("#editLabelModalMessage").css("display", "none");
+                $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                $("#editLabelModalMessage").css("display", "block");
+                $("#editLabelModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
+
             }
         })
     }
 
-    function removeGeneralTariffLabel(id){
+    function upLabel(id){
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_label_remove("")' + id,
+            url: '@routes.Controller_Finance.tariffLabel_up("")' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+                $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        })
+    }
+
+    function downLabel(id){
+        $.ajax({
+            url: '@routes.Controller_Finance.tariffLabel_down("")' + id,
+            type: 'PUT',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+                $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
+            }
+        })
+    }
+
+    function deleteLabel(id){
+        $.ajax({
+            url: '@routes.Controller_Finance.tariffLabel_delete("")' + id,
             type: 'DELETE',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffsLabel').load(document.URL +  ' #allGeneralsTariffsLabel');
+                $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
     }
-
-    function upGeneralTariffLabel(id){
-        $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_label_edit_up("")' + id,
-            type: 'PUT',
-            headers: {
-                "X-AUTH-TOKEN":getCookie("authToken")
-            },
-            success:function(e){
-                $('#allGeneralsTariffsLabel').load(document.URL +  ' #allGeneralsTariffsLabel');
-            },
-            error:function(e) {
-                alert("Unsuccessful.");
-            }
-        })
-    }
-
-    function downGeneralTariffLabel(id){
-        $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_label_edit_down("")' + id,
-            type: 'PUT',
-            headers: {
-                "X-AUTH-TOKEN":getCookie("authToken")
-            },
-            success:function(e){
-                $('#allGeneralsTariffsLabel').load(document.URL +  ' #allGeneralsTariffsLabel');
-            },
-            error:function(e) {
-                alert("Unsuccessful.");
-            }
-        })
-    }
-
 
     // Extensions
 
-
-    function openNewGeneralTariffExtensionModal(tariff_id) {
-        $("#newGeneralTariffExtensionModal").css("display", "block");
-        $('#newGeneralTariffExtensionModal_id').val(tariff_id);
-    }
-
-    function newGeneralTariffExtension(){
-        model_data = $("#newGeneralTariffExtensionForm").serializeObject();
+    function newExtension(){
+        var model_data = $("#newExtensionForm").serializeObject();
+        model_data.id = id;
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_extension_create()',
+            url: '@routes.Controller_Finance.tariffExtension_create()',
             type: 'POST',
             contentType: 'application/json',
             headers: {
@@ -658,100 +612,123 @@
             data: JSON.stringify(model_data),
             dataType: 'json',
             success:function(e){
-                $("#newGeneralTariffExtensionForm input[type=text]").val("");
-                $("#newGeneralTariffExtensionModal").css("display","none");
-                $('#allGeneralsTariffsExtensions').load(document.URL +  ' #allGeneralsTariffsExtensions');
+                $("#newExtensionForm input[type=text]").val("");
+                $("#newExtensionModal").modal("hide");
+                $("#newExtensionModalMessage").css("display", "none");
+                $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                $("#newExtensionModalMessage").css("display", "block");
+                $("#newExtensionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
         })
     }
 
-
-
-    function upGeneralTariffExtension(id){
+    function editExtension(){
+        var model_data = $("#editExtensionForm").serializeObject();
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_extension_edit_up("")' + id,
+            url: '@routes.Controller_Finance.tariffExtension_update()',
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken"),
+                "Content-Type":"application/json"
+            },
+            data: JSON.stringify(model_data),
+            dataType: 'json',
+            success:function(e){
+                $("#editExtensionForm input[type=text]").val("");
+                $("#editExtensionModal").modal("hide");
+                $("#editExtensionModalMessage").css("display", "none");
+                $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
+            },
+            error:function(e) {
+                $("#editExtensionModalMessage").css("display", "block");
+                $("#editExtensionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+        })
+    }
+
+    function upExtension(id){
+        $.ajax({
+            url: '@routes.Controller_Finance.tariffExtension_up("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffsExtensions').load(document.URL +  ' #allGeneralsTariffsExtensions');
+                $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
     }
 
-    function downGeneralTariffExtension(id){
+    function downExtension(id){
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_extension_edit_down("")' + id,
+            url: '@routes.Controller_Finance.tariffExtension_down("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffsExtensions').load(document.URL +  ' #allGeneralsTariffsExtensions');
+                $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
     }
 
-    function deactivateGeneralTariffExtension(id){
+    function deactivateExtension(id){
 
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_extension_deactivate("")' + id,
+            url: '@routes.Controller_Finance.tariffExtension_deactivate("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffsExtensions').load(document.URL +  ' #allGeneralsTariffsExtensions');
+                $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
     }
 
-    function activateGeneralTariffExtension(id){
+    function activateExtension(id){
 
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_extension_activate("")' + id,
+            url: '@routes.Controller_Finance.tariffExtension_activate("")' + id,
             type: 'PUT',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffsExtensions').load(document.URL +  ' #allGeneralsTariffsExtensions');
+                $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
     }
 
-    function deleteGeneralTariffExtension(id){
+    function deleteExtension(id){
 
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_general_extension_delete("")' + id,
+            url: '@routes.Controller_Finance.tariffExtension_delete("")' + id,
             type: 'DELETE',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")
             },
             success:function(e){
-                $('#allGeneralsTariffsExtensions').load(document.URL +  ' #allGeneralsTariffsExtensions');
+                $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
             error:function(e) {
-                alert("Unsuccessful.");
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
     }
-
-
 </script>

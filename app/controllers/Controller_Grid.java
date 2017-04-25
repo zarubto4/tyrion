@@ -31,7 +31,7 @@ import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Grid extends Controller {
-    
+
 // LOGGER ##############################################################################################################
 
     private static final Class_Logger terminal_logger = new Class_Logger(Controller_Grid.class);

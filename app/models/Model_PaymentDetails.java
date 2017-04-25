@@ -42,6 +42,8 @@ public class Model_PaymentDetails extends Model {
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String country;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String invoice_email;
 
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
 /* JSON IGNORE ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
@@ -80,15 +82,22 @@ public class Model_PaymentDetails extends Model {
 
     }
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-
     @JsonProperty @Transient  public boolean edit_permission()  {  return true;  }
 
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<Long,Model_PaymentDetails> find = new Finder<>(Model_PaymentDetails.class);
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 }
