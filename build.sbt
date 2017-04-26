@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
 
   "com.typesafe.play" %% "routes-compiler"            % "2.4.6",
   "io.swagger"         % "swagger-core"               % "1.5.8",
-  "io.swagger"        %% "swagger-scala-module"       % "1.0.2",
+  "io.swagger"        %% "swagger-scala-module"       % "1.0.3",
 
   "com.github.scribejava" % "scribejava-apis" % "2.1.0",
 
@@ -40,6 +40,8 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
 
   "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.7",
+
+  "com.microsoft.azure" % "azure-documentdb" % "1.10.0",
 
   javaJdbc,
   filters,

@@ -32,7 +32,7 @@ public class Server {
 
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;
-    public static String azureLink;
+    public static String azure_blob_Link;
     public static String tyrion_serverAddress;
     public static String tyrion_webSocketAddress;
 
@@ -151,7 +151,8 @@ public class Server {
                 GoPay_return_url            = Configuration.root().getString("GOPay.localhost.return_url");
                 GoPay_notification_url      = Configuration.root().getString("GOPay.localhost.notification_url");
 
-                azureLink           = Configuration.root().getString("Azure.developer.azureLink");
+                azure_blob_Link           = Configuration.root().getString("Azure.developer.azureLink");
+                storageAccount = CloudStorageAccount.parse(Configuration.root().getString("Azure.blob.developer.azureConnectionSecret"));
 
                 link_api_swagger    = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
@@ -203,7 +204,8 @@ public class Server {
                 GoPay_return_url        = Configuration.root().getString("GOPay.production.return_url");
                 GoPay_notification_url  = Configuration.root().getString("GOPay.production.notification_url");
 
-                azureLink           = Configuration.root().getString("Azure.production.azureLink");
+                azure_blob_Link           = Configuration.root().getString("Azure.production.azureLink");
+                storageAccount = CloudStorageAccount.parse(Configuration.root().getString("Azure.blob.production.azureConnectionSecret"));
 
                 link_api_swagger    = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
@@ -256,7 +258,8 @@ public class Server {
                 GoPay_return_url = Configuration.root().getString("GOPay.stage.return_url");
                 GoPay_notification_url = Configuration.root().getString("GOPay.stage.notification_url");
 
-                azureLink               = Configuration.root().getString("Azure.stage.azureLink");
+                azure_blob_Link = Configuration.root().getString("Azure.blob.stage.azureLink");
+                storageAccount = CloudStorageAccount.parse(Configuration.root().getString("Azure.blob.stage.azureConnectionSecret"));
 
                 link_api_swagger        = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
@@ -270,13 +273,7 @@ public class Server {
          * Nastavení Azure připojení
          * jelikož v době vývoje nebylo možné realizovat různá připojení, bylo nutné zajistit pouze jedno připojení v počátku
          */
-        String azureConnection = "";
 
-        if(server_mode ==Enum_Tyrion_Server_mode.developer)     azureConnection = Configuration.root().getString("Azure.developer.azureConnectionSecret");
-        if(server_mode ==Enum_Tyrion_Server_mode.stage)         azureConnection = Configuration.root().getString("Azure.stage.azureConnectionSecret");
-        if(server_mode ==Enum_Tyrion_Server_mode.production)    azureConnection = Configuration.root().getString("Azure.production.azureConnectionSecret");
-
-        storageAccount = CloudStorageAccount.parse(azureConnection);
         blobClient = storageAccount.createCloudBlobClient();
 
     }
@@ -340,10 +337,10 @@ public class Server {
             configurator.setContext(context);
             context.reset();
             if (!Configuration.root().getString("Server.mode").equals("production")) {
-                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logback.developerSettings")));
+                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.developerSettings")));
             }
             else {
-                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logback.productionSettings")));
+                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.productionSettings")));
             }
         } catch (JoranException je) {}
     }

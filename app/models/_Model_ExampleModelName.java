@@ -8,7 +8,6 @@ import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
-import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Date;
 import java.util.UUID;

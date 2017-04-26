@@ -65,7 +65,7 @@ public class Model_TypeOfBoard extends Model {
     @JsonProperty @ApiModelProperty(required = true)
     public String picture_link(){
         if(this.azure_picture_link == null){ return null;}
-        return Server.azureLink + azure_picture_link;
+        return Server.azure_blob_Link + azure_picture_link;
     }
 
 

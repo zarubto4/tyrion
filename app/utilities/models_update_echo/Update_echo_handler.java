@@ -3,7 +3,6 @@ package utilities.models_update_echo;
 import controllers.Controller_WebSocket;
 import models.Model_Project;
 import utilities.logger.Class_Logger;
-import utilities.login_entities.Secured_Admin;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 import web_socket.services.WS_Becki_Website;
 
@@ -11,6 +10,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+
+/**
+ * Slouží k zasílání informací o updatu do Becki kde se zašle ID společně s typem objektu.
+ * Becki si objekt stromovou hierarchí přepíše a aktualizuje.
+ */
 public class Update_echo_handler {
 
     

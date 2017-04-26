@@ -412,7 +412,7 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_complete(){
         try {
 
-            terminal_logger.debug("notification_update_procedure_complete :: operation ");
+            terminal_logger.warn("notification_update_procedure_complete :: operation ");
 
             Model_Notification notification =  new Model_Notification();
 

@@ -73,7 +73,7 @@ public class Model_Person extends Model {
         if(this.azure_picture_link == null){
             return null;
         }
-        return Server.azureLink + azure_picture_link;
+        return Server.azure_blob_Link + azure_picture_link;
     }
 
 /* JSON IGNOR VALUES ----------------------------------------------------------------------------------------------------*/

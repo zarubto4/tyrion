@@ -61,7 +61,7 @@ public class Server_Logger extends Controller {
             if (Configuration.root().getString("Server.mode").equals("production")) {
 
                 logger = new Server_Logger_Production();
-                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logback.productionSettings")));
+                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.productionSettings")));
                 return;
             }
 
@@ -69,7 +69,7 @@ public class Server_Logger extends Controller {
             else if(Configuration.root().getString("Server.mode").equals("developer") || Configuration.root().getString("Server.mode").equals("stage") ){
 
                 logger = new Server_Logger_Developer();
-                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logback.developerSettings")));
+                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.developerSettings")));
                 return;
             }
 
