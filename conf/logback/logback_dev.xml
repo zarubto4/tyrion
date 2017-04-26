@@ -35,6 +35,8 @@
     <logger name="org.avaje.ebean.SQL"                                      level="WARN" />
     <logger name="org.ehcache.core.EhcacheManager"                          level="WARN" />
     <logger name="org.quartz" level="WARN" />
+    <logger name="p.a.d" level="WARN" />
+    <logger name="com.microsoft.azure.documentdb" level="WARN" />
 
     <logger name="play"                 level="WARN" />
     <logger name="application"          level="DEBUG" />

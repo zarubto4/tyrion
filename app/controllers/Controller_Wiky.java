@@ -7,6 +7,7 @@ import models.Model_Product;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utilities.Server;
 import utilities.logger.Class_Logger;
 import utilities.response.GlobalResult;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version_Short_Detail;
@@ -36,52 +37,32 @@ public class Controller_Wiky extends Controller {
 
      }
 
+
+
     public Result test2(){
         try {
 
             System.out.println(" Test 2 ");
 
-            // Replace with your DocumentDB end point and master key.
-            String END_POINT = "stagedocumentdb.documents.azure.com";
-            String MASTER_KEY = "8IFUApIpk9kcY7BjKhulIHlxe77OBOyaZeh8F6UyKWqEmU81PpH7AOfGBFb08RThHhbd1UBgyFLvFlc55lRJOg==";
-
-            // Define an id for your database and collection
-            String DATABASE_ID = "stagedocumentdb";
-            String COLLECTION_ID = "TestCollection";
-
-            System.out.println(" DocumentClient");
-            DocumentClient documentClient = new DocumentClient(END_POINT, MASTER_KEY, ConnectionPolicy.GetDefault(), ConsistencyLevel.Session);
-
-
-            System.out.println(" Database create ");
-            Database myDatabase = new Database();
-            myDatabase.setId(DATABASE_ID);
-
-            System.out.println(" RequestOptions ");
             RequestOptions requestOptions = new RequestOptions();
             requestOptions.setOfferThroughput(1000);
 
+
+            System.out.println("new DocumentCollection");
+            // Define a new collection using the id above.
             DocumentCollection myCollection = new DocumentCollection();
-            myCollection.setId( "TestCollection ");
+            myCollection.setId("Model_Board_Test");
+
+            System.out.println("new DocumentCollection Done");
 
             // Create a new collection.
-            myCollection = documentClient.createCollection("dbs/" + DATABASE_ID, myCollection, requestOptions).getResource();
-            
-            Swagger_B_Program_Version_Short_Detail swagger_b_program_version_short_detail = new Swagger_B_Program_Version_Short_Detail();
-            swagger_b_program_version_short_detail.version_id = "122113";
+            myCollection = Server.documentClient.createCollection("dbs/" + Server.no_sql_database.getId(), myCollection, requestOptions).getResource();
 
-
-
-            Document allenDocument = new Document( Json.toJson(swagger_b_program_version_short_detail).toString() );
-
-
-            allenDocument = documentClient.createDocument("dbs/" + DATABASE_ID + "/colls/" + "TestCollection", allenDocument, null, false).getResource();
-
-
-            System.out.println( "Vypisuji dokument " + allenDocument.toString());
-
+            System.out.println("Created a new collection:");
+            System.out.println(myCollection.toString());
 
             return ok();
+
         }catch (Exception e){
             e.printStackTrace();
             return badRequest();

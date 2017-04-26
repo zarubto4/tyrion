@@ -35,7 +35,6 @@ public class Server_Cache {
 
             cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
 
-
         /*
          *  Person / Token
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -53,10 +52,6 @@ public class Server_Cache {
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Person.class,
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_Person.CACHE_TOKEN")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
-
-
-
-
 
         /*
          *  Project Hierarchy ( Project, B_Program, C_Program, M_Program,
@@ -82,7 +77,6 @@ public class Server_Cache {
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_CProgram.class.getSimpleName() + ".CACHE_VERSION")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
 
-
         /*
          *  Model_Board
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -102,9 +96,6 @@ public class Server_Cache {
                     ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_Board.CACHE_STATUS")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
 
-
-
-
         /*
          *  Updates
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -116,9 +107,6 @@ public class Server_Cache {
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_CProgramUpdatePlan.class,
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_CProgramUpdatePlan.CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(7, TimeUnit.MINUTES))).build());
-
-
-
 
         /*
          *  Model_Instance
@@ -138,10 +126,6 @@ public class Server_Cache {
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerInstance.CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(30, TimeUnit.MINUTES))).build());
 
-
-
-
-
         /*
          *  Model_HomerServer
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -155,15 +139,12 @@ public class Server_Cache {
                     ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerServer.CACHE")))
                     .withExpiry(Expirations.timeToIdleExpiration(Duration.of(12, TimeUnit.HOURS))).build());
 
-
-
-
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
     }
 
     public static void stopCache(){
-        cacheManager.close();
+        if(cacheManager != null) cacheManager.close();
     }
 }
