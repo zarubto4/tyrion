@@ -3,7 +3,9 @@ package utilities.logger;
 
 import com.google.inject.Singleton;
 import play.Configuration;
+import utilities.Server;
 import utilities.enums.Enum_Log_level;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.helps_objects.Interface_Server_Logger;
 
 import java.awt.*;
@@ -35,7 +37,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
                 ArrayList<String> list = (ArrayList<String>) Configuration.root().getStringList("Loggy.groups." + group_name);
 
                 // If list not empty - Developer want log only some Logger groups!
-                if(!list.isEmpty()) {
+                if(!list.isEmpty() && Server.server_mode != Enum_Tyrion_Server_mode.stage) {
 
                     String group_config = list.get(0);
 
