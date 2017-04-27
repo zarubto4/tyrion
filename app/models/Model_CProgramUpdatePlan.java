@@ -148,6 +148,7 @@ public class Model_CProgramUpdatePlan extends Model {
     public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
+        count_of_tries = 0;
 
         if(this.state == null) this.state = Enum_CProgram_updater_state.not_start_yet;
         this.date_of_create = new Date();

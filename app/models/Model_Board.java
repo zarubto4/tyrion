@@ -490,21 +490,17 @@ public class Model_Board extends Model {
                     try {
 
                         Enum_Hardware_update_state_from_Homer status = Enum_Hardware_update_state_from_Homer.getUpdate_state(updateDeviceInformation_device.update_state);
-                        if (status == null)
-                            throw new NullPointerException("Hardware_update_state_from_Homer " + updateDeviceInformation_device.update_state + " is not recognize in Json!");
+                        if (status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + updateDeviceInformation_device.update_state + " is not recognize in Json!");
 
                         Model_Board board = Model_Board.get_byId(updateDeviceInformation_device.deviceId);
-                        if (board == null)
-                            throw new NullPointerException("Device id" + updateDeviceInformation_device.deviceId + " not found!");
+                        if (board == null) throw new NullPointerException("Device id" + updateDeviceInformation_device.deviceId + " not found!");
 
                         Enum_Firmware_type firmware_type = Enum_Firmware_type.getFirmwareType(updateDeviceInformation_device.firmwareType);
-                        if (firmware_type == null)
-                            throw new NullPointerException("Firmware_type " + updateDeviceInformation_device.firmwareType + "is not recognize in Json!");
+                        if (firmware_type == null) throw new NullPointerException("Firmware_type " + updateDeviceInformation_device.firmwareType + "is not recognize in Json!");
 
 
                         Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.byId(updateDeviceInformation_device.c_program_update_plan_id);
-                        if (plan == null)
-                            throw new NullPointerException("Plan id" + updateDeviceInformation_device.c_program_update_plan_id + " not found!");
+                        if (plan == null) throw new NullPointerException("Plan id" + updateDeviceInformation_device.c_program_update_plan_id + " not found!");
 
 
                         if (status == Enum_Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE) {
@@ -596,15 +592,16 @@ public class Model_Board extends Model {
 
             terminal_logger.debug("hardware_firmware_state_check:: Summary information of connected master board: " + board.id);
 
-            System.out.println("Kontrola Board");
-            System.out.println("    Board Id:: " + board.id);
-            System.out.println("    Aktuální firmware_id dle HW:: " + report.firmware_build_id);
+            terminal_logger.debug("hardware_firmware_state_check:: Board Check");
+            System.out.println("hardware_firmware_state_check::     Board Id:: " + board.id);
+            System.out.println("hardware_firmware_state_check::     Actual firmware_id by HW::: " + report.firmware_build_id);
 
-            if (board.actual_c_program_version == null) System.out.println("Aktuální firmware_id dle DB není znám - ještě není žádný vypálen :( ");
-            else System.out.println("   Aktuální firmware_id dle DB:: " + board.actual_c_program_version.c_compilation.firmware_build_id);
 
-            if (board.actual_boot_loader == null) System.out.println("Aktuální bootlader_id dle DB není znám :: " + report.bootloader_build_id);
-            else System.out.println("   Aktuální bootlader_id dle DB:: " + board.actual_boot_loader.version_identificator);
+            if (board.actual_c_program_version == null) terminal_logger.debug("hardware_firmware_state_check::        Actual firmware_id by DB not recognized - Device has not firmware from Tyrion");
+            else  terminal_logger.debug("hardware_firmware_state_check::        Actual firmware_id by DB:: " + board.actual_c_program_version.c_compilation.firmware_build_id);
+
+            if (board.actual_boot_loader == null) System.out.println(" Actual bootloader_id by DB not recognized :: " + report.bootloader_build_id);
+            else terminal_logger.debug("hardware_firmware_state_check::    Actual bootloader_id by DB:: " + board.actual_boot_loader.version_identificator);
 
 
             // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
@@ -620,30 +617,37 @@ public class Model_Board extends Model {
                     .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
                     .findList();
 
-            System.out.println("    Kolik mám aktualizačních procedur nažhavených pro dané zařízení:: " + firmware_plans.size());
+            terminal_logger.debug("hardware_firmware_state_check::      Total CProgramUpdatePlans for this device (not complete):: " + firmware_plans.size());
 
             if(firmware_plans.size() == 0){
 
                 if( board.actual_c_program_version != null && !report.firmware_build_id.equals( board.actual_c_program_version.c_compilation.firmware_build_id)){
 
-                    System.out.println("    Mám rozhozený stav o tom, co očekává databáze a co na Devicu opravdu je... Lze hádat, že Yoda se vrátil na předchozí funčkní firmware!! ");
-                    System.out.println("    Mám hardware autobackup?? :: " + board.backup_mode );
+                    terminal_logger.debug("hardware_firmware_state_check::     Different versions versus database");
+                    terminal_logger.debug("hardware_firmware_state_check::     Auto-backup on Hardware is set to :: " + board.backup_mode );
 
-                    for(Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", board.id).order().asc("date_of_create").findList()){
-                        System.out.println("    Co měl HArdware předtím??? :: " + plan.c_program_version_for_update.c_compilation.firmware_build_id );
+                    if(board.actual_backup_c_program_version != null &&  board.actual_c_program_version.c_compilation != null   ){
+
+                        if(board.actual_c_program_version.c_compilation.firmware_build_id .equals(report.firmware_build_id )){
+
+                            terminal_logger.warn("hardware_firmware_state_check::     On device is Backup!!! TODO"); //TODO
+
+                        }
+                    }else {
+                        terminal_logger.warn("hardware_firmware_state_check::     No Backup, No right version.. What to do??? TODO"); //TODO
+
                     }
-
                 }
             }
 
             if (firmware_plans.size() > 0) {
 
-                terminal_logger.debug("hardware_firmware_state_check:: there is still some not finished firmware_plans");
+                terminal_logger.debug("hardware_firmware_state_check::     there is still some not finished firmware_plans");
 
                 if (firmware_plans.size() > 1) {
                     for (int i = 1; i < firmware_plans.size(); i++) {
 
-                        terminal_logger.debug("hardware_firmware_state_check:: overwritten previous update procedure");
+                        terminal_logger.debug("hardware_firmware_state_check::      overwritten previous update procedure");
                         firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
                         firmware_plans.get(i).update();
                     }
@@ -665,6 +669,7 @@ public class Model_Board extends Model {
 
                         terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal,System start with and try the new update");
                         firmware_plans.get(0).state = Enum_CProgram_updater_state.not_start_yet;
+                        firmware_plans.get(0).count_of_tries++;
                         firmware_plans.get(0).update();
                         Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(firmware_plans.get(0).actualization_procedure);
 

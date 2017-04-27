@@ -159,6 +159,8 @@ public class Server_Logger extends Controller {
 
     public static Result result_internalServerError(Exception exception, Http.Request request) {
 
+        exception.printStackTrace();
+
         String id;
 
         while (true) { // I need Unique Value

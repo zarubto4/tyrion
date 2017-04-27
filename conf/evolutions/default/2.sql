@@ -240,6 +240,8 @@ add constraint pk_model_general_tariff_label primary key (id),
 add constraint fk_model_general_tariff_label_39 foreign key (general_tariff_id) references model_general_tariff (id),
 add constraint fk_model_general_tariff_label_40 foreign key (extensions_id) references GeneralTariffExt (id);
 
+drop index if exists ix_model_tariff_label_tariff_39;
+create index ix_model_general_tariff_label_39 on model_general_tariff_label (general_tariff_id);
 
 create index ix_model_general_tariff_label_40 on model_general_tariff_label (extensions_id);
 

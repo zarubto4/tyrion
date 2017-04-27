@@ -3,7 +3,6 @@ package utilities.independent_threads;
 import models.Model_Board;
 import models.Model_HomerInstance;
 import models.Model_HomerServer;
-import models._Model_ExampleModelName;
 import utilities.enums.Enum_Homer_instance_type;
 import utilities.logger.Class_Logger;
 import web_socket.services.WS_HomerServer;
@@ -51,47 +50,52 @@ public class Check_Update_for_hw_on_homer extends Thread {
             terminal_logger.internalServerError(e);
         }
 
-        // Musím najít klasické instnace s Blockem a také virtuální instance
-        Model_HomerInstance.find
-                .where().ne("removed_by_user", true)
-                        .eq("cloud_homer_server.unique_identificator", model_server.unique_identificator)
-                        .disjunction()
-                            .conjunction()
-                                .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL.name())
-                                .isNotNull("actual_instance")
-                            .endJunction()
-                            .conjunction()
-                                .eq("instance_type", Enum_Homer_instance_type.VIRTUAL.name())
-                                .isNotNull("boards_in_virtual_instance")
-                             .endJunction()
-                            .endJunction()
-                .order().asc("blocko_instance_name")
-                .findEachWhile( (Model_HomerInstance instance) -> {
+        try {
+            // Musím najít klasické instnace s Blockem a také virtuální instance
+            Model_HomerInstance.find
+                    .where().ne("removed_by_user", true)
+                    .eq("cloud_homer_server.unique_identificator", model_server.unique_identificator)
+                    .disjunction()
+                    .conjunction()
+                    .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL.name())
+                    .isNotNull("actual_instance")
+                    .endJunction()
+                    .conjunction()
+                    .eq("instance_type", Enum_Homer_instance_type.VIRTUAL.name())
+                    .isNotNull("boards_in_virtual_instance")
+                    .endJunction()
+                    .endJunction()
+                    .order().asc("blocko_instance_name")
+                    .findEachWhile((Model_HomerInstance instance) -> {
 
-                    // Zajímá mě stav HW
+                        // Zajímá mě stav HW
 
-                    try {
+                        try {
 
-                        terminal_logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
+                            terminal_logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
 
-                        WS_Message_Get_summary_information summary_information = instance.get_summary_information();
+                            WS_Message_Get_summary_information summary_information = instance.get_summary_information();
 
-                        // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
-                        if(!summary_information.status.equals("success")){
-                            if(!model_server.server_is_online()) {
-                                terminal_logger.warn("Check_Update_for_hw_on_homer:: Run:: Server is probably offline");
-                                return false;
+                            // Pokud není success - zkontroluji stav serveru a přeruším update proceduru
+                            if (!summary_information.status.equals("success")) {
+                                if (!model_server.server_is_online()) {
+                                    terminal_logger.warn("Check_Update_for_hw_on_homer:: Run:: Server is probably offline");
+                                    return false;
+                                }
                             }
+
+                            // Ten porovnám se stavem - který se tam aktuálně očekává
+                            Check_Update_for_hw_on_homer.check_Update(ws_homerServer, summary_information);
+
+                        } catch (Exception e) {
+
                         }
+                        return true;
+                    });
 
-                        // Ten porovnám se stavem - který se tam aktuálně očekává
-                        Check_Update_for_hw_on_homer.check_Update(ws_homerServer, summary_information);
-
-                    }catch (Exception e){
-
-                    }
-                    return true;
-                });
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
     }
 
 

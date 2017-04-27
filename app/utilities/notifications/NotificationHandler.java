@@ -90,7 +90,6 @@ public class NotificationHandler {
 
         try {
 
-            System.out.println("Odesílám Notifikaci");
 
             terminal_logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
@@ -108,6 +107,7 @@ public class NotificationHandler {
             message.put("created", notification.created.getTime());
             message.set("buttons", Json.toJson(notification.buttons()) );
 
+            terminal_logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
             System.out.println("  Počet příjemců je " + notification.list_of_ids_receivers.size());
 
@@ -115,7 +115,7 @@ public class NotificationHandler {
 
                 try {
 
-                    System.out.println("      Odesílám příjemcovi " + person_id);
+                    System.out.println("      The number of recipients is " + person_id);
 
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
                     if ((notification.notification_importance != Enum_Notification_importance.low) && (notification.id == null)) {
@@ -126,8 +126,7 @@ public class NotificationHandler {
                         notification.save_object();
 
                         message.put("id", notification.id);
-                        message.put("notification_id", notification.id); // TODO Smazat - určeno jen pro testování
-                        System.out.println("      Notifikaci k tomu ještě ukládám pod notification id " +notification.id);
+                        System.out.println("      Notifikaci has own Notification ID:  " +notification.id);
 
                         try {
                             // TODO Lexa - co jsi touhle čístí kodu chtěl říci??? Tohle by tu vůbec být nemělo - ale mělo by se to zařídit na jiném místě v kodu
@@ -144,9 +143,9 @@ public class NotificationHandler {
                         if(notification.id == null) {
                             message.put("id", UUID.randomUUID().toString());
                             message.put("notification_id", UUID.randomUUID().toString());  // TODO Smazat - určeno jen pro testování
-                            System.out.println("      Notifikaci k tomu ještě něměla vlastní id a nebude ukládánáa a tak tvořím nové id " +  message.get("id").asText());
+                            System.out.println("      Notifikation has not own id and its not set for save ID:" +  message.get("id").asText());
                         }else {
-                            System.out.println("      Notifikaci měla už vlastní id ale nebude ukládáná " +  notification.id);
+                            System.out.println("      Notifikation has own id and its not set for save ID: " +  notification.id);
                             message.put("id", notification.id);
                             message.put("notification_id", notification.id);
                         }

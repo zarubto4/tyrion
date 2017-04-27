@@ -15,7 +15,7 @@ public class Job_OldFloatingTokenRemoval implements Job {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Job_OldFloatingTokenRemoval.class);
 
 //**********************************************************************************************************************
 
@@ -23,7 +23,7 @@ public class Job_OldFloatingTokenRemoval implements Job {
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        terminal_logger.info("Job_OldFloatingTokenRemoval:: execute: Executing Job_OldFloatingTokenRemoval");
+        terminal_logger.info("execute: Executing Job_OldFloatingTokenRemoval");
 
         if(!remove_floating_person_token_thread.isAlive()) remove_floating_person_token_thread.start();
     }
@@ -35,26 +35,26 @@ public class Job_OldFloatingTokenRemoval implements Job {
 
             try {
 
-                terminal_logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: concurrent thread started on {}", new Date());
+                terminal_logger.debug("remove_floating_person_token_thread: concurrent thread started on {}", new Date());
 
                 while (true) {
 
                     List<Model_FloatingPersonToken> tokens = Model_FloatingPersonToken.find.where().gt("access_age", new Date()).setMaxRows(100).findList();
                     if (tokens.isEmpty()) {
-                        terminal_logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: no tokens to remove");
+                        terminal_logger.debug("remove_floating_person_token_thread: no tokens to remove");
                         break;
                     }
 
-                    terminal_logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: removing old tokens (100 per cycle)");
+                    terminal_logger.debug("remove_floating_person_token_thread: removing old tokens (100 per cycle)");
 
                     tokens.forEach(Model_FloatingPersonToken::delete);
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread:", e);
+                terminal_logger.internalServerError("remove_floating_person_token_thread:", e);
             }
 
-            terminal_logger.debug("Job_OldFloatingTokenRemoval:: remove_floating_person_token_thread: thread stopped on {}", new Date());
+            terminal_logger.debug("remove_floating_person_token_thread: thread stopped on {}", new Date());
         }
     };
 }

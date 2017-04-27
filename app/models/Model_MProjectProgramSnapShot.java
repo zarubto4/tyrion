@@ -19,7 +19,7 @@ public class Model_MProjectProgramSnapShot extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(_Model_ExampleModelName.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_MProjectProgramSnapShot.class);
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
