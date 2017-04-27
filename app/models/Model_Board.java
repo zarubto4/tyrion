@@ -268,7 +268,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @Transient @JsonIgnore public Swagger_Board_for_fast_upload_detail get_short_board_for_fast_upload() {
+    @Transient @JsonIgnore public Swagger_Board_for_fast_upload_detail get_short_board_for_fast_upload(){
 
         try {
 
@@ -276,7 +276,7 @@ public class Model_Board extends Model {
             board_for_fast_upload_detail.id = id;
             board_for_fast_upload_detail.personal_description = personal_description;
 
-            System.out.println("Board " + id);
+            terminal_logger.debug("get_short_board_for_fast_upload:: Board " + id);
 
             if (this.get_instance() == null) {
 
@@ -367,9 +367,6 @@ public class Model_Board extends Model {
             }
 
             if(cache_status.get(help.deviceId) == null || !cache_status.get(help.deviceId) ){
-
-                System.out.println("Zasílám pokyn k notifikaci o tom, že device je online");
-
                 cache_status.put(help.deviceId, true);
                 master_device.notification_board_connect();
             }
@@ -593,14 +590,15 @@ public class Model_Board extends Model {
             terminal_logger.debug("hardware_firmware_state_check:: Summary information of connected master board: " + board.id);
 
             terminal_logger.debug("hardware_firmware_state_check:: Board Check");
-            System.out.println("hardware_firmware_state_check::     Board Id:: " + board.id);
-            System.out.println("hardware_firmware_state_check::     Actual firmware_id by HW::: " + report.firmware_build_id);
+
+            terminal_logger.debug("hardware_firmware_state_check::     Board Id:: " + board.id);
+            terminal_logger.debug("hardware_firmware_state_check::     Actual firmware_id by HW::: " + report.firmware_build_id);
 
 
-            if (board.actual_c_program_version == null) terminal_logger.debug("hardware_firmware_state_check::        Actual firmware_id by DB not recognized - Device has not firmware from Tyrion");
+            if (board.actual_c_program_version == null) terminal_logger.debug("hardware_firmware_state_check::      Actual firmware_id by DB not recognized - Device has not firmware from Tyrion");
             else  terminal_logger.debug("hardware_firmware_state_check::        Actual firmware_id by DB:: " + board.actual_c_program_version.c_compilation.firmware_build_id);
 
-            if (board.actual_boot_loader == null) System.out.println(" Actual bootloader_id by DB not recognized :: " + report.bootloader_build_id);
+            if (board.actual_boot_loader == null)       terminal_logger.debug("hardware_firmware_state_check::      Actual bootloader_id by DB not recognized :: " + report.bootloader_build_id);
             else terminal_logger.debug("hardware_firmware_state_check::    Actual bootloader_id by DB:: " + board.actual_boot_loader.version_identificator);
 
 
@@ -669,6 +667,7 @@ public class Model_Board extends Model {
 
                         terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal,System start with and try the new update");
                         firmware_plans.get(0).state = Enum_CProgram_updater_state.not_start_yet;
+                        terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal, System start with and try the new update. Number of Tries:: {} " , firmware_plans.get(0).count_of_tries);
                         firmware_plans.get(0).count_of_tries++;
                         firmware_plans.get(0).update();
                         Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(firmware_plans.get(0).actualization_procedure);
@@ -677,7 +676,7 @@ public class Model_Board extends Model {
 
                 } else {
 
-                    terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal because there is no hardware at all. System start with a new update");
+                    terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal because there is no on the hardware at all. System start with a new update");
                     firmware_plans.get(0).state = Enum_CProgram_updater_state.not_start_yet;
                     firmware_plans.get(0).update();
 
@@ -687,9 +686,9 @@ public class Model_Board extends Model {
             }
 
 
-            // TODO Bootloader
+            // TODO Bootloader TOM jde vlastně téměř o kopii předchozího
 
-            // TODO Backup
+            // TODO Backup TOM jde vlastně téměř o kopii předchozího
 
 
             if(report instanceof WS_Message_Yoda_connected){
@@ -1102,7 +1101,7 @@ public class Model_Board extends Model {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean first_connect_permission(){  return  project != null ? false : true;}
+    @JsonIgnore @Transient public boolean first_connect_permission(){  return project == null;}
 
     @Override
     public void save(){
