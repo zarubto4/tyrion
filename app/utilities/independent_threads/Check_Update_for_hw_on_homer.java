@@ -9,6 +9,8 @@ import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 import web_socket.message_objects.homer_instance.WS_Message_Yoda_connected;
 
+import java.util.concurrent.ExecutionException;
+
 public class Check_Update_for_hw_on_homer extends Thread {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -55,17 +57,17 @@ public class Check_Update_for_hw_on_homer extends Thread {
             Model_HomerInstance.find
                     .where().ne("removed_by_user", true)
                     .eq("cloud_homer_server.unique_identificator", model_server.unique_identificator)
-                    .disjunction()
-                    .conjunction()
-                    .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL.name())
-                    .isNotNull("actual_instance")
-                    .endJunction()
-                    .conjunction()
-                    .eq("instance_type", Enum_Homer_instance_type.VIRTUAL.name())
-                    .isNotNull("boards_in_virtual_instance")
-                    .endJunction()
-                    .endJunction()
-                    .order().asc("blocko_instance_name")
+                        .disjunction()
+                            .conjunction()
+                                .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL.name())
+                                .isNotNull("actual_instance")
+                            .endJunction()
+                            .conjunction()
+                                .eq("instance_type", Enum_Homer_instance_type.VIRTUAL.name())
+                                .isNotNull("boards_in_virtual_instance")
+                            .endJunction()
+                        .endJunction()
+                     .order().asc("blocko_instance_name")
                     .findEachWhile((Model_HomerInstance instance) -> {
 
                         // Zajímá mě stav HW
@@ -90,6 +92,8 @@ public class Check_Update_for_hw_on_homer extends Thread {
                         } catch (Exception e) {
 
                         }
+
+
                         return true;
                     });
 

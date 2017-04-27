@@ -2,11 +2,18 @@ package utilities.login_entities;
 
 import org.apache.commons.collections.MapIterator;
 import org.apache.commons.collections.map.LRUMap;
+import utilities.logger.Class_Logger;
 import web_socket.message_objects.common.WS_Token;
 
 import java.util.ArrayList;
 
 public class TokenCache {
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(TokenCache.class);
+
+/* METHOD  -------------------------------------------------------------------------------------------------------------*/
 
     private long timeToLive;
     private final LRUMap crunchifyCacheMap;

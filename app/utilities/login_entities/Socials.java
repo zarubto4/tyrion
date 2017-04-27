@@ -8,9 +8,15 @@ import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.oauth.OAuthService;
 import play.Configuration;
 import utilities.Server;
+import utilities.logger.Class_Logger;
 
 public class Socials {
 
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Socials.class);
+
+/* METHOD  -------------------------------------------------------------------------------------------------------------*/
     // Toturiál a popis na
     // https://github.com/scribejava/scribejava/issues
 

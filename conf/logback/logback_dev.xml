@@ -37,6 +37,7 @@
     <logger name="org.quartz" level="WARN" />
     <logger name="p.a.d" level="WARN" />
     <logger name="com.microsoft.azure.documentdb" level="WARN" />
+    <logger name="TYRION" level="TRACE" />
 
     <logger name="play"                 level="WARN" />
     <logger name="application"          level="DEBUG" />

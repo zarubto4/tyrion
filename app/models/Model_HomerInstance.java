@@ -845,8 +845,18 @@ public class Model_HomerInstance extends Model {
     public void update_device_summary_collection(){
         try {
 
-            if(actual_instance != null) {
+            if(!server_is_online()){
+                terminal_logger.error("update_device_summary_collection:: Server is offline ");
+                throw new InterruptedException();
+            }
 
+            if(!instance_online()){
+                terminal_logger.error("update_device_summary_collection:: Instance is offline ");
+                throw new InterruptedException();
+            }
+
+
+            if(actual_instance != null) {
 
                 // Seznam - který by na instanci měl běžet!
                 List<Model_BProgramHwGroup> hardware_groups = Model_BProgramHwGroup.find.where().eq("b_program_version_groups.id", actual_instance.version_object.id).findList();
@@ -855,7 +865,7 @@ public class Model_HomerInstance extends Model {
                 WS_Message_Get_Hardware_list summary_information = this.get_hardware_list();
 
                 if(!summary_information.status.equals("success")){
-                    terminal_logger.error("update_device_summary_collection:: Get Instance status Failed:: Error:: " + summary_information.error + " ErrorCode:: "+ summary_information.errorCode);
+                    terminal_logger.error("update_device_summary_collection:: Get Instance status Failed:: Error:: {}  ErrorCode:: {} ", summary_information.error , summary_information.errorCode);
                     return;
                 }
 
@@ -878,7 +888,7 @@ public class Model_HomerInstance extends Model {
 
                         WS_Message_Remove_yoda_from_instance remove_yoda_from_instance =  this.remove_Yoda_from_instance(yoda_list.deviceId);
                         if(!remove_yoda_from_instance.status.equals("success")){
-                            terminal_logger.error("update_device_summary_collection:: Remove Yoda Failed:: Error:: " + remove_yoda_from_instance.error + " ErrorCode:: "+ remove_yoda_from_instance.errorCode);
+                            terminal_logger.error("update_device_summary_collection:: Remove Yoda Failed:: Error:: {}  ErrorCode:: {} ", summary_information.error , summary_information.errorCode);
                         }
 
                         Model_Board master_board = Model_Board.get_byId(yoda_list.deviceId);
@@ -931,58 +941,65 @@ public class Model_HomerInstance extends Model {
 
                 List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
 
-                System.out.println("Budu procházet Grupu k ADD");
+                terminal_logger.debug("update_device_summary_collection:: Cycle for ADD or Remove to Hardware group for Blocko Instance");
 
                 for (Model_BProgramHwGroup b_program_hw_group : hardware_groups) {
 
-                    System.out.println("b_program_hw_group:: " + b_program_hw_group.id);
-
+                    terminal_logger.debug("update_device_summary_collection:: Iteration {} (Hardware Group ID) ", b_program_hw_group.id );
 
                     if (b_program_hw_group.main_board_pair != null) {
 
-                        System.out.println("b_program_hw_group:: Main Board " + b_program_hw_group.main_board_pair.board.personal_description);
+                        terminal_logger.debug("update_device_summary_collection:: Iteration {}  Main Board ID:: {} Check. ", b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description);
 
                         // Neobsahuje Yodu - Tak vytvořím skupinu s Yodou a devicama
                         if(!yodas_id_on_instance.contains(b_program_hw_group.main_board_pair.board_id())) {
 
-                            System.out.println("Instance Neobsahuje Yodu - takže vytvořím skupinu s Yodou " + b_program_hw_group.main_board_pair.board.personal_description);
+                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Instance not contain this Yoda device -> create new group with Yoda" , b_program_hw_group.id);
 
                             Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
                             group.yodaId = b_program_hw_group.main_board_pair.board.id;
 
                             for (Model_BPair pair : b_program_hw_group.device_board_pairs) {
-                                System.out.println("Instance Neobsahuje Yodu - takže vytvořím skupinu s Yodou a ještě přidám device pod Yodu:: " + pair.board.personal_description);
+                                terminal_logger.debug("update_device_summary_collection:: Iteration {} Instance not contain this Yoda device. Group was created bud Yoda has own MESH device id {} ", b_program_hw_group.id , pair.board.personal_description);
                                 group.devicesId.add(pair.board.id);
                             }
 
                             hw_groups.add(group);
-                            System.out.println("Cyklus opakuji ");
                             continue;
                         }
 
-                        System.out.println("Instance Yodu už má");
+                        terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance - it not required add that to new group",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description);
 
                         // Obsahuje Yodu - takže kontroluji ještě Devices
                         List<String> devices_id_under_yoda = new ArrayList<>();
 
                         WS_Message_Help_Yoda_only_hardware_Id_list yodaList = summary_information.getListWithYoda(b_program_hw_group.main_board_pair.board_id());
+
                         if(yodaList == null){
-                            terminal_logger.error("update_device_summary_collection:: Error::  yodaList is Null" );
+                            terminal_logger.error("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but summary_information (WS_Message_Get_Hardware_list) not contains yodaList!!!",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description );
                             continue;
                         }
 
                         for(Model_BPair bPair : b_program_hw_group.device_board_pairs){
-                            if(!yodaList.devicesId.contains( bPair.board_id())) devices_id_under_yoda.add(bPair.board_id());
+                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but summary_information (WS_Message_Get_Hardware_list) not contains yodaList!!!",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description );
+
+                            if(!yodaList.devicesId.contains( bPair.board_id())){
+                                terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but device {} is also required in group. Device was Add to group. ",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description , bPair.board_id() );
+                                devices_id_under_yoda.add(bPair.board_id());
+                            }
                         }
 
-                        if(!devices_id_under_yoda.isEmpty()) add_Device_to_instance(b_program_hw_group.main_board_pair.board_id(), devices_id_under_yoda);
+                        if(!devices_id_under_yoda.isEmpty()){
+                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {}. Add device under Yoda immediately on Instance id {} ",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description , this.blocko_instance_name );
+                            add_Device_to_instance(b_program_hw_group.main_board_pair.board_id(), devices_id_under_yoda);
+                        }
                     }
                 }
 
 
                 if (!hw_groups.isEmpty()) {
 
-                    if(!server_is_online()) throw new InterruptedException();
+                    terminal_logger.debug("update_device_summary_collection:: Now its time to send All Groups to Instance for Synchronize. ");
 
                     ObjectNode node = send_to_instance().write_with_confirmation( new WS_Message_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
 
@@ -991,6 +1008,7 @@ public class Model_HomerInstance extends Model {
 
                     WS_Message_Update_device_summary_collection rsp = form.get();
                     if(!rsp.status.equals("success")) {
+                        // Todo - Reakce??
                         terminal_logger.error("WS_Update_device_summary_collection:: Remove Yoda Failed:: Error:: {} ErrorCode:: {} " , rsp.error , rsp.errorCode);
                     }
 
@@ -1035,7 +1053,6 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore @Transient
     public boolean online_state(){
-
         return get_status();
     }
 

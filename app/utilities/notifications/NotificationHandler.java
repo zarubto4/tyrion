@@ -109,13 +109,13 @@ public class NotificationHandler {
 
             terminal_logger.trace("NotificationHandler:: sendNotification:: sending notification");
 
-            System.out.println("  Počet příjemců je " + notification.list_of_ids_receivers.size());
+            terminal_logger.debug("  Počet příjemců je " + notification.list_of_ids_receivers.size());
 
             for (String person_id : notification.list_of_ids_receivers) {
 
                 try {
 
-                    System.out.println("      The number of recipients is " + person_id);
+                    terminal_logger.debug("      The number of recipients is " + person_id);
 
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
                     if ((notification.notification_importance != Enum_Notification_importance.low) && (notification.id == null)) {
@@ -126,7 +126,7 @@ public class NotificationHandler {
                         notification.save_object();
 
                         message.put("id", notification.id);
-                        System.out.println("      Notifikaci has own Notification ID:  " +notification.id);
+                        terminal_logger.debug("      Notifikaci has own Notification ID:  " +notification.id);
 
                         try {
                             // TODO Lexa - co jsi touhle čístí kodu chtěl říci??? Tohle by tu vůbec být nemělo - ale mělo by se to zařídit na jiném místě v kodu
@@ -143,7 +143,7 @@ public class NotificationHandler {
                         if(notification.id == null) {
                             message.put("id", UUID.randomUUID().toString());
                             message.put("notification_id", UUID.randomUUID().toString());  // TODO Smazat - určeno jen pro testování
-                            System.out.println("      Notifikation has not own id and its not set for save ID:" +  message.get("id").asText());
+                            terminal_logger.debug("      Notifikation has not own id and its not set for save ID:" +  message.get("id").asText());
                         }else {
                             System.out.println("      Notifikation has own id and its not set for save ID: " +  notification.id);
                             message.put("id", notification.id);
@@ -151,15 +151,11 @@ public class NotificationHandler {
                         }
                     }
 
-
                     // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
                     if (Controller_WebSocket.becki_website.containsKey(person_id)) {
                         WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person_id);
                         becki.write_without_confirmation( message );
                     }
-
-
-                   // notification.id = null;
 
                 } catch (NullPointerException e) {
                     terminal_logger.error("NotificationHandler:: SendNotification inside for void Error:: ", e);

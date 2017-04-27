@@ -52,7 +52,7 @@ public class WS_Becki_Website extends WS_Interface_type {
 
     @Override
     public void onClose() {
-        terminal_logger.trace("Local_Terminal onClose " + identifikator);
+        terminal_logger.debug("Local_Terminal onClose " + identifikator);
         this.close();
     }
 
@@ -61,10 +61,10 @@ public class WS_Becki_Website extends WS_Interface_type {
     public void write_without_confirmation(ObjectNode json) {
         try {
 
-            System.out.println("          Reálné odesílání notifikace na počet odběrů jednoho uživatele Becki_Website:: " + all_person_Connections.size());
+            terminal_logger.debug("          Reálné odesílání notifikace na počet odběrů jednoho uživatele Becki_Website:: " + all_person_Connections.size());
 
             for (Map.Entry<String,WS_Interface_type> entry : all_person_Connections.entrySet()) {
-                System.out.println("          Reálné odesílání notifikace na Identifikator WS odběru :: " + entry.getValue().get_identificator());
+                terminal_logger.debug("          Reálné odesílání notifikace na Identifikator WS odběru :: " + entry.getValue().get_identificator());
 
                entry.getValue().write_without_confirmation(json);
             }

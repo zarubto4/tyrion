@@ -45,9 +45,9 @@ public class WS_Send_message {
     public void insert_result(ObjectNode result) {
 
 
-        terminal_logger.trace("Sending message:  {}  insert result {} " , messageId , result.toString());
+        terminal_logger.trace("Sending message::  {}  insert result {} " , messageId , result.toString());
 
-        terminal_logger.trace("Sending message:  {} not contains Sub-Message - its regular message",  messageId);
+        terminal_logger.trace("Sending message::  {} not contains Sub-Message - its regular message",  messageId);
 
 
         // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
@@ -109,7 +109,7 @@ public class WS_Send_message {
                                 return result;
                             }
                         }else {
-                            terminal_logger.trace("Sending message: " + messageId + "Nothing for sending - just waiting for result");
+                            terminal_logger.trace("Sending message:: {} Nothing for sending - just waiting for result", messageId );
                         }
 
                         Thread.sleep(time);

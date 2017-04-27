@@ -12,6 +12,7 @@ import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualizati
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Target_pair;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.homer_instance.WS_Message_Update_device_summary_collection;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,12 +25,12 @@ public class Utilities_HW_Updater_Master_thread_updater {
     private static final Class_Logger terminal_logger = new Class_Logger(Utilities_HW_Updater_Master_thread_updater.class);
 
 
-    private static Utilities_HW_Updater_Master_thread_updater instance = null;
+    private static Utilities_HW_Updater_Master_thread_updater updater = null;
     protected Utilities_HW_Updater_Master_thread_updater() {/** Exists only to defeat instantiation.*/}
 
     public static Utilities_HW_Updater_Master_thread_updater getInstance() {
-        if(instance == null) {instance = new Utilities_HW_Updater_Master_thread_updater(); start_thread_box();}
-        return instance;
+        if(updater == null) {updater = new Utilities_HW_Updater_Master_thread_updater(); start_thread_box();}
+        return updater;
     }
 
 
@@ -127,28 +128,29 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
     private void actualization_update_procedure(Model_ActualizationProcedure procedure){
 
-
+        terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} Start Execution. ", procedure.id );
+        terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} . Actual state {} ", procedure.id , procedure.state.name());
+        
         if(procedure.state == Enum_Update_group_procedure_state.complete || procedure.state == Enum_Update_group_procedure_state.successful_complete ){
-            terminal_logger.debug("actualization_update_procedure:: Procedure id:: " +procedure.id + " is done");
+            terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} is done  (successful_complete or complete) -> Return.", procedure.id);
             return;
         }
 
         if(procedure.state == Enum_Update_group_procedure_state.in_progress){
-            terminal_logger.debug("actualization_update_procedure:: Procedure id:: " +procedure.id + " already in progress");
+            terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} is already in progress. (This is only for debug) ", procedure.id);
         }
 
+
+        terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} . Number of All updates of C_Procedures:: " + procedure.updates.size());
 
         if(procedure.updates.isEmpty()){
 
             procedure.state = Enum_Update_group_procedure_state.complete_with_error;
             procedure.update();
-            terminal_logger.debug("actualization_update_procedure:: Procedure id:: " +procedure.id + " is empty and not set to any updates!!!");
+            terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} is empty and not set to any updates! -> Return." , procedure.id);
             return;
+            
         }
-
-        terminal_logger.debug("actualization_update_procedure:: Procedure id:: " +procedure.id + " state::  " + procedure.state);
-
-        terminal_logger.debug("actualization_update_procedure:: Procedure Number of C_Procedures:: " + procedure.updates.size());
 
 
         Actualization_structure structure = new Actualization_structure();
@@ -163,62 +165,66 @@ public class Utilities_HW_Updater_Master_thread_updater {
                 .endJunction()
                 .findList();
 
-            if(plans.isEmpty()){
-                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} all updates is done or in progress", procedure.id );
-                return;
-            }
+        if(plans.isEmpty()){
+            terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} all updates is done or in progress. -> Return.", procedure.id );
+            return;
+        }
 
-        terminal_logger.debug("actualization_update_procedure:: Procedure Number of C_Procedures By database for execution:: {}" , plans.size());
+        terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} . Number of C_Procedures By database for execution:: {}" , procedure.id , plans.size());
 
            for (Model_CProgramUpdatePlan plan : plans) {
                try {
 
-                   terminal_logger.debug("actualization_update_procedure:: Json CProgramUpdatePlan::  {} ", Json.toJson(plan));
-                   terminal_logger.debug("actualization_update_procedure:: Json CProgramUpdatePlan:: ID:: {} ", plan.id);
-                   terminal_logger.debug("actualization_update_procedure:: Json CProgramUpdatePlan:: Board ID:: {}",  plan.board.id);
-                   terminal_logger.debug("actualization_update_procedure:: Json CProgramUpdatePlan:: Status:: {} ",  plan.state);
 
-                   Model_Board board  = plan.board;
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} Json CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id);
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} Json CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} Json CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
 
                    // Najdu instanci - pod kterou deska běží
                    Model_HomerInstance homer_instance = Model_HomerInstance.find.where()
                            .disjunction()
-                              .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", board.id))
-                              .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", board.id))
-                              .add(Expr.eq("boards_in_virtual_instance.id", board.id))
+                              .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", plan.board.id))
+                              .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", plan.board.id))
+                              .add(Expr.eq("boards_in_virtual_instance.id", plan.board.id))
                            .endJunction()
                    .findUnique();
 
                    if (homer_instance == null) {
-                       terminal_logger.error("actualization_update_procedure:: Device has not own instance!");
+                       terminal_logger.error("actualization_update_procedure:: Procedure id:: {}  plan {} Device has not own instance! There is place for fix it!!!!"); // TODO
                        plan.state = Enum_CProgram_updater_state.instance_inaccessible;
                        plan.update();
                        continue;
                    }
 
-                   terminal_logger.debug("actualization_update_procedure:: Homer_instance id:{} "+ homer_instance.blocko_instance_name);
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Updates is for Homer_instance id: {} Server {} " , procedure.id , plan.id,homer_instance.blocko_instance_name, homer_instance.cloud_homer_server.personal_server_name);
 
-
-                   terminal_logger.debug("actualization_update_procedure:: Hardware (board) is running under cloud blocko program");
-                   terminal_logger.debug("actualization_update_procedure:: Blocko Instance: {}", homer_instance.blocko_instance_name);
-                   terminal_logger.debug("actualization_update_procedure:: Server:{} ",homer_instance.cloud_homer_server.unique_identificator) ;
-
-
-                   if(! Controller_WebSocket.homer_servers.containsKey( homer_instance.cloud_homer_server.unique_identificator )){
-                       terminal_logger.warn("actualization_update_procedure:: Server is offline. Putting off the task for later ");
+                   if(!homer_instance.cloud_homer_server.server_is_online()){
+                       terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id,homer_instance.cloud_homer_server.personal_server_name);
                       plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
                       plan.update();
                       continue;
                    }
 
                    if (!homer_instance.instance_online()) {
-                       terminal_logger.warn("actualization_update_procedure:: Homer is offline. Putting off the task for later ");
-                        plan.state = Enum_CProgram_updater_state.instance_inaccessible;
-                        plan.update();
-                        continue;
+                       terminal_logger.error("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} is offline. Putting off the task for later. This is not standart situation but bug in State Machine!!!!! ", procedure.id, plan.id, homer_instance.cloud_homer_server.personal_server_name);
+
+                       // Pokusím se instanci zase nahodit.
+                       terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} is offline. Try to add instance to server.", procedure.id, plan.id, homer_instance.blocko_instance_name);
+                       WS_Message_Update_device_summary_collection add_instance = homer_instance.add_instance_to_server();
+
+                       if (add_instance.status.equals("success")) {
+                           terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {}  Instance {} Upload instance was successful" , procedure.id, plan.id, homer_instance.blocko_instance_name);
+                           plan.state = Enum_CProgram_updater_state.instance_inaccessible;
+                           plan.update();
+                           continue;
+
+                       } else if (add_instance.status.equals("error")) {
+                           terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} Fail when Tyrion try to add instance from Blocko cloud_blocko_server Response Message:: {} ", procedure.id, plan.id, homer_instance.blocko_instance_name, add_instance.toString());
+                       }
+
                    }
 
-                   terminal_logger.debug("actualization_update_procedure::  Instance of blocko program is online and connected with Tyrion");
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {}  of blocko program is online and connected with Tyrion", procedure.id, plan.id, homer_instance.blocko_instance_name);
 
 
                    // Založím ve Struktuře seznam instnací
@@ -311,7 +317,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                   }
 
                    Utilities_HW_Updater_Target_pair pair = new Utilities_HW_Updater_Target_pair();
-                   pair.targetId = board.id;
+                   pair.targetId = plan.board.id;
                    pair.c_program_update_plan_id = plan.id;
 
                    structure.instances.get(homer_instance.blocko_instance_name).programs.get(program_identificator).target_pairs.add(pair);
@@ -335,6 +341,8 @@ public class Utilities_HW_Updater_Master_thread_updater {
         if(procedure.state != Enum_Update_group_procedure_state.in_progress){
 
             System.out.println("Přepisuji stav update procedury na in progress");
+            
+            
             procedure.state = Enum_Update_group_procedure_state.in_progress;
             procedure.update();
         }

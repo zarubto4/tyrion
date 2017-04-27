@@ -36,7 +36,7 @@ public class Global extends GlobalSettings {
 
            //1
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Setting logback configuration" + Enum_Terminal_Color.ANSI_RESET);
-           Server.setLogback();
+            Server.setLogback();
 
            //2
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +  "onStart: Setting global values" + Enum_Terminal_Color.ANSI_RESET);

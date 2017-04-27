@@ -17,8 +17,7 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    static play.Logger.ALogger logger = play.Logger.of("TYRION");
-
+    static private play.Logger.ALogger logger = play.Logger.of("TYRION");
 
 /* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
