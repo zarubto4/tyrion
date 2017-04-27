@@ -56,18 +56,17 @@ public class SynchronizeHomerServer extends Thread {
                 homer.mqtt_username = help.mqttUser;
                 homer.grid_port = help.gridPort;
 
-                homer.webView_port = help.beckiPort;
+                homer.web_view_port = help.beckiPort;
                 homer.server_remote_port = help.webPort;
 
                 homer.mqtt_username = help.mqttUser;
                 homer.grid_port = help.gridPort;
-                homer.webView_port = help.beckiPort;
                 homer.days_in_archive = help.daysInArchive;
                 homer.time_stamp_configuration = help.get_Date();
 
                 homer.logging = help.logging;
                 homer.interactive = help.interactive;
-                homer.logLevel = Enum_Log_level.fromString(help.logLevel);
+                homer.log_level = Enum_Log_level.fromString(help.logLevel);
                 homer.update();
 
 

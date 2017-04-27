@@ -55,8 +55,8 @@ public class Model_HomerServer extends Model{
 
 
     @ApiModelProperty(required = true, readOnly = true)         public Integer grid_port;              // Přidává se destination_address + "/" grid_ulr
-    @ApiModelProperty(required = true, readOnly = true)         public Integer webView_port;           // Přidává se destination_address + "/" webView_port
-    @ApiModelProperty(required = true, readOnly = true)         public Integer server_remote_port;     // Přidává se destination_address + "/" webView_port
+    @ApiModelProperty(required = true, readOnly = true)         public Integer web_view_port;           // Přidává se destination_address + "/" web_view_port
+    @ApiModelProperty(required = true, readOnly = true)         public Integer server_remote_port;     // Přidává se destination_address + "/" web_view_port
 
     @ApiModelProperty(required = true, readOnly = true)         public String server_url;  // Může být i IP adresa
 
@@ -66,7 +66,7 @@ public class Model_HomerServer extends Model{
                                                                 public Integer days_in_archive;
                                                                 public boolean logging;
                                                                 public boolean interactive;
-                                                                public Enum_Log_level logLevel;
+                                                                public Enum_Log_level log_level;
 
 
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();

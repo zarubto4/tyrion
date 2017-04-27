@@ -1,6 +1,5 @@
 package utilities.demo_data;
 
-import controllers.Controller_Actualization;
 import io.swagger.annotations.Api;
 import models.*;
 import play.Application;
@@ -282,7 +281,7 @@ public class Utilities_Demo_data_Controller extends Controller {
                 yoda.personal_description = yoda_pair.name;
                 yoda.type_of_board = yoda_type;
                 yoda.date_of_create = new Date();
-                yoda.generationDescription = "G2.0";
+                yoda.generation_description = "G2.0";
                 yoda.save();
             }
 
@@ -329,7 +328,7 @@ public class Utilities_Demo_data_Controller extends Controller {
                 wrls.personal_description = WrlsKitG2_pair.name;
                 wrls.type_of_board = wireles_type;
                 wrls.date_of_create = new Date();
-                wrls.generationDescription = "G2.0";
+                wrls.generation_description = "G2.0";
                 wrls.save();
             }
 
@@ -378,7 +377,7 @@ public class Utilities_Demo_data_Controller extends Controller {
                 bsk.personal_description = bskpair.name;
                 bsk.type_of_board = buskit_type;
                 bsk.date_of_create = new Date();
-                bsk.generationDescription = "G2.0";
+                bsk.generation_description = "G2.0";
                 bsk.save();
             }
 
@@ -404,7 +403,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_1.mqtt_port = 1881;
             cloud_server_1.mqtt_password = "pass";
             cloud_server_1.mqtt_username = "user";
-            cloud_server_1.webView_port = 8501;
+            cloud_server_1.web_view_port = 8501;
             cloud_server_1.server_type = Enum_Cloud_HomerServer_type.main_server;
             cloud_server_1.save();
 
@@ -415,7 +414,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_2.mqtt_port = 1881;
             cloud_server_2.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
-            cloud_server_2.webView_port = 8501;
+            cloud_server_2.web_view_port = 8501;
             cloud_server_2.server_type = Enum_Cloud_HomerServer_type.backup_server;
             cloud_server_2.save();
 
@@ -427,7 +426,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_3.mqtt_port = 1881;
             cloud_server_3.mqtt_password = "pass";
             cloud_server_2.mqtt_username = "user";
-            cloud_server_3.webView_port = 8501;
+            cloud_server_3.web_view_port = 8501;
             cloud_server_3.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_3.save();
 
@@ -438,7 +437,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_4.mqtt_port = 1881;
             cloud_server_4.mqtt_password = "pass";
             cloud_server_4.mqtt_username = "user";
-            cloud_server_4.webView_port = 8501;
+            cloud_server_4.web_view_port = 8501;
             cloud_server_4.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_4.save();
 
@@ -452,7 +451,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_5.mqtt_port = 1881;
             cloud_server_5.mqtt_password = "pass";
             cloud_server_5.mqtt_username = "User";
-            cloud_server_5.webView_port = 8501;
+            cloud_server_5.web_view_port = 8501;
             cloud_server_5.server_type = Enum_Cloud_HomerServer_type.test_server;
             cloud_server_5.save();
 

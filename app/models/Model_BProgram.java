@@ -82,9 +82,9 @@ public class Model_BProgram extends Model {
 
             if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
                 // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
-                state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
+                state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.web_view_port + "/" + instance.blocko_instance_name + "/#token";
             } else {
-                state.instance_remote_url = "wss://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.webView_port + "/" + instance.blocko_instance_name + "/#token";
+                state.instance_remote_url = "wss://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.web_view_port + "/" + instance.blocko_instance_name + "/#token";
             }
 
 

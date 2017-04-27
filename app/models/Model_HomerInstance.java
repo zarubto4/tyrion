@@ -80,9 +80,9 @@ public class Model_HomerInstance extends Model {
             if(actual_instance != null) {
 
                 if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-                    return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+                    return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + blocko_instance_name + "/#token";
                 }else{
-                    return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.webView_port + "/" + blocko_instance_name + "/#token";
+                    return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + blocko_instance_name + "/#token";
                 }
 
             }
@@ -182,7 +182,7 @@ public class Model_HomerInstance extends Model {
                 .setImportance(Enum_Notification_importance.low)
                 .setLevel(Enum_Notification_level.info)
                 .setText( new Notification_Text().setText("Server started creating new Blocko Instance of Blocko Version "))
-                .setText( new Notification_Text().setText(this.actual_instance.version_object.b_program.name).setBoltText())
+                .setText( new Notification_Text().setText(this.actual_instance.version_object.b_program.name).setBoldText())
                 .setObject(this.actual_instance.version_object)
                 .setText( new Notification_Text().setText(" from Blocko program "))
                 .setObject(this.actual_instance.version_object.b_program)
@@ -219,11 +219,11 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.warning)
                     .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
-                    .setText( new Notification_Text().setText(this.actual_instance.version_object.version_name ).setBoltText())
+                    .setText( new Notification_Text().setText(this.actual_instance.version_object.version_name ).setBoldText())
                     .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setText( new Notification_Text().setText(this.b_program.name).setBoltText())
-                    .setText( new Notification_Text().setText(" for reason: ").setBoltText() )
-                    .setText( new Notification_Text().setText(reason + " ").setBoltText())
+                    .setText( new Notification_Text().setText(this.b_program.name).setBoldText())
+                    .setText( new Notification_Text().setText(" for reason: ").setBoldText() )
+                    .setText( new Notification_Text().setText(reason + " ").setBoldText())
                     .setObject(this.actual_instance.version_object)
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.b_program)

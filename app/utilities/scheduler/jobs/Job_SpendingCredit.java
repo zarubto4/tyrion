@@ -171,7 +171,7 @@ public class Job_SpendingCredit implements Job {
                 invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
                 if (invoice == null) return;
 
-                // TODO Pošlu notifikaci
+                invoice.notificationInvoiceNew();
 
                 Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
 
@@ -179,7 +179,7 @@ public class Job_SpendingCredit implements Job {
             }
 
             if (invoice == null) {
-                terminal_logger.debug("spendCreditSaas: bank transfer: The financial reserves are sufficient. Just send a notification");
+                terminal_logger.debug("spendCreditSaas: bank transfer: The financial reserves are sufficient.");
                 return;
             }
 
@@ -189,7 +189,7 @@ public class Job_SpendingCredit implements Job {
                 invoice.warning = Enum_Payment_warning.deactivation;
                 invoice.update();
 
-                // TODO Pošlu notifikaci
+                invoice.notificationInvoiceReminder("You have reached negative credit limit. Your product is deactivated.");
 
                 Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "We are sorry to inform you, that you have reached negative credit limit. Your services are no longer supported. We activate your product again, when we receive payment for your invoice.");
@@ -205,9 +205,7 @@ public class Job_SpendingCredit implements Job {
                 invoice.warning = Enum_Payment_warning.zero_balance;
                 invoice.update();
 
-                // TODO Pošlu notifikaci
-                terminal_logger.warn("Product ID::  bank transfer:: " +product.id + " It is time to send an invoice");
-                // Vytvořím zálohovou fakturu
+                invoice.notificationInvoiceReminder("You have reached zero credit balance. Your services will be supported for next 20 days.");
 
                 Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "You have reached zero credit balance. Your services will be supported for next 20 days. If we do not receive your payment till then, we will have to deactivate your services.");
@@ -221,9 +219,11 @@ public class Job_SpendingCredit implements Job {
                 invoice.warning = Enum_Payment_warning.first;
                 invoice.update();
 
-                // TODO Pošlu notifikaci
+                invoice.notificationInvoiceReminder("You will reach zero credit balance soon.");
 
-                Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
+                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                        "We did not receive your payment. You will reach zero credit balance soon.");
+
             }
 
         }else if(product.method == Enum_Payment_method.credit_card){
@@ -247,8 +247,6 @@ public class Job_SpendingCredit implements Job {
 
                 invoice.invoice_items.add(invoice_item);
 
-                // TODO Pošlu notifikaci
-
                 invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
                 if (invoice == null) return;
 
@@ -262,6 +260,8 @@ public class Job_SpendingCredit implements Job {
 
                         invoice = Utilities_GoPay_Controller.singlePayment("Substitute payment", product, invoice);
 
+                        invoice.notificationInvoiceReminder("Failed to take money from your credit card, resolve it manually.");
+
                         Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                                 "We could not take money from your credit card due to some problems. Please use the manual substitute payment through financial section of your Byzance account.");
                     }
@@ -269,7 +269,7 @@ public class Job_SpendingCredit implements Job {
 
                     invoice = Utilities_GoPay_Controller.singlePayment("First Payment", product, invoice);
 
-                    // TODO notifikace autorizace platby
+                    invoice.notificationInvoiceReminder("You have to authorize the first payment.");
 
                     Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
                 }
@@ -278,7 +278,7 @@ public class Job_SpendingCredit implements Job {
             }
 
             if (invoice == null){
-                terminal_logger.debug("spendCreditSaas: credit card: The financial reserves are sufficient. Just send a notification");
+                terminal_logger.debug("spendCreditSaas: credit card: The financial reserves are sufficient.");
                 return;
             }
 
@@ -288,7 +288,7 @@ public class Job_SpendingCredit implements Job {
                 invoice.warning = Enum_Payment_warning.deactivation;
                 invoice.update();
 
-                // TODO Pošlu notifikaci
+                invoice.notificationInvoiceReminder("Your product is deactivated.");
 
                 Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "We are sorry to inform you, that you have reached negative credit limit. Your services are no longer supported. We activate your product again, when we receive payment for your invoice.");
@@ -304,7 +304,7 @@ public class Job_SpendingCredit implements Job {
                 invoice.warning = Enum_Payment_warning.zero_balance;
                 invoice.update();
 
-                // TODO Pošlu notifikaci
+                invoice.notificationInvoiceReminder("You have 10 days before your product will be deactivated.");
 
                 Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "You have reached zero credit balance. Your services will be supported for next 10 days. If we do not receive your payment till then, we will have to deactivate your services.");

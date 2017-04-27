@@ -170,7 +170,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Homer_Server(@ApiParam(value = "unique_identificator ", required = true) String unique_identificator ){
+    public Result edit_Homer_Server(@ApiParam(value = "unique_identifier ", required = true) String unique_identifier ){
         try{
 
             // Zpracování Json
@@ -179,7 +179,7 @@ public class Controller_ExternalServer extends Controller {
             Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
+            Model_HomerServer server = Model_HomerServer.get_model(unique_identifier);
             if (server == null) return GlobalResult.notFoundObject("Cloud_Blocko_Server server_id not found");
 
             // Kontrola oprávnění
@@ -193,14 +193,11 @@ public class Controller_ExternalServer extends Controller {
             server.mqtt_username = help.mqtt_username;
 
             server.grid_port = help.grid_port;
-
-            server.webView_port = help.webView_port;
-
+            server.web_view_port = help.web_view_port;
             server.server_url = help.server_url;
 
             // Uložení objektu
             server.update();
-
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(server));

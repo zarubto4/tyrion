@@ -4,25 +4,19 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import play.Configuration;
-import play.Logger;
 import play.data.Form;
 import play.libs.Json;
 import utilities.Server;
-import utilities.enums.Enum_BusinessModel;
-import utilities.enums.Enum_Payment_method;
-import utilities.enums.Enum_Payment_mode;
-import utilities.enums.Enum_Payment_status;
+import utilities.enums.*;
 import utilities.financial.history.History;
 import utilities.financial.history.HistoryEvent;
 import utilities.goPay.Utilities_GoPay_Controller;
 import utilities.logger.Class_Logger;
+import utilities.notifications.helps_objects.Notification_Text;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -32,7 +26,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
-@ApiModel( value = "Product", description = "Model of Product")
+@ApiModel(value = "Product", description = "Model of Product")
 public class Model_Product extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -153,20 +147,40 @@ public class Model_Product extends Model {
     public void credit_upload(Long credit){
         try {
 
-            terminal_logger.debug("Model_Product:: credit_upload: {} credit", credit);
+            Long credit_before = this.credit;
 
-            this.credit += credit;
+            try {
 
-            if (!this.active && this.credit > 0) this.active = true; // TODO notifikace - různé stavy
+                terminal_logger.debug("credit_upload: {} credit", credit);
 
-            this.update();
+                this.credit += credit;
 
-            this.archiveEvent("Credit Upload", credit + " of credit was uploaded to this product", null);
+                if (!this.active && this.credit > 0) this.active = true; // TODO notifikace - různé stavy
 
-            // TODO notifikace - nahrál se credit/nepovedlo se
+                this.update();
+
+            } catch (Exception e) {
+
+                terminal_logger.internalServerError("credit_upload:", e);
+
+            } finally {
+
+                this.refresh();
+
+                if (this.credit - credit_before == credit) {
+
+                    this.archiveEvent("Credit Upload", ((double) credit) / 1000 + " of credit was successfully added to this product", null);
+                    this.notificationCreditSuccess(credit);
+
+                } else {
+
+                    this.archiveEvent("Credit Upload", "Fail to add " + ((double) credit) / 1000 + " of credit to this product", null);
+                    this.notificationCreditFail(credit);
+                }
+            }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Model_Product:: credit_upload:", e);
+            terminal_logger.internalServerError("credit_upload:", e);
         }
     }
 
@@ -174,20 +188,39 @@ public class Model_Product extends Model {
     public void credit_remove(Long credit){
         try {
 
-            terminal_logger.debug("Model_Product:: credit_remove: {} credit", credit);
+            Long credit_before = this.credit;
 
-            this.credit -= credit;
+            try {
 
-            if (this.active && this.credit < 0) this.active = false; // TODO notifikace - různé stavy
+                terminal_logger.debug("credit_remove: {} credit", credit);
 
-            this.update();
+                this.credit -= credit;
 
-            this.archiveEvent("Credit Remove", credit + " of credit was removed from this product", null);
+                if (this.active && this.credit < 0) this.active = false; // TODO notifikace - různé stavy
 
-            // TODO notifikace - odečetl se credit/nepovedlo se
+                this.update();
+
+            } catch (Exception e) {
+
+                terminal_logger.internalServerError("credit_remove:", e);
+
+            } finally {
+
+                this.refresh();
+
+                if (credit_before - this.credit == credit) {
+
+                    this.archiveEvent("Credit Remove", ((double) credit) / 1000 + " of credit was removed from this product", null);
+                    this.notificationCreditRemove(credit);
+
+                } else {
+
+                    this.archiveEvent("Credit Remove", "Fail to remove " + ((double) credit) / 1000 + " of credit from this product", null);
+                }
+            }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Model_Product:: credit_remove:", e);
+            terminal_logger.internalServerError("credit_remove:", e);
         }
     }
 
@@ -205,7 +238,7 @@ public class Model_Product extends Model {
             return true;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Model_Product:: terminateOnDemand:", e);
+            terminal_logger.internalServerError("terminateOnDemand:", e);
             return false;
         }
     }
@@ -225,7 +258,7 @@ public class Model_Product extends Model {
             return help;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Model_Product:: getFinancialHistory:", e);
+            terminal_logger.internalServerError("getFinancialHistory:", e);
             return null;
         }
     }
@@ -249,7 +282,7 @@ public class Model_Product extends Model {
             this.update();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Model_Product:: archiveEvent:", e);
+            terminal_logger.internalServerError("archiveEvent:", e);
         }
     }
 
@@ -298,16 +331,126 @@ public class Model_Product extends Model {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    @ApiModel(description = "Model for Proforma Details for next invoice", value = "Next_Invoice_Product")
-    public class Next_Invoice_Product{
-        @ApiModelProperty(required = true, readOnly = true) public String id;
-
-    }
-
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    private void notificationCreditSuccess(Long credit){
+        try {
 
-/* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
+            Double amount = ((double) credit) / 1000;
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.success)
+                    .setText(new Notification_Text().setText("Credit was uploaded. ").setBoldText())
+                    .setText(new Notification_Text().setText(" " + amount + "of credit was added to your product "))
+                    .setObject(this)
+                    .send(this.payment_details.person);
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationCreditSuccess:", e);
+        }
+    }
+
+    @JsonIgnore
+    private void notificationCreditFail(Long credit){
+        try {
+
+            Double amount = ((double) credit) / 1000;
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.high)
+                    .setLevel(Enum_Notification_level.error)
+                    .setText(new Notification_Text().setText("Failed to upload credit. ").setBoldText())
+                    .setText(new Notification_Text().setText(" Adding" + amount + "of credit to your product "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" was unsuccessful."))
+                    .send(this.payment_details.person);
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationCreditFail:", e);
+        }
+    }
+
+    @JsonIgnore
+    private void notificationCreditRemove(Long credit){
+        try {
+
+            Double amount = ((double) credit) / 1000;
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.info)
+                    .setText(new Notification_Text().setText("Credit was removed. ").setBoldText())
+                    .setText(new Notification_Text().setText(" " + amount + "of credit was removed from your product "))
+                    .setObject(this)
+                    .send(this.payment_details.person);
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationCreditRemove:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationTerminateOnDemand(boolean success){
+        try {
+
+            Model_Notification notification = new Model_Notification();
+
+            if (success) {
+                notification
+                        .setImportance(Enum_Notification_importance.normal)
+                        .setLevel(Enum_Notification_level.success)
+                        .setText(new Notification_Text().setText("On demand payments were canceled on your product"));
+            } else {
+                notification
+                        .setImportance(Enum_Notification_importance.high)
+                        .setLevel(Enum_Notification_level.error)
+                        .setText(new Notification_Text().setText("Failed to cancel on demand payments on your product"));
+            }
+
+            notification
+                    .setObject(this)
+                    .setText(new Notification_Text().setText("."))
+                    .send(this.payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationCreditRemove:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationRefundPaymentSuccess(double amount){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.success)
+                    .setText(new Notification_Text().setText("Refund payment of $" + amount + " for your product "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" was successfully refunded."))
+                    .send(this.payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationRefundPaymentSuccess:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationPaymentSuccess(double amount){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.success)
+                    .setText(new Notification_Text().setText("Payment $" + amount + " for your product "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" was successful."))
+                    .send(this.payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationRefundPaymentSuccess:", e);
+        }
+    }
+
+/* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore private String azure_product_link;
 
@@ -379,7 +522,7 @@ public class Model_Product extends Model {
         return find.where().eq("active",true).eq("payment_details.person.id", owner_id).select("id").select("name").select("tariff").findList();
     }
 
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model.Finder<String,Model_Product> find = new Finder<>(Model_Product.class);
 

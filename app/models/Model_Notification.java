@@ -172,6 +172,18 @@ public class Model_Notification extends Model {
                 element.id = ((Model_Person)object).id;
                 break;
             }
+            case "Product" : {
+                element.name = class_name;
+                element.text = ((Model_Product)object).name;
+                element.id = ((Model_Product)object).id;
+                break;
+            }
+            case "Invoice" : {
+                element.name = class_name;
+                element.text = ((Model_Invoice)object).invoice_number;
+                element.id = ((Model_Invoice)object).id;
+                break;
+            }
             case "Project" : {
                 element.name = class_name;
                 element.text = ((Model_Project)object).name;
@@ -244,9 +256,8 @@ public class Model_Notification extends Model {
                 break;
             }
 
-
             default:{
-                terminal_logger.error("Model_Notification:: setObject:: Error:: Notification Unsupported Object " + class_name);
+                terminal_logger.internalServerError("setObject:", new Exception("Notification Unsupported Object: " + class_name));
             }
         }
 

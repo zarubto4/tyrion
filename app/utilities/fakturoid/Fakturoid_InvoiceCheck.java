@@ -21,7 +21,7 @@ public class Fakturoid_InvoiceCheck {
     // Logger
     private static final Class_Logger terminal_logger = new Class_Logger(Fakturoid_InvoiceCheck.class);
 
-    private static List<Model_Invoice> invoices = new ArrayList<>(); // Tady se hromadí id plateb, které je potřeba zkontrolovat
+    private static List<Model_Invoice> invoices = new ArrayList<>(); // Tady se hromadí id faktur, které je potřeba zkontrolovat
 
     public static void startInvoiceCheckThread(){
         terminal_logger.info("Fakturoid_InvoiceCheck:: startInvoiceCheckThread: starting");
@@ -192,6 +192,7 @@ public class Fakturoid_InvoiceCheck {
                         // If credit card then credit was already uploaded when payment was received, this is just sync with Fakturoid
                         if (invoice.method == Enum_Payment_method.credit_card) {
 
+                            invoice.notificationInvoiceNew();
                             Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
                         }
 

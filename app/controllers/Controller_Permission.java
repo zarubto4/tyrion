@@ -610,6 +610,7 @@ public class Controller_Permission extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result get_status_request_token(){
         try {
 

@@ -24,12 +24,12 @@ public class WS_Message_Set_homer_server_configuration extends WS_AbstractMessag
         request_conf.put("mqttUser", server.mqtt_username);
         request_conf.put("gridPort", server.grid_port);
         request_conf.put("webPort", server.server_remote_port);
-        request_conf.put("beckiPort", server.webView_port);
+        request_conf.put("beckiPort", server.web_view_port);
         request_conf.put("timeStamp", server.time_stamp_configuration.getTime());
         request_conf.put("daysInArchive", server.days_in_archive);
         request_conf.put("logging", server.logging);
         request_conf.put("interactive", server.interactive);
-        request_conf.put("logLevel", server.logLevel.toString());
+        request_conf.put("logLevel", server.log_level.toString());
 
         return request_conf;
     }

@@ -75,7 +75,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for(invoice_item <- invoice.getInvoiceItems) {
+                    @for(invoice_item <- invoice.invoice_items) {
                         <tr>
                             <td>@invoice_item.quantity</td>
                             <td>@invoice_item.unit_name</td>

@@ -23,7 +23,7 @@ public class Notification_Text {
         return this;
     }
 
-    public Notification_Text setBoltText(){
+    public Notification_Text setBoldText(){
         element.bold     = true;
         return this;
     }

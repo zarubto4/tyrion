@@ -173,7 +173,7 @@ public class Server_Logger extends Controller {
 
         StringBuilder description = new StringBuilder();     // stavění obsahu
 
-        String summary = "Internal Server Error - " + exception.getClass().getName() + " - " + request.method() + " " + request.path();
+        String summary = "Internal Server Error - " + request.method() + " " + request.path();
 
         description.append("\n");
         description.append("    Exception type: " + exception.getClass().getName());

@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of ProductExtension",
-        value = "ProductExtension")
+@ApiModel(value = "ProductExtension", description = "Model of ProductExtension")
 public class Model_ProductExtension extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -39,7 +38,7 @@ public class Model_ProductExtension extends Model{
                                         @ApiModelProperty(required = true) public String color;
 
            @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_ExtensionType type;
-                                        @ApiModelProperty(required = true) public String config;
+                                                               @JsonIgnore public String config;
                                         @ApiModelProperty(required = true) public Integer order_position;
 
                                         @ApiModelProperty(required = true) public boolean active;
@@ -60,6 +59,15 @@ public class Model_ProductExtension extends Model{
             Price price = new Price();
             price.USD = ((double) getPrice()) / 1000;
             return price;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public Integer count(){
+        try {
+            return getConfig().count;
         } catch (Exception e) {
             return null;
         }

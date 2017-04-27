@@ -100,7 +100,7 @@ PUT            /person/picture/remove                            @controllers.Co
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
-GET            /secure/rest_api_token_validation                           @controllers.Controller_Permission.get_status_request_token()
+POST           /secure/rest_api_token_validation                           @controllers.Controller_Permission.get_status_request_token()
 
 PUT            /secure/permission/person/:person_id/:permission_id         @controllers.Controller_Permission.add_Permission_Person(person_id,permission_id)
 DELETE         /secure/permission/person/:person_id/:permission_id         @controllers.Controller_Permission.remove_Permission_Person(person_id,permission_id)
@@ -161,7 +161,7 @@ GET            /go_pay/return                                                   
 
 #Fakturoid
 GET            /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_get(invoice_id)
-GET            /invoice/pdf/:kind/:invoice_id                                               @utilities.fakturoid.Utilities_Fakturoid_Controller.invoice_get_pdf(kind, invoice_id)
+GET            /invoice/pdf/:kind/:invoice_id                                               @controllers.Controller_Finance.invoice_getPdf(kind, invoice_id)
 POST           /invoice/reimbursement/:invoice_id                                           @controllers.Controller_Finance.invoice_reimbursement(invoice_id)
 POST           /invoice/resend/:invoice_id                                                  @controllers.Controller_Finance.invoice_resend(invoice_id)
 POST           /fakturoid/callback                                                          @utilities.fakturoid.Utilities_Fakturoid_Controller.fakturoid_callback()

@@ -8,9 +8,9 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
-import utilities.enums.Enum_Payment_method;
-import utilities.enums.Enum_Payment_status;
-import utilities.enums.Enum_Payment_warning;
+import utilities.enums.*;
+import utilities.logger.Class_Logger;
+import utilities.notifications.helps_objects.Notification_Text;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -23,6 +23,8 @@ import java.util.UUID;
 public class Model_Invoice extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Invoice.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -102,7 +104,7 @@ public class Model_Invoice extends Model {
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public List<Model_InvoiceItem> getInvoiceItems() {
+    public List<Model_InvoiceItem> invoice_items() {
 
         if(invoice_items != null) return invoice_items;
 
@@ -148,14 +150,123 @@ public class Model_Invoice extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public void notificationInvoiceNew(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.info)
+                    .setText(new Notification_Text().setText("See new invoice "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" for your product "))
+                    .setObject(this.getProduct())
+                    .setText(new Notification_Text().setText("."))
+                    .send(this.getProduct().payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationInvoiceNew:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationInvoiceReminder(String message){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.high)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setText(new Notification_Text().setText("Payment for this product "))
+                    .setObject(this.getProduct())
+                    .setText(new Notification_Text().setText(" was not received. See this invoice "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" and resolve it. "))
+                    .setText(new Notification_Text().setText(message))
+                    .send(this.getProduct().payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationInvoiceReminder:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationInvoiceOverdue(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.high)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setText(new Notification_Text().setText("Invoice "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" for this product "))
+                    .setObject(this.getProduct())
+                    .setText(new Notification_Text().setText(" is overdue."))
+                    .send(this.getProduct().payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationInvoiceReminder:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationPaymentIncomplete(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.high)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setText(new Notification_Text().setText("It seems, that you did not finish your payment for this invoice "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText("."))
+                    .send(this.getProduct().payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationPaymentIncomplete:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationPaymentSuccess(double amount){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.success)
+                    .setText(new Notification_Text().setText("Payment $" + amount + " for invoice "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" was successful."))
+                    .send(this.getProduct().payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationPaymentSuccess:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationPaymentFail(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.high)
+                    .setLevel(Enum_Notification_level.error)
+                    .setText(new Notification_Text().setText("Failed to receive your payment for this invoice "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" Check the payment or contact support."))
+                    .send(this.getProduct().payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notificationPaymentFail:", e);
+        }
+    }
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Invoice_create");}
-    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Invoice_read");}
+    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Invoice_create");}
+    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Invoice_read");}
     @JsonIgnore @Transient public boolean remind_permission() {  return true;  }
     @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
     @JsonIgnore @Transient public boolean delete_permission() {  return true;  }
