@@ -188,7 +188,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                    if( plan.count_of_tries > 5 ){
                        plan.state = Enum_CProgram_updater_state.critical_error;
                        plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
-                       plan.errorCode = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
+                       plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
                        plan.update();
                        terminal_logger.warn("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
                        continue;
