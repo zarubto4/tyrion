@@ -4,13 +4,11 @@ package controllers;
 import com.microsoft.azure.documentdb.*;
 import io.swagger.annotations.Api;
 import models.Model_Product;
-import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
 import utilities.logger.Class_Logger;
 import utilities.response.GlobalResult;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version_Short_Detail;
 
 import static utilities.scheduler.jobs.Job_SpendingCredit.spend;
 
