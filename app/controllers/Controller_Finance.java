@@ -35,9 +35,7 @@ public class Controller_Finance extends Controller {
 
     private static final Class_Logger terminal_logger = new Class_Logger(Controller_Finance.class);
 
-///###################################################################################################################*/
-
-    // ADMIN - TARIFF SETTINGS #########################################################################################
+// ADMIN - TARIFF SETTINGS #############################################################################################
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
@@ -205,7 +203,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    // ADMIN - TARIFF LABEL ############################################################################################
+// ADMIN - TARIFF LABEL ################################################################################################
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
@@ -310,7 +308,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    // USER -  EXTENSION PACKAGES ######################################################################################
+// USER -  EXTENSION PACKAGES ##########################################################################################
 
     @ApiOperation(value = "create Product Extension",
             tags = {"Price & Invoice & Tariffs"},
@@ -765,7 +763,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    // USER PRODUCT_TARIFF #############################################################################################
+// USER PRODUCT ########################################################################################################
 
     @ApiOperation(value = "get all Tariffs",
             tags = {"Price & Invoice & Tariffs"},
@@ -895,7 +893,7 @@ public class Controller_Finance extends Controller {
 
             if(tariff.payment_mode_required) {
 
-            terminal_logger.debug("product_create: Payment mode Required");
+                terminal_logger.debug("product_create: Payment mode Required");
 
                 if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
 
@@ -904,7 +902,7 @@ public class Controller_Finance extends Controller {
 
             if(tariff.payment_method_required) {
 
-        terminal_logger.debug("product_create: Payment method Required");
+                terminal_logger.debug("product_create: Payment method Required");
 
                 if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
 
@@ -1266,41 +1264,6 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "reimbursement of an unpaid invoice",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "reimbursement of an unpaid invoice - with settings from creating product before",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Invoice.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })  /**  Uživatel může zaplatit neúspěšně zaplacenou fakturu (službu) */
-    public Result invoice_reimbursement(String invoice_id) {
-        try {
-
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
-
-            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
-            if( invoice.status.equals(Enum_Payment_status.paid)) return GlobalResult.result_BadRequest("Invoice is already paid");
-
-            // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
-            invoice = Utilities_GoPay_Controller.singlePayment("First Payment", invoice.product, invoice);
-
-            // Vrácení ID s možností uhrazení
-            return GlobalResult.result_ok(Json.toJson(invoice));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
     @ApiOperation(value = "edit Product payment details",
             tags = {"Price & Invoice & Tariffs"},
             notes = "edit payments details in Product",
@@ -1342,7 +1305,6 @@ public class Controller_Finance extends Controller {
             // Oprávnění operace
             if(!payment_details.edit_permission()) return GlobalResult.forbidden_Permission();
 
-
             // úpravy objektu
             payment_details.street        = help.street;
             payment_details.street_number = help.street_number;
@@ -1377,19 +1339,28 @@ public class Controller_Finance extends Controller {
 
                 if (help.vat_number != null) {
                     if (!Model_PaymentDetails.control_vat_number(help.vat_number))
-                        return GlobalResult.badRequest("Prefix code in VatNumber is not valid");
-                    payment_details.company_vat_number = help.vat_number;
+                        return GlobalResult.result_BadRequest("Prefix code in VatNumber is not valid");
+                    payment_details.company_vat_number   = help.vat_number;
                 }
 
-                payment_details.company_registration_no = help.registration_no;
-                payment_details.company_name = help.company_name;
+                payment_details.company_registration_no  = help.registration_no;
+                payment_details.company_name             = help.company_name;
                 payment_details.company_authorized_email = help.company_authorized_email;
                 payment_details.company_authorized_phone = help.company_authorized_phone;
-                payment_details.company_web = help.company_web;
+                payment_details.company_web              = help.company_web;
             }
 
-            // Updatování do databáze
-            payment_details.update();
+            if (payment_details.product.fakturoid_subject_id == null) {
+
+
+                payment_details.product.fakturoid_subject_id = Utilities_Fakturoid_Controller.create_subject(payment_details);
+                if (payment_details.product.fakturoid_subject_id == null) return GlobalResult.result_BadRequest("Unable to update your payment details, check provided information.");
+
+                payment_details.update();
+            }
+
+            if (!Utilities_Fakturoid_Controller.update_subject(payment_details))
+                return GlobalResult.result_BadRequest("Unable to update your payment details, check provided information.");
 
             // Vrácení objektu
             return  GlobalResult.result_ok(Json.toJson(payment_details));
@@ -1407,7 +1378,7 @@ public class Controller_Finance extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response =  Swagger_Product_Active.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Product_Active.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
@@ -1418,7 +1389,7 @@ public class Controller_Finance extends Controller {
 
             List<Swagger_Product_Active> products = new ArrayList<>();
 
-            for(Model_Product product : Model_Product.get_applicableByOwner(Controller_Security.get_person().id)){
+            for(Model_Product product : Model_Product.get_applicableByOwner(Controller_Security.get_person_id())){
                 Swagger_Product_Active help = new Swagger_Product_Active();
                 help.id = product.id;
                 help.name = product.name;
@@ -1472,8 +1443,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-
-// INVOICE #############################################################################################
+// INVOICE #############################################################################################################
 
     @ApiOperation(value = "get Invoice with all details",
             tags = {"Price & Invoice & Tariffs"},
@@ -1550,6 +1520,77 @@ public class Controller_Finance extends Controller {
             Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, help.mail);
 
             return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "reimbursement of an unpaid invoice",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "reimbursement of an unpaid invoice - with settings from creating product before",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Invoice.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })  /**  Uživatel může zaplatit neúspěšně zaplacenou fakturu (službu) */
+    public Result invoice_reimbursement(String invoice_id) {
+        try {
+
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+
+            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
+            if( invoice.status.equals(Enum_Payment_status.paid)) return GlobalResult.result_BadRequest("Invoice is already paid");
+
+            // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
+            invoice = Utilities_GoPay_Controller.singlePayment("First Payment", invoice.product, invoice);
+
+            // Vrácení ID s možností uhrazení
+            return GlobalResult.result_ok(Json.toJson(invoice));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Invoice PDF file",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "get PDF invoice file",
+            produces = "multipartFormData",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result invoice_getPdf(String kind, String invoice_id){
+        try {
+
+            if (!kind.equals("proforma") && !kind.equals("invoice")) return GlobalResult.result_BadRequest("kind should be 'proforma' or 'invoice'");
+
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
+
+            if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return GlobalResult.result_BadRequest("Proforma PDF is unavailable");
+
+            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
+
+            byte[] pdf_in_array = Utilities_Fakturoid_Controller.download_PDF_invoice(kind, invoice);
+
+            return GlobalResult.result_pdf_file(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());

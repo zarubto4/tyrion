@@ -44,43 +44,6 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################
 
-    @ApiOperation(value = "get Invoice PDF file",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "get PDF invoice file",
-            produces = "multipartFormData",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Invoice_FullDetails.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result invoice_get_pdf(String kind, String invoice_id){
-        try {
-
-            if (!kind.equals("proforma") && !kind.equals("invoice")) return GlobalResult.result_BadRequest("kind should be 'proforma' or 'invoice'");
-
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
-
-            if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return GlobalResult.result_BadRequest("Proforma PDF is unavailable");
-
-            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
-
-            byte[] pdf_in_array = Utilities_Fakturoid_Controller.download_PDF_invoice(kind, invoice);
-
-            return GlobalResult.result_pdf_file(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(hidden = true, value = "fakturoid callback endpoint")
     @BodyParser.Of(BodyParser.Json.class)
     public Result fakturoid_callback(){
         try {
@@ -102,8 +65,6 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                     Fakturoid_InvoiceCheck.addToQueue(invoice);
 
-                    // TODO
-
                     break;
                 }
 
@@ -113,7 +74,9 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     invoice.overdue = new Date();
                     invoice.update();
 
-                    // TODO notifikace
+                    invoice.notificationInvoiceOverdue();
+                    sendInvoiceReminderEmail(invoice,
+                            "Invoice for your product is overdue.");
 
                     break;
                 }
@@ -138,7 +101,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
             fakturoid_invoice.custom_id = invoice.product.id;
             fakturoid_invoice.client_name = invoice.product.payment_details.company_account ? invoice.product.payment_details.company_name : invoice.product.payment_details.person.full_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
-            fakturoid_invoice.lines = invoice.getInvoiceItems();
+            fakturoid_invoice.lines = invoice.invoice_items();
             fakturoid_invoice.proforma = true;
             fakturoid_invoice.partial_proforma = false;
 
@@ -382,7 +345,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
         }
     }
 
-    private static String create_subject(Model_PaymentDetails details){
+    public static String create_subject(Model_PaymentDetails details){
         try {
 
             ObjectNode request = Json.newObject();
@@ -393,10 +356,17 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
             if (details.company_account) {
                 // request.put("country", product.payment_details.country); (vyžaduje ISO code země - to zatím Tyrion nemá implementováno)
-                request.put("vat_no", details.company_vat_number);
+                if (details.company_vat_number != null)
+                    request.put("vat_no", details.company_vat_number);
+
+                if (details.company_registration_no != null)
+                    request.put("registration_no", details.company_registration_no);
+
                 request.put("phone", details.company_authorized_phone);
                 request.put("web", details.company_web);
                 request.put("name", details.company_name);
+                request.put("full_name", details.full_name);
+
             } else {
                 request.put("name", details.full_name);
             }
@@ -470,8 +440,149 @@ public class Utilities_Fakturoid_Controller extends Controller {
         return null;
     }
 
-    public static void edit_subject(Model_Product product){
-        // TODO http://docs.fakturoid.apiary.io/#reference/subjects/subject/uprava-kontaktu
+    public static boolean update_subject(Model_PaymentDetails details){
+        try {
+
+            Model_PaymentDetails old_details = Model_PaymentDetails.find.byId(details.id);
+
+            ObjectNode request = Json.newObject();
+
+            if (!details.street.equals(old_details.street) || !details.street_number.equals(old_details.street_number))
+                request.put("street", details.street + " " + details.street_number);
+
+            if (!details.city.equals(old_details.city))
+                request.put("city", details.city);
+
+            if (!details.zip_code.equals(old_details.zip_code))
+                request.put("zip", details.zip_code);
+
+            if (!details.invoice_email.equals(old_details.invoice_email))
+                request.put("email", details.invoice_email);
+
+            if (details.company_account && !old_details.company_account) {
+
+                if (details.company_vat_number != null)
+                    request.put("vat_no", details.company_vat_number);
+
+                if (details.company_registration_no != null)
+                    request.put("registration_no", details.company_registration_no);
+
+                request.put("phone", details.company_authorized_phone);
+                request.put("web", details.company_web);
+                request.put("name", details.company_name);
+                request.put("full_name", details.full_name);
+
+            } else {
+                request.put("name", details.full_name);
+            }
+
+            if (details.company_account && old_details.company_account) {
+
+                if (details.company_vat_number != null)
+                    if (old_details.company_vat_number == null || !details.company_vat_number.equals(old_details.company_vat_number))
+                        request.put("vat_no", details.company_vat_number);
+
+                if (details.company_registration_no != null)
+                    if (old_details.company_registration_no == null || !details.company_registration_no.equals(old_details.company_registration_no))
+                        request.put("registration_no", details.company_registration_no);
+
+                if (!details.company_authorized_phone.equals(old_details.company_authorized_phone))
+                    request.put("phone", details.company_authorized_phone);
+
+                if (!details.company_web.equals(old_details.company_web))
+                    request.put("web", details.company_web);
+
+                if (!details.company_name.equals(old_details.company_name))
+                    request.put("name", details.company_name);
+
+                if (!details.full_name.equals(old_details.full_name))
+                    request.put("full_name", details.full_name);
+            }
+
+            if (!details.company_account && old_details.company_account) {
+
+                request.put("vat_no", "");
+                request.put("phone", "");
+                request.put("web", "");
+                request.put("name", details.full_name);
+            }
+
+            if (!details.company_account && !old_details.company_account) {
+
+                if (!details.full_name.equals(old_details.full_name))
+                    request.put("name", details.full_name);
+            }
+
+            for (int trial = 5; trial > 0; trial--) {
+
+                WSResponse response;
+
+                JsonNode result;
+
+                try {
+
+                    F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + "/subjects/" + details.product.fakturoid_subject_id + ".json")
+                            .setAuth(Server.Fakturoid_secret_combo)
+                            .setContentType("application/json")
+                            .setHeader("User-Agent", Server.Fakturoid_user_agent)
+                            .setRequestTimeout(5000)
+                            .patch(Json.toJson(request));
+
+                    response = responsePromise.get(5000);
+
+                    result = response.asJson();
+
+                } catch (Exception e) {
+                    terminal_logger.internalServerError("update_subject:", e);
+                    Thread.sleep(2500);
+                    continue;
+                }
+
+                switch (response.getStatus()) {
+
+                    case 200: {
+
+                        terminal_logger.debug("update_subject: Status: 201");
+
+                        details.product.archiveEvent("Subject updated", "System updated subject in Fakturoid", null);
+
+                        if (result != null && result.has("id")) {
+                            details.update();
+                            return true;
+                        }
+                        else throw new NullPointerException("Response from Fakturoid does not contain ID.");
+                    }
+
+                    case 400: {
+
+                        terminal_logger.debug("update_subject: Status: 400");
+                        throw new Exception("Fakturoid returned 400 - Bad Request. Response: " + result);
+                    }
+
+                    case 403: {
+
+                        terminal_logger.debug("update_subject: Status: 403");
+                        throw new Exception("Fakturoid returned 403 - Forbidden. Response: " + result);
+                    }
+
+                    case 422: {
+
+                        terminal_logger.debug("update_subject: Status: 422");
+
+                        // TODO notifikace
+
+                        throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
+                    }
+
+                    default: throw new Exception("Fakturoid returned unhandled status: " + response.getStatus() + ". Response: " + result);
+                }
+            }
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("update_subject:", e);
+        }
+
+        return false;
     }
 
 // PRIVATE HELPERS METHODS #####################################################################################################

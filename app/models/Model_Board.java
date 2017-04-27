@@ -54,7 +54,7 @@ public class Model_Board extends Model {
 
                                        @ApiModelProperty(required = true)   public String wifi_mac_address;     // Mac addressa wifi čipu
                                        @ApiModelProperty(required = true)   public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
-                                       @ApiModelProperty(required = true)   public String generationDescription;  // Info  výrobní generaci
+                                       @ApiModelProperty(required = true)   public String generation_description;  // Info  výrobní generaci
 
 
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
@@ -554,7 +554,7 @@ public class Model_Board extends Model {
                         // Na závěr vše ostatní je chyba
                         plan.state = Enum_CProgram_updater_state.critical_error;
                         plan.error = updateDeviceInformation_device.error;
-                        plan.errorCode = updateDeviceInformation_device.errorCode;
+                        plan.error_code = updateDeviceInformation_device.errorCode;
                         plan.date_of_finish = new Date();
                         plan.update();
 

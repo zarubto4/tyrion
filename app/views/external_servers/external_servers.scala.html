@@ -152,7 +152,7 @@
                         <input type="text" class="form-control" id="grid_port"  name="grid_port">
 
                         <label style="">Becki - WebView and Remote control Port:</label>
-                        <input type="text" class="form-control" id="webView_port"  name="webView_port">
+                        <input type="text" class="form-control" id="web_view_port"  name="web_view_port">
 
 
 
@@ -240,7 +240,7 @@
                                         </a>
                                     </td>
                                     <td>@main_server.server_type</td>
-                                    <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@main_server.unique_identificator','@main_server.personal_server_name','@main_server.mqtt_port', '@main_server.mqtt_username','@main_server.mqtt_password', '@main_server.webView_port', '@main_server.grid_port',  '@main_server.server_url', '@main_server.hash_certificate' )">Edit</button></td>
+                                    <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@main_server.unique_identificator','@main_server.personal_server_name','@main_server.mqtt_port', '@main_server.mqtt_username','@main_server.mqtt_password', '@main_server.web_view_port', '@main_server.grid_port',  '@main_server.server_url', '@main_server.hash_certificate' )">Edit</button></td>
 
                             }else{
 
@@ -288,7 +288,7 @@
                                         </a>
                                     </td>
                                     <td>@backup_server.server_type</td>
-                                    <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@backup_server.unique_identificator','@backup_server.personal_server_name','@backup_server.mqtt_port', '@backup_server.mqtt_username','@backup_server.mqtt_password', '@backup_server.webView_port', '@backup_server.grid_port',  '@backup_server.server_url', '@backup_server.hash_certificate' )">Edit</button></td>
+                                    <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@backup_server.unique_identificator','@backup_server.personal_server_name','@backup_server.mqtt_port', '@backup_server.mqtt_username','@backup_server.mqtt_password', '@backup_server.web_view_port', '@backup_server.grid_port',  '@backup_server.server_url', '@backup_server.hash_certificate' )">Edit</button></td>
 
                             }else{
 
@@ -379,7 +379,7 @@
                                                 <button class="btn btn-block btn-info btn-xs">All Instancies</button>
                                             </a>
                                         </td>
-                                        <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url', '@homer_server.hash_certificate' )">Edit</button></td>
+                                        <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.web_view_port', '@homer_server.grid_port',  '@homer_server.server_url', '@homer_server.hash_certificate' )">Edit</button></td>
                                     </tr>
                                 }
                             </table>
@@ -418,7 +418,7 @@
                                                     <button class="btn btn-block btn-info btn-xs">All Instancies</button>
                                                 </a>
                                             </td>
-                                            <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url' , '@homer_server.hash_certificate')">Edit</button></td>
+                                            <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.web_view_port', '@homer_server.grid_port',  '@homer_server.server_url' , '@homer_server.hash_certificate')">Edit</button></td>
                                            </tr>
                                     }
 
@@ -459,7 +459,7 @@
                                                     <button class="btn btn-block btn-info btn-xs">All Instancies</button>
                                                 </a>
                                             </td>
-                                            <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.webView_port', '@homer_server.grid_port',  '@homer_server.server_url',  '@homer_server.hash_certificate' )">Edit</button></td>
+                                            <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormHomerServer('@homer_server.unique_identificator','@homer_server.personal_server_name','@homer_server.mqtt_port', '@homer_server.mqtt_username','@homer_server.mqtt_password', '@homer_server.web_view_port', '@homer_server.grid_port',  '@homer_server.server_url',  '@homer_server.hash_certificate' )">Edit</button></td>
                                             <td><button class="btn btn-block btn-danger" type="button" onclick="deleteHomerServer(@homer_server.unique_identificator)">Delete</button></td>
                                         </tr>
                                     }
@@ -746,7 +746,7 @@ function deleteHomerServer(id){
         }
     })}
 
-function showEditFormHomerServer(server_identificator, personal_server_name, mqtt_port, mqtt_username, mqtt_password, webView_port, grid_port, server_url, hash_certificate){
+function showEditFormHomerServer(server_identificator, personal_server_name, mqtt_port, mqtt_username, mqtt_password, web_view_port, grid_port, server_url, hash_certificate){
     $("#editHomerServerModal").css("display","block");
     $('#editHomerServerButton').val(server_identificator);
     $('#compilationServerId').text("ID = " + server_identificator);
@@ -755,7 +755,7 @@ function showEditFormHomerServer(server_identificator, personal_server_name, mqt
     $("#editHomerServer input[name=mqtt_port]").val(mqtt_port);
     $("#editHomerServer input[name=mqtt_username]").val(mqtt_username);
     $("#editHomerServer input[name=mqtt_password]").val(mqtt_password);
-    $("#editHomerServer input[name=webView_port]").val(webView_port);
+    $("#editHomerServer input[name=web_view_port]").val(web_view_port);
     $("#editHomerServer input[name=grid_port]").val(grid_port);
     $("#editHomerServer input[name=server_url]").val(server_url);
     $("#editHomerServer textarea[name=hash_certificate]").val(hash_certificate);

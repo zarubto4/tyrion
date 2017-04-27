@@ -63,7 +63,7 @@
 
                                     <tr>
                                         <td class="col-md-4">Generation Description</td>
-                                        <td class="col-md-8">@board.generationDescription</td>
+                                        <td class="col-md-8">@board.generation_description</td>
                                     </tr>
 
                                     <tr>
@@ -96,7 +96,7 @@
 
                                     <tr>
                                         <td class="col-md-4">Online</td>
-                                        @if(board.is_online() == true){
+                                        @if(board.is_online()){
                                             <td> <span class="label label-success">Online</span></td>
                                         }else{
                                             <td><span class="label label-danger">Offline</span></td>
@@ -106,7 +106,7 @@
                                     <tr>
                                         <td class="col-md-4">Backup mode</td>
                                         <td class="col-md-8">
-                                            @if(board.backup_mode == false){
+                                            @if(!board.backup_mode){
                                                 <button id="set_backup_mode" class="btn btn-block btn-success" type="button"  onclick="backup_mode('@board.id',true)">Turn ON Backup Mode (Now is off)</button>
                                             }else{
                                                 Autobeckup is on. Uploud Static Backup for change
@@ -366,8 +366,8 @@
                                         }
 
 
-                                        @if(update.errorCode != null) {
-                                            <td>@update.state + (ErrorCode: @update.errorCode )</td>
+                                        @if(update.error_code != null) {
+                                            <td>@update.state + (ErrorCode: @update.error_code )</td>
                                         }else{
                                             <td>@update.state</td>
                                         }

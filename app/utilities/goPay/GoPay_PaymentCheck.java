@@ -84,131 +84,154 @@ public class GoPay_PaymentCheck {
             Model_Invoice invoice = Model_Invoice.find.where().eq("gopay_id", id).findUnique();
             if (invoice == null) throw new NullPointerException("Invoice is null. Cannot find it in database. Gopay ID was: " + id);
 
-            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-            F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url +  "/payments/payment/" + id)
-                    .setContentType("application/x-www-form-urlencoded")
-                    .setHeader("Accept", "application/json")
-                    .setHeader("Authorization" , "Bearer " + local_token)
-                    .setRequestTimeout(5000)
-                    .get();
+            try {
 
-            WSResponse response = responsePromise.get(5000);
+                WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
-            JsonNode result = response.asJson();
+                // Some operations require more tries
+                for (int trial = 5; trial > 0; trial--) {
 
-            terminal_logger.debug("checkPayment: Status: " + response.getStatus() + " Response " + result);
+                    WSResponse response;
 
-            if (response.getStatus() == 200) {
-                final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(result);
-                if (form.hasErrors()) throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
-                GoPay_Result help = form.get();
+                    JsonNode result;
 
-                switch (help.state){
+                    try {
 
-                    case "PAID":{
+                        F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/payments/payment/" + id)
+                                .setContentType("application/x-www-form-urlencoded")
+                                .setHeader("Accept", "application/json")
+                                .setHeader("Authorization", "Bearer " + local_token)
+                                .setRequestTimeout(5000)
+                                .get();
 
-                        terminal_logger.debug("checkPayment: state - PAID");
+                        response = responsePromise.get(5000);
 
-                        if (invoice.status != Enum_Payment_status.paid) {
+                        result = response.asJson();
 
-                            /*
-                            if (!Utilities_Fakturoid_Controller.fakturoid_delete("/invoices/" + invoice.fakturoid_id + ".json"))
-                                terminal_logger.internalServerError("checkPayment:", new Exception("Error removing proforma from Fakturoid"));
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError("checkPayment:", e);
+                        Thread.sleep(2500);
+                        continue;
+                    }
 
-                            invoice = Utilities_Fakturoid_Controller.create_paid_invoice(invoice);
-                            */
+                    terminal_logger.debug("checkPayment: Status: " + response.getStatus() + " Response " + result);
 
-                            if (!Utilities_Fakturoid_Controller.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
-                                terminal_logger.internalServerError("checkPayment:", new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
+                    if (response.getStatus() == 200) {
+                        final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(result);
+                        if (form.hasErrors())
+                            throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
+                        GoPay_Result help = form.get();
 
-                            invoice.getProduct().credit_upload(help.amount * 10);
-                            invoice.status = Enum_Payment_status.paid;
-                            invoice.paid = new Date();
-                            invoice.update();
+                        switch (help.state) {
 
-                            invoice.getProduct().archiveEvent("Payment", "GoPay payment number: " + invoice.gopay_id + " was successful", invoice.id);
+                            case "PAID": {
 
-                            // TODO notifikace
+                                terminal_logger.debug("checkPayment: state - PAID");
+
+                                if (invoice.status != Enum_Payment_status.paid) {
+
+                                    if (!Utilities_Fakturoid_Controller.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
+                                        terminal_logger.internalServerError("checkPayment:", new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
+
+                                    invoice.getProduct().credit_upload(help.amount * 10);
+                                    invoice.status = Enum_Payment_status.paid;
+                                    invoice.paid = new Date();
+                                    invoice.update();
+
+                                    invoice.getProduct().archiveEvent("Payment", "GoPay payment number: " + invoice.gopay_id + " was successful", invoice.id);
+                                    invoice.notificationPaymentSuccess(((double) help.amount) / 100);
+                                }
+
+                                break;
+                            }
+
+                            case "PAYMENT_METHOD_CHOSEN": {
+
+                                terminal_logger.debug("checkPayment: state - PAYMENT_METHOD_CHOSEN");
+
+                                invoice.notificationPaymentIncomplete();
+
+                                break;
+                            }
+
+                            case "REFUNDED": {
+
+                                terminal_logger.debug("checkPayment: state - REFUNDED");
+
+                                invoice.getProduct().credit_remove(help.amount * 10);
+                                invoice.status = Enum_Payment_status.canceled;
+                                invoice.update();
+
+                                invoice.getProduct().archiveEvent("Refund Payment", "GoPay payment number: " + invoice.gopay_id + " was successfully refunded", invoice.id);
+                                invoice.getProduct().notificationRefundPaymentSuccess(((double) help.amount) / 100);
+
+                                // TODO úprava ve fakturoidu
+
+                                break;
+                            }
+
+                            case "PARTIALLY_REFUNDED": {
+
+                                terminal_logger.debug("checkPayment: state - PARTIALLY_REFUNDED");
+
+                                // TODO úprava ve fakturoidu
+
+                                invoice.getProduct().credit_remove(help.amount * 10);
+
+                                invoice.getProduct().archiveEvent("Refund Payment", "GoPay payment number: " + invoice.gopay_id + " was successfully partially refunded", invoice.id);
+                                invoice.getProduct().notificationRefundPaymentSuccess(((double) help.amount) / 100);
+
+                                break;
+                            }
+
+                            case "CANCELED": {
+
+                                terminal_logger.debug("checkPayment: state - CANCELED");
+
+                                invoice.status = Enum_Payment_status.canceled;
+                                invoice.gw_url = null;
+                                invoice.update();
+
+                                // TODO
+
+                                break;
+                            }
+
+                            case "TIMEOUTED": {
+
+                                terminal_logger.debug("checkPayment: state - TIMEOUTED");
+
+                                // TODO notifikace
+
+                                break;
+                            }
+
+                            case "CREATED": {
+
+                                terminal_logger.debug("checkPayment: state - CREATED");
+
+                                // TODO notifikace
+
+                                break;
+                            }
+
+                            default:
+                                throw new Exception("Payment state could not be handled. State: " + help.state);
                         }
 
                         break;
+
+                    } else {
+
+                        throw new Exception("Cannot obtain payment. Response from GoPay was: " + result);
                     }
-
-                    case "PAYMENT_METHOD_CHOSEN":{
-
-                        terminal_logger.debug("checkPayment: state - PAYMENT_METHOD_CHOSEN");
-
-                        // TODO notifikace - zdá se že nedokončil platbu
-
-                        break;
-                    }
-
-                    case  "REFUNDED":{
-
-                        terminal_logger.debug("checkPayment: state - REFUNDED");
-
-                        invoice.getProduct().credit_remove(help.amount * 10);
-                        invoice.status = Enum_Payment_status.canceled;
-                        invoice.update();
-
-                        invoice.getProduct().archiveEvent("Refund Payment", "GoPay payment number: " + invoice.gopay_id + " was successfully refunded", invoice.id);
-
-                        // TODO úprava ve fakturoidu
-
-                        break;
-                    }
-
-                    case  "PARTIALLY_REFUNDED":{
-
-                        terminal_logger.debug("checkPayment: state - PARTIALLY_REFUNDED");
-
-                        // TODO úprava ve fakturoidu
-
-                        invoice.getProduct().credit_remove(help.amount * 10);
-
-                        break;
-                    }
-
-                    case  "CANCELED":{
-
-                        terminal_logger.debug("checkPayment: state - CANCELED");
-
-                        invoice.status = Enum_Payment_status.canceled;
-                        invoice.gw_url = null;
-                        invoice.update();
-
-                        break;
-                    }
-
-                    case  "TIMEOUTED":{
-
-                        terminal_logger.debug("checkPayment: state - TIMEOUTED");
-
-                        // TODO notifikace
-
-                        break;
-                    }
-
-                    case  "CREATED":{
-
-                        terminal_logger.debug("checkPayment: state - CREATED");
-
-                        // TODO notifikace
-
-                        break;
-                    }
-
-                    default: throw new Exception("Payment state could not be handled. State: " + help.state);
                 }
+            } catch (Exception e) {
+                // TODO náhrada platby?
 
-
-
-            } else {
-                // TODO notifikace a náhrada platby?
+                invoice.notificationPaymentFail();
 
                 Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice, "We were unable to take money from your credit card. Please check your payment credentials or contact our support if anything is unclear. You can also pay this invoice manually through your Byzance account.");
-
-                throw new Exception("Cannot obtain payment. Response from GoPay is: " + result);
             }
         } catch (Exception e){
 

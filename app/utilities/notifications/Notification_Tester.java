@@ -11,8 +11,6 @@ import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
 import utilities.enums.Enum_Notification_type;
-import utilities.independent_threads.Check_Update_for_hw_on_homer;
-import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -218,7 +216,7 @@ public class Notification_Tester extends Controller {
                         .setText( new Notification_Text().setText("Test object: "))
                         .setObject(person)
                         .setText(new Notification_Text().setText(" test text, "))
-                        .setText(new Notification_Text().setText(" test bold text, ").setBoltText())
+                        .setText(new Notification_Text().setText(" test bold text, ").setBoldText())
                         .setText(new Notification_Text().setText(" test italic text, ").setItalicText())
                         .setText(new Notification_Text().setText(" test underline text, ").setUnderlineText())
                         .setText(new Notification_Text().setText(" test red color text, ").setColor(Becki_color.byzance_red))
@@ -346,7 +344,7 @@ public class Notification_Tester extends Controller {
                         .setLevel(lvl)
                         .setText( new Notification_Text().setText("Test object: "))
                         .setObject(person)
-                        .setText( new Notification_Text().setText(" test bold text: ").setBoltText())
+                        .setText( new Notification_Text().setText(" test bold text: ").setBoldText())
                         .setText( new Notification_Text().setText( "test link: "))
                         .setLink( new Notification_Link().setUrl("Yes", "http://google.com"));
                 break;}

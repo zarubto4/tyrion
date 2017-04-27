@@ -38,8 +38,11 @@ public class Model_CProgramUpdatePlan extends Model {
 
                                                        @JsonIgnore @ManyToOne() public Model_ActualizationProcedure actualization_procedure;
 
-    @ApiModelProperty(required = true, value = "UNIX time in ms", example = "1466163478925")   public Date date_of_create;
-    @ApiModelProperty(required = true, value = "UNIX time in ms", example = "1466163478925")   public Date date_of_finish;
+                @ApiModelProperty(required = true, value = "UNIX time in ms",
+                        example = "1466163478925")                              public Date date_of_create;
+
+                @ApiModelProperty(required = true, value = "UNIX time in ms",
+                        example = "1466163478925")                              public Date date_of_finish;
 
 
               @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                   public Model_Board board;                           // Deska k aktualizaci
@@ -50,11 +53,12 @@ public class Model_CProgramUpdatePlan extends Model {
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_FileRecord binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
-    @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")  @Enumerated(EnumType.STRING)    public Enum_CProgram_updater_state state;
-                                                                     @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
+    @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")
+                                                @Enumerated(EnumType.STRING)    public Enum_CProgram_updater_state state;
+                                                                    @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer errorCode;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer error_code;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
