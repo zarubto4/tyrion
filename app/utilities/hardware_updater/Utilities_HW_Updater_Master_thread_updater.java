@@ -8,11 +8,14 @@ import utilities.enums.Enum_CProgram_updater_state;
 import utilities.enums.Enum_Firmware_type;
 import utilities.enums.Enum_Update_group_procedure_state;
 import utilities.enums.Enum_Update_type_of_update;
+import utilities.errors.ErrorCode;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_Task;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Target_pair;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.homer_instance.WS_Message_Add_new_instance;
 import web_socket.message_objects.homer_instance.WS_Message_Update_device_summary_collection;
+import web_socket.message_objects.homer_instance.WS_Message_Update_instance_to_actual_instance_record;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -176,9 +179,20 @@ public class Utilities_HW_Updater_Master_thread_updater {
                try {
 
 
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} Json CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id);
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} Json CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} Json CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id);
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
+
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries  ", procedure.id , plan.id,  plan.count_of_tries);
+
+                   if( plan.count_of_tries > 5 ){
+                       plan.state = Enum_CProgram_updater_state.critical_error;
+                       plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
+                       plan.errorCode = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
+                       plan.update();
+                       terminal_logger.warn("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
+                       continue;
+                   }
 
                    // Najdu instanci - pod kterou deska běží
                    Model_HomerInstance homer_instance = Model_HomerInstance.find.where()
@@ -190,11 +204,13 @@ public class Utilities_HW_Updater_Master_thread_updater {
                    .findUnique();
 
                    if (homer_instance == null) {
+
                        terminal_logger.error("actualization_update_procedure:: Procedure id:: {}  plan {} Device has not own instance! There is place for fix it!!!!"); // TODO
                        plan.state = Enum_CProgram_updater_state.instance_inaccessible;
                        plan.update();
                        continue;
                    }
+
 
                    terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Updates is for Homer_instance id: {} Server {} " , procedure.id , plan.id,homer_instance.blocko_instance_name, homer_instance.cloud_homer_server.personal_server_name);
 
