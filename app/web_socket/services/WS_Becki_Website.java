@@ -38,6 +38,22 @@ public class WS_Becki_Website extends WS_Interface_type {
     }
 
     @Override
+    public boolean is_online() {
+        try {
+
+            for(String key :  Controller_WebSocket.homer_servers.keySet() ){
+                System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
+            }
+
+
+            out.write(" Něco posílám???");
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    @Override
     public void add_to_map() {
         Controller_WebSocket.becki_website.put(identifikator, this);
     }

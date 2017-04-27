@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
+import play.libs.Json;
 import utilities.Server;
 import utilities.enums.*;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
@@ -24,7 +25,6 @@ import web_socket.services.WS_Interface_type;
 import web_socket.message_objects.homer_instance.helps_objects.WS_Message_Help_Yoda_only_hardware_Id_list;
 import web_socket.message_objects.homer_instance.*;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -96,6 +96,8 @@ public class Model_HomerInstance extends Model {
     }
 
 
+
+
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @Transient @JsonIgnore public Swagger_Instance_Short_Detail get_instance_short_detail(){
@@ -123,7 +125,12 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore             public Model_BProgram getB_program()   { return b_program;}
     @JsonIgnore @Transient  public List<Model_Board>  getBoards_in_virtual_instance() {
-            return Model_Board.find.where().eq("virtual_instance_under_project.blocko_instance_name", blocko_instance_name).findList();
+        return Model_Board.find.where().eq("virtual_instance_under_project.blocko_instance_name", blocko_instance_name).findList();
+    }
+
+    @JsonIgnore @Transient  public Model_Project get_project() {
+        if(instance_type == Enum_Homer_instance_type.INDIVIDUAL) return Model_Project.find.where().eq("b_programs.instance.blocko_instance_name", blocko_instance_name).findUnique();
+        else return Model_Project.find.where().eq("private_instance.blocko_instance_name", blocko_instance_name).findUnique();
     }
 
 
@@ -789,6 +796,9 @@ public class Model_HomerInstance extends Model {
 
             terminal_logger.debug("update_instance_to_actual_instance_record:: Get Summary Information From Instance");
             WS_Message_Get_summary_information summary_information = this.get_summary_information();
+
+            terminal_logger.debug("update_instance_to_actual_instance_record:: Co pošlu jako vytvoření aktalizační procedury {}", Json.toJson( summary_information ).toString() );
+
 
             terminal_logger.debug("update_instance_to_actual_instance_record:: Vytvářím Aktualizační procedury");
             actual_instance.create_actualization_request(summary_information);

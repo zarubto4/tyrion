@@ -8,8 +8,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.common.WS_Send_message;
-
 import java.util.Date;
 import java.util.List;
 
@@ -17,7 +15,7 @@ public class Job_StuckCompilationCheck implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Job_StuckCompilationCheck.class);
 
 //**********************************************************************************************************************
 

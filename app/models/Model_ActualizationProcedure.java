@@ -43,6 +43,11 @@ public class Model_ActualizationProcedure extends Model {
 
     @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Enum_Update_type_of_update type_of_update;
 
+
+    // Temporary variable for reasons of incompleteness when calling save() and also for acceleration and for reduce database load.
+    // - is only added when the new Model_ActualizationProcedure object is created and it does not yet contain any references that project_id could find throw database search
+    @JsonIgnore @Transient public String project_id;
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true ) public Enum_Update_group_procedure_state state (){
@@ -200,11 +205,14 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Transient
     public String get_project_id(){
 
+        if(project_id != null) return project_id;
+
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
             return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id", id).select("id").findUnique().id;
         }
 
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
+            System.out.println("Hledám Project ID pod aktualizačním plánem ID " + id);
             return Model_Project.find.where().eq("boards.c_program_update_plans.actualization_procedure.id", id).findUnique().id;
         }
 

@@ -6,8 +6,6 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.common.WS_Send_message;
-
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +14,7 @@ public class Job_OldNotificationRemoval implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Job_OldNotificationRemoval.class);
 
 //**********************************************************************************************************************
 

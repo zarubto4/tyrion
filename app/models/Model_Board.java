@@ -802,6 +802,7 @@ public class Model_Board extends Model {
             terminal_logger.debug("update_bootloader :: operation");
 
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+            procedure.project_id = board_for_update.get(0).project_id();
             procedure.state = Enum_Update_group_procedure_state.not_start_yet;
             procedure.type_of_update = type_of_update;
             procedure.save();
@@ -873,6 +874,7 @@ public class Model_Board extends Model {
             terminal_logger.debug("update_firmware :: operation");
 
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+            procedure.project_id = board_for_update.get(0).board.project_id();
             procedure.state = Enum_Update_group_procedure_state.not_start_yet;
             procedure.type_of_update = type_of_update;
 
@@ -935,6 +937,7 @@ public class Model_Board extends Model {
             terminal_logger.debug("update_backup :: operation");
 
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+            procedure.project_id = board_for_update.get(0).board.project_id();
             procedure.state = Enum_Update_group_procedure_state.not_start_yet;
             procedure.type_of_update = type_of_update;
             procedure.save();
