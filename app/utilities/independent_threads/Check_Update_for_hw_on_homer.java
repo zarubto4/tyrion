@@ -67,8 +67,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
                                 .isNotNull("boards_in_virtual_instance")
                             .endJunction()
                         .endJunction()
-                     .order().asc("blocko_instance_name")
-                    .findEachWhile((Model_HomerInstance instance) -> {
+                     .order().asc("blocko_instance_name").findEachWhile((Model_HomerInstance instance) -> {
 
                         // Zajímá mě stav HW
 

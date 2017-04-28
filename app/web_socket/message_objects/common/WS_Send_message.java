@@ -63,10 +63,10 @@ public class WS_Send_message {
         }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
 
 
-        terminal_logger.trace("Sinsert_result:: MessageID:: {} saving result to variable " , messageId );
+        terminal_logger.trace("insert_result:: MessageID:: {}  saving result to variable " , messageId );
         this.result = result;
 
-        terminal_logger.trace("insert_result:: MessageID:: {} Terminating message thread");
+        terminal_logger.trace("insert_result:: MessageID:: {}  Terminating message thread");
         future.cancel(true); // Terminuji zprávu k odeslání
 
     }
@@ -92,12 +92,14 @@ public class WS_Send_message {
 
                Thread.sleep(delay);
 
+               int i = 0;
+
                 while (number_of_retries >= 0) {
 
 
                     if(json != null) {
 
-                        terminal_logger.trace("thread:: Message ID: {} Sending Message {} Number of Retires. Time {} ", messageId, json.get("messageType"), number_of_retries, time);
+                        terminal_logger.trace("thread:: MessageID:: {} , MessageType:: {} , Number of RetiresTime:: {} , RecurencyTime:: {} ", messageId, json.get("messageType"), number_of_retries, time);
 
                         sender_object.out.write(json.toString());
                         --number_of_retries;
@@ -109,18 +111,18 @@ public class WS_Send_message {
                         }
 
                     }else {
-                        terminal_logger.trace("thread:: Message ID: {}  Nothing for sending - just waiting for result", messageId );
+                        terminal_logger.trace("thread:: MessageID:: {} , MessageType:: {} , Nothing for sending - just waiting for result - It can be from Compilator? Cycle:: {}", messageId, i++);
                     }
 
                     Thread.sleep(time);
                 }
 
                 if(!sender_object.is_online())  {
-                    terminal_logger.error("thread:: Message ID: {}  Sender is offine!!! ", messageId );
+                    terminal_logger.error("thread:: MessageID:: {} , MessageType:: {} ,  Sender is offine!!! ", messageId ,  json.get("messageType"));
                     sender_object.close();
                 }
 
-                terminal_logger.error("thread:: Message ID: {}  time is gone!! :( Responde with Error!!", messageId );
+                terminal_logger.error("thread:: Message ID:: {}  time is gone!! :( Responde with Error!!", messageId );
                 return time_out_exception_error_response();
 
             }catch (InterruptedException|CancellationException e){
