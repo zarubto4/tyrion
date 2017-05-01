@@ -314,7 +314,6 @@ public class Model_HomerInstance extends Model {
                             terminal_logger.error("WS_Message_Device_disconnected:: Incoming Json from Homer server has not right Form:: " + form.errorsAsJson(new Lang(new play.api.i18n.Lang("en", "US"))).toString());
                             return;
                         }
-
                         Model_Board.device_Disconnected(form.get());
                         return;
                     }

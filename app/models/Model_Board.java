@@ -6,6 +6,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonObject;
+import com.microsoft.azure.documentdb.Document;
+import com.microsoft.azure.documentdb.DocumentClientException;
+import com.microsoft.azure.documentdb.DocumentCollection;
+import com.microsoft.azure.documentdb.RequestOptions;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,7 +18,10 @@ import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
+import utilities.Server;
+import utilities.document_db.document_objects.DM_Board_Connect;
 import utilities.enums.*;
+import utilities.errors.ErrorCode;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.logger.Class_Logger;
@@ -78,7 +86,7 @@ public class Model_Board extends Model {
     /**
      * Propojení pokud HW není připojen do intnace - ale potřebuji na něj referenci - je ve vrituální instanci
      */
-    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public Model_HomerInstance virtual_instance_under_project;
+    @JsonIgnore @ManyToOne( cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_HomerInstance virtual_instance_under_project;
 
     /**
      * Když device nemá majitele - ale připojí se do internetu - někam se připojí - zde je záznam kam naposledy se připojil.
@@ -371,6 +379,8 @@ public class Model_Board extends Model {
                 master_device.notification_board_connect();
             }
 
+            master_device.make_log_connect();
+
             Model_Board.hardware_firmware_state_check(server, master_device, help);
 
         }catch (Exception e){
@@ -392,6 +402,7 @@ public class Model_Board extends Model {
             }
 
             master_device.notification_board_disconnect();
+            master_device.make_log_disconnect();
 
             Model_Board.cache_status.put(help.deviceId, false);
 
@@ -414,6 +425,9 @@ public class Model_Board extends Model {
                 return;
             }
             device.notification_board_connect();
+
+            device.make_log_connect();
+
             Model_Board.hardware_firmware_state_check( server, device, help);
 
         }catch (Exception e){
@@ -436,6 +450,8 @@ public class Model_Board extends Model {
             }
 
             device.notification_board_disconnect();
+
+            device.make_log_disconnect();
 
             Model_Board.cache_status.put(help.deviceId, false);
 
@@ -587,6 +603,18 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public static void hardware_firmware_state_check(WS_HomerServer server, Model_Board board, WS_AbstractMessage_Board report) {
         try {
 
+            if(report.error != null){
+
+                terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: " , board.id, report.errorCode, report.error);
+
+                if(report.errorCode == ErrorCode.YODA_IS_OFFLINE.error_code() || report.errorCode == ErrorCode.DEVICE_IS_NOT_ONLINE.error_code()){
+                    terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} is offline" , board.id);
+                    return;
+                }
+
+            }
+
+
             terminal_logger.debug("hardware_firmware_state_check:: Summary information of connected master board: " + board.id);
 
             terminal_logger.debug("hardware_firmware_state_check:: Board Check");
@@ -705,7 +733,6 @@ public class Model_Board extends Model {
     }
 
     @JsonIgnore @Transient public static WS_Message_Update_device_firmware update_devices_firmware(Model_HomerInstance instance, List<Utilities_HW_Updater_Actualization_procedure> procedures){
-
         try {
 
             JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Message_Update_device_firmware().make_request(instance, procedures), 1000 * 30, 0, 3);
@@ -1083,6 +1110,39 @@ public class Model_Board extends Model {
             }
         }).start();
     }
+
+
+/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
+
+    public static final String COLLECTION_MAME = Model_Board.class.getSimpleName();
+    public static DocumentCollection collection = null;
+
+    public void make_log_connect(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
+    }
+
+    public void make_log_disconnect(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
+    }
+
+    public void make_log_backup_arrise_change(){
+
+    }
+
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

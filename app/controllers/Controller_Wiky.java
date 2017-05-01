@@ -1,8 +1,12 @@
 package controllers;
 
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonObject;
 import com.microsoft.azure.documentdb.*;
+import com.tc.util.UUID;
 import io.swagger.annotations.Api;
+import models.Model_Board;
 import models.Model_Product;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -10,7 +14,9 @@ import play.mvc.Result;
 import utilities.Server;
 import utilities.logger.Class_Logger;
 import utilities.response.GlobalResult;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version_Short_Detail;
+
+import java.util.Date;
+import java.util.List;
 
 import static utilities.scheduler.jobs.Job_SpendingCredit.spend;
 
@@ -37,29 +43,13 @@ public class Controller_Wiky extends Controller {
 
      }
 
-
+    public static final String COLLECTION_MAME = Model_Board.class.getSimpleName();
+    public static DocumentCollection collection = null;
 
     public Result test2(){
         try {
 
-            System.out.println(" Test 2 ");
-
-            RequestOptions requestOptions = new RequestOptions();
-            requestOptions.setOfferThroughput(1000);
-
-
-            System.out.println("new DocumentCollection");
-            // Define a new collection using the id above.
-            DocumentCollection myCollection = new DocumentCollection();
-            myCollection.setId("Model_Board_Test");
-
-            System.out.println("new DocumentCollection Done");
-
-            // Create a new collection.
-            myCollection = Server.documentClient.createCollection("dbs/" + Server.no_sql_database.getId(), myCollection, requestOptions).getResource();
-
-            System.out.println("Created a new collection:");
-            System.out.println(myCollection.toString());
+            new Model_Board().make_log_connect();
 
             return ok();
 
@@ -69,6 +59,9 @@ public class Controller_Wiky extends Controller {
         }
 
     }
+
+
+
 
 
 }
