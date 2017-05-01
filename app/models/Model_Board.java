@@ -19,6 +19,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
 import utilities.Server;
+import utilities.document_db.DocumentDB;
 import utilities.document_db.document_objects.DM_Board_Connect;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
@@ -1115,12 +1116,11 @@ public class Model_Board extends Model {
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
     public static final String COLLECTION_MAME = Model_Board.class.getSimpleName();
-    public static DocumentCollection collection = null;
 
     public void make_log_connect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }
@@ -1130,7 +1130,7 @@ public class Model_Board extends Model {
     public void make_log_disconnect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }
