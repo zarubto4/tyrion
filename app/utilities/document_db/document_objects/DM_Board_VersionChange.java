@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tc.util.UUID;
 import models.Model_Board;
 import play.libs.Json;
+import utilities.Server;
 import utilities.enums.Enum_Firmware_type;
 
 import java.util.Date;
@@ -25,7 +26,7 @@ public class DM_Board_VersionChange {
         request.put("collection_type", Model_Board.class.getSimpleName());
         request.put("document_type", document_type);
         request.put("document_type_sub_type", document_type_sub_type);
-
+        request.put("server_version", Server.server_version);
 
         request.put("device_id", board_id);
         request.put("firmware_type", firmware_type.name());

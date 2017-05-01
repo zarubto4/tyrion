@@ -34,6 +34,7 @@ public class DocumentDB {
      * REQUIRED:: document_type             ::  String -> Type (connection_record, disconnection_record, backup_set, change_version)
      * OPTIONAL:: document_type_sub_type    ::  String -> Sub_type for DM_XXX_XXX objects in utilities/document_db/document_objects
      * REQUIRED:: id                        ::  String -> UUID.getUUID().toString() recommended by Mongo
+     * REQUIRED:: server_version            ::  String -> Server.server_version
      */
     private static void set_online_status_collection(){
         try {

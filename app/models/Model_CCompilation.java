@@ -2,9 +2,16 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.Server;
+import utilities.document_db.DocumentDB;
+import utilities.document_db.document_objects.DM_CompilationServer_Connect;
+import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
+import utilities.document_db.document_objects.DM_HomerServer_Connect;
+import utilities.document_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.Enum_Compile_status;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
@@ -174,6 +181,29 @@ public class Model_CCompilation extends Model {
                         .send(Controller_Security.get_person());
             } catch (Exception e) {
                 terminal_logger.internalServerError("Model_CCompilation:: notification_new_actualization_request_on_version", e);
+            }
+        }).start();
+    }
+
+
+/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
+
+    public void make_log_connect(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request(this.id), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
+    }
+
+    public void make_log_disconnect(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request(this.id), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }

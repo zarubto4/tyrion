@@ -21,6 +21,8 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.document_db.DocumentDB;
 import utilities.document_db.document_objects.DM_Board_Connect;
+import utilities.document_db.document_objects.DM_HomerServer_Connect;
+import utilities.document_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
@@ -1115,8 +1117,6 @@ public class Model_Board extends Model {
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
-    public static final String COLLECTION_MAME = Model_Board.class.getSimpleName();
-
     public void make_log_connect(){
         new Thread( () -> {
             try {
@@ -1140,7 +1140,6 @@ public class Model_Board extends Model {
     public void make_log_backup_arrise_change(){
 
     }
-
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
@@ -1202,6 +1201,7 @@ public class Model_Board extends Model {
         terminal_logger.error("This object is not legitimate to remove. ");
         throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
     }
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static final String CACHE        = Model_Board.class.getSimpleName();

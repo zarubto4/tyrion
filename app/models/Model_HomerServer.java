@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_Security;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
@@ -14,6 +15,10 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.Http;
 import utilities.Server;
+import utilities.document_db.DocumentDB;
+import utilities.document_db.document_objects.DM_Board_Connect;
+import utilities.document_db.document_objects.DM_HomerServer_Connect;
+import utilities.document_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Enum_Log_level;
 import utilities.enums.Enum_Tyrion_Server_mode;
@@ -216,9 +221,6 @@ public class Model_HomerServer extends Model{
         return null;
 
     }
-
-
-
 
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
@@ -583,8 +585,33 @@ public class Model_HomerServer extends Model{
 
     }
 
-    
+/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
+
+    public void make_log_connect(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_HomerServer_Connect.make_request(this.unique_identificator), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
+    }
+
+    public void make_log_disconnect(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_HomerServer_Disconnect.make_request(this.unique_identificator), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
+    }
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
 
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: User (Admin with privileges) can read public servers, User (Customer) can read own private servers";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User (Admin with privileges) can create public cloud cloud_blocko_server where the system uniformly creating Blocko instantiates or (Customer) can create private cloud_blocko_server for own projects";
