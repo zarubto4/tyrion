@@ -75,102 +75,81 @@ public class CustomScheduler {
             // Definované Trigry
             if(!scheduler.checkExists(every_day_key1)){
 
-                Trigger every_day_0 = newTrigger().withIdentity(every_day_key0).startNow()
-                        .withSchedule(dailyAtHourAndMinute(0,0))// Spuštění každý den v 00:00 AM
-                        .build();
-
-                Trigger every_day_1 = newTrigger().withIdentity(every_day_key1).startNow()
-                        .withSchedule(dailyAtHourAndMinute(3,0))// Spuštění každý den v 03:00 AM
-                        .build();
-
-                Trigger every_day_2 = newTrigger().withIdentity(every_day_key2).startNow()
-                        .withSchedule(dailyAtHourAndMinute(3,10))// Spuštění každý den v 03:10 AM
-                        .build();
-
-                Trigger every_day_3 = newTrigger().withIdentity(every_day_key3).startNow()
-                        .withSchedule(dailyAtHourAndMinute(3,20))// Spuštění každý den v 03:20 AM
-                        .build();
-
-                Trigger every_day_4 = newTrigger().withIdentity(every_day_key4).startNow()
-                        .withSchedule(dailyAtHourAndMinute(3,30))// Spuštění každý den v 03:30 AM
-                        .build();
-
-                // TODO 5
-                Trigger every_day_5 = newTrigger().withIdentity(every_day_key5).startNow()
-                        .withSchedule(dailyAtHourAndMinute(3,40))// Spuštění každý den v 03:20 AM
-                        .build();
-
-                Trigger every_day_6 = newTrigger().withIdentity(every_day_key6).startNow()
-                        .withSchedule(dailyAtHourAndMinute(3,50))// Spuštění každý den v 03:20 AM
-                        .build();
-
-                // TODO 6
-
-                Trigger every_10_minutes_7 = newTrigger().withIdentity(every_10_min_key7).startNow()
-                        .withSchedule(cronSchedule("17 0/10 * * * ?"))// Spuštění každých 10 minut a to v 17 vteřině každé minuty
-                        .build();
-
-                Trigger every_five_minute = newTrigger().withIdentity(every_five_minute_key).startNow()
-                        .withSchedule(cronSchedule("10 0/5 * * * ?"))// Spuštění každých 5 minut
-                        .build();
-
-                Trigger every_minute2 = newTrigger().withIdentity(every_minute_key2).startNow()
-                        .withSchedule(cronSchedule("10 0/1 * * * ?"))// Spuštění každou minutu
-                        .build();
-
-                Trigger every_minute = newTrigger().withIdentity(every_minute_key).startNow()
-                        .withSchedule(cronSchedule("30 0/1 * * * ?"))// Spuštění každou minutu
-                        .build();
-
-                Trigger every_hour = newTrigger().withIdentity(every_hour_key).startNow()
-                        .withSchedule(repeatHourlyForever())// Spuštění každou minutu
-                        .build();
-
-                /**
-                 *  !!!
-                 *  Každý Job musí mít Trigger, který má unikátní TriggerKey
-                 *  !!!
-                 */
-
                 // Přidání úkolů do scheduleru
 
-                // 0) Přesouvání logu z tyriona do BLOB serveru
+                // Přesouvání logu z tyriona do BLOB serveru
                 if(Server.server_mode != Enum_Tyrion_Server_mode.developer ) {
+
                     terminal_logger.debug("start: Scheduling new Job - Log_Azure_Upload");
-                    scheduler.scheduleJob(newJob(Job_LogAzureUpload.class).withIdentity(JobKey.jobKey("log_azure_upload")).build(), every_day_0);
+                    scheduler.scheduleJob(newJob(Job_LogAzureUpload.class).withIdentity(JobKey.jobKey("log_azure_upload")).build(),
+                             newTrigger().withIdentity(every_day_key0).startNow()
+                            .withSchedule(dailyAtHourAndMinute(0,0))// Spuštění každý den v 00:00 AM
+                            .build()
+                    );
+
                 }
+
                 // 1) Odstraňování starých auth-tokenů z přihlášení, které mají živostnost jen 72h
                 terminal_logger.debug("start: Scheduling new Job - Old_Floating_Person_Token_Removal");
-                scheduler.scheduleJob( newJob(Job_OldFloatingTokenRemoval.class).withIdentity( JobKey.jobKey("removing_old_floating_person_tokens") ).build(), every_day_1);
+                scheduler.scheduleJob( newJob(Job_OldFloatingTokenRemoval.class).withIdentity( JobKey.jobKey("removing_old_floating_person_tokens") ).build(),
+                        newTrigger().withIdentity(every_day_key1).startNow()
+                                .withSchedule(dailyAtHourAndMinute(3,0))// Spuštění každý den v 03:00 AM
+                                .build()
+                );
 
                 // 2) Odstraňování notifikací starších, než měsíc
                 terminal_logger.debug("start: Scheduling new Job - Old_Notification_Removal");
-                scheduler.scheduleJob( newJob(Job_OldNotificationRemoval.class).withIdentity( JobKey.jobKey("removing_old_notifications") ).build(), every_day_2);
+                scheduler.scheduleJob( newJob(Job_OldNotificationRemoval.class).withIdentity( JobKey.jobKey("removing_old_notifications") ).build(),
+                        newTrigger().withIdentity(every_day_key2).startNow()
+                                .withSchedule(dailyAtHourAndMinute(3,10))// Spuštění každý den v 03:10 AM
+                                .build()
+                );
 
-                // 3) Odstraňování nepřihlášených tokenů ze sociálních sítí, které mají živostnost jen 24h
-                //logger.info("start: Scheduling new Job - Removing_Unused_Tokens");
-                //scheduler.scheduleJob( newJob(Job_RemovingUnusedTokens.class).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day_3);
+                // 3) Odstraňování nepřihlášených tokenů ze sociálních sítí, které mají živostnost jen 24h TODO - http://youtrack.byzance.cz/youtrack/issue/TYRION-501
+                // terminal_logger.info("start: Scheduling new Job - Removing_Unused_Tokens");
+                // scheduler.scheduleJob( newJob(Job_RemovingUnusedTokens.class).withIdentity( JobKey.jobKey("removing_unused_tokens") ).build(), every_day_3);
 
                 // 4) Odstraňování nezvalidovaných účtů, které jsou starší, než měsíc
                 terminal_logger.debug("start: Scheduling new Job - Unauthenticated_Person_Removal");
-                scheduler.scheduleJob( newJob(Job_UnauthenticatedPersonRemoval.class).withIdentity( JobKey.jobKey("unauthenticated_person_removal") ).build(), every_day_4);
+                scheduler.scheduleJob( newJob(Job_UnauthenticatedPersonRemoval.class).withIdentity( JobKey.jobKey("unauthenticated_person_removal") ).build(),
+                        newTrigger().withIdentity(every_day_key4).startNow()
+                                .withSchedule(dailyAtHourAndMinute(3,30))// Spuštění každý den v 03:30 AM
+                                .build()
+                );
 
                 // 5) Kontrola a fakturace klientů na měsíční bázi
                 terminal_logger.debug("CustomScheduler:: start: Scheduling new Job - Sending_Invoices");
-                scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(), every_five_minute);
+                scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(),
+                        newTrigger().withIdentity(every_five_minute_key).startNow()
+                                .withSchedule(cronSchedule("10 0/5 * * * ?"))// Spuštění každých 5 minut
+                                .build()
+                );
 
                 // 6) Slouží ke kontrole plateb na localhostu, kam nám gopay nemůže poslat notifikace
                 if(Server.server_mode == Enum_Tyrion_Server_mode.developer ) {
                     terminal_logger.debug("CustomScheduler:: start: Scheduling new Job - Artificial Financial Callback");
-                    scheduler.scheduleJob(newJob(Job_ArtificialFinancialCallback.class).withIdentity(JobKey.jobKey("artificial_financial_callback")).build(), every_minute2);
+                    scheduler.scheduleJob(newJob(Job_ArtificialFinancialCallback.class).withIdentity(JobKey.jobKey("artificial_financial_callback")).build(),
+                            newTrigger().withIdentity(every_minute_key2).startNow()
+                                .withSchedule(cronSchedule("10 0/1 * * * ?"))// Spuštění každou minutu
+                                .build()
+                    );
                 }
+
                 // 7) Kontrola zaseknutých kompilací - těch co jsou in progress déle než 5 minut.
                 terminal_logger.debug("start: Scheduling new Job - Checking stuck compilations");
-                scheduler.scheduleJob( newJob(Job_StuckCompilationCheck.class).withIdentity( JobKey.jobKey("stuck_compilation_check") ).build(), every_10_minutes_7);
+                scheduler.scheduleJob( newJob(Job_StuckCompilationCheck.class).withIdentity( JobKey.jobKey("stuck_compilation_check") ).build(),
+                        newTrigger().withIdentity(every_10_min_key7).startNow()
+                                .withSchedule(cronSchedule("17 0/10 * * * ?"))// Spuštění každých 10 minut a to v 17 vteřině každé minuty
+                                .build()
+                );
 
                 // 8) Update statistiky o requestech
                 terminal_logger.debug("start: Scheduling new Job - Request Stats Update");
-                scheduler.scheduleJob( newJob(Job_RequestStatsUpdate.class).withIdentity( JobKey.jobKey("request_stats_update") ).build(), every_hour);
+                scheduler.scheduleJob( newJob(Job_RequestStatsUpdate.class).withIdentity( JobKey.jobKey("request_stats_update") ).build(),
+                        newTrigger().withIdentity(every_hour_key).startNow()
+                            .withSchedule(repeatHourlyForever())// Spuštění každou minutu
+                            .build()
+                );
 
             }else {
                 terminal_logger.warn("start: CRON (Every-Day) is in RAM yet. Be careful with that!");

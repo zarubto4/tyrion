@@ -142,7 +142,6 @@ public class NotificationHandler {
                     }else {
                         if(notification.id == null) {
                             message.put("id", UUID.randomUUID().toString());
-                            message.put("notification_id", UUID.randomUUID().toString());  // TODO Smazat - určeno jen pro testování
                             terminal_logger.debug("      Notifikation has not own id and its not set for save ID:" +  message.get("id").asText());
                         }else {
                             System.out.println("      Notifikation has own id and its not set for save ID: " +  notification.id);

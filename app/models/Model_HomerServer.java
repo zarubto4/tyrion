@@ -540,8 +540,8 @@ public class Model_HomerServer extends Model{
     }
 
     @JsonIgnore @Transient  public void is_disconnect(){
-        terminal_logger.debug("Tyrion lost connection with blocko cloud_blocko_server: " + unique_identificator);
-        // TODO nějaký Alarm když se to stane??
+        terminal_logger.debug("is_disconnect:: Tyrion lost connection with Homer server: " + unique_identificator);
+        make_log_disconnect();
     }
 
     @JsonIgnore @Transient  public  void add_task(Utilities_HW_Updater_Actualization_Task task){

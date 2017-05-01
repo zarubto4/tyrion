@@ -37,7 +37,7 @@ public class Model_BProgram extends Model {
                                                          @Id public String id;
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String description;
-    @JsonIgnore @OneToOne(cascade = CascadeType.ALL)         public Model_HomerInstance instance; // TODO - do budoucna více instnací!!!!
+    @JsonIgnore @OneToOne(cascade = CascadeType.ALL)         public Model_HomerInstance instance; // TODO - do budoucna více instnací!!!! http://youtrack.byzance.cz/youtrack/issue/TYRION-502
 
     @ApiModelProperty(required = true,
                      dataType = "integer", readOnly = true,

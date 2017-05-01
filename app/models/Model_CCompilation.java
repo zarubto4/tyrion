@@ -62,6 +62,7 @@ public class Model_CCompilation extends Model {
         return Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findUnique();
     }
 
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
@@ -179,29 +180,6 @@ public class Model_CCompilation extends Model {
                         .send(Controller_Security.get_person());
             } catch (Exception e) {
                 terminal_logger.internalServerError("Model_CCompilation:: notification_new_actualization_request_on_version", e);
-            }
-        }).start();
-    }
-
-
-/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
-
-    public void make_log_connect(){
-        new Thread( () -> {
-            try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request(this.id), null, true);
-            } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
-            }
-        }).start();
-    }
-
-    public void make_log_disconnect(){
-        new Thread( () -> {
-            try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request(this.id), null, true);
-            } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
             }
         }).start();
     }

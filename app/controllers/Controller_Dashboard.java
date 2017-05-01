@@ -710,7 +710,8 @@ public class Controller_Dashboard extends Controller {
     public Result not_found(){
         try {
 
-            //TODO
+            terminal_logger.error("Link Not found");
+            // TODO - přesměrování na page 404 Not found http://youtrack.byzance.cz/youtrack/issue/TYRION-504
             return index();
 
         }catch (Exception e){

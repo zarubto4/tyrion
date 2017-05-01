@@ -75,6 +75,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 // Změna FlagRegistru
                 server.security_token_confirm = true;
+                check_server.make_log_connect();
 
                 // Sesynchronizuj Configuraci serveru s tím co ví a co zná Tyrion
                 server.synchronize_configuration();

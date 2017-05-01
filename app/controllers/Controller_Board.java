@@ -251,6 +251,7 @@ public class Controller_Board extends Controller {
     }
 
     /**
+     * TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-503
     @ApiOperation(value = "update Embedded Hardware with  binary file",
             tags = {"C_Program", "Actualization"},
             notes = "Upload Binary file and choose hardware_id for update. Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
@@ -370,7 +371,6 @@ public class Controller_Board extends Controller {
             request.put("build_id", build_id);
             request.put("program", Model_FileRecord.get_encoded_binary_string_from_File(file));
 
-            // TODO - tohle nejde nějak domylset
             // ObjectNode result =  Controller_WebSocket.incomingConnections_homers.get(instance_id).write_with_confirmation(request, 1000*30, 0, 3);
 
             if(request.get("status").asText().equals("success")) {

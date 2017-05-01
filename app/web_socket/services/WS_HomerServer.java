@@ -111,22 +111,10 @@ public class WS_HomerServer extends WS_Interface_type {
                         return;
                     }
 
-                    // TODO Becki
+
                     case WS_Becki_Website.CHANNEL: {    // Komunikace mezi Becki a Homer Instance
-
-                        switch (json.get("messageType").asText()){
-
-                            case "notification" : {
-
-                                return;
-                            }
-
-                            default: {
-                                terminal_logger.error("WS_HomerServer:: onMessage:: Chanel becki:: not recognize messageType ->" + json.get("messageType").asText());
-                                return;
-                            }
-
-                        }
+                        WS_Becki_Website.Messages_HomerInstance(this, json);
+                        return;
                     }
 
                     default: {

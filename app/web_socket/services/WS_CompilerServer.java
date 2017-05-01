@@ -74,8 +74,6 @@ public class WS_CompilerServer extends WS_Interface_type {
         server.compiler_server_is_disconnect();
     }
 
-
-
     @Override
     public void onMessage(String message) {
 
@@ -114,7 +112,6 @@ public class WS_CompilerServer extends WS_Interface_type {
 
         }
     }
-
 
     @Override
     public void onMessage(ObjectNode json) {
