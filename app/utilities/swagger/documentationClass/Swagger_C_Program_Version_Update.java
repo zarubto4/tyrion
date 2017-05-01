@@ -1,11 +1,9 @@
 package utilities.swagger.documentationClass;
 
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
-import play.libs.Json;
 
 import javax.validation.Valid;
 import java.util.ArrayList;

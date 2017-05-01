@@ -1,9 +1,7 @@
 package utilities.hardware_updater;
 
 import com.avaje.ebean.Expr;
-import controllers.Controller_WebSocket;
 import models.*;
-import play.libs.Json;
 import utilities.enums.Enum_CProgram_updater_state;
 import utilities.enums.Enum_Firmware_type;
 import utilities.enums.Enum_Update_group_procedure_state;
@@ -13,9 +11,7 @@ import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualizati
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Target_pair;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homer_instance.WS_Message_Add_new_instance;
 import web_socket.message_objects.homer_instance.WS_Message_Update_device_summary_collection;
-import web_socket.message_objects.homer_instance.WS_Message_Update_instance_to_actual_instance_record;
 
 import java.util.ArrayList;
 import java.util.HashMap;

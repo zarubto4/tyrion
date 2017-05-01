@@ -2,7 +2,6 @@ package utilities.swagger.documentationClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Enum_Token_type;
 
 
 @ApiModel(description = "Json Model for validation of Token for HTTP requests",

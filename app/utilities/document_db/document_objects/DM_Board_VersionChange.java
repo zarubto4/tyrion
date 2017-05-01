@@ -1,6 +1,5 @@
 package utilities.document_db.document_objects;
 
-import com.avaje.ebeaninternal.server.lib.util.Str;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tc.util.UUID;

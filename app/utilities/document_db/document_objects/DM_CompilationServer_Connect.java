@@ -3,7 +3,6 @@ package utilities.document_db.document_objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tc.util.UUID;
-import models.Model_Board;
 import models.Model_CompilationServer;
 import play.libs.Json;
 import utilities.Server;

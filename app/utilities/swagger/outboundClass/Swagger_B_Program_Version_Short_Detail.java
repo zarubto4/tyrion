@@ -1,10 +1,7 @@
 package utilities.swagger.outboundClass;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.persistence.Transient;
 
 @ApiModel(description = "B_Program Version Light (only few properties)",
           value = "B_Program_Version_Short_Detail")

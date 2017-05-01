@@ -10,8 +10,6 @@ import utilities.Server;
 import utilities.document_db.DocumentDB;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
-import utilities.document_db.document_objects.DM_HomerServer_Connect;
-import utilities.document_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.Enum_Compile_status;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;

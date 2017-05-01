@@ -11,7 +11,6 @@ import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.hardware_generator.Utilities_Hardware_generator_Controller;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;

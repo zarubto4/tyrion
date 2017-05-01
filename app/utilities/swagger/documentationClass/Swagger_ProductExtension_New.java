@@ -2,7 +2,6 @@ package utilities.swagger.documentationClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_ProductExtension.Config;
 import play.data.validation.Constraints;
 import utilities.enums.Enum_ExtensionType;
 

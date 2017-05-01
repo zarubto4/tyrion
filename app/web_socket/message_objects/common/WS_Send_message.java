@@ -1,12 +1,9 @@
 package web_socket.message_objects.common;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_HomerInstance;
 import play.libs.Json;
 import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
-import utilities.response.GlobalResult;
 import web_socket.services.WS_Interface_type;
 
 import java.util.concurrent.*;

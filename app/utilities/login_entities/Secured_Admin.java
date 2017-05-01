@@ -5,7 +5,6 @@ import models.Model_Person;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.logger.Class_Logger;
 
 import static play.mvc.Controller.request;

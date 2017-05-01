@@ -7,7 +7,6 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import utilities.Server;
 import utilities.enums.Enum_Tyrion_Server_mode;
-import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.logger.Class_Logger;
 import utilities.scheduler.jobs.*;
 
@@ -15,7 +14,6 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.repeatHourlyForever;
-import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class CustomScheduler {

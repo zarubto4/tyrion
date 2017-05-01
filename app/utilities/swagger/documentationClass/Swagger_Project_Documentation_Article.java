@@ -5,9 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-import java.awt.*;
-import java.util.*;
-
 @ApiModel(description = "Json Model for new Article",
         value = "Article")
 public class Swagger_Project_Documentation_Article {

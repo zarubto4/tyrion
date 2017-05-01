@@ -1,12 +1,8 @@
 package utilities.document_db;
 
 
-import com.microsoft.azure.documentdb.DocumentClient;
-import com.microsoft.azure.documentdb.DocumentClientException;
 import com.microsoft.azure.documentdb.DocumentCollection;
 import com.microsoft.azure.documentdb.RequestOptions;
-import models.Model_Board;
-import org.bouncycastle.asn1.sec.SECNamedCurves;
 import play.Configuration;
 import utilities.Server;
 import utilities.logger.Class_Logger;

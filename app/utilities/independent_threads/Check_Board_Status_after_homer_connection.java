@@ -3,10 +3,8 @@ package utilities.independent_threads;
 import models.*;
 import utilities.enums.Enum_Homer_instance_type;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Get_instance_list;
 import web_socket.message_objects.homer_instance.WS_Message_Online_states_devices;
-import web_socket.message_objects.homer_instance.WS_Message_Update_device_summary_collection;
 import web_socket.services.WS_HomerServer;
 
 import java.util.ArrayList;

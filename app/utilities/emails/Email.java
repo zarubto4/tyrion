@@ -7,7 +7,6 @@ import com.microtripit.mandrillapp.lutung.view.MandrillMessage.Recipient;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.MergeVar;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.MessageContent;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessageStatus;
-import controllers.Controller_Actualization;
 import play.Configuration;
 import utilities.logger.Class_Logger;
 

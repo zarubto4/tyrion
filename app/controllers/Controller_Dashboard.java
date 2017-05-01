@@ -5,7 +5,6 @@ import io.swagger.annotations.Api;
 import models.*;
 import org.pegdown.PegDownProcessor;
 import play.Application;
-import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -29,7 +28,6 @@ import views.html.external_servers.external_servers;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
 import views.html.hardware_generator.generator_main;
-import views.html.helpdesk_tool.product_detail;
 import views.html.helpdesk_tool.project_detail;
 import views.html.helpdesk_tool.user_summary;
 import views.html.helpdesk_tool.product_detail;
@@ -40,7 +38,6 @@ import views.html.publiccprograms.approvalprocedurecprogram;
 import views.html.publiccprograms.c_program_editor;
 import views.html.publiccprograms.libraries;
 import views.html.publiccprograms.publiccode;
-import views.html.super_general.login;
 import views.html.super_general.main;
 import views.html.tariffs.extension_edit;
 import views.html.tariffs.tariff_edit;
@@ -136,6 +133,7 @@ public class Controller_Dashboard extends Controller {
             file_name = file_name.substring(file_name.lastIndexOf("/") + 1);
             file_name = file_name.replaceAll("_", " ");
             file_name.replace(".markdown", " ");
+            file_name.replace(".md", " ");
 
             Html wiki_html = wiki.render(file_name.substring(0,1).toUpperCase() + file_name.substring(1) , new Html(new PegDownProcessor().markdownToHtml(text)));
 
