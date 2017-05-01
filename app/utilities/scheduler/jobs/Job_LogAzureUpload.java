@@ -15,7 +15,7 @@ public class Job_LogAzureUpload implements Job {
 
  /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Job_LogAzureUpload.class);
 
 //**********************************************************************************************************************
 
@@ -36,9 +36,9 @@ public class Job_LogAzureUpload implements Job {
 
                 terminal_logger.debug("Job_LogAzureUpload:: log_upload_thread: concurrent thread started on {}", new Date());
 
-                File file = new File(System.getProperty("user.dir") + "/app/logs/all.log");
+                File file = new File(System.getProperty("user.dir") + "/logs/all.log");
 
-                PrintWriter writer = new PrintWriter(new File(System.getProperty("user.dir") + "/app/logs/all.log"));
+                PrintWriter writer = new PrintWriter(new File(System.getProperty("user.dir") + "/logs/all.log"));
                 writer.close();
 
                 String file_name = new Date().toString();
