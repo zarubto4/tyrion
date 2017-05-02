@@ -31,78 +31,33 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
         for(String group_name :  Configuration.root().getStringList("Loggy.general_log_groups")){
             try {
 
-
                 // Get List of all Groups!
                 ArrayList<String> list = (ArrayList<String>) Configuration.root().getStringList("Loggy.groups." + group_name);
 
-                // If list not empty - Developer want log only some Logger groups!
-                if(!list.isEmpty() && Server.server_mode != Enum_Tyrion_Server_mode.stage) {
+                String group_config = list.get(0);
 
-                    String group_config = list.get(0);
+                Enum_Log_level default_group_log_level = Enum_Log_level.fromString(group_config.split("::")[0]);
+                Color default_group_log_color = Color.getColor(group_config.split("::")[1]);
 
-                    Enum_Log_level default_group_log_level = Enum_Log_level.fromString(group_config.split("::")[0]);
-                    Color default_group_log_color = Color.getColor(group_config.split("::")[1]);
+                list.remove(0);
 
-                    list.remove(0);
+                for (String object_for_log : list) {
 
-                    for (String object_for_log : list) {
+                    Log_Pair log_pair = new Log_Pair();
 
-                        Log_Pair log_pair = new Log_Pair();
-                        String object_configuration = Configuration.root().getString("Loggy.objects." + object_for_log);
+                    // The Name of Object
+                    log_pair.name = object_for_log;
 
-                        // If object not found - Programer Will be notified!!!
-                        if (object_configuration == null) {
-
-                            System.err.println("ERROR");
-                            System.err.println("ERROR:: Server_Logger_Developer:: Object " + object_for_log + " not found in configuration file!!! (Loggy.objects." + object_for_log + ")");
-                            continue;
-                        }
-
-                        // The Name of Object
-                        log_pair.name = object_for_log;
-
-                        // Set Color of Object if default_group_log_color is not set
-                        if (default_group_log_color != null) {
-                            log_pair.color = default_group_log_color;
-                        } else {
-                            Color log_pair_color = Color.getColor(object_configuration.split("::")[1].substring(2));
-                            if (log_pair_color != null) log_pair.color = log_pair_color;
-                            else log_pair.color = Color.BLACK;
-                        }
+                    // Set Color of Object if default_group_log_color is not set
+                    log_pair.color = default_group_log_color;
 
 
-                        // Set Level of Object if default_group_log_level is not set
-                        if (default_group_log_level != null) {
-                            log_pair.log_level = default_group_log_level;
-                        } else {
-                            Enum_Log_level log_pair_log_level = Enum_Log_level.fromString(object_configuration.split("::")[0]);
-                            if (log_pair_log_level != null) log_pair.log_level = log_pair_log_level;
-                            else log_pair.log_level = Enum_Log_level.debug;
-                        }
+                    // Set Level of Object if default_group_log_level is not set
+                    log_pair.log_level = default_group_log_level;
 
-                        // Add Object to HashMap
-                        list_of_objects_for_logging.put(object_for_log, log_pair);
-                    }
+                    // Add Object to HashMap
+                    list_of_objects_for_logging.put(object_for_log, log_pair);
 
-                // Developer not set any groups for logger - so system will log every objects by default parameters.
-                }else {
-                    for(String key: Configuration.root().getConfig("Loggy.objects").keys()){
-
-                        Log_Pair log_pair = new Log_Pair();
-                        String object_configuration = Configuration.root().getString("Loggy.objects." + key);
-                        log_pair.name = key;
-
-                        Color log_pair_color = Color.getColor(object_configuration.split("::")[1].substring(2));
-                        if (log_pair_color != null) log_pair.color = log_pair_color;
-                        else log_pair.color = Color.BLACK;
-
-                        Enum_Log_level log_pair_log_level = Enum_Log_level.fromString(object_configuration.split("::")[0]);
-                        if (log_pair_log_level != null) log_pair.log_level = log_pair_log_level;
-                        else log_pair.log_level = Enum_Log_level.debug;
-
-                        // Add Object to HashMap
-                        list_of_objects_for_logging.put(key, log_pair);
-                    }
                 }
 
 

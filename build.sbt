@@ -5,7 +5,7 @@ version := "1.08.2"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.8"
 crossScalaVersions := Seq("2.11.6", "2.11.7")
 
 libraryDependencies ++= Seq(
@@ -36,11 +36,14 @@ libraryDependencies ++= Seq(
 
   "com.novocode" % "junit-interface" % "0.11",
 
+  // Tests
   "junit" % "junit" % "4.12" ,
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
 
+  // MailChimp
   "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.7",
 
+  // Mongo DB
   "com.microsoft.azure" % "azure-documentdb" % "1.10.0",
 
   javaJdbc,
