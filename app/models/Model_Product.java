@@ -12,6 +12,7 @@ import play.data.Form;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.*;
+import utilities.financial.FinancialPermission;
 import utilities.financial.history.History;
 import utilities.financial.history.HistoryEvent;
 import utilities.goPay.Utilities_GoPay_Controller;
@@ -478,20 +479,12 @@ public class Model_Product extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission()              {  return true;  }
-    @JsonIgnore   @Transient                                    public boolean read_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Product_read");  }
-                  @Transient                                    public boolean edit_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Product_edit");  }
-                  @Transient                                    public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
-    @JsonIgnore   @Transient                                    public boolean delete_permission()              {  return Controller_Security.get_person().has_permission("Product_delete");}
-
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_register_new_Device()     {  return true;  }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_C_Program()           {  return true;  }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_M_Project()           {  return true;  }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_M_Program()           {  return true;  }
-
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_B_program()           {  return true;  }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_new_Instrance()           {  return true;  }
-    @JsonIgnore   @Transient @ApiModelProperty(required = true) public boolean create_own_server()              {  return true;  }
+    @JsonIgnore  public boolean create_permission()              {  return true;  }
+    @JsonIgnore  public boolean read_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_read");  }
+                 public boolean edit_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_edit");  }
+                 public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
+    @JsonIgnore  public boolean delete_permission()              {  return Controller_Security.get_person().has_permission("Product_delete");}
+    @JsonIgnore  public boolean financial_permission(String action){  return FinancialPermission.check(this, action);}
 
     public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
 

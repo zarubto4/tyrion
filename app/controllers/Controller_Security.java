@@ -17,6 +17,7 @@ import play.libs.ws.WSRequest;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
+import utilities.enums.Enum_Token_type;
 import utilities.enums.Enum_Where_logged_tag;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
@@ -24,12 +25,11 @@ import utilities.login_entities.Secured_API;
 import utilities.login_entities.Socials;
 import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.Result_JsonValueMissing;
-import utilities.response.response_objects.Result_NotValidated;
-import utilities.response.response_objects.Result_Unauthorized;
-import utilities.response.response_objects.Result_ok;
+import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Login_IncomingLogin;
+import utilities.swagger.documentationClass.Swagger_Blocko_Token_validation_request;
 import utilities.swagger.outboundClass.Login_Social_Network;
+import utilities.swagger.outboundClass.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 import views.html.super_general.login;
@@ -102,6 +102,73 @@ public class Controller_Security extends Controller {
     }
 
 //######################################################################################################################
+
+    @ApiOperation(value = "check Request Token for blocko REST-API blocks",
+            tags = {"Blocko"},
+            notes = "",
+            produces = "application/json",
+            response =  Swagger_Blocko_Token_validation_result.class,
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Blocko_Token_validation_request",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Blocko_Token_validation_result.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_status_request_token(){
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Blocko_Token_validation_request> form = Form.form(Swagger_Blocko_Token_validation_request.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Blocko_Token_validation_request help = form.get();
+
+            Enum_Token_type token_type = Enum_Token_type.getType(help.type_of_token);
+
+            Swagger_Blocko_Token_validation_result result = new Swagger_Blocko_Token_validation_result();
+
+            if(token_type == Enum_Token_type.PERSON_TOKEN){
+
+                Model_Person person = Model_Person.get_byAuthToken(help.token);
+                if(person == null) return GlobalResult.forbidden_Permission("Token not found");
+
+                result.token = help.token;
+                result.available_requests = 500L; // LEXA TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-495
+
+                return GlobalResult.result_ok(Json.toJson(result));
+
+            }
+
+
+            if( token_type == Enum_Token_type.INSTANCE_TOKEN){
+
+                result.token = help.token;
+                result.available_requests = 500L;   // LEXA TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-495
+
+                return GlobalResult.result_ok(Json.toJson(result));
+            }
+
+
+            return GlobalResult.result_BadRequest("Missing or wrong type of tokkend Type");
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
 
     @ApiOperation(value = "login",
             tags = {"Access", "Person", "APP-Api"},

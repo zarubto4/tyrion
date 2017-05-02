@@ -15,7 +15,8 @@ public enum Enum_ExtensionType {
 
     @EnumValue("Project")       Project,
     @EnumValue("Log")           Log,
-    @EnumValue("Database")      Database;
+    @EnumValue("Database")      Database,
+    @EnumValue("RestApi")       RestApi;
 
 
     // All classes returned from this method (in package utilities.financial) must implement Extension interface

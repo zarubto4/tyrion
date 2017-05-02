@@ -5,8 +5,7 @@ version := "1.08.3"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
-scalaVersion := "2.11.6"
-crossScalaVersions := Seq("2.11.6", "2.11.7")
+scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
 
@@ -18,8 +17,8 @@ libraryDependencies ++= Seq(
   "io.swagger" %% "swagger-play2" % "1.5.2",
 
   "com.typesafe.play" %% "routes-compiler"            % "2.4.6",
-  "io.swagger"         % "swagger-core"               % "1.5.8",
-  "io.swagger"        %% "swagger-scala-module"       % "1.0.2",
+  "io.swagger"         % "swagger-core"               % "1.5.12",
+  "io.swagger"        %% "swagger-scala-module"       % "1.0.3",
 
   "com.github.scribejava" % "scribejava-apis" % "2.1.0",
 
@@ -50,10 +49,6 @@ libraryDependencies ++= Seq(
 )
 
 resolvers += "JBoss" at "https://repository.jboss.org/"
-
-TwirlKeys.templateImports += "utilities.loggy._"
-
-
 
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.

@@ -101,7 +101,7 @@ PUT            /person/picture/remove                            @controllers.Co
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
-POST           /secure/rest_api_token_validation                           @controllers.Controller_Permission.get_status_request_token()
+POST           /secure/rest_api_token_validation                           @controllers.Controller_Security.get_status_request_token()
 
 PUT            /secure/permission/person/:person_id/:permission_id         @controllers.Controller_Permission.add_Permission_Person(person_id,permission_id)
 DELETE         /secure/permission/person/:person_id/:permission_id         @controllers.Controller_Permission.remove_Permission_Person(person_id,permission_id)
