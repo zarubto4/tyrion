@@ -43,7 +43,8 @@ public class Security_WS_token_confirm_procedure extends Thread {
                 if (form.hasErrors()) {
                     terminal_logger.error("run:: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());
                     sleep(1000 * 10  * ++number_of_tries);
-                    continue;
+                    server.close();
+                    break;
                 }
 
                 // Vytovření objektu
@@ -74,6 +75,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 // Změna FlagRegistru
                 server.security_token_confirm = true;
+                check_server.make_log_connect();
 
                 // Sesynchronizuj Configuraci serveru s tím co ví a co zná Tyrion
                 server.synchronize_configuration();

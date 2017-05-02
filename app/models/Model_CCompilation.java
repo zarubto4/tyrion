@@ -2,9 +2,14 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.Server;
+import utilities.document_db.DocumentDB;
+import utilities.document_db.document_objects.DM_CompilationServer_Connect;
+import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.Enum_Compile_status;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
@@ -56,6 +61,7 @@ public class Model_CCompilation extends Model {
     public Model_FileRecord compilation(){
         return Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findUnique();
     }
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 

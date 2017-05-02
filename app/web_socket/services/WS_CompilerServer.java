@@ -34,6 +34,22 @@ public class WS_CompilerServer extends WS_Interface_type {
     }
 
     @Override
+    public boolean is_online() {
+        try {
+
+            for(String key :  Controller_WebSocket.homer_servers.keySet() ){
+                System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
+            }
+
+
+            out.write(" Něco posílám???");
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    @Override
     public void add_to_map() {
         Controller_WebSocket.compiler_cloud_servers.put(identifikator, this);
     }
@@ -57,8 +73,6 @@ public class WS_CompilerServer extends WS_Interface_type {
         terminal_logger.trace("WS_CompilerServer:: removing on object");
         server.compiler_server_is_disconnect();
     }
-
-
 
     @Override
     public void onMessage(String message) {
@@ -98,7 +112,6 @@ public class WS_CompilerServer extends WS_Interface_type {
 
         }
     }
-
 
     @Override
     public void onMessage(ObjectNode json) {

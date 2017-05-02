@@ -9,8 +9,6 @@ import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 import web_socket.message_objects.homer_instance.WS_Message_Yoda_connected;
 
-import java.util.concurrent.ExecutionException;
-
 public class Check_Update_for_hw_on_homer extends Thread {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -67,8 +65,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
                                 .isNotNull("boards_in_virtual_instance")
                             .endJunction()
                         .endJunction()
-                     .order().asc("blocko_instance_name")
-                    .findEachWhile((Model_HomerInstance instance) -> {
+                     .order().asc("blocko_instance_name").findEachWhile((Model_HomerInstance instance) -> {
 
                         // Zajímá mě stav HW
 

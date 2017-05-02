@@ -42,6 +42,7 @@ public class Server {
     // Azure - NoSQL Database
     public static DocumentClient documentClient;
     public static Database no_sql_database;
+    public static String documentDB_Path;
 
     public static String tyrion_serverAddress;
     public static String tyrion_webSocketAddress;
@@ -223,6 +224,7 @@ public class Server {
         documentClient              = new DocumentClient( Configuration.root().getString("Azure.documentDB." + server_mode.name() + ".azureLink"), Configuration.root().getString("Azure.documentDB." + server_mode.name() + ".azureConnectionSecret") , ConnectionPolicy.GetDefault(), ConsistencyLevel.Session);
         no_sql_database             = new Database();
         no_sql_database.setId( Configuration.root().getString("Azure.documentDB." + server_mode.name() + ".databaseName"));
+        documentDB_Path = "dbs/" + no_sql_database.getId();
 
         link_api_swagger    = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 

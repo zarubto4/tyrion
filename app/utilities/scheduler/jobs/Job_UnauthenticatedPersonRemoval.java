@@ -7,7 +7,6 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.common.WS_Send_message;
 
 import java.util.Date;
 import java.util.List;

@@ -87,14 +87,14 @@ public class TokenCache {
     public void cleanup() {
 
         long now = System.currentTimeMillis();
-        ArrayList<String> deleteKey = null;
+        ArrayList<String> deleteKey;
 
         synchronized (crunchifyCacheMap) {
             MapIterator itr = crunchifyCacheMap.mapIterator();
 
             deleteKey = new ArrayList<>((crunchifyCacheMap.size() / 2) + 1);
-            String key = null;
-            CrunchifyCacheObject c = null;
+            String key;
+            CrunchifyCacheObject c;
 
             while (itr.hasNext()) {
                 key = (String) itr.next();

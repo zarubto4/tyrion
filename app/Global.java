@@ -1,10 +1,12 @@
 import controllers.Controller_WebSocket;
+import io.swagger.converter.ModelConverters;
 import play.Application;
 import play.GlobalSettings;
 import play.mvc.Action;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.cache.Server_Cache;
+import utilities.document_db.DocumentDB;
 import utilities.enums.Enum_Terminal_Color;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Class_Logger;
@@ -61,6 +63,10 @@ public class Global extends GlobalSettings {
            Server.initCache();
 
            //8
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Initializing the NO SQL Database" + Enum_Terminal_Color.ANSI_RESET);
+            DocumentDB.set_no_SQL_collection();
+
+           //9
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +"onStart: Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
            Server.setAdministrator();
 

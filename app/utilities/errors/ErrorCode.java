@@ -37,6 +37,10 @@ public enum ErrorCode {
     @EnumValue("TYRION_IS_OFFLINE")                     TYRION_IS_OFFLINE                       ( 600 ,  "Tyrion is offline!!!"),
     @EnumValue("TOKEN_IS_INVALID")                      TOKEN_IS_INVALID                        ( 601 ,  "Token is invalid!!!"),
 
+    @EnumValue("UPDATE_PROCEDURE_TIMEOUT")              UPDATE_PROCEDURE_TIMEOUT                ( 650 ,  "Timeout exception in update procedure"),
+    @EnumValue("WEBSOCKET_TIME_OUT_EXCEPTION")          WEBSOCKET_TIME_OUT_EXCEPTION            ( 670 ,  "Time for sending Message with required response is up!"),
+
+
     @EnumValue("ERROR_30001")                           ERROR_30001( 30001 , "Unknow full-id"),
     @EnumValue("ERROR_30002")                           ERROR_30002( 30002 , "Unknow shot-id"),
 
@@ -46,6 +50,8 @@ public enum ErrorCode {
     @EnumValue("ERROR_30006")                           ERROR_30006( 30006 , "Remove device failed"),
     @EnumValue("ERROR_30007")                           ERROR_30007( 30007 , "Backup failed"),
     @EnumValue("ERROR_30008")                           ERROR_30008( 30008 , "Invalid device state"),
+    @EnumValue("ERROR_30009")                           ERROR_30009( 30009 , "Attempt to upload binary which is already uploaded"),
+    @EnumValue("ERROR_30010")                           ERROR_30010( 30010 , "Attempt to upload/start while upload/start is in progress"),
 
     @EnumValue("ERROR_50000")                           ERROR_50000( 50000 , "Device is not saved"),
     @EnumValue("ERROR_50001")                           ERROR_50001( 50001 , "Device with unknow interface"),
@@ -54,7 +60,12 @@ public enum ErrorCode {
     @EnumValue("ERROR_50004")                           ERROR_50004( 50004 , "Device id is missing in yoda list"),
     @EnumValue("ERROR_50005")                           ERROR_50005( 50005 , "Bus critical error - collision on bus cable"),
 
-    @EnumValue("ERROR_60001")                           ERROR_60001( 600001 , "Missing Part in packet transport to YODA"),
+    @EnumValue("ERROR_60001")                           ERROR_60001( 600001 , "Write to external memory failed"),
+    @EnumValue("ERROR_60002")                           ERROR_60002( 600002 , "Erase of external memory failed"),
+
+    @EnumValue("INTMEM_READ_ERROR")                     INTMEM_READ_ERROR( 70000 , "Read from internal memory failed"),
+    @EnumValue("INTMEM_WRITE_ERROR")                    INTMEM_WRITE_ERROR( 70001 , "Write to internal memory failed"),
+    @EnumValue("INTMEM_ERASE_ERROR")                    INTMEM_ERASE_ERROR( 70002 , "Erase of internal memory failed"),
 
     @EnumValue("JSON_INVALID")                          JSON_INVALID( 10000 , "Missing some Label"),
     @EnumValue("EMPTY_ARRAY")                           EMPTY_ARRAY( 10001 , "Array of commands is empty");

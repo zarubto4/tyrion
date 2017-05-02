@@ -101,7 +101,7 @@ public class Server_Logger extends Controller {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder description = new StringBuilder();     // stavění obsahu
+        StringBuilder description = new StringBuilder();  // stavění obsahu
 
         // TODO tady nic nedělám s Object... args ???
         String summary = "Internal Server Error - " + log_message;

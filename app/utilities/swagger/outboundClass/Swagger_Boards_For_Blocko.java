@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.*;
 import utilities.logger.Class_Logger;
-import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 
 import java.util.ArrayList;
 import java.util.List;

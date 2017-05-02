@@ -4,23 +4,17 @@ import com.avaje.ebean.annotation.EnumValue;
 
 public enum Enum_Hardware_update_state_from_Homer {
 
-    @EnumValue("WAITING_IN_QUE")                            WAITING_IN_QUE("WAITING_IN_QUE"),
-    @EnumValue("IN_PROGRESS")                               IN_PROGRESS("IN_PROGRESS"),
-    @EnumValue("SUCCESSFULLY_UPDATE")                       SUCCESSFULLY_UPDATE("SUCCESSFULLY_UPDATE"),
-    @EnumValue("DEVICE_WAS_OFFLINE")                        DEVICE_WAS_OFFLINE("DEVICE_WAS_OFFLINE"),
-    @EnumValue("TRANSMISSION_CRC_ERROR")                    TRANSMISSION_CRC_ERROR("TRANSMISSION_CRC_ERROR"),
-    @EnumValue("INVALID_DEVICE_STATE")                      INVALID_DEVICE_STATE("INVALID_DEVICE_STATE"),
-    @EnumValue("YODA_WAS_OFFLINE")                          YODA_WAS_OFFLINE("YODA_WAS_OFFLINE"),
-    @EnumValue("UPDATE_PROGRESS_STACK")                     UPDATE_PROGRESS_STACK("UPDATE_PROGRESS_STACK"),
-    @EnumValue("DEVICE_NOT_RECONNECTED")                    DEVICE_NOT_RECONNECTED("DEVICE_NOT_RECONNECTED"),
-    @EnumValue("DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION")   DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION("DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION"),
-    @EnumValue("ERROR")                                     ERROR("ERROR");
-
-    private String update_state;
-    Enum_Hardware_update_state_from_Homer(String update_state) {
-        this.update_state = update_state;
-    }
-
+    @EnumValue("WAITING_IN_QUE")                            WAITING_IN_QUE,
+    @EnumValue("IN_PROGRESS")                               IN_PROGRESS,
+    @EnumValue("SUCCESSFULLY_UPDATE")                       SUCCESSFULLY_UPDATE,
+    @EnumValue("DEVICE_WAS_OFFLINE")                        DEVICE_WAS_OFFLINE,
+    @EnumValue("TRANSMISSION_CRC_ERROR")                    TRANSMISSION_CRC_ERROR,
+    @EnumValue("INVALID_DEVICE_STATE")                      INVALID_DEVICE_STATE,
+    @EnumValue("YODA_WAS_OFFLINE")                          YODA_WAS_OFFLINE,
+    @EnumValue("UPDATE_PROGRESS_STACK")                     UPDATE_PROGRESS_STACK,
+    @EnumValue("DEVICE_NOT_RECONNECTED")                    DEVICE_NOT_RECONNECTED,
+    @EnumValue("DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION")   DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION,
+    @EnumValue("ERROR")                                     ERROR;
 
     public static Enum_Hardware_update_state_from_Homer getUpdate_state(String value){
 

@@ -48,7 +48,7 @@ public class Model_CProgram extends Model {
 
     @JsonIgnore  public boolean removed_by_user;
 
-    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_VersionObject> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)@OrderBy("date_of_create desc")   public List<Model_VersionObject> version_objects = new ArrayList<>();
 
                                                                               @JsonIgnore @OneToOne     public Model_TypeOfBoard type_of_board_default;
                        @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL)   public Model_VersionObject default_main_version;

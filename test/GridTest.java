@@ -26,7 +26,6 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static play.test.Helpers.*;
-import static play.test.Helpers.route;
 
 public class GridTest extends TestHelper{
 

@@ -2,13 +2,20 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.documentdb.DocumentClientException;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
+import utilities.Server;
+import utilities.document_db.DocumentDB;
+import utilities.document_db.document_objects.DM_Board_Connect;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.util.Date;
 import java.util.UUID;
 
@@ -17,7 +24,7 @@ import java.util.UUID;
  */
 
 // @Entity   (We do not want to have it unnecessarily stored in the database in case of Example Model Class)
-@ApiModel(value = "ExampleModelName", description = "Model of ExampleModelName")
+@ApiModel(value = "ExampleModelName", description = "Model of ExampleModelName - Swagger annotation documentation")
 public class _Model_ExampleModelName extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -113,11 +120,29 @@ public class _Model_ExampleModelName extends Model{
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
+
+    public void make_log_to_non_sql_database(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
+    }
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    // Create Permission is always JsonIgnore
+    @JsonIgnore   @Transient public boolean create_permission()  {  return  false;  }
+    @JsonProperty @Transient public boolean update_permission()  {  return  false;  }
+    @JsonProperty @Transient public boolean edit_permission()  {  return  false;  }
+    @JsonProperty @Transient public boolean delete_permission()  {  return  false;  }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

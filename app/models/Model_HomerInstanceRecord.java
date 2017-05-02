@@ -118,6 +118,7 @@ public class Model_HomerInstanceRecord extends Model {
             terminal_logger.debug("create_actualization_request:: byl zavolán na Instance Record:: {}" , id);
 
             Model_ActualizationProcedure actualization_procedure = new Model_ActualizationProcedure();
+            actualization_procedure.project_id = summary_information.get_instance().get_project().id;
             actualization_procedure.date_of_create = new Date();
 
             if(running_from != null) actualization_procedure.date_of_planing = running_from;

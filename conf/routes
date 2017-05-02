@@ -9,7 +9,7 @@
 OPTIONS           /*all                                        @controllers.Controller_Security.optionLink(all)
 
 POST              /test                                        @controllers.Controller_Wiky.test1()
-POST              /test2                                       @controllers.Controller_Wiky.test2()
+GET              /test2                                       @controllers.Controller_Wiky.test2()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
@@ -458,10 +458,8 @@ PUT             /grid/approval                                                  
 ################################################################################################################################################################################
 
 #SWAGGER API
-GET            /api-docs                                    @utilities.swagger.ApiHelpController.getResources
-GET            /api-docs/:version                           @utilities.swagger.swagger_diff_tools.Swagger_diff_Controller.getResources_version(version)
-
-
+GET             /api-docs                                    @utilities.swagger.ApiHelpController.getResources
+GET             /api-docs/:version                           @utilities.swagger.swagger_diff_tools.Swagger_diff_Controller.getResources_version(version)
 
 
 # Map static resources from the /public folder to the /assets URL path

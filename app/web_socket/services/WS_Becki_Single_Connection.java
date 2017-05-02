@@ -25,6 +25,22 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
     }
 
     @Override
+    public boolean is_online() {
+        try {
+
+            for(String key :  Controller_WebSocket.homer_servers.keySet() ){
+                System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
+            }
+
+
+            out.write(" Něco posílám???");
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    @Override
     public void add_to_map() {
         person_connection.all_person_Connections.put(identifikator, this);
     }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_Security;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
@@ -12,6 +13,10 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
+import utilities.Server;
+import utilities.document_db.DocumentDB;
+import utilities.document_db.document_objects.DM_CompilationServer_Connect;
+import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.Enum_Compile_status;
 import utilities.independent_threads.Compilation_After_BlackOut;
 import utilities.logger.Class_Logger;
@@ -162,7 +167,7 @@ public class Model_CompilationServer extends Model {
 
     @JsonIgnore @Transient public void compiler_server_is_disconnect(){
         terminal_logger.debug("compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + unique_identificator + " name " + personal_server_name);
-        // TODO -  Nějaké upozornění??? - Aspoň pro nás v režimu stage nebo production - o pádu serveru
+        make_log_disconnect();
     }
 
     @JsonIgnore @Transient public  void check_after_connection(){
@@ -182,7 +187,32 @@ public class Model_CompilationServer extends Model {
         // b) pokud ano pošlu to do Compilation_After_BlackOut
         Compilation_After_BlackOut.getInstance().start(this);
     }
+
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+
+/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
+
+    public void make_log_connect(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request(this.unique_identificator), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
+    }
+
+    public void make_log_disconnect(){
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request(this.unique_identificator), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
+    }
 
 
 

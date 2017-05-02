@@ -1,6 +1,5 @@
 package utilities.response;
 
-import models._Model_ExampleModelName;
 import play.mvc.Controller;
 import utilities.Server;
 import utilities.logger.Class_Logger;

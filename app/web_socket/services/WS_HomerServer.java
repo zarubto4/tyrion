@@ -45,6 +45,22 @@ public class WS_HomerServer extends WS_Interface_type {
 
 
     @Override
+    public boolean is_online() {
+        try {
+
+            for(String key :  Controller_WebSocket.homer_servers.keySet() ){
+                System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
+            }
+
+
+            out.write(" Něco posílám???");
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    @Override
     public void add_to_map() {
         Controller_WebSocket.homer_servers.put(identifikator, this);
     }
@@ -95,22 +111,10 @@ public class WS_HomerServer extends WS_Interface_type {
                         return;
                     }
 
-                    // TODO Becki
+
                     case WS_Becki_Website.CHANNEL: {    // Komunikace mezi Becki a Homer Instance
-
-                        switch (json.get("messageType").asText()){
-
-                            case "notification" : {
-
-                                return;
-                            }
-
-                            default: {
-                                terminal_logger.error("WS_HomerServer:: onMessage:: Chanel becki:: not recognize messageType ->" + json.get("messageType").asText());
-                                return;
-                            }
-
-                        }
+                        WS_Becki_Website.Messages_HomerInstance(this, json);
+                        return;
                     }
 
                     default: {

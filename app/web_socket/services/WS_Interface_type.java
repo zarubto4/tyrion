@@ -33,6 +33,7 @@ public abstract class WS_Interface_type {
         return out != null;
     }
     public abstract void add_to_map();
+    public abstract boolean is_online();
 
 
 

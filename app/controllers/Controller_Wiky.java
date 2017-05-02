@@ -1,9 +1,15 @@
 package controllers;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.documentdb.*;
 import io.swagger.annotations.Api;
+import models.Model_Board;
 import models.Model_Product;
+import play.api.Play;
+import play.libs.F;
+import play.libs.ws.WSClient;
+import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.Server;
@@ -35,31 +41,22 @@ public class Controller_Wiky extends Controller {
 
      }
 
-
-
     public Result test2(){
         try {
 
-            System.out.println(" Test 2 ");
 
-            RequestOptions requestOptions = new RequestOptions();
-            requestOptions.setOfferThroughput(1000);
+            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
+            F.Promise<WSResponse> responsePromise = ws.url(Server.tyrion_serverAddress + "/api-docs")
+                    .setContentType("application/json")
+                    .setHeader("Accept", "application/json")
+                    .setRequestTimeout(15000)
+                    .get();
 
 
-            System.out.println("new DocumentCollection");
-            // Define a new collection using the id above.
-            DocumentCollection myCollection = new DocumentCollection();
-            myCollection.setId("Model_Board_Test");
+            JsonNode result = responsePromise.get(5000).asJson();
 
-            System.out.println("new DocumentCollection Done");
-
-            // Create a new collection.
-            myCollection = Server.documentClient.createCollection("dbs/" + Server.no_sql_database.getId(), myCollection, requestOptions).getResource();
-
-            System.out.println("Created a new collection:");
-            System.out.println(myCollection.toString());
-
-            return ok();
+            return GlobalResult.result_ok(result);
 
         }catch (Exception e){
             e.printStackTrace();
@@ -67,6 +64,9 @@ public class Controller_Wiky extends Controller {
         }
 
     }
+
+
+
 
 
 }

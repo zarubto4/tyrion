@@ -4,8 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-import java.util.List;
-
 @ApiModel(description = "Json Model for confirming notification",
              value = "Notification_Confirm")
 public class Swagger_Notification_Confirm {

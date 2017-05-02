@@ -174,17 +174,6 @@ public class Controller_Project extends Controller {
             // Kontrola oprávnění
             if (!project.read_permission())   return GlobalResult.forbidden_Permission();
 
-            /*
-
-            Swagger_Project_Individual_DashBoard object = new Swagger_Project_Individual_DashBoard();
-            object.project = project;
-
-            // TODO doplňovat Widgety dle libosti!!
-            object.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Total Participants", null, project.participants().size(), Becki_color.byzance_blue, "fa-users" ));
-            object.widget.add( Becki_Widget_Generator.create_A_Type_Widget("Instances in cloud", null, Homer_Instance.find.where().eq("b_program.project.id", project.id).isNotNull("actual_instance").findRowCount(), Becki_color.byzance_pink, "fa-cloud-upload"));
-
-            */
-
             // Vraácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
 

@@ -28,7 +28,6 @@ import views.html.external_servers.external_servers;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
 import views.html.hardware_generator.generator_main;
-import views.html.helpdesk_tool.product_detail;
 import views.html.helpdesk_tool.project_detail;
 import views.html.helpdesk_tool.user_summary;
 import views.html.helpdesk_tool.invoice;
@@ -133,6 +132,7 @@ public class Controller_Dashboard extends Controller {
             file_name = file_name.substring(file_name.lastIndexOf("/") + 1);
             file_name = file_name.replaceAll("_", " ");
             file_name.replace(".markdown", " ");
+            file_name.replace(".md", " ");
 
             Html wiki_html = wiki.render(file_name.substring(0,1).toUpperCase() + file_name.substring(1) , new Html(new PegDownProcessor().markdownToHtml(text)));
 
@@ -709,7 +709,8 @@ public class Controller_Dashboard extends Controller {
     public Result not_found(){
         try {
 
-            //TODO
+            terminal_logger.error("Link Not found");
+            // TODO - přesměrování na page 404 Not found http://youtrack.byzance.cz/youtrack/issue/TYRION-504
             return index();
 
         }catch (Exception e){

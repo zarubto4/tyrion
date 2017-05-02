@@ -3,7 +3,6 @@ package utilities.swagger.documentationClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import play.data.validation.Constraints;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
