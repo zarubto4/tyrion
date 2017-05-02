@@ -1,19 +1,3 @@
-/**
- * Copyright 2014 Reverb Technologies, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package utilities.swagger
 
 import java.io.StringWriter
@@ -107,8 +91,8 @@ class SwaggerBaseApiController extends Controller {
   protected val AccessControlAllowOrigin = ("Access-Control-Allow-Origin", "*")
 
   /**
-   * Get a list of all top level resources
-   */
+    * Get a list of all top level resources
+    */
   protected def getResourceListing(host: String)(implicit requestHeader: RequestHeader) = {
     Logger("swagger").debug("ApiHelpInventory.getRootResources")
     val docRoot = ""
@@ -140,8 +124,8 @@ class SwaggerBaseApiController extends Controller {
   }
 
   /**
-   * Get detailed API/models for a given resource
-   */
+    * Get detailed API/models for a given resource
+    */
   protected def getApiListing(resourceName: String, host: String)(implicit requestHeader: RequestHeader) = {
     Logger("swagger").debug("ApiHelpInventory.getResource(%s)".format(resourceName))
     val docRoot = ""

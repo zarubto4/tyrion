@@ -1,12 +1,10 @@
-
 name := """Tyrion"""
 
-version := "1.08.2"
+version := "1.08.3"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
 scalaVersion := "2.11.8"
-crossScalaVersions := Seq("2.11.6", "2.11.7")
 
 libraryDependencies ++= Seq(
 
@@ -18,8 +16,8 @@ libraryDependencies ++= Seq(
   "io.swagger" %% "swagger-play2" % "1.5.2",
 
   "com.typesafe.play" %% "routes-compiler"            % "2.4.6",
-  "io.swagger"         % "swagger-core"               % "1.5.8",
-  "io.swagger"        %% "swagger-scala-module"       % "1.0.2",
+  "io.swagger"         % "swagger-core"               % "1.5.12",
+  "io.swagger"        %% "swagger-scala-module"       % "1.0.3",
 
   "com.github.scribejava" % "scribejava-apis" % "2.1.0",
 
@@ -36,14 +34,11 @@ libraryDependencies ++= Seq(
 
   "com.novocode" % "junit-interface" % "0.11",
 
-  // Tests
   "junit" % "junit" % "4.12" ,
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
 
-  // MailChimp
   "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.7",
 
-  // Mongo DB
   "com.microsoft.azure" % "azure-documentdb" % "1.10.0",
 
   javaJdbc,
@@ -53,10 +48,6 @@ libraryDependencies ++= Seq(
 )
 
 resolvers += "JBoss" at "https://repository.jboss.org/"
-
-TwirlKeys.templateImports += "utilities.loggy._"
-
-
 
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
