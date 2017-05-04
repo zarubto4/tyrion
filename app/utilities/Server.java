@@ -217,7 +217,7 @@ public class Server {
 
         // Azure Config ------------------------------------------------------------------------------------------------------------
 
-        azure_blob_Link             = Configuration.root().getString("Azure."+ server_mode.name() +".azureLink");
+        azure_blob_Link             = Configuration.root().getString("Azure.blob."+ server_mode.name() +".azureLink");
         storageAccount              = CloudStorageAccount.parse( Configuration.root().getString("Azure.blob." + server_mode.name() +".azureConnectionSecret"));
         blobClient                  = storageAccount.createCloudBlobClient();
 

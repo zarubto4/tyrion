@@ -13,7 +13,6 @@ public class Swagger_Board_Filter {
     @ApiModelProperty(value = "List of typeOfBoard.id", required = false)
     public List<String> type_of_board_ids;
 
-
     @ApiModelProperty(value = "Boolean - required in String! \"true\" or \"false \"", required = false)
     public String active;
 

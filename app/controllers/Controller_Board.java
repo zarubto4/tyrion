@@ -1469,10 +1469,16 @@ public class Controller_Board extends Controller {
             if((!file_type.equals(".jpg"))&&(!file_type.equals(".png"))) return GlobalResult.result_BadRequest("Wrong type of File - '.jpg' or '.png' required! ");
             if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("Picture is bigger than 500 KB");
             BufferedImage bimg = ImageIO.read(file);
-           // if((bimg.getWidth() < 50)||(bimg.getWidth() > 400)||(bimg.getHeight() < 50)||(bimg.getHeight() > 400)) return GlobalResult.result_BadRequest("Picture height or width is not between 50 and 400 pixels.");
+
+            //if((bimg.getWidth() < 400 )|| (bimg.getWidth() > 1200)||(bimg.getHeight() < 400)||(bimg.getHeight() > 1200) ) return GlobalResult.result_BadRequest("Picture height or width is not between 400 and 800 pixels");
+
+            terminal_logger.debug("typeOfBoard_uploadPicture update picture ");
 
             // Odebrání předchozího obrázku
             if(!(type_of_board.picture == null)){
+
+                terminal_logger.debug("typeOfBoard_uploadPicture picture is already there - system remove previous photo");
+
                 Model_FileRecord fileRecord = type_of_board.picture;
                 type_of_board.picture = null;
                 type_of_board.update();
@@ -1481,6 +1487,9 @@ public class Controller_Board extends Controller {
 
             // Pokud link není, vygeneruje se nový, unikátní
             if(type_of_board.azure_picture_link == null){
+
+                terminal_logger.debug("typeOfBoard_uploadPicture - type_of_board.azure_picture_link is null ");
+
                 while(true){ // I need Unique Value
                     String azure_picture_link = type_of_board.get_Container().getName() + "/" + UUID.randomUUID().toString() + file_type;
                     if (Model_TypeOfBoard.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
@@ -1489,9 +1498,13 @@ public class Controller_Board extends Controller {
                         break;
                     }
                 }
+
+                type_of_board.refresh();
             }
 
             String file_path = type_of_board.azure_picture_link;
+
+            terminal_logger.debug("typeOfBoard_uploadPicture - file path :: " + file_path);
 
             int slash = file_path.indexOf("/");
             String file_name = file_path.substring(slash+1);
