@@ -72,7 +72,7 @@ public class WS_Send_message {
 
     public ObjectNode send_with_response() throws TimeoutException, ExecutionException, InterruptedException {
         try {
-            terminal_logger.trace("send_with_response:: Sending message: {} " , this.messageId);
+            terminal_logger.trace("send_with_response:: Sending message: {} Message :: {} " , this.messageId, json );
             return future.get();
         }catch (CancellationException e){
             terminal_logger.trace("send_with_response:: CancellationException: {} result: {} " , this.messageId ,  result.toString() );

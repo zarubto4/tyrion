@@ -1,15 +1,18 @@
 package web_socket.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.Model_Board;
 import models.Model_HomerInstance;
 import models.Model_HomerServer;
+import play.libs.Json;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_Task;
 import utilities.independent_threads.Check_update_for_hw_under_homer_ws;
 import utilities.independent_threads.Security_WS_token_confirm_procedure;
 import utilities.independent_threads.SynchronizeHomerServer;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Ping_server;
 import web_socket.message_objects.homer_instance.WS_Message_Update_device_firmware;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Rejection_homer_server;
 
@@ -49,13 +52,18 @@ public class WS_HomerServer extends WS_Interface_type {
         try {
 
             for(String key :  Controller_WebSocket.homer_servers.keySet() ){
+                // TODO jednou smazat
                 System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
             }
 
+            terminal_logger.trace("is_online:: Test online state Server ID {} ", identifikator);
 
-            out.write(" Něco posílám???");
+            out.write( new WS_Message_Ping_server().make_request().toString() );
+
             return true;
+
         }catch (Exception e){
+            terminal_logger.warn("is_online:: Test online state Server ID {} Exception - return false" , identifikator);
             return false;
         }
     }

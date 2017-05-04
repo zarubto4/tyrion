@@ -54,29 +54,21 @@ public class Model_ActualizationProcedure extends Model {
         return state;
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String state_fraction(){
-
-        try {
-
-            terminal_logger.trace("state_fraction :: operation");
-
-            int all = Model_CProgramUpdatePlan.find.where()
-                    .eq("actualization_procedure.id", id)
-                    .findRowCount();
-
-            int complete = Model_CProgramUpdatePlan.find.where()
-                    .eq("actualization_procedure.id", id).where()
-                    .eq("state", Enum_CProgram_updater_state.complete)
-                    .findRowCount();
-
-            return complete + "/" + all;
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return null;
-        }
-
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true)
+    public Integer procedure_size_all(){
+        return   Model_CProgramUpdatePlan.find.where()
+                .eq("actualization_procedure.id", id)
+                .findRowCount();
     }
+
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true)
+    public Integer procedure_size_complete (){
+        return  Model_CProgramUpdatePlan.find.where()
+                .eq("actualization_procedure.id", id).where()
+                .eq("state", Enum_CProgram_updater_state.complete)
+                .findRowCount();
+    }
+
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -336,11 +328,6 @@ public class Model_ActualizationProcedure extends Model {
 
             terminal_logger.debug("notification_update_procedure_progress :: operation ");
 
-            if(state_fraction().contains("0/")){
-                terminal_logger.warn("notification_update_procedure_progress ::  called inappropriately (O/x) !!!! ");
-                return;
-            }
-
             if(state == Enum_Update_group_procedure_state.complete || state == Enum_Update_group_procedure_state.successful_complete  || state == Enum_Update_group_procedure_state.complete_with_error ){
                 terminal_logger.warn("notification_update_procedure_progress ::  called inappropriately (complete) !!!!");
                 return;
@@ -353,7 +340,7 @@ public class Model_ActualizationProcedure extends Model {
                         .setLevel( Enum_Notification_level.info)
                         .setText(new Notification_Text().setText("Update of Procedure "))
                         .setObject(this)
-                        .setText( new Notification_Text().setText(" is done from " + state_fraction() + " ." ))
+                        .setText( new Notification_Text().setText(" is done from " +  procedure_size_complete() + "/" + procedure_size_all() + " ." ))
                         .send_under_project(get_project_id());
 
         }catch (Exception e){
