@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import io.swagger.converter.ModelConverters;
 import models.Model_FloatingPersonToken;
+import models.Model_HomerInstanceRecord;
 import models.Model_Permission;
 import models.Model_Person;
 import play.data.Form;
@@ -21,6 +22,7 @@ import utilities.Server;
 import utilities.UtilTools;
 import utilities.enums.Enum_Token_type;
 import utilities.enums.Enum_Where_logged_tag;
+import utilities.financial.FinancialPermission;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -125,10 +127,10 @@ public class Controller_Security extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Blocko_Token_validation_result.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Blocko_Token_validation_result.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result get_status_request_token(){
@@ -140,32 +142,29 @@ public class Controller_Security extends Controller {
             Swagger_Blocko_Token_validation_request help = form.get();
 
             Enum_Token_type token_type = Enum_Token_type.getType(help.type_of_token);
+            if (token_type == null) return GlobalResult.result_BadRequest("Wrong type of token");
 
             Swagger_Blocko_Token_validation_result result = new Swagger_Blocko_Token_validation_result();
 
             if(token_type == Enum_Token_type.PERSON_TOKEN){
 
                 Model_Person person = Model_Person.get_byAuthToken(help.token);
-                if(person == null) return GlobalResult.forbidden_Permission("Token not found");
+                if(person == null) return GlobalResult.notFoundObject("Token not found");
 
                 result.token = help.token;
-                result.available_requests = 500L; // LEXA TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-495
-
-                return GlobalResult.result_ok(Json.toJson(result));
-
+                result.available_requests = 50L;
             }
 
+            if(token_type == Enum_Token_type.INSTANCE_TOKEN){
 
-            if( token_type == Enum_Token_type.INSTANCE_TOKEN){
+                Model_HomerInstanceRecord instanceRecord = Model_HomerInstanceRecord.find.byId(help.token);
+                if (instanceRecord == null) return GlobalResult.notFoundObject("Token not found");
 
                 result.token = help.token;
-                result.available_requests = 500L;   // LEXA TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-495
-
-                return GlobalResult.result_ok(Json.toJson(result));
+                result.available_requests = FinancialPermission.checkRestApiRequest(instanceRecord.getProduct(), instanceRecord.id);
             }
 
-
-            return GlobalResult.result_BadRequest("Missing or wrong type of tokkend Type");
+            return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -192,9 +191,9 @@ public class Controller_Security extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully logged",       response = Swagger_Login_Token.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error"),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class),
             @ApiResponse(code = 705, message = "Account not validated",     response = Result_NotValidated.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -255,13 +254,6 @@ public class Controller_Security extends Controller {
             code = 200,
             hidden = true
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully logged",       response = Swagger_Login_Token.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error"),
-            @ApiResponse(code = 705, message = "Account not validated",     response = Result_NotValidated.class)
-    })
     public Result admin_login(){
         try {
 
@@ -288,10 +280,10 @@ public class Controller_Security extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully logged",     response = Swagger_Person_All_Details.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Successfully logged",       response = Swagger_Person_All_Details.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
     public  Result getPersonByToken(){
@@ -332,9 +324,9 @@ public class Controller_Security extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully logged out",   response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result logout() {
         try {
@@ -600,10 +592,10 @@ public class Controller_Security extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created",    response = Login_Social_Network.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Successfully created",      response = Login_Social_Network.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result GitHub( @ApiParam(value = "this is return full url address in format  http//portal.byzance.cz/something", required = true)  String return_link){
         try {
@@ -648,9 +640,9 @@ public class Controller_Security extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully created",    response = Login_Social_Network.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_JsonValueMissing.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result Facebook(@ApiParam(value = "this is return full url address in format  http//portal.byzance.cz/something", required = true)  String return_link){
         try {

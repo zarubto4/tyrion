@@ -118,7 +118,7 @@ public class CustomScheduler {
                 );
 
                 // 5) Kontrola a fakturace klientů na měsíční bázi
-                terminal_logger.debug("CustomScheduler:: start: Scheduling new Job - Sending_Invoices");
+                terminal_logger.debug("start: Scheduling new Job - Sending_Invoices");
                 scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(),
                         newTrigger().withIdentity(every_five_minute_key).startNow()
                                 .withSchedule(cronSchedule("10 0/5 * * * ?"))// Spuštění každých 5 minut
@@ -127,7 +127,7 @@ public class CustomScheduler {
 
                 // 6) Slouží ke kontrole plateb na localhostu, kam nám gopay nemůže poslat notifikace
                 if(Server.server_mode == Enum_Tyrion_Server_mode.developer ) {
-                    terminal_logger.debug("CustomScheduler:: start: Scheduling new Job - Artificial Financial Callback");
+                    terminal_logger.debug("start: Scheduling new Job - Artificial Financial Callback");
                     scheduler.scheduleJob(newJob(Job_ArtificialFinancialCallback.class).withIdentity(JobKey.jobKey("artificial_financial_callback")).build(),
                             newTrigger().withIdentity(every_minute_key2).startNow()
                                 .withSchedule(cronSchedule("10 0/1 * * * ?"))// Spuštění každou minutu

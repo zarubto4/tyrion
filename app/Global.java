@@ -1,5 +1,4 @@
 import controllers.Controller_WebSocket;
-import io.swagger.converter.ModelConverters;
 import play.Application;
 import play.GlobalSettings;
 import play.mvc.Action;
@@ -144,7 +143,7 @@ public class Global extends GlobalSettings {
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
 
-        terminal_logger.debug(request.path());
+        terminal_logger.debug("request: " + request.path());
         RequestCounter.count(actionMethod.getName());
 
         return super.onRequest(request, actionMethod);

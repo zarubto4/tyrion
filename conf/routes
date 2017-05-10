@@ -19,10 +19,6 @@ GET              /websocket/compilation_server/:identificator  @controllers.Cont
 GET              /websocket/becki/:secure_token                @controllers.Controller_WebSocket.becki_website_connection(secure_token)
 GET              /websocket/access_token                       @controllers.Controller_WebSocket.get_Websocket_token()
 
-
-
-
-
 #API - CoreClient ####################################################################################################################################################
 ###################################################################################f##################################################################################
 
@@ -38,9 +34,6 @@ GET             /github/*return_link                        @controllers.Control
 
 GET             /login/person                               @controllers.Controller_Security.getPersonByToken
 
-
-
-
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ################################################################
 ######################################################################################################################################################################
 
@@ -55,10 +48,6 @@ PUT             /notification/read                          @controllers.Control
 ## Test - Private Api
 POST            /notification/individual               @utilities.notifications.Notification_Tester.test_notifications()
 POST            /notification/chain/:email             @utilities.notifications.Notification_Tester.test_chain_notifications(email)
-
-
-
-
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
@@ -94,10 +83,6 @@ PUT            /person/password/recovery                         @controllers.Co
 PUT            /person/picture/upload                            @controllers.Controller_Person.person_uploadPicture()
 PUT            /person/picture/remove                            @controllers.Controller_Person.person_removePicture()
 
-
-
-
-
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
@@ -121,10 +106,6 @@ DELETE         /secure/role/:role_id                                       @cont
 PUT            /secure/role/:role_id                                       @controllers.Controller_Permission.edit_Role(role_id)
 
 GET            /secure/person/system_acces/:person_id                      @controllers.Controller_Permission.get_System_Access(person_id)
-
-
-
-
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
@@ -159,7 +140,6 @@ PUT            /product/general/:product_id                                     
 GET            /go_pay/notification                                                         @utilities.goPay.Utilities_GoPay_Controller.payment_notification(id: Long)
 GET            /go_pay/return                                                               @utilities.goPay.Utilities_GoPay_Controller.payment_return(id: Long)
 
-
 #Fakturoid
 GET            /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_get(invoice_id)
 GET            /invoice/pdf/:kind/:invoice_id                                               @controllers.Controller_Finance.invoice_getPdf(kind, invoice_id)
@@ -173,7 +153,6 @@ PUT            /invoice/send_remainder/:invoice_id                              
 DELETE         /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_delete(invoice_id)
 PUT            /invoice/refund/:invoice_id                                                  @utilities.goPay.Utilities_GoPay_Controller.payment_refund(invoice_id)
 
-
 #Project
 POST           /project                                                                     @controllers.Controller_Project.project_create()
 PUT            /project/:project_id                                                         @controllers.Controller_Project.project_update(project_id)
@@ -185,7 +164,6 @@ PUT            /project/unshareProject/:project_id                              
 PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.Controller_Project.project_addParticipant(invitation_id, decision: Boolean)
 PUT            /project/change_participant_state/:project_id                                @controllers.Controller_Project.project_changeParticipantStatus(project_id)
 
-
 #Program
 POST           /b_program/:project_id                                                       @controllers.Controller_Blocko.new_b_Program(project_id)
 GET            /b_program/:b_program_id                                                     @controllers.Controller_Blocko.get_b_Program(b_program_id)
@@ -196,7 +174,6 @@ PUT            /b_program/list/:page_number                                     
 PUT            /b_program/version/:b_program_id                                             @controllers.Controller_Blocko.update_b_program_new_version(b_program_id)
 GET            /b_program/version/:version_id                                               @controllers.Controller_Blocko.get_b_Program_version(version_id)
 DELETE         /b_program/version/:version_id                                               @controllers.Controller_Blocko.remove_b_Program_version(version_id)
-
 
 #Instance
 GET            /instance/project/:project_id                            @controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
@@ -214,7 +191,6 @@ PUT            /instance/add_device/:instance_id/:yoda_id/:device_id    @control
 PUT            /instance/remove_device/:instance_id/:yoda_id/:device_id @controllers.Controller_Blocko.instance_remove_device(instance_id, yoda_id, device_id)
 PUT            /instance/uploadToCloud/:version_id                      @controllers.Controller_Blocko.upload_b_Program_ToCloud(version_id)
 PUT            /instance/shut_down/:instance_name                       @controllers.Controller_Blocko.instance_shut_down(instance_name)
-
 
 #Blocks
 POST           /blockoBlock                                                         @controllers.Controller_Blocko.blockoBlock_create()
@@ -236,7 +212,6 @@ POST           /blockoBlock/scheme/version                                      
 GET            /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_getScheme()
 PUT            /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_editScheme()
 
-
 #TypeOfBlocko
 POST           /typeOfBlock                                                         @controllers.Controller_Blocko.typeOfBlock_create()
 GET            /typeOfBlock                                                         @controllers.Controller_Blocko.typeOfBlock_getAll
@@ -247,11 +222,9 @@ GET            /typeOfBlock/:type_of_block_id                                   
 PUT            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_update(type_of_block_id)
 DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_delete(type_of_block_id)
 
-
 #Blocko General
 PUT             /blocko/disapprove                                                  @controllers.Controller_Blocko.blockoDisapprove()
 PUT             /blocko/approval                                                    @controllers.Controller_Blocko.blockoApproval()
-
 
 #Homer Server
 POST            /homer_server                                                      @controllers.Controller_ExternalServer.create_Homer_Server()
@@ -261,10 +234,8 @@ PUT             /homer_server/set_main/:server_id                               
 GET             /homer_server                                                      @controllers.Controller_ExternalServer.get_All_Homer_Server()
 DELETE          /homer_server/:server_id                                           @controllers.Controller_ExternalServer.delete_Homer_Server(server_id)
 
-
 #Board on Project
 GET             /blocko/all_details/:project_id                                     @controllers.Controller_Board.board_allDetailsForBlocko(project_id)
-
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
@@ -272,10 +243,6 @@ GET             /blocko/all_details/:project_id                                 
 #Actualization Procedure
 GET             /actualization_procedure/project/:project_id                @controllers.Controller_Actualization.get_Actualization_Procedures_by_project(project_id)
 GET             /actualization_procedure/:actualization_procedure_id        @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
-
-
-
-
 
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################
@@ -303,12 +270,10 @@ PUT             /c_program/default/mark/:c_program_id/:version_id               
 
 GET             /c_program/version/public/list/:page_number                     @controllers.Controller_Code.c_program_getPublicList(page_number: Int)
 
-
 #C_Program/Public
 GET             /c_program/version_for_decision/:version_id                     @controllers.Controller_Code.get_version_for_decision(version_id)
 PUT             /c_program/version_for_aprove/approve_decision                  @controllers.Controller_Code.approve_decision()
 PUT             /c_program/version/make_public/:version_id                      @controllers.Controller_Code.c_programVersion_makePublic(version_id)
-
 
 #Libraries
 POST            /library                                                        @controllers.Controller_Library.importLibrary_create()
@@ -329,12 +294,10 @@ PUT             /library/version/remove_file/:version_id                        
 POST            /library/version/upload_example/:version_id                     @controllers.Controller_Library.importLibraryVersion_uploadExample(version_id)
 DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_Library.importLibraryVersion_removeExample(example_id)
 
-
 #Actualization
 GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_Board.board_getForFastUpload(project_id)
 PUT             /c_program/version/upload                                       @controllers.Controller_Board.uploadCompilationToBoard()
 #POST           /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
-
 
 #Processor
 POST            /processor                                                      @controllers.Controller_Board.processor_create()
@@ -342,7 +305,6 @@ GET             /processor/:processor_id                                        
 GET             /processor                                                      @controllers.Controller_Board.processor_getAll()
 PUT             /processor/:processor_id                                        @controllers.Controller_Board.processor_update(processor_id)
 DELETE          /processor/:processor_id                                        @controllers.Controller_Board.processor_delete(processor_id)
-
 
 #Board
 POST            /board                                                          @controllers.Controller_Board.board_create()
@@ -356,7 +318,6 @@ GET             /board/:board_id                                                
 DELETE          /board/deactivateBoard/:board_id                                @controllers.Controller_Board.board_deactivate(board_id)
 PUT             /board/:hash_for_adding/:project_id                             @controllers.Controller_Board.board_connectProject(hash_for_adding, project_id)
 DELETE          /board/:board_id                                                @controllers.Controller_Board.board_disconnectProject(board_id)
-
 
 #Producer
 POST            /producer                                                       @controllers.Controller_Board.producer_create()
@@ -383,13 +344,11 @@ PUT             /bootloader/update_device_list                                  
 #File // Skryto ve swaggeru
 GET             /file/fileRecord/:file_record_id                                @controllers.Controller_Board.fileRecord_get(file_record_id)
 
-
 #Compilation Server
 POST            /compilation_server                                             @controllers.Controller_Board.create_Compilation_Server()
 PUT             /compilation_server/:server_id                                  @controllers.Controller_Board.edit_Compilation_Server(server_id)
 GET             /compilation_server                                             @controllers.Controller_Board.get_All_Compilation_Server()
 DELETE          /compilation_server/:server_id                                  @controllers.Controller_Board.delete_Compilation_Server(server_id)
-
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
 ################################################################################################################################################################################
@@ -543,7 +502,6 @@ GET             /admin/test/run/:cmd                            @utilities.test.
 GET             /admin/test/log                                 @utilities.test.TestLog.get_test_log()
 GET             /admin/test/log/clear                           @utilities.test.TestLog.clear_test_log()
 
-
 # Tariff
 POST            /admin/tariff                                   @controllers.Controller_Finance.tariff_create()
 PUT             /admin/tariff                                   @controllers.Controller_Finance.tariff_update()
@@ -585,8 +543,5 @@ GET             /admin/compilator_server/disconnect/:id    @controllers.Controll
 
 GET             /admin/becki/ping/:id/:token               @controllers.Controller_Dashboard.ping_becki(id, token)
 GET             /admin/becki/disconnect/:id/:token         @controllers.Controller_Dashboard.disconnect_becki(id, token)
-
-
-
 
 GET             /public/*file                               @controllers.Assets.versioned(path="/public", file: Asset)

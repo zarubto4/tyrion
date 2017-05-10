@@ -15,7 +15,7 @@ public class Job_RequestStatsUpdate implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(WS_Send_message.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Job_RequestStatsUpdate.class);
 
 //**********************************************************************************************************************
 
