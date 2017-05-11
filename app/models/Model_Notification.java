@@ -316,6 +316,20 @@ public class Model_Notification extends Model {
         content_string = Json.toJson(array).toString();
         buttons_string = Json.toJson(buttons).toString();
         super.save();
+
+        try {
+
+            // If the notification is about project invitation, id of the notification is saved to model invitation
+            if ((!this.buttons().isEmpty()) && (this.buttons().get(0).action == Enum_Notification_action.accept_project_invitation)) {
+
+                Model_Invitation invitation = Model_Invitation.find.byId(this.buttons().get(0).payload);
+                invitation.notification_id = this.id;
+                invitation.update();
+            }
+        } catch (Exception e) {
+            terminal_logger.internalServerError("save_object:", e);
+        }
+
         return this;
     }
 

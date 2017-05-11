@@ -19,10 +19,20 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Used to check if user is able to perform some action from financial point of view.
+ */
 public class FinancialPermission {
 
     private static final Class_Logger terminal_logger = new Class_Logger(FinancialPermission.class);
 
+    /**
+     * Checks permission for given action.
+     * Counts all extensions and decides if the user is able to do the action.
+     * @param product Given product to check.
+     * @param action String action that is being performed.
+     * @return Boolean true if user is allowed to do it, otherwise false.
+     */
     public static boolean check(Model_Product product, String action){
 
         switch (action) {
@@ -44,6 +54,17 @@ public class FinancialPermission {
         }
     }
 
+    /**
+     * This method serves to check whether user can do RestApi request from Blocko instance.
+     * Counts all RestApi extensions in product.
+     * The summary is a number of available requests user can do from one instance.
+     * If there are not any extensions the user can do 30 requests.
+     * If parameter "object" is model person, it means that requests are made from test environment in Becki,
+     * so 50 available requests are returned.
+     * @param object Model person or product to check the permission for.
+     * @param instance_id Currently unused param.
+     * @return Long count of available requests user can do from Blocko instance.
+     */
     public static Long checkRestApiRequest(Object object, String instance_id){
 
         Model_Product product = null;

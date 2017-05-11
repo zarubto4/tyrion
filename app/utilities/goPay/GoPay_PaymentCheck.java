@@ -17,18 +17,32 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Class is used to check GoPay payments when notification is received.
+ */
 public class GoPay_PaymentCheck {
 
     // Logger
     private static final Class_Logger terminal_logger = new Class_Logger(GoPay_PaymentCheck.class);
 
-    private static List<Long> payments = new ArrayList<>(); // Tady se hromadí id plateb, které je potřeba zkontrolovat
+    /**
+     * List of ids of payments that needs to be checked.
+     * This is the queue.
+     */
+    private static List<Long> payments = new ArrayList<>();
 
+    /**
+     * Method starts the concurrent thread.
+     */
     public static void startPaymentCheckThread(){
         terminal_logger.info("startPaymentCheckThread: starting");
         if(!check_payment_thread.isAlive()) check_payment_thread.start();
     }
 
+    /**
+     * Method adds payment to the queue and interrupts the thread if it is needed
+     * @param payment Long id of payment (invoice.gopay_id)
+     */
     public static void addToQueue(Long payment){
 
         terminal_logger.info("addToQueue: adding payment to queue");
@@ -41,6 +55,9 @@ public class GoPay_PaymentCheck {
         }
     }
 
+    /**
+     * Thread with an infinite loop inside. The thread goes to sleep when there is no payment to check.
+     */
     private static Thread check_payment_thread = new Thread(){
 
         @Override
@@ -73,6 +90,11 @@ public class GoPay_PaymentCheck {
         }
     };
 
+    /**
+     * Method gets the payment from GoPay and checks its status.
+     * Adds credit to a product if it is paid and fire Fakturoid event "pay_proforma".
+     * @param id Id of the given payment.
+     */
     private static void checkPayment(Long id) {
         try {
 
@@ -118,8 +140,7 @@ public class GoPay_PaymentCheck {
 
                     if (response.getStatus() == 200) {
                         final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(result);
-                        if (form.hasErrors())
-                            throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
+                        if (form.hasErrors()) throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
                         GoPay_Result help = form.get();
 
                         switch (help.state) {
@@ -231,7 +252,9 @@ public class GoPay_PaymentCheck {
 
                 invoice.notificationPaymentFail();
 
-                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice, "We were unable to take money from your credit card. Please check your payment credentials or contact our support if anything is unclear. You can also pay this invoice manually through your Byzance account.");
+                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice, "We were unable to take money from your credit card. " +
+                        "Please check your payment credentials or contact our support if anything is unclear. " +
+                        "You can also pay this invoice manually through your Byzance account.");
             }
         } catch (Exception e){
 

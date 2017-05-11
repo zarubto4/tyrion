@@ -26,6 +26,10 @@ import utilities.swagger.documentationClass.Swagger_Fakturoid_Callback;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * This class is used to interact with Fakturoid or sending emails with invoices.
+ * (Creating invoices and subjects or callbacks from Fakturoid.)
+ */
 public class Utilities_Fakturoid_Controller extends Controller {
 
     // Logger
@@ -33,6 +37,12 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################
 
+    /**
+     * RestApi callback notification from Fakturoid is received here.
+     * Invoice is passed to Fakturoid_InvoiceCheck.class if the status is paid,
+     * so it could be checked and transformed to a tax document.
+     * @return Result ok is returned every time, errors are only logged.
+     */
     @BodyParser.Of(BodyParser.Json.class)
     public Result fakturoid_callback(){
         try {
@@ -83,6 +93,13 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
 // PRIVATE EXECUTIVE METHODS ###########################################################################################
 
+    /**
+     * Method creates object in Fakturoid and saves provided info into model invoice.
+     * If it is a first invoice, that means the product owner is not registered in Fakturoid,
+     * method tries to create subject in Fakturoid.
+     * @param invoice Model invoice that needs to be synchronized to Fakturoid.
+     * @return invoice with details from Fakturoid or null if error occur.
+     */
     public static Model_Invoice create_proforma(Model_Invoice invoice){
         try {
 
@@ -97,7 +114,6 @@ public class Utilities_Fakturoid_Controller extends Controller {
             if (invoice.product.fakturoid_subject_id == null) {
 
                 terminal_logger.debug("create_proforma:: Client is not registered in Fakturoid");
-                // Ověřím zda tam je - a jestli ano - tak ho jen vytvořím v lokální DB
 
                 // Pokud ne tak ho vytvořím
                 invoice.product.fakturoid_subject_id = create_subject(invoice.product.payment_details);
@@ -183,6 +199,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
         return null;
     }
 
+    @Deprecated
     public static Model_Invoice create_paid_invoice(Model_Invoice invoice){
         try {
 
@@ -277,10 +294,15 @@ public class Utilities_Fakturoid_Controller extends Controller {
         return invoice;
     }
 
+    /**
+     * Method tries to download the PDF file from Fakturoid and generates an email with the invoice as attachment.
+     * @param invoice Model invoice that is being sent.
+     * @param mail String mail that the invoice is sent to. If null default invoice_email from payment_details is used.
+     */
     public static void sendInvoiceEmail(Model_Invoice invoice, String mail){
         try {
 
-            terminal_logger.debug("sendInvoiceEmail:: Trying send PDF Invoice to User Email");
+            terminal_logger.debug("sendInvoiceEmail: Trying send PDF Invoice to User Email");
 
             byte[] body = download_PDF_invoice("invoice", invoice);
 
@@ -291,7 +313,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
             if (mail == null) mail = invoice.getProduct().payment_details.invoice_email;
 
-            terminal_logger.debug("sendInvoiceEmail:: PDF with invoice was successfully downloaded from Fakturoid");
+            terminal_logger.debug("sendInvoiceEmail: PDF with invoice was successfully downloaded from Fakturoid");
 
             String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
@@ -303,13 +325,18 @@ public class Utilities_Fakturoid_Controller extends Controller {
                     .attachmentPDF(invoice.invoice_number + ".pdf", body)
                     .send(mail, "Invoice " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)]);
 
-                terminal_logger.debug("sendInvoiceEmail:: Email was successfully sent");
+                terminal_logger.debug("sendInvoiceEmail: Email was successfully sent");
 
         }catch (Exception e){
             terminal_logger.internalServerError("sendInvoiceEmail:", e);
         }
     }
 
+    /**
+     * Method is used to send a reminder email, that some problem has happened during payment for his product.
+     * @param invoice Model invoice that is being sent.
+     * @param message String contents of the email.
+     */
     public static void sendInvoiceReminderEmail(Model_Invoice invoice, String message){
         try{
 
@@ -334,6 +361,11 @@ public class Utilities_Fakturoid_Controller extends Controller {
         }
     }
 
+    /**
+     * Method creates subject in Fakturoid. Tries 5 times to get the result.
+     * @param details Model PaymentDetails with info about the customer.
+     * @return String id of the subject from Fakturoid. Null if some error occurs.
+     */
     public static String create_subject(Model_PaymentDetails details){
         try {
 
@@ -360,6 +392,8 @@ public class Utilities_Fakturoid_Controller extends Controller {
                 request.put("name", details.full_name);
             }
 
+            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
             for (int trial = 5; trial > 0; trial--) {
 
                 WSResponse response;
@@ -368,7 +402,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
                 try {
 
-                    F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.Fakturoid_url + "/subjects.json")
+                    F.Promise<WSResponse> responsePromise = ws.url(Server.Fakturoid_url + "/subjects.json")
                             .setAuth(Server.Fakturoid_secret_combo)
                             .setContentType("application/json")
                             .setHeader("User-Agent", Server.Fakturoid_user_agent)
@@ -429,6 +463,11 @@ public class Utilities_Fakturoid_Controller extends Controller {
         return null;
     }
 
+    /**
+     * Updates subject info in Fakturoid.
+     * @param details Updated model PaymentDetails.
+     * @return Boolean true if it succeeded or false if it failed.
+     */
     public static boolean update_subject(Model_PaymentDetails details){
         try {
 
@@ -597,6 +636,11 @@ public class Utilities_Fakturoid_Controller extends Controller {
         }
     }
 
+    /**
+     * Method is used to fire specific events in Fakturoid. (e.g. "pay_proforma")
+     * @param url String url action to perform.
+     * @return Boolean true if it succeeded or false if it failed.
+     */
     public static boolean fakturoid_post (String url){
         // Slouží ke změnám faktury - například na změnu stavu na "zaplaceno"
         terminal_logger.debug("Fakturoid_Controller: fakturoid_post: URL: " + Server.Fakturoid_url + url);
@@ -716,10 +760,15 @@ public class Utilities_Fakturoid_Controller extends Controller {
         return false;
     }
 
+    /**
+     * Method gets the PDF from Fakturoid.
+     * If the invoice is just created there might be some latency and PDF creation could be delayed.
+     * So the method will try to get the invoice 3 times with 2,5s interval before it gives up.
+     * @param type String type of a document. ("proforma", "invoice")
+     * @param invoice Given model invoice to get the PDF for.
+     * @return Byte array represented PDF file.
+     */
     public static byte[] download_PDF_invoice(String type, Model_Invoice invoice){
-
-            // Tuto metodu volám když ve fakturoidu pomocí API vytvořím fakturu.
-            // U nich může dojít k latenci serveru a zpoždění vytvoření faktury - proto je zde while - který usíná na 2,5s a dává tomu 3x šanci než se rozhodne to zahodit úplně.
 
             int terminator = 3;
             while (terminator >= 0) {

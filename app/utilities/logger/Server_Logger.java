@@ -22,8 +22,10 @@ import play.mvc.Result;
 import play.mvc.Results;
 import play.twirl.api.Html;
 import utilities.Server;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.helps_objects.Interface_Server_Logger;
 import utilities.response.GlobalResult;
+import utilities.slack.Slack;
 import views.html.loggy;
 import views.html.super_general.main;
 
@@ -242,11 +244,18 @@ public class Server_Logger extends Controller {
 
 /* SERVICES ---------------------------------------------------------------------------------------------------*/
 
+    /**
+     * Saves error to database and sends it to Slack channel #servers if mode is not "developer".
+     * @param id Identifier of model error
+     * @param summary String title of error
+     * @param description String details of error
+     */
     private static void error(String id, String summary, String description) {
 
         Model_LoggyError error = new Model_LoggyError(id, summary, description); // zapíšu do databáze
         error.save();
 
+        if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post(error);
     }
 
     // Vracím počet zaznamenaných bugů v souboru

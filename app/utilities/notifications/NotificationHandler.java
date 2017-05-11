@@ -31,18 +31,18 @@ public class NotificationHandler {
     public static List<Model_Notification> notifications = new ArrayList<>();
 
     public static void startNotificationThread(){
-        terminal_logger.trace("NotificationHandler:: startNotificationThread:_ starting");
+        terminal_logger.trace("startNotificationThread: starting");
         if(!send_notification_thread.isAlive()) send_notification_thread.start();
     }
 
     public static void addToQueue(Model_Notification notification){
 
-        terminal_logger.debug("NotificationHandler:: addToQueue:: adding notification to queue");
+        terminal_logger.debug("addToQueue: adding notification to queue");
 
         notifications.add(notification);
 
         if(send_notification_thread.getState() == Thread.State.TIMED_WAITING) {
-            terminal_logger.trace("NotificationHandler:: addToQueue:: thread is sleeping, waiting for interruption!");
+            terminal_logger.trace("addToQueue: thread is sleeping, waiting for interruption!");
             send_notification_thread.interrupt();
         }
     }
@@ -53,14 +53,14 @@ public class NotificationHandler {
         public void run() {
 
 
-            terminal_logger.trace("NotificationHandler:: send_notification_thread:: concurrent thread started on {}", new Date()) ;
+            terminal_logger.trace("send_notification_thread: concurrent thread started on {}", new Date()) ;
 
             while(true){
                 try{
 
                     if(!notifications.isEmpty()) {
 
-                        terminal_logger.debug("Beru notifikaci z Listku:: Počet notifikací v listu je:: " + notifications.size());
+                        terminal_logger.debug("send_notification_thread: {} notifications to send", notifications.size());
 
                         Model_Notification notification = notifications.get(0);
 
@@ -68,30 +68,25 @@ public class NotificationHandler {
 
                         notifications.remove( notification );
 
-                        terminal_logger.debug("Beru notifikaci z Listku:: Smazal jsem odeslanou  notifikací z listu a teď jich je:: " + notifications.size());
-
-
                     } else {
 
-                        terminal_logger.trace("NotificationHandler:: send_notification_thread:: no notifications, thread is going to sleep");
+                        terminal_logger.trace("send_notification_thread:: no notifications, thread is going to sleep");
 
                         sleep(500000000);
                     }
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    terminal_logger.internalServerError("NotificationHandler:: send_notification_thread: ", e);
+                    terminal_logger.internalServerError("send_notification_thread: ", e);
                 }
             }
         }
     };
 
     private static void sendNotification(Model_Notification notification){
-
         try {
 
-
-            terminal_logger.trace("NotificationHandler:: sendNotification:: sending notification");
+            terminal_logger.trace("sendNotification:: sending notification");
 
             ObjectNode message = Json.newObject();
             message.put("messageType", Model_Notification.messageType);
@@ -107,7 +102,7 @@ public class NotificationHandler {
             message.put("created", notification.created.getTime());
             message.set("buttons", Json.toJson(notification.buttons()) );
 
-            terminal_logger.trace("NotificationHandler:: sendNotification:: sending notification");
+            terminal_logger.trace("sendNotification:: sending notification");
 
             terminal_logger.debug("  Počet příjemců je " + notification.list_of_ids_receivers.size());
 
@@ -120,31 +115,22 @@ public class NotificationHandler {
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
                     if ((notification.notification_importance != Enum_Notification_importance.low) && (notification.id == null)) {
 
-
-
                         notification.person = Model_Person.get_byId(person_id); // Get Person Model from Cache
                         notification.save_object();
 
                         message.put("id", notification.id);
                         terminal_logger.debug("      Notifikaci has own Notification ID:  " +notification.id);
 
-                        try {
-                            // TODO Lexa - co jsi touhle čístí kodu chtěl říci??? Tohle by tu vůbec být nemělo - ale mělo by se to zařídit na jiném místě v kodu
-                            if ((!notification.buttons().isEmpty()) && (notification.buttons().get(0).action == Enum_Notification_action.accept_project_invitation)) {
-                                Model_Invitation invitation = Model_Invitation.find.byId(notification.buttons().get(0).payload);
-                                invitation.notification_id = notification.id;
-                                invitation.update();
-                            }
-                        } catch (Exception e) {
-                            terminal_logger.internalServerError("NotificationHandler:: sendNotification:: Error:: ", e);
-                        }
-
                     }else {
                         if(notification.id == null) {
+
+                            // TODO Tomáš - není zavádějící přidávat to JSONu id notifikace, když je to nesmyslná hodnota? Když se notifikace neuloží do databáze, tak není nutné znát id.
                             message.put("id", UUID.randomUUID().toString());
-                            terminal_logger.debug("      Notifikation has not own id and its not set for save ID:" +  message.get("id").asText());
+                            terminal_logger.debug("      Notification has not own id and its not set for save ID:" +  message.get("id").asText());
                         }else {
-                            System.out.println("      Notifikation has own id and its not set for save ID: " +  notification.id);
+                            System.out.println("      Notification has own id and its not set for save ID: " +  notification.id);
+
+                            // TODO proč 2x?
                             message.put("id", notification.id);
                             message.put("notification_id", notification.id);
                         }
@@ -157,12 +143,12 @@ public class NotificationHandler {
                     }
 
                 } catch (NullPointerException e) {
-                    terminal_logger.error("NotificationHandler:: SendNotification inside for void Error:: ", e);
+                    terminal_logger.internalServerError("sendNotification:", e);
                 }
             }
 
         }catch (Exception e){
-            terminal_logger.error("NotificationHandler:: SendNotification void Error: ", e);
+            terminal_logger.internalServerError("sendNotification:", e);
         }
     }
 }

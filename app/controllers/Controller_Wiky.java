@@ -4,8 +4,8 @@ import io.swagger.annotations.Api;
 import models.Model_Product;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.financial.FinancialPermission;
 import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
 
 import static utilities.scheduler.jobs.Job_SpendingCredit.spend;
@@ -36,13 +36,11 @@ public class Controller_Wiky extends Controller {
     public Result test2(){
         try {
 
-            Model_Product product = Model_Product.find.all().get(0);
-
-            return ok(FinancialPermission.checkRestApiRequest(product, "HAHA-fake_value").toString());
+            return ok();
 
         }catch (Exception e){
             e.printStackTrace();
-            return badRequest();
+            return Server_Logger.result_internalServerError(e, request());
         }
 
     }

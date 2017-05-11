@@ -16,18 +16,31 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class is used to check status of invoices from Fakturoid.
+ */
 public class Fakturoid_InvoiceCheck {
 
     // Logger
     private static final Class_Logger terminal_logger = new Class_Logger(Fakturoid_InvoiceCheck.class);
 
-    private static List<Model_Invoice> invoices = new ArrayList<>(); // Tady se hromadí id faktur, které je potřeba zkontrolovat
+    /**
+     * List of invoices, that needs to be checked. This is the queue
+     */
+    private static List<Model_Invoice> invoices = new ArrayList<>();
 
+    /**
+     * Method starts the concurrent thread.
+     */
     public static void startInvoiceCheckThread(){
         terminal_logger.info("Fakturoid_InvoiceCheck:: startInvoiceCheckThread: starting");
         if(!check_invoice_thread.isAlive()) check_invoice_thread.start();
     }
 
+    /**
+     * Method adds invoice to queue and interrupts thread if it is sleeping.
+     * @param invoice Model invoice that needs to be checked
+     */
     public static void addToQueue(Model_Invoice invoice){
 
         terminal_logger.info("Fakturoid_InvoiceCheck:: addToQueue: adding payment to queue");
@@ -40,6 +53,9 @@ public class Fakturoid_InvoiceCheck {
         }
     }
 
+    /**
+     * Thread with infinite loop inside. If there are not any invoices in the queue, thread goes to sleep.
+     */
     private static Thread check_invoice_thread = new Thread(){
 
         @Override
@@ -72,6 +88,13 @@ public class Fakturoid_InvoiceCheck {
         }
     };
 
+    /**
+     * Method gets the invoice from Fakturoid and checks its status.
+     * If it is paid this method transforms it to a tax document (non-proforma).
+     * If payment method is "bank_transfer" the appropriate amount of credit will be added to product.
+     * Method tries 5 times to get the result.
+     * @param invoice Given invoice that is being checked.
+     */
     private static void checkInvoice(Model_Invoice invoice) {
         try {
 

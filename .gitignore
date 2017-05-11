@@ -9,3 +9,5 @@ project.target
 project.project
 project/project
 
+/DocumentDB.Spatial.Sql.dll
+/Microsoft.Azure.Documents.ServiceInterop.dll

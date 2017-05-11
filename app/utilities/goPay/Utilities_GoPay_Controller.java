@@ -31,17 +31,33 @@ import javax.validation.ValidationException;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Class is used to communicate with GoPay,
+ * contains operations like single payment,
+ * on demand payment, refund payment etc.
+ */
 public class Utilities_GoPay_Controller extends Controller {
 
     // Logger
     private static final Class_Logger terminal_logger = new Class_Logger(Utilities_GoPay_Controller.class);
 
-    private static String token;        // GoPay Connector - hash token sloužící k volání API k bráně GoPay
-    private static Date last_refresh;   // čas, který hodnotí obnovu bezpečnostního tokenu - jeho živostnost je totiž 30 minut a šetří se tím dotazy!
+    /**
+     * Hash token used to authenticate the application in GoPay, token has TTL 30 minutes.
+     */
+    private static String token;
+
+    /**
+     * Date when the token was last updated, so it is not needed to ask for new token for every request.
+     */
+    private static Date last_refresh;
 
 // PUBLIC METHODS ######################################################################################################
 
-    // Získání Tokenu od goPay - Ten se přidává do všech hlaviček
+    /**
+     * Method serves to retrieve the token from GoPay if the local token is expired else it returns local static token.
+     * Method tries 5 times to get the token.
+     * @return String token from GoPay or null if error occur.
+     */
     public static String getToken(){
         try {
 
@@ -100,9 +116,17 @@ public class Utilities_GoPay_Controller extends Controller {
         }
     }
 
+    /**
+     * Method is used to provide payment through GoPay.
+     * It provides a single payment or creates recurrence if user allowed on demand payments.
+     * Important field, that is returned in invoice, is "gw_url" where user can access the payment gate.
+     * The method will try 5 times to get the result.
+     * @param payment_description String name of the payment.
+     * @param product Model product the payment is for.
+     * @param invoice Related model invoice where details are stored.
+     * @return Related invoice with details of payment.
+     */
     public static Model_Invoice singlePayment(String payment_description , Model_Product product, Model_Invoice invoice){
-
-        //Rozhodnutí jestli jendnorázové nebo měsíční!
 
         terminal_logger.debug("singlePayment: Creating new payment");
 
@@ -157,7 +181,6 @@ public class Utilities_GoPay_Controller extends Controller {
         payment.lang                = GoPay_Payer.Lang.EN;
 
         String local_token = getToken();
-
         if(local_token == null) throw new NullPointerException("Token for API in GoPay_Controller is null");
 
         terminal_logger.debug("singlePayment: Sending Request for new Payment to GoPay with object: " + Json.toJson(payment).toString());
@@ -217,6 +240,12 @@ public class Utilities_GoPay_Controller extends Controller {
         return invoice;
     }
 
+    /**
+     * This method is used to automatically take money from credit card.
+     * The method tries 5 times to get the result.
+     * @param invoice Model invoice related to payment.
+     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
+     */
     public static void onDemandPayment(Model_Invoice invoice) throws Exception{
 
         terminal_logger.debug("onDemandPayment: Starting with procedure ON_DEMAND - taking money from Credit-Card");
@@ -321,6 +350,12 @@ public class Utilities_GoPay_Controller extends Controller {
         }
     }
 
+    /**
+     * This method serves to cancel on demand payment if user asks for it.
+     * The method will try 5 times to get the result.
+     * @param product Model product the on demand payment is terminated for.
+     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
+     */
     public static void terminateOnDemand(Model_Product product) throws Exception{
 
         // Token
@@ -374,6 +409,13 @@ public class Utilities_GoPay_Controller extends Controller {
         }
     }
 
+    /**
+     * This method requests the payment refund on GoPay.
+     * The method will try 5 times to get the result.
+     * @param invoice Model invoice to refund.
+     * @param amount Long amount equal or lesser than full amount in invoice.
+     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
+     */
     private static void refundPayment(Model_Invoice invoice, Long amount) throws Exception{
 
         // Token
@@ -429,6 +471,12 @@ public class Utilities_GoPay_Controller extends Controller {
 
 // PUBLIC controllers METHOD ###########################################################################################
 
+    /**
+     * This method serves for RestApi call from Tyrion administration to refund a payment.
+     * Only user with admin permissions can do this.
+     * @param invoice_id String id of the invoice that is being refunded.
+     * @return Result ok if request was successful.
+     */
     @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result payment_refund(String invoice_id){
@@ -456,6 +504,12 @@ public class Utilities_GoPay_Controller extends Controller {
         }
     }
 
+    /**
+     * Endpoint for RestApi notification from GoPay.
+     * Adds payment to queue in GoPay_PaymentCheck.class.
+     * @param id Id of a payment that needs to be checked.
+     * @return Result ok every time.
+     */
     public Result payment_notification(Long id){
         try {
 
@@ -469,6 +523,12 @@ public class Utilities_GoPay_Controller extends Controller {
         }
     }
 
+    /**
+     * User is returned here if payment is complete.
+     * Adds payment to queue in GoPay_PaymentCheck.class.
+     * @param id Id of a payment that needs to be checked.
+     * @return Result redirect to Becki every time.
+     */
     public Result payment_return(Long id){
         try {
 
