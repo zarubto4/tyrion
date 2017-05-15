@@ -3,10 +3,7 @@ package utilities;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
-import com.microsoft.azure.documentdb.ConnectionPolicy;
-import com.microsoft.azure.documentdb.ConsistencyLevel;
-import com.microsoft.azure.documentdb.Database;
-import com.microsoft.azure.documentdb.DocumentClient;
+import com.microsoft.azure.documentdb.*;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import models.*;
@@ -14,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
+import utilities.document_db.DocumentDB;
 import utilities.fakturoid.Fakturoid_InvoiceCheck;
 import utilities.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
@@ -43,6 +41,8 @@ public class Server {
     public static DocumentClient documentClient;
     public static Database no_sql_database;
     public static String documentDB_Path;
+
+    public static DocumentCollection online_status_collection = null;
 
     public static String tyrion_serverAddress;
     public static String tyrion_webSocketAddress;

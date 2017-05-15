@@ -15,7 +15,6 @@ public class DocumentDB {
 
     // Online status - variables
     private static final String ONLINE_STATUS_COLLECTION = "ONLINE_STATUS";
-    public static DocumentCollection online_status_collection = null;
 
     public static void set_no_SQL_collection(){
         set_online_status_collection();
@@ -45,7 +44,7 @@ public class DocumentDB {
             // Zkusím najít a pak vrátit Collekci
             if(!collections.isEmpty()) {
 
-                online_status_collection = collections.get(0);
+                Server.online_status_collection = collections.get(0);
                 terminal_logger.debug("DocumentDB:: set_collection:: Online Status Collection:: Collection has already been created");
 
             }else {
@@ -58,7 +57,7 @@ public class DocumentDB {
 
                 Server.documentClient.createCollection(Server.documentDB_Path, collection, request_options_online_status);
 
-                online_status_collection = collection;
+                Server.online_status_collection = collection;
 
                 terminal_logger.debug("DocumentDB:: set_collection:: Online Status Collection:: Collection Successfully created");
             }

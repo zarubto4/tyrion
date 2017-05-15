@@ -61,7 +61,6 @@ public class Model_TypeOfBoard extends Model {
 
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name       (){ return compiler_target_name;}
 
-
     @JsonProperty @ApiModelProperty(required = true)
     public String picture_link(){
 

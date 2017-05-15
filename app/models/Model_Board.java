@@ -602,7 +602,7 @@ public class Model_Board extends Model {
 
             if(report.error != null){
 
-                terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: " , board.id, report.errorCode, report.error);
+                terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , board.id, report.errorCode, report.error);
 
                 if(report.errorCode == ErrorCode.YODA_IS_OFFLINE.error_code() || report.errorCode == ErrorCode.DEVICE_IS_NOT_ONLINE.error_code()){
                     terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} is offline" , board.id);
@@ -1114,7 +1114,7 @@ public class Model_Board extends Model {
     public void make_log_connect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }
@@ -1124,7 +1124,7 @@ public class Model_Board extends Model {
     public void make_log_disconnect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }

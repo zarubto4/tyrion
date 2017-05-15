@@ -263,6 +263,7 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_start(){
         try {
 
+
             terminal_logger.debug("notification_update_procedure_start :: operation ");
 
             Model_Notification notification = new Model_Notification();
@@ -276,12 +277,19 @@ public class Model_ActualizationProcedure extends Model {
 
                 if(updates.size() == 1){
 
-                    notification.setText(new Notification_Text().setText(" for Board "))
+                    if(updates.get(0).firmware_type == Enum_Firmware_type.FIRMWARE)
+                        notification.setText(new Notification_Text().setText(" for Board "))
+                                    .setObject(updates.get(0).board)
+                                    .setText( new Notification_Text().setText(" from Code Editor with Program "))
+                                    .setObject(updates.get(0).c_program_version_for_update.c_program)
+                                    .setText( new Notification_Text().setText(" version "))
+                                    .setObject(updates.get(0).c_program_version_for_update)
+                                    .setText( new Notification_Text().setText("."));
+
+                    else  if(updates.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER)
+                        notification.setText(new Notification_Text().setText(" for Board "))
                                 .setObject(updates.get(0).board)
-                                .setText( new Notification_Text().setText(" from Code Editor with Program "))
-                                .setObject(updates.get(0).c_program_version_for_update.c_program)
-                                .setText( new Notification_Text().setText(" version "))
-                                .setObject(updates.get(0).c_program_version_for_update)
+                                .setText( new Notification_Text().setText(" Bootloader version " + updates.get(0).bootloader.version_identificator ))
                                 .setText( new Notification_Text().setText("."));
 
                 }

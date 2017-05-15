@@ -1093,7 +1093,7 @@ public class Model_HomerInstance extends Model {
 
             if(!server_is_online()) throw new InterruptedException();
 
-            ObjectNode node = send_to_instance().write_with_confirmation(new WS_Message_Get_summary_information().make_request(this), 1000 * 5, 0, 1);
+            ObjectNode node = send_to_instance().write_with_confirmation(new WS_Message_Get_summary_information().make_request(this), 1000 * 30, 0, 3);
 
             final Form<WS_Message_Get_summary_information> form = Form.form(WS_Message_Get_summary_information.class).bind(node);
             if (form.hasErrors()) {terminal_logger.error("WS_Get_summary_information: Error:: Some value missing:: " + form.errorsAsJson(new Lang(new play.api.i18n.Lang("en", "US"))).toString());throw new Exception("Invalid Json data format");}

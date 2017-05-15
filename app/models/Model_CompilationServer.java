@@ -197,7 +197,7 @@ public class Model_CompilationServer extends Model {
     public void make_log_connect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request(this.unique_identificator), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }
@@ -207,7 +207,7 @@ public class Model_CompilationServer extends Model {
     public void make_log_disconnect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request(this.unique_identificator), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }

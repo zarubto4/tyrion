@@ -1658,7 +1658,34 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "Update bootloader on device list", hidden = true)
+    @ApiOperation(value = "update Bootloader",
+            hidden =  true,
+            tags = { "Bootloader"},
+            notes = "List of Hardware Id for update on latest bootloader version for specifict type of hardware",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Bootloader_Update",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful created",      response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result bootLoader_manualUpdate(){
         try {
 

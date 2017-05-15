@@ -125,7 +125,7 @@ public class _Model_ExampleModelName extends Model{
     public void make_log_to_non_sql_database(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }

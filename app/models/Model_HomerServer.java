@@ -72,6 +72,7 @@ public class Model_HomerServer extends Model{
                                                                 public Enum_Log_level log_level;
 
 
+
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="connected_server", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_Board> latest_know_connected_board = new ArrayList<>();
@@ -588,7 +589,7 @@ public class Model_HomerServer extends Model{
     public void make_log_connect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_HomerServer_Connect.make_request(this.unique_identificator), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Connect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }
@@ -598,7 +599,7 @@ public class Model_HomerServer extends Model{
     public void make_log_disconnect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(DocumentDB.online_status_collection.getSelfLink(), DM_HomerServer_Disconnect.make_request(this.unique_identificator), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Disconnect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }

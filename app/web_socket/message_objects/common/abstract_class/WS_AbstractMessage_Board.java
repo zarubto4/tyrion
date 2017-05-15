@@ -25,7 +25,7 @@ public abstract class WS_AbstractMessage_Board {
     public int count;
 
     public String  status = null;
-    public String  error  = null;
-    public Integer errorCode  = null;
+    public String  error;
+    public int errorCode;
 
 }
