@@ -1659,8 +1659,7 @@ public class Controller_Board extends Controller {
     }
 
     @ApiOperation(value = "update Bootloader",
-            hidden =  true,
-            tags = { "Bootloader"},
+            tags = {"Bootloader"},
             notes = "List of Hardware Id for update on latest bootloader version for specifict type of hardware",
             produces = "application/json",
             protocols = "https",
