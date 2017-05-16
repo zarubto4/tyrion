@@ -118,8 +118,8 @@ public class CustomScheduler {
                 );
 
                 // 5) Kontrola a fakturace klientů na měsíční bázi
-                terminal_logger.debug("start: Scheduling new Job - Sending_Invoices");
-                scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("sending_invoices") ).build(),
+                terminal_logger.debug("start: Scheduling new Job - Spending Credit");
+                scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("spending_credit") ).build(),
                         newTrigger().withIdentity(every_five_minute_key).startNow()
                                 .withSchedule(cronSchedule("10 0/5 * * * ?"))// Spuštění každých 5 minut
                                 .build()

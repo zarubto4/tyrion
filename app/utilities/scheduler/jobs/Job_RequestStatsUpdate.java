@@ -11,6 +11,9 @@ import web_socket.message_objects.common.WS_Send_message;
 import java.util.Date;
 import java.util.Map.Entry;
 
+/**
+ * Updates request records in DB
+ */
 public class Job_RequestStatsUpdate implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -23,18 +26,21 @@ public class Job_RequestStatsUpdate implements Job {
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        terminal_logger.info("execute:: Executing Job_RequestStatsUpdate");
+        terminal_logger.info("execute: Executing Job_RequestStatsUpdate");
 
         if(!stats_update_thread.isAlive()) stats_update_thread.start();
     }
 
+    /**
+     * Thread empties request HashMap in RequestCounter.class and uploads it to DB
+     */
     private Thread stats_update_thread = new Thread() {
 
         @Override
         public void run() {
-
             try {
-                terminal_logger.trace("stats_update_thread:: concurrent thread started on {}", new Date());
+
+                terminal_logger.trace("stats_update_thread: concurrent thread started on {}", new Date());
 
                 if (!RequestCounter.requests.isEmpty()) {
 
@@ -60,15 +66,15 @@ public class Job_RequestStatsUpdate implements Job {
 
                     RequestCounter.requests.clear();
 
-                    terminal_logger.trace("stats_update_thread:: logs successfully updated");
+                    terminal_logger.trace("stats_update_thread: logs successfully updated");
                 } else {
-                    terminal_logger.trace("stats_update_thread:: no requests");
+                    terminal_logger.trace("stats_update_thread: no requests");
                 }
             } catch (Exception e) {
-                terminal_logger.internalServerError("stats_update_thread:: ", e);
+                terminal_logger.internalServerError("stats_update_thread: ", e);
             }
 
-            terminal_logger.trace("stats_update_thread:: thread stopped on {}", new Date());
+            terminal_logger.trace("stats_update_thread: thread stopped on {}", new Date());
         }
     };
 }

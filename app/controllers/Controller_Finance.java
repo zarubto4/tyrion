@@ -9,8 +9,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.*;
-import utilities.fakturoid.Utilities_Fakturoid_Controller;
-import utilities.goPay.Utilities_GoPay_Controller;
+import utilities.financial.fakturoid.Fakturoid_Controller;
+import utilities.financial.goPay.GoPay_Controller;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -976,11 +976,11 @@ public class Controller_Finance extends Controller {
             terminal_logger.debug("product_create:: Saving invoice");
 
             terminal_logger.debug("product_create::  Creating Proforma in fakturoid");
-            invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
+            invoice = Fakturoid_Controller.create_proforma(invoice);
             if (invoice == null) return GlobalResult.result_BadRequest("Failed to make an invoice, check your provided payment information");
             terminal_logger.debug("product_create::  Proforma done");
 
-            invoice = Utilities_GoPay_Controller.singlePayment("First Payment", product, invoice);
+            invoice = GoPay_Controller.singlePayment("First Payment", product, invoice);
 
             return Controller.ok(Json.toJson(invoice));
 
@@ -1207,7 +1207,7 @@ public class Controller_Finance extends Controller {
 
             invoice.invoice_items.add(invoice_item);
 
-            invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
+            invoice = Fakturoid_Controller.create_proforma(invoice);
             if (invoice == null) return GlobalResult.result_BadRequest("Failed to make an invoice, check your provided payment information");
 
             switch (product.method){
@@ -1221,7 +1221,7 @@ public class Controller_Finance extends Controller {
 
                 case credit_card:{
 
-                    invoice = Utilities_GoPay_Controller.singlePayment("Credit upload payment", product, invoice);
+                    invoice = GoPay_Controller.singlePayment("Credit upload payment", product, invoice);
                     // TODO
 
                     break;
@@ -1353,13 +1353,13 @@ public class Controller_Finance extends Controller {
             if (payment_details.product.fakturoid_subject_id == null) {
 
 
-                payment_details.product.fakturoid_subject_id = Utilities_Fakturoid_Controller.create_subject(payment_details);
+                payment_details.product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
                 if (payment_details.product.fakturoid_subject_id == null) return GlobalResult.result_BadRequest("Unable to update your payment details, check provided information.");
 
                 payment_details.update();
             }
 
-            if (!Utilities_Fakturoid_Controller.update_subject(payment_details))
+            if (!Fakturoid_Controller.update_subject(payment_details))
                 return GlobalResult.result_BadRequest("Unable to update your payment details, check provided information.");
 
             // Vrácení objektu
@@ -1517,7 +1517,7 @@ public class Controller_Finance extends Controller {
             if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
             if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
 
-            Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, help.mail);
+            Fakturoid_Controller.sendInvoiceEmail(invoice, help.mail);
 
             return GlobalResult.result_ok();
 
@@ -1551,7 +1551,7 @@ public class Controller_Finance extends Controller {
             if( invoice.status.equals(Enum_Payment_status.paid)) return GlobalResult.result_BadRequest("Invoice is already paid");
 
             // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
-            invoice = Utilities_GoPay_Controller.singlePayment("First Payment", invoice.product, invoice);
+            invoice = GoPay_Controller.singlePayment("First Payment", invoice.product, invoice);
 
             // Vrácení ID s možností uhrazení
             return GlobalResult.result_ok(Json.toJson(invoice));
@@ -1588,7 +1588,7 @@ public class Controller_Finance extends Controller {
 
             if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
 
-            byte[] pdf_in_array = Utilities_Fakturoid_Controller.download_PDF_invoice(kind, invoice);
+            byte[] pdf_in_array = Fakturoid_Controller.download_PDF_invoice(kind, invoice);
 
             return GlobalResult.result_pdf_file(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
 
@@ -1606,7 +1606,7 @@ public class Controller_Finance extends Controller {
             if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
 
             if(!invoice.remind_permission()) return GlobalResult.forbidden_Permission();
-            Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
+            Fakturoid_Controller.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
 
             return GlobalResult.result_ok();
 

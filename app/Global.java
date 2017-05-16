@@ -14,6 +14,7 @@ import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.request_counter.RequestCounter;
 import utilities.scheduler.CustomScheduler;
+import utilities.slack.Slack;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -71,6 +72,7 @@ public class Global extends GlobalSettings {
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +"onStart: Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
            Server.setAdministrator();
 
+            if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion " + Server.server_mode.name() + " server started on " + new Date().toString() + ".");
 
        }catch (Exception e){
             System.out.println("");
@@ -119,6 +121,7 @@ public class Global extends GlobalSettings {
             }
         }
 
+        if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion " + Server.server_mode.name() + " server stopped on " + new Date().toString() + ".");
 
         System.err.println(Enum_Terminal_Color.ANSI_RED + " ");
         System.err.println(" ");
@@ -137,7 +140,6 @@ public class Global extends GlobalSettings {
         System.err.println("                                                                                                                           YM.   d9                                  ");
         System.err.println("                                                                                                                            YMMMM9                                   ");
         System.err.println("" + Enum_Terminal_Color.ANSI_RESET);
-
     }
 
 /* On Request   -----------------------------------------------------------------------------------------------------------*/

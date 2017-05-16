@@ -1,4 +1,4 @@
-package utilities.goPay.helps_objects;
+package utilities.financial.goPay.helps_objects;
 
 import play.data.validation.Constraints;
 

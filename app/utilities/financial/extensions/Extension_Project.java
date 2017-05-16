@@ -1,13 +1,13 @@
-package utilities.financial;
+package utilities.financial.extensions;
 
 import models.Model_ProductExtension.Config;
 import utilities.enums.Enum_ExtensionType;
 
-public class Extension_RestApi implements Extension {
+public class Extension_Project implements Extension {
 
-    public static final String name = Enum_ExtensionType.RestApi.name();
-    public static final String description = "This is an extension for REST API requests from Blocko.";
-    public static final Long price = (long) 100;
+    public static final String name = Enum_ExtensionType.Project.name();
+    public static final String description = "This is an extension for project.";
+    public static final Long price = (long) 200;
     public static final Integer count = 5;
 
     public Long getPrice(Config config) {
@@ -25,10 +25,6 @@ public class Extension_RestApi implements Extension {
 
     public Integer getDefaultCount() {
         return count;
-    }
-
-    public boolean isActive() {
-        return false;
     }
 
     public String getName() {

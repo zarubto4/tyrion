@@ -1,7 +1,6 @@
 package controllers;
 
 import com.avaje.ebean.Query;
-import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.Model_Notification;
 import play.data.Form;
@@ -14,6 +13,7 @@ import utilities.enums.Enum_Notification_state;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
+import utilities.notifications.NotificationActionHandler;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
@@ -25,15 +25,11 @@ import java.util.List;
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Notification extends Controller {
 
-  @Inject Controller_Project controllerProgramingPackage;
-
 // LOGGER ##############################################################################################################
 
   private static final Class_Logger terminal_logger = new Class_Logger(Controller_Notification.class);
 
-///###################################################################################################################*/
-
-    // Public REST-API (Zdokumentované ve SWAGGER)  #######################################################################
+// PUBLIC CONTROLLER METHODS ###########################################################################################
 
   @ApiOperation(value = "get latest notification",
           tags = {"Notifications"},
@@ -48,20 +44,19 @@ public class Controller_Notification extends Controller {
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Notification_List.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-          @ApiResponse(code = 500, message = "Server side Error")
+          @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Secured_API.class)
-  public Result get_notification_page(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number){
+  public Result notification_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number){
      try {
 
-        Query<Model_Notification> query =  Model_Notification.find.where().eq("person.id", Controller_Security.get_person().id).order().desc("created");
+        Query<Model_Notification> query =  Model_Notification.find.where().eq("person.id", Controller_Security.get_person_id()).order().desc("created");
 
         Swagger_Notification_List result = new Swagger_Notification_List(query, page_number);
 
         return GlobalResult.result_ok(Json.toJson(result));
 
      } catch (Exception e) {
-       terminal_logger.internalServerError(e);
        return Server_Logger.result_internalServerError(e, request());
      }
   }
@@ -78,13 +73,13 @@ public class Controller_Notification extends Controller {
   )
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Delete Successful",       response = Result_ok.class),
-          @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-          @ApiResponse(code = 500, message = "Server side Error")
+          @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
+          @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Secured_API.class)
-  public Result delete_notification(@ApiParam(value = "notification_id String path", required = true) String notification_id){
+  public Result notification_delete(@ApiParam(value = "notification_id String path", required = true) String notification_id){
     try {
 
       Model_Notification notification = Model_Notification.find.byId(notification_id);
@@ -120,16 +115,16 @@ public class Controller_Notification extends Controller {
   )
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Successfully marked as read", response = Result_ok.class),
-          @ApiResponse(code = 400, message = "Some Json value Missing",     response = Result_JsonValueMissing.class),
+          @ApiResponse(code = 400, message = "Invalid body",                response = Result_JsonValueMissing.class),
           @ApiResponse(code = 401, message = "Unauthorized request",        response = Result_Unauthorized.class),
-          @ApiResponse(code = 500, message = "Server side Error")
+          @ApiResponse(code = 500, message = "Server side Error",           response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Secured_API.class)
-  public Result mark_as_read_notification(){
+  public Result notification_read(){
     try {
 
       final Form<Swagger_Notification_Read> form = Form.form(Swagger_Notification_Read.class).bindFromRequest();
-      if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+      if(form.hasErrors()) return GlobalResult.formExcepting(form.errorsAsJson());
       Swagger_Notification_Read help = form.get();
 
       List<Model_Notification> notifications = Model_Notification.find.where().idIn(help.notification_id).findList();
@@ -159,13 +154,13 @@ public class Controller_Notification extends Controller {
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-          @ApiResponse(code = 500, message = "Server side Error")
+          @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Secured_API.class)
-  public Result get_unconfirmed_notifications(){
+  public Result notifications_getUnconfirmed(){
     try{
 
-      List<Model_Notification> notifications = Model_Notification.find.where().eq("person.id", Controller_Security.get_person().id).eq("notification_importance", Enum_Notification_importance.high).eq("confirmed", false).findList();
+      List<Model_Notification> notifications = Model_Notification.find.where().eq("person.id", Controller_Security.get_person_id()).eq("notification_importance", Enum_Notification_importance.high).eq("confirmed", false).findList();
       if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
 
       for (Model_Notification notification : notifications){
@@ -201,45 +196,44 @@ public class Controller_Notification extends Controller {
   )
   @ApiResponses(value = {
           @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-          @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-          @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
+          @ApiResponse(code = 400, message = "Invalid body",            response = Result_JsonValueMissing.class),
           @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-          @ApiResponse(code = 500, message = "Server side Error")
+          @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
+          @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Secured_API.class)
   public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id){
+      try{
 
-    final Form<Swagger_Notification_Confirm> form = Form.form(Swagger_Notification_Confirm.class).bindFromRequest();
-    if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-    Swagger_Notification_Confirm help = form.get();
+          final Form<Swagger_Notification_Confirm> form = Form.form(Swagger_Notification_Confirm.class).bindFromRequest();
+          if(form.hasErrors()) return GlobalResult.formExcepting(form.errorsAsJson());
+          Swagger_Notification_Confirm help = form.get();
 
-    try{
-      Model_Notification notification = Model_Notification.find.byId(notification_id);
-      if(notification == null) return GlobalResult.notFoundObject("Notification no longer exists");
+          Model_Notification notification = Model_Notification.find.byId(notification_id);
+          if(notification == null) return GlobalResult.notFoundObject("Notification no longer exists");
 
-      if (!notification.confirm_permission()) return GlobalResult.forbidden_Permission();
+          if (!notification.confirm_permission()) return GlobalResult.forbidden_Permission();
 
-      if (notification.confirmed) return GlobalResult.result_BadRequest("Notification is already confirmed");
+          if (notification.confirmed) return GlobalResult.result_BadRequest("Notification is already confirmed");
 
-      switch (help.action){
-        case "confirm_notification"       : {
-          notification.confirm();
-          return GlobalResult.result_ok("Notification confirmed");
-        }
-        case "accept_project_invitation"  : {
-          return controllerProgramingPackage.project_addParticipant(help.payload, true);
-        }
-        case "reject_project_invitation"  : {
-          return controllerProgramingPackage.project_addParticipant(help.payload, false);
-        }
-        default: return GlobalResult.result_BadRequest("Unknown action");
+          try {
+
+              NotificationActionHandler.perform(help.action, help.payload);
+
+              notification.confirm();
+
+              return GlobalResult.result_ok();
+
+          } catch (IllegalArgumentException e) {
+
+              terminal_logger.internalServerError("notification_confirm:", e);
+
+              return GlobalResult.result_BadRequest("Unknown action or provided info invalid");
+          }
+      } catch (Exception e){
+          return Server_Logger.result_internalServerError(e, request());
       }
-
-    }catch (Exception e){
-      return Server_Logger.result_internalServerError(e, request());
-    }
   }
-
 }

@@ -5,13 +5,17 @@ import models.Model_LoggyError;
 import play.api.Play;
 import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
+import utilities.Server;
 
 /**
  * Class is used to post messages to Byzance Slack Team Chat
  */
 public class Slack {
 
+    /**
+     * Posts an error to Byzance Slack, chanel #servers
+     * @param error Model error that is being posted.
+     */
     public static void post(Model_LoggyError error){
         try {
 
@@ -42,7 +46,32 @@ public class Slack {
             json.put("mrkdwn", true);
             //json.set("attachments", Json.toJson(attachments));
 
-            WSResponse response = ws.url("https://hooks.slack.com/services/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")
+            ws.url(Server.slack_webhook_url)
+                    .setRequestTimeout(10000)
+                    .post(json.toString())
+                    .get(10000);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Posts a message to Byzance Slack, chanel #servers
+     * @param message String message to post.
+     */
+    public static void post(String message){
+        try {
+
+            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
+            ObjectNode json = Json.newObject();
+            json.put("username", "Tyrion");
+            json.put("icon_emoji", ":tyrion:");
+            json.put("text", "*" + message + "*" );
+            json.put("mrkdwn", true);
+
+            ws.url(Server.slack_webhook_url)
                     .setRequestTimeout(10000)
                     .post(json.toString())
                     .get(10000);

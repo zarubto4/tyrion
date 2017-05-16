@@ -1,4 +1,4 @@
-package utilities.fakturoid;
+package utilities.financial.fakturoid;
 
 public class Fakturoid_ResponseInvoice {
 

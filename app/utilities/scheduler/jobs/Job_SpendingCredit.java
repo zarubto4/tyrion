@@ -10,14 +10,17 @@ import org.quartz.JobExecutionException;
 import utilities.enums.Enum_Currency;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_warning;
-import utilities.fakturoid.Utilities_Fakturoid_Controller;
-import utilities.goPay.Utilities_GoPay_Controller;
+import utilities.financial.fakturoid.Fakturoid_Controller;
+import utilities.financial.goPay.GoPay_Controller;
 import utilities.logger.Class_Logger;
 
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This is a job class that is used for spending credit of a product.
+ */
 public class Job_SpendingCredit implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -35,6 +38,11 @@ public class Job_SpendingCredit implements Job {
         if(!spend_credit_thread.isAlive()) spend_credit_thread.start();
     }
 
+    /**
+     * Thread that finds number of all products, that credit should be spent for.
+     * Product must be active, must have some extensions and must be older than 16h.
+     * Then gets products in paged list (25 for page) and passes them to method spend().
+     */
     private Thread spend_credit_thread = new Thread(){
 
         @Override
@@ -83,7 +91,9 @@ public class Job_SpendingCredit implements Job {
     };
 
     /**
-     * Vezmou se všechny připojené Extensions sečte se jejich cena a odečte se z účtu.
+     * This method takes all extensions of the product and sums up their prices.
+     * Then it subtracts the calculated credit. Based on business model decides what to do next.
+     * @param product Model product credit is spent for.
      */
     public static void spend(Model_Product product){
         try {
@@ -139,6 +149,16 @@ public class Job_SpendingCredit implements Job {
 
     }
 
+    /**
+     * Does appropriate action depending on how many days will credit suffice.
+     * If it is needed the method will create an invoice and sends it to the user or creates a payment.
+     * If the product has on_demand true, the method will try to take money from credit card.
+     * If the payment is not yet received, the method will send a warning to the user.
+     * Deactivates the product, if the user reaches negative limit.
+     * @param product Given product for spending.
+     * @param daily_spending Long amount of credit to spend.
+     * @param days Integer how many days will credit suffice.
+     */
     private static void spendCreditSaas(Model_Product product, Long daily_spending, int days){
 
         terminal_logger.debug("spendCreditSaas: daily_spending: {}, days: {}", daily_spending, days);
@@ -168,12 +188,12 @@ public class Job_SpendingCredit implements Job {
 
                 invoice.invoice_items.add(invoice_item);
 
-                invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
+                invoice = Fakturoid_Controller.create_proforma(invoice);
                 if (invoice == null) return;
 
                 invoice.notificationInvoiceNew();
 
-                Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
+                Fakturoid_Controller.sendInvoiceEmail(invoice, null);
 
                 return;
             }
@@ -191,7 +211,7 @@ public class Job_SpendingCredit implements Job {
 
                 invoice.notificationInvoiceReminder("You have reached negative credit limit. Your product is deactivated.");
 
-                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "We are sorry to inform you, that you have reached negative credit limit. Your services are no longer supported. We activate your product again, when we receive payment for your invoice.");
 
                 product.active = false;
@@ -207,7 +227,7 @@ public class Job_SpendingCredit implements Job {
 
                 invoice.notificationInvoiceReminder("You have reached zero credit balance. Your services will be supported for next 20 days.");
 
-                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "You have reached zero credit balance. Your services will be supported for next 20 days. If we do not receive your payment till then, we will have to deactivate your services.");
 
                 return;
@@ -221,7 +241,7 @@ public class Job_SpendingCredit implements Job {
 
                 invoice.notificationInvoiceReminder("You will reach zero credit balance soon.");
 
-                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "We did not receive your payment. You will reach zero credit balance soon.");
 
             }
@@ -247,31 +267,31 @@ public class Job_SpendingCredit implements Job {
 
                 invoice.invoice_items.add(invoice_item);
 
-                invoice = Utilities_Fakturoid_Controller.create_proforma(invoice);
+                invoice = Fakturoid_Controller.create_proforma(invoice);
                 if (invoice == null) return;
 
                 if (product.on_demand) {
                     try {
 
-                        Utilities_GoPay_Controller.onDemandPayment(invoice);
+                        GoPay_Controller.onDemandPayment(invoice);
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError("spendCreditSaas:", e);
 
-                        invoice = Utilities_GoPay_Controller.singlePayment("Substitute payment", product, invoice);
+                        invoice = GoPay_Controller.singlePayment("Substitute payment", product, invoice);
 
                         invoice.notificationInvoiceReminder("Failed to take money from your credit card, resolve it manually.");
 
-                        Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                        Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                                 "We could not take money from your credit card due to some problems. Please use the manual substitute payment through financial section of your Byzance account.");
                     }
                 } else {
 
-                    invoice = Utilities_GoPay_Controller.singlePayment("First Payment", product, invoice);
+                    invoice = GoPay_Controller.singlePayment("First Payment", product, invoice);
 
                     invoice.notificationInvoiceReminder("You have to authorize the first payment.");
 
-                    Utilities_Fakturoid_Controller.sendInvoiceEmail(invoice, null);
+                    Fakturoid_Controller.sendInvoiceEmail(invoice, null);
                 }
 
                 return;
@@ -290,7 +310,7 @@ public class Job_SpendingCredit implements Job {
 
                 invoice.notificationInvoiceReminder("Your product is deactivated.");
 
-                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "We are sorry to inform you, that you have reached negative credit limit. Your services are no longer supported. We activate your product again, when we receive payment for your invoice.");
 
                 product.active = false;
@@ -306,7 +326,7 @@ public class Job_SpendingCredit implements Job {
 
                 invoice.notificationInvoiceReminder("You have 10 days before your product will be deactivated.");
 
-                Utilities_Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
+                Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                         "You have reached zero credit balance. Your services will be supported for next 10 days. If we do not receive your payment till then, we will have to deactivate your services.");
             }
         }

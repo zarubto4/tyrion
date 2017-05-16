@@ -1,4 +1,4 @@
-package utilities.financial;
+package utilities.financial.extensions;
 
 import models.Model_ProductExtension.Config;
 
@@ -26,10 +26,6 @@ public class Extension_Log implements Extension {
 
     public Integer getDefaultCount() {
         return count;
-    }
-
-    public boolean isActive() {
-        return false;
     }
 
     public String getName() {

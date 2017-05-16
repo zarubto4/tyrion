@@ -1,4 +1,4 @@
-package utilities.fakturoid;
+package utilities.financial.fakturoid;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,10 +30,10 @@ import java.util.Date;
  * This class is used to interact with Fakturoid or sending emails with invoices.
  * (Creating invoices and subjects or callbacks from Fakturoid.)
  */
-public class Utilities_Fakturoid_Controller extends Controller {
+public class Fakturoid_Controller extends Controller {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Utilities_Fakturoid_Controller.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Fakturoid_Controller.class);
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################
 
@@ -103,7 +103,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
     public static Model_Invoice create_proforma(Model_Invoice invoice){
         try {
 
-            Utilities_Fakturoid_Invoice fakturoid_invoice = new Utilities_Fakturoid_Invoice();
+            Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
             fakturoid_invoice.custom_id = invoice.product.id;
             fakturoid_invoice.client_name = invoice.product.payment_details.company_account ? invoice.product.payment_details.company_name : invoice.product.payment_details.person.full_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
@@ -205,7 +205,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
 
             Model_Product product = invoice.getProduct();
 
-            Utilities_Fakturoid_Invoice fakturoid_invoice = new Utilities_Fakturoid_Invoice();
+            Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
             fakturoid_invoice.custom_id = product.id;
             fakturoid_invoice.client_name = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
@@ -340,7 +340,7 @@ public class Utilities_Fakturoid_Controller extends Controller {
     public static void sendInvoiceReminderEmail(Model_Invoice invoice, String message){
         try{
 
-            byte[] body = Utilities_Fakturoid_Controller.download_PDF_invoice("invoice", invoice);
+            byte[] body = Fakturoid_Controller.download_PDF_invoice("invoice", invoice);
 
             String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 

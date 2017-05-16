@@ -16,6 +16,10 @@ import utilities.logger.Class_Logger;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class is used to send artificial notification in developer mode.
+ * External services like GoPay or Fakturoid cannot send REST notification to localhost.
+ */
 public class Job_ArtificialFinancialCallback implements Job {
 
     public Job_ArtificialFinancialCallback(){}
@@ -30,6 +34,9 @@ public class Job_ArtificialFinancialCallback implements Job {
         if(!callback_thread.isAlive()) callback_thread.start();
     }
 
+    /**
+     * Thread finds pending invoices and makes artificial callbacks.
+     */
     private Thread callback_thread = new Thread() {
 
         @Override
@@ -46,8 +53,9 @@ public class Job_ArtificialFinancialCallback implements Job {
                         .findList();
 
                 List<Model_Invoice> invoices_for_fakturoid = Model_Invoice.find.where()
-                        .isNotNull("fakturoid_id")
-                        .eq("status", Enum_Payment_status.paid)
+                        .isNull("gopay_id")
+                        .isNotNull("proforma_id")
+                        .eq("status", Enum_Payment_status.pending)
                         .eq("proforma", true)
                         .findList();
 
@@ -79,7 +87,6 @@ public class Job_ArtificialFinancialCallback implements Job {
 
                     terminal_logger.debug("callback_thread: Sending notification for invoice: {} - response: {}", invoice.proforma_id, response.getStatus());
                 }
-
             } catch (Exception e) {
                 terminal_logger.internalServerError("callback_thread:", e);
             }

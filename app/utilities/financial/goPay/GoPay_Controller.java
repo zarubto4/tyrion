@@ -1,4 +1,4 @@
-package utilities.goPay;
+package utilities.financial.goPay;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,7 +20,7 @@ import utilities.enums.Enum_Currency;
 import utilities.enums.Enum_Payment_mode;
 
 import utilities.enums.Enum_Recurrence_cycle;
-import utilities.goPay.helps_objects.*;
+import utilities.financial.goPay.helps_objects.*;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_Admin;
@@ -36,10 +36,10 @@ import java.util.Date;
  * contains operations like single payment,
  * on demand payment, refund payment etc.
  */
-public class Utilities_GoPay_Controller extends Controller {
+public class GoPay_Controller extends Controller {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Utilities_GoPay_Controller.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(GoPay_Controller.class);
 
     /**
      * Hash token used to authenticate the application in GoPay, token has TTL 30 minutes.

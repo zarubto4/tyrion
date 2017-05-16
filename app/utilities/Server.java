@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
-import utilities.fakturoid.Fakturoid_InvoiceCheck;
-import utilities.goPay.GoPay_PaymentCheck;
+import utilities.financial.fakturoid.Fakturoid_InvoiceCheck;
+import utilities.financial.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.logger.Class_Logger;
@@ -95,6 +95,8 @@ public class Server {
     public static String GoPay_notification_url;
 
     public static String  link_api_swagger;
+
+    public static String slack_webhook_url;
 
     public static void setServerValues() throws Exception{
 
@@ -228,6 +230,7 @@ public class Server {
 
         link_api_swagger    = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
+        slack_webhook_url = Configuration.root().getString("Slack.webhook_url");
     }
 
     /**

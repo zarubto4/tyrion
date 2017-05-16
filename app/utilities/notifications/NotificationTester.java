@@ -27,12 +27,11 @@ import java.util.UUID;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Notification_Tester extends Controller {
+public class NotificationTester extends Controller {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Notification_Tester.class);
-
+    private static final Class_Logger terminal_logger = new Class_Logger(NotificationTester.class);
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
@@ -46,17 +45,11 @@ public class Notification_Tester extends Controller {
             Model_Person person = Model_Person.find.where().eq("mail", mail).findUnique();
             if (person == null) return GlobalResult.notFoundObject("Person not found");
 
-
             Thread notification_test_thread = new Thread() {
 
                 @Override
                 public void run() {
-
-                    terminal_logger.trace("Check_update_for_hw_under_homer_ws:: add_new_Procedure:: Independent Thread in Check_update_for_hw_under_homer_ws now working"); ;
-
                     try{
-
-
 
                         String id = UUID.randomUUID().toString();
 
@@ -85,7 +78,6 @@ public class Notification_Tester extends Controller {
 
                             notification_start.setText(new Notification_Text().setText("CHAIN TEST:: Shit! This Test not send CHAIN_START notification parameter but first message is CHAIN_UPDATE !!!!"))
                                     .send(person);
-
                         }
 
                         sleep(4000);
@@ -108,9 +100,7 @@ public class Notification_Tester extends Controller {
                             sleep(400);
                         }
 
-
                         sleep(4000);
-
 
                         if(rand.nextInt(10) > 5){
 
@@ -127,9 +117,6 @@ public class Notification_Tester extends Controller {
                             return;
                         }
 
-
-
-
                         Model_Notification notification_finish = new Model_Notification();
 
                         notification_finish.setId(id)
@@ -139,8 +126,6 @@ public class Notification_Tester extends Controller {
 
                         notification_finish.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!" ))
                                 .send(person);
-
-
 
                     }catch (Exception e){
                         terminal_logger.error("Check_update_for_hw_under_homer_ws:: Error", e);

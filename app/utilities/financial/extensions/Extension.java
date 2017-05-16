@@ -1,4 +1,4 @@
-package utilities.financial;
+package utilities.financial.extensions;
 
 import models.Model_ProductExtension.Config;
 
@@ -27,8 +27,6 @@ public interface Extension {
     Long getDefaultDailyPrice();
 
     Integer getDefaultCount();
-
-    boolean isActive();
 
     String getName();
 

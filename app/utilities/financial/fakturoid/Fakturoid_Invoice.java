@@ -1,4 +1,4 @@
-package utilities.fakturoid;
+package utilities.financial.fakturoid;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import models.Model_InvoiceItem;
@@ -6,7 +6,7 @@ import utilities.enums.Enum_Currency;
 
 import java.util.List;
 
-public class Utilities_Fakturoid_Invoice {
+public class Fakturoid_Invoice {
 
     @JsonIgnore  public String custom_id;
     public String client_name;
