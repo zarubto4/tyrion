@@ -1,6 +1,10 @@
 
 # --- !Ups
 
+alter table model_product_extension
+  drop constraint if exists ck_model_product_extension_type,
+  add constraint ck_model_product_extension_type check (type in ('Project','Log','Database','RestApi'));
+
 alter table model_import_library
   add column project_id varchar(255),
   drop column if exists tag cascade,
@@ -35,6 +39,10 @@ alter table model_library_model_type_of_boar
 
 
 # --- !Downs
+
+alter table model_product_extension
+  drop constraint if exists ck_model_product_extension_type,
+  add constraint ck_model_product_extension_type check (type in ('Project','Log','Database'));
 
 alter table model_library rename to model_import_library;
 
