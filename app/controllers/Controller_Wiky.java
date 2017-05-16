@@ -44,19 +44,19 @@ public class Controller_Wiky extends Controller {
 
 
 
-    public Result test2(Map body){
+    public Result test2(){
         try {
-
+/*
             GraphQLSchema schema = GraphQLSchema.newSchema()
                                     .query(Garfield.object)
                                     .build();
 
-            String query = (String) body.get("query");
+            //String query = (String) body.get("query");
 
-            Map<String, Object> variables = (Map<String, Object>) body.get("variables");
+            //Map<String, Object> variables = (Map<String, Object>) body.get("variables");
 
 
-            ExecutionResult executionResult = GraphQL.newGraphQL(schema).build().execute(query,(Object) null, variables);
+            //ExecutionResult executionResult = GraphQL.newGraphQL(schema).build().execute(query,(Object) null, variables);
 
 
             Map<String, Object> result = new LinkedHashMap<>();
@@ -66,8 +66,8 @@ public class Controller_Wiky extends Controller {
             }
 
             result.put("data", executionResult.getData());
-
-            return ok(Json.toJson(result));
+*/
+            return ok();
 
         }catch (Exception e){
             e.printStackTrace();
