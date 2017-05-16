@@ -1,8 +1,10 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ning.http.client.AsyncHttpClient;
 import io.swagger.annotations.*;
 import models.*;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import play.api.Play;
 import play.data.Form;
 import play.libs.F;
@@ -12,6 +14,7 @@ import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
+
 import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.Email;
@@ -822,32 +825,32 @@ public class Controller_Person extends Controller {
 
                         terminal_logger.debug("person_validateProperty:: Link:: " + "https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
 
-                        F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class)
-                                .url("https://www.isvat.eu/CZ/28496639")
-                                .setHeader("cache-control", "no-cache")
-                                .get();
+                        WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
-                        terminal_logger.debug("person_validateProperty:: Link:: Promise zavolán");
+                        F.Promise<WSResponse> responsePromise = ws
+                                .url("https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
+                                .setRequestTimeout(10000)
+                                .get();
 
                         WSResponse wsResponse = responsePromise.get(10000);
 
-                        terminal_logger.debug("person_validateProperty:: http request:: {} ", wsResponse.getStatus());
-                        terminal_logger.debug("person_validateProperty:: vat_number:: {} " , wsResponse.getBody());
+                        JsonNode result = wsResponse.asJson();
 
-                        JsonNode body = wsResponse.asJson();
+                        terminal_logger.debug("person_validateProperty: http request: {} ", wsResponse.getStatus());
+                        terminal_logger.debug("person_validateProperty: vat_number: {} " , result);
 
-                        if (body.get("valid").asBoolean()) {
+                        if (result.get("valid").asBoolean()) {
 
                             validation.valid = true;
                             try {
-                                validation.message = body.get("name").get("0").asText();
+                                validation.message = result.get("name").get("0").asText();
                             }catch (Exception e){
                                 // do nothing
                             }
                             return GlobalResult.result_ok(Json.toJson(validation));
                         }
                     }catch (Exception e){
-                        terminal_logger.internalServerError(e);
+                        terminal_logger.internalServerError("person_validateProperty:", e);
                         // Server_Logger.internalServerError("person_validateProperty()::", e);
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";

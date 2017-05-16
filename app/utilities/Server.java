@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
-import utilities.fakturoid.Fakturoid_InvoiceCheck;
-import utilities.goPay.GoPay_PaymentCheck;
+import utilities.financial.fakturoid.Fakturoid_InvoiceCheck;
+import utilities.financial.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.logger.Class_Logger;
@@ -94,6 +94,8 @@ public class Server {
     public static String GoPay_notification_url;
 
     public static String  link_api_swagger;
+
+    public static String slack_webhook_url;
 
     public static void setServerValues() throws Exception{
 
@@ -227,6 +229,7 @@ public class Server {
 
         link_api_swagger    = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
+        slack_webhook_url = Configuration.root().getString("Slack.webhook_url");
     }
 
     /**
@@ -244,7 +247,7 @@ public class Server {
 
         if (Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null) {
 
-            terminal_logger.warn("setAdministrator:: Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
+            terminal_logger.warn("setAdministrator: Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
 
             Model_Person person = new Model_Person();
             person.full_name = "Admin Byzance";
@@ -264,7 +267,7 @@ public class Server {
 
         }else{
 
-            terminal_logger.warn("setAdministrator:: admin is already created");
+            terminal_logger.warn("setAdministrator: admin is already created");
 
             // updatuji oprávnění
             Model_Person person = Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
@@ -306,7 +309,7 @@ public class Server {
      */
     public static void setPermission() throws Exception{
 
-        terminal_logger.info("setPermission:: Setting Permission");
+        terminal_logger.info("setPermission: Setting Permission");
 
         List<String> permissions = new ArrayList<>();
 
@@ -339,7 +342,7 @@ public class Server {
         for(Enum en : Model_MProgram.permissions.values())                permissions.add(en.name());
 
 
-        terminal_logger.info("setPermission:: Number of Static Permissions " + permissions.size() );
+        terminal_logger.info("setPermission: Number of Static Permissions " + permissions.size() );
 
         for(String permission : permissions) new Model_Permission(permission, "description");
 

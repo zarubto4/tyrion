@@ -16,8 +16,12 @@ public class DocumentDB {
     // Online status - variables
     private static final String ONLINE_STATUS_COLLECTION = "ONLINE_STATUS";
 
+    private static final String BLOCKO_REQUEST_COLLECTION = "BLOCKO_REQUEST";
+    public static DocumentCollection blocko_request_collection = null;
+
     public static void set_no_SQL_collection(){
         set_online_status_collection();
+        set_blocko_request_collection();
     }
 
 
@@ -67,5 +71,39 @@ public class DocumentDB {
         }
     }
 
+    private static void set_blocko_request_collection(){
+        try {
 
+            // RequestOptions definuje maximální počet requestů za vteřinu na Azure Database NO SQL kolekci.
+            // Jde o velikost kanálu - a za ten se platí. Není tedy potřeba do začátku mít kanál moc velký.
+            // Každá kolekce má svůj vlastní RequestOptions.
+
+            // Najdu collekci - Název kolekce totiž tvoří náhodné UUID
+            List<DocumentCollection> collections = Server.documentClient.queryCollections(Server.documentDB_Path, "SELECT * FROM root r WHERE r.id='" + BLOCKO_REQUEST_COLLECTION + "'", null).getQueryIterable().toList();
+
+            // Zkusím najít a pak vrátit Collekci
+            if(!collections.isEmpty()) {
+
+                blocko_request_collection = collections.get(0);
+                terminal_logger.debug("DocumentDB:: set_blocko_request_collection: Collection has already been created");
+
+            }else {
+
+                RequestOptions request_options_blocko_request = new RequestOptions();
+                request_options_blocko_request.setOfferThroughput(Configuration.root().getInt("Azure.documentDB." + Server.server_mode.name() + ".RUsReserved" + BLOCKO_REQUEST_COLLECTION));
+
+                DocumentCollection collection = new DocumentCollection();
+                collection.setId(BLOCKO_REQUEST_COLLECTION);
+
+                Server.documentClient.createCollection(Server.documentDB_Path, collection, request_options_blocko_request);
+
+                blocko_request_collection = collection;
+
+                terminal_logger.debug("DocumentDB:: set_blocko_request_collection: Collection Successfully created");
+            }
+
+        } catch ( Exception e ){
+            terminal_logger.internalServerError(e);
+        }
+    }
 }

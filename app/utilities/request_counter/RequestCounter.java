@@ -12,10 +12,20 @@ import utilities.response.GlobalResult;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Used for endpoint usage statistics.
+ */
 public class RequestCounter extends Controller{
 
-    public static Map<String, Long> requests = new HashMap<>(); // počítadlo requestů
+    /**
+     * Temporary memory of requests, every hour are all requests saved to DB.
+     */
+    public static Map<String, Long> requests = new HashMap<>();
 
+    /**
+     * Adds request to static HashMap or updates the record.
+     * @param request String name of action method that is being called
+     */
     public static void count(String request){
 
         // Pokud mapa už request obsahuje, pouze zvýším value++
@@ -32,6 +42,10 @@ public class RequestCounter extends Controller{
         }
     }
 
+    /**
+     * Serves to show data in Tyrion administration.
+     * @return Result list of models RequestLog
+     */
     @Security.Authenticated(Secured_Admin.class)
     public Result get_request_stats() {
 
@@ -44,6 +58,10 @@ public class RequestCounter extends Controller{
         }
     }
 
+    /**
+     * Resets all stats about requests, deletes all RequestLog objects from DB.
+     * @return Result ok
+     */
     @Security.Authenticated(Secured_Admin.class)
     public Result reset_request_stats() {
 

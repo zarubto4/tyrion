@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.libs.Json;
 import utilities.enums.Enum_ExtensionType;
-import utilities.financial.*;
+import utilities.financial.extensions.Extension;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_ProductExtension_Type;
 

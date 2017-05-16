@@ -62,7 +62,7 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_create() {
@@ -117,18 +117,18 @@ public class Controller_Project extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Model_Project.class, responseContainer = "list"),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class, responseContainer = "list"),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result project_getByUser(){
         try {
 
             // Získání seznamu
-            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person().id).eq("product.active", true).order().asc("name").findList();
+            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).eq("product.active", true).order().asc("name").findList();
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson( projects ));
@@ -156,12 +156,12 @@ public class Controller_Project extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Model_Project.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result project_get(@ApiParam(value = "project_id String path", required = true)  String project_id){
 
@@ -197,12 +197,12 @@ public class Controller_Project extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result project_delete(@ApiParam(value = "project_id String path", required = true) String project_id){
         try {
@@ -253,12 +253,12 @@ public class Controller_Project extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Model_Project.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_update(@ApiParam(value = "project_id String path", required = true)  String project_id){
@@ -316,13 +316,13 @@ public class Controller_Project extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Model_Project.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_invite(@ApiParam(value = "project_id String path", required = true)  String project_id){
@@ -422,8 +422,8 @@ public class Controller_Project extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",            response = Model_Project.class),
-            @ApiResponse(code = 400, message = "Objects not found",    response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 404, message = "Object not found",     response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",    response = Result_InternalServerError.class)
     })
     public Result project_addParticipant(String id, boolean decision ){
         try{
@@ -489,10 +489,10 @@ public class Controller_Project extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProjectParticipant.class),
-            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true)  String project_id){
@@ -551,12 +551,12 @@ public class Controller_Project extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                                 response = Model_Project.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_removeParticipant(@ApiParam(value = "project_id String path", required = true) String project_id){
@@ -593,8 +593,6 @@ public class Controller_Project extends Controller {
                     invitations.add(invitation);
             }
 
-
-
             for (Model_Person person : list) {
                 Model_ProjectParticipant participant = Model_ProjectParticipant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique();
                 if (participant != null) {
@@ -618,5 +616,4 @@ public class Controller_Project extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
 }

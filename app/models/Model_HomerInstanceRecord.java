@@ -54,7 +54,7 @@ public class Model_HomerInstanceRecord extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_MProjectProgramSnapShot> m_project_snapshot()    {  return version_object.b_program_version_snapshots;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String status()    {
 
-        if(planed_when.getTime() > new Date().getTime()) return "furure";
+        if(planed_when.getTime() > new Date().getTime()) return "future";
         if(actual_running_instance != null) return "now";
         else return "history";
 
@@ -88,6 +88,11 @@ public class Model_HomerInstanceRecord extends Model {
             if (Model_HomerInstanceRecord.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @JsonIgnore
+    public Model_Product getProduct(){
+        return this.actual_running_instance.get_project().product;
     }
 
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER-----------------------------------------------------------------------*/

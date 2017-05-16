@@ -15,7 +15,7 @@ import utilities.enums.*;
 import utilities.financial.FinancialPermission;
 import utilities.financial.history.History;
 import utilities.financial.history.HistoryEvent;
-import utilities.goPay.Utilities_GoPay_Controller;
+import utilities.financial.goPay.GoPay_Controller;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
 
@@ -229,7 +229,7 @@ public class Model_Product extends Model {
     public boolean terminateOnDemand(){
         try {
 
-            Utilities_GoPay_Controller.terminateOnDemand(this);
+            GoPay_Controller.terminateOnDemand(this);
 
             this.gopay_id = null;
             this.on_demand = false;

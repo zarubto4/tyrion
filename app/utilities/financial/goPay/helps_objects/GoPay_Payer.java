@@ -1,4 +1,4 @@
-package utilities.goPay.helps_objects;
+package utilities.financial.goPay.helps_objects;
 
 import java.util.ArrayList;
 import java.util.List;

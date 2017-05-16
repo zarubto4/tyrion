@@ -6,598 +6,550 @@
 # Home page
 
 #CORS
-OPTIONS           /*all                                        @controllers.Controller_Security.optionLink(all)
+OPTIONS   /*all                                                         @controllers.Controller_Security.optionLink(all)
 
-POST              /test                                        @controllers.Controller_Wiky.test1()
-GET              /test2                                       @controllers.Controller_Wiky.test2()
+POST      /test                                                         @controllers.Controller_Wiky.test1()
+GET       /test2                                                        @controllers.Controller_Wiky.test2()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
 
-GET              /websocket/homer_server/:identificator        @controllers.Controller_WebSocket.homer_cloud_server_connection(identificator)
-GET              /websocket/compilation_server/:identificator  @controllers.Controller_WebSocket.compilator_server_connection(identificator)
-GET              /websocket/becki/:secure_token                @controllers.Controller_WebSocket.becki_website_connection(secure_token)
-GET              /websocket/access_token                       @controllers.Controller_WebSocket.get_Websocket_token()
-
-
-
-
+GET       /websocket/homer_server/:identificator                        @controllers.Controller_WebSocket.homer_cloud_server_connection(identificator)
+GET       /websocket/compilation_server/:identificator                  @controllers.Controller_WebSocket.compilator_server_connection(identificator)
+GET       /websocket/becki/:secure_token                                @controllers.Controller_WebSocket.becki_website_connection(secure_token)
+GET       /websocket/access_token                                       @controllers.Controller_WebSocket.get_Websocket_token()
 
 #API - CoreClient ####################################################################################################################################################
 ###################################################################################f##################################################################################
 
 #Login page
-POST            /login                                      @controllers.Controller_Security.login()
-POST            /logout                                     @controllers.Controller_Security.logout()
+POST      /login                                                        @controllers.Controller_Security.login()
+POST      /logout                                                       @controllers.Controller_Security.logout()
 
-GET             /login/facebook/*url                        @controllers.Controller_Security.GET_facebook_oauth(url)
-GET             /login/github/*url                          @controllers.Controller_Security.GET_github_oauth(url)
+GET       /login/facebook/*url                                          @controllers.Controller_Security.GET_facebook_oauth(url)
+GET       /login/github/*url                                            @controllers.Controller_Security.GET_github_oauth(url)
 
-GET             /facebook/*return_link                      @controllers.Controller_Security.Facebook(return_link)
-GET             /github/*return_link                        @controllers.Controller_Security.GitHub(return_link)
+GET       /facebook/*return_link                                        @controllers.Controller_Security.Facebook(return_link)
+GET       /github/*return_link                                          @controllers.Controller_Security.GitHub(return_link)
 
-GET             /login/person                               @controllers.Controller_Security.getPersonByToken
-
-
-
+GET       /login/person                                                 @controllers.Controller_Security.getPersonByToken
 
 ### NOTIFICATION ############ NOTIFICATION ############### NOTIFICATION ################ NOTIFICATION ################################################################
 ######################################################################################################################################################################
 
-GET             /notification/list/:page_number             @controllers.Controller_Notification.get_notification_page(page_number: Integer)
-DELETE          /notification/:notification_id              @controllers.Controller_Notification.delete_notification(notification_id)
+GET       /notification/list/:page_number                               @controllers.Controller_Notification.notification_getByFilter(page_number: Integer)
+DELETE    /notification/:notification_id                                @controllers.Controller_Notification.notification_delete(notification_id)
 
-GET             /notification/unconfirmed                   @controllers.Controller_Notification.get_unconfirmed_notifications()
-PUT             /notification/confirm/:notification_id      @controllers.Controller_Notification.notification_confirm(notification_id)
+GET       /notification/unconfirmed                                     @controllers.Controller_Notification.notifications_getUnconfirmed()
+PUT       /notification/confirm/:notification_id                        @controllers.Controller_Notification.notification_confirm(notification_id)
 
-PUT             /notification/read                          @controllers.Controller_Notification.mark_as_read_notification()
+PUT       /notification/read                                            @controllers.Controller_Notification.notification_read()
 
 ## Test - Private Api
-POST            /notification/individual               @utilities.notifications.Notification_Tester.test_notifications()
-POST            /notification/chain/:email             @utilities.notifications.Notification_Tester.test_chain_notifications(email)
-
-
-
-
+POST      /notification/individual                                      @utilities.notifications.NotificationTester.test_notifications()
+POST      /notification/chain/:email                                    @utilities.notifications.NotificationTester.test_chain_notifications(email)
 
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
 
 #Peron CRUD
-POST           /person                                           @controllers.Controller_Person.person_create()
-PUT            /person/:person_id                                @controllers.Controller_Person.person_update(person_id)
-GET            /person/all                                       @controllers.Controller_Person.person_getAll()
-GET            /person/:person_id                                @controllers.Controller_Person.person_get(person_id)
-DELETE         /person/:id                                       @controllers.Controller_Person.person_delete(id: String)
+POST      /person                                                       @controllers.Controller_Person.person_create()
+PUT       /person/:person_id                                            @controllers.Controller_Person.person_update(person_id)
+GET       /person/all                                                   @controllers.Controller_Person.person_getAll()
+GET       /person/:person_id                                            @controllers.Controller_Person.person_get(person_id)
+DELETE    /person/:id                                                   @controllers.Controller_Person.person_delete(id: String)
 
-POST           /person/validate_entity                           @controllers.Controller_Person.person_validateProperty()
-POST           /person/authentication_email                      @controllers.Controller_Person.person_authenticationSendEmail()
+POST      /person/validate_entity                                       @controllers.Controller_Person.person_validateProperty()
+POST      /person/authentication_email                                  @controllers.Controller_Person.person_authenticationSendEmail()
 
-GET            /person/connection/all                            @controllers.Controller_Person.person_getAllConnections()
-DELETE         /person/connection/:connection_id                 @controllers.Controller_Person.remove_Person_Connection(connection_id)
+GET       /person/connection/all                                        @controllers.Controller_Person.person_getAllConnections()
+DELETE    /person/connection/:connection_id                             @controllers.Controller_Person.remove_Person_Connection(connection_id)
 
-PUT            /person/deactivate/:person_id                     @controllers.Controller_Person.person_deactivate(person_id)
-PUT            /person/activate/:person_id                       @controllers.Controller_Person.person_activate(person_id)
-DELETE         /person/connections/:person_id                    @controllers.Controller_Person.person_removeAllConnections(person_id)
-PUT            /person/valid_email/:person_id                    @controllers.Controller_Person.person_validEmail(person_id)
+PUT       /person/deactivate/:person_id                                 @controllers.Controller_Person.person_deactivate(person_id)
+PUT       /person/activate/:person_id                                   @controllers.Controller_Person.person_activate(person_id)
+DELETE    /person/connections/:person_id                                @controllers.Controller_Person.person_removeAllConnections(person_id)
+PUT       /person/valid_email/:person_id                                @controllers.Controller_Person.person_validEmail(person_id)
 
-GET            /person/mail_authentication/:token                @controllers.Controller_Person.person_emailAuthentication(token)
+GET       /person/mail_authentication/:token                            @controllers.Controller_Person.person_emailAuthentication(token)
 
-POST           /person/change_property                           @controllers.Controller_Person.person_changeLoginProperty()
-GET            /person/authorize_change/:token                   @controllers.Controller_Person.person_authorizePropertyChange(token)
+POST      /person/change_property                                       @controllers.Controller_Person.person_changeLoginProperty()
+GET       /person/authorize_change/:token                               @controllers.Controller_Person.person_authorizePropertyChange(token)
 
 #Password recovery
-POST           /person/password/recovery_mail                    @controllers.Controller_Person.person_passwordRecoverySendEmail()
-PUT            /person/password/recovery                         @controllers.Controller_Person.person_passwordRecovery()
+POST      /person/password/recovery_mail                                @controllers.Controller_Person.person_passwordRecoverySendEmail()
+PUT       /person/password/recovery                                     @controllers.Controller_Person.person_passwordRecovery()
 
 #Personal Picture
-PUT            /person/picture/upload                            @controllers.Controller_Person.person_uploadPicture()
-PUT            /person/picture/remove                            @controllers.Controller_Person.person_removePicture()
-
-
-
-
+PUT       /person/picture/upload                                        @controllers.Controller_Person.person_uploadPicture()
+PUT       /person/picture/remove                                        @controllers.Controller_Person.person_removePicture()
 
 ### PERMISSION ############ PERMISSION ############### PERMISSION ################ PERMISSION ################# PERMISSION #####################################################
 ################################################################################################################################################################################
 
-POST           /secure/rest_api_token_validation                           @controllers.Controller_Security.get_status_request_token()
+POST      /secure/rest_api_token_validation                             @controllers.Controller_Security.get_status_request_token()
 
-PUT            /secure/permission/person/:person_id/:permission_id         @controllers.Controller_Permission.add_Permission_Person(person_id,permission_id)
-DELETE         /secure/permission/person/:person_id/:permission_id         @controllers.Controller_Permission.remove_Permission_Person(person_id,permission_id)
-PUT            /secure/permission/:permission_id                           @controllers.Controller_Permission.edit_permission_desciption(permission_id)
+PUT       /secure/permission/person/:person_id/:permission_id           @controllers.Controller_Permission.add_Permission_Person(person_id,permission_id)
+DELETE    /secure/permission/person/:person_id/:permission_id           @controllers.Controller_Permission.remove_Permission_Person(person_id,permission_id)
+PUT       /secure/permission/:permission_id                             @controllers.Controller_Permission.edit_permission_desciption(permission_id)
 
-GET            /secure/permission/all                                      @controllers.Controller_Permission.get_Permission_All()
-GET            /secure/role/all                                            @controllers.Controller_Permission.get_Role_All()
+GET       /secure/permission/all                                        @controllers.Controller_Permission.get_Permission_All()
+GET       /secure/role/all                                              @controllers.Controller_Permission.get_Role_All()
 
-PUT            /secure/role/permission/:permission_id/:role_id             @controllers.Controller_Permission.add_Permission_to_Role(permission_id,role_id)
-DELETE         /secure/role/permission/:permission_id/:role_id             @controllers.Controller_Permission.remove_Permission_from_Role(permission_id,role_id)
+PUT       /secure/role/permission/:permission_id/:role_id               @controllers.Controller_Permission.add_Permission_to_Role(permission_id,role_id)
+DELETE    /secure/role/permission/:permission_id/:role_id               @controllers.Controller_Permission.remove_Permission_from_Role(permission_id,role_id)
 
-PUT            /secure/role/person/:mail/:role_id                          @controllers.Controller_Permission.add_Role_Person(mail,role_id)
-DELETE         /secure/role/person/:person_id/:role_id                     @controllers.Controller_Permission.remove_Role_Person(person_id,role_id)
+PUT       /secure/role/person/:mail/:role_id                            @controllers.Controller_Permission.add_Role_Person(mail,role_id)
+DELETE    /secure/role/person/:person_id/:role_id                       @controllers.Controller_Permission.remove_Role_Person(person_id,role_id)
 
-POST           /secure/role                                                @controllers.Controller_Permission.new_Role()
-DELETE         /secure/role/:role_id                                       @controllers.Controller_Permission.delete_Role(role_id)
-PUT            /secure/role/:role_id                                       @controllers.Controller_Permission.edit_Role(role_id)
+POST      /secure/role                                                  @controllers.Controller_Permission.new_Role()
+DELETE    /secure/role/:role_id                                         @controllers.Controller_Permission.delete_Role(role_id)
+PUT       /secure/role/:role_id                                         @controllers.Controller_Permission.edit_Role(role_id)
 
-GET            /secure/person/system_acces/:person_id                      @controllers.Controller_Permission.get_System_Access(person_id)
-
-
-
-
+GET       /secure/person/system_acces/:person_id                        @controllers.Controller_Permission.get_System_Access(person_id)
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
 
 #Tarrifs
-GET            /tariff                                                                      @controllers.Controller_Finance.tariff_getAll()
+GET       /tariff                                                       @controllers.Controller_Finance.tariff_getAll()
 
 #CRUD Tarrifs
-POST           /product                                                                     @controllers.Controller_Finance.product_create()
-GET            /product/all                                                                 @controllers.Controller_Finance.product_getAll()
-PUT            /product/deactivate/:product_id                                              @controllers.Controller_Finance.product_deactivate(product_id)
-PUT            /product/activate/:product_id                                                @controllers.Controller_Finance.product_activate(product_id)
-PUT            /product/credit/:product_id                                                  @controllers.Controller_Finance.product_credit(product_id)
-PUT            /product/terminate_ondemand/:product_id                                      @controllers.Controller_Finance.product_terminateOnDemand(product_id)
-DELETE         /product/:product_id                                                         @controllers.Controller_Finance.product_delete(product_id)
+POST      /product                                                      @controllers.Controller_Finance.product_create()
+GET       /product/all                                                  @controllers.Controller_Finance.product_getAll()
+PUT       /product/deactivate/:product_id                               @controllers.Controller_Finance.product_deactivate(product_id)
+PUT       /product/activate/:product_id                                 @controllers.Controller_Finance.product_activate(product_id)
+PUT       /product/credit/:product_id                                   @controllers.Controller_Finance.product_credit(product_id)
+PUT       /product/terminate_ondemand/:product_id                       @controllers.Controller_Finance.product_terminateOnDemand(product_id)
+DELETE    /product/:product_id                                          @controllers.Controller_Finance.product_delete(product_id)
 
-POST           /product_extension                                                           @controllers.Controller_Finance.productExtension_create()
-GET            /product_extension                                                           @controllers.Controller_Finance.productExtension_getAll()
-GET            /product_extension/types                                                     @controllers.Controller_Finance.productExtension_getAllTypes()
-GET            /product_extension/:extension_id                                             @controllers.Controller_Finance.productExtension_get(extension_id)
-PUT            /product_extension/:extension_id                                             @controllers.Controller_Finance.productExtension_update(extension_id)
-PUT            /product_extension/activate/:extension_id                                    @controllers.Controller_Finance.productExtension_activate(extension_id)
-PUT            /product_extension/deactivate/:extension_id                                  @controllers.Controller_Finance.productExtension_deactivate(extension_id)
-DELETE         /product_extension/:extension_id                                             @controllers.Controller_Finance.productExtension_delete(extension_id)
+POST      /product_extension                                            @controllers.Controller_Finance.productExtension_create()
+GET       /product_extension                                            @controllers.Controller_Finance.productExtension_getAll()
+GET       /product_extension/types                                      @controllers.Controller_Finance.productExtension_getAllTypes()
+GET       /product_extension/:extension_id                              @controllers.Controller_Finance.productExtension_get(extension_id)
+PUT       /product_extension/:extension_id                              @controllers.Controller_Finance.productExtension_update(extension_id)
+PUT       /product_extension/activate/:extension_id                     @controllers.Controller_Finance.productExtension_activate(extension_id)
+PUT       /product_extension/deactivate/:extension_id                   @controllers.Controller_Finance.productExtension_deactivate(extension_id)
+DELETE    /product_extension/:extension_id                              @controllers.Controller_Finance.productExtension_delete(extension_id)
 
-GET            /product/user_applicable                                                     @controllers.Controller_Finance.product_getActive()
+GET       /product/user_applicable                                      @controllers.Controller_Finance.product_getActive()
 
-PUT            /product/details/:payment_details_id                                         @controllers.Controller_Finance.paymentDetails_update(payment_details_id: Long)
-PUT            /product/general/:product_id                                                 @controllers.Controller_Finance.product_update(product_id)
+PUT       /product/details/:payment_details_id                          @controllers.Controller_Finance.paymentDetails_update(payment_details_id: Long)
+PUT       /product/general/:product_id                                  @controllers.Controller_Finance.product_update(product_id)
 
 #GoPay
-GET            /go_pay/notification                                                         @utilities.goPay.Utilities_GoPay_Controller.payment_notification(id: Long)
-GET            /go_pay/return                                                               @utilities.goPay.Utilities_GoPay_Controller.payment_return(id: Long)
-
+GET       /go_pay/notification                                          @utilities.financial.goPay.GoPay_Controller.payment_notification(id: Long)
+GET       /go_pay/return                                                @utilities.financial.goPay.GoPay_Controller.payment_return(id: Long)
 
 #Fakturoid
-GET            /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_get(invoice_id)
-GET            /invoice/pdf/:kind/:invoice_id                                               @controllers.Controller_Finance.invoice_getPdf(kind, invoice_id)
-POST           /invoice/reimbursement/:invoice_id                                           @controllers.Controller_Finance.invoice_reimbursement(invoice_id)
-POST           /invoice/resend/:invoice_id                                                  @controllers.Controller_Finance.invoice_resend(invoice_id)
-POST           /fakturoid/callback                                                          @utilities.fakturoid.Utilities_Fakturoid_Controller.fakturoid_callback()
+GET       /invoice/:invoice_id                                          @controllers.Controller_Finance.invoice_get(invoice_id)
+GET       /invoice/pdf/:kind/:invoice_id                                @controllers.Controller_Finance.invoice_getPdf(kind, invoice_id)
+POST      /invoice/reimbursement/:invoice_id                            @controllers.Controller_Finance.invoice_reimbursement(invoice_id)
+POST      /invoice/resend/:invoice_id                                   @controllers.Controller_Finance.invoice_resend(invoice_id)
+POST      /fakturoid/callback                                           @utilities.financial.fakturoid.Fakturoid_Controller.fakturoid_callback()
 
 # Obsluha pouze pro Byzance zaměstnance
-PUT            /invoice/set_pay/:invoice_id                                                 @controllers.Controller_Finance.invoice_set_as_paid(invoice_id)
-PUT            /invoice/send_remainder/:invoice_id                                          @controllers.Controller_Finance.invoice_reminder(invoice_id)
-DELETE         /invoice/:invoice_id                                                         @controllers.Controller_Finance.invoice_delete(invoice_id)
-PUT            /invoice/refund/:invoice_id                                                  @utilities.goPay.Utilities_GoPay_Controller.payment_refund(invoice_id)
-
+PUT       /invoice/set_pay/:invoice_id                                  @controllers.Controller_Finance.invoice_set_as_paid(invoice_id)
+PUT       /invoice/send_remainder/:invoice_id                           @controllers.Controller_Finance.invoice_reminder(invoice_id)
+DELETE    /invoice/:invoice_id                                          @controllers.Controller_Finance.invoice_delete(invoice_id)
+PUT       /invoice/refund/:invoice_id                                   @utilities.financial.goPay.GoPay_Controller.payment_refund(invoice_id)
 
 #Project
-POST           /project                                                                     @controllers.Controller_Project.project_create()
-PUT            /project/:project_id                                                         @controllers.Controller_Project.project_update(project_id)
-GET            /project/:project_id                                                         @controllers.Controller_Project.project_get(project_id)
-GET            /project                                                                     @controllers.Controller_Project.project_getByUser
-DELETE         /project/:project_id                                                         @controllers.Controller_Project.project_delete(project_id)
-PUT            /project/shareProject/:project_id                                            @controllers.Controller_Project.project_invite(project_id)
-PUT            /project/unshareProject/:project_id                                          @controllers.Controller_Project.project_removeParticipant(project_id)
-PUT            /project/addParticipant/:invitation_id/:decision                             @controllers.Controller_Project.project_addParticipant(invitation_id, decision: Boolean)
-PUT            /project/change_participant_state/:project_id                                @controllers.Controller_Project.project_changeParticipantStatus(project_id)
-
+POST      /project                                                      @controllers.Controller_Project.project_create()
+PUT       /project/:project_id                                          @controllers.Controller_Project.project_update(project_id)
+GET       /project/:project_id                                          @controllers.Controller_Project.project_get(project_id)
+GET       /project                                                      @controllers.Controller_Project.project_getByUser
+DELETE    /project/:project_id                                          @controllers.Controller_Project.project_delete(project_id)
+PUT       /project/shareProject/:project_id                             @controllers.Controller_Project.project_invite(project_id)
+PUT       /project/unshareProject/:project_id                           @controllers.Controller_Project.project_removeParticipant(project_id)
+PUT       /project/addParticipant/:invitation_id/:decision              @controllers.Controller_Project.project_addParticipant(invitation_id, decision: Boolean)
+PUT       /project/change_participant_state/:project_id                 @controllers.Controller_Project.project_changeParticipantStatus(project_id)
 
 #Program
-POST           /b_program/:project_id                                                       @controllers.Controller_Blocko.new_b_Program(project_id)
-GET            /b_program/:b_program_id                                                     @controllers.Controller_Blocko.get_b_Program(b_program_id)
-PUT            /b_program/:b_program_id                                                     @controllers.Controller_Blocko.edit_b_Program(b_program_id)
-DELETE         /b_program/:b_program_id                                                     @controllers.Controller_Blocko.remove_b_Program(b_program_id)
-PUT            /b_program/list/:page_number                                                 @controllers.Controller_Blocko.get_b_Program_by_Filter(page_number:Int )
+POST      /b_program/:project_id                                        @controllers.Controller_Blocko.new_b_Program(project_id)
+GET       /b_program/:b_program_id                                      @controllers.Controller_Blocko.get_b_Program(b_program_id)
+PUT       /b_program/:b_program_id                                      @controllers.Controller_Blocko.edit_b_Program(b_program_id)
+DELETE    /b_program/:b_program_id                                      @controllers.Controller_Blocko.remove_b_Program(b_program_id)
+PUT       /b_program/list/:page_number                                  @controllers.Controller_Blocko.get_b_Program_by_Filter(page_number:Int )
         
-PUT            /b_program/version/:b_program_id                                             @controllers.Controller_Blocko.update_b_program_new_version(b_program_id)
-GET            /b_program/version/:version_id                                               @controllers.Controller_Blocko.get_b_Program_version(version_id)
-DELETE         /b_program/version/:version_id                                               @controllers.Controller_Blocko.remove_b_Program_version(version_id)
-
+PUT       /b_program/version/:b_program_id                              @controllers.Controller_Blocko.update_b_program_new_version(b_program_id)
+GET       /b_program/version/:version_id                                @controllers.Controller_Blocko.get_b_Program_version(version_id)
+DELETE    /b_program/version/:version_id                                @controllers.Controller_Blocko.remove_b_Program_version(version_id)
 
 #Instance
-GET            /instance/project/:project_id                            @controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
-GET            /instance/get/:instance_id                               @controllers.Controller_Blocko.get_b_program_instance(instance_id)
-PUT            /instance/filter                                         @controllers.Controller_Blocko.get_b_program_instance_by_filter()
-GET            /instance_record/get/:instance_record_id                 @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
+GET       /instance/project/:project_id                                 @controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
+GET       /instance/get/:instance_id                                    @controllers.Controller_Blocko.get_b_program_instance(instance_id)
+PUT       /instance/filter                                              @controllers.Controller_Blocko.get_b_program_instance_by_filter()
+GET       /instance_record/get/:instance_record_id                      @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
 
-PUT            /instance/command/:instance_id/:target_id/:command       @controllers.Controller_Blocko.send_command_to_instance(instance_id, target_id, command)
-PUT            /instance/program/:instance_id                           @controllers.Controller_Blocko.update_blocko_code_in_instance_with_code(instance_id)
-PUT            /instance/ping/:instance_id                              @controllers.Controller_Blocko.ping_instance(instance_id)
-PUT            /instance/temporary_instance                             @controllers.Controller_Blocko.instance_add_temporary_instance()
-PUT            /instance/add_yoda/:instance_id/:yoda_id                 @controllers.Controller_Blocko.instance_add_yoda(instance_id, yoda_id)
-PUT            /instance/remove_yoda/:instance_id/:yoda_id              @controllers.Controller_Blocko.instance_remove_yoda(instance_id, yoda_id)
-PUT            /instance/add_device/:instance_id/:yoda_id/:device_id    @controllers.Controller_Blocko.instance_add_device(instance_id, yoda_id, device_id)
-PUT            /instance/remove_device/:instance_id/:yoda_id/:device_id @controllers.Controller_Blocko.instance_remove_device(instance_id, yoda_id, device_id)
-PUT            /instance/uploadToCloud/:version_id                      @controllers.Controller_Blocko.upload_b_Program_ToCloud(version_id)
-PUT            /instance/shut_down/:instance_name                       @controllers.Controller_Blocko.instance_shut_down(instance_name)
-
+PUT       /instance/command/:instance_id/:target_id/:command            @controllers.Controller_Blocko.send_command_to_instance(instance_id, target_id, command)
+PUT       /instance/program/:instance_id                                @controllers.Controller_Blocko.update_blocko_code_in_instance_with_code(instance_id)
+PUT       /instance/ping/:instance_id                                   @controllers.Controller_Blocko.ping_instance(instance_id)
+PUT       /instance/temporary_instance                                  @controllers.Controller_Blocko.instance_add_temporary_instance()
+PUT       /instance/add_yoda/:instance_id/:yoda_id                      @controllers.Controller_Blocko.instance_add_yoda(instance_id, yoda_id)
+PUT       /instance/remove_yoda/:instance_id/:yoda_id                   @controllers.Controller_Blocko.instance_remove_yoda(instance_id, yoda_id)
+PUT       /instance/add_device/:instance_id/:yoda_id/:device_id         @controllers.Controller_Blocko.instance_add_device(instance_id, yoda_id, device_id)
+PUT       /instance/remove_device/:instance_id/:yoda_id/:device_id      @controllers.Controller_Blocko.instance_remove_device(instance_id, yoda_id, device_id)
+PUT       /instance/uploadToCloud/:version_id                           @controllers.Controller_Blocko.upload_b_Program_ToCloud(version_id)
+PUT       /instance/shut_down/:instance_name                            @controllers.Controller_Blocko.instance_shut_down(instance_name)
 
 #Blocks
-POST           /blockoBlock                                                         @controllers.Controller_Blocko.blockoBlock_create()
-PUT            /blockoBlock/order/up/:blocko_block_id                               @controllers.Controller_Blocko.blockoBlock_order_up(blocko_block_id)
-PUT            /blockoBlock/order/down/:blocko_block_id                             @controllers.Controller_Blocko.blockoBlock_order_down(blocko_block_id)
-PUT            /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_update(blocko_block_id)
-GET            /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_get(blocko_block_id)
-DELETE         /blockoBlock/:blocko_block_id                                        @controllers.Controller_Blocko.blockoBlock_delete(blocko_block_id)
-PUT            /blockoBlock/list/:page_number                                       @controllers.Controller_Blocko.blockoBlock_getByFilter(page_number:Int )
+POST      /blockoBlock                                                  @controllers.Controller_Blocko.blockoBlock_create()
+PUT       /blockoBlock/order/up/:blocko_block_id                        @controllers.Controller_Blocko.blockoBlock_order_up(blocko_block_id)
+PUT       /blockoBlock/order/down/:blocko_block_id                      @controllers.Controller_Blocko.blockoBlock_order_down(blocko_block_id)
+PUT       /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_update(blocko_block_id)
+GET       /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_get(blocko_block_id)
+DELETE    /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_delete(blocko_block_id)
+PUT       /blockoBlock/list/:page_number                                @controllers.Controller_Blocko.blockoBlock_getByFilter(page_number:Int )
 
-POST           /blockoBlock/version/:blocko_block_id                                @controllers.Controller_Blocko.blockoBlockVersion_create(blocko_block_id)
-PUT            /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_Blocko.blockoBlockVersion_update(blocko_block_version_id)
-PUT            /blockoBlock/version/make_public/:blocko_block_version_id            @controllers.Controller_Blocko.blockoBlockVersion_makePublic(blocko_block_version_id)
-GET            /blockoBlock/version/all/:blocko_block_id                            @controllers.Controller_Blocko.blockoBlockVersion_getAll(blocko_block_id)
-GET            /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_Blocko.blockoBlockVersion_get(blocko_block_version_id)
-DELETE         /blockoBlock/version/:blocko_block_version_id                        @controllers.Controller_Blocko.blockoBlockVersion_delete(blocko_block_version_id)
+POST      /blockoBlock/version/:blocko_block_id                         @controllers.Controller_Blocko.blockoBlockVersion_create(blocko_block_id)
+PUT       /blockoBlock/version/:blocko_block_version_id                 @controllers.Controller_Blocko.blockoBlockVersion_update(blocko_block_version_id)
+PUT       /blockoBlock/version/make_public/:blocko_block_version_id     @controllers.Controller_Blocko.blockoBlockVersion_makePublic(blocko_block_version_id)
+GET       /blockoBlock/version/all/:blocko_block_id                     @controllers.Controller_Blocko.blockoBlockVersion_getAll(blocko_block_id)
+GET       /blockoBlock/version/:blocko_block_version_id                 @controllers.Controller_Blocko.blockoBlockVersion_get(blocko_block_version_id)
+DELETE    /blockoBlock/version/:blocko_block_version_id                 @controllers.Controller_Blocko.blockoBlockVersion_delete(blocko_block_version_id)
 
-POST           /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_createScheme()
-GET            /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_getScheme()
-PUT            /blockoBlock/scheme/version                                          @controllers.Controller_Blocko.blockoBlockVersion_editScheme()
-
+POST      /blockoBlock/scheme/version                                   @controllers.Controller_Blocko.blockoBlockVersion_createScheme()
+GET       /blockoBlock/scheme/version                                   @controllers.Controller_Blocko.blockoBlockVersion_getScheme()
+PUT       /blockoBlock/scheme/version                                   @controllers.Controller_Blocko.blockoBlockVersion_editScheme()
 
 #TypeOfBlocko
-POST           /typeOfBlock                                                         @controllers.Controller_Blocko.typeOfBlock_create()
-GET            /typeOfBlock                                                         @controllers.Controller_Blocko.typeOfBlock_getAll
-PUT            /typeOfBlock/list/:page_number                                       @controllers.Controller_Blocko.typeOfBlock_getByFilter(page_number: Int)
-PUT            /typeOfBlock/order/up/:type_of_block_id                              @controllers.Controller_Blocko.typeOfBlock_order_up(type_of_block_id)
-PUT            /typeOfBlock/order/down/:type_of_block_id                            @controllers.Controller_Blocko.typeOfBlock_order_down(type_of_block_id)
-GET            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_get(type_of_block_id)
-PUT            /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_update(type_of_block_id)
-DELETE         /typeOfBlock/:type_of_block_id                                       @controllers.Controller_Blocko.typeOfBlock_delete(type_of_block_id)
-
+POST      /typeOfBlock                                                  @controllers.Controller_Blocko.typeOfBlock_create()
+GET       /typeOfBlock                                                  @controllers.Controller_Blocko.typeOfBlock_getAll
+PUT       /typeOfBlock/list/:page_number                                @controllers.Controller_Blocko.typeOfBlock_getByFilter(page_number: Int)
+PUT       /typeOfBlock/order/up/:type_of_block_id                       @controllers.Controller_Blocko.typeOfBlock_order_up(type_of_block_id)
+PUT       /typeOfBlock/order/down/:type_of_block_id                     @controllers.Controller_Blocko.typeOfBlock_order_down(type_of_block_id)
+GET       /typeOfBlock/:type_of_block_id                                @controllers.Controller_Blocko.typeOfBlock_get(type_of_block_id)
+PUT       /typeOfBlock/:type_of_block_id                                @controllers.Controller_Blocko.typeOfBlock_update(type_of_block_id)
+DELETE    /typeOfBlock/:type_of_block_id                                @controllers.Controller_Blocko.typeOfBlock_delete(type_of_block_id)
 
 #Blocko General
-PUT             /blocko/disapprove                                                  @controllers.Controller_Blocko.blockoDisapprove()
-PUT             /blocko/approval                                                    @controllers.Controller_Blocko.blockoApproval()
-
+PUT       /blocko/disapprove                                            @controllers.Controller_Blocko.blockoDisapprove()
+PUT       /blocko/approval                                              @controllers.Controller_Blocko.blockoApproval()
 
 #Homer Server
-POST            /homer_server                                                      @controllers.Controller_ExternalServer.create_Homer_Server()
-PUT             /homer_server/edit/:server_id                                      @controllers.Controller_ExternalServer.edit_Homer_Server(server_id)
-PUT             /homer_server/set_backup/:server_id                                @controllers.Controller_ExternalServer.set_backup_server(server_id)
-PUT             /homer_server/set_main/:server_id                                  @controllers.Controller_ExternalServer.set_main_server(server_id)
-GET             /homer_server                                                      @controllers.Controller_ExternalServer.get_All_Homer_Server()
-DELETE          /homer_server/:server_id                                           @controllers.Controller_ExternalServer.delete_Homer_Server(server_id)
-
+POST      /homer_server                                                 @controllers.Controller_ExternalServer.create_Homer_Server()
+PUT       /homer_server/edit/:server_id                                 @controllers.Controller_ExternalServer.edit_Homer_Server(server_id)
+PUT       /homer_server/set_backup/:server_id                           @controllers.Controller_ExternalServer.set_backup_server(server_id)
+PUT       /homer_server/set_main/:server_id                             @controllers.Controller_ExternalServer.set_main_server(server_id)
+GET       /homer_server                                                 @controllers.Controller_ExternalServer.get_All_Homer_Server()
+DELETE    /homer_server/:server_id                                      @controllers.Controller_ExternalServer.delete_Homer_Server(server_id)
 
 #Board on Project
-GET             /blocko/all_details/:project_id                                     @controllers.Controller_Board.board_allDetailsForBlocko(project_id)
-
+GET       /blocko/all_details/:project_id                               @controllers.Controller_Board.board_allDetailsForBlocko(project_id)
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
 
 #Actualization Procedure
-GET             /actualization_procedure/project/:project_id                @controllers.Controller_Actualization.get_Actualization_Procedures_by_project(project_id)
-GET             /actualization_procedure/:actualization_procedure_id        @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
-
-
-
-
+GET       /actualization_procedure/project/:project_id                  @controllers.Controller_Actualization.get_Actualization_Procedures_by_project(project_id)
+GET       /actualization_procedure/:actualization_procedure_id          @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
 
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################
 
 #C_Program
-POST            /c_program                                                      @controllers.Controller_Code.c_program_create()
-GET             /c_program/:c_program_id                                        @controllers.Controller_Code.c_program_get(c_program_id)
-PUT             /c_program/list/:page_number                                    @controllers.Controller_Code.c_program_getByFilter(page_number: Int)
+POST      /c_program                                                    @controllers.Controller_Code.c_program_create()
+GET       /c_program/:c_program_id                                      @controllers.Controller_Code.c_program_get(c_program_id)
+PUT       /c_program/list/:page_number                                  @controllers.Controller_Code.c_program_getByFilter(page_number: Int)
 
-PUT             /c_program/:c_program_id                                        @controllers.Controller_Code.c_program_update(c_program_id)
-DELETE          /c_program/:c_program_id                                        @controllers.Controller_Code.c_program_delete(c_program_id)
+PUT       /c_program/:c_program_id                                      @controllers.Controller_Code.c_program_update(c_program_id)
+DELETE    /c_program/:c_program_id                                      @controllers.Controller_Code.c_program_delete(c_program_id)
 
-GET             /c_program/public/:type_of_board_id                             @controllers.Controller_Code.c_program_getPublicByType(type_of_board_id)
+GET       /c_program/public/:type_of_board_id                           @controllers.Controller_Code.c_program_getPublicByType(type_of_board_id)
 
-POST            /c_program/version/create/:c_program_id                         @controllers.Controller_Code.c_programVersion_create(c_program_id)
-PUT             /c_program/version/edit/:version_id                             @controllers.Controller_Code.c_programVersion_update(version_id)
+POST      /c_program/version/create/:c_program_id                       @controllers.Controller_Code.c_programVersion_create(c_program_id)
+PUT       /c_program/version/edit/:version_id                           @controllers.Controller_Code.c_programVersion_update(version_id)
 
-DELETE          /c_program/version/:version_id                                  @controllers.Controller_Code.c_programVersion_delete(version_id)
-GET             /c_program/version/:version_id                                  @controllers.Controller_Code.c_programVersion_get(version_id)
-POST            /c_program/version/compile                                      @controllers.Controller_Board.compile_C_Program_code()
-PUT             /c_program/version/compile/:version_id                          @controllers.Controller_Board.compile_C_Program_version(version_id)
+DELETE    /c_program/version/:version_id                                @controllers.Controller_Code.c_programVersion_delete(version_id)
+GET       /c_program/version/:version_id                                @controllers.Controller_Code.c_programVersion_get(version_id)
+POST      /c_program/version/compile                                    @controllers.Controller_Board.compile_C_Program_code()
+PUT       /c_program/version/compile/:version_id                        @controllers.Controller_Board.compile_C_Program_version(version_id)
 
-POST            /c_program/default/scheme                                       @controllers.Controller_Code.c_program_createDefault()
-PUT             /c_program/default/mark/:c_program_id/:version_id               @controllers.Controller_Code.c_program_markScheme(c_program_id,version_id)
+POST      /c_program/default/scheme                                     @controllers.Controller_Code.c_program_createDefault()
+PUT       /c_program/default/mark/:c_program_id/:version_id             @controllers.Controller_Code.c_program_markScheme(c_program_id,version_id)
 
-GET             /c_program/version/public/list/:page_number                     @controllers.Controller_Code.c_program_getPublicList(page_number: Int)
-
+GET       /c_program/version/public/list/:page_number                   @controllers.Controller_Code.c_program_getPublicList(page_number: Int)
 
 #C_Program/Public
-GET             /c_program/version_for_decision/:version_id                     @controllers.Controller_Code.get_version_for_decision(version_id)
-PUT             /c_program/version_for_aprove/approve_decision                  @controllers.Controller_Code.approve_decision()
-PUT             /c_program/version/make_public/:version_id                      @controllers.Controller_Code.c_programVersion_makePublic(version_id)
-
+GET       /c_program/version_for_decision/:version_id                   @controllers.Controller_Code.get_version_for_decision(version_id)
+PUT       /c_program/version_for_aprove/approve_decision                @controllers.Controller_Code.approve_decision()
+PUT       /c_program/version/make_public/:version_id                    @controllers.Controller_Code.c_programVersion_makePublic(version_id)
 
 #Libraries
-POST            /library                                                        @controllers.Controller_Library.library_create()
-GET             /library/:library_id                                            @controllers.Controller_Library.library_get(library_id)
-PUT             /library/:library_id                                            @controllers.Controller_Library.library_update(library_id)
-PUT             /library/list/:page_number                                      @controllers.Controller_Library.library_getByFilter(page_number: Int)
-DELETE          /library/:library_id                                            @controllers.Controller_Library.library_delete(library_id)
+POST      /library                                                      @controllers.Controller_Library.library_create()
+GET       /library/:library_id                                          @controllers.Controller_Library.library_get(library_id)
+PUT       /library/:library_id                                          @controllers.Controller_Library.library_update(library_id)
+PUT       /library/list/:page_number                                    @controllers.Controller_Library.library_getByFilter(page_number: Int)
+DELETE    /library/:library_id                                          @controllers.Controller_Library.library_delete(library_id)
 
-POST            /library/version/:library_id                                    @controllers.Controller_Library.libraryVersion_create(library_id)
-GET             /library/version/:version_id                                    @controllers.Controller_Library.libraryVersion_get(version_id)
-PUT             /library/version/:version_id                                    @controllers.Controller_Library.libraryVersion_update(version_id)
-DELETE          /library/version/:version_id                                    @controllers.Controller_Library.libraryVersion_delete(version_id)
+POST      /library/version/:library_id                                  @controllers.Controller_Library.libraryVersion_create(library_id)
+GET       /library/version/:version_id                                  @controllers.Controller_Library.libraryVersion_get(version_id)
+PUT       /library/version/:version_id                                  @controllers.Controller_Library.libraryVersion_update(version_id)
+DELETE    /library/version/:version_id                                  @controllers.Controller_Library.libraryVersion_delete(version_id)
 
-POST            /library/version/upload_example/:version_id                     @controllers.Controller_Library.libraryVersion_uploadExample(version_id)
-DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_Library.libraryVersion_removeExample(example_id)
-
+POST      /library/version/upload_example/:version_id                   @controllers.Controller_Library.libraryVersion_uploadExample(version_id)
+DELETE    /library/version/remove_example/:example_id                   @controllers.Controller_Library.libraryVersion_removeExample(example_id)
 
 #Actualization
-GET             /board/ide_upload_hardware/:project_id                          @controllers.Controller_Board.board_getForFastUpload(project_id)
-PUT             /c_program/version/upload                                       @controllers.Controller_Board.uploadCompilationToBoard()
-#POST           /admin_binary/:instance_id/:board_id/:build_id/:command         @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
-
+GET       /board/ide_upload_hardware/:project_id                        @controllers.Controller_Board.board_getForFastUpload(project_id)
+PUT       /c_program/version/upload                                     @controllers.Controller_Board.uploadCompilationToBoard()
+#POST     /admin_binary/:instance_id/:board_id/:build_id/:command       @controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
 
 #Processor
-POST            /processor                                                      @controllers.Controller_Board.processor_create()
-GET             /processor/:processor_id                                        @controllers.Controller_Board.processor_get(processor_id)
-GET             /processor                                                      @controllers.Controller_Board.processor_getAll()
-PUT             /processor/:processor_id                                        @controllers.Controller_Board.processor_update(processor_id)
-DELETE          /processor/:processor_id                                        @controllers.Controller_Board.processor_delete(processor_id)
-
+POST      /processor                                                    @controllers.Controller_Board.processor_create()
+GET       /processor/:processor_id                                      @controllers.Controller_Board.processor_get(processor_id)
+GET       /processor                                                    @controllers.Controller_Board.processor_getAll()
+PUT       /processor/:processor_id                                      @controllers.Controller_Board.processor_update(processor_id)
+DELETE    /processor/:processor_id                                      @controllers.Controller_Board.processor_delete(processor_id)
 
 #Board
-POST            /board                                                          @controllers.Controller_Board.board_create()
-PUT             /board/userDescription/:board_id                                @controllers.Controller_Board.board_updateDescription(board_id)
-PUT             /board/backup                                                   @controllers.Controller_Board.board_updateBackup()
-PUT             /board/backup/set_version                                       @controllers.Controller_Board.board_setBackupCode()
+POST      /board                                                        @controllers.Controller_Board.board_create()
+PUT       /board/userDescription/:board_id                              @controllers.Controller_Board.board_updateDescription(board_id)
+PUT       /board/backup                                                 @controllers.Controller_Board.board_updateBackup()
+PUT       /board/backup/set_version                                     @controllers.Controller_Board.board_setBackupCode()
 
-PUT             /board/filter                                                   @controllers.Controller_Board.board_getByFilter()
-GET             /board/check/:hash_for_adding                                   @controllers.Controller_Board.board_check(hash_for_adding)
-GET             /board/:board_id                                                @controllers.Controller_Board.board_get(board_id)
-DELETE          /board/deactivateBoard/:board_id                                @controllers.Controller_Board.board_deactivate(board_id)
-PUT             /board/:hash_for_adding/:project_id                             @controllers.Controller_Board.board_connectProject(hash_for_adding, project_id)
-DELETE          /board/:board_id                                                @controllers.Controller_Board.board_disconnectProject(board_id)
-
+PUT       /board/filter                                                 @controllers.Controller_Board.board_getByFilter()
+GET       /board/check/:hash_for_adding                                 @controllers.Controller_Board.board_check(hash_for_adding)
+GET       /board/:board_id                                              @controllers.Controller_Board.board_get(board_id)
+DELETE    /board/deactivateBoard/:board_id                              @controllers.Controller_Board.board_deactivate(board_id)
+PUT       /board/:hash_for_adding/:project_id                           @controllers.Controller_Board.board_connectProject(hash_for_adding, project_id)
+DELETE    /board/:board_id                                              @controllers.Controller_Board.board_disconnectProject(board_id)
 
 #Producer
-POST            /producer                                                       @controllers.Controller_Board.producer_create()
-PUT             /producer/:producer_id                                          @controllers.Controller_Board.producer_update(producer_id)
-GET             /producer/all                                                   @controllers.Controller_Board.producer_getAll()
-GET             /producer/:producer_id                                          @controllers.Controller_Board.producer_get(producer_id)
-DELETE          /producer/:producer_id                                          @controllers.Controller_Board.producer_delete(producer_id)
+POST      /producer                                                     @controllers.Controller_Board.producer_create()
+PUT       /producer/:producer_id                                        @controllers.Controller_Board.producer_update(producer_id)
+GET       /producer/all                                                 @controllers.Controller_Board.producer_getAll()
+GET       /producer/:producer_id                                        @controllers.Controller_Board.producer_get(producer_id)
+DELETE    /producer/:producer_id                                        @controllers.Controller_Board.producer_delete(producer_id)
 
 #TypeOfBoard
-POST            /typeOfBoard                                                    @controllers.Controller_Board.typeOfBoard_create()
-PUT             /typeOfBoard/picture_up/:type_of_board_id                       @controllers.Controller_Board.typeOfBoard_uploadPicture(type_of_board_id)
-PUT             /typeOfBoard/picture_remove/:type_of_board_id                   @controllers.Controller_Board.typeOfBoard_removePicture(type_of_board_id)
-PUT             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_Board.typeOfBoard_update(type_of_board_id)
-DELETE          /typeOfBoard/:type_of_board_id                                  @controllers.Controller_Board.typeOfBoard_delete(type_of_board_id)
-GET             /typeOfBoard/all                                                @controllers.Controller_Board.typeOfBoard_getAll()
-GET             /typeOfBoard/:type_of_board_id                                  @controllers.Controller_Board.typeOfBoard_get(type_of_board_id)
+POST      /typeOfBoard                                                  @controllers.Controller_Board.typeOfBoard_create()
+PUT       /typeOfBoard/picture_up/:type_of_board_id                     @controllers.Controller_Board.typeOfBoard_uploadPicture(type_of_board_id)
+PUT       /typeOfBoard/picture_remove/:type_of_board_id                 @controllers.Controller_Board.typeOfBoard_removePicture(type_of_board_id)
+PUT       /typeOfBoard/:type_of_board_id                                @controllers.Controller_Board.typeOfBoard_update(type_of_board_id)
+DELETE    /typeOfBoard/:type_of_board_id                                @controllers.Controller_Board.typeOfBoard_delete(type_of_board_id)
+GET       /typeOfBoard/all                                              @controllers.Controller_Board.typeOfBoard_getAll()
+GET       /typeOfBoard/:type_of_board_id                                @controllers.Controller_Board.typeOfBoard_get(type_of_board_id)
 
 #Bootloader
-POST            /bootloader/:type_of_board_id                                   @controllers.Controller_Board.bootLoader_create(type_of_board_id)
-PUT             /bootloader/file/:boot_loader_id                                @controllers.Controller_Board.bootLoader_uploadFile(boot_loader_id)
-PUT             /bootloader/mark/bootloader/:boot_loader_id                     @controllers.Controller_Board.bootLoader_markAsMain(boot_loader_id)
-PUT             /bootloader/update_device_list                                  @controllers.Controller_Board.bootLoader_manualUpdate()
+POST      /bootloader/:type_of_board_id                                 @controllers.Controller_Board.bootLoader_create(type_of_board_id)
+PUT       /bootloader/file/:boot_loader_id                              @controllers.Controller_Board.bootLoader_uploadFile(boot_loader_id)
+PUT       /bootloader/mark/bootloader/:boot_loader_id                   @controllers.Controller_Board.bootLoader_markAsMain(boot_loader_id)
+PUT       /bootloader/update_device_list                                @controllers.Controller_Board.bootLoader_manualUpdate()
 
 #File // Skryto ve swaggeru
-GET             /file/fileRecord/:file_record_id                                @controllers.Controller_Board.fileRecord_get(file_record_id)
-
+GET       /file/fileRecord/:file_record_id                              @controllers.Controller_Board.fileRecord_get(file_record_id)
 
 #Compilation Server
-POST            /compilation_server                                             @controllers.Controller_Board.create_Compilation_Server()
-PUT             /compilation_server/:server_id                                  @controllers.Controller_Board.edit_Compilation_Server(server_id)
-GET             /compilation_server                                             @controllers.Controller_Board.get_All_Compilation_Server()
-DELETE          /compilation_server/:server_id                                  @controllers.Controller_Board.delete_Compilation_Server(server_id)
-
+POST      /compilation_server                                           @controllers.Controller_Board.create_Compilation_Server()
+PUT       /compilation_server/:server_id                                @controllers.Controller_Board.edit_Compilation_Server(server_id)
+GET       /compilation_server                                           @controllers.Controller_Board.get_All_Compilation_Server()
+DELETE    /compilation_server/:server_id                                @controllers.Controller_Board.delete_Compilation_Server(server_id)
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
 ################################################################################################################################################################################
 
 #M Project
-GET             /m_project/interface_collection/:m_project_id                          @controllers.Controller_Grid.get_M_Project_Interface_collection(m_project_id)
+GET       /m_project/interface_collection/:m_project_id                 @controllers.Controller_Grid.get_M_Project_Interface_collection(m_project_id)
 
-POST            /m_project/:project_id                                                 @controllers.Controller_Grid.new_M_Project(project_id)
-GET             /m_project/:m_project_id                                               @controllers.Controller_Grid.get_M_Project(m_project_id)
-PUT             /m_project/:m_project_id                                               @controllers.Controller_Grid.edit_M_Project(m_project_id)
-DELETE          /m_project/:m_project_id                                               @controllers.Controller_Grid.remove_M_Project(m_project_id)
+POST      /m_project/:project_id                                        @controllers.Controller_Grid.new_M_Project(project_id)
+GET       /m_project/:m_project_id                                      @controllers.Controller_Grid.get_M_Project(m_project_id)
+PUT       /m_project/:m_project_id                                      @controllers.Controller_Grid.edit_M_Project(m_project_id)
+DELETE    /m_project/:m_project_id                                      @controllers.Controller_Grid.remove_M_Project(m_project_id)
 
 #M Program
-POST            /m_program/:m_project_id                                               @controllers.Controller_Grid.new_M_Program(m_project_id)
-GET             /m_program/:m_progrm_id                                                @controllers.Controller_Grid.get_M_Program(m_progrm_id)
-PUT             /m_program/:m_progrm_id                                                @controllers.Controller_Grid.edit_M_Program(m_progrm_id)
-DELETE          /m_program/:m_progrm_id                                                @controllers.Controller_Grid.remove_M_Program(m_progrm_id)
+POST      /m_program/:m_project_id                                      @controllers.Controller_Grid.new_M_Program(m_project_id)
+GET       /m_program/:m_progrm_id                                       @controllers.Controller_Grid.get_M_Program(m_progrm_id)
+PUT       /m_program/:m_progrm_id                                       @controllers.Controller_Grid.edit_M_Program(m_progrm_id)
+DELETE    /m_program/:m_progrm_id                                       @controllers.Controller_Grid.remove_M_Program(m_progrm_id)
 
-POST            /m_program/version/:m_program_id                                       @controllers.Controller_Grid.new_M_Program_version(m_program_id)
-GET             /m_program/version/:m_program_version_id                               @controllers.Controller_Grid.get_M_Program_version(m_program_version_id)
-DELETE          /m_program/version/:m_program_version_id                               @controllers.Controller_Grid.remove_M_Program_version(m_program_version_id)
+POST      /m_program/version/:m_program_id                              @controllers.Controller_Grid.new_M_Program_version(m_program_id)
+GET       /m_program/version/:m_program_version_id                      @controllers.Controller_Grid.get_M_Program_version(m_program_version_id)
+DELETE    /m_program/version/:m_program_version_id                      @controllers.Controller_Grid.remove_M_Program_version(m_program_version_id)
 
 # Terminals Aps
-GET             /m_program/app/token/:qr_token                                         @controllers.Controller_Grid.get_M_Program_byQR_Token_forMobile(qr_token)
-GET             /m_program/app/all_m_programs                                          @controllers.Controller_Grid.get_M_Project_all_forTerminal()
-PUT             /m_program/app/url                                                     @controllers.Controller_Grid.get_conection_url()
+GET       /m_program/app/token/:qr_token                                @controllers.Controller_Grid.get_M_Program_byQR_Token_forMobile(qr_token)
+GET       /m_program/app/all_m_programs                                 @controllers.Controller_Grid.get_M_Project_all_forTerminal()
+PUT       /m_program/app/url                                            @controllers.Controller_Grid.get_conection_url()
 
-PUT             /websocket/terminal/identificator                                      @controllers.Controller_Grid.get_identificator()
-PUT             /websocket/terminal/identificator/:terminal_id                         @controllers.Controller_Grid.check_identifiactor(terminal_id)
+PUT       /websocket/terminal/identificator                             @controllers.Controller_Grid.get_identificator()
+PUT       /websocket/terminal/identificator/:terminal_id                @controllers.Controller_Grid.check_identifiactor(terminal_id)
 
 # Wigets
-POST           /grid_widget                                                            @controllers.Controller_Grid.gridWidget_create()
-PUT            /grid_widget/order/up/:grid_widget_id                                   @controllers.Controller_Grid.gridWidget_order_up(grid_widget_id)
-PUT            /grid_widget/order/down/:grid_widget_id                                 @controllers.Controller_Grid.gridWidget_order_down(grid_widget_id)
-PUT            /grid_widget/:grid_widget_id                                            @controllers.Controller_Grid.gridWidget_update(grid_widget_id)
-GET            /grid_widget/:grid_widget_id                                            @controllers.Controller_Grid.gridWidget_get(grid_widget_id)
-DELETE         /grid_widget/:grid_widget_id                                            @controllers.Controller_Grid.gridWidget_delete(grid_widget_id)
-PUT            /grid_widget/list/:page_number                                          @controllers.Controller_Grid.gridWidget_getByFilter(page_number: Int)
+POST      /grid_widget                                                  @controllers.Controller_Grid.gridWidget_create()
+PUT       /grid_widget/order/up/:grid_widget_id                         @controllers.Controller_Grid.gridWidget_order_up(grid_widget_id)
+PUT       /grid_widget/order/down/:grid_widget_id                       @controllers.Controller_Grid.gridWidget_order_down(grid_widget_id)
+PUT       /grid_widget/:grid_widget_id                                  @controllers.Controller_Grid.gridWidget_update(grid_widget_id)
+GET       /grid_widget/:grid_widget_id                                  @controllers.Controller_Grid.gridWidget_get(grid_widget_id)
+DELETE    /grid_widget/:grid_widget_id                                  @controllers.Controller_Grid.gridWidget_delete(grid_widget_id)
+PUT       /grid_widget/list/:page_number                                @controllers.Controller_Grid.gridWidget_getByFilter(page_number: Int)
 
-POST           /grid_widget/version/:grid_widget_id                                    @controllers.Controller_Grid.gridWidgetVersion_create(grid_widget_id)
-PUT            /grid_widget/version/:grid_widget_version_id                            @controllers.Controller_Grid.gridWidgetVersion_update(grid_widget_version_id)
-PUT            /grid_widget/version/make_public/:grid_widget_version_id                @controllers.Controller_Grid.gridWidgetVersion_makePublic(grid_widget_version_id)
-GET            /grid_widget/version/all/:grid_widget_id                                @controllers.Controller_Grid.gridWidgetVersion_getAll(grid_widget_id)
-GET            /grid_widget/version/:grid_widget_version_id                            @controllers.Controller_Grid.gridWidgetVersion_get(grid_widget_version_id)
-DELETE         /grid_widget/version/:grid_widget_version_id                            @controllers.Controller_Grid.gridWidgetVersion_delete(grid_widget_version_id)
+POST      /grid_widget/version/:grid_widget_id                          @controllers.Controller_Grid.gridWidgetVersion_create(grid_widget_id)
+PUT       /grid_widget/version/:grid_widget_version_id                  @controllers.Controller_Grid.gridWidgetVersion_update(grid_widget_version_id)
+PUT       /grid_widget/version/make_public/:grid_widget_version_id      @controllers.Controller_Grid.gridWidgetVersion_makePublic(grid_widget_version_id)
+GET       /grid_widget/version/all/:grid_widget_id                      @controllers.Controller_Grid.gridWidgetVersion_getAll(grid_widget_id)
+GET       /grid_widget/version/:grid_widget_version_id                  @controllers.Controller_Grid.gridWidgetVersion_get(grid_widget_version_id)
+DELETE    /grid_widget/version/:grid_widget_version_id                  @controllers.Controller_Grid.gridWidgetVersion_delete(grid_widget_version_id)
 
-POST           /grid_widget/scheme/version                                             @controllers.Controller_Grid.gridWidgetVersion_createScheme()
-GET            /grid_widget/scheme/version                                             @controllers.Controller_Grid.gridWidgetVersion_getScheme()
-PUT            /grid_widget/scheme/version                                             @controllers.Controller_Grid.gridWidgetVersion_editScheme()
+POST      /grid_widget/scheme/version                                   @controllers.Controller_Grid.gridWidgetVersion_createScheme()
+GET       /grid_widget/scheme/version                                   @controllers.Controller_Grid.gridWidgetVersion_getScheme()
+PUT       /grid_widget/scheme/version                                   @controllers.Controller_Grid.gridWidgetVersion_editScheme()
 
 #TypeOfWidget
-POST           /type_of_widget                                                         @controllers.Controller_Grid.typeOfWidget_create()
-GET            /type_of_widget                                                         @controllers.Controller_Grid.typeOfWidget_getAll()
-PUT            /type_of_widget/order/up/:type_of_widget_id                             @controllers.Controller_Grid.typeOfWidget_order_up(type_of_widget_id)
-PUT            /type_of_widget/order/down/:type_of_widget_id                           @controllers.Controller_Grid.typeOfWidget_order_down(type_of_widget_id)
-PUT            /type_of_widget/list/:page_number                                       @controllers.Controller_Grid.typeOfWidget_getByFilter(page_number: Int)
-GET            /type_of_widget/:type_of_widget_id                                      @controllers.Controller_Grid.typeOfWidget_get(type_of_widget_id)
-PUT            /type_of_widget/:type_of_widget_id                                      @controllers.Controller_Grid.typeOfWidget_update(type_of_widget_id)
-DELETE         /type_of_widget/:type_of_widget_id                                      @controllers.Controller_Grid.typeOfWidget_delete(type_of_widget_id)
+POST      /type_of_widget                                               @controllers.Controller_Grid.typeOfWidget_create()
+GET       /type_of_widget                                               @controllers.Controller_Grid.typeOfWidget_getAll()
+PUT       /type_of_widget/order/up/:type_of_widget_id                   @controllers.Controller_Grid.typeOfWidget_order_up(type_of_widget_id)
+PUT       /type_of_widget/order/down/:type_of_widget_id                 @controllers.Controller_Grid.typeOfWidget_order_down(type_of_widget_id)
+PUT       /type_of_widget/list/:page_number                             @controllers.Controller_Grid.typeOfWidget_getByFilter(page_number: Int)
+GET       /type_of_widget/:type_of_widget_id                            @controllers.Controller_Grid.typeOfWidget_get(type_of_widget_id)
+PUT       /type_of_widget/:type_of_widget_id                            @controllers.Controller_Grid.typeOfWidget_update(type_of_widget_id)
+DELETE    /type_of_widget/:type_of_widget_id                            @controllers.Controller_Grid.typeOfWidget_delete(type_of_widget_id)
 
 # Approval
-PUT             /grid/disapprove                                                  @controllers.Controller_Grid.gridDisapprove()
-PUT             /grid/approval                                                    @controllers.Controller_Grid.gridApproval()
+PUT       /grid/disapprove                                              @controllers.Controller_Grid.gridDisapprove()
+PUT       /grid/approval                                                @controllers.Controller_Grid.gridApproval()
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
 
 #SWAGGER API
-GET             /api-docs                                    @utilities.swagger.ApiHelpController.getResources
-GET             /api-docs/:version                           @utilities.swagger.swagger_diff_tools.Swagger_diff_Controller.getResources_version(version)
+GET       /api-docs                                                     @utilities.swagger.ApiHelpController.getResources
+GET       /api-docs/:version                                            @utilities.swagger.swagger_diff_tools.Swagger_diff_Controller.getResources_version(version)
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET           /assets/*file                                 controllers.Assets.at(path="/public", file)
-GET           /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
-GET           /.well-known/acme-challenge/:file             @utilities.certificate.Utilities_CertificateCheck.check(file)
+GET       /assets/*file                                                 controllers.Assets.at(path="/public", file)
+GET       /assets/*file                                                 controllers.Assets.versioned(path="/public", file: Asset)
+GET       /.well-known/acme-challenge/:file                             @utilities.certificate.CertificateCheck.check(file)
 
 ### HARDWARE - GENERATOR ############ HARDWARE - GENERATOR ############### HARDWARE - GENERATOR ################ HARDWARE - GENERATOR ###########################################
 ###################################################################################f#############################################################################################
 
-PUT             /admin/embedded_hardware/request                      @utilities.hardware_generator.Utilities_Hardware_generator_Controller.new_hardware_request()
-PUT             /admin/embedded_hardware/result                       @utilities.hardware_generator.Utilities_Hardware_generator_Controller.new_hardware_result()
+PUT       /admin/embedded_hardware/request                              @utilities.hardware_generator.Utilities_Hardware_generator_Controller.new_hardware_request()
+PUT       /admin/embedded_hardware/result                               @utilities.hardware_generator.Utilities_Hardware_generator_Controller.new_hardware_result()
 
 ### PUBLIC - ADMIN ############ PUBLIC  - ADMIN ############### PUBLIC  - ADMIN ################ PUBLIC  - ADMIN ################################################################
 ###################################################################################f#############################################################################################
 
 # Basic Page Requests
-GET             /                                               @controllers.Controller_Dashboard.index()
-GET             /admin/login                                    @controllers.Controller_Security.admin_login()
-GET             /admin/bugs                                     @utilities.logger.Server_Logger.show_all_logs()
-GET             /admin/websocket/summary                        @controllers.Controller_Dashboard.show_web_socket_stats()
-GET             /admin/websocket/server_detail/:server_name     @controllers.Controller_Dashboard.show_websocket_server_detail(server_name)
-GET             /admin/websocket/instance_detail/:instance_id   @controllers.Controller_Dashboard.show_instance_detail(instance_id)
+GET       /                                                             @controllers.Controller_Dashboard.index()
+GET       /admin/login                                                  @controllers.Controller_Security.admin_login()
+GET       /admin/bugs                                                   @utilities.logger.Server_Logger.show_all_logs()
+GET       /admin/websocket/summary                                      @controllers.Controller_Dashboard.show_web_socket_stats()
+GET       /admin/websocket/server_detail/:server_name                   @controllers.Controller_Dashboard.show_websocket_server_detail(server_name)
+GET       /admin/websocket/instance_detail/:instance_id                 @controllers.Controller_Dashboard.show_instance_detail(instance_id)
 
 # Admin - For developers
-GET             /admin/show_readme                              @controllers.Controller_Dashboard.show_readme()
-GET             /admin/show_wiki/:file_name                     @controllers.Controller_Dashboard.show_wiki(file_name)
-GET             /admin/show_diff_on_Api/                        @controllers.Controller_Dashboard.show_diff_on_Api(old_api: String?="",new_api: String?="")
+GET       /admin/show_readme                                            @controllers.Controller_Dashboard.show_readme()
+GET       /admin/show_wiki/:file_name                                   @controllers.Controller_Dashboard.show_wiki(file_name)
+GET       /admin/show_diff_on_Api/                                      @controllers.Controller_Dashboard.show_diff_on_Api(old_api: String?="",new_api: String?="")
 
-GET             /admin/request_stats                            @utilities.request_counter.RequestCounter.get_request_stats()
-DELETE          /admin/request_stats                            @utilities.request_counter.RequestCounter.reset_request_stats()
+GET       /admin/request_stats                                          @utilities.request_counter.RequestCounter.get_request_stats()
+DELETE    /admin/request_stats                                          @utilities.request_counter.RequestCounter.reset_request_stats()
 
 # Admin - Hardware
-GET             /admin/board_settings                           @controllers.Controller_Dashboard.basic_board_management()
-GET             /admin/board_summary                            @controllers.Controller_Dashboard.board_summary()
-GET             /admin/board_detail/:board_id                   @controllers.Controller_Dashboard.board_detail(board_id)
-GET             /admin/mac_address_generator                    @controllers.Controller_Dashboard.mac_address_generator()
-GET             /admin/bootloader_settings/:type_of_board_id    @controllers.Controller_Dashboard.bootloader_management(type_of_board_id)
+GET       /admin/board_settings                                         @controllers.Controller_Dashboard.basic_board_management()
+GET       /admin/board_summary                                          @controllers.Controller_Dashboard.board_summary()
+GET       /admin/board_detail/:board_id                                 @controllers.Controller_Dashboard.board_detail(board_id)
+GET       /admin/mac_address_generator                                  @controllers.Controller_Dashboard.mac_address_generator()
+GET       /admin/bootloader_settings/:type_of_board_id                  @controllers.Controller_Dashboard.bootloader_management(type_of_board_id)
 
 # Admin - External Servers
-GET             /admin/external_servers                         @controllers.Controller_Dashboard.external_servers()
+GET       /admin/external_servers                                       @controllers.Controller_Dashboard.external_servers()
 
 # Admin - Help Desk
-GET             /admin/helpdesk_tool                            @controllers.Controller_Dashboard.user_summary(email: String?="")
-GET             /admin/helpdesk_tool/product/:product_id        @controllers.Controller_Dashboard.product_detail(product_id)
-GET             /admin/helpdesk_tool/project/:project_id        @controllers.Controller_Dashboard.project_detail(project_id)
-GET             /admin/helpdesk_tool/invoice/:invoice_id        @controllers.Controller_Dashboard.invoice(invoice_id)
+GET       /admin/helpdesk_tool                                          @controllers.Controller_Dashboard.user_summary(email: String?="")
+GET       /admin/helpdesk_tool/product/:product_id                      @controllers.Controller_Dashboard.product_detail(product_id)
+GET       /admin/helpdesk_tool/project/:project_id                      @controllers.Controller_Dashboard.project_detail(project_id)
+GET       /admin/helpdesk_tool/invoice/:invoice_id                      @controllers.Controller_Dashboard.invoice(invoice_id)
 
 
 # Admin - Permission
-GET             /admin/permission/permission_summary            @controllers.Controller_Dashboard.permissions_summary()
-GET             /admin/permission/role/:role_id                 @controllers.Controller_Dashboard.role(role_id)
+GET       /admin/permission/permission_summary                          @controllers.Controller_Dashboard.permissions_summary()
+GET       /admin/permission/role/:role_id                               @controllers.Controller_Dashboard.role(role_id)
 
 # Admin - Blocko
-GET             /admin/blocko_objects                           @controllers.Controller_Dashboard.blocko_objects()
-GET             /admin/blocko_management                        @controllers.Controller_Dashboard.blocko_management()
+GET       /admin/blocko_objects                                         @controllers.Controller_Dashboard.blocko_objects()
+GET       /admin/blocko_management                                      @controllers.Controller_Dashboard.blocko_management()
 
 # Admin - Grid
-GET             /admin/grid_public                              @controllers.Controller_Dashboard.grid_public()
-GET             /admin/grid_management                          @controllers.Controller_Dashboard.grid_management()
+GET       /admin/grid_public                                            @controllers.Controller_Dashboard.grid_public()
+GET       /admin/grid_management                                        @controllers.Controller_Dashboard.grid_management()
 
 # Admin - C_code
-GET             /admin/c_program/public/list                    @controllers.Controller_Dashboard.public_c_code_list()
-GET             /admin/c_program/public/:c_program_id           @controllers.Controller_Dashboard.public_c_code(c_program_id)
+GET       /admin/c_program/public/list                                  @controllers.Controller_Dashboard.public_c_code_list()
+GET       /admin/c_program/public/:c_program_id                         @controllers.Controller_Dashboard.public_c_code(c_program_id)
 
-GET             /admin/c_program/aprove/list                    @controllers.Controller_Dashboard.public_code_approve_procedure_list()
-GET             /admin/c_program/aprove/:c_program_id           @controllers.Controller_Dashboard.public_code_approve_procedure(c_program_id)
+GET       /admin/c_program/aprove/list                                  @controllers.Controller_Dashboard.public_code_approve_procedure_list()
+GET       /admin/c_program/aprove/:c_program_id                         @controllers.Controller_Dashboard.public_code_approve_procedure(c_program_id)
 
 # Admin - Libraries
-GET             /admin/library/libraries                        @controllers.Controller_Dashboard.public_libraries()
-GET             /admin/library/:library_id                      @controllers.Controller_Dashboard.public_library(library_id)
+GET       /admin/library/libraries                                      @controllers.Controller_Dashboard.public_libraries()
+GET       /admin/library/:library_id                                    @controllers.Controller_Dashboard.public_library(library_id)
 
 
 
 
 # Admin - Tariff Management
-GET             /admin/tariff                                   @controllers.Controller_Dashboard.tariffs()
-GET             /admin/tariff/:tariff_id                        @controllers.Controller_Dashboard.tariff_edit(tariff_id)
-GET             /admin/extension/:extension_id                  @controllers.Controller_Dashboard.extension_edit(extension_id)
+GET       /admin/tariff                                                 @controllers.Controller_Dashboard.tariffs()
+GET       /admin/tariff/:tariff_id                                      @controllers.Controller_Dashboard.tariff_edit(tariff_id)
+GET       /admin/extension/:extension_id                                @controllers.Controller_Dashboard.extension_edit(extension_id)
 
 # Demo Data
-GET             /admin/demo_data                                @controllers.Controller_Dashboard.demo_data()
-PUT             /admin/demo_data/test                           @utilities.demo_data.Utilities_Demo_data_Controller.test()
-PUT             /admin/demo_data/all_for_becki                  @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
-PUT             /admin/demo_data/extendension_servers           @utilities.demo_data.Utilities_Demo_data_Controller.extendension_servers()
-PUT             /admin/demo_data/basic_tarifs                   @utilities.demo_data.Utilities_Demo_data_Controller.basic_tariffs()
-PUT             /admin/demo_data/producers                      @utilities.demo_data.Utilities_Demo_data_Controller.producers()
-PUT             /admin/demo_data/type_of_board                  @utilities.demo_data.Utilities_Demo_data_Controller.type_of_board()
-PUT             /admin/demo_data/test_boards                    @utilities.demo_data.Utilities_Demo_data_Controller.test_boards()
-PUT             /admin/demo_data/person                         @utilities.demo_data.Utilities_Demo_data_Controller.person_test_user()
+GET       /admin/demo_data                                              @controllers.Controller_Dashboard.demo_data()
+PUT       /admin/demo_data/test                                         @utilities.demo_data.Utilities_Demo_data_Controller.test()
+PUT       /admin/demo_data/all_for_becki                                @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
+PUT       /admin/demo_data/extendension_servers                         @utilities.demo_data.Utilities_Demo_data_Controller.extendension_servers()
+PUT       /admin/demo_data/basic_tarifs                                 @utilities.demo_data.Utilities_Demo_data_Controller.basic_tariffs()
+PUT       /admin/demo_data/producers                                    @utilities.demo_data.Utilities_Demo_data_Controller.producers()
+PUT       /admin/demo_data/type_of_board                                @utilities.demo_data.Utilities_Demo_data_Controller.type_of_board()
+PUT       /admin/demo_data/test_boards                                  @utilities.demo_data.Utilities_Demo_data_Controller.test_boards()
+PUT       /admin/demo_data/person                                       @utilities.demo_data.Utilities_Demo_data_Controller.person_test_user()
 
-GET             /admin/test                                     @utilities.test.Controller_Test.test()
+GET       /admin/test                                                   @utilities.test.Controller_Test.test()
 
 # Test
-GET             /admin/test/run/:cmd                            @utilities.test.TestLauncher.launch_test(cmd)
-GET             /admin/test/log                                 @utilities.test.TestLog.get_test_log()
-GET             /admin/test/log/clear                           @utilities.test.TestLog.clear_test_log()
-
+GET       /admin/test/run/:cmd                                          @utilities.test.TestLauncher.launch_test(cmd)
+GET       /admin/test/log                                               @utilities.test.TestLog.get_test_log()
+GET       /admin/test/log/clear                                         @utilities.test.TestLog.clear_test_log()
 
 # Tariff
-POST            /admin/tariff                                   @controllers.Controller_Finance.tariff_create()
-PUT             /admin/tariff                                   @controllers.Controller_Finance.tariff_update()
-PUT             /admin/tariff/deactive/:tariff_id               @controllers.Controller_Finance.tariff_deactivate(tariff_id)
-PUT             /admin/tariff/active/:tariff_id                 @controllers.Controller_Finance.tariff_activate(tariff_id)
-PUT             /admin/tariff/up/:tariff_id                     @controllers.Controller_Finance.tariff_up(tariff_id)
-PUT             /admin/tariff/down/:tariff_id                   @controllers.Controller_Finance.tariff_down(tariff_id)
+POST      /admin/tariff                                                 @controllers.Controller_Finance.tariff_create()
+PUT       /admin/tariff                                                 @controllers.Controller_Finance.tariff_update()
+PUT       /admin/tariff/deactive/:tariff_id                             @controllers.Controller_Finance.tariff_deactivate(tariff_id)
+PUT       /admin/tariff/active/:tariff_id                               @controllers.Controller_Finance.tariff_activate(tariff_id)
+PUT       /admin/tariff/up/:tariff_id                                   @controllers.Controller_Finance.tariff_up(tariff_id)
+PUT       /admin/tariff/down/:tariff_id                                 @controllers.Controller_Finance.tariff_down(tariff_id)
 
-POST            /admin/label/tariff                             @controllers.Controller_Finance.tariffLabel_create()
-#POST            /admin/label/extension                          @controllers.Controller_Finance.tariff_general_label_extension_create()
-PUT             /admin/label                                    @controllers.Controller_Finance.tariffLabel_update()
-PUT             /admin/label/up/:label_id                       @controllers.Controller_Finance.tariffLabel_up(label_id)
-PUT             /admin/label/down/:label_id                     @controllers.Controller_Finance.tariffLabel_down(label_id)
-DELETE          /admin/label/:label_id                          @controllers.Controller_Finance.tariffLabel_delete(label_id)
+POST      /admin/label/tariff                                           @controllers.Controller_Finance.tariffLabel_create()
+PUT       /admin/label                                                  @controllers.Controller_Finance.tariffLabel_update()
+PUT       /admin/label/up/:label_id                                     @controllers.Controller_Finance.tariffLabel_up(label_id)
+PUT       /admin/label/down/:label_id                                   @controllers.Controller_Finance.tariffLabel_down(label_id)
+DELETE    /admin/label/:label_id                                        @controllers.Controller_Finance.tariffLabel_delete(label_id)
 
-POST            /admin/extension                                @controllers.Controller_Finance.tariffExtension_create()
-PUT             /admin/extension                                @controllers.Controller_Finance.tariffExtension_update()
-PUT             /admin/extension/up/:extension_id               @controllers.Controller_Finance.tariffExtension_up(extension_id)
-PUT             /admin/extension/down/:extension_id             @controllers.Controller_Finance.tariffExtension_down(extension_id)
-PUT             /admin/extension/deactive/:extension_id         @controllers.Controller_Finance.tariffExtension_deactivate(extension_id)
-PUT             /admin/extension/active/:extension_id           @controllers.Controller_Finance.tariffExtension_activate(extension_id)
-DELETE          /admin/extension/:extension_id                  @controllers.Controller_Finance.tariffExtension_delete(extension_id)
-
-#GET             /javascriptRoutes                               @controllers.Controller_Dashboard.javascriptRoutes()
+POST      /admin/extension                                              @controllers.Controller_Finance.tariffExtension_create()
+PUT       /admin/extension                                              @controllers.Controller_Finance.tariffExtension_update()
+PUT       /admin/extension/up/:extension_id                             @controllers.Controller_Finance.tariffExtension_up(extension_id)
+PUT       /admin/extension/down/:extension_id                           @controllers.Controller_Finance.tariffExtension_down(extension_id)
+PUT       /admin/extension/deactive/:extension_id                       @controllers.Controller_Finance.tariffExtension_deactivate(extension_id)
+PUT       /admin/extension/active/:extension_id                         @controllers.Controller_Finance.tariffExtension_activate(extension_id)
+DELETE    /admin/extension/:extension_id                                @controllers.Controller_Finance.tariffExtension_delete(extension_id)
 
 # BUGS SERVISE PAGE
-GET             /admin/bugs/deleteAll                      @utilities.logger.Server_Logger.loggy_remove_all_bugs()
-GET             /admin/bug/remove/:id                      @utilities.logger.Server_Logger.loggy_remove_bug(id: String)
-GET             /admin/bug/report/:id                      @utilities.logger.Server_Logger.loggy_report_bug_to_youtrack(id: String)
+GET       /admin/bugs/deleteAll                                         @utilities.logger.Server_Logger.loggy_remove_all_bugs()
+GET       /admin/bug/remove/:id                                         @utilities.logger.Server_Logger.loggy_remove_bug(id: String)
+GET       /admin/bug/report/:id                                         @utilities.logger.Server_Logger.loggy_report_bug_to_youtrack(id: String)
 
 # WEBSOCKET SERVISE PAGE
-GET             /admin/instance/ping/:id                   @controllers.Controller_Dashboard.ping_homer_instance(id: String)
+GET       /admin/instance/ping/:id                                      @controllers.Controller_Dashboard.ping_homer_instance(id: String)
 
-GET             /admin/homer_server/ping/:id               @controllers.Controller_Dashboard.ping_homer_server(id)
-GET             /admin/homer_server/disconnect/:id         @controllers.Controller_Dashboard.disconnect_blocko_server(id)
+GET       /admin/homer_server/ping/:id                                  @controllers.Controller_Dashboard.ping_homer_server(id)
+GET       /admin/homer_server/disconnect/:id                            @controllers.Controller_Dashboard.disconnect_blocko_server(id)
 
-GET             /admin/compilator_server/ping/:id          @controllers.Controller_Dashboard.ping_compilation_server(id)
-GET             /admin/compilator_server/disconnect/:id    @controllers.Controller_Dashboard.disconnect_compilation_server(id)
+GET       /admin/compilator_server/ping/:id                             @controllers.Controller_Dashboard.ping_compilation_server(id)
+GET       /admin/compilator_server/disconnect/:id                       @controllers.Controller_Dashboard.disconnect_compilation_server(id)
 
-GET             /admin/becki/ping/:id/:token               @controllers.Controller_Dashboard.ping_becki(id, token)
-GET             /admin/becki/disconnect/:id/:token         @controllers.Controller_Dashboard.disconnect_becki(id, token)
+GET       /admin/becki/ping/:id/:token                                  @controllers.Controller_Dashboard.ping_becki(id, token)
+GET       /admin/becki/disconnect/:id/:token                            @controllers.Controller_Dashboard.disconnect_becki(id, token)
 
-
-
-
-GET             /public/*file                               @controllers.Assets.versioned(path="/public", file: Asset)
+GET       /public/*file                                                 @controllers.Assets.versioned(path="/public", file: Asset)

@@ -10,6 +10,9 @@ import utilities.logger.Class_Logger;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Class removes old authTokens, that cannot be used anymore.
+ */
 public class Job_OldFloatingTokenRemoval implements Job {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -27,6 +30,9 @@ public class Job_OldFloatingTokenRemoval implements Job {
         if(!remove_floating_person_token_thread.isAlive()) remove_floating_person_token_thread.start();
     }
 
+    /**
+     * Thread finds tokens whose access_age is greater than now.
+     */
     private Thread remove_floating_person_token_thread = new Thread() {
 
         @Override

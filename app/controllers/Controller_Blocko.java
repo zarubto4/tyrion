@@ -69,12 +69,12 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response =  Model_BProgram.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_BProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public  Result new_b_Program(String project_id){
@@ -93,7 +93,7 @@ public class Controller_Blocko extends Controller{
             if (!project.update_permission() ) return GlobalResult.forbidden_Permission();
 
             // Tvorba programu
-            Model_BProgram b_program             = new Model_BProgram();
+            Model_BProgram b_program        = new Model_BProgram();
             b_program.date_of_create        = new Date();
             b_program.description           = help.description;
             b_program.name                  = help.name;
@@ -126,12 +126,11 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Model_BProgram.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgram.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public  Result get_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
         try{
@@ -164,12 +163,11 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_B_Program_Version.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_B_Program_Version.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public  Result get_b_Program_version(@ApiParam(value = "version_id String path", required = true)  String version_id){
         try{
@@ -216,12 +214,12 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Model_BProgram.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public  Result edit_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
@@ -232,17 +230,16 @@ public class Controller_Blocko extends Controller{
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_B_Program_New help = form.get();
 
-
             // Kontrola objektu
-            Model_BProgram b_program  = Model_BProgram.find.byId(b_program_id);
+            Model_BProgram b_program = Model_BProgram.find.byId(b_program_id);
             if (b_program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             // Kontrola oprávěnní
-            if (! b_program.edit_permission() ) return GlobalResult.forbidden_Permission();
+            if (!b_program.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
-            b_program.description           = help.description;
-            b_program.name                  = help.name;
+            b_program.description = help.description;
+            b_program.name        = help.name;
 
             // Uložení objektu
             b_program.update();
@@ -279,12 +276,13 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_B_Program_Version.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_B_Program_Version.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public  Result update_b_program_new_version(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
@@ -313,19 +311,15 @@ public class Controller_Blocko extends Controller{
             version_object.b_program               = b_program;
             version_object.author                  = Controller_Security.get_person();
 
-
-
             if(help.m_project_snapshots != null)
                 for(Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots){
 
                     Model_MProject m_project = Model_MProject.find.byId(help_m_project_snap.m_project_id);
-                    if(m_project == null) return GlobalResult.notFoundObject("M_Project id not found");
+                    if(m_project == null) return GlobalResult.notFoundObject("M_Project not found");
                     if(!m_project.update_permission()) return GlobalResult.forbidden_Permission();
-
 
                     Model_MProjectProgramSnapShot snap = new Model_MProjectProgramSnapShot();
                     snap.m_project = m_project;
-
 
                     for(Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots){
                         Model_VersionObject m_program_version = Model_VersionObject.find.where().eq("id", help_m_program_snap.version_object_id ).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findUnique();
@@ -335,7 +329,6 @@ public class Controller_Blocko extends Controller{
 
                     version_object.b_program_version_snapshots.add(snap);
                 }
-
 
             // Definování main Board
             for( Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
@@ -448,18 +441,17 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public  Result remove_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
         try{
 
             // Kontrola objektu
-            Model_BProgram program  = Model_BProgram.find.byId(b_program_id);
+            Model_BProgram program = Model_BProgram.find.byId(b_program_id);
             if (program == null) return GlobalResult.notFoundObject("B_Program id not found");
 
             // Kontrola oprávění
@@ -490,12 +482,12 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public  Result remove_b_Program_version(@ApiParam(value = "version_id String path", required = true) String version_id){
         try{
@@ -546,9 +538,10 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_B_Program_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_B_Program_List.class),
+            @ApiResponse(code = 400, message = "Invalid body",          response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
     public Result get_b_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
@@ -560,7 +553,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.get_person().id);
+            query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
@@ -604,12 +597,13 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Successfully uploaded",     response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) String version_id){
         try {
@@ -679,11 +673,12 @@ public class Controller_Blocko extends Controller{
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful removed",                        response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Successfully removed",      response = Result_ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result instance_shut_down(String instance_name){
         try{
@@ -694,14 +689,11 @@ public class Controller_Blocko extends Controller{
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.forbidden_Permission();
 
-
             if(homer_instance.actual_instance == null){
                 return GlobalResult.result_BadRequest("Instance not running");
             }
 
-
             WS_Message_Destroy_instance result = homer_instance.remove_instance_from_server();
-
 
             return GlobalResult.result_ok();
 
@@ -724,11 +716,9 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Swagger_Instance_Short_Detail.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Successfully uploaded",     response = Swagger_Instance_Short_Detail.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result get_b_program_instance_under_project(String project_id){
         try{
@@ -766,15 +756,14 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful Uploaded",                       response = Model_HomerInstance.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Successfully uploaded",     response = Model_HomerInstance.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result get_b_program_instance(String instance_id){
         try{
-
 
             Model_HomerInstance instance = Model_HomerInstance.find.byId(instance_id);
             if (instance == null) return GlobalResult.notFoundObject("Homer_Instance instance_id not found");
@@ -795,13 +784,7 @@ public class Controller_Blocko extends Controller{
                     " all Instances if user have static Permission key",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Board_read"),
-                    }),
-            }
+            code = 200
     )
     @ApiImplicitParams(
             {
@@ -815,10 +798,10 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Instance_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Instance_List.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result get_b_program_instance_by_filter(){
@@ -867,11 +850,10 @@ public class Controller_Blocko extends Controller{
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success",                                   response = Model_HomerInstanceRecord.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HomerInstanceRecord.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result get_b_program_instance_record(String instance_record_id){
         try{
@@ -1106,11 +1088,12 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Model_TypeOfBlock.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_TypeOfBlock.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result typeOfBlock_create(){
@@ -1175,21 +1158,21 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBlock.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_TypeOfBlock.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result typeOfBlock_get(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try {
 
             // Kontrola objektu
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
+            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock not found");
 
             // Kontrola oprávnění
-            if (! typeOfBlock.read_permission() ) return GlobalResult.forbidden_Permission();
+            if (!typeOfBlock.read_permission()) return GlobalResult.forbidden_Permission();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(typeOfBlock));
@@ -1226,11 +1209,12 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response =  Model_TypeOfBlock.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_TypeOfBlock.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result typeOfBlock_update(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
@@ -1243,10 +1227,10 @@ public class Controller_Blocko extends Controller{
 
             // Kontrola objektu
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock type_of_block_id not found");
+            if(typeOfBlock == null) return GlobalResult.notFoundObject("TypeOfBlock not found");
 
             // Kontrola oprávnění
-            if (! typeOfBlock.edit_permission() ) return GlobalResult.forbidden_Permission();
+            if (!typeOfBlock.edit_permission()) return GlobalResult.forbidden_Permission();
 
             // Úprava objektu
             typeOfBlock.description = help.description;
@@ -1260,7 +1244,6 @@ public class Controller_Blocko extends Controller{
 
                 // Úprava objektu
                 typeOfBlock.project = project;
-
             }
 
             // Uložení objektu
@@ -1289,11 +1272,11 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result typeOfBlock_delete(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try{
@@ -1325,10 +1308,10 @@ public class Controller_Blocko extends Controller{
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response =  Model_TypeOfBlock.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_TypeOfBlock.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result typeOfBlock_getAll(){
         try {
@@ -1371,9 +1354,10 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Type_Of_Block_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_Type_Of_Block_List.class),
+            @ApiResponse(code = 400, message = "Invalid body",          response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
     public Result typeOfBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
@@ -1387,7 +1371,7 @@ public class Controller_Blocko extends Controller{
             Query<Model_TypeOfBlock> query = Ebean.find(Model_TypeOfBlock.class);
 
             if(help.private_type){
-                query.where().eq("project.participants.person.id", Controller_Security.get_person().id);
+                query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
             }else{
                 query.where().isNull("project");
             }
@@ -1418,19 +1402,20 @@ public class Controller_Blocko extends Controller{
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result typeOfBlock_order_up(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try{
 
             Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.find.byId(blocko_block_id);
-            if(typeOfBlocks == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(typeOfBlocks == null) return GlobalResult.notFoundObject("TypeOfBlock not found");
 
             // Kontrola oprávnění
-            if (! typeOfBlocks.edit_permission()) return GlobalResult.forbidden_Permission();
+            if (!typeOfBlocks.edit_permission()) return GlobalResult.forbidden_Permission();
 
             typeOfBlocks.up();
 
@@ -1450,19 +1435,20 @@ public class Controller_Blocko extends Controller{
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_order_down(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+    public Result typeOfBlock_order_down(@ApiParam(value = "type_of_block_id String path",   required = true) String type_of_block_id){
         try{
 
-            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.find.byId(blocko_block_id);
-            if(typeOfBlocks == null) return GlobalResult.notFoundObject("Tariff not found");
+            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.find.byId(type_of_block_id);
+            if(typeOfBlocks == null) return GlobalResult.notFoundObject("TypeOfBlock not found");
 
             // Kontrola oprávnění
-            if (! typeOfBlocks.edit_permission()) return GlobalResult.forbidden_Permission();
+            if (!typeOfBlocks.edit_permission()) return GlobalResult.forbidden_Permission();
 
             typeOfBlocks.down();
 
@@ -1503,12 +1489,13 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Model_BlockoBlock.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something went wrong",    response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_BlockoBlock.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something went wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result blockoBlock_create(){
@@ -1536,7 +1523,7 @@ public class Controller_Blocko extends Controller{
             blockoBlock.type_of_block       = typeOfBlock;
 
             // Kontrola oprávnění těsně před uložením
-            if (! blockoBlock.create_permission() ) return GlobalResult.forbidden_Permission();
+            if (!blockoBlock.create_permission()) return GlobalResult.forbidden_Permission();
 
             // Uložení objektu
             blockoBlock.save();
@@ -1545,7 +1532,7 @@ public class Controller_Blocko extends Controller{
             Model_BlockoBlockVersion scheme = Model_BlockoBlockVersion.get_scheme();
 
             // Kontrola objektu
-            if(scheme == null) return GlobalResult.created( Json.toJson(blockoBlock) );
+            if(scheme == null) return GlobalResult.created(Json.toJson(blockoBlock));
 
             // Vytvoření objektu první verze
             Model_BlockoBlockVersion blockoBlockVersion = new Model_BlockoBlockVersion();
@@ -1591,11 +1578,12 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BlockoBlock.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlock.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result blockoBlock_update(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
@@ -1654,11 +1642,11 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BlockoBlockVersion.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockoBlockVersion_get(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
@@ -1695,17 +1683,17 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BlockoBlock.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlock.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockoBlock_get(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
             // Kontrola objektu
             Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
+            if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock not found");
 
             // Kontrola oprávnění
             if (! blockoBlock.read_permission() ) return GlobalResult.forbidden_Permission();
@@ -1743,9 +1731,10 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Blocko_Block_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_Blocko_Block_List.class),
+            @ApiResponse(code = 400, message = "Invalid body",          response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
     public Result blockoBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
@@ -1757,7 +1746,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_BlockoBlock> query = Ebean.find(Model_BlockoBlock.class);
-            query.where().eq("author.id", Controller_Security.get_person().id);
+            query.where().eq("author.id", Controller_Security.get_person_id());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
@@ -1790,11 +1779,11 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockoBlock_delete(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
         try {
@@ -1804,7 +1793,7 @@ public class Controller_Blocko extends Controller{
             if(blockoBlock == null) return GlobalResult.notFoundObject("BlockoBlock blocko_block_id not found");
 
             // Kontrola oprávnění
-            if (! blockoBlock.delete_permission()) return GlobalResult.forbidden_Permission();
+            if (!blockoBlock.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Smazání objektu
             blockoBlock.delete();
@@ -1831,11 +1820,11 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockoBlockVersion_delete(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
@@ -1845,7 +1834,7 @@ public class Controller_Blocko extends Controller{
             if(version == null) return GlobalResult.notFoundObject("BlockoBlockVersion blocko_block_version_id not found");
 
             // Kontrola oprávnění
-            if (! version.delete_permission()) return GlobalResult.forbidden_Permission();
+            if (!version.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Smazání objektu
             version.delete();
@@ -1886,11 +1875,13 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Model_BlockoBlockVersion.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_BlockoBlockVersion.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something went wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result blockoBlockVersion_create(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
@@ -1959,11 +1950,13 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BlockoBlockVersion.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Something went wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result blockoBlockVersion_update(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
@@ -2024,11 +2017,11 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BlockoBlockVersion.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockoBlockVersion_getAll(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try {
@@ -2065,11 +2058,11 @@ public class Controller_Blocko extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BlockoBlockVersion.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockoBlockVersion_makePublic(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try{
@@ -2104,10 +2097,11 @@ public class Controller_Blocko extends Controller{
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockoBlock_order_up(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
         try{
@@ -2136,10 +2130,11 @@ public class Controller_Blocko extends Controller{
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockoBlock_order_down(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
         try{
@@ -2345,5 +2340,4 @@ public class Controller_Blocko extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
 }

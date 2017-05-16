@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Class serves to remove old notifications.
+ */
 public class Job_OldNotificationRemoval implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -27,6 +30,9 @@ public class Job_OldNotificationRemoval implements Job {
         if(!remove_notification_thread.isAlive()) remove_notification_thread.start();
     }
 
+    /**
+     * Thread finds all notifications older than one month.
+     */
     private Thread remove_notification_thread = new Thread() {
 
         @Override
@@ -34,7 +40,7 @@ public class Job_OldNotificationRemoval implements Job {
 
             try {
 
-                terminal_logger.debug("remove_notification_thread:: concurrent thread started on {}", new Date());
+                terminal_logger.debug("remove_notification_thread: concurrent thread started on {}", new Date());
 
                 Date created = new Date(new Date().getTime() - TimeUnit.DAYS.toMillis(30)); // before one month
 
@@ -42,20 +48,20 @@ public class Job_OldNotificationRemoval implements Job {
 
                     List<Model_Notification> notifications = Model_Notification.find.where().lt("created", created).setMaxRows(100).findList();
                     if (notifications.isEmpty()) {
-                        terminal_logger.debug("remove_notification_thread:: no notifications to remove");
+                        terminal_logger.debug("remove_notification_thread: no notifications to remove");
                         break;
                     }
 
-                    terminal_logger.debug("remove_notification_thread:: removing old notifications (100 per cycle)");
+                    terminal_logger.debug("remove_notification_thread: removing old notifications (100 per cycle)");
 
                     notifications.forEach(Model_Notification::delete);
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("remove_notification_thread:", e);
             }
 
-            terminal_logger.debug("remove_notification_thread:: thread stopped on {} ", new Date());
+            terminal_logger.debug("remove_notification_thread: thread stopped on {} ", new Date());
         }
     };
 }

@@ -1,4 +1,4 @@
-package utilities.financial;
+package utilities.financial.extensions;
 
 import models.Model_ProductExtension.Config;
 import utilities.enums.Enum_ExtensionType;
@@ -25,10 +25,6 @@ public class Extension_Database implements Extension {
 
     public Integer getDefaultCount() {
         return count;
-    }
-
-    public boolean isActive() {
-        return false;
     }
 
     public String getName() {
