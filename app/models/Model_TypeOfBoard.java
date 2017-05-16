@@ -46,7 +46,7 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore @OneToOne(mappedBy="type_of_board_default", cascade = CascadeType.ALL)          public Model_CProgram version_scheme;
 
     @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_TypeOfBoardFeatures> features = new ArrayList<>();
-    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_ImportLibrary> libraries = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_Library> libraries = new ArrayList<>();
 
 
     @JsonIgnore              public boolean removed_by_user;

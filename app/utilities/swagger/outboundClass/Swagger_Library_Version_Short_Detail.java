@@ -2,14 +2,14 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
+import utilities.swagger.documentationClass.Swagger_Library_Record;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Json Model for ImportLibrary_Version_Short_Detail",
-        value = "ImportLibrary_Version_Short_Detail")
-public class Swagger_ImportLibrary_Version_Short_Detail {
+@ApiModel(description = "Json Model for Library_Version_Short_Detail",
+        value = "Library_Version_Short_Detail")
+public class Swagger_Library_Version_Short_Detail {
 
 
     @ApiModelProperty(required = true, readOnly = true)
@@ -25,7 +25,7 @@ public class Swagger_ImportLibrary_Version_Short_Detail {
     public List<Swagger_Example_Short_Detail> examples = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_ImportLibrary_Version_New.Library_File> library_files = new ArrayList<>();
+    public List<Swagger_Library_Record> files = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
     public String library_id;

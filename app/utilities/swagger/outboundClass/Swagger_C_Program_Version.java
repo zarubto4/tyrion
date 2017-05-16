@@ -6,7 +6,9 @@ import models.Model_VersionObject;
 import models.Model_CCompilation;
 import utilities.enums.Enum_Compile_status;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
+import utilities.swagger.documentationClass.Swagger_Library_Record;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,11 +27,12 @@ public class Swagger_C_Program_Version {
     @ApiModelProperty(required = false, readOnly = true )
     public String main;
 
-   @ApiModelProperty(required = false, readOnly = true )
-    public List<Swagger_C_Program_Version_New.User_File>  user_files = new ArrayList<>();
-
+    @Valid
     @ApiModelProperty(required = false, readOnly = true )
-    public List<String> library_files = new ArrayList<>();
+    public List<Swagger_Library_Record>  user_files = new ArrayList<>();
+
+    @ApiModelProperty(required = false, readOnly = true , value = "List ID of libraries")
+    public List<String> imported_libraries = new ArrayList<>();
 
 
     @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + Model_CCompilation.virtual_input_output_docu)

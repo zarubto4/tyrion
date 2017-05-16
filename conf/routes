@@ -311,23 +311,19 @@ PUT             /c_program/version/make_public/:version_id                      
 
 
 #Libraries
-POST            /library                                                        @controllers.Controller_Library.importLibrary_create()
-GET             /library                                                        @controllers.Controller_Library.importLibrary_getAll()
-GET             /library/:library_id                                            @controllers.Controller_Library.importLibrary_get(library_id)
-PUT             /library/:library_id                                            @controllers.Controller_Library.importLibrary_update(library_id)
-PUT             /library/list/:page_number                                      @controllers.Controller_Library.importLibrary_getByFilter(page_number: Int)
-DELETE          /library/:library_id                                            @controllers.Controller_Library.importLibrary_delete(library_id)
+POST            /library                                                        @controllers.Controller_Library.library_create()
+GET             /library/:library_id                                            @controllers.Controller_Library.library_get(library_id)
+PUT             /library/:library_id                                            @controllers.Controller_Library.library_update(library_id)
+PUT             /library/list/:page_number                                      @controllers.Controller_Library.library_getByFilter(page_number: Int)
+DELETE          /library/:library_id                                            @controllers.Controller_Library.library_delete(library_id)
 
-POST            /library/version/:library_id                                    @controllers.Controller_Library.importLibraryVersion_create(library_id)
-GET             /library/version/:version_id                                    @controllers.Controller_Library.importLibraryVersion_get(version_id)
-PUT             /library/version/:version_id                                    @controllers.Controller_Library.importLibraryVersion_update(version_id)
-DELETE          /library/version/:version_id                                    @controllers.Controller_Library.importLibraryVersion_delete(version_id)
+POST            /library/version/:library_id                                    @controllers.Controller_Library.libraryVersion_create(library_id)
+GET             /library/version/:version_id                                    @controllers.Controller_Library.libraryVersion_get(version_id)
+PUT             /library/version/:version_id                                    @controllers.Controller_Library.libraryVersion_update(version_id)
+DELETE          /library/version/:version_id                                    @controllers.Controller_Library.libraryVersion_delete(version_id)
 
-PUT             /library/version/upload_file/:version_id                        @controllers.Controller_Library.importLibraryVersion_uploadFile(version_id)
-PUT             /library/version/remove_file/:version_id                        @controllers.Controller_Library.importLibraryVersion_removeFile(version_id)
-
-POST            /library/version/upload_example/:version_id                     @controllers.Controller_Library.importLibraryVersion_uploadExample(version_id)
-DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_Library.importLibraryVersion_removeExample(example_id)
+POST            /library/version/upload_example/:version_id                     @controllers.Controller_Library.libraryVersion_uploadExample(version_id)
+DELETE          /library/version/remove_example/:example_id                     @controllers.Controller_Library.libraryVersion_removeExample(example_id)
 
 
 #Actualization
@@ -483,6 +479,8 @@ GET             /admin/bugs                                     @utilities.logge
 GET             /admin/websocket/summary                        @controllers.Controller_Dashboard.show_web_socket_stats()
 GET             /admin/websocket/server_detail/:server_name     @controllers.Controller_Dashboard.show_websocket_server_detail(server_name)
 GET             /admin/websocket/instance_detail/:instance_id   @controllers.Controller_Dashboard.show_instance_detail(instance_id)
+
+# Admin - For developers
 GET             /admin/show_readme                              @controllers.Controller_Dashboard.show_readme()
 GET             /admin/show_wiki/:file_name                     @controllers.Controller_Dashboard.show_wiki(file_name)
 GET             /admin/show_diff_on_Api/                        @controllers.Controller_Dashboard.show_diff_on_Api(old_api: String?="",new_api: String?="")
@@ -511,14 +509,27 @@ GET             /admin/helpdesk_tool/invoice/:invoice_id        @controllers.Con
 GET             /admin/permission/permission_summary            @controllers.Controller_Dashboard.permissions_summary()
 GET             /admin/permission/role/:role_id                 @controllers.Controller_Dashboard.role(role_id)
 
+# Admin - Blocko
 GET             /admin/blocko_objects                           @controllers.Controller_Dashboard.blocko_objects()
 GET             /admin/blocko_management                        @controllers.Controller_Dashboard.blocko_management()
+
+# Admin - Grid
 GET             /admin/grid_public                              @controllers.Controller_Dashboard.grid_public()
 GET             /admin/grid_management                          @controllers.Controller_Dashboard.grid_management()
-GET             /admin/public_code                              @controllers.Controller_Dashboard.public_code()
-GET             /admin/public_code_management                   @controllers.Controller_Dashboard.public_code_management()
-GET             /admin/libraries                                @controllers.Controller_Dashboard.libraries()
-GET             /admin/public_code_aproval                      @controllers.Controller_Dashboard.public_code_approve_procedure()
+
+# Admin - C_code
+GET             /admin/c_program/public/list                    @controllers.Controller_Dashboard.public_c_code_list()
+GET             /admin/c_program/public/:c_program_id           @controllers.Controller_Dashboard.public_c_code(c_program_id)
+
+GET             /admin/c_program/aprove/list                    @controllers.Controller_Dashboard.public_code_approve_procedure_list()
+GET             /admin/c_program/aprove/:c_program_id           @controllers.Controller_Dashboard.public_code_approve_procedure(c_program_id)
+
+# Admin - Libraries
+GET             /admin/library/libraries                        @controllers.Controller_Dashboard.public_libraries()
+GET             /admin/library/:library_id                      @controllers.Controller_Dashboard.public_library(library_id)
+
+
+
 
 # Admin - Tariff Management
 GET             /admin/tariff                                   @controllers.Controller_Dashboard.tariffs()
@@ -536,7 +547,7 @@ PUT             /admin/demo_data/type_of_board                  @utilities.demo_
 PUT             /admin/demo_data/test_boards                    @utilities.demo_data.Utilities_Demo_data_Controller.test_boards()
 PUT             /admin/demo_data/person                         @utilities.demo_data.Utilities_Demo_data_Controller.person_test_user()
 
-GET             /admin/test                                     @controllers.Controller_Dashboard.test()
+GET             /admin/test                                     @utilities.test.Controller_Test.test()
 
 # Test
 GET             /admin/test/run/:cmd                            @utilities.test.TestLauncher.launch_test(cmd)

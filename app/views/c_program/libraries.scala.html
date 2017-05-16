@@ -1,5 +1,5 @@
-@import models.Model_ImportLibrary
-@import utilities.enums.{Enum_Library_state, Enum_Library_tag}
+@import models.Model_Library
+
 <section class="content-header">
   <h1> Libraries </h1>
   <ol class="breadcrumb">
@@ -30,9 +30,7 @@
                     </div>
                     <select class="form-control select2" style="width: 100%; margin-top: 10px;" name="tag">
                         <option selected="selected" disabled>Choose tag</option>
-                        @for(tag <- Enum_Library_tag.values()){
-                            <option value="@tag.name()">@tag.name()</option>
-                        }
+
                     </select>
                     <label>Long Description(markdown)</label>
                     <textarea style="width: 100%;" id="newLibraryLongDescription" rows="5" name="long_description"></textarea>
@@ -65,14 +63,10 @@
                         <input id="editLibraryDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
                     </div>
                     <select id="editSelectTag" class="form-control select2" style="width: 48%; margin-top: 10px; float: left;" name="tag">
-                        @for(tag <- Enum_Library_tag.values()){
-                            <option value="@tag.name()">@tag.name()</option>
-                        }
+
                     </select>
                     <select id="editSelectState" class="form-control select2" style="width: 48%; margin-top: 10px; float: right;" name="state">
-                        @for(state <- Enum_Library_state.values()){
-                            <option value="@state.name()">@state.name()</option>
-                        }
+
                     </select>
                     <label>Long Description(markdown)</label>
                     <textarea style="width: 100%;" id="editLibraryLongDescription" rows="15" name="long_description"></textarea>
@@ -208,7 +202,7 @@
                 <div class="box-header with-border">
                     <select id="selectLibrary" class="form-control select2" style="width: 100%;">
                         <option selected="selected" disabled>Choose one</option>
-                        @for(library <- Model_ImportLibrary.find.all()){
+                        @for(library <- Model_Library.find.all()){
                             @if(library.removed){
                                 <option class="text-red" onclick="getLibrary('@library.id')">@library.name (removed)</option>
                             }else{
@@ -295,9 +289,9 @@
                 </div>
                 <div class="box-body">
                     <div id="editor">public int main() {
-    int x = 0;
-    return x;
-}</div>
+                            int x = 0;
+                            return x;
+                                        }</div>
                 </div>
                 <div class="box-footer">
                     <p class="pull-left" id="file_name"></p>
@@ -505,7 +499,7 @@
         function newLibrary(){
             model_data = $("#newLibrary").serializeObject();
             $.ajax({
-                url: '@routes.Controller_Library.importLibrary_create()',
+                url: '@routes.Controller_Library.library_create()',
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {

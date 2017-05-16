@@ -1,0 +1,468 @@
+@import models.Model_Library
+
+@import utilities.wiki.Wiki
+
+@(library: Model_Library)
+
+<section class="content-header">
+    <h1> Libraries </h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-share"></i> Server Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> C Program Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> Libraries </li>
+    </ol>
+</section>
+
+<!-- CONTENT ----------------------------------------------------------------------------------------------------->
+
+<section class="content">
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box box-warning">
+                    <div class="box-body box-profile">
+                        <h2 class="profile-username text-left">Library Name: @library.name</h2>
+                    </div>
+                    <div class="box-body box-profile">
+                        <h5 class="profile-username text-left">Description: @library.description </h5>
+                        <button class="btn btn-xs btn-warning pull-right" type="button" data-toggle="modal" data-target="#newLibraryModal" title="New Library"><i class="fa fa-minus"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-5">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Markdown Documentation</h3>
+                    </div>
+                    <div style="margin-left: 5%; margin-right: 5%">
+                        @Wiki.get_markdown_html_from_String(library.markdown_description)
+                    </div>
+                    <div class="box-footer">
+                        <p class="pull-left" id="file_name"></p>
+                        <button id="saveFileButton" disabled class="btn btn-success pull-right disabled" type="button" onclick="saveFile()">Edit</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="box">
+
+                    <div class="box-header with-border">
+                        <h2 class="profile-username text-left">Versions</h2>
+                        <button class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newLibraryModal" title="New Version"><i class="fa fa-plus"></i></button>
+                    </div>
+
+                    <table id="allTypesOfBoards" class="table table-bordered">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>OPEN</th>
+                            <th>DELETE</th>
+                        </tr>
+
+                        @for(version <- library.versions){
+                            <tr>
+                                <td>@version.id</td>
+                                <td>@version.version_name</td>
+                                <td>@version.version_description</td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="getLibraryVersion('@version.id')">Edit</button></td>
+                                <td><button class="btn btn-block btn-danger" type="button" onclick="removeLibraryVersion('@version.id')">Delete</button></td>
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Files</h3>
+                        <button id="newFileButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newFileModal" title="New File"><i class="fa fa-plus"></i></button>
+                    </div>
+                    <div class="box-body">
+                        <div class="nav nav-sidebar" id="files">
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Examples</h3>
+                        <button id="newExampleButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newExampleModal" title="New Example"><i class="fa fa-plus"></i></button>
+                    </div>
+                    <div class="box-body">
+                        <div id="examples">
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Code Editor</h3>
+                    </div>
+                    <div class="box-body">
+                        <div id="editor">public int main() {
+                            int x = 0;
+                            return x;
+                            }</div>
+                    </div>
+                    <div class="box-footer">
+                        <p class="pull-left" id="file_name"></p>
+                        <button id="saveFileButton" disabled class="btn btn-success pull-right disabled" type="button" onclick="saveFile()">Save</button>
+                        <button id="saveExampleButton" disabled class="btn btn-success pull-right disabled" type="button" style="margin-right: 10px;" onclick="saveExample()">Save example</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+</section>
+
+
+
+
+
+
+<!-- NEW VERSION LIBRARY MODAL ----------------------------------------------------------------------------------------->
+
+<div id="newLibraryVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newLibraryVersionModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newLibraryVersionModalTitle" class="modal-title">New Library</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newLibraryVersion">
+                    <div style="float: left; width: 30%;">
+                        <label>Name</label>
+                        <input id="newLibraryVersionName" placeholder="Name" style="display: block" type="text" name="version_name" >
+                    </div>
+                    <div style="width: 100%;">
+                        <label>Description</label>
+                        <input id="newLibraryVersionDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+                    </div>
+                </form>
+                <div id="newLibraryVersionModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newLibraryVersion()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- EDIT VERSION LIBRARY MODAL ----------------------------------------------------------------------------------------->
+
+<div id="editLibraryVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editLibraryVersionModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="editLibraryVersionModalTitle" class="modal-title">New Library</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editLibraryVersion">
+                    <div style="float: left; width: 30%;">
+                        <label>Name</label>
+                        <input id="editLibraryVersionName" placeholder="Name" style="display: block" type="text" name="version_name" >
+                    </div>
+                    <div style="width: 100%;">
+                        <label>Description</label>
+                        <input id="editLibraryVersionDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+                    </div>
+                </form>
+                <div id="editLibraryVersionModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="editLibraryVersion()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- EDIT VERSION LIBRARY MODAL ----------------------------------------------------------------------------------------->
+
+<div id="newExampleModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newExampleModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newExampleModalTitle" class="modal-title">New Example</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newExample">
+                    <div style="float: left; width: 30%;">
+                        <label>Name</label>
+                        <input id="newExampleName" placeholder="Name" style="display: block" type="text" name="version_name" >
+                    </div>
+                    <div style="width: 100%;">
+                        <label>Description</label>
+                        <input id="newExampleDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+                    </div>
+                </form>
+                <div id="newExampleModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newExample()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NEW FILE LIBRARY MODAL ----------------------------------------------------------------------------------------->
+
+<div id="newFileModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newFileModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newFileModalTitle" class="modal-title">New File</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newFile">
+                    <label>Name</label>
+                    <p class="text-red">Specify the full path (e.g. "library/folder/file.cpp")</p>
+                    <input id="newFileName" placeholder="Name" style="display: block" type="text" name="file_name" >
+                </form>
+                <div id="newFileModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newFile()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+   $.ajaxSetup({ cache: false });
+
+   var fileContents = [];
+   var exampleContents = [];
+   var openedLibrary = {};
+   var openedVersion = {};
+   var openedFile = {};
+   var openedExample = {};
+
+  var converter = new showdown.Converter();
+
+   function makeId() {
+       var text = "";
+       var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+       for( var i=0; i < 5; i++ )
+           text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+       return text;
+   }
+
+   function makeJson(data){
+
+       var tree = [];
+       var root = 0;
+
+       function fillTree(content, steps, x) {
+           var current = null,
+                   existing = null,
+                   i = 0;
+           for (var y = 0; y < steps.length; y++) {
+
+               if (y == 0) {
+
+                   if (!tree[root] || !tree[root].children || typeof tree[root].children == 'undefined') {
+                       tree[root] = {text: steps[y], leaf: false, children: []};
+                   }
+
+                   for (var z = 0; z < tree.length; z++) {
+                       if (tree[z].text !== steps[y] && z == (tree.length - 1)){
+                           tree.push({text: steps[y], leaf: false, children: []});
+                           root = z + 1;
+                           break;
+                       }
+                       if (tree[z].text === steps[y]){
+                           root = z;
+                           break;
+                       }
+                   }
+
+                   current = tree[root].children;
+               } else {
+                   existing = null;
+                   for (i = 0; i < current.length; i++) {
+                       if (current[i].text === steps[y]) {
+                           existing = current[i];
+                           break;
+                       }
+                   }
+                   if (existing) {
+                       current = existing.children;
+                   } else {
+                       current.push({text: steps[y], leaf: false, children: []});
+                       current = current[current.length - 1].children;
+                   }
+               }
+           }
+           current.push({text: content, leaf: true, order: x})
+       }
+
+       for (x = 0; x < data.length; x++) {
+           steps = data[x].file_name.split('/');
+           fillTree(data[x].content, steps, x)
+       }
+
+       return tree;
+   }
+
+   function makeTree(t) {
+
+       var content = "<ul style='list-style-type: none; margin: 0; padding: 0;'>";
+
+       if (t.leaf != true) {
+           if (t.children.length == 1 && t.children[0].leaf == true) {
+               content += "<li style='margin: 0; padding: 0;'>" +
+                       "<div class='panel-group' style='margin: 5px 0;' id='" + t.text + "'>" +
+                       "<div class='panel panel-default'>" +
+                       "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                       "<h4 class='panel-title'>" +
+                       "<a onclick=\"" +
+                       "openFile(" + t.children[0].order + ");" +
+                       "\">";
+
+               content += t.text;
+
+               content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeFile(" + t.children[0].order + ")' title='Remove File' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button></h4></div>" +
+                       "<div id='collapse" + t.text + "' class='panel-collapse collapse'>" +
+                       "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+           } else {
+               var randomId = makeId();
+               content += "<li style='margin: 0; padding: 0;'>" +
+                       "<div class='panel-group' style='margin: 5px 0;' id='" + t.text + "'>" +
+                       "<div class='panel panel-default'>" +
+                       "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                       "<h4 class='panel-title'>" +
+                       "<a style='display:block;' data-toggle='collapse' data-parent='#" + t.text + randomId + "' href='#collapse" + t.text + randomId + "'>" + t.text + "</a></h4></div>" +
+                       "<div id='collapse" + t.text + randomId + "' class='panel-collapse collapse'>" +
+                       "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+           }
+           $.each(t.children, function (k, v) {
+               content += makeTree(v);
+           });
+           content += "</div></div></div></div></li>";
+       }
+
+       content += "</ul>";
+
+       return content;
+   }
+
+   function makeStructure(trees){
+
+       var content = "";
+
+       $.each(trees, function (k, v) {
+           content += makeTree(v)
+       });
+
+       return content;
+   }
+
+  function editLibrary(){
+      model_data = $("#editLibrary").serializeObject();
+      $.ajax({
+          url: '@routes.Controller_Library.library_update("")' + openedLibrary.id,
+          type: 'PUT',
+          contentType: 'application/json',
+          headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+          },
+          data: JSON.stringify(model_data),
+          dataType: 'json',
+          success:function(json){
+              location.reload();
+          },
+          error:function(e) {
+              $("#editLibraryModalMessage").css("display", "block");
+              $("#editLibraryModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editLibraryModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+          }
+      })
+  }
+
+   function getLibraryVersion(id){
+       $.ajax({
+           url: '@routes.Controller_Library.libraryVersion_get("")' + id,
+           type: 'GET',
+           headers: {
+               "X-AUTH-TOKEN":getCookie("authToken")
+           },
+           dataType: 'json',
+           success:function(json){
+               openVersion(json);
+           },
+           error:function(e) {
+               alert(JSON.stringify(JSON.parse(e.responseText).message));
+           }
+       })
+   }
+
+  function editLibraryVersion(id){
+      model_data = $("#editLibraryVersion").serializeObject();
+      $.ajax({
+          url: '@routes.Controller_Library.libraryVersion_update("")' + id,
+          type: 'PUT',
+          contentType: 'application/json',
+          headers: {
+              "X-AUTH-TOKEN":getCookie("authToken"),
+              "Content-Type":"application/json"
+          },
+          data: JSON.stringify(model_data),
+          dataType: 'json',
+          success:function(json){
+              $("#editLibraryVersion input[type=text]").val("");
+              $("#editLibraryVersionModal").modal('hide');
+              $("#editLibraryVersionModalMessage").css("display", "none");
+              openVersion(json);
+          },
+          error:function(e) {
+              $("#editLibraryVersionModalMessage").css("display", "block");
+              $("#editLibraryVersionModalMessage p").text(JSON.parse(e.responseText).message);
+              $("#editLibraryVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+          }
+      })
+  }
+
+  function removeLibraryVersion(version_id){
+      $.ajax({
+          url: '@routes.Controller_Library.libraryVersion_delete("")' + version_id,
+          type: 'DELETE',
+          headers: {
+              "X-AUTH-TOKEN":getCookie("authToken")
+          },
+          dataType: 'json',
+          success:function(json){
+              location.reload();
+          },
+          error:function(e) {
+              alert(JSON.stringify(JSON.parse(e.responseText).message));
+          }
+      })
+  }
+
+</script>

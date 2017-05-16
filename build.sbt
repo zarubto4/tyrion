@@ -41,6 +41,8 @@ libraryDependencies ++= Seq(
 
   "com.microsoft.azure" % "azure-documentdb" % "1.10.0",
 
+  "com.graphql-java" % "graphql-java" % "2.4.0",
+
   javaJdbc,
   filters,
   javaWs,

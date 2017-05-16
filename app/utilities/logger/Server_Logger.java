@@ -24,8 +24,8 @@ import play.twirl.api.Html;
 import utilities.Server;
 import utilities.logger.helps_objects.Interface_Server_Logger;
 import utilities.response.GlobalResult;
-import views.html.loggy;
-import views.html.super_general.main;
+import views.html.tyrion_developers.loggy;
+import views.html.common.main;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -213,7 +213,7 @@ public class Server_Logger extends Controller {
     // Vykreslí šablonu s bugy
     public Result show_all_logs() {
         Html content =  loggy.render( Server_Logger.getErrors() );
-        return ok(  main.render(content) );
+        return ok( main.render(content) );
     }
 
     // Nahraje konkrétní bug na Youtrack

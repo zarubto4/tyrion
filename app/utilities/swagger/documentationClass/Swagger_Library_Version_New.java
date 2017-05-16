@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Json Model for new Version of ImportLibrary",
-        value = "ImportLibrary_Version_New")
-public class Swagger_ImportLibrary_Version_New {
+        value = "Library_Version_New")
+public class Swagger_Library_Version_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
@@ -25,13 +25,6 @@ public class Swagger_ImportLibrary_Version_New {
 
 
     @ApiModelProperty(required = false)
-    @Valid public List<Library_File>  library_files = new ArrayList<>();
+    @Valid public List<Swagger_Library_Record> user_files = new ArrayList<>();
 
-
-    public static class Library_File {
-        public Library_File(){}
-
-        public String file_name;
-        public String content;
-    }
 }

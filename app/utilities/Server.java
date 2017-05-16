@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
-import utilities.document_db.DocumentDB;
 import utilities.fakturoid.Fakturoid_InvoiceCheck;
 import utilities.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
@@ -318,7 +317,7 @@ public class Server {
         for(Enum en : Model_HomerServer.permissions.values())             permissions.add(en.name());
         for(Enum en : Model_Board.permissions.values())                   permissions.add(en.name());
         for(Enum en : Model_CompilationServer.permissions.values())       permissions.add(en.name());
-        for(Enum en : Model_ImportLibrary.permissions.values())           permissions.add(en.name());
+        for(Enum en : Model_Library.permissions.values())           permissions.add(en.name());
         for(Enum en : Model_Processor.permissions.values())               permissions.add(en.name());
         for(Enum en : Model_Producer.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());

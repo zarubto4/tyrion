@@ -23,6 +23,12 @@ import views.html.boards.board_detail;
 import views.html.boards.board_settings;
 import views.html.boards.board_summary;
 import views.html.boards.bootloader_settings;
+import views.html.c_program.aproval_community_procedure.approval_procedure_c_program;
+import views.html.c_program.aproval_community_procedure.approval_procedure_list;
+import views.html.c_program.c_libraries.library;
+import views.html.c_program.c_libraries.library_list;
+import views.html.c_program.public_c_programs.public_c_code;
+import views.html.c_program.public_c_programs.public_c_code_list;
 import views.html.demo_data.demo_data_main;
 import views.html.external_servers.external_servers;
 import views.html.grid.grid_management;
@@ -34,17 +40,17 @@ import views.html.helpdesk_tool.user_summary;
 import views.html.helpdesk_tool.invoice;
 import views.html.permission.permissions_summary;
 import views.html.permission.role;
-import views.html.publiccprograms.approvalprocedurecprogram;
-import views.html.publiccprograms.c_program_editor;
-import views.html.publiccprograms.libraries;
-import views.html.publiccprograms.publiccode;
-import views.html.super_general.main;
+import views.html.c_program.c_program_editor;
+import views.html.common.main;
 import views.html.tariffs.extension_edit;
 import views.html.tariffs.tariff_edit;
 import views.html.tariffs.tariffs;
+import views.html.tyrion_developers.Api_Div;
+import views.html.tyrion_developers.readme;
 import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
 import views.html.websocket.websocket_homer_server_detail;
+import views.html.wiki.wiki;
 import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
 import web_socket.message_objects.homer_instance.WS_Message_Ping_instance;
 import web_socket.services.WS_Becki_Website;
@@ -54,7 +60,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +73,7 @@ import java.util.stream.Collectors;
  * Obsah tohoto controlleru není dovloeno vlákadt do dokumentace Swaggeru
  *
  * */
-@Api(value = "Dashboard Private Api", hidden = true)
+@Api(value = "Private Admin Api", hidden = true)
 @Security.Authenticated(Secured_Admin.class)
 public class Controller_Dashboard extends Controller {
 
@@ -76,7 +81,7 @@ public class Controller_Dashboard extends Controller {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Board.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Dashboard.class);
 
 
 // Index (úvod) ########################################################################################################
@@ -125,10 +130,6 @@ public class Controller_Dashboard extends Controller {
             String text = "";
 
             file_name.replaceAll("%2F", "/");
-
-            for (String line : Files.readAllLines(Paths.get("conf/markdown_documentation/" + file_name), StandardCharsets.UTF_8)){
-                text += line + "\n";
-            }
 
             file_name = file_name.substring(file_name.lastIndexOf("/") + 1);
             file_name = file_name.replaceAll("_", " ");
@@ -325,21 +326,31 @@ public class Controller_Dashboard extends Controller {
 
 
     public Result show_web_socket_stats() {
+        try{
 
-        List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(Controller_WebSocket.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
-        Html content =   websocket.render(becki_terminals);
-        return return_page(content);
+            List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(Controller_WebSocket.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
+            Html content =   websocket.render(becki_terminals);
+            return return_page(content);
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
     }
 
 
     public Result  show_instance_detail(String instance_id) {
 
-        Model_HomerInstance instance = Model_HomerInstance.find.byId(instance_id);
-        if(instance == null) return show_web_socket_stats();
+        try{
 
+            Model_HomerInstance instance = Model_HomerInstance.find.byId(instance_id);
+            if(instance == null) return show_web_socket_stats();
 
-        Html content = instance_detail.render(instance);
-        return return_page(content);
+            Html content = instance_detail.render(instance);
+            return return_page(content);
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
     }
 
 
@@ -486,19 +497,32 @@ public class Controller_Dashboard extends Controller {
             return return_page(blocko_management_content);
 
         }catch (Exception e){
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
 
-    public Result public_code(){
+    public Result public_c_code_list(){
         try {
 
-            Html public_code_content = publiccode.render();
+            Html public_code_content = public_c_code_list.render();
             return return_page(public_code_content);
 
         }catch (Exception e){
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result public_c_code(String c_program_id){
+        try {
+
+            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+
+            Html public_code_content = public_c_code.render(c_program);
+            return return_page(public_code_content);
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -509,31 +533,56 @@ public class Controller_Dashboard extends Controller {
             return return_page(public_code_content);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
-    public Result public_code_approve_procedure(){
+    public Result public_code_approve_procedure_list(){
         try {
 
-            Html public_code_content = approvalprocedurecprogram.render();
+            Html public_code_content = approval_procedure_list.render();
             return return_page(public_code_content);
 
         }catch (Exception e){
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result public_code_approve_procedure(String c_program_id){
+        try {
+
+            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+
+            Html public_code_content = approval_procedure_c_program.render(c_program);
+            return return_page(public_code_content);
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
 
-    public Result libraries(){
+    public Result public_libraries(){
         try {
 
-            Html libraries_content = libraries.render();
+            Html libraries_content = library_list.render();
             return return_page(libraries_content);
 
         }catch (Exception e){
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result public_library(String library_id){
+        try {
+
+            Model_Library model_library = Model_Library.find.byId(library_id);
+
+            Html libraries_content = library.render(model_library);
+            return return_page(libraries_content);
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -566,7 +615,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(grid_management_content);
 
         }catch (Exception e){
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -580,7 +629,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(project_detail_content);
 
         }catch (Exception e){
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -594,7 +643,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(product_detail_content);
 
         }catch (Exception e){
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -608,48 +657,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(content);
 
         }catch (Exception e){
-            return ok();
-        }
-    }
-
-// TEST ################################################################################################################
-
-
-    public Result test(){
-        try {
-
-
-
-            List<String> fileNames = new ArrayList<>();
-            File[] files = new File(application.path() + "/test").listFiles();
-
-            for (File file : files) {
-
-                if(file.getName().equals(".DS_Store")) continue;
-                if(file.getName().equals("resources")) continue;
-
-                fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))));
-            }
-
-            Path path;
-
-            try {
-                path = Paths.get(application.path() + "/logs/test.log");
-            }catch (Exception e){
-                File file = new File(application.path() + "/logs/test.log");
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-                path = Paths.get(application.path() + "/logs/test.log");
-            }
-
-            String log =  new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-
-            Html test_content = test.render(fileNames, log);
-            return return_page(test_content);
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -660,8 +668,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(test_content);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -672,8 +679,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(list_of_tariffs);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -686,8 +692,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(content);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
@@ -702,8 +707,7 @@ public class Controller_Dashboard extends Controller {
             return return_page(extension_page);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return ok();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

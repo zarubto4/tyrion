@@ -4,11 +4,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import utilities.enums.Enum_Library_state;
-import utilities.enums.Enum_Library_tag;
 
-@ApiModel(description = "Json Model for new ImportLibrary",
-          value = "ImportLibrary_New")
-public class Swagger_ImportLibrary_New {
+import java.util.List;
+
+@ApiModel(value = "Library_New", description = "Json Model for new Library")
+public class Swagger_Library_New {
+
+
+    @ApiModelProperty(required = true, value = "Project ID only for private libraries. For Public, permission is required.")
+    public String project_id = null;
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters, must be unique!")
@@ -22,15 +26,7 @@ public class Swagger_ImportLibrary_New {
     @ApiModelProperty(required = true, value = "Length must be between 8 and 255 characters.")
     public String description;
 
-    @Constraints.Required
-    @Constraints.MinLength(value = 8, message = "The description must have at least 8 characters")
-    @ApiModelProperty(required = true, value = "The description must have at least 8 characters")
-    public String long_description;
+    @ApiModelProperty(required = false, value = "The description in MARKDONW must have at least 8 characters - ")
+    public String markdown_description;
 
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "The tag describes what the library is doing")
-    public Enum_Library_tag tag;
-
-    @ApiModelProperty(required = false, value = "The state describes if the library is tested, new or old.")
-    public Enum_Library_state state;
 }

@@ -19,7 +19,7 @@ import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
-import utilities.swagger.documentationClass.Swagger_ImportLibrary_Version_New;
+import utilities.swagger.documentationClass.Swagger_Library_Record;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
@@ -61,7 +61,7 @@ public class Model_VersionObject extends Model {
 
     // Libraries ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    @JsonIgnore @ManyToOne                                  public Model_ImportLibrary library;
+    @JsonIgnore @ManyToOne                                  public Model_Library library;
     @JsonIgnore @ManyToMany(mappedBy = "library_versions")  public List<Model_VersionObject> c_program_versions = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy = "example_library",
@@ -116,8 +116,8 @@ public class Model_VersionObject extends Model {
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-    @Transient @JsonIgnore public Swagger_ImportLibrary_Version_Short_Detail get_short_import_library_version(){
-        Swagger_ImportLibrary_Version_Short_Detail help = new Swagger_ImportLibrary_Version_Short_Detail();
+    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail get_short_import_library_version(){
+        Swagger_Library_Version_Short_Detail help = new Swagger_Library_Version_Short_Detail();
 
         help.version_id = id;
         help.library_id = library.id;
@@ -136,7 +136,7 @@ public class Model_VersionObject extends Model {
             if(form.hasErrors()) return null;
             Swagger_Library_File_Load lib_form = form.get();
 
-            help.library_files.addAll(lib_form.library_files);
+            help.files.addAll(lib_form.library_files);
         }
 
         return help;
@@ -294,12 +294,12 @@ public class Model_VersionObject extends Model {
             result.put("error_code", 400);
             return result;
         }
+
         Swagger_C_Program_Version_Update code_file = form.get();
 
+        List<Swagger_Library_Record> library_files = new ArrayList<>();
 
-        List<Swagger_ImportLibrary_Version_New.Library_File> library_files = new ArrayList<>();
-
-        for (String lib_id : code_file.library_files) {
+        for (String lib_id : code_file.imported_libraries) {
 
             Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
             if (lib_version == null){
@@ -335,8 +335,8 @@ public class Model_VersionObject extends Model {
                     }
                     Swagger_Library_File_Load lib_help = lib_form.get();
 
-                    for (Swagger_ImportLibrary_Version_New.Library_File lib_file : lib_help.library_files){
-                        for (Swagger_C_Program_Version_Update.User_File user_file : code_file.user_files){
+                    for (Swagger_Library_Record lib_file : lib_help.library_files){
+                        for (Swagger_Library_Record user_file : code_file.user_files){
 
                             if (!library_files.contains(lib_file)) library_files.add(lib_file);
 
@@ -352,17 +352,14 @@ public class Model_VersionObject extends Model {
 
         ObjectNode includes = Json.newObject();
 
-        for(Swagger_ImportLibrary_Version_New.Library_File file_lib : library_files){
+        for(Swagger_Library_Record file_lib : library_files){
             includes.put(file_lib.file_name , file_lib.content);
         }
 
         if(code_file.user_files != null)
-            for(Swagger_C_Program_Version_Update.User_File user_file : code_file.user_files){
-                includes.put(user_file.file_name , user_file.code);
+            for(Swagger_Library_Record user_file : code_file.user_files){
+                includes.put(user_file.file_name , user_file.content);
             }
-
-
-
 
 
         // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený

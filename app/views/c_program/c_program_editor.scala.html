@@ -1,5 +1,5 @@
 @import models.Model_TypeOfBoard
-@import models.Model_ImportLibrary
+@import models.Model_Library
 
 <section class="content-header">
   <h1> Public Firmware Code </h1>
@@ -181,7 +181,7 @@
           <label>Library</label>
           <select id="selectLibrary" class="form-control select2" style="width: 100%;">
             <option selected="selected" disabled>Choose Library</option>
-            @for(library <- Model_ImportLibrary.find.all()){
+            @for(library <- Model_Library.find.all()){
               <option value="@library.last_version().version_id">@library.name</option>
             }
           </select>

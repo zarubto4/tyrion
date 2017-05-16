@@ -34,7 +34,7 @@ import utilities.swagger.outboundClass.Login_Social_Network;
 import utilities.swagger.outboundClass.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
-import views.html.super_general.login;
+import views.html.common.login;
 import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;

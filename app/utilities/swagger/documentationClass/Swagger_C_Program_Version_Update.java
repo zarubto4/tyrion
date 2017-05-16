@@ -14,9 +14,8 @@ import java.util.List;
           value = "C_Program_Version_Update")
 public class Swagger_C_Program_Version_Update {
 
-    // Nutný fiktivní contructor pro zhmotnění vnitřních tříd
-    public Swagger_C_Program_Version_Update() {
-    }
+    // Nutný fiktivní contructor pro inicializaci vnitřních tříd
+    public Swagger_C_Program_Version_Update() {}
 
     @ApiModelProperty(required = false, value = "Required only if user compile code not under C++ code version (where compilation can found type_of_board)")
     public String type_of_board_id;
@@ -26,24 +25,10 @@ public class Swagger_C_Program_Version_Update {
     public String main;
 
     @Valid
-    public List<User_File> user_files = new ArrayList<>();
+    @ApiModelProperty(required = false, readOnly = true )
+    public List<Swagger_Library_Record> user_files = new ArrayList<>();
 
-    @Valid
-    public List<String> library_files = new ArrayList<>();
-
-
-    public static class User_File {
-        public User_File() {}
-
-        public String file_name;
-        public String code;
-    }
-
-    public static class Library_File {
-        public Library_File() {}
-
-        public String file_name;
-        public String content;
-        }
+    @ApiModelProperty(required = false, readOnly = true , value = "List ID of libraries")
+    public List<String> imported_libraries = new ArrayList<>();
 
 }

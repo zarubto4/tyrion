@@ -3,6 +3,7 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers.Controller_Security;
+import graphql.schema.GraphQLObjectType;
 import io.swagger.annotations.ApiModel;
 import utilities.enums.Enum_Garfield_burning_state;
 import utilities.logger.Class_Logger;
@@ -11,6 +12,13 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import java.util.Date;
+
+import static graphql.Scalars.GraphQLID;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLList.list;
+import static graphql.schema.GraphQLNonNull.nonNull;
+import static graphql.schema.GraphQLObjectType.newObject;
 
 @Entity
 @ApiModel(description = "Model for MacAdress Controling",
@@ -59,6 +67,8 @@ public class Model_MacAddressRegisterRecord extends Model {
     }
 
 
+
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -74,6 +84,9 @@ public class Model_MacAddressRegisterRecord extends Model {
     public enum permissions{MacAddressRegister}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+/* GRAPH_QL ------------------------------------------------------------------------------------------------------------*/
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_MacAddressRegisterRecord> find = new Finder<>(Model_MacAddressRegisterRecord.class);

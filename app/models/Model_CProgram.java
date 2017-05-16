@@ -169,7 +169,7 @@ public class Model_CProgram extends Model {
 
                 c_program_versions.main = version_new.main;
                 c_program_versions.user_files = version_new.user_files;
-                c_program_versions.library_files = version_new.library_files;
+                c_program_versions.imported_libraries = version_new.imported_libraries;
             }
 
             if (version_object.c_compilation != null) {

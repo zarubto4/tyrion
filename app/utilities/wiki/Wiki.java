@@ -1,6 +1,12 @@
 package utilities.wiki;
 
+import org.pegdown.PegDownProcessor;
+import play.twirl.api.Html;
+
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +66,13 @@ public class Wiki {
             }
 
         }
+    }
+
+
+
+
+    public static Html get_markdown_html_from_String(String text){
+        return new Html(new PegDownProcessor().markdownToHtml(text));
     }
 
 

@@ -156,9 +156,9 @@ public class Controller_Board extends Controller {
             if(!Model_CompilationServer.is_online()) return GlobalResult.result_external_server_is_offline("Compilation Server offilne");
 
 
-            List<Swagger_C_Program_Version_New.Library_File> library_files = new ArrayList<>();
+            List<Swagger_Library_Record> library_files = new ArrayList<>();
 
-            for (String lib_id : help.library_files) {
+            for (String lib_id : help.imported_libraries) {
 
                 Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
                 if (lib_version == null || lib_version.library == null){
@@ -171,11 +171,12 @@ public class Controller_Board extends Controller {
                 }
 
                 if (!lib_version.files.isEmpty()){
+
                     for (Model_FileRecord f : lib_version.files) {
 
                         JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
 
-                        Form<Swagger_C_Program_Version_New.Library_File> lib_form = Form.form(Swagger_C_Program_Version_New.Library_File.class).bind(j);
+                        Form<Swagger_Library_Record> lib_form = Form.form(Swagger_Library_Record.class).bind(j);
                         if (lib_form.hasErrors()){
 
                             ObjectNode error = Json.newObject();
@@ -185,9 +186,9 @@ public class Controller_Board extends Controller {
                             return GlobalResult.result_BadRequest(error);
                         }
 
-                        Swagger_C_Program_Version_New.Library_File lib_file = lib_form.get();
+                        Swagger_Library_Record lib_file = lib_form.get();
 
-                        for (Swagger_C_Program_Version_Update.User_File user_file : help.user_files){
+                        for (Swagger_Library_Record user_file : help.user_files){
 
                             if (lib_file.file_name.equals(user_file.file_name))break;
                             if (!library_files.contains(lib_file)) library_files.add(lib_file);
@@ -199,13 +200,13 @@ public class Controller_Board extends Controller {
 
             ObjectNode includes = Json.newObject();
 
-            for(Swagger_C_Program_Version_New.Library_File file_lib : library_files){
+            for(Swagger_Library_Record file_lib : library_files){
                 includes.put(file_lib.file_name , file_lib.content);
             }
 
             if(help.user_files != null)
-                for(Swagger_C_Program_Version_Update.User_File user_file : help.user_files){
-                    includes.put(user_file.file_name , user_file.code);
+                for(Swagger_Library_Record user_file : help.user_files){
+                    includes.put(user_file.file_name , user_file.content);
                 }
 
 

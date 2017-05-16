@@ -50,13 +50,15 @@ public class Model_Project extends Model {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()           { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    for( Model_Board m           : boards)         l.add(m.get_short_board());                return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()       { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( Model_BProgram m        : get_b_program_not_deleted()) l.add(m.get_b_program_short_detail()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()       { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    for( Model_CProgram m        : get_c_program_not_deleted()) l.add(m.get_c_program_short_detail()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()       { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    for( Model_MProject m        : get_m_project_not_deleted()) l.add(m.get_short_m_project()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()   { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    for( Model_TypeOfBlock m     : type_of_blocks) l.add(m.get_type_of_block_short_detail()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()  { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    for( Model_TypeOfWidget m    : type_of_widgets)l.add(m.get_typeOfWidget_short_detail());  return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()       { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    for( Model_HomerInstance m   : get_instances_not_deleted()) l.add(m.get_instance_short_detail());  return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()             { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    for( Model_Board m           : boards)         l.add(m.get_short_board());                return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()         { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    for( Model_BProgram m        : get_b_program_not_deleted()) l.add(m.get_b_program_short_detail()); return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()         { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    for( Model_CProgram m        : get_c_program_not_deleted()) l.add(m.get_c_program_short_detail()); return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Library_Short_Detail>       c_private_libraries(){ List<Swagger_Library_Short_Detail>   l = new ArrayList<>();    for( Model_Library m        : get_c_private_project_libraries_not_deleted()) l.add(m.get_short_import_library()); return l;}
+
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()         { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    for( Model_MProject m        : get_m_project_not_deleted()) l.add(m.get_short_m_project()); return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()     { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    for( Model_TypeOfBlock m     : type_of_blocks) l.add(m.get_type_of_block_short_detail()); return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()    { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    for( Model_TypeOfWidget m    : type_of_widgets)l.add(m.get_typeOfWidget_short_detail());  return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()         { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    for( Model_HomerInstance m   : get_instances_not_deleted()) l.add(m.get_instance_short_detail());  return l;}
 
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_name() { return product.name;}
@@ -131,6 +133,11 @@ public class Model_Project extends Model {
     public List<Model_CProgram> get_c_program_not_deleted(){
 
         return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+    }
+
+    @JsonIgnore
+    public List<Model_Library> get_c_private_project_libraries_not_deleted(){
+        return Model_Library.find.where().eq("project_id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
     }
 
     @JsonIgnore
