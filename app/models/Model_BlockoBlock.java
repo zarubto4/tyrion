@@ -88,7 +88,7 @@ public class Model_BlockoBlock extends Model {
             help.id = id;
             help.name = name;
             help.description = description;
-
+            help.versions = versions();
             help.edit_permission = edit_permission();
             help.delete_permission = delete_permission();
             help.update_permission = update_permission();

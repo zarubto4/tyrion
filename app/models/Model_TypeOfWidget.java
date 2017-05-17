@@ -73,7 +73,7 @@ public class Model_TypeOfWidget extends Model{
         help.id = id;
         help.name = name;
         help.description = description;
-        help.grid_widgets.addAll(widgets());
+        help.grid_widgets = widgets();
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
