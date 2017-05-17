@@ -2156,6 +2156,7 @@ public class Controller_Blocko extends Controller{
 
 // BLOCKO ADMIN ########################################################################################################*/
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoDisapprove(){
         try {
@@ -2195,6 +2196,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoApproval() {
 
@@ -2263,6 +2265,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoBlockVersion_editScheme(){
 
@@ -2291,6 +2294,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoBlockVersion_getScheme(){
 
@@ -2312,6 +2316,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoBlockVersion_createScheme(){
 

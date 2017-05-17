@@ -2085,6 +2085,7 @@ public class Controller_Grid extends Controller {
 
 // GRID ADMIN ##########################################################################################################
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result gridDisapprove(){
         try {
@@ -2126,6 +2127,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result gridApproval() {
 
@@ -2196,6 +2198,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result gridWidgetVersion_editScheme(){
 
@@ -2224,6 +2227,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result gridWidgetVersion_getScheme(){
 
@@ -2245,6 +2249,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
+    @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result gridWidgetVersion_createScheme(){
 

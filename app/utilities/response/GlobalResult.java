@@ -224,8 +224,8 @@ public class GlobalResult extends Controller {
              CoreResponse.cors();
 
              Result_JsonValueMissing result = new Result_JsonValueMissing();
-             result.state     = "Json Unrecognized Values";
-             result.message   = "Your Json had some unrecognized fields. Please look at this example, or you can report it. Example: ";
+             result.state     = "Json Unrecognized parameters or Invalid data";
+             result.message   = "Your Json had some unrecognized fields or data is incorrect. Look at exception parameter. If it is possible, we will try return example of data inputs.";
              result.exception = json;
 
             return Controller.badRequest( Json.toJson(result) );

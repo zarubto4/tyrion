@@ -105,7 +105,7 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "get ImportLibrary",
+    @ApiOperation(value = "get Library",
             tags = {"Library"},
             notes = "if you want to get ImportLibrary.",
             produces = "application/json",
@@ -257,9 +257,8 @@ public class Controller_Library extends Controller {
     }
 
     @ApiOperation(value = "delete Library",
-            hidden = true,
             tags = {"Library"},
-            notes = "if you want delete ImportLibrary.",
+            notes = "For remove Library",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -421,7 +420,6 @@ public class Controller_Library extends Controller {
     }
 
     @ApiOperation(value = "update basic information in Version of ImportLibrary",
-            hidden = true,
             tags = {"Library"},
             notes = "For update basic (name and description) information in Version of ImportLibrary. If you want update code. You have to create new version. " +
                     "And after that you can delete previous version",
@@ -487,7 +485,6 @@ public class Controller_Library extends Controller {
     }
 
     @ApiOperation(value = "delete Version in Library",
-            hidden = true,
             tags = {"Library"},
             notes = "delete ImportLibrary by query = version_id",
             produces = "application/json",

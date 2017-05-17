@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class Result_Unauthorized {
 
     @ApiModelProperty(value = "state", allowableValues = "Unauthorized", required = true, readOnly = true)
-    public String state = "Unauthorized";
+    public String state = "Unauthorized Access";
 
     @ApiModelProperty(value = "code", allowableValues = "401", required = true, readOnly = true)
     public Integer code = 401;
