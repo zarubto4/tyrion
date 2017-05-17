@@ -245,7 +245,7 @@ public class Controller_Library extends Controller {
             library.update();
 
             // Vrácení objektu
-            return GlobalResult.created(Json.toJson(library));
+            return GlobalResult.result_ok(Json.toJson(library));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
