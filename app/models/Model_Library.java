@@ -63,6 +63,10 @@ public class Model_Library extends Model{
         help.name = this.name;
         help.description = this.description;
 
+        help.edit_permission   = this.edit_permission();
+        help.update_permission = this.update_permission();
+        help.delete_permission = this.delete_permission();
+
         return help;
     }
 
