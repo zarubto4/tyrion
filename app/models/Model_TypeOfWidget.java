@@ -8,6 +8,8 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.logger.Class_Logger;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_TypeOfWidget_Short_Detail;
 
 import javax.persistence.*;
@@ -32,18 +34,51 @@ public class Model_TypeOfWidget extends Model{
                                                 @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Project project;
                                                                                    @JsonIgnore  public Integer order_position;
 
-    @OneToMany(mappedBy="type_of_widget", cascade = CascadeType.ALL) @ApiModelProperty(required = true) @OrderBy("order_position asc") public List<Model_GridWidget> grid_widgets = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @ApiModelProperty(required = true) public List<Model_GridWidget> grid_widgets = new ArrayList<>();
 
 
     @JsonIgnore              public boolean removed_by_user;
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
     @ApiModelProperty(value = "This value will be in Json only if TypeOfWidget is private!", readOnly = true, required = false)
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project_id() {  return project == null ? null : this.project.id; }
 
+
+    @JsonProperty @Transient public List<Swagger_GridWidget_Short_Detail> widgets() {
+
+        try {
+
+            List<Swagger_GridWidget_Short_Detail> short_detail_widgets = new ArrayList<>();
+
+            for (Model_GridWidget widget :  Model_GridWidget.find.where().eq("type_of_widget.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList()) {
+                short_detail_widgets.add( widget.get_grid_widget_short_detail() ) ;
+            }
+
+            return short_detail_widgets;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
+
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    @Transient @JsonIgnore public Swagger_TypeOfWidget_Short_Detail get_typeOfWidget_short_detail(){
+        Swagger_TypeOfWidget_Short_Detail help = new Swagger_TypeOfWidget_Short_Detail();
+        help.id = id;
+        help.name = name;
+        help.description = description;
+
+        help.edit_permission = edit_permission();
+        help.delete_permission = delete_permission();
+        help.update_permission = update_permission();
+        return help;
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -80,6 +115,10 @@ public class Model_TypeOfWidget extends Model{
 
         removed_by_user = true;
         super.update();
+
+        for(Model_GridWidget gridWidget : grid_widgets){
+            gridWidget.delete();
+        }
     }
 
 
@@ -116,19 +155,7 @@ public class Model_TypeOfWidget extends Model{
 
     /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-    @Transient @JsonIgnore public Swagger_TypeOfWidget_Short_Detail get_typeOfWidget_short_detail(){
-        Swagger_TypeOfWidget_Short_Detail help = new Swagger_TypeOfWidget_Short_Detail();
-        help.id = id;
-        help.name = name;
-        help.description = description;
 
-        for (Model_GridWidget widget : grid_widgets) help.grid_widgets.add(widget.get_grid_widget_short_detail());
-
-        help.edit_permission = edit_permission();
-        help.delete_permission = delete_permission();
-        help.update_permission = update_permission();
-        return help;
-    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

@@ -138,7 +138,7 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    private static Model.Finder<String,Model_BlockoBlockVersion> find = new Finder<>(Model_BlockoBlockVersion.class);
+    public static Model.Finder<String,Model_BlockoBlockVersion> find = new Finder<>(Model_BlockoBlockVersion.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

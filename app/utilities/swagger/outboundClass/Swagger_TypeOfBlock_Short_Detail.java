@@ -20,9 +20,6 @@ public class Swagger_TypeOfBlock_Short_Detail {
     public String description;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_Blocko_Block_Short_Detail> blocko_blocks = new ArrayList<>();
-
-    @ApiModelProperty(required = true, readOnly = true)
     public boolean edit_permission;
 
     @ApiModelProperty(required = true, readOnly = true)

@@ -37,7 +37,7 @@ public class Model_BlockoBlock extends Model {
                                     @JsonIgnore @ManyToOne                                       public Model_TypeOfBlock type_of_block;
                                     @JsonIgnore @ManyToOne                                       public Model_Producer producer;
 
-    @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL) @OrderBy("date_of_create desc") public List<Model_BlockoBlockVersion> blocko_versions = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BlockoBlockVersion> blocko_versions = new ArrayList<>();
 
     @JsonIgnore  public Integer order_position;
 
@@ -69,7 +69,7 @@ public class Model_BlockoBlock extends Model {
 
         List<Swagger_BlockoBlock_Version_Short_Detail> list = new ArrayList<>();
 
-        for( Model_BlockoBlockVersion v : blocko_versions){
+        for( Model_BlockoBlockVersion v : Model_BlockoBlockVersion.find.where().eq("blocko_block.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList()){
 
             if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.get_person().id)))) {
 

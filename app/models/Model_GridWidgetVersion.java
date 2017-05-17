@@ -131,7 +131,7 @@ public class Model_GridWidgetVersion extends Model{
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    private static Model.Finder<String,Model_GridWidgetVersion> find = new Finder<>(Model_GridWidgetVersion.class);
+    public static Model.Finder<String,Model_GridWidgetVersion> find = new Finder<>(Model_GridWidgetVersion.class);
 
 
 }

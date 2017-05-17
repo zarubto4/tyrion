@@ -2452,8 +2452,8 @@ public class Controller_Board extends Controller {
 
             // Získání objektu
             Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
-            boards_for_blocko.add_M_Projects(project.get_m_project_not_deleted());
-            boards_for_blocko.add_C_Programs(project.get_c_program_not_deleted());
+            boards_for_blocko.add_M_Projects(project.get_m_projects_not_deleted());
+            boards_for_blocko.add_C_Programs(project.get_c_programs_not_deleted());
 
             for (Model_Board board : project.boards) boards_for_blocko.boards.add(board.get_short_board());
 

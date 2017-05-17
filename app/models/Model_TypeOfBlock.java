@@ -8,6 +8,8 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.logger.Class_Logger;
+import utilities.swagger.outboundClass.Swagger_Blocko_Block_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_TypeOfBlock_Short_Detail;
 
 import javax.persistence.*;
@@ -32,7 +34,7 @@ public class Model_TypeOfBlock extends Model {
 
                                                                         @JsonIgnore @ManyToOne public Model_Project project;
 
-    @OneToMany(mappedBy="type_of_block", cascade=CascadeType.ALL) @ApiModelProperty(required = true) @OrderBy("order_position asc") public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_block", cascade=CascadeType.ALL, fetch = FetchType.LAZY) @ApiModelProperty(required = true) public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
 
     @JsonIgnore  public Integer order_position;
 
@@ -44,6 +46,24 @@ public class Model_TypeOfBlock extends Model {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient                        public String project_id() {  return project == null ? null : this.project.id; }
 
 
+    @JsonProperty @Transient public List<Swagger_Blocko_Block_Short_Detail> blocks() {
+
+        try {
+
+            List<Swagger_Blocko_Block_Short_Detail> short_detail_blocks = new ArrayList<>();
+
+            for (Model_BlockoBlock block :  Model_BlockoBlock.find.where().eq("type_of_block.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList()) {
+                short_detail_blocks.add( block.get_blocko_block_short_detail() ) ;
+            }
+
+            return short_detail_blocks;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public Swagger_TypeOfBlock_Short_Detail get_type_of_block_short_detail(){
@@ -51,8 +71,6 @@ public class Model_TypeOfBlock extends Model {
         help.id = id;
         help.name = name;
         help.description = description;
-
-        for (Model_BlockoBlock block : blocko_blocks) help.blocko_blocks.add(block.get_blocko_block_short_detail());
 
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
