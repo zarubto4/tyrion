@@ -18,7 +18,7 @@ import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.Swagger_ImportLibrary_List;
+import utilities.swagger.outboundClass.Filter_List.Swagger_Library_List;
 import utilities.swagger.outboundClass.Swagger_Library_Version_Short_Detail;
 
 import java.util.Date;
@@ -79,8 +79,6 @@ public class Controller_Library extends Controller {
             Model_Library library = new Model_Library();
             library.name = help.name;
             library.description = help.description;
-            library.markdown_description = help.markdown_description;
-
 
             if(help.project_id != null){
 
@@ -107,7 +105,7 @@ public class Controller_Library extends Controller {
 
     @ApiOperation(value = "get Library",
             tags = {"Library"},
-            notes = "if you want to get ImportLibrary.",
+            notes = "if you want to get Library.",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -130,7 +128,7 @@ public class Controller_Library extends Controller {
 
             // Kontrola objektu
             Model_Library library = Model_Library.find.byId(library_id);
-            if(library == null ) return GlobalResult.notFoundObject("ImportLibrary not found");
+            if(library == null ) return GlobalResult.notFoundObject("Library not found");
 
             // Vrácneí objektu
             return GlobalResult.result_ok(Json.toJson(library));
@@ -183,7 +181,7 @@ public class Controller_Library extends Controller {
             }
 
             // Vyvoření odchozího JSON
-            Swagger_ImportLibrary_List result = new Swagger_ImportLibrary_List(query,page_number);
+            Swagger_Library_List result = new Swagger_Library_List(query,page_number);
 
             // Vrácneí objektu
             return GlobalResult.result_ok(Json.toJson(result));
@@ -194,7 +192,6 @@ public class Controller_Library extends Controller {
     }
 
     @ApiOperation(value = "update Library",
-            hidden = true,
             tags = {"Library"},
             notes = "TODO",
             produces = "application/json",
@@ -243,7 +240,6 @@ public class Controller_Library extends Controller {
 
             library.name = help.name;
             library.description = help.description;
-            library.markdown_description = help.markdown_description;
 
             // Uložení změn
             library.update();
@@ -281,7 +277,7 @@ public class Controller_Library extends Controller {
 
             // Kontrola objektu
             Model_Library library = Model_Library.find.byId(library_id);
-            if(library == null ) return GlobalResult.notFoundObject("ImportLibrary not found");
+            if(library == null ) return GlobalResult.notFoundObject("Library not found");
 
             // Kontrola oprávnění
             if (!library.delete_permission()) return GlobalResult.forbidden_Permission();
@@ -345,7 +341,7 @@ public class Controller_Library extends Controller {
 
             // Ověření objektu
             Model_Library library = Model_Library.find.byId(library_id);
-            if(library == null) return GlobalResult.notFoundObject("ImportLibrary library_id not found");
+            if(library == null) return GlobalResult.notFoundObject("Library library_id not found");
 
             // Zkontroluji oprávnění
             if(!library.update_permission()) return GlobalResult.forbidden_Permission();
@@ -376,14 +372,14 @@ public class Controller_Library extends Controller {
 
     @ApiOperation(value = "get Library Version",
             tags = {"Library"},
-            notes = "get Version of ImportLibrary by query = version_id",
+            notes = "get Version of Library by query = version_id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
                     @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "ImportLibrary.Version.read_permission", value = Model_VersionObject.read_permission_docs),
+                            @ExtensionProperty(name = "Library.Version.read_permission", value = Model_VersionObject.read_permission_docs),
                     }),
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "Static Permission key", value = "ImporLibrary_read"),
@@ -406,7 +402,7 @@ public class Controller_Library extends Controller {
             if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of ImportLibrary");
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of Library");
 
             // Zkontroluji oprávnění
             if(! version_object.library.read_permission())  return GlobalResult.forbidden_Permission();
@@ -419,16 +415,16 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "update basic information in Version of ImportLibrary",
+    @ApiOperation(value = "update basic information in Version of Library",
             tags = {"Library"},
-            notes = "For update basic (name and description) information in Version of ImportLibrary. If you want update code. You have to create new version. " +
+            notes = "For update basic (name and description) information in Version of Library. If you want update code. You have to create new version. " +
                     "And after that you can delete previous version",
             produces = "application/json",
             protocols = "https",
             code = 200,
             extensions = {
                     @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "ImportLibrary_edit"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Library_edit"),
                     })
             }
     )
@@ -463,8 +459,8 @@ public class Controller_Library extends Controller {
             Model_VersionObject version_object= Model_VersionObject.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
-            // Zkontroluji validitu Verze zda sedí k ImportLibrary
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of ImportLibrary");
+            // Zkontroluji validitu Verze zda sedí k Library
+            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of Library");
 
             // Kontrola oprávnění
             if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
@@ -486,7 +482,7 @@ public class Controller_Library extends Controller {
 
     @ApiOperation(value = "delete Version in Library",
             tags = {"Library"},
-            notes = "delete ImportLibrary by query = version_id",
+            notes = "delete Library by query = version_id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -511,7 +507,7 @@ public class Controller_Library extends Controller {
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
             if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
 
-            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            // Zkontroluji validitu Verze zda sedí k Library
             if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of Library");
 
             // Kontrola oprávnění
@@ -576,9 +572,9 @@ public class Controller_Library extends Controller {
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("ImportLibrary Version version_id not found");
+            if (version_object == null) return GlobalResult.notFoundObject("Library Version version_id not found");
 
-            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            // Zkontroluji validitu Verze zda sedí k Library
             if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of Library");
 
             // Kontrola oprávnění
@@ -655,7 +651,7 @@ public class Controller_Library extends Controller {
             Model_CProgram cProgram = Model_CProgram.find.byId(example_id);
             if (cProgram == null) return GlobalResult.notFoundObject("Example example_id not found");
 
-            // Zkontroluji validitu Verze zda sedí k ImportLibrary
+            // Zkontroluji validitu Verze zda sedí k Library
             if(cProgram.example_library == null) return GlobalResult.result_BadRequest("Program is not example of Library");
 
             Model_VersionObject returnObject = cProgram.example_library;

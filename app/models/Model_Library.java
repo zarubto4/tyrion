@@ -30,8 +30,6 @@ public class Model_Library extends Model{
     @Id @ApiModelProperty(required = true) public String id;
     @ApiModelProperty(required = true)     public String name;
     @ApiModelProperty(required = true)     public String description;
-    @Column(columnDefinition = "TEXT")
-    @ApiModelProperty(required = true)     public String markdown_description;
 
                            @JsonIgnore     public boolean removed_by_user;
 

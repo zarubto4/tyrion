@@ -8,7 +8,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Json Model for new Version of ImportLibrary",
+@ApiModel(description = "Json Model for new Version of Library",
         value = "Library_Version_New")
 public class Swagger_Library_Version_New {
 

@@ -11,7 +11,7 @@ import java.util.List;
 public class Swagger_Library_New {
 
 
-    @ApiModelProperty(required = true, value = "Project ID only for private libraries. For Public, permission is required.")
+    @ApiModelProperty(required = true, value = "Project ID only for private libraries. For Public, permission is required. Its Required only for Creating, For update is used previous settings. ")
     public String project_id = null;
 
     @Constraints.Required
@@ -25,8 +25,5 @@ public class Swagger_Library_New {
     @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
     @ApiModelProperty(required = true, value = "Length must be between 8 and 255 characters.")
     public String description;
-
-    @ApiModelProperty(required = false, value = "The description in MARKDONW must have at least 8 characters - ")
-    public String markdown_description;
 
 }

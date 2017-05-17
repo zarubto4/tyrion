@@ -116,31 +116,41 @@ public class Model_VersionObject extends Model {
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail get_short_library_version(){
-        Swagger_Library_Version_Short_Detail help = new Swagger_Library_Version_Short_Detail();
+    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail   get_short_library_version(){
+        try {
 
-        help.version_id = id;
-        help.version_name = version_name;
-        help.version_description = version_description;
+            Swagger_Library_Version_Short_Detail help = new Swagger_Library_Version_Short_Detail();
 
-        for (Model_CProgram cProgram : examples){
-            help.examples.add(cProgram.get_example_short_detail());
+            help.version_id = id;
+            help.version_name = version_name;
+            help.version_description = version_description;
+            help.delete_permission = library.delete_permission();
+            help.update_permission = library.update_permission();
+            //help.author = library.autho - není možnost ho získat TODO
+
+            for (Model_CProgram cProgram : examples) {
+                help.examples.add(cProgram.get_example_short_detail());
+            }
+
+            for (Model_FileRecord file : this.files) {
+
+                System.out.println("get_short_library_version:: " + file.file_name);
+
+                JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+
+                Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bind(json);
+                if (form.hasErrors()) return null;
+                Swagger_Library_File_Load lib_form = form.get();
+
+                help.files.addAll(lib_form.files);
+            }
+
+            return help;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
         }
-
-        for (Model_FileRecord file : this.files){
-
-            System.out.println("get_short_library_version:: " + file.file_name);
-
-            JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
-
-            Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bind(json);
-            if(form.hasErrors()) return null;
-            Swagger_Library_File_Load lib_form = form.get();
-
-            help.files.addAll(lib_form.files);
-        }
-
-        return help;
     }
 
     @Transient @JsonIgnore public Swagger_C_Program_Version_Short_Detail get_short_c_program_version(){

@@ -33,7 +33,7 @@ public class Swagger_C_Program_Version_New {
     @ApiModelProperty(required = false)
     @Valid public List<Swagger_Library_Record> files = new ArrayList<>();
 
-    @ApiModelProperty(required = false, value = "Contains IDs of ImportLibrary versions")
+    @ApiModelProperty(required = false, value = "Contains IDs of imported Library versions")
     @Valid public List<String>  imported_libraries = new ArrayList<>();
 
 }

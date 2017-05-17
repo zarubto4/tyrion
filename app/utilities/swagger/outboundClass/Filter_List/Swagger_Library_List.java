@@ -9,9 +9,9 @@ import utilities.swagger.outboundClass.Swagger_Library_Short_Detail;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Individual ImportLibrary List",
-        value = "ImportLibrary_List")
-public class Swagger_ImportLibrary_List {
+@ApiModel(description = "Individual Library List",
+        value = "Library_List")
+public class Swagger_Library_List {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
@@ -34,7 +34,7 @@ public class Swagger_ImportLibrary_List {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_ImportLibrary_List(Query<Model_Library> query , int page_number){
+    public Swagger_Library_List(Query<Model_Library> query , int page_number){
 
         if(page_number < 1) page_number = 1;
         List<Model_Library> list =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
