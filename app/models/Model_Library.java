@@ -84,7 +84,7 @@ public class Model_Library extends Model{
 
             Swagger_Library_Version help = new Swagger_Library_Version();
 
-            help.version_id = id;
+            help.version_id = version_object.id;
             help.version_name = version_object.version_name;
             help.version_description = version_object.version_description;
             help.delete_permission = delete_permission();
