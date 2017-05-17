@@ -104,8 +104,39 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_version_name()     { return  actual_boot_loader == null ? null : actual_boot_loader.name; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_id()               { return  actual_boot_loader == null ? null : actual_boot_loader.id;}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = false) public String available_bootloader_version_name()   { if(type_of_board.main_boot_loader != null && type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return type_of_board.main_boot_loader.name; else return null;}
-    @JsonProperty  @Transient @ApiModelProperty(required = false) public String available_bootloader_id()             { if(type_of_board.main_boot_loader != null && type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) return type_of_board.main_boot_loader.id; else return null;}
+    @JsonProperty  @Transient @ApiModelProperty(required = false) public String available_bootloader_version_name()   {
+
+        if(type_of_board.main_boot_loader != null) {
+
+            if(actual_bootloader_id() == null) {
+                return type_of_board.main_boot_loader.name;
+            }
+
+            if(type_of_board.main_boot_loader.id.equals(actual_bootloader_id())){
+                return null;
+            }
+        }
+
+        return null;
+
+    }
+    @JsonProperty  @Transient @ApiModelProperty(required = false) public String available_bootloader_id()             {
+
+
+        if(type_of_board.main_boot_loader != null) {
+
+            if(actual_bootloader_id() == null) {
+                return type_of_board.main_boot_loader.id;
+            }
+
+            if(type_of_board.main_boot_loader.id.equals(actual_bootloader_id())){
+                return null;
+            }
+        }
+
+        return null;
+
+    }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) List<Enum_Board_Alert> alert_list(){
         List<Enum_Board_Alert> list = new ArrayList<>();
