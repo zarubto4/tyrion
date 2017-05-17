@@ -299,7 +299,6 @@ public class Controller_Library extends Controller {
 
     @ApiOperation(value = "new Version of Library",
             tags = {"Library"},
-            hidden = true,
             notes = "If you want add new code to Library",
             produces = "application/json",
             protocols = "https",
