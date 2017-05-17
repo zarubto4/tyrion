@@ -120,7 +120,6 @@ public class Model_VersionObject extends Model {
         Swagger_Library_Version_Short_Detail help = new Swagger_Library_Version_Short_Detail();
 
         help.version_id = id;
-        help.library_id = library.id;
         help.version_name = version_name;
         help.version_description = version_description;
 

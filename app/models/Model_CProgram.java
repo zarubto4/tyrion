@@ -16,6 +16,7 @@ import utilities.logger.Server_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
+import utilities.swagger.documentationClass.Swagger_Library_Library_Version_pair;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
@@ -169,7 +170,19 @@ public class Model_CProgram extends Model {
 
                 c_program_versions.main = version_new.main;
                 c_program_versions.files = version_new.files;
-                c_program_versions.imported_libraries = version_new.imported_libraries;
+
+                for( String imported_library_version_id : version_new.imported_libraries){
+
+                    Model_VersionObject library_version = Model_VersionObject.find.byId(imported_library_version_id);
+
+                    if(library_version == null) continue;
+
+                    Swagger_Library_Library_Version_pair pair = new Swagger_Library_Library_Version_pair();
+                    pair.library_version_short_detail = library_version.get_short_library_version();
+                    pair.library_short_detail         = library_version.library.get_short_import_library();
+
+                    c_program_versions.imported_libraries.add(pair);
+                }
             }
 
             if (version_object.c_compilation != null) {

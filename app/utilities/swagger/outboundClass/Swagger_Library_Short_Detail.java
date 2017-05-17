@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
         value = "Library_Short_Detail")
 public class Swagger_Library_Short_Detail {
 
-
     @ApiModelProperty(required = true, readOnly = true)
     public String id;
 
@@ -16,8 +15,5 @@ public class Swagger_Library_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
     public String description;
-
-    @ApiModelProperty(required = true, readOnly = true)
-    public Swagger_Library_Version_Short_Detail last_version;
 
 }

@@ -65,8 +65,6 @@ public class Model_Library extends Model{
         help.name = this.name;
         help.description = this.description;
 
-        help.last_version = this.last_version();
-
         return help;
     }
 

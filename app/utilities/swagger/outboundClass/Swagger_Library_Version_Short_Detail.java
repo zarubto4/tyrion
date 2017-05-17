@@ -27,6 +27,4 @@ public class Swagger_Library_Version_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_Library_Record> files = new ArrayList<>();
 
-    @ApiModelProperty(required = true, readOnly = true)
-    public String library_id;
 }

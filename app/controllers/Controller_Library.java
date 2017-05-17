@@ -84,6 +84,8 @@ public class Controller_Library extends Controller {
 
             if(help.project_id != null){
 
+                System.out.println("Project id != null");
+
                 Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null || !project.update_permission()) return GlobalResult.notFoundObject("Project project_id not found");
                 library.project_id = project.id;
@@ -173,8 +175,10 @@ public class Controller_Library extends Controller {
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
+                System.out.println("Project není null");
                 query.where().eq("project_id", help.project_id);
             }else {
+                System.out.println("Project je null");
                 query.where().isNull("project_id");
             }
 
