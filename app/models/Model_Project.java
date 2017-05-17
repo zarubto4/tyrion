@@ -131,7 +131,6 @@ public class Model_Project extends Model {
 
     @JsonIgnore
     public List<Model_CProgram> get_c_programs_not_deleted(){
-
         return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
     }
 

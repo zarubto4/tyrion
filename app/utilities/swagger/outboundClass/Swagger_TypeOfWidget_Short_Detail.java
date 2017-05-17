@@ -20,6 +20,9 @@ public class Swagger_TypeOfWidget_Short_Detail {
     public String description;
 
     @ApiModelProperty(required = true, readOnly = true)
+    public List<Swagger_GridWidget_Short_Detail> grid_widgets = new ArrayList<>();
+
+    @ApiModelProperty(required = true, readOnly = true)
     public boolean edit_permission;
 
     @ApiModelProperty(required = true, readOnly = true)
