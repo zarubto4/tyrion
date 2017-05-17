@@ -25,6 +25,6 @@ public class Swagger_Library_Version_New {
 
 
     @ApiModelProperty(required = false)
-    @Valid public List<Swagger_Library_Record> user_files = new ArrayList<>();
+    @Valid public List<Swagger_Library_Record> files = new ArrayList<>();
 
 }

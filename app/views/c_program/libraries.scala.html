@@ -203,7 +203,7 @@
                     <select id="selectLibrary" class="form-control select2" style="width: 100%;">
                         <option selected="selected" disabled>Choose one</option>
                         @for(library <- Model_Library.find.all()){
-                            @if(library.removed){
+                            @if(library.removed_by_user){
                                 <option class="text-red" onclick="getLibrary('@library.id')">@library.name (removed)</option>
                             }else{
                                 <option onclick="getLibrary('@library.id')">@library.name</option>

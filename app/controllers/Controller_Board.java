@@ -188,7 +188,7 @@ public class Controller_Board extends Controller {
 
                         Swagger_Library_Record lib_file = lib_form.get();
 
-                        for (Swagger_Library_Record user_file : help.user_files){
+                        for (Swagger_Library_Record user_file : help.files){
 
                             if (lib_file.file_name.equals(user_file.file_name))break;
                             if (!library_files.contains(lib_file)) library_files.add(lib_file);
@@ -204,8 +204,8 @@ public class Controller_Board extends Controller {
                 includes.put(file_lib.file_name , file_lib.content);
             }
 
-            if(help.user_files != null)
-                for(Swagger_Library_Record user_file : help.user_files){
+            if(help.files != null)
+                for(Swagger_Library_Record user_file : help.files){
                     includes.put(user_file.file_name , user_file.content);
                 }
 

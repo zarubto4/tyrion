@@ -143,7 +143,7 @@ public class Controller_Code extends Controller{
                     // Nahraje do Azure a připojí do verze soubor
                     ObjectNode content = Json.newObject();
                     content.put("main", scheme_load_form.main);
-                    content.set("user_files", Json.toJson(scheme_load_form.user_files));
+                    content.set("files", Json.toJson(scheme_load_form.files));
                     content.set("imported_libraries", Json.toJson(scheme_load_form.imported_libraries));
 
                     // Content se nahraje na Azure
@@ -839,8 +839,8 @@ public class Controller_Code extends Controller{
                 // Nahraje do Azure a připojí do verze soubor
                 ObjectNode  content = Json.newObject();
                 content.put("main", help.main );
-                content.set("user_files", null);
-                content.set("library_files", null );
+                content.set("files", null);
+                content.set("library", null );
 
 
                 Model_FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);

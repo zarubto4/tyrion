@@ -168,7 +168,7 @@ public class Model_CProgram extends Model {
                 Swagger_C_Program_Version_New version_new = Json.fromJson(json, Swagger_C_Program_Version_New.class);
 
                 c_program_versions.main = version_new.main;
-                c_program_versions.user_files = version_new.user_files;
+                c_program_versions.files = version_new.files;
                 c_program_versions.imported_libraries = version_new.imported_libraries;
             }
 

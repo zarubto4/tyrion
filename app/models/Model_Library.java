@@ -33,9 +33,9 @@ public class Model_Library extends Model{
     @Column(columnDefinition = "TEXT")
     @ApiModelProperty(required = true)     public String markdown_description;
 
-                           @JsonIgnore     public boolean removed;
+                           @JsonIgnore     public boolean removed_by_user;
 
-    @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_VersionObject> versions        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_VersionObject> versions   = new ArrayList<>();
 
     @ManyToMany public List<Model_TypeOfBoard>  type_of_boards  = new ArrayList<>();
 
@@ -49,7 +49,7 @@ public class Model_Library extends Model{
 
         List<Swagger_Library_Version_Short_Detail> versions = new ArrayList<>();
         for (Model_VersionObject version : this.versions){
-            versions.add(version.get_short_import_library_version());
+            versions.add(version.get_short_library_version());
         }
 
         return versions;
@@ -75,7 +75,7 @@ public class Model_Library extends Model{
 
         if (this.versions.isEmpty()) return null;
 
-        return this.versions.get(0).get_short_import_library_version();
+        return this.versions.get(0).get_short_library_version();
     }
 
 
@@ -110,7 +110,7 @@ public class Model_Library extends Model{
 
         terminal_logger.debug("remove :: Update (hide) object Id: " + this.id);
 
-        removed = true;
+        removed_by_user = true;
 
         //Database Update
         super.update();

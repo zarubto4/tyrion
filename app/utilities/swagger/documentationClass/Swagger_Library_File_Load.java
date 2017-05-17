@@ -14,6 +14,6 @@ import java.util.List;
 public class Swagger_Library_File_Load {
 
     @ApiModelProperty(required = false)
-    @Valid public List<Swagger_Library_Record>  library_files = new ArrayList<>();
+    @Valid public List<Swagger_Library_Record>  files = new ArrayList<>();
 
 }

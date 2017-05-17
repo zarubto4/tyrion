@@ -116,7 +116,7 @@ public class Model_VersionObject extends Model {
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail get_short_import_library_version(){
+    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail get_short_library_version(){
         Swagger_Library_Version_Short_Detail help = new Swagger_Library_Version_Short_Detail();
 
         help.version_id = id;
@@ -130,13 +130,15 @@ public class Model_VersionObject extends Model {
 
         for (Model_FileRecord file : this.files){
 
+            System.out.println("get_short_library_version:: " + file.file_name);
+
             JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
             Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bind(json);
             if(form.hasErrors()) return null;
             Swagger_Library_File_Load lib_form = form.get();
 
-            help.files.addAll(lib_form.library_files);
+            help.files.addAll(lib_form.files);
         }
 
         return help;
@@ -335,8 +337,8 @@ public class Model_VersionObject extends Model {
                     }
                     Swagger_Library_File_Load lib_help = lib_form.get();
 
-                    for (Swagger_Library_Record lib_file : lib_help.library_files){
-                        for (Swagger_Library_Record user_file : code_file.user_files){
+                    for (Swagger_Library_Record lib_file : lib_help.files){
+                        for (Swagger_Library_Record user_file : code_file.files){
 
                             if (!library_files.contains(lib_file)) library_files.add(lib_file);
 
@@ -356,8 +358,8 @@ public class Model_VersionObject extends Model {
             includes.put(file_lib.file_name , file_lib.content);
         }
 
-        if(code_file.user_files != null)
-            for(Swagger_Library_Record user_file : code_file.user_files){
+        if(code_file.files != null)
+            for(Swagger_Library_Record user_file : code_file.files){
                 includes.put(user_file.file_name , user_file.content);
             }
 

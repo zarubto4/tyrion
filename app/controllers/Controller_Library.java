@@ -168,11 +168,14 @@ public class Controller_Library extends Controller {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Library> query = Ebean.find(Model_Library.class);
-            query.where().eq("removed", false);
+            query.where().eq("removed_by_user", false);
+
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
                 query.where().eq("project_id", help.project_id);
+            }else {
+                query.where().isNull("project_id");
             }
 
             // Vyvoření odchozího JSON
@@ -281,7 +284,7 @@ public class Controller_Library extends Controller {
             if (!library.delete_permission()) return GlobalResult.forbidden_Permission();
 
             // Smazání objektu
-            library.removed = true;
+            library.removed_by_user = true;
             library.update();
 
             // Vrácneí potvrzení
@@ -355,11 +358,13 @@ public class Controller_Library extends Controller {
 
             version_object.save();
 
-            Model_FileRecord.uploadAzure_Version(Json.toJson(help).toString(), "library.json" , library.get_path() ,  version_object);
-            version_object.update();
+            Swagger_Library_File_Load library_file_collection = new Swagger_Library_File_Load();
+            library_file_collection.files = help.files;
+
+            Model_FileRecord.uploadAzure_Version(Json.toJson(library_file_collection).toString(), "library.json" , library.get_path() ,  version_object);
 
             // Vracím vytvořený objekt
-            return GlobalResult.created(Json.toJson(version_object.get_short_import_library_version()));
+            return GlobalResult.created(Json.toJson(version_object.get_short_library_version()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -404,7 +409,7 @@ public class Controller_Library extends Controller {
             if(! version_object.library.read_permission())  return GlobalResult.forbidden_Permission();
 
             // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
+            return GlobalResult.result_ok(Json.toJson(version_object.get_short_library_version()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -470,7 +475,7 @@ public class Controller_Library extends Controller {
             version_object.update();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
+            return GlobalResult.result_ok(Json.toJson(version_object.get_short_library_version()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -605,8 +610,8 @@ public class Controller_Library extends Controller {
             // Nahraje do Azure a připojí do verze soubor
             ObjectNode  content = Json.newObject();
             content.put("main", help.main );
-            //content.set("user_files", Json.toJson( help.user_files) );
-            //content.set("library_files", Json.toJson(help.library_files) );
+            content.set("files", Json.toJson( help.files) );
+            content.set("imported_libraries", Json.toJson(help.imported_libraries) );
 
             // Content se nahraje na Azure
 
@@ -614,7 +619,7 @@ public class Controller_Library extends Controller {
             example.update();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version_object.get_short_import_library_version()));
+            return GlobalResult.result_ok(Json.toJson(version_object.get_short_library_version()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -665,7 +670,7 @@ public class Controller_Library extends Controller {
             returnObject.refresh();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(returnObject.get_short_import_library_version()));
+            return GlobalResult.result_ok(Json.toJson(returnObject.get_short_library_version()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
