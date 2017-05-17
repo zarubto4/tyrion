@@ -52,7 +52,7 @@ public class Model_TypeOfWidget extends Model{
 
             List<Swagger_GridWidget_Short_Detail> short_detail_widgets = new ArrayList<>();
 
-            for (Model_GridWidget widget :  Model_GridWidget.find.where().eq("type_of_widget.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList()) {
+            for (Model_GridWidget widget :  Model_GridWidget.find.where().eq("type_of_widget.id", id).eq("removed_by_user", false).order().asc("order_position").findList()) {
                 short_detail_widgets.add( widget.get_grid_widget_short_detail() ) ;
             }
 

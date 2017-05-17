@@ -10,7 +10,7 @@ import java.util.List;
         value = "Blocko_Block_Short_Detail")
 public class Swagger_Blocko_Block_Short_Detail {
 
-    @ApiModelProperty(required = true, readOnly = true)
+    @ApiModelProperty(required = true, readOnly = true, value = "Id of Block in Blocko Group (TypeOfBlock)")
     public String id;
 
     @ApiModelProperty(required = true, readOnly = true)

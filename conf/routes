@@ -226,6 +226,9 @@ DELETE    /typeOfBlock/:type_of_block_id                                @control
 PUT       /blocko/disapprove                                            @controllers.Controller_Blocko.blockoDisapprove()
 PUT       /blocko/approval                                              @controllers.Controller_Blocko.blockoApproval()
 
+#Board on Project
+GET       /blocko/all_details/:project_id                               @controllers.Controller_Board.board_allDetailsForBlocko(project_id)
+
 #Homer Server
 POST      /homer_server                                                 @controllers.Controller_ExternalServer.create_Homer_Server()
 PUT       /homer_server/edit/:server_id                                 @controllers.Controller_ExternalServer.edit_Homer_Server(server_id)
@@ -234,8 +237,7 @@ PUT       /homer_server/set_main/:server_id                             @control
 GET       /homer_server                                                 @controllers.Controller_ExternalServer.get_All_Homer_Server()
 DELETE    /homer_server/:server_id                                      @controllers.Controller_ExternalServer.delete_Homer_Server(server_id)
 
-#Board on Project
-GET       /blocko/all_details/:project_id                               @controllers.Controller_Board.board_allDetailsForBlocko(project_id)
+
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################

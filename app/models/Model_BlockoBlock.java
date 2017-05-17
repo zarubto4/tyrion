@@ -69,7 +69,7 @@ public class Model_BlockoBlock extends Model {
 
         List<Swagger_BlockoBlock_Version_Short_Detail> list = new ArrayList<>();
 
-        for( Model_BlockoBlockVersion v : Model_BlockoBlockVersion.find.where().eq("blocko_block.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList()){
+        for( Model_BlockoBlockVersion v : Model_BlockoBlockVersion.find.where().eq("blocko_block.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList()){
 
             if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.get_person().id)))) {
 

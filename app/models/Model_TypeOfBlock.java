@@ -52,7 +52,7 @@ public class Model_TypeOfBlock extends Model {
 
             List<Swagger_Blocko_Block_Short_Detail> short_detail_blocks = new ArrayList<>();
 
-            for (Model_BlockoBlock block :  Model_BlockoBlock.find.where().eq("type_of_block.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList()) {
+            for (Model_BlockoBlock block :  Model_BlockoBlock.find.where().eq("type_of_block.id", id).eq("removed_by_user", false).order().asc("order_position").findList()) {
                 short_detail_blocks.add( block.get_blocko_block_short_detail() ) ;
             }
 

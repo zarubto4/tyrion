@@ -59,7 +59,7 @@ public class Model_GridWidget extends Model{
 
         List<Swagger_GridWidgetVersion_Short_Detail> list = new ArrayList<>();
 
-        for( Model_GridWidgetVersion v : Model_GridWidgetVersion.find.where().eq("grid_widget.id", id).eq("removed_by_user", false).order().asc("date_of_create").findList()){
+        for( Model_GridWidgetVersion v : Model_GridWidgetVersion.find.where().eq("grid_widget.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList()){
 
             if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.get_person().id)))) {
 
