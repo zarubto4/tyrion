@@ -179,7 +179,7 @@ public class Model_CProgram extends Model {
 
                     Swagger_Library_Library_Version_pair pair = new Swagger_Library_Library_Version_pair();
                     pair.library_version_short_detail = library_version.get_short_library_version();
-                    pair.library_short_detail         = library_version.library.get_short_import_library();
+                    pair.library_short_detail         = library_version.library.get_short_library();
 
                     c_program_versions.imported_libraries.add(pair);
                 }

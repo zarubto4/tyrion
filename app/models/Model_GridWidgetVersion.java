@@ -39,6 +39,8 @@ public class Model_GridWidgetVersion extends Model{
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
     @JsonIgnore @ManyToOne                                                   public Model_GridWidget grid_widget;
 
+    @JsonIgnore  public boolean removed_by_user;
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty
@@ -79,7 +81,6 @@ public class Model_GridWidgetVersion extends Model{
     @JsonIgnore @Override public void update() {
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
-
         super.update();
     }
 
@@ -87,7 +88,8 @@ public class Model_GridWidgetVersion extends Model{
 
         terminal_logger.debug("delete :: Delete object Id: {}",  this.id);
 
-        super.delete();
+        this.removed_by_user =true;
+        super.update();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

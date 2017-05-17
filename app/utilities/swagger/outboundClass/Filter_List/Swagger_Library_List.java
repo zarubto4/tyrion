@@ -40,7 +40,7 @@ public class Swagger_Library_List {
         List<Model_Library> list =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
         for(Model_Library library : list){
-            this.content.add(library.get_short_import_library());
+            this.content.add(library.get_short_library());
         }
 
         this.total   = query.findRowCount();

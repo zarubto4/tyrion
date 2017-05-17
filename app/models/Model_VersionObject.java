@@ -126,24 +126,6 @@ public class Model_VersionObject extends Model {
             help.version_description = version_description;
             help.delete_permission = library.delete_permission();
             help.update_permission = library.update_permission();
-            //help.author = library.autho - není možnost ho získat TODO
-
-            for (Model_CProgram cProgram : examples) {
-                help.examples.add(cProgram.get_example_short_detail());
-            }
-
-            for (Model_FileRecord file : this.files) {
-
-                System.out.println("get_short_library_version:: " + file.file_name);
-
-                JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
-
-                Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bind(json);
-                if (form.hasErrors()) return null;
-                Swagger_Library_File_Load lib_form = form.get();
-
-                help.files.addAll(lib_form.files);
-            }
 
             return help;
 

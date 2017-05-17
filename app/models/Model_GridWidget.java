@@ -39,6 +39,9 @@ public class Model_GridWidget extends Model{
 
     @JsonIgnore  public Integer order_position;
 
+    @JsonIgnore  public boolean removed_by_user;
+
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if GridWidget is created by Byzance or Other Company")
@@ -100,7 +103,6 @@ public class Model_GridWidget extends Model{
     @JsonIgnore @Override public void update() {
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
-
         super.update();
 
     }
@@ -110,7 +112,8 @@ public class Model_GridWidget extends Model{
 
         terminal_logger.debug("delete :: Delete object Id: {}",  this.id);
 
-        super.delete();
+        this.removed_by_user = true;
+        super.update();
     }
 
 /* ORDER  -------------------------------------------------------------------------------------------------------------*/

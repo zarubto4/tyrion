@@ -3,11 +3,20 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import play.data.Form;
+import play.libs.Json;
+import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
+import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
+import utilities.swagger.documentationClass.Swagger_Library_File_Load;
+import utilities.swagger.documentationClass.Swagger_Library_Library_Version_pair;
+import utilities.swagger.documentationClass.Swagger_Library_Version;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Library_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Library_Version_Short_Detail;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
@@ -56,7 +65,7 @@ public class Model_Library extends Model{
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Swagger_Library_Short_Detail get_short_import_library(){
+    public Swagger_Library_Short_Detail get_short_library(){
         Swagger_Library_Short_Detail help = new Swagger_Library_Short_Detail();
 
         help.id = this.id;
@@ -70,14 +79,43 @@ public class Model_Library extends Model{
         return help;
     }
 
-    @JsonIgnore
-    public Swagger_Library_Version_Short_Detail last_version(){
+    @Transient @JsonIgnore public Swagger_Library_Version library_version(Model_VersionObject version_object){
+        try {
 
-        if (this.versions.isEmpty()) return null;
+            Swagger_Library_Version help = new Swagger_Library_Version();
 
-        return this.versions.get(0).get_short_library_version();
+            help.version_id = id;
+            help.version_name = version_object.version_name;
+            help.version_description = version_object.version_description;
+            help.delete_permission = delete_permission();
+            help.update_permission = update_permission();
+            //help.author = library.autho - není možnost ho získat TODO
+
+            for (Model_CProgram cProgram : version_object.examples) {
+                help.examples.add(cProgram.get_example_short_detail());
+            }
+
+            for (Model_FileRecord file : version_object.files) {
+
+                System.out.println("get_short_library_version:: " + file.file_name);
+
+                JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+
+                Form<Swagger_Library_File_Load> form = Form.form(Swagger_Library_File_Load.class).bind(json);
+                if (form.hasErrors()) return null;
+                Swagger_Library_File_Load lib_form = form.get();
+
+                help.files.addAll(lib_form.files);
+            }
+
+            return help;
+
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
