@@ -13,6 +13,13 @@ public class WS_Message_Add_new_instance extends WS_AbstractMessage_Instance {
     @JsonIgnore
     public static final String messageType = "createInstance";
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
+
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance) {
 

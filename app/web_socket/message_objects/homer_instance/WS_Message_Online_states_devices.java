@@ -15,11 +15,10 @@ import java.util.List;
 public class WS_Message_Online_states_devices extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "deviceOnlineState";
+    @JsonIgnore public static final String messageType = "deviceOnlineState";
 
 
-    // Obsah příchozí zprávy
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
     @Valid public List<DeviceStatus> deviceList = new ArrayList<>();
 
@@ -37,10 +36,10 @@ public class WS_Message_Online_states_devices extends WS_AbstractMessage_Instanc
 
 
     /**
-     * Mapa byla vytvořena za účelem velkých polí. Aby nebylo nutné hledat v seznamu objektů, přemapuje se list
-     * na hashmapu. A tak zle volat device napřímo podle ID.
+     * The map was created for large fields. To avoid having to search the list of objects, the list will be remapped
+     * on hashmap. So you can call the device directly by ID.
      *
-     * Pomalejší u malého množství prvků - výrazně rychlejší u velkého množství prvků.
+     * Slower for a small number of elements - significantly faster for a large number of elements.
      */
     @JsonIgnore HashMap<String,DeviceStatus> map = new HashMap<>();
     public boolean is_device_online(String device_id){
@@ -59,8 +58,8 @@ public class WS_Message_Online_states_devices extends WS_AbstractMessage_Instanc
 
 
 
-    //------------------------------------------------------------------------------------------------------------------
 
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance, List<String> devicesId) {

@@ -14,7 +14,13 @@ public class WS_Message_Yoda_connected extends WS_AbstractMessage_Board {
     // MessageType
     @JsonIgnore public static final String messageType = "yodaConnected";
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
     @Constraints.Required public String deviceId;
 
     @Valid public List<WS_Message_Device_connected> deviceList  = new ArrayList<>();
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
 }

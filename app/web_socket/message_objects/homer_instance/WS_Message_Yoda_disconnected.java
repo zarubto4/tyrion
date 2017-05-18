@@ -10,5 +10,10 @@ public class WS_Message_Yoda_disconnected extends WS_AbstractMessage {
     @JsonIgnore
     public static final String messageType = "yodaDisconnected";
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
     @Constraints.Required public String deviceId;
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
 }

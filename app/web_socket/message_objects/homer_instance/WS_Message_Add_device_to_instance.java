@@ -11,8 +11,15 @@ import java.util.List;
 public class WS_Message_Add_device_to_instance extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "addDeviceToInstance";
+    @JsonIgnore public static final String messageType = "addDeviceToInstance";
+
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance, String yodaId, List<String> devicesId) {

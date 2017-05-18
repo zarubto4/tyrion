@@ -9,9 +9,12 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Is_device_connected extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "checkDeviceConnection";
+    @JsonIgnore public static final String messageType = "checkDeviceConnection";
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(String device_id) {

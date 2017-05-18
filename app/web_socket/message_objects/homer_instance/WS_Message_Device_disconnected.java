@@ -7,9 +7,13 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Device_disconnected extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "deviceDisconnected";
+    @JsonIgnore public static final String messageType = "deviceDisconnected";
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
     @Constraints.Required public String deviceId;
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
 
 }

@@ -11,8 +11,11 @@ import java.util.List;
 public class WS_Message_Remove_device_from_instance extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "removeDeviceFromInstance";
+    @JsonIgnore public static final String messageType = "removeDeviceFromInstance";
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance, String yoda_id, List<String> devices_id) {

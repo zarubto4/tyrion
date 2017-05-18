@@ -9,8 +9,11 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Destroy_instance extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "destroyInstance";
+    @JsonIgnore public static final String messageType = "destroyInstance";
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(String instance_name) {

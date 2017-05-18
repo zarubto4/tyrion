@@ -10,8 +10,13 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Basic_command_for_device extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "basicCommand";
+    @JsonIgnore public static final String messageType = "basicCommand";
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance, String targetId, Enum_type_of_command command) {

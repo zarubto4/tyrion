@@ -8,8 +8,13 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
 public class WS_Message_Set_homer_server_configuration extends WS_AbstractMessage {
 
-    @JsonIgnore
-    public static final String messageType = "setServerConfiguration";
+    @JsonIgnore public static final String messageType = "setServerConfiguration";
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerServer server) {

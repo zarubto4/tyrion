@@ -16,9 +16,16 @@ public class WS_Message_Check_homer_server_person_permission extends WS_Abstract
     @JsonIgnore
     public static final String messageType = "checkUserPermission";
 
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
     @ApiModelProperty(required = true) @Constraints.Required  public String email;
     @ApiModelProperty(required = true) @Constraints.Required  public String password;
     @ApiModelProperty(required = true) @Constraints.Required  public String user_agent;
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
 
     @JsonIgnore
     public ObjectNode make_request_unsuccess() {

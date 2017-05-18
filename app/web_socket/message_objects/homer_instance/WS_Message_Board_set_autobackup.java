@@ -13,6 +13,12 @@ public class WS_Message_Board_set_autobackup extends WS_AbstractMessage_Instance
     @JsonIgnore public static final String messageType = "setAutoBackup";
 
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance, Model_Board board) {
 

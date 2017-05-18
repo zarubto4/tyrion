@@ -652,6 +652,47 @@ public class Model_Board extends Model {
 
     }
 
+    @JsonIgnore @Transient public static void device_autoBackUp_echo(WS_Message_AutoBackUp_progress report){
+        try {
+
+            terminal_logger.debug("device_autoBackUp_echo:: Deive send Echo about backup device ID:: {} ", report.deviceId);
+
+
+            Model_Board device = Model_Board.get_byId(report.deviceId);
+
+            if(device == null){
+                terminal_logger.error("master_device_Connected:: Unregistered Hardware:: Id:: {} ",  report.deviceId);
+                return;
+            }
+
+
+            if(report.phase.equals("start")){
+                terminal_logger.debug("device_autoBackUp_echo - Device ID {} started with autobackup procedure",report.deviceId);
+                return;
+            }
+
+            if(report.phase.equals("done")){
+
+                Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", report.build_id).findUnique();
+                if(c_program_version == null){
+                    terminal_logger.error("device_autoBackUp_echo Firmware with build ID {} not find in database!", report.build_id);
+                    return;
+                }
+
+                device.actual_backup_c_program_version = c_program_version;
+                device.update();
+
+                return;
+            }
+
+            terminal_logger.error("device_autoBackUp_echo phase {} not recognize!", report.phase);
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+
     // Kontrola up_to_date harwaru
     @JsonIgnore @Transient  public static void hardware_firmware_state_check(WS_HomerServer server, Model_Board board, WS_AbstractMessage_Board report) {
         try {

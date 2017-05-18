@@ -10,11 +10,14 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 public class WS_Message_Number_of_instances_homer_server extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "numberOfInstances";
+    @JsonIgnore public static final String messageType = "numberOfInstances";
+
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
     @Constraints.Required public int value;
 
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request() {

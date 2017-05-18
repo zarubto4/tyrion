@@ -14,11 +14,13 @@ import java.util.List;
 public class WS_Message_Get_Hardware_list extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "hardwareList";
+    @JsonIgnore public static final String messageType = "hardwareList";
 
-    @Valid
-    public List<WS_Message_Help_Yoda_only_hardware_Id_list> hardwareIdList = new ArrayList<>();
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+    @Valid public List<WS_Message_Help_Yoda_only_hardware_Id_list> hardwareIdList = new ArrayList<>();
 
 
     @JsonIgnore
@@ -32,6 +34,7 @@ public class WS_Message_Get_Hardware_list extends WS_AbstractMessage_Instance {
     }
 
 
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance) {

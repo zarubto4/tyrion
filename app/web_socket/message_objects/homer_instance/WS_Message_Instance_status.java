@@ -9,9 +9,15 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "instanceStatus";
+    @JsonIgnore public static final String messageType = "instanceStatus";
 
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance) {

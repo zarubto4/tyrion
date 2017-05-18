@@ -12,10 +12,13 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 public class WS_Message_Valid_person_token_homer_server extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "checkPersonToken";
+    @JsonIgnore public static final String messageType = "checkPersonToken";
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true) @Constraints.Required  public String token;
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request_unsuccess() {

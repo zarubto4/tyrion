@@ -9,8 +9,14 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 public class WS_Message_Notice_homer_server_verification_required extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "serverValidation";
+    @JsonIgnore public static final String messageType = "serverValidation";
+
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
 
     @JsonIgnore
     public ObjectNode make_request() {

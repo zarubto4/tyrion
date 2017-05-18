@@ -12,6 +12,10 @@ public class WS_Message_Remove_yoda_from_instance extends WS_AbstractMessage_Ins
     @JsonIgnore
     public static final String messageType = "removeYodaFromInstance";
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance, String yodaId) {
 

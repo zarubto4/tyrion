@@ -318,6 +318,17 @@ public class Model_HomerInstance extends Model {
                         return;
                     }
 
+                    case WS_Message_AutoBackUp_progress.messageType: {
+
+                        final Form<WS_Message_AutoBackUp_progress> form = Form.form(WS_Message_AutoBackUp_progress.class).bind(json);
+                        if (form.hasErrors()) {
+                            terminal_logger.error("WS_Message_AutoBackUp_progress:: Incoming Json from Homer server has not right Form:: " + form.errorsAsJson(new Lang(new play.api.i18n.Lang("en", "US"))).toString());
+                            return;
+                        }
+                        Model_Board.device_autoBackUp_echo(form.get());
+                        return;
+                    }
+
 
                     case WS_Message_UpdateProcedure_progress.messageType: {
 

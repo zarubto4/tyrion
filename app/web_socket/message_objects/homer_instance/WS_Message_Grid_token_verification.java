@@ -11,9 +11,12 @@ public class WS_Message_Grid_token_verification extends WS_AbstractMessage_Insta
     // MessageType
     @JsonIgnore public static final String messageType = "token_grid_verification";
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
     @Constraints.Required public String token;
 
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     public ObjectNode get_result( boolean token_approve){
 

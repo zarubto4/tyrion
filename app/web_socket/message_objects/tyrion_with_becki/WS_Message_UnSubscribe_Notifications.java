@@ -14,6 +14,7 @@ public class WS_Message_UnSubscribe_Notifications extends WS_AbstractMessage {
 
     public String single_connection_token;
 
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public static ObjectNode approve_result() {

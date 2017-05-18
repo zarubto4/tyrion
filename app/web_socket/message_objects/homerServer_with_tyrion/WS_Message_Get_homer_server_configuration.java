@@ -13,6 +13,8 @@ public class WS_Message_Get_homer_server_configuration extends WS_AbstractMessag
 
     @JsonIgnore public static final String messageType = "getServerConfiguration";
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
     @Constraints.Required public String serverName;
 
     @Constraints.Required public int mqttPort;
@@ -39,6 +41,7 @@ public class WS_Message_Get_homer_server_configuration extends WS_AbstractMessag
 
 
 
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request() {

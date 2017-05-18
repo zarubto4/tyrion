@@ -6,7 +6,15 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Update_instance_to_actual_instance_record extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = null;
+    @JsonIgnore public static final String messageType = "updateInstance";
+
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+    // Using values only from  extends WS_AbstractMessage_Instance
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
+
 
 }

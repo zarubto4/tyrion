@@ -12,9 +12,12 @@ public class WS_Message_Check_homer_server_permission extends WS_AbstractMessage
     @JsonIgnore
     public static final String messageType = "getVerificationToken";
 
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
 
     @Constraints.Required public String hashToken;
 
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request() {

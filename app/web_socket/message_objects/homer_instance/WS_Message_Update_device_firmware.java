@@ -14,12 +14,11 @@ import java.util.List;
 public class WS_Message_Update_device_firmware extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "updateDevice";
+    @JsonIgnore public static final String messageType = "updateDevice";
 
-    @Valid
-    public List<UpdateDeviceInformation> procedure_list = new ArrayList<>();
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
+    @Valid public List<UpdateDeviceInformation> procedure_list = new ArrayList<>();
 
 
     public static class UpdateDeviceInformation {
@@ -50,6 +49,7 @@ public class WS_Message_Update_device_firmware extends WS_AbstractMessage_Instan
     }
 
 
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance, List<Utilities_HW_Updater_Actualization_procedure> procedures) {

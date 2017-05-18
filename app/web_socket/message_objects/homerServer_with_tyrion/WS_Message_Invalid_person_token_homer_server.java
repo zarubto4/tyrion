@@ -14,9 +14,13 @@ public class WS_Message_Invalid_person_token_homer_server extends WS_AbstractMes
     @JsonIgnore
     public static final String messageType = "removePersonLoginToken";
 
-    @ApiModelProperty(required = true) @Constraints.Required  public String token;
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+    @Constraints.Required  public String token;
 
 
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request_unsuccess() {

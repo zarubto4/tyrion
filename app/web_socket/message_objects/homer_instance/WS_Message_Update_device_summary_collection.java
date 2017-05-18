@@ -12,8 +12,13 @@ import java.util.List;
 public class WS_Message_Update_device_summary_collection extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore
-    public static final String messageType = "addDevices";
+    @JsonIgnore public static final String messageType = "addDevices";
+
+/* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
+
+
+/* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public ObjectNode make_request(Model_HomerInstance instance, List<Swagger_Instance_HW_Group> hw_groups) {
