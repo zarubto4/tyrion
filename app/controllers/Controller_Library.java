@@ -1,6 +1,7 @@
 package controllers;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Expression;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
@@ -163,7 +164,7 @@ public class Controller_Library extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Library.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Library_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
@@ -182,13 +183,23 @@ public class Controller_Library extends Controller {
             query.where().eq("removed_by_user", false);
 
 
-            // Pokud JSON obsahuje project_id filtruji podle projektu
+
             if(help.project_id != null){
-                query.where().eq("project_id", help.project_id);
-            }else {
-                System.out.println("Project je null");
+                if(help.inlclude_public) {
+                    query.where().or(
+                            com.avaje.ebean.Expr.eq("project_id", help.project_id),
+                            com.avaje.ebean.Expr.isNull("project_id")
+                    );
+                } else {
+                    query.where().eq("project_id", help.project_id);
+                }
+            } else {
                 query.where().isNull("project_id");
             }
+
+
+
+
 
             // Vyvoření odchozího JSON
             Swagger_Library_List result = new Swagger_Library_List(query,page_number);

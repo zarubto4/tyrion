@@ -9,7 +9,9 @@ import java.util.List;
         value = "Library_Filter")
 public class Swagger_Library_Filter {
 
-    @ApiModelProperty(required = true, value = "The tag describes what the library is doing")
+    @ApiModelProperty(required = false)
     public String project_id;
 
+    @ApiModelProperty(required = false)
+    public boolean inlclude_public = false;
 }
