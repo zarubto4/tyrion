@@ -1242,9 +1242,6 @@ public class Controller_Grid extends Controller {
             // Získání seznamu
             List<Model_TypeOfWidget> typeOfWidgets = Model_TypeOfWidget.get_all();
 
-            // Kontrola oprávnění
-            for(Model_TypeOfWidget typeOfWidget :typeOfWidgets ) if(! typeOfWidget.read_permission())  return GlobalResult.forbidden_Permission();
-
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(typeOfWidgets));
 

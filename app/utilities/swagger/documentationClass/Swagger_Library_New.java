@@ -20,10 +20,8 @@ public class Swagger_Library_New {
     @ApiModelProperty(required = true, value = "Length must be between 4 and 60 characters, must be unique!")
     public String name;
 
-    @Constraints.Required
-    @Constraints.MinLength(value = 8, message = "The description must have at least 8 characters")
     @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
-    @ApiModelProperty(required = true, value = "Length must be between 8 and 255 characters.")
+    @ApiModelProperty(required = false, value = "Length must be between 8 and 255 characters.")
     public String description;
 
 }

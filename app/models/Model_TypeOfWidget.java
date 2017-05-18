@@ -192,7 +192,8 @@ public class Model_TypeOfWidget extends Model{
     public static List<Model_TypeOfWidget> get_all() {
 
         List<Model_TypeOfWidget> typeOfWidgets = find.where().isNull("project").findList();
-        typeOfWidgets.addAll( find.where().eq("project.participants.person.id", Controller_Security.get_person().id ).findList() );
+        typeOfWidgets.addAll( find.where().eq("project.participants.person.id", Controller_Security.get_person().id ).eq("removed_by_user",false).order().asc("name").findList() );
+        typeOfWidgets.addAll( find.where().isNull("project").eq("removed_by_user", false).order().asc("order_position").findList());
 
         return typeOfWidgets;
     }

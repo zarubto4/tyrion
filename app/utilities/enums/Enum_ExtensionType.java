@@ -24,7 +24,7 @@ public enum Enum_ExtensionType {
     public Class<? extends Extension> getExtensionClass(){
         try {
 
-            return (Class<? extends Extension>) Class.forName("utilities.financial.Extension_" + this.name());
+            return (Class<? extends Extension>) Class.forName("utilities.financial.extensions.Extension_" + this.name());
 
         } catch (Exception e){
             terminal_logger.internalServerError("getExtensionClass:", e);

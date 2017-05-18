@@ -1319,9 +1319,6 @@ public class Controller_Blocko extends Controller{
             // Získání seznamu
             List<Model_TypeOfBlock> typeOfBlocks = Model_TypeOfBlock.get_all();
 
-            // Kontrola oprávnění
-            for(Model_TypeOfBlock typeOfBlock :typeOfBlocks ) if(! typeOfBlock.read_permission())  return GlobalResult.forbidden_Permission();
-
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(typeOfBlocks));
 

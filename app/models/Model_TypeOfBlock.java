@@ -185,7 +185,8 @@ public class Model_TypeOfBlock extends Model {
     public static List<Model_TypeOfBlock> get_all() {
 
         List<Model_TypeOfBlock> typeOfBlocks = find.where().isNull("project").findList();
-        typeOfBlocks.addAll( find.where().eq("project.participants.person.id", Controller_Security.get_person().id ).findList() );
+        typeOfBlocks.addAll( find.where().eq("project.participants.person.id", Controller_Security.get_person().id ).eq("removed_by_user", false).order().asc("name").findList() );
+        typeOfBlocks.addAll( find.where().isNull("project").eq("removed_by_user", false).order().asc("order_position").findList());
         return typeOfBlocks;
     }
 
