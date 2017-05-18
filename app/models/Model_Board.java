@@ -105,55 +105,80 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_id()               { return  actual_boot_loader == null ? null : actual_boot_loader.id;}
 
     @JsonProperty  @Transient @ApiModelProperty(required = false) public String available_bootloader_version_name()   {
+        try {
+            if (type_of_board.main_boot_loader != null) {
 
-        if(type_of_board.main_boot_loader != null) {
+                if (actual_bootloader_id() == null) {
+                    return type_of_board.main_boot_loader.name;
+                }
 
-            if(actual_bootloader_id() == null) {
-                return type_of_board.main_boot_loader.name;
+                if (type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) {
+                    return null;
+                }
             }
 
-            if(type_of_board.main_boot_loader.id.equals(actual_bootloader_id())){
-                return null;
-            }
+            return null;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
         }
-
-        return null;
 
     }
     @JsonProperty  @Transient @ApiModelProperty(required = false) public String available_bootloader_id()             {
 
+        try {
+            if (type_of_board.main_boot_loader != null) {
 
-        if(type_of_board.main_boot_loader != null) {
+                if (actual_bootloader_id() == null) {
+                    return type_of_board.main_boot_loader.id;
+                }
 
-            if(actual_bootloader_id() == null) {
-                return type_of_board.main_boot_loader.id;
+                if (type_of_board.main_boot_loader.id.equals(actual_bootloader_id())) {
+                    return null;
+                }
             }
 
-            if(type_of_board.main_boot_loader.id.equals(actual_bootloader_id())){
-                return null;
-            }
+            return null;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
         }
-
-        return null;
 
     }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) List<Enum_Board_Alert> alert_list(){
-        List<Enum_Board_Alert> list = new ArrayList<>();
+        try {
+            List<Enum_Board_Alert> list = new ArrayList<>();
 
-        if(update_boot_loader_required()) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
+            if(update_boot_loader_required()) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
 
-        return list;
+            return list;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
 
-        List<Swagger_C_Program_Update_plan_Short_Detail> plans = new ArrayList<>();
+        try {
+            List<Swagger_C_Program_Update_plan_Short_Detail> plans = new ArrayList<>();
 
-        for(Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().asc("date_of_create").findList())
-        plans.add(plan.get_short_version_for_board());
+            for (Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().asc("date_of_create").findList()) {
+                try {
+                    plans.add(plan.get_short_version_for_board());
 
-        return plans;
+                }catch (Exception e){
+                    terminal_logger.internalServerError(e);
+                }
+            }
+
+            return plans;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status()       {
