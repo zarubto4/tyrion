@@ -151,6 +151,17 @@ public class Controller_Library extends Controller {
                     }),
             }
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Library_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Library.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -173,7 +184,6 @@ public class Controller_Library extends Controller {
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
-                System.out.println("Project není null");
                 query.where().eq("project_id", help.project_id);
             }else {
                 System.out.println("Project je null");
