@@ -1965,7 +1965,6 @@ public class Controller_Board extends Controller {
             // Seznam Hardwaru k updatu
             List<Model_BPair> board_pairs = new ArrayList<>();
 
-
             for(Swagger_Board_Backup_settings.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
 
                 // Kotrola objektu
@@ -1984,17 +1983,10 @@ public class Controller_Board extends Controller {
                         terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.board_id);
 
                         WS_Message_Board_set_autobackup result = Model_Board.set_auto_backup(board);
-                        if (result.status.equals("success")) {
-
-                            terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} Success of setting of dynamic backup", board_backup_pair.board_id);
-
-                            board.actual_backup_c_program_version = null;
-                            board.backup_mode = true;
-                            board.update();
-
-                        } else {
-                            terminal_logger.warn("Controller_Board:: board_update_backup:: Something is wrong in message:: Error:: " + result.error + " ErrorCode:: " + result.errorCode);
-                        }
+                        
+                        board.actual_backup_c_program_version = null;
+                        board.backup_mode = true;
+                        board.update();
 
                     // Na devicu už autobackup zapnutý byl - nic nedělám jen překokontroluji???
                     }else {
