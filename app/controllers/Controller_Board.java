@@ -6,16 +6,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.*;
+import org.omg.CORBA.Object;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
-import utilities.enums.Enum_Compile_status;
-import utilities.enums.Enum_Update_type_of_update;
-import utilities.enums.Enum_Board_registration_status;
+import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -160,39 +160,49 @@ public class Controller_Board extends Controller {
 
             for (String lib_id : help.imported_libraries) {
 
+                System.out.println("Hledám verzi knihovny verzi " + lib_id);
                 Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
+
                 if (lib_version == null || lib_version.library == null){
+
+                    terminal_logger.error("compile_C_Program_code::  Error in reading libraries version not found! Version ID: {} " , lib_version);
 
                     ObjectNode error = Json.newObject();
                     error.put("status", "error");
-                    error.put("error", "Error getting libraries");
+                    error.put("error", "Error getting libraries - Library not found!");
                     error.put("error_code", 400);
-                    return GlobalResult.result_BadRequest(error);
+                    return GlobalResult.result_buildErrors(error);
+
+
                 }
 
                 if (!lib_version.files.isEmpty()){
 
+                    System.out.println("Files nejsou Empty");
+
                     for (Model_FileRecord f : lib_version.files) {
 
-                        JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
+                        JsonNode json_library = Json.parse(f.get_fileRecord_from_Azure_inString());
 
-                        Form<Swagger_Library_Record> lib_form = Form.form(Swagger_Library_Record.class).bind(j);
+                        System.out.println("Jak vypadá Json z Azure??? ");
+                        System.out.println( json_library.toString() );
+
+                        Form<Swagger_Library_File_Load> lib_form = Form.form(Swagger_Library_File_Load.class).bind(json_library);
                         if (lib_form.hasErrors()){
+
+                            terminal_logger.error("compile_C_Program_code::  Error in reading libraries from files! Model_FileRecord Id: {} ", f.id);
 
                             ObjectNode error = Json.newObject();
                             error.put("status", "error");
-                            error.put("error", "Error importing libraries");
+                            error.put("error", "Error with importing libraries - Library Id: " + lib_id );
                             error.put("error_code", 400);
-                            return GlobalResult.result_BadRequest(error);
+                            return GlobalResult.result_buildErrors(error);
                         }
 
-                        Swagger_Library_Record lib_file = lib_form.get();
+                        Swagger_Library_File_Load lib_file = lib_form.get();
 
-                        for (Swagger_Library_Record user_file : help.files){
-
-                            if (lib_file.file_name.equals(user_file.file_name))break;
-                            if (!library_files.contains(lib_file)) library_files.add(lib_file);
-
+                        for (Swagger_Library_Record file : lib_file.files){
+                           library_files.add(file);
                         }
                     }
                 }
@@ -201,23 +211,22 @@ public class Controller_Board extends Controller {
             ObjectNode includes = Json.newObject();
 
             for(Swagger_Library_Record file_lib : library_files){
-                includes.put(file_lib.file_name , file_lib.content);
+                if(file_lib.file_name.equals("README.md") || file_lib.file_name.equals("readme.md")) continue;
+                includes.put(file_lib.file_name, file_lib.content);
             }
 
-            if(help.files != null)
-                for(Swagger_Library_Record user_file : help.files){
-                    includes.put(user_file.file_name , user_file.content);
+            if(help.files != null) {
+                for (Swagger_Library_Record user_file : help.files) {
+                    includes.put(user_file.file_name, user_file.content);
                 }
-
+            }
 
             if (Controller_WebSocket.compiler_cloud_servers.isEmpty()) {
                 return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
             }
 
 
-            // Odesílám na compilační cloud_compilation_server
-            WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( typeOfBoard ,"", help.main, includes ));
-
+            WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( typeOfBoard ,"only_for_compilation", help.main, includes ));
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
             if (compilation_result.buildUrl != null && compilation_result.status.equals("success")) {
@@ -1934,11 +1943,11 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
+            @ApiResponse(code = 200, message = "Ok Result",                                 response = Result_ok.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",                   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1950,7 +1959,12 @@ public class Controller_Board extends Controller {
             if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
             Swagger_Board_Backup_settings help = form.get();
 
-            if( help.board_backup_pair_list.isEmpty()) return GlobalResult.notFoundObject("List is Empty");
+            if(help.board_backup_pair_list.isEmpty()) return GlobalResult.notFoundObject("List is Empty");
+
+
+            // Seznam Hardwaru k updatu
+            List<Model_BPair> board_pairs = new ArrayList<>();
+
 
             for(Swagger_Board_Backup_settings.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
 
@@ -1961,116 +1975,101 @@ public class Controller_Board extends Controller {
                 // Kontrola oprávnění
                 if (!board.edit_permission()) return GlobalResult.forbidden_Permission();
 
-                // Uprava desky
+                // Pokud je nastaven autobackup na true
+                if(board_backup_pair.backup_mode) {
 
 
-                terminal_logger.debug("Controller_Board:: board_update_backup:: Board has own Static Backup - Removing static backup procedure required");
+                    // Na devicu byla nastavená statická - Proto je potřeba jí odstranit a nahradit autobackupem
+                    if(!board.backup_mode) {
+                        terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.board_id);
 
-                WS_Message_Board_set_autobackup result =  Model_Board.set_auto_backup(board);
-                if(result.status.equals("success")){
+                        WS_Message_Board_set_autobackup result = Model_Board.set_auto_backup(board);
+                        if (result.status.equals("success")) {
 
-                    board.actual_backup_c_program_version = null;
-                    board.backup_mode = true;
-                    board.save();
+                            terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} Success of setting of dynamic backup", board_backup_pair.board_id);
 
-                }else {
-                    terminal_logger.warn("Controller_Board:: board_update_backup:: Something is wrong in message:: Error:: " + result.error + " ErrorCode:: " + result.errorCode);
+                            board.actual_backup_c_program_version = null;
+                            board.backup_mode = true;
+                            board.update();
+
+                        } else {
+                            terminal_logger.warn("Controller_Board:: board_update_backup:: Something is wrong in message:: Error:: " + result.error + " ErrorCode:: " + result.errorCode);
+                        }
+
+                    // Na devicu už autobackup zapnutý byl - nic nedělám jen překokontroluji???
+                    }else {
+
+                        terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has already sat asi  dynamic Backup", board_backup_pair.board_id);
+
+                        WS_Message_Board_set_autobackup result = Model_Board.set_auto_backup(board);
+                        if (result.status.equals("success")) {
+                            terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} Success of setting of dynamic backup", board_backup_pair.board_id);
+
+                            // Toto je pro výjmečné případy - kdy při průběhu updatu padne tyrion a transakce není komplentí
+                            if( board.actual_backup_c_program_version != null){
+                                board.actual_backup_c_program_version = null;
+                                board.update();
+                            }
+
+                        }
+
+                    }
+
+                // Autobacku je statický
+                }else{
+
+                    if(board_backup_pair.c_program_version_id == null || board_backup_pair.c_program_version_id.equals("")) return GlobalResult.badRequest("If backup_mode is set to false, c_program_version_id is required");
+
+                    terminal_logger.debug("Controller_Board:: board_update_backup:: To FALSE:: Board Id: {} has dynamic Backup or already set static backup", board_backup_pair.board_id);
+
+                    // Uprava desky na statický backup
+                    Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_backup_pair.c_program_version_id);
+                    if (c_program_version == null) return GlobalResult.notFoundObject("Version_Object c_program_version_id not found");
+
+                    //Zkontroluji validitu Verze zda sedí k C_Programu
+                    if (c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+
+                    // Zkontroluji oprávnění
+                    if (!c_program_version.c_program.read_permission()) return GlobalResult.forbidden_Permission();
+
+                    //Zkontroluji validitu Verze zda sedí k C_Programu
+                    if (c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
+
+                    // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
+                    if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+
+                    //Zkontroluji zda byla verze už zkompilována
+                    if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
+
+                    Model_BPair b_pair = new Model_BPair();
+                    b_pair.board = board;
+                    b_pair.c_program_version = c_program_version;
+
+                    board_pairs.add(b_pair);
+
+                    if(!board.backup_mode){
+                        board.actual_backup_c_program_version = null;
+                        board.backup_mode = false;
+                        board.update();
+                    }
                 }
 
-
-
             }
 
-            // Vrácení upravenéh objektu
-            return GlobalResult.result_ok();
 
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
+            if(!board_pairs.isEmpty()){
+                new Thread( () -> {
 
-    @ApiOperation(value = "update Board - set Backup Code",
-            tags = { "Board"},
-            notes = "",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Board.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Board_edit"),
-                    }),
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Board_SetBackup",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
-            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result board_setBackupCode(){
-        try {
-
-            // Zpracování Json
-            final Form<Swagger_Board_SetBackup> form = Form.form(Swagger_Board_SetBackup.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
-            Swagger_Board_SetBackup help = form.get();
-
-            List<Model_BPair> board_pairs = new ArrayList<>();
-
-            for(Swagger_Board_CProgram_Pair board_backup_pair : help.board_backup_pair_list) {
-
-                // Kotrola objektu
-                Model_Board board = Model_Board.get_byId(board_backup_pair.board_id);
-                if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
-
-                // Kontrola oprávnění
-                if (!board.edit_permission()) return GlobalResult.forbidden_Permission();
-
-                // Uprava desky
-                Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_backup_pair.c_program_version_id);
-                if (c_program_version == null) return GlobalResult.notFoundObject("Version_Object c_program_version_id not found");
-
-                //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
-
-                // Zkontroluji oprávnění
-                if (!c_program_version.c_program.read_permission()) return GlobalResult.forbidden_Permission();
-
-                //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
-
-                // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-                if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
-
-                //Zkontroluji zda byla verze už zkompilována
-                if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
-
-                Model_BPair b_pair = new Model_BPair();
-                b_pair.board = board;
-                b_pair.c_program_version = c_program_version;
-
-                board_pairs.add(b_pair);
-
+                    try {
+                        Model_Board.update_backup(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, board_pairs);
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError(e);
+                    }
+                }).start();
             }
 
-            Model_Board.update_backup(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, board_pairs);
 
-            // Vrácení upravenéh objektu
+            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
         } catch (Exception e) {

@@ -19,7 +19,8 @@ public class Swagger_Board_Backup_settings {
 
         public Board_backup_pair(){}
 
-        @Constraints.Required @ApiModelProperty(required = true)  public boolean backup_mode;
+        @Constraints.Required @ApiModelProperty(required = true, value = "True - for auto_backup. False for static backup. If static c_program_version_id is required!")  public boolean backup_mode;
+        @Constraints.Required @ApiModelProperty(required = false, value = "Required if backup_mode is false. C_program_version_id must be compiled and for same type of Board!")  public String c_program_version_id;
         @Constraints.Required @ApiModelProperty(required = true)  public String  board_id;
 
     }

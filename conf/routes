@@ -308,7 +308,6 @@ DELETE    /processor/:processor_id                                      @control
 POST      /board                                                        @controllers.Controller_Board.board_create()
 PUT       /board/userDescription/:board_id                              @controllers.Controller_Board.board_updateDescription(board_id)
 PUT       /board/backup                                                 @controllers.Controller_Board.board_updateBackup()
-PUT       /board/backup/set_version                                     @controllers.Controller_Board.board_setBackupCode()
 
 PUT       /board/filter                                                 @controllers.Controller_Board.board_getByFilter()
 GET       /board/check/:hash_for_adding                                 @controllers.Controller_Board.board_check(hash_for_adding)
