@@ -220,9 +220,9 @@
                                                 </td>
                                             </try>
                                             <tr>
-                                                <td class="col-md-4"> Uploud Immidietly </td>
+                                                <td class="col-md-4"> Upload Immediately </td>
                                                 <td>
-                                                    <button class="btn btn-block btn-warning" type="button" onclick="updateBackup()">Upload</button>
+                                                    <button class="btn btn-block btn-warning" type="button" onclick="updateBackup()">Set Static Backup</button>
                                                 </td>
                                             </tr>
 
@@ -443,8 +443,10 @@
                 var element = document.getElementById("selectCProgramVersion");
                 var c_program_version_id = element.options[element.selectedIndex].value;
                 var target_id = '@board.id';
+                var type = false;
 
                 var json = {
+                    backup_mode:type,
                     board_id:target_id,
                     c_program_version_id:c_program_version_id
                 };
@@ -454,7 +456,7 @@
                 };
 
                 $.ajax({
-                    url: '@routes.Controller_Board.board_setBackupCode()',
+                    url: '@routes.Controller_Board.board_updateBackup()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
