@@ -15,7 +15,6 @@ alter table model_grid_widget
 alter table model_grid_widget_version
   add column removed_by_user BOOLEAN DEFAULT FALSE;
 
-
 # --- !Downs
 ALTER TABLE model_library
   RENAME removed_by_user TO removed;

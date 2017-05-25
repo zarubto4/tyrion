@@ -625,7 +625,7 @@ public class Controller_Finance extends Controller {
             extension.active = true;
 
             Model_ProductExtension.Config config = new Model_ProductExtension.Config();
-            config.price = (long) (help.price * 1000);
+            config.price = (long) (help.price * 1);
             config.count = help.count;
 
             extension.config = Json.toJson(config).toString();
@@ -666,7 +666,7 @@ public class Controller_Finance extends Controller {
             extension.active = true;
 
             Model_ProductExtension.Config config = new Model_ProductExtension.Config();
-            config.price = (long) (help.price * 1000);
+            config.price = (long) (help.price * 1);
             config.count = help.count;
 
             extension.config = Json.toJson(config).toString();

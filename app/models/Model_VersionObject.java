@@ -18,6 +18,7 @@ import play.libs.ws.WSResponse;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
+import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_Library_Record;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
@@ -37,7 +38,7 @@ public class Model_VersionObject extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_ValidationToken.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_VersionObject.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
                                                                 @Id @ApiModelProperty(required = true) public String id;
@@ -89,20 +90,19 @@ public class Model_VersionObject extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)     public List<Model_BProgramHwGroup> b_program_hw_groups = new ArrayList<>();
 
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions")         public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "version_objects_program")   public List<Model_MProjectProgramSnapShot> m_project_program_snapshots = new ArrayList<>();    // Vazba kvůli puštěným M_programům
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions")           public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
+//REMOVED(1.09.04)  @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "version_objects_program")   public List<Model_MProjectProgramSnapShot> m_project_program_snapshots = new ArrayList<>();    // Vazba kvůli puštěným M_programům
 
 
-        // B_Program - Instance
-        @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
+    // B_Program - Instance
+    @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
 
 
 
-    // M_Project --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // M_Program --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER) public Model_MProgram m_program;
-                                    @JsonIgnore @Column(columnDefinition = "TEXT") public String m_program_virtual_input_output;
-                                                                       @JsonIgnore public String qr_token;
+                                    @JsonIgnore @Column(columnDefinition = "TEXT")  public String m_program_virtual_input_output;
 
 
 
@@ -214,13 +214,10 @@ public class Model_VersionObject extends Model {
             @Override
             public void run() {
                 try {
-
                     version.compile_program_procedure();
-
                 }catch (Exception e){
                     terminal_logger.internalServerError(e);
                 }
-
             }
         };
 
@@ -228,7 +225,7 @@ public class Model_VersionObject extends Model {
 
     }
 
-    @JsonIgnore @Transient public ObjectNode compile_program_procedure(){
+    @JsonIgnore @Transient public Response_Interface compile_program_procedure(){
 
 
         Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", this.c_program.id).findUnique();
@@ -236,10 +233,8 @@ public class Model_VersionObject extends Model {
 
             terminal_logger.error("compile_program_procedure:: Type_of_Board not found!!! - Not found way how to compile that");
 
-            ObjectNode result = Json.newObject();
-            result.put("status", "error");
-            result.put("error", "Version is not version of C_Program");
-            result.put("error_code", 400);
+            Result_BadRequest result = new Result_BadRequest();
+            result.message = "Version is not version of C_Program";
             return result;
         }
 
@@ -264,11 +259,10 @@ public class Model_VersionObject extends Model {
             c_compilation.status = Enum_Compile_status.file_with_code_not_found;
             c_compilation.update();
 
-            ObjectNode result = Json.newObject();
-            result.put("status", "error");
-            result.put("error", "Server has no content from version");
-            result.put("error_code", 400);
+            Result_BadRequest result = new Result_BadRequest();
+            result.message = "Server has no content from version";
             return result;
+
         }
 
         // Zpracování Json
@@ -281,11 +275,10 @@ public class Model_VersionObject extends Model {
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
 
-            ObjectNode result = Json.newObject();
-            result.put("status", "error");
-            result.put("error", "Json code is broken - contact tech support!");
-            result.put("error_code", 400);
+            Result_BadRequest result = new Result_BadRequest();
+            result.message = "Json code is broken - contact tech support!";
             return result;
+
         }
 
         Swagger_C_Program_Version_Update code_file = form.get();
@@ -297,19 +290,17 @@ public class Model_VersionObject extends Model {
             Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
             if (lib_version == null){
 
-                ObjectNode result = Json.newObject();
-                result.put("status", "error");
-                result.put("error", "Error getting libraries - library version not found");
-                result.put("error_code", 400);
+                Result_BadRequest result = new Result_BadRequest();
+                result.message = "Error getting libraries - library version not found";
                 return result;
+
             }
             if (lib_version.library == null){
 
-                ObjectNode result = Json.newObject();
-                result.put("status", "error");
-                result.put("error", "Error getting libraries - some file is not a library");
-                result.put("error_code", 400);
+                Result_BadRequest result = new Result_BadRequest();
+                result.message = "Error getting libraries - some file is not a library";
                 return result;
+
             }
 
             if (!lib_version.files.isEmpty()){
@@ -320,10 +311,8 @@ public class Model_VersionObject extends Model {
                     Form<Swagger_Library_File_Load> lib_form = Form.form(Swagger_Library_File_Load.class).bind(j);
                     if (lib_form.hasErrors()){
 
-                        ObjectNode result = Json.newObject();
-                        result.put("status", "error");
-                        result.put("error", "Error importing libraries");
-                        result.put("error_code", 400);
+                        Result_BadRequest result = new Result_BadRequest();
+                        result.message = "Error importing libraries";
                         return result;
                     }
                     Swagger_Library_File_Load lib_help = lib_form.get();
@@ -363,10 +352,8 @@ public class Model_VersionObject extends Model {
             c_compilation.status = Enum_Compile_status.server_was_offline;
             c_compilation.update();
 
-            ObjectNode result = Json.newObject();
-            result.put("status", "error");
-            result.put("error", "Compilation cloud_compilation_server is offline! It will be compiled as soon as possible!");
-            result.put("error_code", 477);
+            Result_ServerOffline result = new Result_ServerOffline();
+            result.message = "Compilation cloud_compilation_server is offline! It will be compiled as soon as possible!";
             return result;
         }
 
@@ -374,7 +361,6 @@ public class Model_VersionObject extends Model {
 
         WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request( typeOfBoard ,this.id, code_file.main, includes   ));
 
-        // Controller_Notification.successful_compilation(Controller_Security.get_person(), this); TODO Notifikace
 
         // Když obsahuje chyby - vrátím rovnou Becki
         if(!compilation.buildErrors.isEmpty()) {
@@ -384,7 +370,9 @@ public class Model_VersionObject extends Model {
             c_compilation.status = Enum_Compile_status.compiled_with_code_errors;
             c_compilation.update();
 
-            return (ObjectNode) Json.toJson( compilation.buildErrors );
+            Result_CompilationListError result_compilationListError = new Result_CompilationListError();
+            result_compilationListError.errors = compilation.buildErrors;
+            return result_compilationListError;
         }
 
         if(compilation.interface_code == null || compilation.buildUrl == null){
@@ -394,10 +382,8 @@ public class Model_VersionObject extends Model {
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
 
-            ObjectNode result = Json.newObject();
-            result.put("status", "error");
-            result.put("error", "Json code is broken - contact tech support!");
-            result.put("error_code", 400);
+            Result_BadRequest result = new Result_BadRequest();
+            result.message = "Json code is broken - contact tech support!";
             return result;
         }
 
@@ -409,11 +395,10 @@ public class Model_VersionObject extends Model {
             c_compilation.status = Enum_Compile_status.compilation_server_error;
             c_compilation.update();
 
-            ObjectNode result = Json.newObject();
-            result.put("status", "error");
-            result.put("error", "Server side Error");
-            result.put("error_code", 400);
+            Result_ExternalServerSideError result = new Result_ExternalServerSideError();
+            result.message = "Server side Error!";
             return result;
+
         }
 
         if(compilation.status.equals("success")) {
@@ -451,7 +436,12 @@ public class Model_VersionObject extends Model {
                 c_compilation.date_of_create = new Date();
                 c_compilation.update();
 
-                return (ObjectNode) Json.toJson(new Swagger_Compilation_Ok());
+
+
+                Result_ok result = new Result_ok();
+                return result;
+
+             //   return (ObjectNode) Json.toJson(new Swagger_Compilation_Ok());
 
             }catch (ConnectException e){
 
@@ -459,10 +449,8 @@ public class Model_VersionObject extends Model {
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
 
-                ObjectNode result = Json.newObject();
-                result.put("status", "error");
-                result.put("error", "Server side Error");
-                result.put("error_code", 400);
+                Result_ExternalServerSideError result = new Result_ExternalServerSideError();
+                result.message = "Server side Error!";
                 return result;
 
 
@@ -473,10 +461,8 @@ public class Model_VersionObject extends Model {
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
 
-                ObjectNode result = Json.newObject();
-                result.put("status", "error");
-                result.put("error", "Server side Error");
-                result.put("error_code", 400);
+                Result_ExternalServerSideError result = new Result_ExternalServerSideError();
+                result.message = "Server side Error!";
                 return result;
 
 
@@ -487,10 +473,8 @@ public class Model_VersionObject extends Model {
                 c_compilation.status = Enum_Compile_status.compilation_server_error;
                 c_compilation.update();
 
-                ObjectNode result = Json.newObject();
-                result.put("status", "error");
-                result.put("error", "Server side Error");
-                result.put("error_code", 400);
+                Result_ExternalServerSideError result = new Result_ExternalServerSideError();
+                result.message = "Server side Error!";
                 return result;
             }
 
@@ -499,10 +483,8 @@ public class Model_VersionObject extends Model {
         c_compilation.status = Enum_Compile_status.undefined;
         c_compilation.update();
 
-        ObjectNode result = Json.newObject();
-        result.put("status", "error");
-        result.put("error", "Server side Error");
-        result.put("error_code", 400);
+        Result_ExternalServerSideError result = new Result_ExternalServerSideError();
+        result.message = "Server side Error!";
         return result;
     }
 

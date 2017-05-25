@@ -140,10 +140,6 @@ public class Model_Person extends Model {
         }
     }
 
-    @JsonIgnore @Transient
-    public String get_picture_path(){
-        return  this.azure_picture_link;
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

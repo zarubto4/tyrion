@@ -15,7 +15,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
 import utilities.Server;
-import utilities.document_db.DocumentDB;
+import utilities.document_db.document_objects.DM_Board_BackupIncident;
 import utilities.document_db.document_objects.DM_Board_Connect;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
@@ -65,7 +65,7 @@ public class Model_Board extends Model {
     @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
                                        @JsonIgnore  @ManyToOne              public Model_TypeOfBoard type_of_board;
                                        @JsonIgnore                          public boolean is_active;
-                                       @ApiModelProperty(required = true)   public boolean backup_mode;
+                                       @JsonIgnore                          public boolean backup_mode;
                                                                             public Date date_of_create;
                                        @JsonIgnore                          public Date date_of_user_registration;
 
@@ -92,6 +92,8 @@ public class Model_Board extends Model {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer connected_server;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public Enum_Board_BackUpMode backup_mode()   { return backup_mode ? Enum_Board_BackUpMode.AUTO_BACKUP : Enum_Board_BackUpMode.STATIC_BACKUP;}
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_id()   { return type_of_board.id; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_name() { return type_of_board.name; }
@@ -279,7 +281,14 @@ public class Model_Board extends Model {
 
             if(update_boot_loader_required()) swagger_board_short_detail.alert_list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
 
-            swagger_board_short_detail.board_online_status = is_online();
+            try {
+                swagger_board_short_detail.board_online_status = is_online();
+
+            }catch (Exception e){
+                terminal_logger.error("get_short_board:: Error Get online status!");
+                terminal_logger.internalServerError(e);
+                swagger_board_short_detail.board_online_status = false;
+            }
 
             return swagger_board_short_detail;
 
@@ -515,7 +524,7 @@ public class Model_Board extends Model {
 
                     try {
 
-                        Enum_Hardware_update_state_from_Homer status = Enum_Hardware_update_state_from_Homer.getUpdate_state(updateDeviceInformation_device.update_state);
+                        Enum_HardwareHomerUpdate_state status = Enum_HardwareHomerUpdate_state.getUpdate_state(updateDeviceInformation_device.update_state);
                         if (status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + updateDeviceInformation_device.update_state + " is not recognize in Json!");
 
                         Model_Board board = Model_Board.get_byId(updateDeviceInformation_device.deviceId);
@@ -529,7 +538,7 @@ public class Model_Board extends Model {
                         if (plan == null) throw new NullPointerException("Plan id" + updateDeviceInformation_device.c_program_update_plan_id + " not found!");
 
 
-                        if (status == Enum_Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE) {
+                        if (status == Enum_HardwareHomerUpdate_state.SUCCESSFULLY_UPDATE) {
                             plan.state = Enum_CProgram_updater_state.complete;
                             plan.date_of_finish = new Date();
                             plan.update();
@@ -552,6 +561,9 @@ public class Model_Board extends Model {
                                 board.actual_backup_c_program_version = plan.c_program_version_for_update;
                                 board.backup_mode = false;
                                 board.update();
+
+                                board.make_log_backup_arrise_change();
+
                                 continue;
                             }
 
@@ -567,13 +579,13 @@ public class Model_Board extends Model {
 
                         }
 
-                        if (status == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || status == Enum_Hardware_update_state_from_Homer.YODA_WAS_OFFLINE) {
+                        if (status == Enum_HardwareHomerUpdate_state.DEVICE_WAS_OFFLINE || status == Enum_HardwareHomerUpdate_state.YODA_WAS_OFFLINE) {
                             plan.state = Enum_CProgram_updater_state.waiting_for_device;
                             plan.update();
                             continue;
                         }
 
-                        if (status == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION) {
+                        if (status == Enum_HardwareHomerUpdate_state.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION) {
                             plan.state = Enum_CProgram_updater_state.not_updated;
                             plan.date_of_finish = new Date();
                             plan.update();
@@ -1189,7 +1201,13 @@ public class Model_Board extends Model {
     }
 
     public void make_log_backup_arrise_change(){
-
+        new Thread( () -> {
+            try {
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_BackupIncident.make_request_success_backup(this.id), null, true);
+            } catch (DocumentClientException e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

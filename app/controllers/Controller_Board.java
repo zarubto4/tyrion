@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.*;
-import org.omg.CORBA.Object;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
@@ -15,7 +14,7 @@ import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
-import utilities.notifications.helps_objects.Notification_Text;
+import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -62,12 +61,12 @@ public class Controller_Board extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Ok.class),
-            @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
             @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 478, message = "External server side Error",response = Result_BadRequest.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 478, message = "External server side Error",response = Result_ExternalServerSideError.class),
+            @ApiResponse(code = 477, message = "External server is offline",response = Result_ServerOffline.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
@@ -89,12 +88,23 @@ public class Controller_Board extends Controller {
             if(version_object.c_compilation != null) return GlobalResult.result_ok(Json.toJson( new Swagger_Compilation_Ok()));
 
 
-            JsonNode result = version_object.compile_program_procedure();
+            Response_Interface result = version_object.compile_program_procedure();
 
-            if(result.has("status") && result.get("status").asText().equals("success")) return  GlobalResult.result_ok(result);
+            if(result instanceof Result_ok){
+               return  GlobalResult.result_ok(Json.toJson(new Swagger_Compilation_Ok()));
+            }
 
-            if(result.has("error_code") && result.get("error_code").asInt() == 400) return GlobalResult.badRequest(result);
-            if(result.has("error_code") && result.get("error_code").asInt() == 477) return GlobalResult.external_server_is_offline();
+            if(result instanceof Result_CompilationListError){
+                return  GlobalResult.result_ok(Json.toJson(((Result_CompilationListError) result).errors));
+            }
+
+            if(result instanceof Result_ExternalServerSideError ){
+                return GlobalResult.result_external_server_error(Json.toJson(result));
+            }
+
+            if(result instanceof Result_ServerOffline){
+                return GlobalResult.result_external_server_is_offline(((Result_ServerOffline) result).message);
+            }
 
             // Neznámá chyba se kterou nebylo počítání
            return GlobalResult.result_BadRequest("unknown_error");
@@ -130,12 +140,12 @@ public class Controller_Board extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Cloud_Compilation_Server_CompilationResult.class),
-            @ApiResponse(code = 477, message = "External server is offline",response = Result_BadRequest.class),
+            @ApiResponse(code = 477, message = "External server is offline",response = Result_ServerOffline.class),
             @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 478, message = "External server side Error",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 478, message = "External server side Error",response = Result_ExternalServerSideError.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result compile_C_Program_code() {
@@ -279,7 +289,7 @@ public class Controller_Board extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-            @ApiResponse(code = 477, message = "External Cloud_Homer_server where is hardware is offline", response = Result_serverIsOffline.class),
+            @ApiResponse(code = 477, message = "External Cloud_Homer_server where is hardware is offline", response = Result_ServerOffline.class),
             @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
@@ -1660,6 +1670,10 @@ public class Controller_Board extends Controller {
             boot_loader.main_type_of_board = boot_loader.type_of_board;
             boot_loader.update();
 
+            // Vymažu Device Cache
+            Model_Board.cache.clear();
+
+
             // Vracím Json
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
@@ -1983,7 +1997,7 @@ public class Controller_Board extends Controller {
                         terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.board_id);
 
                         WS_Message_Board_set_autobackup result = Model_Board.set_auto_backup(board);
-                        
+
                         board.actual_backup_c_program_version = null;
                         board.backup_mode = true;
                         board.update();

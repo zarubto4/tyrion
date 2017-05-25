@@ -137,10 +137,11 @@ public class Controller_Person extends Controller {
         try{
 
             Model_ValidationToken validationToken = Model_ValidationToken.find.where().eq("authToken", authToken).findUnique();
-            if (validationToken == null) return GlobalResult.redirect(Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedFailed  );
+
+            if (validationToken == null) return GlobalResult.redirect(Server.becki_mainUrl + "/" + Server.becki_redirectOk  );
 
             Model_Person person = Model_Person.find.where().eq("mail", validationToken.personEmail).findUnique();
-            if(person == null) return GlobalResult.redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedFailed  );
+            if(person == null) return GlobalResult.redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail  );
 
             person.mailValidated = true;
             person.update();
@@ -1104,18 +1105,20 @@ public class Controller_Person extends Controller {
 
             // Pokud link není, vygeneruje se nový, unikátní
             if(person.azure_picture_link == null || person.azure_picture_link.equals("")){
-                while(true){ // I need Unique Value
-                    String azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
-                    if (Model_Person.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
-                        person.azure_picture_link = azure_picture_link;
-                        person.update();
-                        break;
-                    }
-                }
+                    person.azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+                    person.update();
             }
 
-            String file_path = person.get_picture_path();
-            String file_name = file_path.substring(file_path.indexOf("/") + 1);
+            // Pouze pro případy, kdy se uživatel registroval skrze sociální síť a Tyrion používá obrázek daného uživatele
+            // Z konrkétní sociální sítě - pak chybí soubor, ale existuje cesta k souboru, kterou zaslí tyrion do Becki
+            // Například:: https://avatars1.githubusercontent.com/u/16296782?v=3
+            // PRoto je nutné na to pamatovat - jinak se pak taková cesta strká do Azure k přepsání předchozího obrázku
+            if(person.azure_picture_link.contains("http")){
+                person.azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+                person.update();
+            }
+
+            String file_name =  person.azure_picture_link.substring( person.azure_picture_link.indexOf("/") + 1);
 
             //  data:image/png;base64,
             String[] parts = help.file.split(",");
@@ -1125,7 +1128,7 @@ public class Controller_Person extends Controller {
             terminal_logger.debug("person_uploadPicture:: Data Type:" + dataType[0] + ":::");
             terminal_logger.debug("person_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
 
-            person.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, file_path);
+            person.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, person.azure_picture_link);
             person.update();
 
 

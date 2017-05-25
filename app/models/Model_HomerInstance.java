@@ -1082,6 +1082,8 @@ public class Model_HomerInstance extends Model {
 
             if(!server_is_online()) throw new InterruptedException();
 
+            System.out.print("get_devices_online_state:: List contains " + device_id.size());
+
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
 
 

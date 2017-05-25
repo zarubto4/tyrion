@@ -311,25 +311,32 @@ public class Controller_Blocko extends Controller{
             version_object.b_program               = b_program;
             version_object.author                  = Controller_Security.get_person();
 
-            if(help.m_project_snapshots != null)
-                for(Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots){
+            // Vytvořím Snapshoty Verze M_Programu
+            if(help.m_project_snapshots != null) {
+
+                for (Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots) {
 
                     Model_MProject m_project = Model_MProject.find.byId(help_m_project_snap.m_project_id);
-                    if(m_project == null) return GlobalResult.notFoundObject("M_Project not found");
-                    if(!m_project.update_permission()) return GlobalResult.forbidden_Permission();
+                    if (m_project == null) return GlobalResult.notFoundObject("M_Project not found");
+                    if (!m_project.update_permission()) return GlobalResult.forbidden_Permission();
 
                     Model_MProjectProgramSnapShot snap = new Model_MProjectProgramSnapShot();
                     snap.m_project = m_project;
 
-                    for(Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots){
-                        Model_VersionObject m_program_version = Model_VersionObject.find.where().eq("id", help_m_program_snap.version_object_id ).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findUnique();
-                        if(m_program_version == null) return GlobalResult.notFoundObject("M_Program Version id not found");
-                        snap.version_objects_program.add(m_program_version);
+                    for (Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots) {
+                        Model_VersionObject m_program_version = Model_VersionObject.find.where().eq("id", help_m_program_snap.version_object_id).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findUnique();
+
+                        if (m_program_version == null) return GlobalResult.notFoundObject("M_Program Version id not found");
+
+                        Model_MProgramInstanceParameter snap_shot_parameter = new Model_MProgramInstanceParameter();
+
+                        snap_shot_parameter.m_program_version = m_program_version;
+                        snap.m_program_snapshots.add(snap_shot_parameter);
                     }
 
                     version_object.b_program_version_snapshots.add(snap);
                 }
-
+            }
             // Definování main Board
             for( Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
 

@@ -11,7 +11,9 @@ public class GlobalResult extends Controller {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
+
     private static final Class_Logger terminal_logger = new Class_Logger(GlobalResult.class);
+
 
 //**********************************************************************************************************************
 
@@ -35,6 +37,15 @@ public class GlobalResult extends Controller {
 
         CoreResponse.cors();
         return ok(Json.toJson(resultOk));
+
+    }
+
+//**********************************************************************************************************************
+
+    public static Result redirect(String path){
+
+        CoreResponse.cors();
+        return Controller.redirect(path);
 
     }
 
@@ -202,7 +213,7 @@ public class GlobalResult extends Controller {
     public static Status external_server_is_offline(String message){
         CoreResponse.cors();
 
-        Result_serverIsOffline serverIsOffline = new Result_serverIsOffline();
+        Result_ServerOffline serverIsOffline = new Result_ServerOffline();
         serverIsOffline.message = message;
 
         return Controller.badRequest(Json.toJson(serverIsOffline));
@@ -211,7 +222,7 @@ public class GlobalResult extends Controller {
     public static Status external_server_is_offline(){
         CoreResponse.cors();
 
-        Result_serverIsOffline serverIsOffline = new Result_serverIsOffline();
+        Result_ServerOffline serverIsOffline = new Result_ServerOffline();
 
         return Controller.badRequest(Json.toJson(serverIsOffline));
     }

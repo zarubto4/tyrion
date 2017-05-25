@@ -229,6 +229,9 @@ public class Model_CProgramUpdatePlan extends Model {
     public static void update_procedure_progress(WS_Message_UpdateProcedure_progress progress_message){
 
         try {
+
+            if(progress_message.percentageProgress == null || progress_message.percentageProgress < 1) return;
+
             Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_model(progress_message.updatePlanId);
 
             if (plan == null) {
@@ -337,14 +340,14 @@ public class Model_CProgramUpdatePlan extends Model {
                 return;
             }
 
-            Enum_Hardware_update_state_from_Homer update_state = Enum_Hardware_update_state_from_Homer.getUpdate_state(procedure_result.updateState);
+            Enum_HardwareHomerUpdate_state update_state = Enum_HardwareHomerUpdate_state.getUpdate_state(procedure_result.updateState);
 
             if(update_state == null){
-                terminal_logger.error( "update_procedure_state:: Error: Enum_Hardware_update_state_from_Homer not recognize:: " + procedure_result.updateState);
+                terminal_logger.error( "update_procedure_state:: Error: Enum_HardwareHomerUpdate_state not recognize:: " + procedure_result.updateState);
                 return;
             }
 
-            if(update_state == Enum_Hardware_update_state_from_Homer.SUCCESSFULLY_UPDATE){
+            if(update_state == Enum_HardwareHomerUpdate_state.SUCCESSFULLY_UPDATE){
 
                 plan.state = Enum_CProgram_updater_state.complete;
                 plan.update();
@@ -369,17 +372,17 @@ public class Model_CProgramUpdatePlan extends Model {
                 return;
             }
 
-            if(update_state == Enum_Hardware_update_state_from_Homer.DEVICE_WAS_OFFLINE || update_state == Enum_Hardware_update_state_from_Homer.YODA_WAS_OFFLINE ){
+            if(update_state == Enum_HardwareHomerUpdate_state.DEVICE_WAS_OFFLINE || update_state == Enum_HardwareHomerUpdate_state.YODA_WAS_OFFLINE ){
                 plan.state = Enum_CProgram_updater_state.waiting_for_device;
                 plan.update();
                 return;
             }
 
-            if(update_state == Enum_Hardware_update_state_from_Homer.TRANSMISSION_CRC_ERROR
-                || update_state == Enum_Hardware_update_state_from_Homer.UPDATE_PROGRESS_STACK
-                || update_state == Enum_Hardware_update_state_from_Homer.INVALID_DEVICE_STATE
-                || update_state == Enum_Hardware_update_state_from_Homer.ERROR
-                || update_state == Enum_Hardware_update_state_from_Homer.DEVICE_NOT_RECONNECTED
+            if(update_state == Enum_HardwareHomerUpdate_state.TRANSMISSION_CRC_ERROR
+                || update_state == Enum_HardwareHomerUpdate_state.UPDATE_PROGRESS_STACK
+                || update_state == Enum_HardwareHomerUpdate_state.INVALID_DEVICE_STATE
+                || update_state == Enum_HardwareHomerUpdate_state.ERROR
+                || update_state == Enum_HardwareHomerUpdate_state.DEVICE_NOT_RECONNECTED
               ){
                 plan.state = Enum_CProgram_updater_state.critical_error;
                 plan.update();

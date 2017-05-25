@@ -88,7 +88,7 @@ public class Compilation_After_BlackOut {
                         version_object.c_compilation.update();
 
                         // Výsledek se kterým se dále nic neděje
-                        JsonNode jsonNode = version_object.compile_program_procedure();
+                        version_object.compile_program_procedure();
                     }
                 }catch(Exception e){
                     terminal_logger.internalServerError(e);

@@ -3,6 +3,7 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.scribejava.core.model.*;
+import com.github.scribejava.core.oauth.OAuth20Service;
 import com.github.scribejava.core.oauth.OAuthService;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
@@ -352,7 +353,6 @@ public class Controller_Security extends Controller {
                     }
 
                     token_model .deleteAuthToken();
-
                 }
 
             }catch (Exception e){
@@ -379,9 +379,14 @@ public class Controller_Security extends Controller {
     public Result GET_github_oauth(String url) {
         try {
 
+            terminal_logger.debug("GET_github_oauth:: " + url);
+
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
             if (map.containsKey("error")) {
+
+                terminal_logger.warn("GET_github_oauth::  contains Error: {} " , map.get("error"));
+
                 if (map.containsKey("state")){
 
                     Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique();
@@ -411,6 +416,9 @@ public class Controller_Security extends Controller {
             String code = map.get("code").replace("[", "").replace("]", "");
 
 
+            terminal_logger.debug("GET_github_oauth:: state" + state);
+            terminal_logger.debug("GET_github_oauth:: code" + code);
+
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
             if (floatingPersonToken == null){
 
@@ -431,13 +439,14 @@ public class Controller_Security extends Controller {
 
             floatingPersonToken.social_token_verified = true;
 
-            OAuthService service = Socials.GitHub(state);
-            Token accessToken = service.getAccessToken(null, new Verifier(code));
+            OAuth20Service service = Socials.GitHub(state);
+            OAuth2AccessToken accessToken = service.getAccessToken(code);
 
-            OAuthRequest request = new OAuthRequest(Verb.GET, Server.GitHub_url, service);
+
+            OAuthRequest request = new OAuthRequest(Verb.GET,Server.GitHub_url);
             service.signRequest(accessToken, request);
 
-            Response response = request.send();
+            Response response = service.execute(request);
 
 
             if (!response.isSuccessful()) redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
@@ -464,7 +473,6 @@ public class Controller_Security extends Controller {
                 System.out.println("Json::" + jsonNode.toString());
 
                 Model_Person person = new Model_Person();
-
 
                 if (jsonNode.has("mail"))   person.mail = jsonNode.get("mail").asText();
                 if (jsonNode.has("login"))  person.nick_name = jsonNode.get("login").asText();
@@ -495,12 +503,28 @@ public class Controller_Security extends Controller {
     public Result GET_facebook_oauth(String url) {
         try {
 
+            terminal_logger.debug("GET_facebook_oauth:: URL:: {} ", url);
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
             if (map.containsKey("error")) {
+
+                terminal_logger.warn("GET_facebook_oauth:: Map Contains Error");
+
                 if (map.containsKey("state"))
                 Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
                 return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
+            }
+
+
+            System.out.println(" ");
+
+
+
+            for(String parameter : map.keySet()){
+
+                System.out.println("Facebook parameter: " + parameter);
+                System.out.println("Facebook contains: "  + map.get(parameter));
+
             }
 
             String state = map.get("state").replace("[", "").replace("]", "");
@@ -511,28 +535,60 @@ public class Controller_Security extends Controller {
 
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
-            if (floatingPersonToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
+            if (floatingPersonToken == null){
+
+                terminal_logger.warn("GET_facebook_oauth:: floatingPersonToken not found! ");
+                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
+            }
+
+            terminal_logger.debug("GET_facebook_oauth:: floatingPersonToken set as verified! ");
+
             floatingPersonToken.social_token_verified = true;
             floatingPersonToken.setDate();
 
-            OAuthService  service = Socials.Facebook(state);
+            OAuth20Service service = Socials.Facebook(state);
 
-            Token accessToken = service.getAccessToken(null, new Verifier(code) );
+            System.out.println("Trading the Request Token for an Access Token...");
+            OAuth2AccessToken accessToken = service.getAccessToken(code);
 
-            OAuthRequest request = new OAuthRequest(Verb.GET, Server.Facebook_url, service);
+            System.out.println("Got the Access Token!");
+            System.out.println("(if your curious it looks like this: " + accessToken + ", 'rawResponse'='" + accessToken.getRawResponse() + "')");
+            System.out.println();
+
+            // Now let's go and ask for a protected resource!
+            System.out.println("Now we're going to access a protected resource...");
+
+            OAuthRequest request = new OAuthRequest(Verb.GET, Server.Facebook_url);
             service.signRequest(accessToken, request);
 
-            Response response = request.send();
+            final Response response = service.execute(request);
+
+            System.out.println("Got it! Lets see what we found...");
+            System.out.println();
+            System.out.println(response.getCode());
+            System.out.println(response.getBody());
+
+            System.out.println();
+            System.out.println("Thats it man! Go and build something awesome with ScribeJava! :)");
+
+
+
+            terminal_logger.debug("GET_facebook_oauth:: Get Response for Token:: " + response.getBody());
+
             if (!response.isSuccessful()){
+
+                terminal_logger.warn("GET_facebook_oauth:: Get Response wasnt succesfull :(  ");
 
                 if(floatingPersonToken.return_url.contains(".cz")) {
                     String[] parts = floatingPersonToken.return_url.split(".cz");
 
+                    terminal_logger.warn("GET_facebook_oauth:: redirdct to fail::: " + parts[1] + "/" + Server.becki_redirectFail);
                     return redirect(parts[1] + "/" + Server.becki_redirectFail );
 
                 }else if(floatingPersonToken.return_url.contains(".com")){
                     String[] parts = floatingPersonToken.return_url.split(".com");
 
+                    terminal_logger.warn("GET_facebook_oauth:: redirdct to fail::: " + parts[1] + "/" + Server.becki_redirectFail);
                     return redirect(parts[1] + "/" + Server.becki_redirectFail );
                 }
 
@@ -541,10 +597,12 @@ public class Controller_Security extends Controller {
             }
 
 
+            terminal_logger.debug("GET_facebook_oauth:: Get Response was succesfull :)  ");
+
             JsonNode jsonNode = Json.parse(response.getBody());
 
             WSRequest wsrequest = ws.url("https://graph.facebook.com/v2.5/"+ jsonNode.get("id").asText());
-            WSRequest complexRequest = wsrequest.setQueryParameter("access_token", accessToken.getToken())
+            WSRequest complexRequest = wsrequest.setQueryParameter("access_token", accessToken.getAccessToken())
                                                 .setQueryParameter("fields", "id,name,first_name,last_name,email,birthday,languages");
 
             F.Promise<JsonNode> jsonPromise = wsrequest.get().map(rsp -> { return rsp.asJson();});
@@ -573,6 +631,7 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
+            terminal_logger.internalServerError(e);
             return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail );
         }
     }
@@ -600,29 +659,41 @@ public class Controller_Security extends Controller {
     public Result GitHub( @ApiParam(value = "this is return full url address in format  http//portal.byzance.cz/something", required = true)  String return_link){
         try {
 
+            terminal_logger.debug("GitHub  request for login:: return link:: {}", return_link);
+
+            if(return_link.equals("/login-failed") || return_link.equals("/")){
+                return_link = "http://localhost:8080/dashboard";
+                terminal_logger.error("Na Becki jsou idioti!!!!");
+            }
+
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("GitHub");
 
-            floatingPersonToken.return_url = return_link.replace("/github/", "");
+            floatingPersonToken.return_url = return_link;
             floatingPersonToken.where_logged = Enum_Where_logged_tag.BECKI_WEBSITE;
+
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
 
             floatingPersonToken.update();
 
-            OAuthService service = Socials.GitHub( floatingPersonToken.provider_key);
+            System.out.println("GitHub_callBack ::" + Server.GitHub_callBack);
+            System.out.println("GitHub_url ::" + Server.GitHub_url);
+
+
+            OAuth20Service service = Socials.GitHub( floatingPersonToken.provider_key);
 
             Login_Social_Network result = new Login_Social_Network();
             result.type = "GitHub";
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;
 
-            System.out.println(Json.toJson(result));
+            terminal_logger.debug("GitHub  request for login:: response:: {}", Json.toJson(result));
 
             return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
-            e.printStackTrace();
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -644,7 +715,7 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result Facebook(@ApiParam(value = "this is return full url address in format  http//portal.byzance.cz/something", required = true)  String return_link){
+    public Result Facebook(@ApiParam(value = "this is return full url address in format  http//*.byzance.cz/something", required = true)  String return_link){
         try {
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("Facebook");
 
@@ -655,7 +726,7 @@ public class Controller_Security extends Controller {
 
             floatingPersonToken.update();
 
-            OAuthService service = Socials.Facebook(floatingPersonToken.provider_key);
+            OAuth20Service service = Socials.Facebook(floatingPersonToken.provider_key);
 
             Login_Social_Network result = new Login_Social_Network();
             result.type = "Facebook";

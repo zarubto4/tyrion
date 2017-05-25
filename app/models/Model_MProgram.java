@@ -45,7 +45,7 @@ public class Model_MProgram extends Model{
             value = "UNIX time stamp in millis", example = "1458315085338")         public Date date_of_create;
 
                                     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_MProject m_project;
-    @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("date_of_create DESC") public List<Model_VersionObject> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
@@ -81,7 +81,7 @@ public class Model_MProgram extends Model{
     // Objekt určený k vracení verze - Fatch lazy!!
     @JsonIgnore @Transient
     public List<Model_VersionObject> getVersion_objects() {
-        return Model_VersionObject.find.where().eq("m_program.id", this.id).eq("removed_by_user", false).order().asc("date_of_create").findList();
+        return Model_VersionObject.find.where().eq("m_program.id", this.id).eq("removed_by_user", false).order().desc("date_of_create").findList();
     }
 
 
@@ -216,7 +216,7 @@ public class Model_MProgram extends Model{
 
     @JsonIgnore   @Transient public boolean create_permission(){  return ( Model_Project.find.where().where().eq("participants.person.id", Controller_Security.get_person().id ).eq("m_projects.id", m_project.id).findUnique().create_permission() ) || Controller_Security.get_person().has_permission("M_Program_create");      }
     @JsonIgnore   @Transient public boolean read_permission()  {
-        if(Controller_Security.get_person() == null){System.out.println("Person == null");}
+        if(Controller_Security.get_person() == null){terminal_logger.warn("read_permission:: Person is null in read_permission");}
         return ( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) ||
                 Controller_Security.get_person().has_permission("M_Program_read");
     }

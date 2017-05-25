@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value="Bad Request", description="When is something wrong")
-public class Result_BadRequest {
+public class Result_BadRequest implements Response_Interface{
 
     @ApiModelProperty(value = "state", allowableValues = "error", required = true, readOnly = true)
     public String state = "error";

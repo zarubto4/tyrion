@@ -1,8 +1,13 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 
 
+import org.json.JSONObject;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -17,13 +22,37 @@ public class Controller_Wiky extends Controller {
 
      public Result test1(){
          try {
-             
-             return ok();
+
+             // Chci zpracovat JSON o Pepovi
+           //  JsonNode muj_json = request().body().asJson();
+
+             String muj_sstring = request().body().asText();
+
+             // Vypíšu si co je uvnitř
+             System.out.println(  muj_sstring );
+
+
+             String name;
+             String prijmeni;
+             Integer age;
+             String street;
+
+
+             // - Napiš Cyklus - Kterej
+
+
+             ObjectNode co_vracim = Json.newObject();
+          //   co_vracim.put("name", muj_json.get("jeho_name").textValue() + " je drsoň"   );
+             co_vracim.put("sadfsadasafd", "asdfsfasdfsdfs");
+          //   co_vracim.put("age" , muj_json.get("jeho_age").asInt() );
+
+
+             return ok( co_vracim );
+
          }catch (Exception e){
              e.printStackTrace();
              return badRequest();
          }
-
      }
 
 

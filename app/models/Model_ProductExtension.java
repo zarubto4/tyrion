@@ -170,7 +170,7 @@ public class Model_ProductExtension extends Model{
 
             if (extension == null) return null;
 
-            return extension.getPrice(getConfig());
+            return ( extension.getPrice(getConfig()));
 
         } catch (Exception e) {
             terminal_logger.internalServerError("Model_ProductExtension:: getPrice:", e);

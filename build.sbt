@@ -1,6 +1,6 @@
 name := """Tyrion"""
 
-version := "1.08.3"
+version := "1.09.3"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
   "io.swagger"         % "swagger-core"               % "1.5.12",
   "io.swagger"        %% "swagger-scala-module"       % "1.0.3",
 
-  "com.github.scribejava" % "scribejava-apis" % "2.1.0",
+  "com.github.scribejava" % "scribejava-apis" % "4.1.1",
 
   "commons-codec" % "commons-codec" % "1.9",
   "com.cedarsoftware" % "json-io" % "4.4.0",

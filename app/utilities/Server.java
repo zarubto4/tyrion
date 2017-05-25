@@ -14,6 +14,7 @@ import utilities.cache.Server_Cache;
 import utilities.financial.fakturoid.Fakturoid_InvoiceCheck;
 import utilities.financial.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
+import utilities.grid_support.utils.IP_Founder;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.logger.Class_Logger;
 import utilities.notifications.NotificationHandler;
@@ -54,6 +55,9 @@ public class Server {
     public static String becki_passwordReset;
     public static String becki_invitationToCollaborate;
     public static String becki_propertyChangeFailed;
+
+    public static String grid_app_main_url;
+
 
     public static String GitHub_callBack;
     public static String GitHub_clientSecret;
@@ -121,11 +125,14 @@ public class Server {
                 server_mode = Enum_Tyrion_Server_mode.developer;
 
                 // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress = "http://" + Configuration.root().getString("Server.localhost");
-                tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server.localhost");
+                tyrion_serverAddress = "http://" + Configuration.root().getString("Server." + server_mode);
+                tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server." + server_mode);
 
                 // Nastavení pro Becki Adresy
-                becki_mainUrl                           = "http://" + Configuration.root().getString("Becki.localhost.mainUrl");
+                becki_mainUrl           = "http://" + Configuration.root().getString("Becki." + server_mode + ".mainUrl");
+
+                // Nastavení adresy, kde běží Grid APP
+                grid_app_main_url       = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8888";
 
                 // Swagger URL Redirect - Actual Rest Api docu
                 link_api_swagger        = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
@@ -136,11 +143,14 @@ public class Server {
 
                 server_mode = Enum_Tyrion_Server_mode.production;
                 // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress = "https://" + Configuration.root().getString("Server.production");
-                tyrion_webSocketAddress = "wss://" + Configuration.root().getString("Server.production");
+                tyrion_serverAddress = "https://" + Configuration.root().getString("Server." + server_mode);
+                tyrion_webSocketAddress = "wss://" + Configuration.root().getString("Server." + server_mode);
 
                 // Nastavení pro Becki Adresy
-                becki_mainUrl                   = "https://" + Configuration.root().getString("Becki.production.mainUrl");
+                becki_mainUrl                   = "https://" + Configuration.root().getString("Becki." + server_mode + ".mainUrl");
+
+                // Nastavení adresy, kde běží Grid APP
+                grid_app_main_url                   = "https://" + Configuration.root().getString("Grid_App." + server_mode + ".mainUrl");
 
                 // Swagger URL Redirect - Actual Rest Api docu
                 link_api_swagger    = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
@@ -152,11 +162,14 @@ public class Server {
                 server_mode = Enum_Tyrion_Server_mode.stage;
 
                 // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress        = "https://" + Configuration.root().getString("Server.stage");
-                tyrion_webSocketAddress     = "wss://" + Configuration.root().getString("Server.stage");
+                tyrion_serverAddress        = "https://" + Configuration.root().getString("Server." + server_mode);
+                tyrion_webSocketAddress     = "wss://" + Configuration.root().getString("Server." + server_mode);
 
                 // Nastavení pro Becki Adresy
-                becki_mainUrl               = "https://" + Configuration.root().getString("Becki.stage.mainUrl");
+                becki_mainUrl               = "https://" + Configuration.root().getString("Becki." + server_mode + ".mainUrl");
+
+                // Nastavení adresy, kde běží Grid APP
+                grid_app_main_url                   = "https://" + Configuration.root().getString("Grid_App." + server_mode + ".mainUrl");
 
                 // Swagger URL Redirect - Actual Rest Api docu
                 link_api_swagger            = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";

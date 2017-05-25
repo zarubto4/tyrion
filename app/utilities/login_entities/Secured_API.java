@@ -46,10 +46,13 @@ private static final Class_Logger terminal_logger = new Class_Logger(Secured_API
                 return null;
             }
 
-            Model_Person.token_cache.put(token, model_token.person.id);
+            if(model_token.person != null) {
+                Model_Person.token_cache.put(token, model_token.person.id);
+            }else {
+                terminal_logger.warn("getUsername:: Model_FloatingPersonToken not contains Person!");
+            }
 
         }
-
 
 
         ctx.args.put("person_token", token);

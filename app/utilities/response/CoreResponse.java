@@ -34,7 +34,7 @@ public class CoreResponse extends Controller {
     public static void cors(String url) {
         try {
 
-            response().setHeader("Access-Control-Link", url);
+            response().setHeader("Access-Control-Link", url + "," + Server.becki_mainUrl);
             response().setHeader("Access-Control-Allow-Origin", "*"); // Zde bude web se kterým to může komunikovat (url frontendu)
             response().setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
             response().setHeader("Access-Control-Max-Age", "72000");

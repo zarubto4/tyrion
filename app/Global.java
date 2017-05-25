@@ -72,7 +72,7 @@ public class Global extends GlobalSettings {
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +"onStart: Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
            Server.setAdministrator();
 
-            if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion " + Server.server_mode.name() + " server started on " + new Date().toString() + ".");
+            if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion server in Mode " + Server.server_mode.name() + " version: " + Server.server_version + " started on " + new Date().toString() + ".");
 
        }catch (Exception e){
             System.out.println("");

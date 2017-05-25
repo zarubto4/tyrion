@@ -5,6 +5,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.UUID;
 
 @Entity
@@ -18,6 +19,8 @@ public class Model_LoggyError extends Model {
     @Column(columnDefinition = "TEXT")  public String summary;
     @Column(columnDefinition = "TEXT")  public String description;
                                         public String youtrack_url;
+
+                                        public Date date_of_create;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 

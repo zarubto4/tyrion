@@ -122,7 +122,7 @@ public class Model_Tariff extends Model {
             if(price != null)
                 total_price += price;
         }
-        return ((double) total_price*30) / 1000;
+        return ((double) total_price*30) ;
     }
 
     @JsonIgnore @Override

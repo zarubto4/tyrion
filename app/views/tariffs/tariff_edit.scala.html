@@ -204,6 +204,7 @@
                                 <th>Order</th>
                                 <th>Name</th>
                                 <th>Type</th>
+                                <th>Price (per day)</th>
                                 <th>Price (per month)</th>
                                 <th>Default count </th>
                                 <th>Color</th>
@@ -220,13 +221,17 @@
                                     <td>@extension.order_position</td>
                                     <td>@extension.name</td>
                                     <td>@extension.getExtensionTypeName</td>
-                                    <td>@{extension.getPrice * 30}</td>
+                                    <td>@{ extension.getPrice / 1000 } USD</td>
+                                    <td>@{ extension.getPrice * 30 / 1000 } USD</td>
                                     <td>@extension.getConfig.count</td>
                                     <td>@extension.color</td>
                                     <td>@extension.description</td>
                                     <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')">Up</button>}</td>
                                     <td>@if(tariff.extensions_included.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')">Down</button>}</td>
-                                    <td><button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', @extension.getConfig.price, @extension.getConfig.count, @{extension.tariff_included != null})">Edit</button></td>
+                                    <td>
+                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', @extension.getConfig.price, @extension.getConfig.count, @{extension.tariff_included != null} )">Edit</button>
+                                    </td>
+
                                     <td>
                                         @if(!extension.active) {
                                             <button class="btn btn-xs btn-block btn-danger" type="button" onclick="activateExtension('@extension.id')" title="Activate">Deactivated</button>
@@ -241,8 +246,9 @@
                                 <th></th>
                                 <th></th>
                                 <th></th>
+                                <th></th>
                                 <th>Total Per Month</th>
-                                <th>@tariff.total_per_month() USD</th>
+                                <th>@( tariff.total_per_month() / 1000) USD</th>
                                 <th></th>
                                 <th></th>
                                 <th></th>
@@ -260,6 +266,7 @@
                                 <th>Order</th>
                                 <th>Name</th>
                                 <th>Type</th>
+                                <th>Price (per day)</th>
                                 <th>Price (per month)</th>
                                 <th>Default count </th>
                                 <th>Color</th>
@@ -276,13 +283,15 @@
                                     <td>@extension.order_position</td>
                                     <td>@extension.name</td>
                                     <td>@extension.getExtensionTypeName</td>
-                                    <td>@{extension.getPrice * 30}</td>
+                                    <td>@{extension.getPrice / 1000 } USD</td>
+                                    <td>@{extension.getPrice * 30 / 1000 } USD </td>
                                     <td>@extension.getConfig.count</td>
                                     <td>@extension.color</td>
                                     <td>@extension.description</td>
                                     <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')">Up</button>}</td>
                                     <td>@if(tariff.extensions_optional.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')">Down</button>}</td>
-                                    <td><button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', @extension.getConfig.price, @extension.getConfig.count, @{extension.tariff_included != null})">Edit</button></td>
+                                    <td>
+                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', @extension.getConfig.price, @extension.getConfig.count, @{extension.tariff_included != null})">Edit</button></td>
                                     <td>
                                     @if(!extension.active) {
                                         <button class="btn btn-xs btn-block btn-danger" type="button" onclick="activateExtension('@extension.id')" title="Activate">Deactivated</button>
@@ -335,11 +344,12 @@
                 </div>
                 <div class="modal-body">
                     <form id="editLabelForm">
-                        <input type="text" class="form-control form-group" id="edit_label_id" name="id" readonly title="Id">
-                        <input type="text" class="form-control form-group" id="edit_label_label" name="label" title="Label">
-                        <input type="text" class="form-control form-group" id="edit_label_description" name="description" title="Description">
-                        <input type="text" class="form-control" id="edit_label_icon" name="icon" title="Font icon">
-                        <a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_icons.html">Icon codes</a>
+
+                        <label>ID</label>  <input type="text" class="form-control form-group" id="edit_label_id" name="id" readonly title="Id">
+                        <label>Label Text</label>  <input type="text" class="form-control form-group" id="edit_label_label" name="label" title="Label">
+                        <label>Description</label>   <input type="text" class="form-control form-group" id="edit_label_description" name="description" title="Description">
+                        <label>Font Icon</label>   <input type="text" class="form-control" id="edit_label_icon" name="icon" title="Font icon">
+                        <label>Icon Code</label>  <a href="http://keenthemes.com/preview/metronic/theme/admin_4/ui_icons.html">Icon codes</a>
                     </form>
                     <div id="editLabelModalMessage" style="display: none"><p class="text-red"></p></div>
                 </div>
@@ -358,6 +368,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="newExtensionForm">
+
                         <input type="text" class="form-control form-group" name="name" placeholder="Name">
                         <input type="text" class="form-control form-group" name="description" placeholder="Description">
                         <input type="text" class="form-control form-group" name="color" placeholder="Color">
@@ -394,17 +405,17 @@
                 <div class="modal-body">
                     <form id="editExtensionForm">
                         <input type="text" class="form-control form-group" id="extension_id" name="id" readonly title="Id">
-                        <input type="text" class="form-control form-group" id="extension_name" name="name" title="Name">
-                        <input type="text" class="form-control form-group" id="extension_description" name="description" title="Description">
-                        <input type="text" class="form-control form-group" id="extension_color" name="color" title="Color">
+                        <label>Extension Name</label> <input type="text" class="form-control form-group" id="extension_name" name="name" title="Name">
+                        <label>Description</label> <input type="text" class="form-control form-group" id="extension_description" name="description" title="Description">
+                        <label>Color</label>   <input type="text" class="form-control form-group" id="extension_color" name="color" title="Color">
                         <select name="type" class="form-control form-group select2" id="extension_type" title="Type of Extension">
                             <option selected="selected" disabled>Choose one</option>
                             @for(etype <- Enum_ExtensionType.values()){
                                 <option value="@etype.name()">@etype.name()</option>
                             }
                         </select>
-                        <input type="text" class="form-control form-group" id="extension_price" name="price" title="Price (USD)">
-                        <input type="text" class="form-control form-group" id="extension_count" name="count" title="Count">
+                        <label>Price In USD in with 4 digits ( 1$ is 1000)</label>  <input type="text" class="form-control form-group" id="extension_price" name="price" title="Price (USD)">
+                        <label>Count</label><input type="text" class="form-control form-group" id="extension_count" name="count" title="Count">
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" class="checkbox" id="extension_included" name="included">

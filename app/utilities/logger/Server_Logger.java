@@ -305,7 +305,7 @@ public class Server_Logger extends Controller {
     }
 
     public static List<Model_LoggyError> getErrors(){
-        return Model_LoggyError.find.all();
+        return Model_LoggyError.find.where().orderBy().asc("").findList();
     }
 
     public static Model_LoggyError getError(String id) {

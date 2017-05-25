@@ -415,7 +415,6 @@ public class Controller_Grid extends Controller {
             version_object.m_program           = main_m_program;
             version_object.author              = Controller_Security.get_person();
             version_object.public_version      = help.public_mode;
-            version_object.qr_token            = UUID.randomUUID().toString() + UUID.randomUUID().toString();
             version_object.m_program_virtual_input_output =  help.virtual_input_output;
 
             version_object.save();

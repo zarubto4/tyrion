@@ -48,7 +48,7 @@ public class Model_FloatingPersonToken extends Model {
     @Column(columnDefinition = "TEXT")
     @ApiModelProperty(required = true)                      public String provider_key;                 // provider key - slouží k identifikaci pro oauth2
     @ApiModelProperty(required = true)                      public String type_of_connection;           // Typ Spojení
-    @ApiModelProperty(required = true)                      public String return_url;                   // Url pna které užáivatele přesměruji
+    @ApiModelProperty(required = true)                      public String return_url;                   // Url na které uživatele nakonci přesměrujeme
 
     @ApiModelProperty(required = true)                      public boolean social_token_verified;       // Pro ověření, že token byl sociální sítí ověřen
 
