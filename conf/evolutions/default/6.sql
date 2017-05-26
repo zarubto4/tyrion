@@ -1,12 +1,13 @@
 
+
 # --- !Ups
 
 alter table model_version_object
   drop column if exists qr_token cascade;
 
-drop table if exists m_project_program_snapshots cascade;
 
-create table model_mprogram_instance_paramete(
+
+create table model_mprogram_instance_parameter(
 
   id                            uuid not null,
   connection_token              varchar(255),
@@ -18,27 +19,29 @@ create table model_mprogram_instance_paramete(
 );
 
 
-alter table model_mprogram_instance_paramete add constraint fk_model_mprogram_instance_pa_80 foreign key (m_program_version_id) references model_version_object (id);
-create index ix_model_mprogram_instance_pa_80 on model_mprogram_instance_paramete (m_program_version_id);
-alter table model_mprogram_instance_paramete add constraint fk_model_mprogram_instance_pa_81 foreign key (m_project_program_snapshot_id) references model_mproject_program_snap_shot (id);
-create index ix_model_mprogram_instance_pa_81 on model_mprogram_instance_paramete (m_project_program_snapshot_id);
+alter table model_mprogram_instance_parameter add constraint fk_model_mprogram_instance_pa_80 foreign key (m_program_version_id) references model_version_object (id);
+create index ix_model_mprogram_instance_pa_80 on model_mprogram_instance_parameter (m_program_version_id);
+alter table model_mprogram_instance_parameter add constraint fk_model_mprogram_instance_pa_81 foreign key (m_project_program_snapshot_id) references model_mproject_program_snap_shot (id);
+create index ix_model_mprogram_instance_pa_81 on model_mprogram_instance_parameter (m_project_program_snapshot_id);
+
+
+create sequence model_mproject_program_snap_shot_seq;
+
 
 # --- !Downs
 
 alter table model_version_object
   ADD column qr_token VARCHAR(255);
 
-drop table if exists model_mprogram_instance_paramete cascade;
+drop table if exists model_mprogram_instance_parameter cascade;
 
 drop index if exists ix_model_mprogram_instance_pa_80 cascade;
 drop index if exists ix_model_mprogram_instance_pa_81 cascade;
 
-create table m_project_program_snapshots (
-  model_mproject_program_snap_shot_id varchar(40) not null,
-  model_version_object_id        varchar(255) not null,
-  constraint pk_m_project_program_snapshots primary key (model_mproject_program_snap_shot_id, model_version_object_id))
-;
-
 alter table m_project_program_snapshots add constraint fk_m_project_program_snapshot_01 foreign key (model_mproject_program_snap_shot_id) references model_mproject_program_snap_shot (id);
 
 alter table m_project_program_snapshots add constraint fk_m_project_program_snapshot_02 foreign key (model_version_object_id) references model_version_object (id);
+
+
+DROP sequence  if exists model_mproject_program_snap_shot_seq;
+DROP sequence  if exists model_mprogram_instance_parameter_seq;

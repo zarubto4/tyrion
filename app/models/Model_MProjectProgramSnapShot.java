@@ -22,16 +22,13 @@ public class Model_MProjectProgramSnapShot extends Model {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public UUID id;
+    @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_MProject m_project;
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "b_program_version_snapshots") public List<Model_VersionObject> instance_versions = new ArrayList<>(); // Vazba přes version_objet na Homer_Instance_record
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "b_program_version_snapshots") public List<Model_VersionObject> instance_versions = new ArrayList<>(); // Vazba na version Blocka (zatím je využívaná jen jako M:1
 
-    @JsonProperty @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "m_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu
-
-//REMOVED(1.09.04) @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "m_project_program_snapshots") public List<Model_VersionObject> version_objects_program = new ArrayList<>();    // Verze M_Programu
-
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "m_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
@@ -45,6 +42,21 @@ public class Model_MProjectProgramSnapShot extends Model {
     @JsonProperty @ApiModelProperty(required = true) public boolean unshare_permission()   {return true;}
     @JsonProperty @ApiModelProperty(required = true) public boolean share_permission ()    {return true;}
     @JsonProperty @ApiModelProperty(required = true) public boolean admin_permission ()    {return true;}
+
+
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProgramInstanceParameter> m_program_snapshots(){
+        try{
+
+            return m_program_snapshots;
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+
+            return null;
+        }
+
+    }
 
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

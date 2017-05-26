@@ -14,7 +14,6 @@ import java.util.UUID;
 
 
 @Entity
-
 public class Model_MProgramInstanceParameter extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -23,13 +22,18 @@ public class Model_MProgramInstanceParameter extends Model {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id @ApiModelProperty(required = true)  public UUID id;
+    @JsonIgnore @Id @ApiModelProperty(required = true) @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
 
-    @JsonIgnore @ManyToOne()  public Model_MProjectProgramSnapShot m_project_program_snapshot;
-    @JsonIgnore @ManyToOne()  public Model_VersionObject m_program_version;
+    @JsonIgnore @ManyToOne()  public Model_MProjectProgramSnapShot m_project_program_snapshot; //(Vazba Done)
+    @JsonIgnore @ManyToOne()  public Model_VersionObject m_program_version;                    //(Vazba Done)
 
     @JsonProperty public String                          connection_token;        // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
     @JsonProperty public Enum_MProgram_SnapShot_settings snapshot_settings;       // Typ Aplikace
+
+
+
+    // TODO Zde lze dopsat práva pro jednotlivé uživatele
+    // Podle emailů, podle Tokenů, podle domény atd. atd..
 
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/

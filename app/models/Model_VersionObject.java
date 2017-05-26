@@ -90,9 +90,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)     public List<Model_BProgramHwGroup> b_program_hw_groups = new ArrayList<>();
 
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions")           public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
-//REMOVED(1.09.04)  @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "version_objects_program")   public List<Model_MProjectProgramSnapShot> m_project_program_snapshots = new ArrayList<>();    // Vazba kvůli puštěným M_programům
-
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions")   public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
 
     // B_Program - Instance
     @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
@@ -378,6 +376,8 @@ public class Model_VersionObject extends Model {
         if(compilation.interface_code == null || compilation.buildUrl == null){
 
             terminal_logger.error("compile_program_procedure:: Json Result from Compilation server has not required labels!");
+            terminal_logger.error("compile_program_procedure:: Json Missing value interface_code or buildUrl ");
+            terminal_logger.error("compile_program_procedure:: What Server sent:: " + Json.toJson(compilation)  );
 
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
@@ -390,7 +390,8 @@ public class Model_VersionObject extends Model {
         if(compilation.error != null || !compilation.status.equals("success")){
 
             terminal_logger.error("compile_program_procedure:: Json Result from Compilation server has not required labels!");
-
+            terminal_logger.error("compile_program_procedure:: status is not succrss, but error is empty ");
+            terminal_logger.error("compile_program_procedure:: What Server sent:: " + Json.toJson(compilation)  );
 
             c_compilation.status = Enum_Compile_status.compilation_server_error;
             c_compilation.update();

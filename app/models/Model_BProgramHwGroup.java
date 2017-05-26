@@ -32,6 +32,7 @@ public class Model_BProgramHwGroup extends Model {
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
