@@ -1070,6 +1070,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
+    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024)
     public Result person_uploadPicture(){
         try {
 

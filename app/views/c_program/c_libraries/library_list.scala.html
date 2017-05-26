@@ -1,5 +1,4 @@
 @import models.Model_Library
-@import utilities.enums.Enum_Library_state
 
 <section class="content-header">
     <h1> Libraries </h1>
@@ -17,7 +16,52 @@
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">List of Libraries</h3>
+                    <h3 class="box-title">Filter settings</h3>
+                    <div class="pull-right">
+                        <div class="btn-group">
+                            <button class="btn btn-block btn-info" type="button" onclick="showNewBoard()">New Board</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <form id="boardFilterForm">
+                        <table id="filterTable" class="table table-condensed no-padding no-margin">
+                            <tr>
+                                <th class="col-md-2">Type of Board</th>
+                                <th class="col-md-1">Parameters</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div>
+                                        <select id="selectTypeOfBoard" name="type_of_board_ids[]" class="form-control" multiple>
+                                        @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
+                                            <option value="@type_of_board.id"> @type_of_board.name </option>
+                                        }
+                                        </select>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="active" type="checkbox"> Removed by user
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div class="box-footer">
+                    <button class="btn pull-right btn-warning" type="button" onclick="filter()">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Libraries</h3>
                     <div class="pull-right">
                         <div class="btn-group">
                             <button class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newLibraryModal" title="New Library"><i class="fa fa-plus"></i></button>
@@ -47,6 +91,9 @@
                                     @for(type_of_board <- library.type_of_boards){
                                        @type_of_board.name + ", "
                                     }
+                                </td>
+                                <td>
+                                    TODO
                                 </td>
 
                                 <td><a href='@routes.Controller_Dashboard.public_library(library.id)'><button class="btn btn-block btn-info"   type="button"> Edit </button></a></td>
@@ -102,11 +149,9 @@
     </div>
 </div>
 
-
     <script>
 
           function newLibrary(){
-              model_data = $("#newLibrary").serializeObject();
               $.ajax({
                   url: '@routes.Controller_Library.library_create()',
                   type: 'POST',
@@ -115,7 +160,7 @@
                       "X-AUTH-TOKEN":getCookie("authToken"),
                       "Content-Type":"application/json"
                   },
-                  data: JSON.stringify(model_data),
+                  data: JSON.stringify($("#newLibrary").serializeObject()),
                   dataType: 'json',
                   success:function(json){
                       location.reload();
@@ -128,6 +173,29 @@
               })
           }
 
+          function deleteLibrary(id){
+              $.ajax({
+                  url: '/library/' + id,
+                  type: 'DELETE',
+                  headers: {
+                      "X-AUTH-TOKEN":getCookie("authToken")
+                  },
+                  dataType: 'json',
+                  success:function(json){
+                      window.location.reload();
+                  },
+                  error:function(e) {
+                      alert(JSON.stringify(JSON.parse(e.responseText).message));
+                  }
+              })
+          }
+
+          $(function () {
+
+              $('#selectTypeOfBoard').select2({
+                  placeholder: "Select multiple",
+                  allowClear: false
+              });
+          });
+
     </script>
-
-

@@ -158,4 +158,9 @@ public class Global extends GlobalSettings {
         // TODO tady vyrendrovat hezkou 404 page
         return super.onHandlerNotFound(request);
     }
+
+    @Override
+    public F.Promise<Result> onBadRequest(Http.RequestHeader request, String error) {
+        return super.onBadRequest(request, error);
+    }
 }
