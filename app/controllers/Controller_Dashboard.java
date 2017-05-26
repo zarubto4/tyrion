@@ -269,7 +269,7 @@ public class Controller_Dashboard extends Controller {
                     ObjectNode result = Json.newObject();
                     result.put("status", "Becki terminal is not connected now");
 
-                    return GlobalResult.result_BadRequest(result);
+                    return GlobalResult.result_badRequest(result);
                 }
 
             }else {
@@ -277,7 +277,7 @@ public class Controller_Dashboard extends Controller {
                 ObjectNode result = Json.newObject();
                 result.put("status", "Becki terminal is not connected now");
 
-                return GlobalResult.result_BadRequest(result);
+                return GlobalResult.result_badRequest(result);
             }
 
         }catch (Exception e){
@@ -408,7 +408,7 @@ public class Controller_Dashboard extends Controller {
 
             if(type_of_board == null) {
 
-                return GlobalResult.notFoundObject("Type of Board not found!");
+                return GlobalResult.result_notFound("Type of Board not found!");
 
             }else {
                 Html content = bootloader_settings.render(type_of_board);
@@ -624,7 +624,7 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_Project project = Model_Project.find.byId(id);
-            if (project == null) return GlobalResult.notFoundObject("Project not found");
+            if (project == null) return GlobalResult.result_notFound("Project not found");
 
             Html project_detail_content = project_detail.render(project);
             return return_page(project_detail_content);
@@ -638,7 +638,7 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_Product product = Model_Product.get_byId(id);
-            if (product == null) return GlobalResult.notFoundObject("Product not found");
+            if (product == null) return GlobalResult.result_notFound("Product not found");
 
             Html product_detail_content = product_detail.render(product);
             return return_page(product_detail_content);
@@ -652,7 +652,7 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_Invoice inv = Model_Invoice.find.byId(id);
-            if (inv == null) return GlobalResult.notFoundObject("Invoice not found");
+            if (inv == null) return GlobalResult.result_notFound("Invoice not found");
 
             Html content = invoice.render(inv);
             return return_page(content);

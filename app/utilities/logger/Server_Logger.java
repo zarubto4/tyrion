@@ -159,7 +159,7 @@ public class Server_Logger extends Controller {
 
 /* CONTROLLER LOGGER ---------------------------------------------------------------------------------------------------*/
 
-    public static Result result_internalServerError(Exception exception, Http.Request request) {
+    public static Result result_internalServerError(Throwable exception, Http.RequestHeader request) {
 
         exception.printStackTrace();
 
@@ -205,7 +205,7 @@ public class Server_Logger extends Controller {
 
         error(id, summary, description.toString());
 
-        return GlobalResult.result_InternalServerError(summary + "\n" + exception.getMessage());
+        return GlobalResult.result_internalServerError(summary + "\n" + exception.getMessage());
     }
 
 

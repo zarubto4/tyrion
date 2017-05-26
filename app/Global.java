@@ -1,10 +1,8 @@
 import controllers.Controller_WebSocket;
 import play.Application;
 import play.GlobalSettings;
-import play.libs.F;
 import play.mvc.Action;
 import play.mvc.Http;
-import play.mvc.Result;
 import utilities.Server;
 import utilities.cache.Server_Cache;
 import utilities.document_db.DocumentDB;
@@ -151,16 +149,5 @@ public class Global extends GlobalSettings {
         RequestCounter.count(actionMethod.getName());
 
         return super.onRequest(request, actionMethod);
-    }
-
-    @Override
-    public F.Promise<Result> onHandlerNotFound(Http.RequestHeader request) {
-        // TODO tady vyrendrovat hezkou 404 page
-        return super.onHandlerNotFound(request);
-    }
-
-    @Override
-    public F.Promise<Result> onBadRequest(Http.RequestHeader request, String error) {
-        return super.onBadRequest(request, error);
     }
 }

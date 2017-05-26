@@ -484,18 +484,18 @@ public class GoPay_Controller extends Controller {
 
             // Binding Json with help object
             final Form<Swagger_Payment_Refund> form = Form.form(Swagger_Payment_Refund.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.formExcepting(form.errorsAsJson());
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Payment_Refund help = form.get();
 
             // Finding in DB
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
+            if(invoice == null) return GlobalResult.result_notFound("Invoice not found");
 
             invoice.getProduct().archiveEvent("Refund payment", "Request for refund for this reason: " + help.reason, null);
 
             if (help.whole) refundPayment(invoice, invoice.total_price());
             else if (help.amount != null) refundPayment(invoice, (long) (help.amount * 1000));
-            else return GlobalResult.result_BadRequest("Set 'whole' parameter to true or specify amount.");
+            else return GlobalResult.result_badRequest("Set 'whole' parameter to true or specify amount.");
 
             return GlobalResult.result_ok();
 

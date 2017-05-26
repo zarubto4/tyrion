@@ -1,10 +1,8 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.ning.http.client.AsyncHttpClient;
 import io.swagger.annotations.*;
 import models.*;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import play.api.Play;
 import play.data.Form;
 import play.libs.F;
@@ -64,8 +62,8 @@ public class Controller_Person extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created",    response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 200, message = "Successfully created",    response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -74,13 +72,13 @@ public class Controller_Person extends Controller {
         try {
 
             final Form<Swagger_Person_New> form = Form.form(Swagger_Person_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Person_New help = form.get();
 
             if (Model_Person.find.where().eq("nick_name", help.nick_name).findUnique() != null)
-                return GlobalResult.result_BadRequest("nick name is used");
+                return GlobalResult.result_badRequest("nick name is used");
             if (Model_Person.find.where().eq("mail", help.mail).findUnique() != null)
-                return GlobalResult.result_BadRequest("Email is registered");
+                return GlobalResult.result_badRequest("Email is registered");
 
 
             Model_Person person = new Model_Person();
@@ -173,11 +171,11 @@ public class Controller_Person extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 404, message = "Not found object",        response = Result_NotFound.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -185,15 +183,15 @@ public class Controller_Person extends Controller {
         try{
 
             final Form<Swagger_Person_Authentication> form = Form.form(Swagger_Person_Authentication.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Person_Authentication help = form.get();
 
             Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
-            if (person == null) return GlobalResult.notFoundObject("No such user is registered");
-            if (person.mailValidated) return GlobalResult.result_BadRequest("This user is validated");
+            if (person == null) return GlobalResult.result_notFound("No such user is registered");
+            if (person.mailValidated) return GlobalResult.result_badRequest("This user is validated");
 
             Model_ValidationToken validationToken = Model_ValidationToken.find.byId(help.mail);
-            if (validationToken == null) return GlobalResult.notFoundObject("Validation token not found");
+            if (validationToken == null) return GlobalResult.result_notFound("Validation token not found");
 
             String link = Server.tyrion_serverAddress + "/person/mail_authentication/" + validationToken.authToken;
 
@@ -233,8 +231,8 @@ public class Controller_Person extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -242,7 +240,7 @@ public class Controller_Person extends Controller {
         try{
 
             final Form<Swagger_Person_Password_RecoveryEmail> form = Form.form(Swagger_Person_Password_RecoveryEmail.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Person_Password_RecoveryEmail help = form.get();
 
             String link;
@@ -305,8 +303,8 @@ public class Controller_Person extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -315,22 +313,22 @@ public class Controller_Person extends Controller {
         try{
 
             final Form<Swagger_Person_Password_New> form = Form.form(Swagger_Person_Password_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Person_Password_New help = form.get();
 
             Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
 
             Model_PasswordRecoveryToken passwordRecoveryToken = Model_PasswordRecoveryToken.find.where().eq("password_recovery_token", help.password_recovery_token).findUnique();
-            if(passwordRecoveryToken == null) return GlobalResult.result_BadRequest("Password change was unsuccessful");
+            if(passwordRecoveryToken == null) return GlobalResult.result_badRequest("Password change was unsuccessful");
 
             if(person == null || !passwordRecoveryToken.person.id.equals(person.id)) {
                 passwordRecoveryToken.delete();
-                return GlobalResult.result_BadRequest("Password change was unsuccessful");
+                return GlobalResult.result_badRequest("Password change was unsuccessful");
             }
 
             if(((new java.util.Date()).getTime() - passwordRecoveryToken.time_of_creation.getTime()) > 86400000 ){
                 passwordRecoveryToken.delete();
-                return GlobalResult.result_BadRequest("You must recover your password in 24 hours.");
+                return GlobalResult.result_badRequest("You must recover your password in 24 hours.");
             }
 
             for ( Model_FloatingPersonToken floatingPersonToken : person.floatingPersonTokens  ) {
@@ -372,7 +370,7 @@ public class Controller_Person extends Controller {
       @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK Result",               response = Model_Person.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -381,7 +379,7 @@ public class Controller_Person extends Controller {
         try{
 
             Model_Person person = Model_Person.find.byId(person_id);
-            if(person == null )  return GlobalResult.notFoundObject("Person person_id not found");
+            if(person == null )  return GlobalResult.result_notFound("Person person_id not found");
             return GlobalResult.result_ok(Json.toJson(person));
 
         } catch (Exception e) {
@@ -399,7 +397,7 @@ public class Controller_Person extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK Result",               response = Model_Person.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
@@ -431,9 +429,9 @@ public class Controller_Person extends Controller {
 
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -442,10 +440,10 @@ public class Controller_Person extends Controller {
         try{
 
             Model_Person person = Model_Person.find.byId(person_id);
-            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
 
-            if (!person.delete_permission())  return GlobalResult.forbidden_Permission();
+            if (!person.delete_permission())  return GlobalResult.result_forbidden();
             person.delete();
 
             return GlobalResult.result_ok();
@@ -472,9 +470,9 @@ public class Controller_Person extends Controller {
 
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -483,9 +481,9 @@ public class Controller_Person extends Controller {
         try{
 
             Model_Person person = Model_Person.find.byId(person_id);
-            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
-            if (!person.edit_permission())  return GlobalResult.forbidden_Permission();
+            if (!person.edit_permission())  return GlobalResult.result_forbidden();
 
             for(Model_FloatingPersonToken token : person.floatingPersonTokens) token.delete();
 
@@ -513,10 +511,10 @@ public class Controller_Person extends Controller {
 
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -525,11 +523,11 @@ public class Controller_Person extends Controller {
         try{
 
             Model_Person person = Model_Person.find.byId(person_id);
-            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return GlobalResult.forbidden_Permission();
+            if (!person.activation_permission())  return GlobalResult.result_forbidden();
 
-            if(!person.freeze_account) return GlobalResult.result_BadRequest("Person is already active.");
+            if(!person.freeze_account) return GlobalResult.result_badRequest("Person is already active.");
 
             person.freeze_account = false;
             person.update();
@@ -558,11 +556,11 @@ public class Controller_Person extends Controller {
 
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
@@ -570,11 +568,11 @@ public class Controller_Person extends Controller {
         try{
 
             Model_Person person = Model_Person.find.byId(person_id);
-            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return GlobalResult.forbidden_Permission();
+            if (!person.activation_permission())  return GlobalResult.result_forbidden();
 
-            if(person.freeze_account) return GlobalResult.result_BadRequest("Person is already deactivated.");
+            if(person.freeze_account) return GlobalResult.result_badRequest("Person is already deactivated.");
 
             person.freeze_account = true;
 
@@ -606,9 +604,9 @@ public class Controller_Person extends Controller {
 
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -617,9 +615,9 @@ public class Controller_Person extends Controller {
         try{
 
             Model_Person person = Model_Person.find.byId(person_id);
-            if(person == null ) return GlobalResult.notFoundObject("Person person_id not found");
+            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return GlobalResult.forbidden_Permission();
+            if (!person.activation_permission())  return GlobalResult.result_forbidden();
 
             person.mailValidated = true;
             person.update();
@@ -657,9 +655,9 @@ public class Controller_Person extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully updated",    response = Model_Person.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -669,12 +667,12 @@ public class Controller_Person extends Controller {
         try{
 
             final Form<Swagger_Person_Update> form = Form.form(Swagger_Person_Update.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Person_Update help = form.get();
 
             Model_Person person = Model_Person.find.byId(person_id);
-            if (person == null) return GlobalResult.notFoundObject("Person not found");
-            if (!person.edit_permission())  return GlobalResult.forbidden_Permission();
+            if (person == null) return GlobalResult.result_notFound("Person not found");
+            if (!person.edit_permission())  return GlobalResult.result_forbidden();
 
             person.nick_name    = help.nick_name;
             person.full_name    = help.full_name != null ? help.full_name : null;
@@ -710,7 +708,7 @@ public class Controller_Person extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK result",               response = Model_FloatingPersonToken.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not Found object",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -739,7 +737,7 @@ public class Controller_Person extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK result",               response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Not Found object",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
@@ -748,9 +746,9 @@ public class Controller_Person extends Controller {
         try{
 
             Model_FloatingPersonToken token = Model_FloatingPersonToken.find.byId(connection_id);
-            if(token == null ) return GlobalResult.notFoundObject("FloatingPersonToken connection_id not found");
+            if(token == null ) return GlobalResult.result_notFound("FloatingPersonToken connection_id not found");
 
-            if (!token.delete_permission())  return GlobalResult.forbidden_Permission();
+            if (!token.delete_permission())  return GlobalResult.result_forbidden();
 
             token.delete();
 
@@ -786,7 +784,7 @@ public class Controller_Person extends Controller {
         try{
             
             final Form<Swagger_Entity_Validation_In> form = Form.form(Swagger_Entity_Validation_In.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Entity_Validation_In help = form.get();
 
             Swagger_Entity_Validation_Out validation = new Swagger_Entity_Validation_Out();
@@ -860,7 +858,7 @@ public class Controller_Person extends Controller {
                     break;
                 }
 
-                default:return GlobalResult.result_BadRequest("Key does not exist, use only {mail, nick_name or vat_number}");
+                default:return GlobalResult.result_badRequest("Key does not exist, use only {mail, nick_name or vat_number}");
             }
 
             return GlobalResult.result_ok(Json.toJson(validation));
@@ -888,7 +886,7 @@ public class Controller_Person extends Controller {
             )
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
@@ -901,11 +899,11 @@ public class Controller_Person extends Controller {
 
             // Získání JSON
             final Form<Swagger_Person_ChangeProperty> form = Form.form(Swagger_Person_ChangeProperty.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Person_ChangeProperty help = form.get();
 
             if(Model_ChangePropertyToken.find.where().eq("person.id", Controller_Security.get_person().id).findUnique() != null)
-                return GlobalResult.result_BadRequest("You can request only one change at this time.");
+                return GlobalResult.result_badRequest("You can request only one change at this time.");
 
             // Proměnné mailu
             String subject;
@@ -918,7 +916,7 @@ public class Controller_Person extends Controller {
 
                 case "password":{
 
-                    if (help.password == null) return GlobalResult.result_BadRequest("You must fill in the password");
+                    if (help.password == null) return GlobalResult.result_badRequest("You must fill in the password");
 
                     // Vytvoření tokenu pro podržení hesla
                     Model_ChangePropertyToken changePropertyToken = new Model_ChangePropertyToken();
@@ -937,7 +935,7 @@ public class Controller_Person extends Controller {
 
                 case "email":{
 
-                    if (help.email == null) return GlobalResult.result_BadRequest("You must fill in the email");
+                    if (help.email == null) return GlobalResult.result_badRequest("You must fill in the email");
 
                     // Vytvoření tokenu pro podržení emailu
                     Model_ChangePropertyToken changePropertyToken = new Model_ChangePropertyToken();
@@ -954,7 +952,7 @@ public class Controller_Person extends Controller {
 
                     break;}
 
-                default: return GlobalResult.result_BadRequest("No such property");
+                default: return GlobalResult.result_badRequest("No such property");
             }
 
             // Odeslání emailu
@@ -1063,7 +1061,7 @@ public class Controller_Person extends Controller {
             )
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -1076,12 +1074,12 @@ public class Controller_Person extends Controller {
 
             // Získání JSON
             final Form<Swagger_BASE64_FILE> form = Form.form(Swagger_BASE64_FILE.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BASE64_FILE help = form.get();
 
             Model_Person person = Controller_Security.get_person();
 
-            if(!person.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!person.edit_permission()) return GlobalResult.result_forbidden();
 
 
 
@@ -1147,7 +1145,7 @@ public class Controller_Person extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)

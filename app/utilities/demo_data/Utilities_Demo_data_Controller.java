@@ -79,7 +79,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Ochranná zarážka proti znovu vytvoření
             if (Model_Producer.find.where().eq("name", "Byzance ltd").findUnique() != null)
-                return GlobalResult.result_BadRequest("Its Already done!");
+                return GlobalResult.result_badRequest("Its Already done!");
 
             // Nastavím Producer
             Model_Producer producer = new Model_Producer();
@@ -120,9 +120,9 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Ochranná zarážka proti znovu vytvoření
             Model_Producer producer = Model_Producer.find.where().eq("name", "Byzance ltd").findUnique();
-            if (producer == null) return GlobalResult.result_BadRequest("Create Producer first");
+            if (producer == null) return GlobalResult.result_badRequest("Create Producer first");
             if (Model_Processor.find.where().eq("processor_name", "ARM STM32 FR17").findUnique() != null)
-                return GlobalResult.result_BadRequest("Its Already done!");
+                return GlobalResult.result_badRequest("Its Already done!");
 
             // Nastavím Processor - YODA
             Model_Processor processor_1 = new Model_Processor();
@@ -249,13 +249,13 @@ public class Utilities_Demo_data_Controller extends Controller {
         try {
             // Ochranná zarážka proti znovu vytvoření
             Model_TypeOfBoard yoda_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
-            if (yoda_type == null) return GlobalResult.result_BadRequest("Create Type of Boards first");
+            if (yoda_type == null) return GlobalResult.result_badRequest("Create Type of Boards first");
 
             Model_TypeOfBoard wireles_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
             Model_TypeOfBoard buskit_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
 
             if (Model_Board.find.where().eq("id", "005300393533510B34353732").findUnique() != null)
-                return GlobalResult.result_BadRequest("Its Already done!");
+                return GlobalResult.result_badRequest("Its Already done!");
 
             // YODA!!!!!
             List<Pair> yodas = new ArrayList<>();
@@ -393,7 +393,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Ochranná zarážka proti znovu vytvoření
             if (Model_HomerServer.find.where().eq("personal_server_name", "Alfa").findUnique() != null)
-                return GlobalResult.result_BadRequest("Its Already done!");
+                return GlobalResult.result_badRequest("Its Already done!");
 
             // Nasstavím Homer servery
             Model_HomerServer cloud_server_1 = new Model_HomerServer();
@@ -481,7 +481,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Ochranná zarážka proti znovu vytvoření
             if (Model_Tariff.find.where().eq("name", "Alfa account").findUnique() != null)
-                return GlobalResult.result_BadRequest("Its Already done!");
+                return GlobalResult.result_badRequest("Its Already done!");
 
             // Alfa
             Model_Tariff tariff_1 = new Model_Tariff();
@@ -887,7 +887,7 @@ public class Utilities_Demo_data_Controller extends Controller {
         try {
 
             if (Model_Person.find.where().eq("nick_name", "Pepíno").findUnique() != null)
-                return GlobalResult.result_BadRequest("Its Already done!");
+                return GlobalResult.result_badRequest("Its Already done!");
 
             String uuid = UUID.randomUUID().toString().substring(0, 4);
 

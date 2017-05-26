@@ -15,9 +15,9 @@ import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
-import utilities.response.response_objects.Result_PermissionRequired;
+import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Unauthorized;
-import utilities.response.response_objects.Result_ok;
+import utilities.response.response_objects.Result_Ok;
 import utilities.swagger.documentationClass.Swagger_Hardware_New_Hardware_Request;
 import utilities.swagger.documentationClass.Swagger_Hardware_New_Settings_Request;
 import utilities.swagger.outboundClass.Swagger_Hardware_New_Settings_Result;
@@ -119,7 +119,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Hardware_New_Settings_Result.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_Admin.class)
@@ -127,17 +127,17 @@ public class Utilities_Hardware_generator_Controller extends Controller {
         try{
 
             final Form<Swagger_Hardware_New_Settings_Request> form = Form.form(Swagger_Hardware_New_Settings_Request.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Hardware_New_Settings_Request help = form.get();
 
             // Ověřím Typ desky!!!
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("compiler_target_name", help.compiler_target_name).findUnique();
-            if(typeOfBoard == null) return GlobalResult.notFoundObject("Type Of Board - compiler_target_name not found");
+            if(typeOfBoard == null) return GlobalResult.result_notFound("Type Of Board - compiler_target_name not found");
 
 
             Model_MacAddressRegisterRecord record = Model_MacAddressRegisterRecord.find.byId(help.uuid_request_number);
             if(record != null){
-                return GlobalResult.notFoundObject("You are using same - UUID twice");
+                return GlobalResult.result_notFound("You are using same - UUID twice");
             }
 
             // Vytvořím Záznam o vypalovací proceduře
@@ -156,7 +156,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
 
 
             if(help.full_id != null){
-                if(help.full_id.length() != 24) return GlobalResult.result_BadRequest("Full_Id is not correct!");
+                if(help.full_id.length() != 24) return GlobalResult.result_badRequest("Full_Id is not correct!");
             }
 
 
@@ -165,19 +165,19 @@ public class Utilities_Hardware_generator_Controller extends Controller {
 
                 // Najdu backup_server
                 Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.backup_server).findUnique();
-                if (backup_server == null) return GlobalResult.notFoundObject("Backup server not found!!!");
+                if (backup_server == null) return GlobalResult.result_notFound("Backup server not found!!!");
 
                 // Najdu Main_server
                 Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
-                if (main_server == null) return GlobalResult.notFoundObject("Main server not found!!!");
+                if (main_server == null) return GlobalResult.result_notFound("Main server not found!!!");
 
                 // Najdu Firmware
                 Model_FileRecord firmware = Model_FileRecord.find.where().eq("c_compilations_binary_file.version_object.default_version_program.default_program_type_of_board.id", typeOfBoard.id).eq("file_name", "compilation.bin").findUnique();
-                if (firmware == null) return GlobalResult.notFoundObject("firmware not found - Set Main Firmware in Tyrion first!!!");
+                if (firmware == null) return GlobalResult.result_notFound("firmware not found - Set Main Firmware in Tyrion first!!!");
 
                 // Najdu Bootloader
                 Model_FileRecord bootloader = Model_FileRecord.find.where().eq("boot_loader.main_type_of_board.id", typeOfBoard.id).eq("file_name", "bootloader.bin").findUnique();
-                if (bootloader == null) return GlobalResult.notFoundObject("bootloader not found - Set bootloader in Tyrion first!!!!");
+                if (bootloader == null) return GlobalResult.result_notFound("bootloader not found - Set bootloader in Tyrion first!!!!");
 
                 Swagger_Hardware_New_Settings_Result result = new Swagger_Hardware_New_Settings_Result();
                 result.full_id                              = record.full_id;
@@ -214,11 +214,11 @@ public class Utilities_Hardware_generator_Controller extends Controller {
 
                 // Najdu Firmware
                 Model_FileRecord firmware = Model_FileRecord.find.where().eq("c_compilations_binary_file.version_object.default_version_program.default_program_type_of_board.id", typeOfBoard.id).eq("file_name", "compilation.bin").findUnique();
-                if (firmware == null) return GlobalResult.notFoundObject("firmware not found - Set Main Firmware in Tyrion first!!!");
+                if (firmware == null) return GlobalResult.result_notFound("firmware not found - Set Main Firmware in Tyrion first!!!");
 
                 // Najdu Bootloader
                 Model_FileRecord bootloader = Model_FileRecord.find.where().eq("boot_loader.main_type_of_board.id", typeOfBoard.id).eq("file_name", "bootloader.bin").findUnique();
-                if (bootloader == null) return GlobalResult.notFoundObject("bootloader not found - Set bootloader in Tyrion first!!!!");
+                if (bootloader == null) return GlobalResult.result_notFound("bootloader not found - Set bootloader in Tyrion first!!!!");
 
                 Swagger_Hardware_New_Settings_Result result = new Swagger_Hardware_New_Settings_Result();
                 result.autobackup               = Configuration.root().getBoolean( "MacAddressForBoards." + typeOfBoard.compiler_target_name + ".autobackup" );
@@ -258,10 +258,10 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_Admin.class)
@@ -269,24 +269,24 @@ public class Utilities_Hardware_generator_Controller extends Controller {
         try{
 
             final Form<Swagger_Hardware_New_Hardware_Request> form = Form.form(Swagger_Hardware_New_Hardware_Request.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Hardware_New_Hardware_Request help = form.get();
 
             // Ověřím Record
             Model_MacAddressRegisterRecord record = Model_MacAddressRegisterRecord.find.byId(help.uuid_request_number);
-            if(record == null) return GlobalResult.notFoundObject("MacAddressRegisterRecord not exist");
+            if(record == null) return GlobalResult.result_notFound("MacAddressRegisterRecord not exist");
 
             // OVěřím stav
             Enum_Garfield_burning_state state = Enum_Garfield_burning_state.get_state(help.status);
-            if(state == null) return GlobalResult.notFoundObject("Status not recognize! Use only [complete, in_progress, broken_device,unknown_error] ");
+            if(state == null) return GlobalResult.result_notFound("Status not recognize! Use only [complete, in_progress, broken_device,unknown_error] ");
 
             // Ověřím program
             Model_VersionObject firmware_version = Model_VersionObject.find.byId(help.firmware_version_id);
-            if(firmware_version == null) return GlobalResult.notFoundObject("Firmware version not exist");
+            if(firmware_version == null) return GlobalResult.result_notFound("Firmware version not exist");
 
             // Ověřím bootloader
             Model_BootLoader bootLoader = Model_BootLoader.find.byId(help.bootloader_id);
-            if(bootLoader == null) return GlobalResult.notFoundObject("bootLoader not exist");
+            if(bootLoader == null) return GlobalResult.result_notFound("bootLoader not exist");
 
 
 
@@ -323,7 +323,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
                     // Ověřím Typ desky!!!
                     Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("compiler_target_name", help.compiler_target_name).findUnique();
                     if (typeOfBoard == null)
-                        return GlobalResult.notFoundObject("Type Of Board - compiler_target_name not found");
+                        return GlobalResult.result_notFound("Type Of Board - compiler_target_name not found");
 
                     board = new Model_Board();
                     board.id = help.full_id;

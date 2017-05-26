@@ -63,7 +63,7 @@ private static final Class_Logger terminal_logger = new Class_Logger(Secured_API
 
     @Override
     public Result onUnauthorized(Context ctx) {
-        return GlobalResult.result_Unauthorized();
+        return GlobalResult.result_unauthorized();
     }
 
 }

@@ -126,7 +126,7 @@ public class Controller_Security extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Blocko_Token_validation_result.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -136,18 +136,18 @@ public class Controller_Security extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Blocko_Token_validation_request> form = Form.form(Swagger_Blocko_Token_validation_request.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Blocko_Token_validation_request help = form.get();
 
             Enum_Token_type token_type = Enum_Token_type.getType(help.type_of_token);
-            if (token_type == null) return GlobalResult.result_BadRequest("Wrong type of token");
+            if (token_type == null) return GlobalResult.result_badRequest("Wrong type of token");
 
             Swagger_Blocko_Token_validation_result result = new Swagger_Blocko_Token_validation_result();
 
             if(token_type == Enum_Token_type.PERSON_TOKEN){
 
                 Model_Person person = Model_Person.get_byAuthToken(help.token);
-                if(person == null) return GlobalResult.notFoundObject("Token not found");
+                if(person == null) return GlobalResult.result_notFound("Token not found");
 
                 result.token = help.token;
                 result.available_requests = 50L;
@@ -156,7 +156,7 @@ public class Controller_Security extends Controller {
             if(token_type == Enum_Token_type.INSTANCE_TOKEN){
 
                 Model_HomerInstanceRecord instanceRecord = Model_HomerInstanceRecord.find.byId(help.token);
-                if (instanceRecord == null) return GlobalResult.notFoundObject("Token not found");
+                if (instanceRecord == null) return GlobalResult.result_notFound("Token not found");
 
                 result.token = help.token;
                 result.available_requests = FinancialPermission.checkRestApiRequest(instanceRecord.getProduct(), instanceRecord.id);
@@ -189,7 +189,7 @@ public class Controller_Security extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully logged",       response = Swagger_Login_Token.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class),
             @ApiResponse(code = 705, message = "Account not validated",     response = Result_NotValidated.class)
@@ -200,17 +200,17 @@ public class Controller_Security extends Controller {
 
             // Kontrola JSON
             final Form<Login_IncomingLogin> form = Form.form(Login_IncomingLogin.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Login_IncomingLogin help = form.get();
 
             // Ověření Person - Heslo a email
             Model_Person person = Model_Person.findByEmailAddressAndPassword(help.mail, help.password);
-            if (person == null) return GlobalResult.forbidden_Permission("Email or password are wrong");
+            if (person == null) return GlobalResult.result_forbidden("Email or password are wrong");
 
             // Kontrola validity - jestli byl ověřen přes email
             // Jestli není účet blokován
-            if (!person.mailValidated) return GlobalResult.result_NotValidated();
-            if (person.freeze_account) return GlobalResult.result_BadRequest("Your account has been temporarily suspended");
+            if (!person.mailValidated) return GlobalResult.result_notValidated();
+            if (person.freeze_account) return GlobalResult.result_badRequest("Your account has been temporarily suspended");
 
             // Vytvářim objekt tokenu pro přihlášení (na něj jsou vázány co uživatel kde a jak dělá) - Historie pro využití v MongoDB widgety atd..
             Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
@@ -279,7 +279,7 @@ public class Controller_Security extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully logged",       response = Swagger_Person_All_Details.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -291,7 +291,7 @@ public class Controller_Security extends Controller {
             String token = request().getHeader("X-AUTH-TOKEN");
 
             Model_Person person = Model_Person.get_byAuthToken(token);
-            if(person == null) return GlobalResult.forbidden_Permission("Account is not authorized");
+            if(person == null) return GlobalResult.result_forbidden("Account is not authorized");
 
             Swagger_Person_All_Details result = new Swagger_Person_All_Details();
             result.person = person;
@@ -316,13 +316,13 @@ public class Controller_Security extends Controller {
             notes = "for logout person - that's deactivate person token ",
             produces = "application/json",
             consumes = "text/html",
-            response =  Result_ok.class,
+            response =  Result_Ok.class,
             protocols = "https",
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully logged out",   response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 200, message = "Successfully logged out",   response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -649,7 +649,7 @@ public class Controller_Security extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully created",      response = Login_Social_Network.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -708,7 +708,7 @@ public class Controller_Security extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully created",    response = Login_Social_Network.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })

@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value="PermissionRequired", description="Some Json value missing - don't show that to users.. " +
           "SERVER IS LOGGING THIS FRONTEND ISSUE")
-public class Result_PermissionRequired {
+public class Result_Forbidden {
 
     @ApiModelProperty(value = "state", required = true, readOnly = true)
     public String state = "Permission required";

@@ -12,7 +12,7 @@ import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
-import utilities.response.response_objects.Result_PermissionRequired;
+import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Unauthorized;
 
 import java.util.List;
@@ -35,10 +35,10 @@ public class Controller_Actualization extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Model_ActualizationProcedure.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_ActualizationProcedure.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_Actualization_Procedure(@ApiParam(required = true) String actualization_procedure_id){
@@ -46,10 +46,10 @@ public class Controller_Actualization extends Controller {
 
             // Kontrola objektu
             Model_ActualizationProcedure procedure = Model_ActualizationProcedure.find.byId(actualization_procedure_id);
-            if (procedure == null) return GlobalResult.notFoundObject("Actualization_Procedure actualization_procedure_id not found");
+            if (procedure == null) return GlobalResult.result_notFound("Actualization_Procedure actualization_procedure_id not found");
 
             // Kontrola oprávnění
-            if (! procedure.read_permission()) return GlobalResult.forbidden_Permission();
+            if (! procedure.read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(procedure));
@@ -67,10 +67,10 @@ public class Controller_Actualization extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Model_ActualizationProcedure.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_ActualizationProcedure.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_Actualization_Procedures_by_project(@ApiParam(required = true) String project_id){
@@ -78,9 +78,9 @@ public class Controller_Actualization extends Controller {
 
 
             Model_Project project = Model_Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Model_Project project_id not found");
+            if (project == null) return GlobalResult.result_notFound("Model_Project project_id not found");
 
-            if(!project.read_permission())return GlobalResult.forbidden_Permission();
+            if(!project.read_permission())return GlobalResult.result_forbidden();
 
             // Kontrola objektu
             List<Model_ActualizationProcedure> procedures = Model_ActualizationProcedure.find.where().eq("updates.board.project.id", project_id).order().asc("date_of_create").findList();
@@ -111,10 +111,10 @@ public class Controller_Actualization extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Model_ActualizationProcedure.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_ActualizationProcedure.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result canceled_procedure(@ApiParam(required = true) String actualization_procedure_id) {
@@ -122,10 +122,10 @@ public class Controller_Actualization extends Controller {
 
             // Kontrola objektu
             Model_ActualizationProcedure procedure = Model_ActualizationProcedure.find.byId(actualization_procedure_id);
-            if (procedure == null) return GlobalResult.notFoundObject("Actualization_Procedure actualization_procedure_id not found");
+            if (procedure == null) return GlobalResult.result_notFound("Actualization_Procedure actualization_procedure_id not found");
 
             // Kontrola oprávnění
-            if (! procedure.read_permission()) return GlobalResult.forbidden_Permission();
+            if (! procedure.read_permission()) return GlobalResult.result_forbidden();
 
             procedure.cancel_procedure();
 
@@ -134,20 +134,4 @@ public class Controller_Actualization extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-
-// -------------------------------------------------------------------------------------------------------------
-
-
-
-
-// ---------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
 }
-
-

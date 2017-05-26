@@ -43,7 +43,7 @@ public class NotificationTester extends Controller {
             terminal_logger.debug("Notification_Tester:: test_chain_notifications:: Email:: " + mail);
 
             Model_Person person = Model_Person.find.where().eq("mail", mail).findUnique();
-            if (person == null) return GlobalResult.notFoundObject("Person not found");
+            if (person == null) return GlobalResult.result_notFound("Person not found");
 
             Thread notification_test_thread = new Thread() {
 
@@ -151,11 +151,11 @@ public class NotificationTester extends Controller {
 
             terminal_logger.debug("Notification_Tester:: test_notifications:: ");
             final Form<Swagger_Notification_Test> form = Form.form(Swagger_Notification_Test.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Notification_Test help = form.get();
 
             Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
-            if (person == null) return GlobalResult.notFoundObject("Person not found");
+            if (person == null) return GlobalResult.result_notFound("Person not found");
 
             test_notification(person, help.level, help.importance, help.type, help.buttons);
             return GlobalResult.result_ok();

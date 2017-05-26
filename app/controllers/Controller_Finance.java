@@ -43,11 +43,11 @@ public class Controller_Finance extends Controller {
     public Result tariff_create(){
         try {
             final Form<Swagger_Tariff_New> form = Form.form(Swagger_Tariff_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.formExcepting(form.errorsAsJson());
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Tariff_New help = form.get();
 
             if (Model_Tariff.find.where().eq("identifier", help.identifier).findUnique() != null)
-                return GlobalResult.result_BadRequest("Identifier must be unique!");
+                return GlobalResult.result_badRequest("Identifier must be unique!");
 
             Model_Tariff tariff = new Model_Tariff();
 
@@ -88,16 +88,16 @@ public class Controller_Finance extends Controller {
         try {
 
             final Form<Swagger_Tariff_New> form = Form.form(Swagger_Tariff_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Tariff_New help = form.get();
 
-            if (help.id == null) return GlobalResult.result_BadRequest("Tariff id is required");
+            if (help.id == null) return GlobalResult.result_badRequest("Tariff id is required");
 
             Model_Tariff tariff = Model_Tariff.find.byId(help.id);
-            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             if (Model_Tariff.find.where().ne("id", help.id).eq("identifier", help.identifier).findUnique() != null)
-                return GlobalResult.result_BadRequest("Identifier must be unique!");
+                return GlobalResult.result_badRequest("Identifier must be unique!");
 
             tariff.name                     = help.name;
             tariff.identifier               = help.identifier;
@@ -133,9 +133,9 @@ public class Controller_Finance extends Controller {
         try {
 
             Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
-            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
-            if (!tariff.active) return GlobalResult.result_BadRequest("Tariff is already deactivated");
+            if (!tariff.active) return GlobalResult.result_badRequest("Tariff is already deactivated");
 
             tariff.active = false;
 
@@ -154,9 +154,9 @@ public class Controller_Finance extends Controller {
         try {
 
             Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
-            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
-            if (tariff.active) return GlobalResult.result_BadRequest("Tariff is already activated");
+            if (tariff.active) return GlobalResult.result_badRequest("Tariff is already activated");
 
             tariff.active = true;
 
@@ -175,7 +175,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
-            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             tariff.up();
 
@@ -192,7 +192,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
-            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             tariff.down();
 
@@ -212,11 +212,11 @@ public class Controller_Finance extends Controller {
         try {
 
             final Form<Swagger_TariffLabel_New> form = Form.form(Swagger_TariffLabel_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TariffLabel_New help = form.get();
 
             Model_Tariff tariff = Model_Tariff.find.byId(help.id);
-            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             Model_TariffLabel label = new Model_TariffLabel();
             label.tariff = tariff;
@@ -239,11 +239,11 @@ public class Controller_Finance extends Controller {
         try {
 
             final Form<Swagger_TariffLabel_New> form = Form.form(Swagger_TariffLabel_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TariffLabel_New help = form.get();
 
             Model_TariffLabel label = Model_TariffLabel.find.byId(help.id);
-            if(label == null) return GlobalResult.notFoundObject("TariffLabel not found");
+            if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
 
             label.description = help.description;
             label.label = help.label;
@@ -263,7 +263,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_TariffLabel label =  Model_TariffLabel.find.byId(label_id);
-            if(label == null) return GlobalResult.notFoundObject("TariffLabel not found");
+            if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
 
             label.up();
 
@@ -280,7 +280,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_TariffLabel label =  Model_TariffLabel.find.byId(label_id);
-            if(label == null) return GlobalResult.notFoundObject("TariffLabel not found");
+            if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
 
             label.down();
 
@@ -297,7 +297,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_TariffLabel label =  Model_TariffLabel.find.byId(label_id);
-            if(label == null) return GlobalResult.notFoundObject("TariffLabel not found");
+            if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
 
             label.delete();
 
@@ -332,7 +332,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_ProductExtension.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
@@ -341,11 +341,11 @@ public class Controller_Finance extends Controller {
         try{
 
             final Form<Swagger_ProductExtension_New> form = Form.form(Swagger_ProductExtension_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ProductExtension_New help = form.get();
 
             Model_Product product = Model_Product.find.byId(help.product_id);
-            if(product == null) return GlobalResult.notFoundObject("Product not found");
+            if(product == null) return GlobalResult.result_notFound("Product not found");
 
             Model_ProductExtension extension = new Model_ProductExtension();
             extension.name = help.name;
@@ -362,7 +362,7 @@ public class Controller_Finance extends Controller {
 
             extension.config = Json.toJson(config).toString();
 
-            if (!extension.create_permission()) return GlobalResult.forbidden_Permission();
+            if (!extension.create_permission()) return GlobalResult.result_forbidden();
 
             extension.save();
 
@@ -384,7 +384,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
@@ -392,9 +392,9 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
-            if (extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if (extension == null) return GlobalResult.result_notFound("Extension not found");
 
-            if (!extension.read_permission()) return GlobalResult.forbidden_Permission();
+            if (!extension.read_permission()) return GlobalResult.result_forbidden();
 
             return GlobalResult.result_ok(Json.toJson(extension));
 
@@ -470,7 +470,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
@@ -479,13 +479,13 @@ public class Controller_Finance extends Controller {
         try{
 
             final Form<Swagger_ProductExtension_Edit> form = Form.form(Swagger_ProductExtension_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ProductExtension_Edit help = form.get();
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
-            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
-            if (!extension.edit_permission()) return GlobalResult.forbidden_Permission();
+            if (!extension.edit_permission()) return GlobalResult.result_forbidden();
 
             extension.name = help.name;
             extension.description = help.description;
@@ -511,7 +511,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
@@ -519,11 +519,11 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
-            if (extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if (extension == null) return GlobalResult.result_notFound("Extension not found");
 
-            if (!extension.act_deactivate_permission()) return GlobalResult.forbidden_Permission();
+            if (!extension.act_deactivate_permission()) return GlobalResult.result_forbidden();
 
-            if (extension.active) return GlobalResult.result_BadRequest("Extension is already activated");
+            if (extension.active) return GlobalResult.result_badRequest("Extension is already activated");
 
             extension.active = true;
 
@@ -547,7 +547,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
@@ -555,11 +555,11 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
-            if (extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if (extension == null) return GlobalResult.result_notFound("Extension not found");
 
-            if (!extension.act_deactivate_permission()) return GlobalResult.forbidden_Permission();
+            if (!extension.act_deactivate_permission()) return GlobalResult.result_forbidden();
 
-            if (!extension.active) return GlobalResult.result_BadRequest("Extension is already deactivated");
+            if (!extension.active) return GlobalResult.result_badRequest("Extension is already deactivated");
 
             extension.active = false;
 
@@ -580,9 +580,9 @@ public class Controller_Finance extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
@@ -590,9 +590,9 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
-            if (extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if (extension == null) return GlobalResult.result_notFound("Extension not found");
 
-            if (!extension.delete_permission()) return GlobalResult.forbidden_Permission();
+            if (!extension.delete_permission()) return GlobalResult.result_forbidden();
 
             extension.removed = true;
 
@@ -611,11 +611,11 @@ public class Controller_Finance extends Controller {
         try{
 
             final Form<Swagger_TariffExtension_New> form = Form.form(Swagger_TariffExtension_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TariffExtension_New help = form.get();
 
             Model_Tariff tariff = Model_Tariff.find.byId(help.id);
-            if(tariff == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             Model_ProductExtension extension = new Model_ProductExtension();
             extension.name = help.name;
@@ -636,7 +636,7 @@ public class Controller_Finance extends Controller {
                 extension.tariff_optional = tariff;
             }
 
-            if (!extension.create_permission()) return GlobalResult.forbidden_Permission();
+            if (!extension.create_permission()) return GlobalResult.result_forbidden();
 
             extension.save();
 
@@ -653,11 +653,11 @@ public class Controller_Finance extends Controller {
         try{
 
             final Form<Swagger_TariffExtension_New> form = Form.form(Swagger_TariffExtension_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TariffExtension_New help = form.get();
 
             Model_ProductExtension extension = Model_ProductExtension.find.byId(help.id);
-            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.name = help.name;
             extension.description = help.description;
@@ -671,7 +671,7 @@ public class Controller_Finance extends Controller {
 
             extension.config = Json.toJson(config).toString();
 
-            if (!extension.edit_permission()) return GlobalResult.forbidden_Permission();
+            if (!extension.edit_permission()) return GlobalResult.result_forbidden();
 
             extension.update();
 
@@ -687,7 +687,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
-            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if(extension == null) return GlobalResult.result_notFound("Extension not found");
             extension.up();
 
             return GlobalResult.result_ok();
@@ -702,7 +702,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
-            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.down();
 
@@ -718,7 +718,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
-            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.active = false;
             extension.update();
@@ -735,7 +735,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
-            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.active = true;
             extension.update();
@@ -752,7 +752,7 @@ public class Controller_Finance extends Controller {
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
-            if(extension == null) return GlobalResult.notFoundObject("Extension not found");
+            if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.delete();
 
@@ -815,7 +815,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 201, message = "Created successfully - payment not required",   response = Model_Product.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -827,20 +827,20 @@ public class Controller_Finance extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Product_New> form = Form.form(Swagger_Product_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Product_New help = form.get();
 
             Model_Tariff tariff = Model_Tariff.find.byId(help.tariff_id);
-            if(tariff == null) return GlobalResult.result_BadRequest("Tariff identifier id: {" + help.tariff_id  + "} not found or not supported now! Use only supported");
+            if(tariff == null) return GlobalResult.result_badRequest("Tariff identifier id: {" + help.tariff_id  + "} not found or not supported now! Use only supported");
 
             Model_Person person;
 
             if(help.person_id == null) person = Controller_Security.get_person();
             else person = Model_Person.get_byId(help.person_id);
 
-            if (person == null) return GlobalResult.notFoundObject("Person not found");
+            if (person == null) return GlobalResult.result_notFound("Person not found");
 
-            if(Model_Product.get_byNameAndOwner(help.name, person.id) != null) return GlobalResult.result_BadRequest("You cannot use same Product name twice!");
+            if(Model_Product.get_byNameAndOwner(help.name, person.id) != null) return GlobalResult.result_badRequest("You cannot use same Product name twice!");
 
             Model_Product product   = new Model_Product();
             product.tariff          = tariff;
@@ -866,16 +866,16 @@ public class Controller_Finance extends Controller {
 
             if(tariff.company_details_required){
 
-                if(help.registration_no == null && help.vat_number == null) return GlobalResult.result_BadRequest("company_registration_no or vat_number is required with this tariff");
-                if(help.company_name == null)               return GlobalResult.result_BadRequest("company_name is required with this tariff");
-                if(help.company_authorized_email == null)   return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
-                if(help.company_authorized_phone == null)   return GlobalResult.result_BadRequest("company_authorized_phone is required with this tariff");
-                if(help.company_web == null)                return GlobalResult.result_BadRequest("company_web is required with this tariff");
+                if(help.registration_no == null && help.vat_number == null) return GlobalResult.result_badRequest("company_registration_no or vat_number is required with this tariff");
+                if(help.company_name == null)               return GlobalResult.result_badRequest("company_name is required with this tariff");
+                if(help.company_authorized_email == null)   return GlobalResult.result_badRequest("company_authorized_email is required with this tariff");
+                if(help.company_authorized_phone == null)   return GlobalResult.result_badRequest("company_authorized_phone is required with this tariff");
+                if(help.company_web == null)                return GlobalResult.result_badRequest("company_web is required with this tariff");
 
                 try {
                     new URL(help.company_web);
                 } catch (MalformedURLException malformedURLException) {
-                    return GlobalResult.result_BadRequest("company_web invalid value");
+                    return GlobalResult.result_badRequest("company_web invalid value");
                 }
 
                 if(help.vat_number != null) payment_details.company_vat_number = help.vat_number;
@@ -895,7 +895,7 @@ public class Controller_Finance extends Controller {
 
                 terminal_logger.debug("product_create: Payment mode Required");
 
-                if(help.payment_mode == null) return GlobalResult.result_BadRequest("Payment_mode is required!");
+                if(help.payment_mode == null) return GlobalResult.result_badRequest("Payment_mode is required!");
 
                 product.mode = help.payment_mode;
             }
@@ -904,7 +904,7 @@ public class Controller_Finance extends Controller {
 
                 terminal_logger.debug("product_create: Payment method Required");
 
-                if(help.payment_method == null) return GlobalResult.result_BadRequest("payment_method is required with this tariff");
+                if(help.payment_method == null) return GlobalResult.result_badRequest("payment_method is required with this tariff");
 
                 product.method = help.payment_method;
             }
@@ -929,7 +929,7 @@ public class Controller_Finance extends Controller {
                         Model_ProductExtension extension = Model_ProductExtension.copyExtension(ext);
                         extension.product = product;
 
-                        if (!extension.create_permission()) return GlobalResult.forbidden_Permission();
+                        if (!extension.create_permission()) return GlobalResult.result_forbidden();
 
                         extension.save();
                     }
@@ -944,7 +944,7 @@ public class Controller_Finance extends Controller {
                     Model_ProductExtension extension = Model_ProductExtension.copyExtension(ext);
                     extension.product = product;
 
-                    if (!extension.create_permission()) return GlobalResult.forbidden_Permission();
+                    if (!extension.create_permission()) return GlobalResult.result_forbidden();
 
                     extension.save();
                 }
@@ -954,7 +954,7 @@ public class Controller_Finance extends Controller {
 
             if(!tariff.payment_required) {
                 terminal_logger.debug("product_create:: Payment is not required!");
-                return GlobalResult.created(Json.toJson(product));
+                return GlobalResult.result_created(Json.toJson(product));
             }
 
             terminal_logger.debug("product_create:: Creating invoice");
@@ -977,7 +977,7 @@ public class Controller_Finance extends Controller {
 
             terminal_logger.debug("product_create::  Creating Proforma in fakturoid");
             invoice = Fakturoid_Controller.create_proforma(invoice);
-            if (invoice == null) return GlobalResult.result_BadRequest("Failed to make an invoice, check your provided payment information");
+            if (invoice == null) return GlobalResult.result_badRequest("Failed to make an invoice, check your provided payment information");
             terminal_logger.debug("product_create::  Proforma done");
 
             invoice = GoPay_Controller.singlePayment("First Payment", product, invoice);
@@ -1000,7 +1000,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "List of users Products",    response =  Model_Product.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
     })
     public Result product_getAll(){
@@ -1039,7 +1039,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "Successfully updated",      response = Model_Product.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -1048,15 +1048,15 @@ public class Controller_Finance extends Controller {
 
             // Vytvoření pomocného Objektu
             final Form<Swagger_Product_Edit> form = Form.form(Swagger_Product_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Product_Edit help = form.get();
 
             // Kontrola Objektu
             Model_Product product = Model_Product.get_byId(product_id);
-            if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
+            if(product == null) return GlobalResult.result_notFound("Product product_id not found");
 
             // Oprávnění operace
-            if(!product.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!product.edit_permission()) return GlobalResult.result_forbidden();
 
             // úpravy objektu
             product.name = help.name;
@@ -1084,7 +1084,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "Deactivating was successful",   response = Model_Product.class),
             @ApiResponse(code = 400, message = "Something is wrong",            response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",          response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",      response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",      response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",              response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",             response = Result_InternalServerError.class)
     })
@@ -1093,12 +1093,12 @@ public class Controller_Finance extends Controller {
 
             // Kontrola objektu
             Model_Product product = Model_Product.get_byId(product_id);
-            if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
+            if(product == null) return GlobalResult.result_notFound("Product product_id not found");
 
             // Kontorla oprávnění
-            if(!product.act_deactivate_permission()) return GlobalResult.forbidden_Permission();
+            if(!product.act_deactivate_permission()) return GlobalResult.result_forbidden();
 
-            if (!product.active) return GlobalResult.result_BadRequest("Product is already deactivated");
+            if (!product.active) return GlobalResult.result_badRequest("Product is already deactivated");
 
             // Deaktivování (vyřazení všech funkcionalit produktu
             product.active = false;
@@ -1123,7 +1123,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "Activating was successful", response = Model_Product.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -1132,12 +1132,12 @@ public class Controller_Finance extends Controller {
 
             // Kontrola objektu
             Model_Product product = Model_Product.get_byId(product_id);
-            if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
+            if(product == null) return GlobalResult.result_notFound("Product product_id not found");
 
             // Kontrola oprávnění
-            if(!product.act_deactivate_permission()) return GlobalResult.forbidden_Permission();
+            if(!product.act_deactivate_permission()) return GlobalResult.result_forbidden();
 
-            if (product.active) return GlobalResult.result_BadRequest("Product is already activated");
+            if (product.active) return GlobalResult.result_badRequest("Product is already activated");
 
             // Aktivování
             product.active = true;
@@ -1173,7 +1173,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_Invoice.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -1182,17 +1182,17 @@ public class Controller_Finance extends Controller {
 
             // Binding Json with help object
             final Form<Swagger_Product_Credit> form = Form.form(Swagger_Product_Credit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Product_Credit help = form.get();
 
-            if (!(help.credit > 0)) return GlobalResult.result_BadRequest("Credit must be positive double number");
+            if (!(help.credit > 0)) return GlobalResult.result_badRequest("Credit must be positive double number");
 
             // Find object
             Model_Product product = Model_Product.get_byId(product_id);
-            if(product == null) return GlobalResult.notFoundObject("Product not found");
+            if(product == null) return GlobalResult.result_notFound("Product not found");
 
             // Check permission
-            if(!product.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!product.edit_permission()) return GlobalResult.result_forbidden();
 
             Model_Invoice invoice = new Model_Invoice();
             invoice.product = product;
@@ -1208,7 +1208,7 @@ public class Controller_Finance extends Controller {
             invoice.invoice_items.add(invoice_item);
 
             invoice = Fakturoid_Controller.create_proforma(invoice);
-            if (invoice == null) return GlobalResult.result_BadRequest("Failed to make an invoice, check your provided payment information");
+            if (invoice == null) return GlobalResult.result_badRequest("Failed to make an invoice, check your provided payment information");
 
             switch (product.method){
 
@@ -1227,7 +1227,7 @@ public class Controller_Finance extends Controller {
                     break;
                 }
 
-                default: return GlobalResult.result_BadRequest("Payment method is undefined");
+                default: return GlobalResult.result_badRequest("Payment method is undefined");
             }
 
             // Return serialized object
@@ -1248,10 +1248,10 @@ public class Controller_Finance extends Controller {
 
             // Kontrola objektu
             Model_Product product = Model_Product.get_byId(product_id);
-            if(product == null) return GlobalResult.notFoundObject("Product product_id not found");
+            if(product == null) return GlobalResult.result_notFound("Product product_id not found");
 
             // Kontorla oprávnění
-            if(!product.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(!product.delete_permission()) return GlobalResult.result_forbidden();
 
             // Trvalé odstranění produktu!
             product.delete();
@@ -1286,7 +1286,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "Successfully updated",      response = Model_PaymentDetails.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -1295,15 +1295,15 @@ public class Controller_Finance extends Controller {
 
             // Vytvoření pomocného Objektu
             final Form<Swagger_PaymentDetails_Edit> form = Form.form(Swagger_PaymentDetails_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_PaymentDetails_Edit help = form.get();
 
             // Kontrola Objektu
             Model_PaymentDetails payment_details = Model_PaymentDetails.find.byId(payment_details_id);
-            if(payment_details == null) return GlobalResult.notFoundObject("PaymentDetails not found");
+            if(payment_details == null) return GlobalResult.result_notFound("PaymentDetails not found");
 
             // Oprávnění operace
-            if(!payment_details.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!payment_details.edit_permission()) return GlobalResult.result_forbidden();
 
             // úpravy objektu
             payment_details.street        = help.street;
@@ -1331,15 +1331,15 @@ public class Controller_Finance extends Controller {
             // Pokud je účet business - jsou vyžadovány následující informace
             if(payment_details.company_account) {
 
-                if (help.registration_no == null)           return GlobalResult.result_BadRequest("company_registration_no is required with this tariff");
-                if (help.company_name == null)              return GlobalResult.result_BadRequest("company_name is required with this tariff");
-                if (help.company_authorized_email == null)  return GlobalResult.result_BadRequest("company_authorized_email is required with this tariff");
-                if (help.company_authorized_phone == null)  return GlobalResult.result_BadRequest("company_authorized_phone is required with this tariff");
-                if (help.company_web == null)               return GlobalResult.result_BadRequest("company_web is required with this tariff");
+                if (help.registration_no == null)           return GlobalResult.result_badRequest("company_registration_no is required with this tariff");
+                if (help.company_name == null)              return GlobalResult.result_badRequest("company_name is required with this tariff");
+                if (help.company_authorized_email == null)  return GlobalResult.result_badRequest("company_authorized_email is required with this tariff");
+                if (help.company_authorized_phone == null)  return GlobalResult.result_badRequest("company_authorized_phone is required with this tariff");
+                if (help.company_web == null)               return GlobalResult.result_badRequest("company_web is required with this tariff");
 
                 if (help.vat_number != null) {
                     if (!Model_PaymentDetails.control_vat_number(help.vat_number))
-                        return GlobalResult.result_BadRequest("Prefix code in VatNumber is not valid");
+                        return GlobalResult.result_badRequest("Prefix code in VatNumber is not valid");
                     payment_details.company_vat_number   = help.vat_number;
                 }
 
@@ -1354,13 +1354,13 @@ public class Controller_Finance extends Controller {
 
 
                 payment_details.product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
-                if (payment_details.product.fakturoid_subject_id == null) return GlobalResult.result_BadRequest("Unable to update your payment details, check provided information.");
+                if (payment_details.product.fakturoid_subject_id == null) return GlobalResult.result_badRequest("Unable to update your payment details, check provided information.");
 
                 payment_details.update();
             }
 
             if (!Fakturoid_Controller.update_subject(payment_details))
-                return GlobalResult.result_BadRequest("Unable to update your payment details, check provided information.");
+                return GlobalResult.result_badRequest("Unable to update your payment details, check provided information.");
 
             // Vrácení objektu
             return  GlobalResult.result_ok(Json.toJson(payment_details));
@@ -1381,7 +1381,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Product_Active.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result product_getActive(){
@@ -1414,10 +1414,10 @@ public class Controller_Finance extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully updated",      response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Successfully updated",      response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -1426,17 +1426,17 @@ public class Controller_Finance extends Controller {
 
             // Kontrola objektu
             Model_Product product = Model_Product.get_byId(product_id);
-            if(product == null) return GlobalResult.notFoundObject("Product not found");
+            if(product == null) return GlobalResult.result_notFound("Product not found");
 
             // Oprávnění operace
-            if(!product.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!product.edit_permission()) return GlobalResult.result_forbidden();
 
-            if(product.gopay_id == null) return GlobalResult.result_BadRequest("Product has on demand payments turned off.");
+            if(product.gopay_id == null) return GlobalResult.result_badRequest("Product has on demand payments turned off.");
 
             // Zrušení automatického strhávání z kreditní karty
             if (product.terminateOnDemand()) return GlobalResult.result_ok("Successfully terminated on demand payment.");
 
-            return GlobalResult.result_BadRequest("Request was unsuccessful.");
+            return GlobalResult.result_badRequest("Request was unsuccessful.");
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -1456,7 +1456,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Invoice_FullDetails.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
     })
     public Result invoice_get(String invoice_id){
@@ -1464,9 +1464,9 @@ public class Controller_Finance extends Controller {
 
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+            if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
 
-            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!invoice.read_permission()) return GlobalResult.result_forbidden();
             Swagger_Invoice_FullDetails help = new Swagger_Invoice_FullDetails();
             help.invoice = invoice;
             help.invoice_items = Model_InvoiceItem.find.where().eq("invoice.id", invoice_id).findList();
@@ -1497,10 +1497,10 @@ public class Controller_Finance extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
     })
     public Result invoice_resend(String invoice_id){
@@ -1508,14 +1508,14 @@ public class Controller_Finance extends Controller {
 
             // Vytvoření pomocného Objektu
             final Form<Swagger_Resend_Email> form = Form.form(Swagger_Resend_Email.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Resend_Email help = form.get();
 
 
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
-            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
+            if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
+            if(!invoice.read_permission()) return GlobalResult.result_forbidden();
 
             Fakturoid_Controller.sendInvoiceEmail(invoice, help.mail);
 
@@ -1537,7 +1537,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Invoice.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })  /**  Uživatel může zaplatit neúspěšně zaplacenou fakturu (službu) */
@@ -1545,10 +1545,10 @@ public class Controller_Finance extends Controller {
         try {
 
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+            if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
 
-            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
-            if( invoice.status.equals(Enum_Payment_status.paid)) return GlobalResult.result_BadRequest("Invoice is already paid");
+            if(!invoice.read_permission()) return GlobalResult.result_forbidden();
+            if( invoice.status.equals(Enum_Payment_status.paid)) return GlobalResult.result_badRequest("Invoice is already paid");
 
             // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
             invoice = GoPay_Controller.singlePayment("First Payment", invoice.product, invoice);
@@ -1572,25 +1572,25 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
     public Result invoice_getPdf(String kind, String invoice_id){
         try {
 
-            if (!kind.equals("proforma") && !kind.equals("invoice")) return GlobalResult.result_BadRequest("kind should be 'proforma' or 'invoice'");
+            if (!kind.equals("proforma") && !kind.equals("invoice")) return GlobalResult.result_badRequest("kind should be 'proforma' or 'invoice'");
 
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
+            if(invoice == null) return GlobalResult.result_notFound("Invoice not found");
 
-            if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return GlobalResult.result_BadRequest("Proforma PDF is unavailable");
+            if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return GlobalResult.result_badRequest("Proforma PDF is unavailable");
 
-            if(!invoice.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!invoice.read_permission()) return GlobalResult.result_forbidden();
 
             byte[] pdf_in_array = Fakturoid_Controller.download_PDF_invoice(kind, invoice);
 
-            return GlobalResult.result_pdf_file(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
+            return GlobalResult.result_pdfFile(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -1603,9 +1603,9 @@ public class Controller_Finance extends Controller {
 
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
+            if(invoice == null) return GlobalResult.result_notFound("Invoice not found");
 
-            if(!invoice.remind_permission()) return GlobalResult.forbidden_Permission();
+            if(!invoice.remind_permission()) return GlobalResult.result_forbidden();
             Fakturoid_Controller.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
 
             return GlobalResult.result_ok();
@@ -1621,10 +1621,10 @@ public class Controller_Finance extends Controller {
 
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice invoice_id not found");
+            if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
 
             // Kontrola oprávnění
-            if(!invoice.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(!invoice.delete_permission()) return GlobalResult.result_forbidden();
 
             // TODO - Chybí navázání na fakturoid - smazání faktury (nějaký proces?)
 

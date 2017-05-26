@@ -62,7 +62,7 @@ public class Controller_Board extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Ok.class),
             @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 478, message = "External server side Error",response = Result_ExternalServerSideError.class),
@@ -76,13 +76,13 @@ public class Controller_Board extends Controller {
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            if(version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
             // Smažu předchozí kompilaci
-            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version is not version of C_Program");
+            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version is not version of C_Program");
 
             // Kontrola oprávnění
-            if(!version_object.c_program.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.c_program.read_permission()) return GlobalResult.result_forbidden();
 
             // Smažu předchozí kompilaci
             if(version_object.c_compilation != null) return GlobalResult.result_ok(Json.toJson( new Swagger_Compilation_Ok()));
@@ -103,11 +103,11 @@ public class Controller_Board extends Controller {
             }
 
             if(result instanceof Result_ServerOffline){
-                return GlobalResult.result_external_server_is_offline(((Result_ServerOffline) result).message);
+                return GlobalResult.result_externalServerIsOffline(((Result_ServerOffline) result).message);
             }
 
             // Neznámá chyba se kterou nebylo počítání
-           return GlobalResult.result_BadRequest("unknown_error");
+           return GlobalResult.result_badRequest("unknown_error");
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -144,7 +144,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 478, message = "External server side Error",response = Result_ExternalServerSideError.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -153,17 +153,17 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.formExcepting(form.errorsAsJson());
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_C_Program_Version_Update help = form.get();
 
             // Ověření objektu
-            if (help.type_of_board_id.isEmpty()) return GlobalResult.result_BadRequest("type_of_board_id is missing!");
+            if (help.type_of_board_id.isEmpty()) return GlobalResult.result_badRequest("type_of_board_id is missing!");
 
             // Ověření objektu
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
-            if(!Model_CompilationServer.is_online()) return GlobalResult.result_external_server_is_offline("Compilation Server offilne");
+            if(!Model_CompilationServer.is_online()) return GlobalResult.result_externalServerIsOffline("Compilation Server offilne");
 
 
             List<Swagger_Library_Record> library_files = new ArrayList<>();
@@ -229,7 +229,7 @@ public class Controller_Board extends Controller {
             }
 
             if (Controller_WebSocket.compiler_cloud_servers.isEmpty()) {
-                return GlobalResult.result_external_server_is_offline("Compilation cloud_compilation_server is offline!");
+                return GlobalResult.result_externalServerIsOffline("Compilation cloud_compilation_server is offline!");
             }
 
 
@@ -256,11 +256,11 @@ public class Controller_Board extends Controller {
                 ObjectNode result_json = Json.newObject();
                 result_json.put("error", compilation_result.error);
 
-                return GlobalResult.result_external_server_error(result_json);
+                return GlobalResult.result_externalServerError(result_json);
             }
 
             // Neznámá chyba se kterou nebylo počítání
-            return GlobalResult.result_BadRequest("Unknown error");
+            return GlobalResult.result_badRequest("Unknown error");
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -299,24 +299,24 @@ public class Controller_Board extends Controller {
 
             // Vyhledání objektů
             Board board = Board.find.byId(board_id);
-            if (board == null) return GlobalResult.notFoundObject("Board board_id object not found");
+            if (board == null) return GlobalResult.result_notFound("Board board_id object not found");
 
-            if (!board.update_permission()) return GlobalResult.forbidden_Permission();
+            if (!board.update_permission()) return GlobalResult.result_forbidden();
 
             Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
-            if (firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
+            if (firmware_type == null) return GlobalResult.result_notFound("FirmwareType not found!");
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
 
             List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
 
-            if (files_from_request == null || files_from_request.isEmpty())return GlobalResult.notFoundObject("Bin File not found!");
-            if (files_from_request.size() > 1)return GlobalResult.result_BadRequest("More than one File is not allowed!");
+            if (files_from_request == null || files_from_request.isEmpty())return GlobalResult.result_notFound("Bin File not found!");
+            if (files_from_request.size() > 1)return GlobalResult.result_badRequest("More than one File is not allowed!");
 
             File file = files_from_request.get(0).getFile();
-            if (file == null) return GlobalResult.result_BadRequest("File not found!");
-            if (file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
+            if (file == null) return GlobalResult.result_badRequest("File not found!");
+            if (file.length() < 1) return GlobalResult.result_badRequest("File is Empty!");
 
 
             int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
@@ -324,8 +324,8 @@ public class Controller_Board extends Controller {
             String file_name = files_from_request.get(0).getFilename().substring(0, dot);
 
             // Zkontroluji soubor
-            if (!file_type.equals(".bin"))return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
-            if ((file.length() / 1024) > 500)return GlobalResult.result_BadRequest("File is bigger than 500K b");
+            if (!file_type.equals(".bin"))return GlobalResult.result_badRequest("Wrong type of File - \"Bin\" required! ");
+            if ((file.length() / 1024) > 500)return GlobalResult.result_badRequest("File is bigger than 500K b");
 
             // Existuje Homer?
 
@@ -352,7 +352,7 @@ public class Controller_Board extends Controller {
             // Slouží jen pro Admin rozhraní Tyriona
 
             Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
-            if (firmware_type == null) return GlobalResult.notFoundObject("FirmwareType not found!");
+            if (firmware_type == null) return GlobalResult.result_notFound("FirmwareType not found!");
 
             List<String> list = new ArrayList<>();
             list.add(board_id);
@@ -362,12 +362,12 @@ public class Controller_Board extends Controller {
 
             List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
 
-            if (files_from_request == null || files_from_request.isEmpty())return GlobalResult.notFoundObject("Bin File not found!");
-            if (files_from_request.size() > 1)return GlobalResult.result_BadRequest("More than one File is not allowed!");
+            if (files_from_request == null || files_from_request.isEmpty())return GlobalResult.result_notFound("Bin File not found!");
+            if (files_from_request.size() > 1)return GlobalResult.result_badRequest("More than one File is not allowed!");
 
             File file = files_from_request.get(0).getFile();
-            if (file == null) return GlobalResult.result_BadRequest("File not found!");
-            if (file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
+            if (file == null) return GlobalResult.result_badRequest("File not found!");
+            if (file.length() < 1) return GlobalResult.result_badRequest("File is Empty!");
 
 
             int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
@@ -375,8 +375,8 @@ public class Controller_Board extends Controller {
             String file_name = files_from_request.get(0).getFilename().substring(0, dot);
 
             // Zkontroluji soubor
-            if (!file_type.equals(".bin"))return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
-            if ((file.length() / 1024) > 500)return GlobalResult.result_BadRequest("File is bigger than 500K b");
+            if (!file_type.equals(".bin"))return GlobalResult.result_badRequest("Wrong type of File - \"Bin\" required! ");
+            if ((file.length() / 1024) > 500)return GlobalResult.result_badRequest("File is bigger than 500K b");
 
 
             ObjectNode request = Json.newObject();
@@ -394,7 +394,7 @@ public class Controller_Board extends Controller {
                 return GlobalResult.result_ok();
             }
             else {
-                return GlobalResult.result_BadRequest(request);
+                return GlobalResult.result_badRequest(request);
             }
 
         } catch (Exception e) {
@@ -432,10 +432,10 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -444,7 +444,7 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_UploadBinaryFileToBoard help = form.get();
 
 
@@ -456,29 +456,29 @@ public class Controller_Board extends Controller {
 
                 // Ověření objektu
                 Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_update_pair.c_program_version_id);
-                if (c_program_version == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+                if (c_program_version == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+                if (c_program_version.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
                 // Zkontroluji oprávnění
-                if (!c_program_version.c_program.read_permission()) return GlobalResult.forbidden_Permission();
+                if (!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
+                if (c_program_version.c_compilation == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program - Missing compilation File");
 
                 // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-                if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+                if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_badRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
 
                 //Zkontroluji zda byla verze už zkompilována
-                if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
+                if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_badRequest("The program is not yet compiled & Restored");
 
                 // Kotrola objektu
                 Model_Board board = Model_Board.get_byId(board_update_pair.board_id);
-                if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+                if (board == null) return GlobalResult.result_notFound("Board board_id not found");
 
                 // Kontrola oprávnění
-                if (!board.edit_permission()) return GlobalResult.forbidden_Permission();
+                if (!board.edit_permission()) return GlobalResult.result_forbidden();
 
 
                 Model_BPair b_pair = new Model_BPair();
@@ -527,9 +527,9 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Model_CompilationServer.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_CompilationServer.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -539,7 +539,7 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Cloud_Compilation_Server_New help = form.get();
 
 
@@ -548,13 +548,13 @@ public class Controller_Board extends Controller {
             server.personal_server_name = help.personal_server_name;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! server.create_permission())  return GlobalResult.forbidden_Permission();
+            if(! server.create_permission())  return GlobalResult.result_forbidden();
 
             // Ukládám objekt
             server.save();
 
             // Vracím objekt
-            return GlobalResult.created(Json.toJson(server));
+            return GlobalResult.result_created(Json.toJson(server));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -588,8 +588,8 @@ public class Controller_Board extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Update successfuly",        response = Model_CompilationServer.class),
             @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Invalid body",   response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -598,15 +598,15 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Cloud_Compilation_Server_New help = form.get();
 
             //Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.find.byId(server_id);
-            if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
+            if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Zkontroluji oprávnění
-            if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!server.edit_permission()) return GlobalResult.result_forbidden();
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
@@ -669,10 +669,10 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result delete_Compilation_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
@@ -680,10 +680,10 @@ public class Controller_Board extends Controller {
 
             //Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.find.byId(server_id);
-            if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
+            if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! server.delete_permission())  return GlobalResult.forbidden_Permission();
+            if(! server.delete_permission())  return GlobalResult.result_forbidden();
 
             // Smažu objekt
             server.delete();
@@ -723,10 +723,10 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Model_Processor.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_Processor.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -735,7 +735,7 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Processor_New> form = Form.form(Swagger_Processor_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Processor_New help = form.get();
 
             // Vytvářím objekt
@@ -746,13 +746,13 @@ public class Controller_Board extends Controller {
             processor.speed          = help.speed;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! processor.create_permission())  return GlobalResult.forbidden_Permission();
+            if(! processor.create_permission())  return GlobalResult.result_forbidden();
 
             // Ukládám objekt
             processor.save();
 
             // Vracím objekt
-            return GlobalResult.created(Json.toJson(processor));
+            return GlobalResult.result_created(Json.toJson(processor));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -781,7 +781,7 @@ public class Controller_Board extends Controller {
 
             //Zkontroluji validitu
             Model_Processor processor = Model_Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Vracím objekt
             return GlobalResult.result_ok(Json.toJson(processor));
@@ -846,10 +846,10 @@ public class Controller_Board extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Processor.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",   response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -858,15 +858,15 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             Form<Swagger_Processor_New> form = Form.form(Swagger_Processor_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Processor_New help = form.get();
 
             // Kontroluji validitu
             Model_Processor processor = Model_Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! processor.edit_permission())  return GlobalResult.forbidden_Permission();
+            if(! processor.edit_permission())  return GlobalResult.result_forbidden();
 
             // Upravuji objekt
             processor.description    = help.description;
@@ -900,10 +900,10 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result processor_delete(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
@@ -911,10 +911,10 @@ public class Controller_Board extends Controller {
 
             // Kontroluji validitu
             Model_Processor processor = Model_Processor.find.byId(processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! processor.delete_permission())  return GlobalResult.forbidden_Permission();
+            if(! processor.delete_permission())  return GlobalResult.result_forbidden();
 
             // Mažu z databáze
             processor.delete();
@@ -942,7 +942,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_File_Content.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result fileRecord_get(@ApiParam(value = "file_record_id String query", required = true)  String file_record_id){
@@ -950,7 +950,7 @@ public class Controller_Board extends Controller {
 
             // Kontrola validity objektu
             Model_FileRecord fileRecord = Model_FileRecord.find.fetch("version_object").where().eq("id", file_record_id).findUnique();
-            if (fileRecord == null) return GlobalResult.notFoundObject("FileRecord file_record_id not found");
+            if (fileRecord == null) return GlobalResult.result_notFound("FileRecord file_record_id not found");
 
             // Swagger_File_Content - Zástupný dokumentační objekt
 
@@ -990,9 +990,9 @@ public class Controller_Board extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_Producer.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1001,7 +1001,7 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Producer_New> form = Form.form(Swagger_Producer_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Producer_New help = form.get();
 
             //Vytvářím objekt
@@ -1010,13 +1010,13 @@ public class Controller_Board extends Controller {
             producer.description = help.description;
 
             // Kontorluji oprávnění těsně před uložením
-            if(! producer.create_permission()) return GlobalResult.forbidden_Permission();
+            if(! producer.create_permission()) return GlobalResult.result_forbidden();
 
             //Ukládám objekt
             producer.save();
 
             // Vracím objekt
-            return GlobalResult.created(Json.toJson(producer));
+            return GlobalResult.result_created(Json.toJson(producer));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -1051,9 +1051,9 @@ public class Controller_Board extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Producer.class),
             @ApiResponse(code = 400, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1062,15 +1062,15 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Producer_New> form = Form.form(Swagger_Producer_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Producer_New help = form.get();
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.find.byId(producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontorluji oprávnění těsně před uložením
-            if(! producer.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(! producer.edit_permission()) return GlobalResult.result_forbidden();
 
             // Úprava objektu
             producer.name = help.name;
@@ -1104,7 +1104,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Producer.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result producer_getAll() {
@@ -1138,7 +1138,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Producer.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result producer_get(@ApiParam(required = true)  String producer_id) {
@@ -1146,7 +1146,7 @@ public class Controller_Board extends Controller {
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.find.byId(producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Vrácneí objektu
             return GlobalResult.result_ok(Json.toJson(producer));
@@ -1172,10 +1172,10 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result producer_delete(@ApiParam(required = true) String producer_id) {
@@ -1183,10 +1183,10 @@ public class Controller_Board extends Controller {
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.find.byId(producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontorluji oprávnění
-            if(! producer.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(! producer.delete_permission()) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             producer.delete();
@@ -1227,10 +1227,10 @@ public class Controller_Board extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_TypeOfBoard.class),
-            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1239,16 +1239,16 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_TypeOfBoard_New> form = Form.form(Swagger_TypeOfBoard_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TypeOfBoard_New help = form.get();
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.find.byId(help.producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontrola objektu
             Model_Processor processor = Model_Processor.find.byId(help.processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Tvorba objektu
             Model_TypeOfBoard typeOfBoard = new Model_TypeOfBoard();
@@ -1259,12 +1259,12 @@ public class Controller_Board extends Controller {
             typeOfBoard.connectible_to_internet = help.connectible_to_internet;
 
             // Kontorluji oprávnění
-            if(!typeOfBoard.create_permission()) return GlobalResult.forbidden_Permission();
+            if(!typeOfBoard.create_permission()) return GlobalResult.result_forbidden();
 
             // Uložení objektu do DB
             typeOfBoard.save();
 
-            return GlobalResult.created(Json.toJson(typeOfBoard));
+            return GlobalResult.result_created(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -1298,9 +1298,9 @@ public class Controller_Board extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1309,23 +1309,23 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_TypeOfBoard_New> form = Form.form(Swagger_TypeOfBoard_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TypeOfBoard_New help = form.get();
 
             // Kontrola objektu
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.find.byId(help.producer_id);
-            if(producer == null ) return GlobalResult.notFoundObject("Producer producer_id not found");
+            if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontrola objektu
             Model_Processor processor = Model_Processor.find.byId(help.processor_id);
-            if(processor == null ) return GlobalResult.notFoundObject("Processor processor_id not found");
+            if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Kontorluji oprávnění
-            if(! typeOfBoard.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(! typeOfBoard.edit_permission()) return GlobalResult.result_forbidden();
 
             // Uprava objektu
             typeOfBoard.name = help.name;
@@ -1362,10 +1362,10 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result typeOfBoard_delete(@ApiParam(required = true)  String type_of_board_id) {
@@ -1373,10 +1373,10 @@ public class Controller_Board extends Controller {
 
             // Kontrola objektu
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found") ;
+            if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found") ;
 
             // Kontorluji oprávnění
-            if(! typeOfBoard.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(! typeOfBoard.delete_permission()) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             typeOfBoard.delete();
@@ -1406,7 +1406,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result typeOfBoard_getAll() {
@@ -1440,7 +1440,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result typeOfBoard_get(@ApiParam(required = true)  String type_of_board_id) {
@@ -1448,10 +1448,10 @@ public class Controller_Board extends Controller {
 
             // Kontrola validity objektu
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
-            if(! typeOfBoard.read_permission()) return GlobalResult.forbidden_Permission();
+            if(! typeOfBoard.read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení validity objektu
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
@@ -1466,16 +1466,16 @@ public class Controller_Board extends Controller {
         try {
 
             Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
-            if (type_of_board == null) return GlobalResult.notFoundObject("Type of board does not exist");
+            if (type_of_board == null) return GlobalResult.result_notFound("Type of board does not exist");
 
             // Přijmu soubor
             Http.MultipartFormData body = request().body().asMultipartFormData();
 
-            if (body == null) return GlobalResult.notFoundObject("Missing picture!");
+            if (body == null) return GlobalResult.result_notFound("Missing picture!");
 
             Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
 
-            if (file_from_request == null) return GlobalResult.notFoundObject("Missing picture!");
+            if (file_from_request == null) return GlobalResult.result_notFound("Missing picture!");
 
             File file = file_from_request.getFile();
 
@@ -1483,11 +1483,11 @@ public class Controller_Board extends Controller {
             String file_type = file_from_request.getFilename().substring(dot);
 
             // Zkontroluji soubor - formát, velikost, rozměry
-            if((!file_type.equals(".jpg"))&&(!file_type.equals(".png"))) return GlobalResult.result_BadRequest("Wrong type of File - '.jpg' or '.png' required! ");
-            if( (file.length() / 1024) > 500) return GlobalResult.result_BadRequest("Picture is bigger than 500 KB");
+            if((!file_type.equals(".jpg"))&&(!file_type.equals(".png"))) return GlobalResult.result_badRequest("Wrong type of File - '.jpg' or '.png' required! ");
+            if( (file.length() / 1024) > 500) return GlobalResult.result_badRequest("Picture is bigger than 500 KB");
             BufferedImage bimg = ImageIO.read(file);
 
-            //if((bimg.getWidth() < 400 )|| (bimg.getWidth() > 1200)||(bimg.getHeight() < 400)||(bimg.getHeight() > 1200) ) return GlobalResult.result_BadRequest("Picture height or width is not between 400 and 800 pixels");
+            //if((bimg.getWidth() < 400 )|| (bimg.getWidth() > 1200)||(bimg.getHeight() < 400)||(bimg.getHeight() > 1200) ) return GlobalResult.result_badRequest("Picture height or width is not between 400 and 800 pixels");
 
             terminal_logger.debug("typeOfBoard_uploadPicture update picture ");
 
@@ -1541,7 +1541,7 @@ public class Controller_Board extends Controller {
         try {
 
             Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
-            if (type_of_board == null) return GlobalResult.notFoundObject("Type of Board does not exist");
+            if (type_of_board == null) return GlobalResult.result_notFound("Type of Board does not exist");
 
             if(!(type_of_board.picture == null)) {
                 Model_FileRecord fileRecord = type_of_board.picture;
@@ -1550,7 +1550,7 @@ public class Controller_Board extends Controller {
                 type_of_board.update();
                 fileRecord.delete();
             }else{
-                return GlobalResult.result_BadRequest("There is no picture to remove.");
+                return GlobalResult.result_badRequest("There is no picture to remove.");
             }
 
             return GlobalResult.result_ok("Picture successfully removed");
@@ -1569,13 +1569,13 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_BootLoader_New> form = Form.form(Swagger_BootLoader_New.class).bindFromRequest();
-            if(form.hasErrors()){return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()){return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BootLoader_New help = form.get();
 
             Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
-            if(type_of_board == null) return GlobalResult.notFoundObject("Type_of_board_not_found");
+            if(type_of_board == null) return GlobalResult.result_notFound("Type_of_board_not_found");
 
-            if(Model_BootLoader.find.where().eq("version_identificator", help.version_identificator ).eq("type_of_board.id", type_of_board.id).findUnique() != null) return GlobalResult.result_BadRequest("Version format is not unique!");
+            if(Model_BootLoader.find.where().eq("version_identificator", help.version_identificator ).eq("type_of_board.id", type_of_board.id).findUnique() != null) return GlobalResult.result_badRequest("Version format is not unique!");
 
             Model_BootLoader boot_loader = new Model_BootLoader();
             boot_loader.date_of_create = new Date();
@@ -1585,7 +1585,7 @@ public class Controller_Board extends Controller {
             boot_loader.version_identificator = help.version_identificator;
             boot_loader.type_of_board = type_of_board;
 
-            if(!boot_loader.create_permission()) return GlobalResult.forbidden_Permission();
+            if(!boot_loader.create_permission()) return GlobalResult.result_forbidden();
             boot_loader.save();
 
             // Vracím seznam
@@ -1602,19 +1602,19 @@ public class Controller_Board extends Controller {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
-            if(boot_loader == null) return GlobalResult.notFoundObject("BootLoader boot_loader_id not found");
+            if(boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
 
-            if(!boot_loader.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
 
-            if(boot_loader.file != null) return GlobalResult.result_BadRequest("You cannot upload file twice!");
+            if(boot_loader.file != null) return GlobalResult.result_badRequest("You cannot upload file twice!");
 
             Http.MultipartFormData body = request().body().asMultipartFormData();
             List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
 
             //Bin FILE
             File file = files_from_request.get(0).getFile();
-            if (file == null) return GlobalResult.result_BadRequest("File not found!");
-            if (file.length() < 1) return GlobalResult.result_BadRequest("File is Empty!");
+            if (file == null) return GlobalResult.result_badRequest("File not found!");
+            if (file.length() < 1) return GlobalResult.result_badRequest("File is Empty!");
 
 
             int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
@@ -1622,8 +1622,8 @@ public class Controller_Board extends Controller {
             String file_name = files_from_request.get(0).getFilename().substring(0, dot);
 
             // Zkontroluji soubor
-            if (!file_type.equals(".bin")) return GlobalResult.result_BadRequest("Wrong type of File - \"Bin\" required! ");
-            if ((file.length() / 1024) > 500) return GlobalResult.result_BadRequest("File is bigger than 500Kb");
+            if (!file_type.equals(".bin")) return GlobalResult.result_badRequest("Wrong type of File - \"Bin\" required! ");
+            if ((file.length() / 1024) > 500) return GlobalResult.result_badRequest("File is bigger than 500Kb");
 
             String binary_file = Model_FileRecord.get_encoded_binary_string_from_File(file);
             Model_FileRecord filerecord  = Model_FileRecord.create_Binary_file( boot_loader.get_path(), binary_file, "bootloader.bin");
@@ -1648,12 +1648,12 @@ public class Controller_Board extends Controller {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
-            if(boot_loader == null) return GlobalResult.notFoundObject("BootLoader boot_loader_id not found");
+            if(boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
 
-            if(!boot_loader.edit_permission()) return GlobalResult.forbidden_Permission();
-            if(boot_loader.file == null) return GlobalResult.result_BadRequest("Required bootloader object with file");
+            if(!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
+            if(boot_loader.file == null) return GlobalResult.result_badRequest("Required bootloader object with file");
 
-            if(boot_loader.main_type_of_board != null) return GlobalResult.result_BadRequest("Bootloader is Already Main");
+            if(boot_loader.main_type_of_board != null) return GlobalResult.result_badRequest("Bootloader is Already Main");
 
 
             Model_BootLoader old_main = Model_BootLoader.find.where().eq("main_type_of_board.id", boot_loader.type_of_board.id).findUnique();
@@ -1698,11 +1698,11 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1711,20 +1711,20 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Board_Bootloader_Update > form = Form.form(Swagger_Board_Bootloader_Update.class).bindFromRequest();
-            if(form.hasErrors()){return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()){return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Board_Bootloader_Update help = form.get();
 
 
             List<Model_Board> boards = Model_Board.find.where().in("id", help.device_ids).findList();
-            if(boards.isEmpty()) return GlobalResult.notFoundObject("Board not found");
+            if(boards.isEmpty()) return GlobalResult.result_notFound("Board not found");
 
             if(help.bootloader_id != null) {
 
                 Model_BootLoader bootLoader = Model_BootLoader.find.byId(help.bootloader_id);
-                if (bootLoader == null) return GlobalResult.notFoundObject("BootLoader not found");
+                if (bootLoader == null) return GlobalResult.result_notFound("BootLoader not found");
 
                 for(Model_Board board : boards) {
-                    if (!board.read_permission()) return GlobalResult.forbidden_Permission();
+                    if (!board.read_permission()) return GlobalResult.result_forbidden();
                 }
 
                 Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards, bootLoader);
@@ -1732,7 +1732,7 @@ public class Controller_Board extends Controller {
             }else {
 
                 for(Model_Board board : boards) {
-                    if (!board.read_permission()) return GlobalResult.forbidden_Permission();
+                    if (!board.read_permission()) return GlobalResult.result_forbidden();
                 }
 
                 Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards, null);
@@ -1777,11 +1777,11 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Model_Board.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_Board.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1790,15 +1790,15 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Board_New> form = Form.form(Swagger_Board_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Board_New help = form.get();
 
             // Kotrola objektu
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId( help.type_of_board_id  );
-            if(typeOfBoard == null ) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
-            if(! typeOfBoard.register_new_device_permission()) return GlobalResult.forbidden_Permission();
+            if(! typeOfBoard.register_new_device_permission()) return GlobalResult.result_forbidden();
 
 
                 Model_Board board = new Model_Board();
@@ -1811,7 +1811,7 @@ public class Controller_Board extends Controller {
                 board.save();
 
             // Vracím seznam zařízení k registraci
-            return GlobalResult.created(Json.toJson(board));
+            return GlobalResult.result_created(Json.toJson(board));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -1834,9 +1834,9 @@ public class Controller_Board extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_for_fast_upload_detail.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result board_getForFastUpload(@ApiParam(required = true)  String project_id){
@@ -1844,10 +1844,10 @@ public class Controller_Board extends Controller {
 
             // Kotrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if(project == null ) return GlobalResult.notFoundObject("Project project not found");
+            if(project == null ) return GlobalResult.result_notFound("Project project not found");
 
             // Kontrola oprávnění
-            if(!project.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!project.edit_permission()) return GlobalResult.result_forbidden();
 
             // Vyhledání seznamu desek na které lze nahrát firmware - okamžitě
             List<Model_Board> boards = Model_Board.find.where().eq("type_of_board.connectible_to_internet", true).eq("project.id", project_id).findList();
@@ -1894,9 +1894,9 @@ public class Controller_Board extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1905,15 +1905,15 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Board_Personal> form = Form.form(Swagger_Board_Personal.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Board_Personal help = form.get();
 
             // Kotrola objektu
             Model_Board board = Model_Board.get_byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kontrola oprávnění
-            if(!board.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.edit_permission()) return GlobalResult.result_forbidden();
 
             // Uprava desky
             board.personal_description = help.personal_description;
@@ -1954,11 +1954,11 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                                 response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",                   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",                   response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",                      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",                  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1967,10 +1967,10 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Board_Backup_settings> form = Form.form(Swagger_Board_Backup_settings.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Board_Backup_settings help = form.get();
 
-            if(help.board_backup_pair_list.isEmpty()) return GlobalResult.notFoundObject("List is Empty");
+            if(help.board_backup_pair_list.isEmpty()) return GlobalResult.result_notFound("List is Empty");
 
 
             // Seznam Hardwaru k updatu
@@ -1980,10 +1980,10 @@ public class Controller_Board extends Controller {
 
                 // Kotrola objektu
                 Model_Board board = Model_Board.find.byId(board_backup_pair.board_id);
-                if (board == null) return GlobalResult.notFoundObject("Board board_id not found");
+                if (board == null) return GlobalResult.result_notFound("Board board_id not found");
 
                 // Kontrola oprávnění
-                if (!board.edit_permission()) return GlobalResult.forbidden_Permission();
+                if (!board.edit_permission()) return GlobalResult.result_forbidden();
 
                 // Pokud je nastaven autobackup na true
                 if(board_backup_pair.backup_mode) {
@@ -2027,22 +2027,22 @@ public class Controller_Board extends Controller {
 
                     // Uprava desky na statický backup
                     Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_backup_pair.c_program_version_id);
-                    if (c_program_version == null) return GlobalResult.notFoundObject("Version_Object c_program_version_id not found");
+                    if (c_program_version == null) return GlobalResult.result_notFound("Version_Object c_program_version_id not found");
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
-                    if (c_program_version.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+                    if (c_program_version.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
                     // Zkontroluji oprávnění
-                    if (!c_program_version.c_program.read_permission()) return GlobalResult.forbidden_Permission();
+                    if (!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
-                    if (c_program_version.c_compilation == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program - Missing compilation File");
+                    if (c_program_version.c_compilation == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program - Missing compilation File");
 
                     // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-                    if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_BadRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+                    if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_badRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
 
                     //Zkontroluji zda byla verze už zkompilována
-                    if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_BadRequest("The program is not yet compiled & Restored");
+                    if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_badRequest("The program is not yet compiled & Restored");
 
                     Model_BPair b_pair = new Model_BPair();
                     b_pair.board = board;
@@ -2108,7 +2108,7 @@ public class Controller_Board extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -2117,7 +2117,7 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Board_Filter> form = Form.form(Swagger_Board_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Board_Filter help = form.get();
 
             // Tvorba parametru dotazu
@@ -2184,7 +2184,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result board_deactivate(@ApiParam(required = true)  String board_id) {
@@ -2192,10 +2192,10 @@ public class Controller_Board extends Controller {
 
             // Kotrola objektu
             Model_Board board = Model_Board.find.byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kontrola oprávnění
-            if(board.update_permission()) return GlobalResult.forbidden_Permission();
+            if(board.update_permission()) return GlobalResult.result_forbidden();
 
             // Úprava stavu
             board.is_active = false;
@@ -2231,7 +2231,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result board_get(@ApiParam(required = true) String board_id) {
@@ -2239,10 +2239,10 @@ public class Controller_Board extends Controller {
 
             // Kotrola objektu
             Model_Board board = Model_Board.get_byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kontrola oprávnění
-            if(!board.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.read_permission()) return GlobalResult.result_forbidden();
 
             // vrácení objektu
             return GlobalResult.result_ok(Json.toJson(board));
@@ -2272,7 +2272,7 @@ public class Controller_Board extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Board_Registration_Status.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result board_check(@ApiParam(required = true) String hash_for_adding) {
@@ -2322,7 +2322,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result board_connectProject(@ApiParam(required = true) String hash_for_adding, @ApiParam(required = true) String project_id){
@@ -2331,17 +2331,17 @@ public class Controller_Board extends Controller {
             terminal_logger.debug("CompilationControler:: Registrace nového zařízení ");
             // Kotrola objektu
             Model_Board board = Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique();
-            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kotrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if(!board.first_connect_permission()) return GlobalResult.result_BadRequest("Board is already registered");
+            if(!board.first_connect_permission()) return GlobalResult.result_badRequest("Board is already registered");
 
             // Kontrola oprávnění
-            if(!project.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!project.update_permission()) return GlobalResult.result_forbidden();
 
             // uprava desky
             board.project = project;
@@ -2394,7 +2394,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result board_disconnectProject(@ApiParam(required = true)   String board_id){
@@ -2402,10 +2402,10 @@ public class Controller_Board extends Controller {
 
             // Kontrola objektu
             Model_Board board = Model_Board.get_byId(board_id);
-            if(board == null ) return GlobalResult.notFoundObject("Board board_id not found");
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kontrola oprávnění
-            if(!board.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!board.update_permission()) return GlobalResult.result_forbidden();
 
             // Odstraním vazbu
             board.project = null;
@@ -2439,7 +2439,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Boards_For_Blocko.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result board_allDetailsForBlocko(@ApiParam(required = true)   String project_id){
@@ -2447,10 +2447,10 @@ public class Controller_Board extends Controller {
 
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (! project.read_permission()) return GlobalResult.forbidden_Permission();
+            if (! project.read_permission()) return GlobalResult.result_forbidden();
 
             // Získání objektu
             Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();

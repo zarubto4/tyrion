@@ -11,10 +11,15 @@ public class GlobalResult extends Controller {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-
     private static final Class_Logger terminal_logger = new Class_Logger(GlobalResult.class);
 
-
+    public static Result result_custom(int statusCode, String message){
+        CoreResponse.cors();
+        Result_Custom result = new Result_Custom();
+        result.code = statusCode;
+        result.message = message;
+        return status(statusCode, Json.toJson(result));
+    }
 //**********************************************************************************************************************
 
     // Vracím objekty
@@ -26,13 +31,13 @@ public class GlobalResult extends Controller {
     // Vracím pouze OK 200 state
     public static Result result_ok(){
         CoreResponse.cors();
-        return ok(  Json.toJson(new Result_ok())  );
+        return ok(  Json.toJson(new Result_Ok())  );
     }
 
     // Vracím pouze OK 200 state se zprávou
     public static Result result_ok(String message){
 
-        Result_ok resultOk = new Result_ok();
+        Result_Ok resultOk = new Result_Ok();
         resultOk.message = message;
 
         CoreResponse.cors();
@@ -52,7 +57,7 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-    public static Result result_pdf_file(byte[] byte_array, String  file_name){
+    public static Result result_pdfFile(byte[] byte_array, String  file_name){
 
         CoreResponse.cors_pdf_file();
         response().setHeader("filename", file_name);
@@ -64,7 +69,7 @@ public class GlobalResult extends Controller {
 //**********************************************************************************************************************
 
     // Vracím při vytvoření objekt, jedinná změna je, že code = 201!
-    public static Status created(JsonNode o){
+    public static Status result_created(JsonNode o){
         CoreResponse.cors();
         return Controller.created(o);
     }
@@ -72,7 +77,7 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-    public static Result result_BadRequest(){
+    public static Result result_badRequest(){
 
         Result_BadRequest result = new Result_BadRequest();
 
@@ -82,7 +87,7 @@ public class GlobalResult extends Controller {
     }
 
     // Různé varianty, když se něco nepovede
-    public static Result result_BadRequest(String message){
+    public static Result result_badRequest(String message){
 
         Result_BadRequest result = new Result_BadRequest();
         result.message = message;
@@ -92,7 +97,7 @@ public class GlobalResult extends Controller {
 
     }
 
-    public static Result result_BadRequest(String message, String state){
+    public static Result result_badRequest(String message, String state){
 
         Result_BadRequest result = new Result_BadRequest();
         result.message = message;
@@ -103,7 +108,7 @@ public class GlobalResult extends Controller {
 
     }
 
-    public static Result result_BadRequest(JsonNode o){
+    public static Result result_badRequest(JsonNode o){
 
         CoreResponse.cors();
         return Controller.badRequest(Json.toJson(o));
@@ -122,25 +127,24 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-    public static Result result_external_server_is_offline(String message){
+    public static Result result_externalServerIsOffline(String message){
 
         CoreResponse.cors();
-        Result_NotFound result = new Result_NotFound();
+        Result_ServerOffline result = new Result_ServerOffline();
         result.message = message;
-        result.code = 477;
         return Controller.status(477, Json.toJson(result));
 
     }
 
 
-    public static Result result_external_server_error(JsonNode o){
+    public static Result result_externalServerError(JsonNode o){
 
         CoreResponse.cors();
         return Controller.status(478, o);
 
     }
 
-    public static Result result_external_server_error(String message){
+    public static Result result_externalServerError(String message){
 
         CoreResponse.cors();
         return Controller.status(478, message);
@@ -151,45 +155,45 @@ public class GlobalResult extends Controller {
 
     // 400
     // Různé varianty, když se něco nepovede
-    public static Result notFoundObject(String message){
+    public static Result result_notFound(String message){
         CoreResponse.cors();
 
         Result_NotFound result = new Result_NotFound();
         result.message = message;
 
-        return Controller.badRequest(Json.toJson(result));
+        return Controller.notFound(Json.toJson(result));
     }
 
 //**********************************************************************************************************************
 
     // Výlučně pro odmítnutí nepřihlášeného uživatele
     //  Což je zajišťováno anotací ---->  @Security.Authenticated(Secured.class)
-    public static Result result_Unauthorized(){
+    public static Result result_unauthorized(){
         CoreResponse.cors();
         return Controller.unauthorized(Json.toJson( new Result_Unauthorized()));
     }
 
     // Používá se výhradně pro odmítnutí uživatelovi akce z bezečnostních důvodů
     // Například nemá oprávnění (Klíč) přistupovat k projektům ostatních uživatelů
-    public static Status forbidden_Permission(){
+    public static Status result_forbidden(){
         CoreResponse.cors();
-        return Controller.forbidden(Json.toJson(new Result_PermissionRequired() ) );
+        return Controller.forbidden(Json.toJson(new Result_Forbidden()));
     }
 
 
     // Používá se výhradně pro odmítnutí uživatelovi akce z bezečnostních důvodů
     // Například nemá oprávnění (Klíč) přistupovat k projektům ostatních uživatelů
-    public static Status forbidden_Permission(String message){
+    public static Status result_forbidden(String message){
         CoreResponse.cors();
 
-        Result_PermissionRequired resultPermissionRequired = new Result_PermissionRequired();
-        resultPermissionRequired.message = message;
+        Result_Forbidden result = new Result_Forbidden();
+        result.message = message;
 
-        return Controller.forbidden(Json.toJson(resultPermissionRequired));
+        return Controller.forbidden(Json.toJson(result));
     }
 
     // Používá se výhradně pro odmítnutí uživatele při přihlášení, pokud nemá validovaný účet
-    public static Status result_NotValidated(){
+    public static Status result_notValidated(){
         CoreResponse.cors();
 
         Result_NotValidated result_notValidated = new Result_NotValidated();
@@ -198,7 +202,7 @@ public class GlobalResult extends Controller {
     }
 
     // Používá se výhradně pro odmítnutí uživatele při přihlášení, pokud nemá validovaný účet
-    public static Status result_NotValidated(String message){
+    public static Status result_notValidated(String message){
         CoreResponse.cors();
 
         Result_NotValidated result_notValidated = new Result_NotValidated();
@@ -209,34 +213,14 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-
-    public static Status external_server_is_offline(String message){
-        CoreResponse.cors();
-
-        Result_ServerOffline serverIsOffline = new Result_ServerOffline();
-        serverIsOffline.message = message;
-
-        return Controller.badRequest(Json.toJson(serverIsOffline));
-    }
-
-    public static Status external_server_is_offline(){
-        CoreResponse.cors();
-
-        Result_ServerOffline serverIsOffline = new Result_ServerOffline();
-
-        return Controller.badRequest(Json.toJson(serverIsOffline));
-    }
-
-//**********************************************************************************************************************
-
     // Používáno pouze pro vrácení nevalidně přijatých FORM pokud se body Json transformuje na objekt
     // Hlídáno anotacemi viz Wiki:
-    public static Result formExcepting(JsonNode json){
+    public static Result result_invalidBody(JsonNode json){
              CoreResponse.cors();
 
-             Result_JsonValueMissing result = new Result_JsonValueMissing();
-             result.state     = "Json Unrecognized parameters or Invalid data";
-             result.message   = "Your Json had some unrecognized fields or data is incorrect. Look at exception parameter. If it is possible, we will try return example of data inputs.";
+             Result_InvalidBody result = new Result_InvalidBody();
+             result.state     = "Invalid body";
+             result.message   = "Provided body is invalid. If it is possible, the reason will be returned in exception field.";
              result.exception = json;
 
             return Controller.badRequest( Json.toJson(result) );
@@ -244,13 +228,13 @@ public class GlobalResult extends Controller {
 
 //**********************************************************************************************************************
 
-    public static Result result_InternalServerError(){
+    public static Result result_internalServerError(){
         CoreResponse.cors();
         Result_InternalServerError result_internalServerError = new Result_InternalServerError();
         return Controller.internalServerError(Json.toJson(result_internalServerError));
     }
 
-    public static Result result_InternalServerError(String message){
+    public static Result result_internalServerError(String message){
         CoreResponse.cors();
         Result_InternalServerError result_internalServerError = new Result_InternalServerError();
         result_internalServerError.message = message;
