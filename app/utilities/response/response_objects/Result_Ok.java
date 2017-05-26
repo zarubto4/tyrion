@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 
-@ApiModel(value="Result ok", description="Some Json value missing - don't show that to users.. ")
+@ApiModel(value="Result Ok")
 public class Result_Ok implements Response_Interface{
 
 

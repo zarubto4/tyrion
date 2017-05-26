@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 
-@ApiModel(value="Result ok", description="Some Json value missing - don't show that to users.. ")
+@ApiModel(value="Result custom", description="Customizable response object")
 public class Result_Custom {
 
 

@@ -3,12 +3,11 @@ package utilities.response.response_objects;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value="PermissionRequired", description="Some Json value missing - don't show that to users.. " +
-          "SERVER IS LOGGING THIS FRONTEND ISSUE")
+@ApiModel(value="Forbidden", description="Permission is needed for this action.")
 public class Result_Forbidden {
 
     @ApiModelProperty(value = "state", required = true, readOnly = true)
-    public String state = "Permission required";
+    public String state = "forbidden";
 
     @ApiModelProperty(value = "code", allowableValues = "403", required = true, readOnly = true)
     public Integer code = 403;

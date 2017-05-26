@@ -4,12 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value="Json_Value_Missing_Result", description="Some Json value missing - don't show that to users.. " +
-        "SERVER IS LOGGING THIS FRONTEND ISSUE")
+@ApiModel(value="Invalid Body", description="Provided body is not valid. Something is missing or some field input is not allowed.")
 public class Result_InvalidBody {
 
     @ApiModelProperty(value = "state", required = true, readOnly = true)
-    public String state = "Some Json value missing";
+    public String state = "invalid body";
 
     @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
     public Integer code = 400;
