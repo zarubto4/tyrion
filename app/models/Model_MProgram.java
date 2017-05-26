@@ -93,8 +93,8 @@ public class Model_MProgram extends Model{
 
             m_program_versions.version_object = version_object;
             m_program_versions.public_mode = version_object.public_version;
-            m_program_versions.qr_token = version_object.qr_token;
-            m_program_versions.qr_token = version_object.qr_token;
+            //m_program_versions.qr_token = version_object.qr_token; TODO Tomáš
+            //m_program_versions.qr_token = version_object.qr_token;
             m_program_versions.virtual_input_output = version_object.m_program_virtual_input_output;
 
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
