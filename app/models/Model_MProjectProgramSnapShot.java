@@ -22,13 +22,13 @@ public class Model_MProjectProgramSnapShot extends Model {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
+    @JsonIgnore @Id public String id;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_MProject m_project;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "b_program_version_snapshots") public List<Model_VersionObject> instance_versions = new ArrayList<>(); // Vazba na version Blocka (zatím je využívaná jen jako M:1
 
-    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "m_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "m_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
@@ -65,6 +65,11 @@ public class Model_MProjectProgramSnapShot extends Model {
     public void save() {
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (find.byId(this.id) == null) break;
+        }
         super.save();
     }
 

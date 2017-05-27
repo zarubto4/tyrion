@@ -331,7 +331,7 @@ public class Controller_Blocko extends Controller{
                         Model_MProgramInstanceParameter snap_shot_parameter = new Model_MProgramInstanceParameter();
 
                         snap_shot_parameter.m_program_version = m_program_version;
-                        snap.m_program_snapshots.add(snap_shot_parameter);
+                        snap_shot_parameter.m_project_program_snapshot = snap;
                     }
 
                     version_object.b_program_version_snapshots.add(snap);

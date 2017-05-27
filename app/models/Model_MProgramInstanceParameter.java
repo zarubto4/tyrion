@@ -22,7 +22,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id @ApiModelProperty(required = true) @GeneratedValue(strategy = GenerationType.SEQUENCE) public String id;
+    @JsonIgnore @Id @ApiModelProperty(required = true) public String id;
 
     @JsonIgnore @ManyToOne()  public Model_MProjectProgramSnapShot m_project_program_snapshot; //(Vazba Done)
     @JsonIgnore @ManyToOne()  public Model_VersionObject m_program_version;                    //(Vazba Done)
@@ -83,6 +83,18 @@ public class Model_MProgramInstanceParameter extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public void save() {
+
+        terminal_logger.debug("dave :: Save object Id: {}",  this.id);
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (find.byId(this.id) == null) break;
+        }
+        super.save();
+    }
 
 
+    public static Model.Finder<String,Model_MProgramInstanceParameter> find = new Model.Finder<>(Model_MProgramInstanceParameter.class);
 }

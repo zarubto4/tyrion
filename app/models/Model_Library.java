@@ -125,7 +125,7 @@ public class Model_Library extends Model{
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
             this.azure_library_link = "libraries/"  + this.id;
-            if (Model_Library.find.byId(this.id) == null) break;
+            if (find.byId(this.id) == null) break;
         }
         super.save();
     }

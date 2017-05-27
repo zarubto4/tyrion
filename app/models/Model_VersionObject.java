@@ -102,6 +102,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER) public Model_MProgram m_program;
                                     @JsonIgnore @Column(columnDefinition = "TEXT")  public String m_program_virtual_input_output;
 
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "m_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
 
 
 
