@@ -330,8 +330,7 @@ public class Controller_Dashboard extends Controller {
     public Result show_web_socket_stats() {
         try{
 
-            List<WS_Becki_Website>  becki_terminals         = new ArrayList<>(Controller_WebSocket.becki_website.values()).stream().map(o -> (WS_Becki_Website) o).collect(Collectors.toList());
-            Html content =   websocket.render(becki_terminals);
+            Html content =   websocket.render();
             return return_page(content);
 
         }catch (Exception e){
