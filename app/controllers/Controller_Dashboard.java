@@ -229,7 +229,9 @@ public class Controller_Dashboard extends Controller {
 
     public Result disconnect_compilation_server(String identificator){
         try {
+
             if (Controller_WebSocket.compiler_cloud_servers.containsKey(identificator)) {
+
                 Controller_WebSocket.compiler_cloud_servers.get(identificator).onClose();
 
                 ObjectNode result = Json.newObject();

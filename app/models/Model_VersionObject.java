@@ -494,11 +494,16 @@ public class Model_VersionObject extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-
-
 /* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore public String blob_version_link;
+
+    @JsonIgnore @Transient
+    public String get_path(){
+        return  blob_version_link;
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save() {
 
@@ -511,19 +516,13 @@ public class Model_VersionObject extends Model {
 
         try {
             if(this.author == null)
-            this.author = Controller_Security.get_person();
+                this.author = Controller_Security.get_person();
         }catch (Exception e){
             // this.author = null;
         }
 
         super.save();
     }
-    
-    @JsonIgnore @Transient
-    public String get_path(){
-        return  blob_version_link;
-    }
-
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 

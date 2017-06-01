@@ -28,6 +28,7 @@ public class WS_CompilerServer extends WS_Interface_type {
 
     public WS_CompilerServer(Model_CompilationServer server) {
         super();
+        this.server = server;
         this.server_address = server.server_url;
         identifikator = server.unique_identificator;
         super.webSCtype = this;

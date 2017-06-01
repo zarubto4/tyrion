@@ -179,7 +179,12 @@ DELETE    /b_program/version/:version_id                                @control
 GET       /instance/project/:project_id                                 @controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
 GET       /instance/get/:instance_id                                    @controllers.Controller_Blocko.get_b_program_instance(instance_id)
 PUT       /instance/filter                                              @controllers.Controller_Blocko.get_b_program_instance_by_filter()
+PUT       /instance/grid_app                                            @controllers.Controller_Blocko.instance_change_settings_grid_App()
+
+#Instance/Record
 GET       /instance_record/get/:instance_record_id                      @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
+
+
 
 PUT       /instance/command/:instance_id/:target_id/:command            @controllers.Controller_Blocko.send_command_to_instance(instance_id, target_id, command)
 PUT       /instance/program/:instance_id                                @controllers.Controller_Blocko.update_blocko_code_in_instance_with_code(instance_id)

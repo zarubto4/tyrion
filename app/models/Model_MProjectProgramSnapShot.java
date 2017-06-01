@@ -22,7 +22,7 @@ public class Model_MProjectProgramSnapShot extends Model {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id public String id;
+    @JsonIgnore @Id public UUID id;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_MProject m_project;
 
@@ -51,8 +51,7 @@ public class Model_MProjectProgramSnapShot extends Model {
 
         }catch (Exception e){
 
-            e.printStackTrace();
-
+            terminal_logger.internalServerError(e);
             return null;
         }
 
@@ -65,11 +64,6 @@ public class Model_MProjectProgramSnapShot extends Model {
     public void save() {
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (find.byId(this.id) == null) break;
-        }
         super.save();
     }
 

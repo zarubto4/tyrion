@@ -56,6 +56,9 @@ public class WS_Send_message {
 
         // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
         try {
+
+            if(sender_object.sendMessageMap.size() > 10) terminal_logger.error("insert_result:: Map contains " + sender_object.sendMessageMap.size() + " objects");
+
             sender_object.sendMessageMap.remove(result.get("messageId").asText());
         }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
 
@@ -72,6 +75,14 @@ public class WS_Send_message {
 
     public ObjectNode send_with_response() throws TimeoutException, ExecutionException, InterruptedException {
         try {
+
+            if(this.messageId == null) {
+                terminal_logger.error("send_with_response:: messageId is null!!!");
+            }
+
+            if(this.json == null){
+                terminal_logger.error("send_with_response:: Json is null!!!");
+            }
 
             terminal_logger.trace("send_with_response:: Sending message: {} Message :: {} " , this.messageId, json );
 

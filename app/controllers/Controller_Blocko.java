@@ -13,6 +13,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_MProgram_SnapShot_settings;
 import utilities.enums.Enum_type_of_command;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
@@ -332,6 +333,8 @@ public class Controller_Blocko extends Controller{
 
                         snap_shot_parameter.m_program_version = m_program_version;
                         snap_shot_parameter.m_project_program_snapshot = snap;
+
+                        snap.m_program_snapshots.add(snap_shot_parameter);
                     }
 
                     version_object.b_program_version_snapshots.add(snap);
@@ -848,6 +851,72 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    @ApiOperation(value = "change settings on Grid App in Instance",
+            tags = { "Instance"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Instance_GridApp_Settings",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_MProgramInstanceParameter.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result instance_change_settings_grid_App(){
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Instance_GridApp_Settings> form = Form.form(Swagger_Instance_GridApp_Settings.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            Swagger_Instance_GridApp_Settings help = form.get();
+
+            // Hledám objekt
+            Model_MProgramInstanceParameter program_parameter = Model_MProgramInstanceParameter.find.byId(help.m_program_parameter_id);
+            if (program_parameter == null) return GlobalResult.notFoundObject("Object not found");
+
+            //Ohlídám oprávnění
+            if (!program_parameter.edit_permission()) return GlobalResult.forbidden_Permission();
+
+            //PArsuju Enum kdyžtak chyba IllegalArgumentException
+            Enum_MProgram_SnapShot_settings settings = Enum_MProgram_SnapShot_settings.valueOf(help.snapshot_settings);
+
+            // Měním parameter
+            program_parameter.snapshot_settings = settings;
+
+            // Měním oprávnění - Uvnitř třídy update se vše provede
+            program_parameter.synchronize();
+
+            // Update
+            program_parameter.update();
+
+            // Vracím Objekt
+            return GlobalResult.result_ok(Json.toJson(program_parameter));
+
+        } catch (IllegalArgumentException e) {
+
+            terminal_logger.error("instance_change_settings_grid_App:: Incoming snapshot_settings is invalid");
+            return GlobalResult.result_BadRequest("snapshot_settings is not valid");
+
+        } catch (Exception e) {
+
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "get Instance Record by instance_record_id",
             tags = {"Instance"},
             notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instance schema yet",
@@ -918,9 +987,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "upload B Program (code) to instnace ",
-            hidden = true
-    )
+    @ApiOperation(value = "upload B Program (code) to instnace ", hidden = true)
     public Result update_blocko_code_in_instance_with_code(String instance_name){
         try{
 

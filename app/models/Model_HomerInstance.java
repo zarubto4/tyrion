@@ -689,21 +689,61 @@ public class Model_HomerInstance extends Model {
 
         new Thread(() -> {
                 try {
+
                     terminal_logger.debug("upload_Record_immediately:: thread is running under record ID:: " + record.id);
 
                     Model_HomerInstance instance = record.main_instance_history;
 
 
+
+
                     if( instance.actual_instance != null) {
+
+                        System.out.println("Actual Instnace != null -> InstanceRecord ID: " + instance.actual_instance.id);
 
                         terminal_logger.debug("upload_Record_immediately:: Record overwriting previous instance record:: " + instance.actual_instance.id);
 
-                        instance.actual_instance.running_to = new Date();
-                        instance.actual_instance.actual_running_instance = null;
-                        instance.actual_instance.update();
+                        Model_HomerInstanceRecord previous_version = instance.actual_instance;
+
+                        previous_version.running_to = new Date();
+                        previous_version.actual_running_instance = null;
+
+                        previous_version.update();
 
                     }else {
                         terminal_logger.debug("upload_Record_immediately:: First uploading of instnace:: ");
+                    }
+
+
+
+                    // Synchronize Grid App settings from last config
+                    // Try Find Latest runing Record with latest configuration - it can be instance.actual_instance from previous step or
+                    // record that was turned off and on again.
+                    Model_HomerInstanceRecord latest_version = Model_HomerInstanceRecord.find.where().eq("main_instance_history.blocko_instance_name", record.main_instance_history.blocko_instance_name).isNotNull("running_to").orderBy().desc("running_to").setMaxRows(1).findUnique();
+
+                    if(latest_version != null){
+
+                        for(Model_MProjectProgramSnapShot snap_shot : latest_version.version_object.b_program_version_snapshots){
+
+                            // Programy
+                            for(Model_MProgramInstanceParameter old_parameter : snap_shot.m_program_snapshots()){
+
+
+                                Model_MProgramInstanceParameter new_parameter = Model_MProgramInstanceParameter.find.where()
+                                        .eq("m_project_program_snapshot.instance_versions.instance_record.id", record.id)
+                                        .eq("m_program_version.id", old_parameter.m_program_version.id)
+                                        .findUnique();
+
+                                if(new_parameter == null){
+                                    continue;
+                                }
+
+                                new_parameter.connection_token = old_parameter.connection_token;
+                                new_parameter.snapshot_settings = old_parameter.snapshot_settings;
+                                new_parameter.update();
+
+                            }
+                        }
                     }
 
                     instance.refresh();

@@ -9,4 +9,6 @@ public enum Enum_MProgram_SnapShot_settings {
     @EnumValue("only_for_project_members")                          only_for_project_members,
     @EnumValue("only_for_project_members_and_imitated_emails")      only_for_project_members_and_imitated_emails,
 
+    // Not in database - only for frontend
+    @EnumValue("not_in_instance")      not_in_instance,
 }
