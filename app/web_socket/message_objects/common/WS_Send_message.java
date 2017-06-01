@@ -50,8 +50,6 @@ public class WS_Send_message {
 
     public void insert_result(ObjectNode result) {
 
-        System.out.println(result.get("messageId").asText());
-
         terminal_logger.trace("insert_result:: MessageID:: {}  insert result {} ", result.get("messageId").asText() , result.toString());
 
         // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku

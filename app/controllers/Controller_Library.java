@@ -83,8 +83,6 @@ public class Controller_Library extends Controller {
 
             if(help.project_id != null){
 
-                System.out.println("Project id != null");
-
                 Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null || !project.update_permission()) return GlobalResult.notFoundObject("Project project_id not found");
                 library.project_id = project.id;

@@ -2,6 +2,8 @@
 @import models.Model_Person
 @import models.Model_HomerServer
 @import web_socket.services.WS_Becki_Website
+@import web_socket.services.WS_Interface_type
+
 @(becki_Terminal: List[WS_Becki_Website])
 
 <section class="content-header">
@@ -96,7 +98,7 @@
                         @for( x <- becki_Terminal){
 
                                 <tr>
-                                    <th rowspan="@(x.all_person_Connections.size()+2)"> @(Model_Person.find.byId( x.identifikator ).mail )</th>
+                                    <th rowspan="@(x.all_person_Connections.size()+2)"> @(Model_Person.find.byId( x.identifikator ).mail ) + Connections:( @x.all_person_Connections.size() )</th>
                                     <th>instances</th>
                                     <th><button data-toggle="modal" data-target="#testNotificationModal" onclick="email = '@Model_Person.find.byId( x.identifikator ).mail'; " class="btn btn-block btn-primary btn-xs">Test notification</button></th>
                                 </tr>
@@ -105,13 +107,12 @@
                             @if( !x.all_person_Connections.isEmpty) {
                                 @for((k,v) <- x.all_person_Connections) {
                                     <tr>
-                                        <td> @x.identifikator </td>
-
+                                        <td>@k</td>
                                         <td>
                                             <button onclick="ping_becki('@x.identifikator', '@k' )" class="btn btn-block btn-info btn-xs">Ping</button>
                                             <button onclick="disconnect_becki( '@x.identifikator', '@k' )" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                         </td>
-                                    <tr>
+                                    </tr>
                                 }
                             }
 

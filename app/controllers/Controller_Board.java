@@ -170,7 +170,7 @@ public class Controller_Board extends Controller {
 
             for (String lib_id : help.imported_libraries) {
 
-                System.out.println("Hledám verzi knihovny verzi " + lib_id);
+                terminal_logger.trace("compile_C_Program_code:: Looking for library Version Id " + lib_id);
                 Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
 
                 if (lib_version == null || lib_version.library == null){
@@ -193,9 +193,6 @@ public class Controller_Board extends Controller {
                     for (Model_FileRecord f : lib_version.files) {
 
                         JsonNode json_library = Json.parse(f.get_fileRecord_from_Azure_inString());
-
-                        System.out.println("Jak vypadá Json z Azure??? ");
-                        System.out.println( json_library.toString() );
 
                         Form<Swagger_Library_File_Load> lib_form = Form.form(Swagger_Library_File_Load.class).bind(json_library);
                         if (lib_form.hasErrors()){

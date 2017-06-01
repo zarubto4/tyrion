@@ -20,8 +20,8 @@ public class WS_CompilerServer extends WS_Interface_type {
 /* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
     public String server_address;
-    public Map<String, ObjectNode> compilation_results = new HashMap<>();
-    public Map<String, ObjectNode> compilation_request = new HashMap<>();
+    //public Map<String, ObjectNode> compilation_results = new HashMap<>();
+    //public Map<String, ObjectNode> compilation_request = new HashMap<>();
     public Model_CompilationServer server;
     public boolean security_token_confirm = true;
     public String identifikator;
