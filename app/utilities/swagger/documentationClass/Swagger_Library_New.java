@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import utilities.enums.Enum_Library_state;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(value = "Library_New", description = "Json Model for new Library")
@@ -24,4 +25,5 @@ public class Swagger_Library_New {
     @ApiModelProperty(required = false, value = "Length must be between 8 and 255 characters.")
     public String description;
 
+    public List<String> type_of_board_ids = new ArrayList<>();
 }

@@ -110,6 +110,11 @@ public class Model_VersionObject extends Model {
 
     @JsonProperty
     public Swagger_Person_Short_Detail author(){
+        if (this.author == null) {
+
+            this.author = Model_Person.find.where().eq("version_objects.id", this.id).findUnique();
+            if (this.author == null) return null;
+        }
         return this.author.get_short_person();
     }
 

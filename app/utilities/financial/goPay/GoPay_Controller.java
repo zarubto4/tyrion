@@ -17,6 +17,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.enums.Enum_Currency;
+import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
 
 import utilities.enums.Enum_Recurrence_cycle;
@@ -136,21 +137,10 @@ public class GoPay_Controller extends Controller {
         payment.currency = Enum_Currency.CZK;
         payment.order_description = payment_description;
 
-        if (!product.on_demand && !(product.mode == Enum_Payment_mode.free || product.mode == Enum_Payment_mode.per_credit)) {
+        if (!product.on_demand && product.method == Enum_Payment_method.credit_card) {
 
             payment.recurrence = new Recurrence();
             payment.recurrence.recurrence_cycle = Enum_Recurrence_cycle.ON_DEMAND;
-
-            Calendar cal = Calendar.getInstance();
-
-            if (product.mode == Enum_Payment_mode.monthly) {
-
-                product.monthly_day_period = cal.get(Calendar.DAY_OF_MONTH) > 28 ? 28 : cal.get(Calendar.DAY_OF_MONTH);
-
-            } else if (product.mode == Enum_Payment_mode.annual) {
-
-                product.monthly_year_period = cal.get(Calendar.DAY_OF_YEAR);
-            }
         }
 
         GoPay_Payer payer = new GoPay_Payer();
@@ -289,6 +279,7 @@ public class GoPay_Controller extends Controller {
 
             } catch (Exception e) {
                 terminal_logger.internalServerError("onDemandPayment: ", new Exception("Error getting result"));
+                Thread.sleep(2500);
                 continue;
             }
         /*

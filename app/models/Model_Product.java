@@ -39,10 +39,7 @@ public class Model_Product extends Model {
                                          @Id @ApiModelProperty(required = true) public String id;
                                              @ApiModelProperty(required = true) public String name;
 
-                                 @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Tariff tariff;
-                                       @JsonIgnore @Enumerated(EnumType.STRING) public Enum_Payment_mode mode;
                                        @JsonIgnore @Enumerated(EnumType.STRING) public Enum_Payment_method method;
-
                                        @JsonIgnore @Enumerated(EnumType.STRING) public Enum_BusinessModel business_model;
 
                                              @ApiModelProperty(required = true) public String subscription_id;
@@ -50,9 +47,6 @@ public class Model_Product extends Model {
                                                                     @JsonIgnore public Long gopay_id;
 
                                              @ApiModelProperty(required = true) public boolean active;              // Jestli je projekt aktivní (může být zmražený, nebo třeba ještě neuhrazený platbou)
-
-                                                                    @JsonIgnore public Integer monthly_day_period;  // Den v měsíci, kdy bude obnovována platba // Nejvyšší možné číslo je 28!!!
-                                                                    @JsonIgnore public Integer monthly_year_period; // Měsíc v roce, kdy bude obnovována platba // Nejvyšší možné číslo je 12!!!
 
                                              @ApiModelProperty(required = true) public Date created;
                                                                     @JsonIgnore public boolean on_demand;    // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
@@ -82,29 +76,10 @@ public class Model_Product extends Model {
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @ApiModelProperty(required = false)
     public Double remaining_credit(){
 
-        if (this.mode == Enum_Payment_mode.per_credit) return ((double) this.credit) / 1000;
+        if (this.business_model == Enum_BusinessModel.saas) return ((double) this.credit) / 1000;
         return null;
     }
 
-
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public String product_type(){
-        if (tariff == null) return Model_Tariff.find.where().eq("product.id", id).select("name").findUnique().name;
-
-        return tariff.name;
-    }
-
-
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
-    public String payment_mode(){
-        switch (mode) {
-            case free       : return "free";
-            case monthly    : return "monthly";
-            case annual     : return "annual";
-            case per_credit : return "per_credit";
-            default         : return "Undefined state";
-        }
-    }
 
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
     public String payment_method(){
@@ -233,7 +208,7 @@ public class Model_Product extends Model {
 
             this.gopay_id = null;
             this.on_demand = false;
-            this.mode = Enum_Payment_mode.per_credit;
+            this.method = Enum_Payment_method.bank_transfer;
             this.update();
 
             return true;

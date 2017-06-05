@@ -1,0 +1,463 @@
+@(version: Model_VersionObject)
+
+<section class="content-header">
+    <h1> @version.version_name </h1>
+    <ol class="breadcrumb">
+        <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
+        <li class="active"><i class="fa fa-share"></i> Server Management </li>
+        <li class="active"><i class="fa fa-wrench"></i> C Program Management </li>
+        <li><a href="@routes.Controller_Dashboard.public_libraries()"><i class="fa fa-wrench"></i> Libraries </a></li>
+        <li><a href="@routes.Controller_Dashboard.public_library(version.library.id)"><i class="fa fa-wrench"></i> @version.library.name </a></li>
+        <li class="active"><i class="fa fa-wrench"></i> @version.version_name </li>
+    </ol>
+</section>
+
+<!-- CONTENT -->
+
+<section class="content">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Details</h3>
+                                <div class="btn-group pull-right">
+                                    <button class="btn btn-xs btn-danger" type="button" onclick="removeLibrary()" title="Remove Library Version"><i class="fa fa-times"></i></button>
+                                    <button class="btn btn-xs btn-info" type="button" data-toggle="modal" data-target="#editLibraryVersionModal" title="Edit Library Version"><i class="fa fa-edit"></i></button>
+                                </div>
+                            </div>
+                            <div class="box-body">
+                                <label for="types_of_boards">Types of boards</label>
+                                <div id="types_of_boards" class="form-group">
+                                </div>
+                                <label for="library_description">Description</label>
+                                <textarea id="library_description" class="form-group form-control" readonly rows="3">@version.version_description</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Examples</h3>
+                                <button id="newExampleButton" class="btn btn-xs btn-success disabled pull-right" disabled type="button" data-toggle="modal" data-target="#newExampleModal" title="New Example"><i class="fa fa-plus"></i></button>
+                            </div>
+                            <div class="box-body">
+                                <div id="examples">
+                                </div>
+                            </div>
+                            <div class="box-footer">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Files</h3>
+                                <button id="newFileButton" class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newFileModal" title="New File"><i class="fa fa-plus"></i></button>
+                            </div>
+                            <div class="box-body">
+                                <div class="nav nav-sidebar" id="files">
+                                </div>
+                            </div>
+                            <div class="box-footer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Code Editor</h3>
+                    </div>
+                    <div class="box-body">
+                        <div id="editor">public int main() {
+    int x = 0;
+    return x;
+}</div>
+                    </div>
+                    <div class="box-footer">
+                        <p class="pull-left" id="file_name"></p>
+                        <button id="saveFileButton" disabled class="btn btn-success pull-right disabled" type="button" onclick="saveFile()">Save</button>
+                        <button id="saveExampleButton" disabled class="btn btn-success pull-right disabled" type="button" style="margin-right: 10px;" onclick="saveExample()">Save example</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+</section>
+
+<!-- EDIT VERSION LIBRARY MODAL -->
+
+<div id="editLibraryVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editLibraryVersionModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="editLibraryVersionModalTitle" class="modal-title">Edit Library Version</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editLibraryVersion">
+                    <input class="form-control form-group" title="Name" type="text" name="version_name" value="@version.version_name">
+                    <input class="form-control form-group" title="Description" type="text" name="version_description" value="@version.version_description">
+                </form>
+                <div id="editLibraryVersionModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="editLibraryVersion('@version.id')">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- EDIT VERSION LIBRARY MODAL -->
+
+<div id="newExampleModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newExampleModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newExampleModalTitle" class="modal-title">New Example</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newExample">
+                    <div style="float: left; width: 30%;">
+                        <label>Name</label>
+                        <input id="newExampleName" placeholder="Name" style="display: block" type="text" name="version_name" >
+                    </div>
+                    <div style="width: 100%;">
+                        <label>Description</label>
+                        <input id="newExampleDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="version_description" >
+                    </div>
+                </form>
+                <div id="newExampleModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newExample()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NEW FILE LIBRARY MODAL -->
+
+<div id="newFileModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newFileModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newFileModalTitle" class="modal-title">New File</h4>
+            </div>
+            <div class="modal-body">
+                <form id="newFile">
+                    <label>Name</label>
+                    <p class="text-red">Specify the full path (e.g. "library/folder/file.cpp")</p>
+                    <input id="newFileName" placeholder="Name" style="display: block" type="text" name="file_name" >
+                </form>
+                <div id="newFileModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="newFile()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+   $.ajaxSetup({ cache: false });
+
+   var id = "@version.id";
+
+   var editor;
+
+   var fileContents = [];
+   var exampleContents = [];
+   var openedLibrary = {};
+   var openedVersion = {
+       @if(version != null){
+            id: "@version.id",
+            version_name: "@version.version_name"
+            version_description: "@version.version_description"
+       }
+   };
+   var openedFile = {};
+   var openedExample = {};
+
+   var converter = new showdown.Converter();
+
+   function makeId() {
+       var text = "";
+       var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+       for( var i=0; i < 5; i++ )
+           text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+       return text;
+   }
+
+   function makeJson(data){
+
+       var tree = [];
+       var root = 0;
+
+       function fillTree(content, steps, x) {
+           var current = null,
+                   existing = null,
+                   i = 0;
+           for (var y = 0; y < steps.length; y++) {
+
+               if (y == 0) {
+
+                   if (!tree[root] || !tree[root].children || typeof tree[root].children == 'undefined') {
+                       tree[root] = {text: steps[y], leaf: false, children: []};
+                   }
+
+                   for (var z = 0; z < tree.length; z++) {
+                       if (tree[z].text !== steps[y] && z == (tree.length - 1)){
+                           tree.push({text: steps[y], leaf: false, children: []});
+                           root = z + 1;
+                           break;
+                       }
+                       if (tree[z].text === steps[y]){
+                           root = z;
+                           break;
+                       }
+                   }
+
+                   current = tree[root].children;
+               } else {
+                   existing = null;
+                   for (i = 0; i < current.length; i++) {
+                       if (current[i].text === steps[y]) {
+                           existing = current[i];
+                           break;
+                       }
+                   }
+                   if (existing) {
+                       current = existing.children;
+                   } else {
+                       current.push({text: steps[y], leaf: false, children: []});
+                       current = current[current.length - 1].children;
+                   }
+               }
+           }
+           current.push({text: content, leaf: true, order: x})
+       }
+
+       for (x = 0; x < data.length; x++) {
+           steps = data[x].file_name.split('/');
+           fillTree(data[x].content, steps, x)
+       }
+
+       return tree;
+   }
+
+   function makeTree(t) {
+
+       var content = "<ul style='list-style-type: none; margin: 0; padding: 0;'>";
+
+       if (t.leaf != true) {
+           if (t.children.length == 1 && t.children[0].leaf == true) {
+               content += "<li style='margin: 0; padding: 0;'>" +
+                       "<div class='panel-group' style='margin: 5px 0;' id='" + t.text + "'>" +
+                       "<div class='panel panel-default'>" +
+                       "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                       "<h4 class='panel-title'>" +
+                       "<a onclick=\"" +
+                       "openFile(" + t.children[0].order + ");" +
+                       "\">";
+
+               content += t.text;
+
+               content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeFile(" + t.children[0].order + ")' title='Remove File' style='top: -2px; position: relative;'><i class='fa fa-times'></i></button></h4></div>" +
+                       "<div id='collapse" + t.text + "' class='panel-collapse collapse'>" +
+                       "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+           } else {
+               var randomId = makeId();
+               content += "<li style='margin: 0; padding: 0;'>" +
+                       "<div class='panel-group' style='margin: 5px 0;' id='" + t.text + "'>" +
+                       "<div class='panel panel-default'>" +
+                       "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                       "<h4 class='panel-title'>" +
+                       "<a style='display:block;' data-toggle='collapse' data-parent='#" + t.text + randomId + "' href='#collapse" + t.text + randomId + "'>" + t.text + "</a></h4></div>" +
+                       "<div id='collapse" + t.text + randomId + "' class='panel-collapse collapse'>" +
+                       "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+           }
+           $.each(t.children, function (k, v) {
+               content += makeTree(v);
+           });
+           content += "</div></div></div></div></li>";
+       }
+
+       content += "</ul>";
+
+       return content;
+   }
+
+   function makeStructure(trees){
+
+       var content = "";
+
+       $.each(trees, function (k, v) {
+           content += makeTree(v)
+       });
+
+       return content;
+   }
+
+   function getLibraryVersion(){
+       $.ajax({
+           url: '/library/version/' + id,
+           type: 'GET',
+           headers: {
+               "X-AUTH-TOKEN":getCookie("authToken")
+           },
+           dataType: 'json',
+           success:function(json){
+               openVersion(json);
+           },
+           error:function(e) {
+               alert(JSON.stringify(JSON.parse(e.responseText).message));
+           }
+       })
+   }
+
+   function openVersion(json) {
+
+       openedVersion = json;
+
+       closeFile();
+
+       $('#files').html("");
+       $('#examples').html("");
+
+       if (json.files.length > 0) {
+
+           fileContents = json.files;
+
+           $('#files').append(makeStructure(makeJson(fileContents)));
+       }else{
+           $('#files').append("<p>No files here! Hit the plus button to add o new one.</p>");
+       }
+
+       if (json.examples.length > 0) {
+
+           exampleContents = json.examples;
+
+           $.each(exampleContents, function (k, v) {
+
+               var content = "";
+
+               content += "<ul style='list-style-type: none; padding: 0;'><li style='margin: 0; padding: 0;'>" +
+                       "<div class='panel-group' style='margin: 5px 0;'>" +
+                       "<div class='panel panel-default'>" +
+                       "<div class='panel-heading' style='padding: 5px 10px;'>" +
+                       "<h4 class='panel-title'>" +
+                       "<a onclick=\"" +
+                       "openExample(" + k + ");" +
+                       "\">";
+               content += v.name;
+
+               content += "</a><button class='btn btn-xs btn-danger pull-right' type='button' onclick='removeExample(" + k + ")' title='Remove Example'><i class='fa fa-times'></i></button></h4></div>" +
+                       "<div class='panel-collapse collapse'>" +
+                       "<div class='panel-body' style='padding: 0 5px 0 10px;'>";
+               content += "</div></div></div></div></li></ul>";
+
+               $('#examples').append(content);
+           });
+
+
+       }else{
+           $('#examples').append("<p>No examples here! Hit the plus button to add o new one.</p>");
+       }
+   }
+
+   function editLibraryVersion(id){
+       model_data = $("#editLibraryVersion").serializeObject();
+       $.ajax({
+           url: '@routes.Controller_Library.libraryVersion_update("")' + id,
+           type: 'PUT',
+           contentType: 'application/json',
+           headers: {
+               "X-AUTH-TOKEN":getCookie("authToken"),
+               "Content-Type":"application/json"
+           },
+           data: JSON.stringify(model_data),
+           dataType: 'json',
+           success:function(json){
+               location.reload();
+           },
+           error:function(e) {
+               $("#editLibraryVersionModalMessage").css("display", "block");
+               $("#editLibraryVersionModalMessage p").text(JSON.parse(e.responseText).message);
+               $("#editLibraryVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+           }
+       })
+   }
+
+   function removeLibraryVersion(version_id){
+       $.ajax({
+           url: '@routes.Controller_Library.libraryVersion_delete("")' + version_id,
+           type: 'DELETE',
+           headers: {
+               "X-AUTH-TOKEN":getCookie("authToken")
+           },
+           dataType: 'json',
+           success:function(json){
+               location.reload();
+           },
+           error:function(e) {
+               alert(JSON.stringify(JSON.parse(e.responseText).message));
+           }
+       })
+   }
+
+   function newFile(){
+       openedFile = {file_name: $('#newFileName').val(), content: ''};
+       $('#file_name').text(openedFile.file_name);
+       editor.setValue("// your new file - " + openedFile.file_name,1);
+       $("#newFileModal").modal('hide');
+       $('#newFileName').val("");
+
+       $('#saveFileButton').prop('disabled', false).removeClass('disabled');
+       $('#saveExampleButton').prop('disabled', true).addClass('disabled');
+   }
+
+   function saveFile(){
+
+       var sendFile = {library_files:[]};
+       openedFile.content = editor.getValue();
+       sendFile.library_files[0] = openedFile;
+
+       $.ajax({
+           url: '/library/version/upload_file/' + id,
+           type: 'PUT',
+           contentType: 'application/json',
+           headers: {
+               "X-AUTH-TOKEN":getCookie("authToken"),
+               "Content-Type":"application/json"
+           },
+           data: JSON.stringify(sendFile),
+           dataType: 'json',
+           success:function(json){
+               openVersion(json);
+           },
+           error:function(e) {
+               alert(JSON.stringify(JSON.parse(e.responseText).message));
+           }
+       })
+   }
+
+</script>
+<script>
+        $(function(){
+            editor = ace.edit("editor");
+            //editor.setTheme("ace/theme/eclipse");
+            editor.getSession().setMode("ace/mode/c_cpp");
+        });
+</script>

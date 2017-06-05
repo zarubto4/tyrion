@@ -843,10 +843,8 @@ public class Controller_Finance extends Controller {
             if(Model_Product.get_byNameAndOwner(help.name, person.id) != null) return GlobalResult.result_badRequest("You cannot use same Product name twice!");
 
             Model_Product product   = new Model_Product();
-            product.tariff          = tariff;
             product.name            = help.name;
             product.active          = true;
-            product.mode            = Enum_Payment_mode.free;
             product.method          = Enum_Payment_method.free;
             product.business_model  = Enum_BusinessModel.saas;
 
@@ -890,15 +888,6 @@ public class Controller_Finance extends Controller {
             }
 
             terminal_logger.debug("product_create: Payment details are done");
-
-            if(tariff.payment_mode_required) {
-
-                terminal_logger.debug("product_create: Payment mode Required");
-
-                if(help.payment_mode == null) return GlobalResult.result_badRequest("Payment_mode is required!");
-
-                product.mode = help.payment_mode;
-            }
 
             if(tariff.payment_method_required) {
 
@@ -964,7 +953,7 @@ public class Controller_Finance extends Controller {
             invoice.product = product;
 
             Model_InvoiceItem invoice_item = new Model_InvoiceItem();
-            invoice_item.name = product.tariff.name + " in Mode(" + product.mode.name() + ")";
+            invoice_item.name = "TODO"; // TODO invoice items
             invoice_item.unit_price = product.price() * 30;
             invoice_item.quantity = (long) 1;
             invoice_item.unit_name = "Currency";
@@ -1199,7 +1188,7 @@ public class Controller_Finance extends Controller {
             invoice.method = product.method;
 
             Model_InvoiceItem invoice_item = new Model_InvoiceItem();
-            invoice_item.name = product.product_type() + " in Mode(" + product.mode.name() + ")";
+            invoice_item.name = "TODO";
             invoice_item.unit_price = (long) (help.credit * 1000);
             invoice_item.quantity = (long) 1;
             invoice_item.unit_name = "Currency";
@@ -1393,7 +1382,6 @@ public class Controller_Finance extends Controller {
                 Swagger_Product_Active help = new Swagger_Product_Active();
                 help.id = product.id;
                 help.name = product.name;
-                help.tariff = product.tariff.name;
 
                 products.add(help);
             }
@@ -1453,11 +1441,11 @@ public class Controller_Finance extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Swagger_Invoice_FullDetails.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Invoice_FullDetails.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result invoice_get(String invoice_id){
         try{
@@ -1497,11 +1485,11 @@ public class Controller_Finance extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_Ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong ",       response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result invoice_resend(String invoice_id){
         try{

@@ -27,6 +27,7 @@ import views.html.c_program.aproval_community_procedure.approval_procedure_c_pro
 import views.html.c_program.aproval_community_procedure.approval_procedure_list;
 import views.html.c_program.c_libraries.library;
 import views.html.c_program.c_libraries.library_list;
+import views.html.c_program.c_libraries.library_version;
 import views.html.c_program.public_c_programs.public_c_code;
 import views.html.c_program.public_c_programs.public_c_code_list;
 import views.html.demo_data.demo_data_main;
@@ -581,6 +582,20 @@ public class Controller_Dashboard extends Controller {
 
             Html libraries_content = library.render(model_library);
             return return_page(libraries_content);
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result public_library_version(String version_id){
+        try {
+
+            Model_VersionObject version = Model_VersionObject.find.byId(version_id);
+            if (version == null) return GlobalResult.result_notFound("Version not found");
+
+            Html content = library_version.render(version);
+            return return_page(content);
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());

@@ -70,7 +70,7 @@ public class Controller_Library extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Library_New> form = Form.form(Swagger_Library_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Library_New help = form.get();
 
 
@@ -85,6 +85,15 @@ public class Controller_Library extends Controller {
                 Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null || !project.update_permission()) return GlobalResult.result_notFound("Project project_id not found");
                 library.project_id = project.id;
+            }
+
+            for (String type_of_board_id : help.type_of_board_ids) {
+
+                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+                if (typeOfBoard != null) {
+
+                    library.type_of_boards.add(typeOfBoard);
+                }
             }
 
             // Kontorluji oprávnění těsně před uložením
@@ -179,7 +188,8 @@ public class Controller_Library extends Controller {
             Query<Model_Library> query = Ebean.find(Model_Library.class);
             query.where().eq("removed_by_user", false);
 
-
+            if (!help.type_of_board_ids.isEmpty())
+                query.where().in("type_of_boards.id", help.type_of_board_ids);
 
             if(help.project_id != null){
                 if(help.inlclude_public) {

@@ -1,4 +1,3 @@
-@import models.Model_Library
 
 <section class="content-header">
     <h1> Libraries </h1>
@@ -17,18 +16,13 @@
             <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">Filter settings</h3>
-                    <div class="pull-right">
-                        <div class="btn-group">
-                            <button class="btn btn-block btn-info" type="button" onclick="showNewBoard()">New Board</button>
-                        </div>
-                    </div>
                 </div>
                 <div class="box-body">
-                    <form id="boardFilterForm">
+                    <form id="libraryFilterForm">
                         <table id="filterTable" class="table table-condensed no-padding no-margin">
                             <tr>
-                                <th class="col-md-2">Type of Board</th>
-                                <th class="col-md-1">Parameters</th>
+                                <th>Type of Board</th>
+                                <th>Parameters</th>
                             </tr>
                             <tr>
                                 <td>
@@ -52,7 +46,7 @@
                     </form>
                 </div>
                 <div class="box-footer">
-                    <button class="btn pull-right btn-warning" type="button" onclick="filter()">Filter</button>
+                    <button class="btn btn-xs pull-right btn-warning" type="button" onclick="filter()">Filter</button>
                 </div>
             </div>
         </div>
@@ -65,45 +59,23 @@
                     <div class="pull-right">
                         <div class="btn-group">
                             <button class="btn btn-xs btn-success pull-right" type="button" data-toggle="modal" data-target="#newLibraryModal" title="New Library"><i class="fa fa-plus"></i></button>
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
+                        </div>
+                    </div>
                 </div>
                 <div class="box-body">
-                    <label>All Types of Boards</label>
-                    <table id="allTypesOfBoards" class="table table-bordered">
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>For type of Boards</th>
-                            <th>Tags</th>
+                    <table id="libraries" class="table table-bordered">
 
-                            <th>OPEN</th>
-                            <th>DELETE</th>
-                        </tr>
-                        @for(library <- Model_Library.find.where().isNull("project_id").findList()) {
-                            <tr>
-                                <td>@library.id</td>
-                                <td>@library.name</td>
-                                <td>@library.description</td>
-
-                                <td>
-                                    @for(type_of_board <- library.type_of_boards){
-                                       @type_of_board.name + ", "
-                                    }
-                                </td>
-                                <td>
-                                    TODO
-                                </td>
-
-                                <td><a href='@routes.Controller_Dashboard.public_library(library.id)'><button class="btn btn-block btn-info"   type="button"> Edit </button></a></td>
-                                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteLibrary('@library.id')">Delete</button></td>
-                            </tr>
-                        }
                     </table>
                 </div>
                 <div class="box-footer">
-        </div>
+                    <div class="dataTables_paginate paging_simple_numbers" id="all_table_paginate" style="text-align: center;">
+                        <ul class="pagination" id="pagination" style="margin: 10px;">
+                            <li class="paginate_button previous disabled" id="all_table_previous">
+                                Zero pages!
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -120,24 +92,22 @@
             </div>
             <div class="modal-body">
                 <form id="newLibrary">
-                    <div style="float: left; width: 30%;">
-                        <label>Name</label>
-                        <input id="newLibraryName" placeholder="Name" style="display: block" type="text" name="name" >
-                    </div>
-                    <div style="width: 100%;">
-                        <label>Description</label>
-                        <input id="newLibraryDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
-                    </div>
-
+                    <input class="form-control form-group" id="newLibraryName" placeholder="Name" type="text" name="name" >
+                    <input class="form-control form-group" id="newLibraryDescription" placeholder="Description" type="text" name="description" >
                     <!--
                     <div style="width: 100%;">
                         <label>Tags</label>
                         <input id="tags" placeholder="tags" style="display: block; width: 70%;" type="text" name="tags" >
                     </div>
                     -->
-
-                    <label>Long Description(markdown)</label>
-                    <textarea style="width: 100%;" id="newLibraryLongDescription" rows="5" name="long_description"></textarea>
+                    <textarea class="form-control form-group" placeholder="Markdown description" id="newLibraryLongDescription" rows="5" name="long_description"></textarea>
+                    <div>
+                        <select id="newLibrarySelectTypeOfBoard" name="type_of_board_ids[]" class="form-control form-group" multiple style="display: block; width: 100%;">
+                        @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
+                            <option value="@type_of_board.id"> @type_of_board.name </option>
+                        }
+                        </select>
+                    </div>
                 </form>
                 <div id="newLibraryModalMessage" style="display: none"><p class="text-red"></p></div>
             </div>
@@ -151,51 +121,193 @@
 
     <script>
 
-          function newLibrary(){
-              $.ajax({
-                  url: '@routes.Controller_Library.library_create()',
-                  type: 'POST',
-                  contentType: 'application/json',
-                  headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken"),
-                      "Content-Type":"application/json"
-                  },
-                  data: JSON.stringify($("#newLibrary").serializeObject()),
-                  dataType: 'json',
-                  success:function(json){
-                      location.reload();
-                  },
-                  error:function(e) {
-                      $("#newLibraryModalMessage").css("display", "block");
-                      $("#newLibraryModalMessage p").text(JSON.parse(e.responseText).message);
-                      $("#newLibraryModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
-                  }
-              })
-          }
+        var page = 1;
 
-          function deleteLibrary(id){
-              $.ajax({
-                  url: '/library/' + id,
-                  type: 'DELETE',
-                  headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken")
-                  },
-                  dataType: 'json',
-                  success:function(json){
-                      window.location.reload();
-                  },
-                  error:function(e) {
-                      alert(JSON.stringify(JSON.parse(e.responseText).message));
-                  }
-              })
-          }
+        function newLibrary(){
+            $.ajax({
+                url: '@routes.Controller_Library.library_create()',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify($("#newLibrary").serializeObject()),
+                dataType: 'json',
+                success:function(json){
+                    location.reload();
+                },
+                error:function(e) {
+                    $("#newLibraryModalMessage").css("display", "block");
+                    $("#newLibraryModalMessage p").text(JSON.parse(e.responseText).message);
+                    $("#newLibraryModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+                }
+            })
+        }
 
-          $(function () {
+        function deleteLibrary(id){
+            $.ajax({
+                url: '/library/' + id,
+                type: 'DELETE',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken")
+                },
+                dataType: 'json',
+                success:function(json){
+                    window.location.reload();
+                },
+                error:function(e) {
+                    alert(JSON.stringify(JSON.parse(e.responseText).message));
+                }
+            })
+        }
 
-              $('#selectTypeOfBoard').select2({
-                  placeholder: "Select multiple",
-                  allowClear: false
-              });
-          });
+        $(function () {
+
+            $('#selectTypeOfBoard').select2({
+                placeholder: "Select multiple",
+                allowClear: false
+            });
+
+            $('#newLibrarySelectTypeOfBoard').select2({
+                placeholder: "Select multiple",
+                allowClear: false
+            });
+
+            filter();
+        });
+
+        function filter() {
+
+            var model_data = $("#libraryFilterForm").serializeObject();
+
+            $.ajax({
+
+                url: '/library/list/' + page,
+                type: 'PUT',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                data: JSON.stringify(model_data),
+                dataType: 'json',
+
+                success: function(json) {
+                    showLibraries(json);
+                    makePagination(json.pages)
+                },
+
+                error: function(data) {
+                    BootstrapDialog.show({
+                        message: syntaxHighlight(data),
+                        type: BootstrapDialog.TYPE_DANGER,
+                        buttons: [{
+                            label: 'Close',
+                            action: function(dialogItself) {
+                                dialogItself.close();
+                            }
+                        }]
+
+                    });
+                }
+            })
+        }
+
+        function showLibraries(json) {
+
+            var content = "";
+
+            $('#libraries').html(""); // Vyprázdnění tabulky
+
+            content +="<tr>";
+            content +="<th>ID</th>";
+            content +="<th>Name</th>";
+            content +="<th>Description</th>";
+            content +="<th>For type of Boards</th>";
+            content +="<th>Tags</th>";
+            content +="<th>OPEN</th>";
+            content +="<th>DELETE</th>";
+            content +="</tr>";
+
+
+
+            $.each(json.content, function (k, v) {
+                content += "<tr>";
+
+                content += "<td>" + v.id + "</td>";
+
+                content += "<td>" + v.name +"</td>";
+                content += "<td>" + v.description +"</td>";
+
+                content += "<td>";
+                $.each(v.type_of_board_names, function (key, value) {
+                    content += "<span class=\"label label-primary\">" + value + "</span> ";
+                });
+                content += "</td>";
+
+                content += "<td></td>";
+                content += "<td><a href='/admin/library/" + v.id + "'><button class='btn btn-xs btn-block btn-info'   type='button'> Edit </button></a></td>";
+                content += "<td><button class='btn btn-xs btn-block btn-danger' type='button' onclick=\"deleteLibrary('" + v.id + "')\">Delete</button></td>";
+
+                content += "</tr>";
+            });
+
+            $('#libraries').append(content);
+        }
+
+        function makePagination(pages) {
+
+            var content = "";
+
+            if (page == 1){
+                content += "<li class='paginate_button previous disabled' id='all_table_next'><a>Previous</a></li>";
+            } else {
+                content += "<li class='paginate_button previous' id='all_table_next'><a onclick=\"pageCall('previous',null)\">Previous</a></li>";
+            }
+
+            $.each(pages, function (k, v) {
+                if (v == page){
+                    content += "<li class='paginate_button active'><a onclick=\"pageCall('normal'," + v + ")\">" + v + "</a></li>";
+                } else {
+                    content += "<li class='paginate_button'><a onclick=\"pageCall('normal'," + v + ")\">" + v + "</a></li>";
+                }
+            });
+
+            if (page == pages.length){
+                content += "<li class='paginate_button next disabled' id='all_table_next'><a>Next</a></li>";
+            } else {
+                content += "<li class='paginate_button next' id='all_table_next'><a onclick=\"pageCall('next',null)\">Next</a></li>";
+            }
+
+            $("#pagination").html(content);
+
+            if (page == 1){
+                $("#all_table_previous").prop("disabled", "disabled").addClass("disabled");
+            }
+
+            if (page == (pages.length + 1)){
+                $("#all_table_next").prop("disabled", "disabled").addClass("disabled");
+            }
+        }
+
+        function pageCall(type, number) {
+            switch (type){
+                case 'normal':{
+                    page = number;
+                    break;
+                }
+                case 'previous':{
+                    page--;
+                    break;
+                }
+                case 'next':{
+                    page++;
+                    break;
+                }
+            }
+
+            filter();
+        }
 
     </script>

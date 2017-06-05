@@ -492,6 +492,7 @@ GET       /admin/c_program/aprove/:c_program_id                         @control
 # Admin - Libraries
 GET       /admin/library/libraries                                      @controllers.Controller_Dashboard.public_libraries()
 GET       /admin/library/:library_id                                    @controllers.Controller_Dashboard.public_library(library_id)
+GET       /admin/library/version/:version_id                            @controllers.Controller_Dashboard.public_library_version(version_id)
 
 
 
