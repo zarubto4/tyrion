@@ -374,7 +374,7 @@ GET       /m_program/version/:m_program_version_id                      @control
 DELETE    /m_program/version/:m_program_version_id                      @controllers.Controller_Grid.remove_M_Program_version(m_program_version_id)
 
 # Terminals Aps
-GET       /m_program/app/token/:qr_token                                @controllers.Controller_Grid.get_M_Program_byQR_Token_forMobile(qr_token)
+GET       /m_program/app/token/*qr_token                                @controllers.Controller_Grid.get_M_Program_byQR_Token_forMobile(qr_token)
 GET       /m_program/app/all_m_programs                                 @controllers.Controller_Grid.get_M_Project_all_forTerminal()
 PUT       /m_program/app/url                                            @controllers.Controller_Grid.get_conection_url()
 
@@ -385,6 +385,7 @@ PUT       /websocket/terminal/identificator/:terminal_id                @control
 POST      /grid_widget                                                  @controllers.Controller_Grid.gridWidget_create()
 PUT       /grid_widget/order/up/:grid_widget_id                         @controllers.Controller_Grid.gridWidget_order_up(grid_widget_id)
 PUT       /grid_widget/order/down/:grid_widget_id                       @controllers.Controller_Grid.gridWidget_order_down(grid_widget_id)
+
 PUT       /grid_widget/:grid_widget_id                                  @controllers.Controller_Grid.gridWidget_update(grid_widget_id)
 GET       /grid_widget/:grid_widget_id                                  @controllers.Controller_Grid.gridWidget_get(grid_widget_id)
 DELETE    /grid_widget/:grid_widget_id                                  @controllers.Controller_Grid.gridWidget_delete(grid_widget_id)
@@ -401,6 +402,11 @@ POST      /grid_widget/scheme/version                                   @control
 GET       /grid_widget/scheme/version                                   @controllers.Controller_Grid.gridWidgetVersion_getScheme()
 PUT       /grid_widget/scheme/version                                   @controllers.Controller_Grid.gridWidgetVersion_editScheme()
 
+# Wigets / Admin Approval
+PUT       /admin/grid_widget/disapprove                                 @controllers.Controller_Grid.grid_widget_public_Disapprove()
+PUT       /admin/grid_widget/approval                                   @controllers.Controller_Grid.grid_widget_public_Approval()
+
+
 #TypeOfWidget
 POST      /type_of_widget                                               @controllers.Controller_Grid.typeOfWidget_create()
 GET       /type_of_widget                                               @controllers.Controller_Grid.typeOfWidget_getAll()
@@ -411,9 +417,8 @@ GET       /type_of_widget/:type_of_widget_id                            @control
 PUT       /type_of_widget/:type_of_widget_id                            @controllers.Controller_Grid.typeOfWidget_update(type_of_widget_id)
 DELETE    /type_of_widget/:type_of_widget_id                            @controllers.Controller_Grid.typeOfWidget_delete(type_of_widget_id)
 
-# Approval
-PUT       /grid/disapprove                                              @controllers.Controller_Grid.gridDisapprove()
-PUT       /grid/approval                                                @controllers.Controller_Grid.gridApproval()
+
+
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################

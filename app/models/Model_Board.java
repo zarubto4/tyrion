@@ -713,7 +713,10 @@ public class Model_Board extends Model {
 
             if(firmware_plans.size() == 0){
 
-                if( board.actual_c_program_version != null && !report.firmware_build_id.equals( board.actual_c_program_version.c_compilation.firmware_build_id)){
+                if(report.firmware_build_id != null)                // Hází to null pointer exception při náběhu instnací na homerovi a touhle stupidní kaskádou se hledalo na čem
+                if(board.actual_c_program_version != null)
+                if(board.actual_c_program_version.c_compilation != null)
+                if(!report.firmware_build_id.equals( board.actual_c_program_version.c_compilation.firmware_build_id)){
 
                     terminal_logger.debug("hardware_firmware_state_check::     Different versions versus database");
                     terminal_logger.debug("hardware_firmware_state_check::     Auto-backup on Hardware is set to :: " + board.backup_mode );

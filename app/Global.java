@@ -110,7 +110,7 @@ public class Global extends GlobalSettings {
         terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Closing cache layer" + Enum_Terminal_Color.ANSI_RESET);
         Server_Cache.stopCache();
 
-        if(Server.server_mode == Enum_Tyrion_Server_mode.developer || Server.server_mode == Enum_Tyrion_Server_mode.stage){
+        if(Server.server_mode == Enum_Tyrion_Server_mode.developer){
             try {
 
                 terminal_logger.warn("onStop: You have developer version - System removes CRON task from your RAM");

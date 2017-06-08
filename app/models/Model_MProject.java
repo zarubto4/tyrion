@@ -38,7 +38,7 @@ public class Model_MProject extends Model {
 
 
     @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "m_project")  public List<Model_MProjectProgramSnapShot> snapShots = new ArrayList<>();
-    @JsonIgnore @ApiModelProperty(required = true) @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL) public List<Model_MProgram> m_programs = new ArrayList<>();
+    @JsonIgnore @ApiModelProperty(required = true) @OneToMany(mappedBy="m_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_MProgram> m_programs = new ArrayList<>();
 
 
     @JsonIgnore  public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
@@ -47,7 +47,7 @@ public class Model_MProject extends Model {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String                               project_id() {  return project.id; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Program_Short_Detail> m_programs() { List<Swagger_M_Program_Short_Detail>   l = new ArrayList<>();    for( Model_MProgram m  : m_programs)    l.add(m.get_m_program_short_detail()); return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Program_Short_Detail> m_programs() { List<Swagger_M_Program_Short_Detail>   l = new ArrayList<>();    for( Model_MProgram m  :  get_m_programs_not_deleted())    l.add(m.get_m_program_short_detail()); return l;}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -63,7 +63,7 @@ public class Model_MProject extends Model {
             swagger_m_project_short_detail.delete_permission = delete_permission();
             swagger_m_project_short_detail.update_permission = update_permission();
 
-            for (Model_MProgram program : m_programs)
+            for (Model_MProgram program :  get_m_programs_not_deleted())
                 swagger_m_project_short_detail.programs.add(program.get_m_program_short_detail());
 
             return swagger_m_project_short_detail;
@@ -72,6 +72,13 @@ public class Model_MProject extends Model {
             terminal_logger.internalServerError(e);
             return null;
         }
+    }
+
+/* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public List<Model_MProgram> get_m_programs_not_deleted(){
+        return Model_MProgram.find.where().eq("m_project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

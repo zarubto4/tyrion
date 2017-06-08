@@ -116,14 +116,14 @@ public class Swagger_Boards_For_Blocko {
             m_project_short_detail_for_blocko.name = project.name;
             m_project_short_detail_for_blocko.description = project.description;
 
-            for(Model_MProgram program : project.m_programs){
+            for(Model_MProgram program : project.get_m_programs_not_deleted()){
 
                 Swagger_M_Program_Short_Detail_For_Blocko m_program_short_detail_for_blocko = new Swagger_M_Program_Short_Detail_For_Blocko();
                 m_program_short_detail_for_blocko.id = program.id;
                 m_program_short_detail_for_blocko.name =program.name;
                 m_program_short_detail_for_blocko.description = program.description;
 
-                for(Model_VersionObject version_object :program.getVersion_objects()){
+                for(Model_VersionObject version_object : program.getVersion_objects_not_removed_by_person()){
 
                     Swagger_M_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_M_Program_Versions_Short_Detail_For_Blocko();
                     versions_short_detail_for_blocko.id = version_object.id;

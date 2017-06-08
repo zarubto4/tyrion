@@ -29,7 +29,7 @@ public class Model_MProgramInstanceParameter extends Model {
     @JsonIgnore @ManyToOne()  public Model_MProjectProgramSnapShot m_project_program_snapshot; //(Vazba Done)
     @JsonIgnore @ManyToOne()  public Model_VersionObject m_program_version;                    //(Vazba Done)
 
-    @JsonIgnore public String                          connection_token;        // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
+    @JsonIgnore public String                            connection_token;        // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
     @JsonIgnore public Enum_MProgram_SnapShot_settings   snapshot_settings;       // Typ Aplikace
 
 
@@ -45,7 +45,24 @@ public class Model_MProgramInstanceParameter extends Model {
         // If there is no instance - token is not required for showing.
         if(get_instance() == null) {
             return null;
-        }else return connection_token;
+
+        }else {
+
+            if( snapshot_settings() == Enum_MProgram_SnapShot_settings.absolutely_public  && ( connection_token == null || connection_token.length() < 1) ){
+
+                System.out.println("connection_token() absolutely_public nastavuji UUID");
+                connection_token = UUID.randomUUID().toString();
+                this.update();
+            }else {
+
+                System.out.println("connection_token() absolutely_public UUID je nastavené ");
+            }
+
+
+        }
+
+
+            return connection_token;
 
     }
 
@@ -70,26 +87,43 @@ public class Model_MProgramInstanceParameter extends Model {
 
             case absolutely_public:{
 
-                return Server.grid_app_main_url + "/dhkahjshkfjsadgjkhjghkasdfjghkfsadjhkgafdshjgkadsfghjkadfsghjksdfkhjgsadfjhkgadfshjkgadfsjhkgsadfjhkg" ; // Lock je nesystémové dočasné řešení Cokoliv za lomitkem značí nemožnst výběru
+                return Server.grid_app_main_url + "/grid?"
+                        + "s="      + snapshot_settings.name()              // s >> settings
+                        + "&i="      + get_instance().blocko_instance_name   // i >> instance
+                        + "&m="       + version_object_id()                   // m >> m_program
+                        + "&t="       + connection_token()                   // t >> conection token
+                        + "&l=1";
+
             }
 
             case public_with_token:{
 
-                return Server.grid_app_main_url + "/dhkahjshkfjsadgjkhjghkasdfjghkfsadjhkgafdshjgkadsfghjkadfsghjksdfkhjgsadfjhkgadfshjkgadfsjhkgsadfjhkg" ; // Lock je nesystémové dočasné řešení Cokoliv za lomitkem značí nemožnst výběru
+                return Server.grid_app_main_url + "/grid?"
+                        + "s="      + snapshot_settings.name()              // s >> settings
+                        + "&i="      + get_instance().blocko_instance_name   // i >> instance
+                        + "&t="      + connection_token()                    // t >> conection token
+                        + "&m="       + version_object_id()                   // m >> m_program
+                        + "&l=1";
 
             }
 
             case only_for_project_members:{
 
-
-                return Server.grid_app_main_url + "/" +  instance.blocko_instance_name + "/" + m_program_version.m_program.id + "/" + "lock"; // Lock je nesystémové dočasné řešení Cokoliv za lomitkem značí nemožnst výběru
+                return Server.grid_app_main_url + "/grid?"
+                        + "s="      + snapshot_settings.name()              // s >> settings
+                        + "&i="      + get_instance().blocko_instance_name   // i >> instance
+                        + "&m="       + version_object_id()                   // m >> m_program
+                        + "&l=1";
 
             }
 
             case only_for_project_members_and_imitated_emails:{
 
-                return Server.grid_app_main_url + "/dhkahjshkfjsadgjkhjghkasdfjghkfsadjhkgafdshjgkadsfghjkadfsghjksdfkhjgsadfjhkgadfshjkgadfsjhkgsadfjhkg" ; // Lock je nesystémové dočasné řešení Cokoliv za lomitkem značí nemožnst výběru
-
+                return Server.grid_app_main_url + "/grid?"
+                        + "s="      + snapshot_settings.name()              // s >> settings
+                        + "&i="      + get_instance().blocko_instance_name   // i >> instance
+                        + "&m="       + version_object_id()                   // m >> m_program
+                        + "&l=1";
             }
         }
 

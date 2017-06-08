@@ -54,7 +54,7 @@ public class Model_MProgram extends Model{
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Program_Version_Short_Detail> program_versions() {
         List<Swagger_M_Program_Version_Short_Detail> versions = new ArrayList<>();
-        for(Model_VersionObject v : getVersion_objects()) versions.add(v.get_short_m_program_version());
+        for(Model_VersionObject v : getVersion_objects_not_removed_by_person()) versions.add(v.get_short_m_program_version());
         return versions;
     }
 
@@ -80,7 +80,7 @@ public class Model_MProgram extends Model{
 
     // Objekt určený k vracení verze - Fatch lazy!!
     @JsonIgnore @Transient
-    public List<Model_VersionObject> getVersion_objects() {
+    public List<Model_VersionObject> getVersion_objects_not_removed_by_person() {
         return Model_VersionObject.find.where().eq("m_program.id", this.id).eq("removed_by_user", false).order().desc("date_of_create").findList();
     }
 
@@ -139,7 +139,7 @@ public class Model_MProgram extends Model{
 
             List<Swagger_M_Program_Version_Interface> versions = new ArrayList<>();
 
-            for (Model_VersionObject v : getVersion_objects()) {
+            for (Model_VersionObject v : getVersion_objects_not_removed_by_person()) {
                 Swagger_M_Program_Version_Interface help = new Swagger_M_Program_Version_Interface();
                 help.version_object = v;
                 help.virtual_input_output = v.m_program_virtual_input_output;
