@@ -13,6 +13,9 @@ import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
 import utilities.enums.Enum_Tyrion_Server_mode;
+import utilities.errors.Exceptions.Tyrion_Exp_ForbidenPermission;
+import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
+import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -685,111 +688,48 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Program_Version.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 200, message = "Ok Result",  response = Swagger_M_Program_Version.class),
+            @ApiResponse(code = 400, message = "Bad Request - Probably token is not valid anymore", response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
+            @ApiResponse(code = 477, message = "External Server is offline", response = Result_ServerOffline.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_M_Program_byQR_Token_forMobile(String qr_token){
         try{
 
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Snapshot Settings: "    + request().getQueryString("s"));
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Instance ID: "          + request().getQueryString("i"));
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Connection token: "     + request().getQueryString("t"));
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: M Program Version: "    + request().getQueryString("m"));
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Lock: "                 + request().getQueryString("l"));
+            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Parameter id: "      + request().getQueryString("p"));
+            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Connection token: "  + request().getQueryString("t"));
+            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Lock: "              + request().getQueryString("l"));
 
 
-            // Tato metoda dokáže variabilně vracet data podle zvoleného query parameteru. Je to taková zkurvená varianta plánovaného
-            // GraphQL. Podle vstupních dat se pokusí Tyrion vrátit vše s tím, že ověřuje, zda na to má uživatel právo.
-            // Dokáže si z HTTP hlavičky vytáhnout Token.
+            Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.byId(request().getQueryString("p"));
+            if(parameter == null) return GlobalResult.notFoundObject("Parameter p not found in database");
 
 
-            if( request().getQueryString("i") == null ) return  GlobalResult.notFoundObject("i parameter in query not found");
-            if( request().getQueryString("s") == null ) return  GlobalResult.notFoundObject("s parameter in query not found");
-
-
-            // OBJEKT který se variabilně naplní a vrátí
-            Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-
-
-
-            if(request().getQueryString("i") != null){
-
-                Model_HomerInstance instance = Model_HomerInstance.find.where().eq("blocko_instance_name",  request().getQueryString("i") ).findUnique();
-                if(instance == null) return GlobalResult.notFoundObject("Instance not found");
-                if(instance.actual_instance == null) return GlobalResult.notFoundObject("Instance is not running");
-
-
-                Enum_MProgram_SnapShot_settings settings = Enum_MProgram_SnapShot_settings.valueOf(request().getQueryString("s"));
-
-                // Compilator is not valid in this line
-                if(settings == null){
-                    terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Settings is null: " + request().getQueryString("s") + " or not recognized");
-                }
-
-                Model_VersionObject m_program_version = Model_VersionObject.find.byId(request().getQueryString("m"));
-                if(m_program_version == null)  return GlobalResult.notFoundObject("M Program Version not found");
-
-
-                // Nastavení SSL
-                if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-                    summary.url = "ws://";
-                }else{
-                    summary.url = "wss://";
-                }
-
-
-                switch (settings){
-
-                    case not_in_instance:{
-                        return GlobalResult.notFoundObject("SnapShot_settings is not valid! not_in_instance is not allowed");
-                    }
-
-                    case absolutely_public:{
-
-                        summary.url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/" + request().getQueryString("t");
-                        summary.token = request().getQueryString("t");
-                        summary.m_program = Model_MProgram.get_m_code(m_program_version);
-
-                        return GlobalResult.result_ok(Json.toJson(summary));
-                    }
-
-                    case public_with_token:{
-
-                        summary.url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
-                        summary.m_program = Model_MProgram.get_m_code(m_program_version);
-
-                        return GlobalResult.result_ok(Json.toJson(summary));
-
-                    }
-
-                    case only_for_project_members:{
-
-                        summary.url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
-                        summary.m_program = Model_MProgram.get_m_code(m_program_version);
-
-                        return GlobalResult.result_ok(Json.toJson(summary));
-                    }
-
-                    case only_for_project_members_and_imitated_emails:{
-
-                        summary.url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
-                        summary.m_program = Model_MProgram.get_m_code(m_program_version);
-
-                        return GlobalResult.result_ok(Json.toJson(summary));
-                    }
-
-                }
+            if(parameter.snapshot_settings() == Enum_MProgram_SnapShot_settings.not_in_instance){
+                return GlobalResult.badRequest("QR token is not valid anymore");
             }
 
+            try{
 
+                return GlobalResult.result_ok(Json.toJson(parameter.get_connection_summary( request().getQueryString("t"), ctx() )));
 
+            }catch (Tyrion_Exp_ForbidenPermission e){
 
+                return GlobalResult.forbidden_Permission();
 
+            }catch (Tyrion_Exp_ObjectNotValidAnymore e){
 
-            return GlobalResult.result_ok(Json.toJson(summary));
+                return GlobalResult.result_BadRequest("QR token is not valid anymore");
+
+            }catch (Tyrion_Exp_Unauthorized e){
+
+                return GlobalResult.result_Unauthorized();
+
+            }
+
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());

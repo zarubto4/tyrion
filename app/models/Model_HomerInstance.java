@@ -32,6 +32,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
+import static models.Model_GridTerminal.private_prefix;
+import static models.Model_GridTerminal.public_prefix;
+import static models.Model_MProgramInstanceParameter.parameter_prefix;
+
 
 @Entity
 @ApiModel(description = "Model of HomerInstance",
@@ -1201,37 +1205,59 @@ public class Model_HomerInstance extends Model {
             terminal_logger.debug("cloud_GRID verification_token::  Checking Token");
             WS_HomerServer server = Controller_WebSocket.homer_servers.get(server_id());
 
-            Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
 
-            if(terminal == null){
-                terminal_logger.warn("cloud_verification_token:: Grid_Terminal object not found!");
-                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
-                return;
-            }
+            if(help.token.contains(public_prefix) || help.token.contains(private_prefix)   ){
 
-            Integer size;
+                Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
 
-            if(terminal.person == null) {
-                terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
-                size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId).eq("actual_instance.version_object.public_version", true).findRowCount();
-            }else {
-                terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
-                size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId)
+                if(terminal == null){
+                    terminal_logger.warn("cloud_verification_token:: Grid_Terminal object not found!");
+                    Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+                    return;
+                }
+
+                Integer size;
+
+                if(terminal.person == null) {
+                    terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
+                    size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId).eq("actual_instance.version_object.public_version", true).findRowCount();
+                }else {
+                    terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
+                    size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId)
                             .disjunction()
-                                .eq("b_program.project.participants.person.id", terminal.person.id)
-                                .eq("actual_instance.version_object.public_version", true)
+                            .eq("b_program.project.participants.person.id", terminal.person.id)
+                            .eq("actual_instance.version_object.public_version", true)
                             .findRowCount();
-            }
+                }
 
-            if(size == 0){
-                terminal_logger.warn("cloud_verification_token:: Token found but this user has not permission!");
-                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+                if(size == 0){
+                    terminal_logger.warn("cloud_verification_token:: Token found but this user has not permission!");
+                    Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+                    return;
+                }
+
+                terminal_logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
+                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(true));
                 return;
+
             }
 
-            terminal_logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
-            Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(true));
-            return;
+            if(help.token.contains(parameter_prefix)){
+
+
+                Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.where().eq("connection_token", help.token).findUnique();
+
+                if(parameter == null) Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+
+                else Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(parameter.verify_token_for_homer_grid_connection(help)));
+
+
+            }
+
+
+
+
+            terminal_logger.error("cloud_verification_token_GRID - Token not recognized!");
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);

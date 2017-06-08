@@ -125,7 +125,7 @@ public class GlobalResult extends Controller {
     public static Result result_external_server_is_offline(String message){
 
         CoreResponse.cors();
-        Result_NotFound result = new Result_NotFound();
+        Result_ServerOffline result = new Result_ServerOffline();
         result.message = message;
         result.code = 477;
         return Controller.status(477, Json.toJson(result));

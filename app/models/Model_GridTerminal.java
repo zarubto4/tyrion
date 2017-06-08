@@ -41,21 +41,28 @@ public class Model_GridTerminal extends Model {
 
 
     // lokální nedořešené oprávnění
-    @ApiModelProperty(required = true)  public boolean ws_permission;
-    @ApiModelProperty(required = true)  public boolean m_program_access;
-    @ApiModelProperty(required = true)  public boolean up_to_date;
+    @ApiModelProperty(required = true)  public boolean ws_permission;       // TODO smazat
+    @ApiModelProperty(required = true)  public boolean m_program_access;    // TODO smazat
+    @ApiModelProperty(required = true)  public boolean up_to_date;          // TODO smazat
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+
+    public static final String private_prefix = "tprt_";
+    public static final String public_prefix  = "tprt_";
+
     @JsonIgnore @Override
     public void save() {
-         if(person != null) this.terminal_token = "private_grid_token_" + UUID.randomUUID().toString() + UUID.randomUUID().toString();
-         else               this.terminal_token = "public_grid_token_" + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+                                                   // Dont change this prefix - its used on another places
+         if(person != null) this.terminal_token = private_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();  // terminal private token _
+         else               this.terminal_token = public_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();  // terminal public token _
 
         super.save();
     }
+
+
 
     @JsonIgnore @Override public void update() {
 

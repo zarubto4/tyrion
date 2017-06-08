@@ -6,11 +6,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
+import play.mvc.Http;
 import utilities.Server;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
+import utilities.enums.Enum_Tyrion_Server_mode;
+import utilities.errors.Exceptions.Tyrion_Exp_ForbidenPermission;
+import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
+import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
 import utilities.logger.Class_Logger;
+import utilities.login_entities.Secured_API;
+import utilities.swagger.outboundClass.Swagger_Mobile_Connection_Summary;
+import web_socket.message_objects.homer_instance.WS_Message_Grid_token_verification;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.UUID;
 
 
@@ -40,6 +49,8 @@ public class Model_MProgramInstanceParameter extends Model {
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
+    public static final String parameter_prefix = "part_";
+
     @JsonProperty @Transient String connection_token(){
 
         // If there is no instance - token is not required for showing.
@@ -51,7 +62,7 @@ public class Model_MProgramInstanceParameter extends Model {
             if( snapshot_settings() == Enum_MProgram_SnapShot_settings.absolutely_public  && ( connection_token == null || connection_token.length() < 1) ){
 
                 System.out.println("connection_token() absolutely_public nastavuji UUID");
-                connection_token = UUID.randomUUID().toString();
+                connection_token = parameter_prefix + UUID.randomUUID().toString();   // parameter token _
                 this.update();
             }else {
 
@@ -83,46 +94,37 @@ public class Model_MProgramInstanceParameter extends Model {
 
           case not_in_instance:{
                   return null;
-              }
+          }
+
 
             case absolutely_public:{
 
-                return Server.grid_app_main_url + "/grid?"
-                        + "s="      + snapshot_settings.name()              // s >> settings
-                        + "&i="      + get_instance().blocko_instance_name   // i >> instance
-                        + "&m="       + version_object_id()                   // m >> m_program
-                        + "&t="       + connection_token()                   // t >> conection token
-                        + "&l=1";
+                // Má předgenerovaný token - který svou platnost pozbývá jen zrušením (přechodem na jiný typ sdílení)
 
+                return Server.grid_app_main_url + "/grid?"
+                        + "p="      + this.id.toString()                      // p >> id
+                        + "&t="       + connection_token()                    // t >> conection token
+                        + "&l=1";
             }
 
             case public_with_token:{
 
                 return Server.grid_app_main_url + "/grid?"
-                        + "s="      + snapshot_settings.name()              // s >> settings
-                        + "&i="      + get_instance().blocko_instance_name   // i >> instance
-                        + "&t="      + connection_token()                    // t >> conection token
-                        + "&m="       + version_object_id()                   // m >> m_program
+                        + "p="      + this.id.toString()                      // p >> id
                         + "&l=1";
-
             }
 
             case only_for_project_members:{
 
                 return Server.grid_app_main_url + "/grid?"
-                        + "s="      + snapshot_settings.name()              // s >> settings
-                        + "&i="      + get_instance().blocko_instance_name   // i >> instance
-                        + "&m="       + version_object_id()                   // m >> m_program
+                        + "p="      + this.id.toString()                      // p >> id
                         + "&l=1";
-
             }
 
             case only_for_project_members_and_imitated_emails:{
 
                 return Server.grid_app_main_url + "/grid?"
-                        + "s="      + snapshot_settings.name()              // s >> settings
-                        + "&i="      + get_instance().blocko_instance_name   // i >> instance
-                        + "&m="       + version_object_id()                   // m >> m_program
+                        + "p="      + this.id.toString()                      // p >> id
                         + "&l=1";
             }
         }
@@ -144,13 +146,127 @@ public class Model_MProgramInstanceParameter extends Model {
     @JsonIgnore  @Transient  private Model_HomerInstance instance;  // Jelikož se několikrát odkazuji na instanci - dočasnou proměnou snižuji počet SQL vyhledávání
     @JsonIgnore  @Transient  private boolean instance_exist_searched = false;        // Abych se neptal znova
 
-    private Model_HomerInstance get_instance(){
+    @JsonIgnore  @Transient private Model_HomerInstance get_instance(){
         if(instance_exist_searched) return instance;
         instance_exist_searched = true;
         instance = Model_HomerInstance.find.where().eq("actual_instance.version_object.b_program_version_snapshots.id", m_project_program_snapshot.id).findUnique();
         return instance;
     }
 
+    /**
+     *
+     * @param request_connection_token - Can be null!!
+     * @return Swagger_Mobile_Connection_Summary
+     * @throws VerifyError
+     */
+    @JsonIgnore  @Transient public Swagger_Mobile_Connection_Summary get_connection_summary(String request_connection_token, Http.Context context) throws Tyrion_Exp_ForbidenPermission, Tyrion_Exp_ObjectNotValidAnymore, Tyrion_Exp_Unauthorized {
+
+        // OBJEKT který se variabilně naplní a vrátí
+        Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
+
+
+        // Nastavení SSL
+        if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
+            summary.url = "ws://";
+        }else{
+            summary.url = "wss://";
+        }
+
+        switch (snapshot_settings()){
+
+
+            case not_in_instance:{
+
+                throw new Tyrion_Exp_ObjectNotValidAnymore("Token is required");
+            }
+
+            case absolutely_public:{
+
+                summary.url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
+                summary.token = connection_token();
+                summary.m_program = Model_MProgram.get_m_code(m_program_version);
+
+                return summary;
+            }
+
+            case public_with_token:{
+
+                if( request_connection_token == null){
+                    throw new Tyrion_Exp_Unauthorized("Token is required");
+                }
+
+                summary.url += instance.cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
+                summary.m_program = Model_MProgram.get_m_code(m_program_version);
+                summary.token = request_connection_token;
+
+                return summary;
+
+            }
+
+            case only_for_project_members:{
+
+                String token = new Secured_API().getUsername(context);
+
+                if(token == null || token.length() < 20) throw new Tyrion_Exp_Unauthorized("Login is required");
+
+                Model_Person person = Controller_Security.get_person();
+                if(person == null) throw new Tyrion_Exp_Unauthorized("Login is required");
+
+                if(!read_permission()) throw new Tyrion_Exp_ForbidenPermission("Login is required");
+
+
+                Model_GridTerminal terminal = new Model_GridTerminal();
+                terminal.device_name = "Unknown";
+                terminal.device_type = "Unknown";
+                terminal.date_of_create = new Date();
+
+                if( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+                else  terminal.user_agent = "Unknown browser";
+
+                terminal.person = person;
+                terminal.save();
+
+                summary.url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + terminal.terminal_token;
+                summary.m_program = Model_MProgram.get_m_code(m_program_version);
+                summary.token = terminal.terminal_token;
+
+                return summary;
+            }
+
+
+            // TODO doimplementovat
+            case only_for_project_members_and_imitated_emails:{
+
+                summary.url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
+                summary.m_program = Model_MProgram.get_m_code(m_program_version);
+
+                return summary;
+            }
+
+        }
+
+        throw new VerifyError("Invalid settings on Instance Grid App permissions");
+
+    }
+
+
+    @JsonIgnore  @Transient public boolean verify_token_for_homer_grid_connection(WS_Message_Grid_token_verification verification){
+
+       if(!get_instance().blocko_instance_name.equals( verification.instanceId)) return false;
+
+       switch (snapshot_settings()){
+
+           case not_in_instance:{
+               return true;
+           }
+
+           default: {
+              return connection_token.equals(verification.token);
+           }
+           
+       }
+
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -203,8 +319,6 @@ public class Model_MProgramInstanceParameter extends Model {
 
 
     }
-
-
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
