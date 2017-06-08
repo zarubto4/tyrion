@@ -55,7 +55,7 @@ public class Fakturoid_Controller extends Controller {
             terminal_logger.warn("fakturoid_callback: Body: {}", request().body().asJson());
 
             // Finding in DB
-            Model_Invoice invoice = Model_Invoice.find.where().eq("fakturoid_id", help.invoice_id).findUnique();
+            Model_Invoice invoice = Model_Invoice.find.where().eq("proforma_id", help.invoice_id).findUnique();
             if (invoice == null) throw new NullPointerException("Invoice is null. Cannot find it in database.");
 
             switch (help.status){
