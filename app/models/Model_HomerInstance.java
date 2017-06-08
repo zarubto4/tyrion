@@ -1205,9 +1205,20 @@ public class Model_HomerInstance extends Model {
             WS_HomerServer server = Controller_WebSocket.homer_servers.get(server_id());
 
 
-            if(help.token.contains(public_prefix) || help.token.contains(private_prefix)   ){
+            Model_GridTerminal terminal = null;
+            Model_MProgramInstanceParameter parameter =null;
 
-                Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
+            terminal = Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
+            if(terminal == null) parameter = Model_MProgramInstanceParameter.find.where()
+                    .eq("connection_token", help.token)
+                    .isNotNull("m_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
+                    .findUnique();
+
+
+            // Terminal is not null - Ita clasic terminal connection
+            if(terminal != null){
+
+                Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
 
                 if(terminal == null){
                     terminal_logger.warn("cloud_verification_token:: Grid_Terminal object not found!");
@@ -1241,22 +1252,15 @@ public class Model_HomerInstance extends Model {
 
             }
 
-            if(help.token.contains(parameter_prefix)){
-
-
-                Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.where().eq("connection_token", help.token).findUnique();
-
-                if(parameter == null) Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
-
-                else Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(parameter.verify_token_for_homer_grid_connection(help)));
-
-
+            // Terminal is not null - Its a parameter connection
+            if(parameter != null){
+                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(parameter.verify_token_for_homer_grid_connection(help)));
             }
 
+            terminal_logger.warn("cloud_verification_token_GRID - Token not recognized!");
+            Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
 
 
-
-            terminal_logger.error("cloud_verification_token_GRID - Token not recognized!");
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
