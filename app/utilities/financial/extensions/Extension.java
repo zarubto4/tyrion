@@ -8,11 +8,18 @@ import models.Model_ProductExtension.Config;
 public interface Extension {
 
     /**
-     * Counts the actual price of the extension.
+     * Should only divide the calculated price by Server.financial_spendDailyPeriod.
      * @param config The configuration of given extension.
      * @return Long price based on the type of the extension and individual configuration.
      */
-    Long getPrice(Config config);
+    Long getActualPrice(Config config);
+
+    /**
+     * Calculates the price of the extension for one day.
+     * @param config The configuration of given extension.
+     * @return Long price based on the type of the extension and individual configuration.
+     */
+    Long getDailyPrice(Config config);
 
     /**
      * Gets the default monthly price based on the type of the extension.

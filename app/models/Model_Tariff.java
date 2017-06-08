@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_BusinessModel;
 import utilities.enums.Enum_Payment_method;
-import utilities.enums.Enum_Payment_mode;
 import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
@@ -111,7 +110,7 @@ public class Model_Tariff extends Model {
     public Double total_per_month(){
         Long total_price = (long) 0;
         for(Model_ProductExtension extension : this.extensions_included){
-            Long price = extension.getPrice();
+            Long price = extension.getActualPrice();
 
             if(price != null)
                 total_price += price;

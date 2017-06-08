@@ -8,10 +8,19 @@ public class Extension_RestApi implements Extension {
 
     public static final String name = Configuration.root().getString("Financial.extensions.restApi.name");
     public static final String description = Configuration.root().getString("Financial.extensions.restApi.description");
-    public static final Long price = Configuration.root().getLong("Financial.extensions.restApi.price") / Server.financial_spendDailyPeriod;
+    public static final Long price = Configuration.root().getLong("Financial.extensions.restApi.price");
     public static final Integer count = 5;
 
-    public Long getPrice(Config config) {
+    /*
+     !!!Important!!!
+     Final calculated price must be divided by Server.financial_spendDailyPeriod.
+      */
+    public Long getActualPrice(Config config) {
+
+        return getDailyPrice(config) / Server.financial_spendDailyPeriod;
+    }
+
+    public Long getDailyPrice(Config config) {
 
         return config.price * config.count;
     }

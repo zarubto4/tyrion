@@ -57,7 +57,7 @@ public class Model_ProductExtension extends Model{
     public Price price(){
         try {
             Price price = new Price();
-            price.USD = ((double) getPrice()) / 1000;
+            price.USD = ((double) getActualPrice()) / 1000;
             return price;
         } catch (Exception e) {
             return null;
@@ -163,17 +163,33 @@ public class Model_ProductExtension extends Model{
     }
 
     @JsonIgnore
-    public Long getPrice() {
+    public Long getActualPrice() {
         try {
 
             Extension extension = getExtensionType();
 
             if (extension == null) return null;
 
-            return ( extension.getPrice(getConfig()));
+            return (extension.getActualPrice(getConfig()));
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("Model_ProductExtension:: getPrice:", e);
+            terminal_logger.internalServerError("getActualPrice:", e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public Long getDailyPrice() {
+        try {
+
+            Extension extension = getExtensionType();
+
+            if (extension == null) return null;
+
+            return (extension.getDailyPrice(getConfig()));
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("getActualPrice:", e);
             return null;
         }
     }
@@ -205,7 +221,7 @@ public class Model_ProductExtension extends Model{
             return extension;
 
         } catch (Exception e){
-            terminal_logger.internalServerError("Model_ProductExtension:: getExtensionType:", e);
+            terminal_logger.internalServerError("getExtensionType:", e);
             return null;
         }
     }
@@ -240,7 +256,7 @@ public class Model_ProductExtension extends Model{
             return types;
 
         } catch (Exception e){
-            terminal_logger.internalServerError("Model_ProductExtension:: getExtensionTypes:", e);
+            terminal_logger.internalServerError("getExtensionTypes:", e);
             return new ArrayList<>();
         }
     }

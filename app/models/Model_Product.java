@@ -101,7 +101,7 @@ public class Model_Product extends Model {
     public Long price(){
         Long total = 0L;
         for(Model_ProductExtension extension : this.extensions){
-            Long price = extension.getPrice();
+            Long price = extension.getActualPrice();
 
             if(price != null)
                 total += price;
@@ -258,6 +258,8 @@ public class Model_Product extends Model {
             }
 
             history.history.add(event);
+
+            terminal_logger.debug("archiveEvent: {}", Json.toJson(event));
 
             this.financial_history = Json.toJson(history).toString();
             this.update();

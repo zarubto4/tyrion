@@ -436,7 +436,7 @@ public class Controller_Grid extends Controller {
 
     @ApiOperation(value = "Remove  Version of M_Program",
             tags = {"M_Program"},
-            notes = "remove bersion of M_Program",
+            notes = "remove version of M_Program",
             produces = "application/json",
             protocols = "https",
             code = 201,

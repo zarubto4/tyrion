@@ -304,7 +304,7 @@ public class Fakturoid_Controller extends Controller {
 
             terminal_logger.debug("sendInvoiceEmail: Trying send PDF Invoice to User Email");
 
-            byte[] body = download_PDF_invoice("invoice", invoice);
+            byte[] body = download_PDF_invoice(invoice.proforma ? "proforma" : "invoice", invoice);
 
             if(body.length < 1){
                 terminal_logger.warn("Incoming File from Fakturoid is empty!");
@@ -340,7 +340,7 @@ public class Fakturoid_Controller extends Controller {
     public static void sendInvoiceReminderEmail(Model_Invoice invoice, String message){
         try{
 
-            byte[] body = Fakturoid_Controller.download_PDF_invoice("invoice", invoice);
+            byte[] body = Fakturoid_Controller.download_PDF_invoice(invoice.proforma ? "proforma" : "invoice", invoice);
 
             String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
@@ -770,6 +770,8 @@ public class Fakturoid_Controller extends Controller {
      */
     public static byte[] download_PDF_invoice(String type, Model_Invoice invoice){
 
+        terminal_logger.debug("download_PDF_invoice: type: {}", type);
+
             int terminator = 3;
             while (terminator >= 0) {
                 try {
@@ -802,7 +804,6 @@ public class Fakturoid_Controller extends Controller {
 
                         --terminator;
                         Thread.sleep(2500);
-
                     }
 
                 } catch (InterruptedException e) {
@@ -812,6 +813,5 @@ public class Fakturoid_Controller extends Controller {
 
         terminal_logger.error("download_PDF_invoice:: Error:: PDF Download un-successfully to byte[]");
         throw new NullPointerException("File not found");
-
     }
 }
