@@ -14,7 +14,6 @@ import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import utilities.Server;
-import utilities.document_db.DocumentDB;
 import utilities.document_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.Enum_Cloud_HomerServer_type;
@@ -241,7 +240,7 @@ public class Model_HomerServer extends Model{
                             return;
                         }
 
-                        Model_Board.un_registred_device_connected(homer, form.get());
+                        Model_Board.un_registered_device_connected(homer, form.get());
                         return;
                     }
 

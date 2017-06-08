@@ -360,8 +360,8 @@ public class Model_Board extends Model {
 
 /* SERVER WEBSOCKET  --------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  Model_HomerInstance homer_instance = null; // SLouží pouze k uchovávání get_instance()!
-    @JsonIgnore @Transient  public Model_HomerInstance get_instance(){
+    @JsonIgnore @Transient Model_HomerInstance homer_instance = null; // SLouží pouze k uchovávání get_instance()!
+    @JsonIgnore @Transient public Model_HomerInstance get_instance(){
 
             // Buď zkoumám virutální instnaci
             if (virtual_instance_under_project != null) {
@@ -382,7 +382,7 @@ public class Model_Board extends Model {
     }
 
     // Kontrola připojení
-    @JsonIgnore @Transient  public static void master_device_Connected(WS_HomerServer server, WS_Message_Yoda_connected help){
+    @JsonIgnore @Transient public static void master_device_Connected(WS_HomerServer server, WS_Message_Yoda_connected help){
         try {
 
             terminal_logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.deviceId);
@@ -410,7 +410,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void master_device_Disconnected(WS_Message_Yoda_disconnected help){
+    @JsonIgnore @Transient public static void master_device_Disconnected(WS_Message_Yoda_disconnected help){
         try {
 
             terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.deviceId + " on offline ");
@@ -433,7 +433,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Connected(WS_HomerServer server, WS_Message_Device_connected help){
+    @JsonIgnore @Transient public static void device_Connected(WS_HomerServer server, WS_Message_Device_connected help){
         try {
 
             terminal_logger.trace("device_Connected:: Updating device status " +  help.deviceId + " on online ");
@@ -457,7 +457,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void device_Disconnected(WS_Message_Device_disconnected help){
+    @JsonIgnore @Transient public static void device_Disconnected(WS_Message_Device_disconnected help){
         try {
 
             terminal_logger.trace("device_Disconnected::  status " +  help.deviceId + " on offline ");
@@ -482,17 +482,17 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static void un_registred_device_connected(WS_HomerServer homer_server, WS_Message_Unregistred_device_connected report) {
-        terminal_logger.debug("un_registred_device_connected:: " + report.deviceId);
+    @JsonIgnore @Transient public static void un_registered_device_connected(WS_HomerServer homer_server, WS_Message_Unregistred_device_connected report) {
+        terminal_logger.debug("un_registered_device_connected:: " + report.deviceId);
 
         Model_Board board = Model_Board.get_byId(report.deviceId);
         if(board == null){
-            terminal_logger.warn("un_registred_device_connected:: Unknown device tries to connect:: " + report.deviceId);
+            terminal_logger.warn("un_registered_device_connected:: Unknown device tries to connect:: " + report.deviceId);
             return;
         }
 
         if(board.project == null){
-            terminal_logger.debug("un_registred_device_connected:: is registed under server:: " + homer_server.identifikator + " Server name:: " + Model_HomerServer.get_model(homer_server.identifikator).personal_server_name);
+            terminal_logger.debug("un_registered_device_connected:: is registed under server:: " + homer_server.identifikator + " Server name:: " + Model_HomerServer.get_model(homer_server.identifikator).personal_server_name);
             board.connected_server = Model_HomerServer.get_model(homer_server.identifikator);
             board.is_active = true;
             board.update();
@@ -503,7 +503,7 @@ public class Model_Board extends Model {
         if(board.project != null){
             // Kontrola zda virtuální instance Projektu má stejný server jako je deska teď - Kdyžtak desku přeregistruji jinam!
             if(board.get_instance() != null){
-                terminal_logger.warn("un_registred_device_connected:: Board without own instance! " + report.deviceId);
+                terminal_logger.warn("un_registered_device_connected:: Board without own instance! " + report.deviceId);
                 return;
             }
             if(!board.get_instance().cloud_homer_server.unique_identificator.equals(homer_server.identifikator)){
@@ -817,7 +817,7 @@ public class Model_Board extends Model {
     }
 
 
-    @JsonIgnore @Transient  public void device_change_server(Model_HomerServer homerServer){
+    @JsonIgnore @Transient public void device_change_server(Model_HomerServer homerServer){
 
         try {
 
@@ -1026,7 +1026,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static void update_backup(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
+    @JsonIgnore @Transient public static void update_backup(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
 
         try {
 
@@ -1100,7 +1100,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient  public static WS_Message_Board_set_autobackup set_auto_backup(Model_Board board_for_update){
+    @JsonIgnore @Transient public static WS_Message_Board_set_autobackup set_auto_backup(Model_Board board_for_update){
         try{
 
             terminal_logger.debug("set_auto_backup :: operation");
