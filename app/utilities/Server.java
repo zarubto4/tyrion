@@ -157,7 +157,7 @@ public class Server {
                 becki_mainUrl                   = "https://" + Configuration.root().getString("Becki." + server_mode + ".mainUrl");
 
                 // Nastavení adresy, kde běží Grid APP
-                grid_app_main_url                   = "https://" + Configuration.root().getString("Grid_App." + server_mode + ".mainUrl");
+                grid_app_main_url               = "https://" + Configuration.root().getString("Grid_App." + server_mode + ".mainUrl");
 
                 // Swagger URL Redirect - Actual Rest Api docu
                 link_api_swagger    = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
@@ -178,7 +178,7 @@ public class Server {
                 becki_mainUrl               = "https://" + Configuration.root().getString("Becki." + server_mode + ".mainUrl");
 
                 // Nastavení adresy, kde běží Grid APP
-                grid_app_main_url                   = "https://" + Configuration.root().getString("Grid_App." + server_mode + ".mainUrl");
+                grid_app_main_url           = "https://" + Configuration.root().getString("Grid_App." + server_mode + ".mainUrl");
 
                 // Swagger URL Redirect - Actual Rest Api docu
                 link_api_swagger            = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";

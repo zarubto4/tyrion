@@ -324,7 +324,8 @@ public class Model_MProgramInstanceParameter extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean read_permission(){
+    @JsonIgnore @Transient
+    public boolean read_permission(){
 
         // check permission if program is in instance
         if(get_instance() != null){
@@ -334,7 +335,9 @@ public class Model_MProgramInstanceParameter extends Model {
         // if not (for programers of blocko versions)
         return m_program_version.m_program.read_permission();
     }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission(){
+
+    @JsonProperty @Transient @ApiModelProperty(required = true)
+    public boolean edit_permission(){
         // check permission if program is in instance
         if(get_instance() != null){
             return  get_instance().getB_program().edit_permission();
