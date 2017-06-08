@@ -137,15 +137,15 @@ public class CustomScheduler {
                                 .withSchedule(dailyAtHourAndMinute(3,30))// Spuštění každý den v 03:30 AM
                                 .build()
                 );
-/*
-                // 5) Kontrola a fakturace klientů na měsíční bázi
+
+                // 5) Kontrola a fakturace klientů na denní bázi
                 terminal_logger.debug("start: Scheduling new Job - Spending Credit");
                 scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("spending_credit") ).build(),
                         newTrigger().withIdentity(spend_credit_key).startNow()
-                                .withSchedule(repeatMinutelyForever())// Spuštění každých 5 minut
+                                .withSchedule(spend_credit_period)
                                 .build()
                 );
-*/
+
                 // 6) Slouží ke kontrole plateb na localhostu, kam nám gopay nemůže poslat notifikace
                 if(Server.server_mode == Enum_Tyrion_Server_mode.developer ) {
                     terminal_logger.debug("start: Scheduling new Job - Artificial Financial Callback");

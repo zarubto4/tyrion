@@ -106,7 +106,7 @@ public class Job_SpendingCredit implements Job {
 
             terminal_logger.info("spend: product ID: {}", product.id );
             Long total_spending = product.price(); // Extension prices summary
-            int daily = Server.financial_spendDailyPeriod; //The number "1" determines how many times on one day is credit spent.
+            int daily = Server.financial_spendDailyPeriod; // The number determines how many times on one day is credit spent.
 
             terminal_logger.debug("spend: total spending: {}", total_spending);
             terminal_logger.debug("spend: state before: {}", product.credit);

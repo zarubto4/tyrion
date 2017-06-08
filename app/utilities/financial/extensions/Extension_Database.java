@@ -1,5 +1,6 @@
 package utilities.financial.extensions;
 
+import models.Model_ProductExtension;
 import models.Model_ProductExtension.Config;
 import play.Configuration;
 import utilities.Server;
@@ -8,10 +9,19 @@ public class Extension_Database implements Extension {
 
     public static final String name = Configuration.root().getString("Financial.extensions.database.name");
     public static final String description = Configuration.root().getString("Financial.extensions.database.description");
-    public static final Long price = Configuration.root().getLong("Financial.extensions.database.price") / Server.financial_spendDailyPeriod;
+    public static final Long price = Configuration.root().getLong("Financial.extensions.database.price");
     public static final Integer count = 1;
 
-    public Long getPrice(Config config) {
+    /*
+     !!!Important!!!
+     Final calculated price must be divided by Server.financial_spendDailyPeriod.
+      */
+    public Long getActualPrice(Config config) {
+
+        return getDailyPrice(config) / Server.financial_spendDailyPeriod;
+    }
+
+    public Long getDailyPrice(Config config) {
 
         return config.price * config.count;
     }

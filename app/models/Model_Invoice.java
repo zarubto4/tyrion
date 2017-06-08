@@ -138,7 +138,7 @@ public class Model_Invoice extends Model {
 
             Model_InvoiceItem item = new Model_InvoiceItem();
             item.name = extension.name;
-            item.unit_price = extension.getPrice() * 30; // TODO nacacheovat ceny, getPrice() je potenciálně drahá operace.
+            item.unit_price = extension.getDailyPrice() * 30; // TODO nacacheovat ceny, getDailyPrice() je potenciálně drahá operace.
             item.quantity = (long) 1; // TODO
             item.unit_name = "Pcs";
             item.currency = Enum_Currency.USD;
