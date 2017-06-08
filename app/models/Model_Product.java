@@ -4,11 +4,13 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.*;
@@ -16,6 +18,7 @@ import utilities.financial.FinancialPermission;
 import utilities.financial.history.History;
 import utilities.financial.history.HistoryEvent;
 import utilities.financial.goPay.GoPay_Controller;
+import utilities.financial.products.*;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
 
@@ -54,20 +57,18 @@ public class Model_Product extends Model {
                                                                     @JsonIgnore public Long credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
 
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String financial_history;
+                                 @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
 
-
-    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Project> projects = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)    public List<Model_Invoice> invoices = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Project>          projects    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Invoice>          invoices    = new ArrayList<>();
+                @OneToMany(mappedBy="product", cascade = CascadeType.ALL)                           public List<Model_ProductExtension> extensions  = new ArrayList<>();
 
                                           @OneToOne(mappedBy="product", cascade = CascadeType.ALL)  public Model_PaymentDetails payment_details;
 
-                                          @OneToMany(mappedBy="product", cascade = CascadeType.ALL) public List<Model_ProductExtension> extensions = new ArrayList<>();
-
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true)
-    @JsonProperty public List<Model_Invoice> invoices(){
+    @ApiModelProperty(required = true) @JsonProperty
+    public List<Model_Invoice> invoices(){
 
         if(this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.where().eq("product.id", this.id).order().desc("created").findList();
         return invoices;
@@ -80,8 +81,7 @@ public class Model_Product extends Model {
         return null;
     }
 
-
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String payment_method(){
         try{
             switch (method) {
@@ -95,10 +95,11 @@ public class Model_Product extends Model {
         }
     }
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public Long price(){
-        Long total = (long) 0;
+        Long total = 0L;
         for(Model_ProductExtension extension : this.extensions){
             Long price = extension.getPrice();
 
@@ -208,7 +209,6 @@ public class Model_Product extends Model {
 
             this.gopay_id = null;
             this.on_demand = false;
-            this.method = Enum_Payment_method.bank_transfer;
             this.update();
 
             return true;
@@ -226,7 +226,7 @@ public class Model_Product extends Model {
             if (this.financial_history == null || this.financial_history.equals("")) return new History();
 
             Form<History> form = Form.form(History.class).bind(Json.parse(this.financial_history));
-            if(form.hasErrors()) throw new Exception("Error parsing product financial history. Errors: " + form.errorsAsJson());
+            if(form.hasErrors()) throw new Exception("Error parsing product financial history. Errors: " + form.errorsAsJson(Lang.forCode("en-US")));
             History help = form.get();
 
             // Sorting the list
@@ -252,6 +252,11 @@ public class Model_Product extends Model {
             event.invoice_id = invoice_id;
             event.date = new Date().toString();
 
+            while (history.history.size() >= 100) {
+
+                history.history.remove(history.history.size() - 1);
+            }
+
             history.history.add(event);
 
             this.financial_history = Json.toJson(history).toString();
@@ -262,8 +267,134 @@ public class Model_Product extends Model {
         }
     }
 
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore
+    public Long getLastSpending(){
+        try {
 
+            return getFinancialHistory().last_spending;
+        } catch (Exception e){
+            terminal_logger.internalServerError("getLastSpending:", e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public void credit_spend(Long credit){
+
+        this.credit -= credit;
+
+        try {
+
+            History history = getFinancialHistory();
+            history.last_spending = credit;
+
+            this.financial_history = Json.toJson(history).toString();
+
+
+        } catch (Exception e){
+            terminal_logger.internalServerError("credit_spend:", e);
+        }
+
+        this.update();
+    }
+
+    @JsonIgnore
+    public JsonNode setConfiguration(){ // TODO
+
+        Form<?> form;
+
+        switch (business_model) {
+
+            case alpha:{
+                form = Form.form(Configuration_Alpha.class).bindFromRequest();
+                break;
+            }
+
+            case saas:{
+                form = Form.form(Configuration_Saas.class).bindFromRequest();
+                break;
+            }
+
+            case fee:{
+                form = Form.form(Configuration_Fee.class).bindFromRequest();
+                break;
+            }
+
+            case cal:{
+                form = Form.form(Configuration_Cal.class).bindFromRequest();
+                break;
+            }
+
+            case integrator:{
+                form = Form.form(Configuration_Integrator.class).bindFromRequest();
+                break;
+            }
+
+            case integration:{
+                form = Form.form(Configuration_Integration.class).bindFromRequest();
+                break;
+            }
+
+            default: form = Form.form(Configuration_Saas.class).bindFromRequest(); break;
+        }
+
+        if(form.hasErrors()) return form.errorsAsJson();
+
+        this.configuration = Json.toJson(form.get()).toString();
+        return null;
+    }
+
+    @JsonIgnore
+    public Object getConfiguration(){
+        try {
+
+            Form<?> form;
+
+            switch (business_model) {
+
+                case alpha:{
+                    form = Form.form(Configuration_Alpha.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case saas:{
+                    form = Form.form(Configuration_Saas.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case fee:{
+                    form = Form.form(Configuration_Fee.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case cal:{
+                    form = Form.form(Configuration_Cal.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case integrator:{
+                    form = Form.form(Configuration_Integrator.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case integration:{
+                    form = Form.form(Configuration_Integration.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                default: throw new Exception("Business model is unknown.");
+            }
+
+            if(form.hasErrors()) throw new Exception("Error parsing product configuration. Errors: " + form.errorsAsJson());
+            return form.get();
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("getConfiguration:",e);
+            return null;
+        }
+    }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -495,11 +626,3 @@ public class Model_Product extends Model {
     public static Model.Finder<String,Model_Product> find = new Finder<>(Model_Product.class);
 
 }
-
-
-
-
-
-
-
-

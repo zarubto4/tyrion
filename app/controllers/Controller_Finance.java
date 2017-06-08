@@ -1,5 +1,6 @@
 package controllers;
 
+import com.avaje.ebean.annotation.Transactional;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
@@ -57,19 +58,13 @@ public class Controller_Finance extends Controller {
 
             tariff.color                    = help.color;
 
-            tariff.payment_required         = help.payment_required;
             tariff.credit_for_beginning     = (long) (help.credit_for_beginning * 1000);
 
             tariff.company_details_required = help.company_details_required;
-            tariff.payment_mode_required    = help.payment_mode_required;
             tariff.payment_method_required  = help.payment_method_required;
 
             tariff.credit_card_support      = help.credit_card_support;
             tariff.bank_transfer_support    = help.bank_transfer_support;
-
-            tariff.mode_annually            = help.mode_annually;
-            tariff.mode_credit              = help.mode_credit;
-            tariff.free_tariff              = help.free_tariff;
 
             tariff.active                   = true;
 
@@ -105,18 +100,11 @@ public class Controller_Finance extends Controller {
 
             tariff.color                    = help.color;
 
-            tariff.payment_required         = help.payment_required;
-
             tariff.company_details_required = help.company_details_required;
-            tariff.payment_mode_required    = help.payment_mode_required;
             tariff.payment_method_required  = help.payment_method_required;
 
             tariff.credit_card_support      = help.credit_card_support;
             tariff.bank_transfer_support    = help.bank_transfer_support;
-
-            tariff.mode_annually            = help.mode_annually;
-            tariff.mode_credit              = help.mode_credit;
-            tariff.free_tariff              = help.free_tariff;
 
             tariff.update();
 
@@ -820,6 +808,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Transactional
     public Result product_create(){
         try{
 
@@ -941,10 +930,8 @@ public class Controller_Finance extends Controller {
 
             product.refresh();
 
-            if(!tariff.payment_required) {
-                terminal_logger.debug("product_create:: Payment is not required!");
-                return GlobalResult.result_created(Json.toJson(product));
-            }
+            return GlobalResult.result_created(Json.toJson(product));
+            /*
 
             terminal_logger.debug("product_create:: Creating invoice");
 
@@ -972,7 +959,7 @@ public class Controller_Finance extends Controller {
             invoice = GoPay_Controller.singlePayment("First Payment", product, invoice);
 
             return Controller.ok(Json.toJson(invoice));
-
+            */
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -986,11 +973,11 @@ public class Controller_Finance extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "List of users Products",    response =  Model_Product.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "List of users Products",    response = Model_Product.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result product_getAll(){
         try{
@@ -1188,10 +1175,10 @@ public class Controller_Finance extends Controller {
             invoice.method = product.method;
 
             Model_InvoiceItem invoice_item = new Model_InvoiceItem();
-            invoice_item.name = "TODO";
-            invoice_item.unit_price = (long) (help.credit * 1000);
-            invoice_item.quantity = (long) 1;
-            invoice_item.unit_name = "Currency";
+            invoice_item.name = "Credit upload";
+            invoice_item.unit_price = 1L;
+            invoice_item.quantity = (long) (help.credit * 1000);
+            invoice_item.unit_name = "Credit";
             invoice_item.currency = Enum_Currency.USD;
 
             invoice.invoice_items.add(invoice_item);

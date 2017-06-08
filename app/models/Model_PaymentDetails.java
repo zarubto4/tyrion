@@ -41,6 +41,7 @@ public class Model_PaymentDetails extends Model {
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String zip_code;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String country;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String invoice_email;
+    @ApiModelProperty(required = false,value = "Used for billing and invoices") public String bank_account;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 

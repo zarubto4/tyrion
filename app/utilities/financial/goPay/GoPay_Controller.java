@@ -137,7 +137,7 @@ public class GoPay_Controller extends Controller {
         payment.currency = Enum_Currency.CZK;
         payment.order_description = payment_description;
 
-        if (!product.on_demand && product.method == Enum_Payment_method.credit_card) {
+        if (product.on_demand && product.gopay_id == null) {
 
             payment.recurrence = new Recurrence();
             payment.recurrence.recurrence_cycle = Enum_Recurrence_cycle.ON_DEMAND;
@@ -221,7 +221,6 @@ public class GoPay_Controller extends Controller {
                     product.archiveEvent("On demand payment", "On demand GoPay payment number: " + invoice.gopay_id + " was set", invoice.id);
 
                     product.gopay_id = invoice.gopay_id;
-                    product.on_demand = true;
                     product.update();
                 }
             }

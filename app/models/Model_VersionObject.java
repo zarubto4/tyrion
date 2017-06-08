@@ -443,10 +443,7 @@ public class Model_VersionObject extends Model {
                 c_compilation.date_of_create = new Date();
                 c_compilation.update();
 
-
-
-                Result_ok result = new Result_ok();
-                return result;
+                return new Result_Ok();
 
              //   return (ObjectNode) Json.toJson(new Swagger_Compilation_Ok());
 
@@ -484,7 +481,6 @@ public class Model_VersionObject extends Model {
                 result.message = "Server side Error!";
                 return result;
             }
-
         }
 
         c_compilation.status = Enum_Compile_status.undefined;

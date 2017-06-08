@@ -34,41 +34,41 @@ public class Global extends GlobalSettings {
             // Set Logs
             Server_Logger.set_Logger();
 
-           //1
+            //1
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Setting logback configuration" + Enum_Terminal_Color.ANSI_RESET);
             Server.setLogback();
 
-           //2
+            //2
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +  "onStart: Setting global values" + Enum_Terminal_Color.ANSI_RESET);
-           Server.setServerValues();
+            Server.setServerValues();
 
-           //3
+            //3
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Setting system Permission" + Enum_Terminal_Color.ANSI_RESET);
-           Server.setPermission();
+            Server.setPermission();
 
-           //4
+            //4
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Setting Directory for Files" + Enum_Terminal_Color.ANSI_RESET);
-           Server.setDirectory();
+            Server.setDirectory();
 
-           //5
+            //5
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Starting threads" + Enum_Terminal_Color.ANSI_RESET);
-           Server.startThreads();
+            Server.startThreads();
 
-           //6
+            //6
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Starting all scheduler threads" + Enum_Terminal_Color.ANSI_RESET);
-           Server.startSchedulingProcedures();
+            Server.startSchedulingProcedures();
 
-           //7
+            //7
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Initializing the cache layer" + Enum_Terminal_Color.ANSI_RESET);
-           Server.initCache();
+            Server.initCache();
 
-           //8
+            //8
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Initializing the NO SQL Database" + Enum_Terminal_Color.ANSI_RESET);
             DocumentDB.set_no_SQL_collection();
 
-           //9
+            //9
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +"onStart: Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
-           Server.setAdministrator();
+            Server.setAdministrator();
 
             if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion server in Mode " + Server.server_mode.name() + " version: " + Server.server_version + " started on " + new Date().toString() + ".");
 
@@ -80,7 +80,6 @@ public class Global extends GlobalSettings {
             terminal_logger.error("##                                                                                     ##");
             terminal_logger.error("##       Tyrion is not configured properly!!!!                                         ##");
             terminal_logger.error("##       Please - Check Global Class!!!!                                               ##");
-            terminal_logger.error("##                                                                                     ##");
             terminal_logger.error("##                                                                                     ##");
             terminal_logger.error("#########################################################################################");
             System.out.println("");

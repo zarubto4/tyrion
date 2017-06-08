@@ -1,12 +1,14 @@
 package utilities.financial.extensions;
 
 import models.Model_ProductExtension.Config;
+import play.Configuration;
+import utilities.Server;
 
 public class Extension_Log implements Extension {
 
-    public static final String name = "Log";
-    public static final String description = "This is an extension for log.";
-    public static final Long price = (long) 600;
+    public static final String name = Configuration.root().getString("Financial.extensions.log.name");
+    public static final String description = Configuration.root().getString("Financial.extensions.log.description");
+    public static final Long price = Configuration.root().getLong("Financial.extensions.log.price") / Server.financial_spendDailyPeriod;
     public static final Integer count = 1;
 
     public Long getPrice(Config config) {

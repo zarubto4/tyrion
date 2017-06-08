@@ -14,7 +14,6 @@ import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
-import utilities.response.CoreResponse;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -90,7 +89,7 @@ public class Controller_Board extends Controller {
 
             Response_Interface result = version_object.compile_program_procedure();
 
-            if(result instanceof Result_ok){
+            if(result instanceof Result_Ok){
                return  GlobalResult.result_ok(Json.toJson(new Swagger_Compilation_Ok()));
             }
 
@@ -99,7 +98,7 @@ public class Controller_Board extends Controller {
             }
 
             if(result instanceof Result_ExternalServerSideError ){
-                return GlobalResult.result_external_server_error(Json.toJson(result));
+                return GlobalResult.result_externalServerError(Json.toJson(result));
             }
 
             if(result instanceof Result_ServerOffline){

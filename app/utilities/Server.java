@@ -22,6 +22,7 @@ import utilities.scheduler.CustomScheduler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Server {
@@ -82,6 +83,10 @@ public class Server {
 
     //-------------------------------------------------------------------
 
+    public static Integer financial_spendDailyPeriod;
+
+    //-------------------------------------------------------------------
+
     public static String Fakturoid_apiKey;
     public static String Fakturoid_url;
     public static String Fakturoid_user_agent;
@@ -137,6 +142,8 @@ public class Server {
                 // Swagger URL Redirect - Actual Rest Api docu
                 link_api_swagger        = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
+                financial_spendDailyPeriod = checkPeriod(Configuration.root().getInt("Financial.developer.spendDailyPeriod"));
+
                 break;
             }
             case "production" : {
@@ -154,6 +161,8 @@ public class Server {
 
                 // Swagger URL Redirect - Actual Rest Api docu
                 link_api_swagger    = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
+
+                financial_spendDailyPeriod = checkPeriod(Configuration.root().getInt("Financial.production.spendDailyPeriod"));
 
                 break;
             }
@@ -174,15 +183,15 @@ public class Server {
                 // Swagger URL Redirect - Actual Rest Api docu
                 link_api_swagger            = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
+                financial_spendDailyPeriod = checkPeriod(Configuration.root().getInt("Financial.stage.spendDailyPeriod"));
+
                 break;
             }
             default: {
                 System.err.println("Server mode is null or unknown - System will shut down immediately");
                 Runtime.getRuntime().exit(10);
             }
-
         }
-
 
         //  Becki Config -------------------------------------------------------------------------------------------------------------
 
@@ -194,14 +203,12 @@ public class Server {
         becki_invitationToCollaborate       = Configuration.root().getString("Becki.invitationToCollaborate");
         becki_propertyChangeFailed          = Configuration.root().getString("Becki.propertyChangeFailed");
 
-
         //  Facturoid Config -------------------------------------------------------------------------------------------------------------
 
         Fakturoid_apiKey        = Configuration.root().getString("Fakturoid." + server_mode.name()  +".apiKey");
         Fakturoid_url           = Configuration.root().getString("Fakturoid." + server_mode.name()  +".url");
         Fakturoid_user_agent    = Configuration.root().getString("Fakturoid." + server_mode.name()  +".userAgent");
         Fakturoid_secret_combo  = Configuration.root().getString("Fakturoid." + server_mode.name()  +".secret_combo");
-
 
         //  GitHub Config -------------------------------------------------------------------------------------------------------------
 
@@ -217,7 +224,6 @@ public class Server {
         Facebook_url            = Configuration.root().getString("Facebook." + server_mode.name() +".stage.url");
         Facebook_apiKey         = Configuration.root().getString("Facebook." + server_mode.name() +".apiKey  ");
 
-
         // Go Pay Config ------------------------------------------------------------------------------------------------------------
 
         GoPay_api_url           = Configuration.root().getString("GOPay."+ server_mode.name() +".api_url");
@@ -227,7 +233,6 @@ public class Server {
 
         GoPay_return_url        = Configuration.root().getString("GOPay."+ server_mode.name() +".return_url");
         GoPay_notification_url  = Configuration.root().getString("GOPay."+ server_mode.name() +".notification_url");
-
 
         // Azure Config ------------------------------------------------------------------------------------------------------------
 
@@ -292,7 +297,6 @@ public class Server {
 
     }
 
-
     /**
      * Výběr nastavení Logbacku podle Server.developerMode
      */
@@ -311,7 +315,6 @@ public class Server {
             }
         } catch (JoranException je) {}
     }
-
 
     /**
      * Metoda slouží k zavolání hlavních neměnných metod v controllerech,
@@ -361,7 +364,6 @@ public class Server {
 
     }
 
-
     public static void setDirectory() {
 
         File file = new File("files");
@@ -384,14 +386,8 @@ public class Server {
     }
 
     public static void startSchedulingProcedures() {
-        try {
 
-            CustomScheduler.startScheduler();
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
-
+        CustomScheduler.startScheduler();
     }
 
     public static void initCache() {
@@ -403,5 +399,20 @@ public class Server {
             terminal_logger.internalServerError(e);
         }
 
+    }
+
+    /**
+     * Checks whether the given spending credit period can be used.
+     * @param period Given period number.
+     * @return Number that can be used.
+     * @throws IllegalArgumentException when the number cannot be used.
+     */
+    private static Integer checkPeriod(Integer period) throws IllegalArgumentException{
+
+        List<Integer> allowable_values = new ArrayList<>(Arrays.asList(1,2,3,4,12,24,48));
+
+        if (allowable_values.contains(period)) return period;
+
+        throw new IllegalArgumentException("Server has wrong configuration. Check the conf/application.conf file. Property Financial.{mode}.spendDailyPeriod should contain only 1-4, 12, 24 or 48.");
     }
 }

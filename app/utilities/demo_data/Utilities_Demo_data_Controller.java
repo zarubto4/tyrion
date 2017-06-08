@@ -494,18 +494,11 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.color = "blue";
             tariff_1.credit_for_beginning = (long) 0;
 
-            tariff_1.payment_required = false;
-
             tariff_1.company_details_required = false;
-            tariff_1.payment_mode_required = false;
             tariff_1.payment_method_required = false;
 
             tariff_1.credit_card_support = false;
             tariff_1.bank_transfer_support = false;
-
-            tariff_1.mode_annually = false;
-            tariff_1.mode_credit = false;
-            tariff_1.free_tariff = true;
 
             tariff_1.save();
             tariff_1.refresh();
@@ -524,7 +517,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             label_2.tariff = tariff_1;
             label_2.save();
 
-
             Model_TariffLabel label_3 = new Model_TariffLabel();
             label_3.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_3.icon = "fa-bullhorn";
@@ -532,14 +524,12 @@ public class Utilities_Demo_data_Controller extends Controller {
             label_3.tariff = tariff_1;
             label_3.save();
 
-
             Model_TariffLabel label_4 = new Model_TariffLabel();
             label_4.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_4.icon = "fa-bullhorn";
             label_4.label = "Super koment 4";
             label_4.tariff = tariff_1;
             label_4.save();
-
 
             Model_ProductExtension extensions_1 = new Model_ProductExtension();
             extensions_1.name = "Extension 1";
@@ -551,7 +541,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_1.tariff_included = tariff_1;
             extensions_1.config = "{\"price\":1000,\"count\":1}";
             extensions_1.save();
-
 
             Model_ProductExtension extensions_2 = new Model_ProductExtension();
             extensions_2.name = "Extension 2";
@@ -565,7 +554,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_2.save();
 
             // Pro geeky
-
             Model_Tariff geek_tariff = new Model_Tariff();
             tariff_1.order_position = 2;
             geek_tariff.active = true;
@@ -575,23 +563,16 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             geek_tariff.color = "green-jungle";
 
-            geek_tariff.payment_required = false;
             geek_tariff.credit_for_beginning = (long) 20000;
 
             geek_tariff.company_details_required = false;
-            geek_tariff.payment_mode_required = true;
             geek_tariff.payment_method_required = false;
 
             geek_tariff.credit_card_support = true;
             geek_tariff.bank_transfer_support = true;
 
-            geek_tariff.mode_annually = false;
-            geek_tariff.mode_credit = false;
-            geek_tariff.free_tariff = true;
-
             geek_tariff.save();
             geek_tariff.refresh();
-
 
             Model_TariffLabel label_5 = new Model_TariffLabel();
             label_5.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
@@ -607,14 +588,12 @@ public class Utilities_Demo_data_Controller extends Controller {
             label_6.tariff = geek_tariff;
             label_6.save();
 
-
             Model_TariffLabel label_7 = new Model_TariffLabel();
             label_7.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
             label_7.icon = "fa-bullhorn";
             label_7.label = "Super koment 3 ";
             label_7.tariff = geek_tariff;
             label_7.save();
-
 
             Model_TariffLabel label_8 = new Model_TariffLabel();
             label_8.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
@@ -623,9 +602,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             label_8.tariff = geek_tariff;
             label_8.save();
 
-
             // Placená
-
             Model_Tariff business_tariff = new Model_Tariff();
             tariff_1.order_position = 3;
             business_tariff.active = true;
@@ -635,19 +612,13 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             business_tariff.color = "green-jungle";
 
-            business_tariff.payment_required = false;
             business_tariff.credit_for_beginning = (long) 100000;
 
             business_tariff.company_details_required = true;
-            business_tariff.payment_mode_required = true;
             business_tariff.payment_method_required = true;
 
             business_tariff.credit_card_support = true;
             business_tariff.bank_transfer_support = true;
-
-            business_tariff.mode_annually = true;
-            business_tariff.mode_credit = true;
-            business_tariff.free_tariff = false;
 
             business_tariff.save();
             business_tariff.refresh();
@@ -665,7 +636,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             label_10.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
             label_10.tariff = business_tariff;
             label_10.save();
-
 
             Model_TariffLabel label_11 = new Model_TariffLabel();
             label_11.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
@@ -713,7 +683,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_4.config = "{\"price\":2600,\"count\":4}";
             business_tariff_extensions_4.save();
 
-
             Model_ProductExtension business_tariff_extensions_3 = new Model_ProductExtension();
             business_tariff_extensions_3.name = "Extension 1";
             business_tariff_extensions_3.description = "description extension djsdjs";
@@ -724,7 +693,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_3.tariff_included = business_tariff;
             business_tariff_extensions_3.config = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_3.save();
-
 
             Model_ProductExtension business_tariff_extensions_2 = new Model_ProductExtension();
             business_tariff_extensions_2.name = "Extension sadas";
@@ -737,7 +705,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_2.config = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_2.save();
 
-
             Model_ProductExtension business_tariff_extensions_1 = new Model_ProductExtension();
             business_tariff_extensions_1.name = "Extension sadasa";
             business_tariff_extensions_1.description = "description extensioasdan 1";
@@ -748,7 +715,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_extensions_1.tariff_optional = business_tariff;
             business_tariff_extensions_1.config = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_1.save();
-
 
             // Další placený
 
@@ -761,23 +727,16 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             business_tariff_2.color = "green-sharp";
 
-            business_tariff_2.payment_required = false;
             business_tariff_2.credit_for_beginning = (long) 500000;
 
             business_tariff_2.company_details_required = true;
-            business_tariff_2.payment_mode_required = true;
             business_tariff_2.payment_method_required = true;
 
             business_tariff_2.credit_card_support = true;
             business_tariff_2.bank_transfer_support = true;
 
-            business_tariff_2.mode_annually = true;
-            business_tariff_2.mode_credit = true;
-            business_tariff_2.free_tariff = false;
-
             business_tariff_2.save();
             business_tariff_2.refresh();
-
 
             Model_TariffLabel label_16 = new Model_TariffLabel();
             label_16.description = "Už prvního měsíce je to placený";
@@ -793,7 +752,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             label_17.tariff = business_tariff_2;
             label_17.save();
 
-
             Model_TariffLabel label_18 = new Model_TariffLabel();
             label_18.description = "kreditkaaa!!!";
             label_18.icon = "fa-bullhorn";
@@ -808,7 +766,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             label_19.tariff = business_tariff_2;
             label_19.save();
 
-
             Model_ProductExtension business_tariff2_extensions_5 = new Model_ProductExtension();
             business_tariff2_extensions_5.name = "Extension saasa";
             business_tariff2_extensions_5.description = "description extensioasn 1";
@@ -819,7 +776,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_5.tariff_included = business_tariff_2;
             business_tariff2_extensions_5.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_5.save();
-
 
             Model_ProductExtension business_tariff2_extensions_4 = new Model_ProductExtension();
             business_tariff2_extensions_4.name = "Extension sasa";
@@ -832,8 +788,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_4.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_4.save();
 
-
-
             Model_ProductExtension business_tariff2_extensions_3 = new Model_ProductExtension();
             business_tariff2_extensions_3.name = "Extension dasa";
             business_tariff2_extensions_3.description = "description extensioan 1";
@@ -844,9 +798,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_3.tariff_optional = business_tariff_2;
             business_tariff2_extensions_3.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_3.save();
-
-
-
 
             Model_ProductExtension business_tariff2_extensions_2 = new Model_ProductExtension();
             business_tariff2_extensions_2.name = "Extension ssa";
@@ -859,7 +810,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_2.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_2.save();
 
-
             Model_ProductExtension business_tariff2_extensions_1 = new Model_ProductExtension();
             business_tariff2_extensions_1.name = "Extension sadaska";
             business_tariff2_extensions_1.description = "description extenssaioasdan 1";
@@ -870,7 +820,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff2_extensions_1.tariff_optional = business_tariff_2;
             business_tariff2_extensions_1.config = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_1.save();
-
 
             Model_Tariff illegal_tariff = new Model_Tariff();
             tariff_1.order_position = 5;
@@ -888,8 +837,6 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             if (Model_Person.find.where().eq("nick_name", "Pepíno").findUnique() != null)
                 return GlobalResult.result_badRequest("Its Already done!");
-
-            String uuid = UUID.randomUUID().toString().substring(0, 4);
 
             System.err.println("Vytvářím uživatele s emailem:  test_user@byzance.cz");
             System.err.println("Heslem: 123456789");
@@ -913,13 +860,11 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Vytvoří tarif
             Model_Product product = new Model_Product();
-            product.tariff = Model_Tariff.find.where().eq("identifier","alpha").findUnique();
-            product.business_model = Enum_BusinessModel.saas;
+            product.business_model = Enum_BusinessModel.alpha;
             product.credit = (long) 0;
             product.name = "Pepkova velkolepá Alfa";
             product.active  = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.method  = Enum_Payment_method.free;
-            product.mode    = Enum_Payment_mode.free;
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
             payment_details.person = person;
             payment_details.full_name = person.full_name;
@@ -934,11 +879,16 @@ public class Utilities_Demo_data_Controller extends Controller {
             product.payment_details = payment_details;
             product.save();
 
-            for( Model_ProductExtension e : Model_Tariff.find.where().eq("identifier","alpha").findUnique().extensions_included ){
-                e.product = product;
-                e.update();
-            }
+             // Okopíruji všechny aktivní, které má Tarrif už v sobě
+            for (Model_ProductExtension ext : Model_Tariff.find.where().eq("identifier","alpha").findUnique().extensions_included){
 
+                if(ext.active) {
+
+                    Model_ProductExtension extension = Model_ProductExtension.copyExtension(ext);
+                    extension.product = product;
+                    extension.save();
+                }
+            }
 
             // Vytvořím Projekty
             Model_Project project_1 = new Model_Project();
@@ -965,14 +915,10 @@ public class Utilities_Demo_data_Controller extends Controller {
                board.save();
            }
 
-
-
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-
 }

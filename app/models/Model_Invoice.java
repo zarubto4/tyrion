@@ -124,6 +124,29 @@ public class Model_Invoice extends Model {
         return product;
     }
 
+    /**
+     * Method takes all extensions and converts them to invoice items.
+     * Prerequisite is an assigned product to the invoice.
+     */
+    @JsonIgnore
+    public void setItems() {
+
+        Model_Product product = getProduct();
+        if (product == null) throw new NullPointerException("Product is not set yet for this invoice.");
+
+        for (Model_ProductExtension extension : product.extensions) {
+
+            Model_InvoiceItem item = new Model_InvoiceItem();
+            item.name = extension.name;
+            item.unit_price = extension.getPrice() * 30; // TODO nacacheovat ceny, getPrice() je potenciálně drahá operace.
+            item.quantity = (long) 1; // TODO
+            item.unit_name = "Pcs";
+            item.currency = Enum_Currency.USD;
+
+            invoice_items.add(item);
+        }
+    }
+
     @JsonIgnore
     public Long total_price() {
         Long total_price = (long) 0;
