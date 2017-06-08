@@ -1,13 +1,14 @@
 package utilities.financial.extensions;
 
 import models.Model_ProductExtension.Config;
-import utilities.enums.Enum_ExtensionType;
+import play.Configuration;
+import utilities.Server;
 
 public class Extension_RestApi implements Extension {
 
-    public static final String name = Enum_ExtensionType.RestApi.name();
-    public static final String description = "This is an extension for REST API requests from Blocko.";
-    public static final Long price = (long) 100;
+    public static final String name = Configuration.root().getString("Financial.extensions.restApi.name");
+    public static final String description = Configuration.root().getString("Financial.extensions.restApi.description");
+    public static final Long price = Configuration.root().getLong("Financial.extensions.restApi.price") / Server.financial_spendDailyPeriod;
     public static final Integer count = 5;
 
     public Long getPrice(Config config) {

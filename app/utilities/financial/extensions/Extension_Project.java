@@ -1,13 +1,14 @@
 package utilities.financial.extensions;
 
 import models.Model_ProductExtension.Config;
-import utilities.enums.Enum_ExtensionType;
+import play.Configuration;
+import utilities.Server;
 
 public class Extension_Project implements Extension {
 
-    public static final String name = Enum_ExtensionType.Project.name();
-    public static final String description = "This is an extension for project.";
-    public static final Long price = (long) 200;
+    public static final String name = Configuration.root().getString("Financial.extensions.project.name");
+    public static final String description = Configuration.root().getString("Financial.extensions.project.description");
+    public static final Long price = Configuration.root().getLong("Financial.extensions.project.price") / Server.financial_spendDailyPeriod;
     public static final Integer count = 5;
 
     public Long getPrice(Config config) {

@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class Result_InternalServerError implements Response_Interface{
 
     @ApiModelProperty(value = "state", allowableValues = "error", required = true, readOnly = true)
-    public String state = "internal_server_error";
+    public String state = "internal server error";
 
     @ApiModelProperty(value = "code", allowableValues = "500", required = true, readOnly = true)
     public Integer code = 500;

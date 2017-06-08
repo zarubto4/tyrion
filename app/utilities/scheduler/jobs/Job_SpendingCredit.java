@@ -7,6 +7,7 @@ import models.Model_ProductExtension;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import utilities.Server;
 import utilities.enums.Enum_Currency;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_warning;
@@ -54,8 +55,11 @@ public class Job_SpendingCredit implements Job {
 
                 Date created = new Date(new Date().getTime() - TimeUnit.HOURS.toMillis(16));
 
-                int total =  Model_Product.find.where().lt("created", created)
-                        .isNotNull("extensions.id").eq("active", true)
+                int total = Model_Product.find.where()
+                        .eq("active", true)
+                        //.ne("business_model", Enum_BusinessModel.alpha)
+                        .isNotNull("extensions.id")
+                        .lt("created", created)
                         .findRowCount();
 
                 if (total != 0) {
@@ -73,7 +77,9 @@ public class Job_SpendingCredit implements Job {
                      * Kredit se strhává u všech produktů, starších než 16 hodin (Aby někdo před půlnocí nezaložil produkt a hned se mu nestrhla raketa)
                      */
                         List<Model_Product> products = Model_Product.find.where()
-                                .isNotNull("extensions.id").eq("active", true)
+                                .eq("active", true)
+                                //.ne("business_model", Enum_BusinessModel.alpha)
+                                .isNotNull("extensions.id")
                                 .lt("created", created)
                                 .order("created")
                                 .findPagedList(page, 25)
@@ -93,24 +99,19 @@ public class Job_SpendingCredit implements Job {
     /**
      * This method takes all extensions of the product and sums up their prices.
      * Then it subtracts the calculated credit. Based on business model decides what to do next.
-     * @param product Model product credit is spent for.
+     * @param product Model product the credit is spent for.
      */
     public static void spend(Model_Product product){
         try {
 
             terminal_logger.info("spend: product ID: {}", product.id );
-            Long total_spending = (long) 0;
-            int daily = 1; //The number "1" determines how many times on one day is credit spent.
-
-            for(Model_ProductExtension extension : product.extensions){
-                total_spending += extension.getPrice();
-            }
+            Long total_spending = product.price(); // Extension prices summary
+            int daily = Server.financial_spendDailyPeriod; //The number "1" determines how many times on one day is credit spent.
 
             terminal_logger.debug("spend: total spending: {}", total_spending);
             terminal_logger.debug("spend: state before: {}", product.credit);
 
-            product.credit -= total_spending;
-            product.update();
+            product.credit_spend(total_spending);
 
             terminal_logger.debug("spend: actual state: {}", product.credit);
 
@@ -124,6 +125,10 @@ public class Job_SpendingCredit implements Job {
             else days = (int) (double_days - 0.5);
 
             switch (product.business_model){
+                case alpha:{
+                    terminal_logger.debug("spend: product is ALPHA - nothing happens"); // TODO
+                    break;
+                }
                 case saas:{
 
                     spendCreditSaas(product, daily_spending, days);
@@ -134,9 +139,19 @@ public class Job_SpendingCredit implements Job {
                     spendCreditFee(product, days);
                     break;
                 }
-                case lifelong:{
+                case cal:{
 
-                    spendCreditLifelong(product);
+                    spendCreditCal(product);
+                    break;
+                }
+                case integrator:{
+
+                    terminal_logger.debug("spend: integrator model - TODO"); // TODO
+                    break;
+                }
+                case integration:{
+
+                    terminal_logger.debug("spend: integration model - TODO"); // TODO
                     break;
                 }
                 default: {
@@ -146,7 +161,6 @@ public class Job_SpendingCredit implements Job {
         } catch (Exception e) {
             terminal_logger.internalServerError("spend:", e);
         }
-
     }
 
     /**
@@ -178,15 +192,7 @@ public class Job_SpendingCredit implements Job {
                 invoice = new Model_Invoice();
                 invoice.method = product.method;
                 invoice.product = product;
-
-                Model_InvoiceItem invoice_item = new Model_InvoiceItem();
-                invoice_item.name = product.product_type() + " in Mode(" + product.mode.name() + ")";
-                invoice_item.unit_price = daily_spending * 30;
-                invoice_item.quantity = (long) 1;
-                invoice_item.unit_name = "Currency";
-                invoice_item.currency = Enum_Currency.USD;
-
-                invoice.invoice_items.add(invoice_item);
+                invoice.setItems();
 
                 invoice = Fakturoid_Controller.create_proforma(invoice);
                 if (invoice == null) return;
@@ -257,20 +263,12 @@ public class Job_SpendingCredit implements Job {
                 invoice = new Model_Invoice();
                 invoice.method = product.method;
                 invoice.product = product;
-
-                Model_InvoiceItem invoice_item = new Model_InvoiceItem();
-                invoice_item.name = product.product_type() + " in Mode(" + product.mode.name() + ")";
-                invoice_item.unit_price = daily_spending * 30;
-                invoice_item.quantity = (long) 1;
-                invoice_item.unit_name = "Currency";
-                invoice_item.currency = Enum_Currency.USD;
-
-                invoice.invoice_items.add(invoice_item);
+                invoice.setItems();
 
                 invoice = Fakturoid_Controller.create_proforma(invoice);
                 if (invoice == null) return;
 
-                if (product.on_demand) {
+                if (product.on_demand && product.gopay_id != null) {
                     try {
 
                         GoPay_Controller.onDemandPayment(invoice);
@@ -285,11 +283,19 @@ public class Job_SpendingCredit implements Job {
                         Fakturoid_Controller.sendInvoiceReminderEmail(invoice,
                                 "We could not take money from your credit card due to some problems. Please use the manual substitute payment through financial section of your Byzance account.");
                     }
-                } else {
+                } else if (product.on_demand) {
 
                     invoice = GoPay_Controller.singlePayment("First Payment", product, invoice);
 
                     invoice.notificationInvoiceReminder("You have to authorize the first payment.");
+
+                    Fakturoid_Controller.sendInvoiceEmail(invoice, null);
+
+                } else {
+
+                    invoice = GoPay_Controller.singlePayment("Single Payment", product, invoice);
+
+                    invoice.notificationInvoiceNew();
 
                     Fakturoid_Controller.sendInvoiceEmail(invoice, null);
                 }
@@ -337,7 +343,7 @@ public class Job_SpendingCredit implements Job {
         // TODO
     }
 
-    private static void spendCreditLifelong(Model_Product product){
+    private static void spendCreditCal(Model_Product product){
 
         // TODO
     }

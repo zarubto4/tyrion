@@ -61,7 +61,7 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -70,11 +70,11 @@ public class Controller_Project extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Project_New help = form.get();
 
             Model_Product product = Model_Product.get_byId(help.product_id);
-            if(product == null){return GlobalResult.notFoundObject("Product not found");}
+            if(product == null){return GlobalResult.result_notFound("Product not found");}
 
             // Vytvoření objektu
             Model_Project project  = new Model_Project();
@@ -83,8 +83,8 @@ public class Controller_Project extends Controller {
             project.product = product;
 
             // Kontrola oprávnění těsně před uložením
-            if (!project.create_permission())  return GlobalResult.forbidden_Permission();
-            if (!project.financial_permission())  return GlobalResult.result_BadRequest("Cannot create new project because of low financial resources.");
+            if (!project.create_permission())  return GlobalResult.result_forbidden();
+            if (!project.financial_permission())  return GlobalResult.result_badRequest("Cannot create new project because of low financial resources.");
 
             // Uložení objektu
             project.save();
@@ -101,7 +101,7 @@ public class Controller_Project extends Controller {
             project.refresh();
 
             // Vrácení objektu
-            return GlobalResult.created(Json.toJson(project));
+            return GlobalResult.result_created(Json.toJson(project));
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -120,7 +120,7 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class, responseContainer = "list"),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -159,7 +159,7 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -169,10 +169,10 @@ public class Controller_Project extends Controller {
 
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.read_permission())   return GlobalResult.forbidden_Permission();
+            if (!project.read_permission())   return GlobalResult.result_forbidden();
 
             // Vraácení objektu
             return GlobalResult.result_ok(Json.toJson(project));
@@ -197,10 +197,10 @@ public class Controller_Project extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -209,10 +209,10 @@ public class Controller_Project extends Controller {
 
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.delete_permission())   return GlobalResult.forbidden_Permission();
+            if (!project.delete_permission())   return GlobalResult.result_forbidden();
 
            // Kvuli bezpečnosti abych nesmazal něco co nechceme
            for(Model_CProgram c : project.c_programs){ c.delete();}
@@ -256,7 +256,7 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -266,15 +266,15 @@ public class Controller_Project extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Project_Edit> form = Form.form(Swagger_Project_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Project_Edit help = form.get();
 
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.edit_permission() )   return GlobalResult.forbidden_Permission();
+            if (!project.edit_permission() )   return GlobalResult.result_forbidden();
 
             // Úprava objektu
             project.name = help.project_name;
@@ -317,10 +317,10 @@ public class Controller_Project extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -330,15 +330,15 @@ public class Controller_Project extends Controller {
 
             // Zpracování Json
             final Form<Swagger_ShareProject_Person> form = Form.form(Swagger_ShareProject_Person.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ShareProject_Person help = form.get();
 
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.share_permission() )   return GlobalResult.forbidden_Permission();
+            if (!project.share_permission() )   return GlobalResult.result_forbidden();
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
@@ -430,13 +430,13 @@ public class Controller_Project extends Controller {
 
             // Kontroly objektů
             Model_Invitation invitation = Model_Invitation.find.byId(id);
-            if(invitation == null) return GlobalResult.notFoundObject("Invitation no longer exists");
+            if(invitation == null) return GlobalResult.result_notFound("Invitation no longer exists");
 
             Model_Person person = Model_Person.find.where().eq("mail", invitation.mail).findUnique();
-            if(person == null) return GlobalResult.notFoundObject("Person does not exist");
+            if(person == null) return GlobalResult.result_notFound("Person does not exist");
 
             Model_Project project = invitation.project;
-            if(project == null) return GlobalResult.notFoundObject("Project no longer exists");
+            if(project == null) return GlobalResult.result_notFound("Project no longer exists");
 
             if ((Model_ProjectParticipant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique() == null)&&(decision)) {
 
@@ -490,7 +490,7 @@ public class Controller_Project extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProjectParticipant.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -500,19 +500,19 @@ public class Controller_Project extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Project_Participant_status> form = Form.form(Swagger_Project_Participant_status.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Project_Participant_status help = form.get();
 
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project no longer exists");
+            if(project == null) return GlobalResult.result_notFound("Project no longer exists");
 
             // Kontrola oprávnění
-            if (!project.admin_permission()) return GlobalResult.forbidden_Permission();
+            if (!project.admin_permission()) return GlobalResult.result_forbidden();
 
             // Kontrola objektu
             Model_ProjectParticipant participant = Model_ProjectParticipant.find.where().eq("person.id", help.person_id).eq("project.id", project_id).findUnique();
-            if (participant == null) return GlobalResult.notFoundObject("Participant not found");
+            if (participant == null) return GlobalResult.result_notFound("Participant not found");
 
             // Uložení změn
             participant.state = help.state;
@@ -554,7 +554,7 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -564,15 +564,15 @@ public class Controller_Project extends Controller {
 
             // Zpracování Json
             final Form<Swagger_ShareProject_Person> form = Form.form(Swagger_ShareProject_Person.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ShareProject_Person help = form.get();
 
             //Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.unshare_permission() )   return GlobalResult.forbidden_Permission();
+            if (!project.unshare_permission() )   return GlobalResult.result_forbidden();
 
             List<Model_Person> list = new ArrayList<>();
 

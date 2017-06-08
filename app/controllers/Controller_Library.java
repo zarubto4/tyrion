@@ -1,7 +1,6 @@
 package controllers;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Expression;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
@@ -60,9 +59,9 @@ public class Controller_Library extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_Library.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -71,7 +70,7 @@ public class Controller_Library extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Library_New> form = Form.form(Swagger_Library_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Library_New help = form.get();
 
 
@@ -84,18 +83,27 @@ public class Controller_Library extends Controller {
             if(help.project_id != null){
 
                 Model_Project project = Model_Project.get_byId(help.project_id);
-                if(project == null || !project.update_permission()) return GlobalResult.notFoundObject("Project project_id not found");
+                if(project == null || !project.update_permission()) return GlobalResult.result_notFound("Project project_id not found");
                 library.project_id = project.id;
             }
 
+            for (String type_of_board_id : help.type_of_board_ids) {
+
+                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+                if (typeOfBoard != null) {
+
+                    library.type_of_boards.add(typeOfBoard);
+                }
+            }
+
             // Kontorluji oprávnění těsně před uložením
-            if(!library.create_permission()) return GlobalResult.forbidden_Permission();
+            if(!library.create_permission()) return GlobalResult.result_forbidden();
 
             // Ukládám objekt
             library.save();
 
             // Vracím objekt
-            return GlobalResult.created(Json.toJson(library));
+            return GlobalResult.result_created(Json.toJson(library));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -118,7 +126,7 @@ public class Controller_Library extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Library.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -127,7 +135,7 @@ public class Controller_Library extends Controller {
 
             // Kontrola objektu
             Model_Library library = Model_Library.find.byId(library_id);
-            if(library == null ) return GlobalResult.notFoundObject("Library not found");
+            if(library == null ) return GlobalResult.result_notFound("Library not found");
 
             // Vrácneí objektu
             return GlobalResult.result_ok(Json.toJson(library));
@@ -164,7 +172,7 @@ public class Controller_Library extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Library_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -173,14 +181,15 @@ public class Controller_Library extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Library_Filter> form = Form.form(Swagger_Library_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Library_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Library> query = Ebean.find(Model_Library.class);
             query.where().eq("removed_by_user", false);
 
-
+            if (!help.type_of_board_ids.isEmpty())
+                query.where().in("type_of_boards.id", help.type_of_board_ids);
 
             if(help.project_id != null){
                 if(help.inlclude_public) {
@@ -235,9 +244,9 @@ public class Controller_Library extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully updated",    response = Model_Library.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -247,15 +256,15 @@ public class Controller_Library extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Library_New> form = Form.form(Swagger_Library_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Library_New help = form.get();
 
             // Vyhledání objektu
             Model_Library library = Model_Library.find.byId(library_id);
-            if (library == null) return GlobalResult.notFoundObject("Library not found");
+            if (library == null) return GlobalResult.result_notFound("Library not found");
 
             // Kontrola oprávnění
-            if(!library.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!library.edit_permission()) return GlobalResult.result_forbidden();
 
             library.name = help.name;
             library.description = help.description;
@@ -285,9 +294,9 @@ public class Controller_Library extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -296,10 +305,10 @@ public class Controller_Library extends Controller {
 
             // Kontrola objektu
             Model_Library library = Model_Library.find.byId(library_id);
-            if(library == null ) return GlobalResult.notFoundObject("Library not found");
+            if(library == null ) return GlobalResult.result_notFound("Library not found");
 
             // Kontrola oprávnění
-            if (!library.delete_permission()) return GlobalResult.forbidden_Permission();
+            if (!library.delete_permission()) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             library.removed_by_user = true;
@@ -341,11 +350,11 @@ public class Controller_Library extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_Library_Version.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_InvalidBody.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -354,15 +363,15 @@ public class Controller_Library extends Controller {
 
             // Zpracování Json
             Form<Swagger_Library_Version_New> form = Form.form(Swagger_Library_Version_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Library_Version_New help = form.get();
 
             // Ověření objektu
             Model_Library library = Model_Library.find.byId(library_id);
-            if(library == null) return GlobalResult.notFoundObject("Library library_id not found");
+            if(library == null) return GlobalResult.result_notFound("Library library_id not found");
 
             // Zkontroluji oprávnění
-            if(!library.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!library.update_permission()) return GlobalResult.result_forbidden();
 
             // První nová Verze
             Model_VersionObject version_object = new Model_VersionObject();
@@ -381,7 +390,7 @@ public class Controller_Library extends Controller {
             Model_FileRecord.uploadAzure_Version(Json.toJson(library_file_collection).toString(), "library.json" , library.get_path() ,  version_object);
 
             // Vracím vytvořený objekt
-            return GlobalResult.created(Json.toJson(version_object.library.library_version(version_object)));
+            return GlobalResult.result_created(Json.toJson(version_object.library.library_version(version_object)));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -408,7 +417,7 @@ public class Controller_Library extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Library_Version.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -417,13 +426,13 @@ public class Controller_Library extends Controller {
 
             // Vyhledám Objekt
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
+            if(version_object == null) return GlobalResult.result_notFound("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of Library");
+            if(version_object.library == null) return GlobalResult.result_badRequest("Version_Object is not version of Library");
 
             // Zkontroluji oprávnění
-            if(! version_object.library.read_permission())  return GlobalResult.forbidden_Permission();
+            if(! version_object.library.read_permission())  return GlobalResult.result_forbidden();
 
             // Vracím Objekt
             return GlobalResult.result_ok(Json.toJson(version_object.library.library_version(version_object)));
@@ -460,7 +469,7 @@ public class Controller_Library extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Library_Version.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -470,18 +479,18 @@ public class Controller_Library extends Controller {
 
             // Zpracování Json
             final Form<Swagger_C_Program_Version_Edit> form = Form.form(Swagger_C_Program_Version_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_Program_Version_Edit help = form.get();
 
             // Ověření objektu
             Model_VersionObject version_object= Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of Library");
+            if(version_object.library == null) return GlobalResult.result_badRequest("Version_Object is not version of Library");
 
             // Kontrola oprávnění
-            if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.library.edit_permission()) return GlobalResult.result_forbidden();
 
             //Uprava objektu
             version_object.version_name = help.version_name;
@@ -512,9 +521,9 @@ public class Controller_Library extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response =  Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response =  Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -523,13 +532,13 @@ public class Controller_Library extends Controller {
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of Library");
+            if(version_object.library == null) return GlobalResult.result_badRequest("Version_Object is not version of Library");
 
             // Kontrola oprávnění
-            if(!version_object.library.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.library.delete_permission()) return GlobalResult.result_forbidden();
 
             version_object.removed_by_user = true;
 
@@ -575,7 +584,7 @@ public class Controller_Library extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Library_Version_Short_Detail.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -585,18 +594,18 @@ public class Controller_Library extends Controller {
 
             // Zpracování Json
             final Form<Swagger_C_Program_Version_New> form = Form.form(Swagger_C_Program_Version_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_Program_Version_New help = form.get();
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Library Version version_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("Library Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
-            if(version_object.library == null) return GlobalResult.result_BadRequest("Version_Object is not version of Library");
+            if(version_object.library == null) return GlobalResult.result_badRequest("Version_Object is not version of Library");
 
             // Kontrola oprávnění
-            if(!version_object.library.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.library.edit_permission()) return GlobalResult.result_forbidden();
 
             Model_CProgram cProgram = Model_CProgram.find.where().eq("example_library.id", version_object.id).eq("name", help.version_name).findUnique();
             if (cProgram != null){
@@ -655,9 +664,9 @@ public class Controller_Library extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -667,15 +676,15 @@ public class Controller_Library extends Controller {
 
             // Ověření objektu
             Model_CProgram cProgram = Model_CProgram.find.byId(example_id);
-            if (cProgram == null) return GlobalResult.notFoundObject("Example example_id not found");
+            if (cProgram == null) return GlobalResult.result_notFound("Example example_id not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
-            if(cProgram.example_library == null) return GlobalResult.result_BadRequest("Program is not example of Library");
+            if(cProgram.example_library == null) return GlobalResult.result_badRequest("Program is not example of Library");
 
             Model_VersionObject returnObject = cProgram.example_library;
 
             // Kontrola oprávnění
-            if(!cProgram.example_library.library.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!cProgram.example_library.library.edit_permission()) return GlobalResult.result_forbidden();
 
             if (cProgram.version_objects.size() > 0)
                 cProgram.version_objects.get(0).delete();

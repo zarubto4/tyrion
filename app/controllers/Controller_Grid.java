@@ -68,11 +68,11 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Model_MProject.class),
+            @ApiResponse(code = 201, message = "Successfully created",     response = Model_MProject.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -81,11 +81,11 @@ public class Controller_Grid extends Controller {
         try{
 
             final Form<Swagger_M_Project_New> form = Form.form(Swagger_M_Project_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_M_Project_New help = form.get();
 
             Model_Project project = Model_Project.find.byId( project_id );
-            if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
+            if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             Model_MProject m_project = new Model_MProject();
             m_project.description = help.description;
@@ -93,10 +93,10 @@ public class Controller_Grid extends Controller {
             m_project.date_of_create = new Date();
             m_project.project = project;
 
-            if (!m_project.create_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_project.create_permission())  return GlobalResult.result_forbidden();
             m_project.save();
 
-            return GlobalResult.created( Json.toJson(m_project));
+            return GlobalResult.result_created( Json.toJson(m_project));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -124,7 +124,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_MProject.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -132,9 +132,9 @@ public class Controller_Grid extends Controller {
         try {
 
             Model_MProject m_project = Model_MProject.find.byId(m_project_id);
-            if (m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+            if (m_project == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
-            if (!m_project.read_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_project.read_permission())  return GlobalResult.result_forbidden();
             return GlobalResult.result_ok(Json.toJson(m_project));
 
         } catch (Exception e) {
@@ -169,7 +169,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_MProject.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -178,14 +178,14 @@ public class Controller_Grid extends Controller {
         try{
 
             final Form<Swagger_M_Project_New> form = Form.form(Swagger_M_Project_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_M_Project_New help = form.get();
 
 
             Model_MProject m_project = Model_MProject.find.byId(m_project_id);
-            if(m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+            if(m_project == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
-            if (!m_project.edit_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_project.edit_permission())  return GlobalResult.result_forbidden();
 
             m_project.description = help.description;
             m_project.name = help.name;
@@ -211,10 +211,10 @@ public class Controller_Grid extends Controller {
             }
     )
      @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -222,9 +222,9 @@ public class Controller_Grid extends Controller {
         try{
 
             Model_MProject m_project = Model_MProject.find.byId(m_project_id);
-            if(m_project == null) return GlobalResult.notFoundObject("M_project m_project_id not found");
+            if(m_project == null) return GlobalResult.result_notFound("M_project m_project_id not found");
 
-            if (!m_project.delete_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_project.delete_permission())  return GlobalResult.result_forbidden();
             m_project.delete();
 
             return GlobalResult.result_ok();
@@ -254,7 +254,7 @@ public class Controller_Grid extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Project_Interface.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Empty.class)
@@ -263,9 +263,9 @@ public class Controller_Grid extends Controller {
         try{
 
             Model_MProject m_project = Model_MProject.find.byId(m_project_id);
-            if(m_project == null) return GlobalResult.notFoundObject("M_project m_project_id not found");
+            if(m_project == null) return GlobalResult.result_notFound("M_project m_project_id not found");
 
-            if (!m_project.read_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_project.read_permission())  return GlobalResult.result_forbidden();
 
 
             Swagger_M_Project_Interface m_project_interface = new Swagger_M_Project_Interface();
@@ -323,10 +323,10 @@ public class Controller_Grid extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_MProgram.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -335,11 +335,11 @@ public class Controller_Grid extends Controller {
         try {
 
             final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_M_Program_New help = form.get();
 
             Model_MProject m_project = Model_MProject.find.byId( m_project_id );
-            if(m_project == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+            if(m_project == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
 
             Model_MProgram m_program = new Model_MProgram();
@@ -350,10 +350,10 @@ public class Controller_Grid extends Controller {
 
             m_program.m_project           = m_project;
 
-            if (!m_program.create_permission()) return GlobalResult.forbidden_Permission();
+            if (!m_program.create_permission()) return GlobalResult.result_forbidden();
             m_program.save();
 
-            return GlobalResult.created(Json.toJson(m_program));
+            return GlobalResult.result_created(Json.toJson(m_program));
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -389,10 +389,10 @@ public class Controller_Grid extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_M_Program_Version.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -401,13 +401,13 @@ public class Controller_Grid extends Controller {
         try {
 
             final Form<Swagger_M_Program_Version_New> form = Form.form(Swagger_M_Program_Version_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_M_Program_Version_New help = form.get();
 
             Model_MProgram main_m_program = Model_MProgram.find.byId( m_program_id );
-            if(main_m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+            if(main_m_program == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
-            if (!main_m_program.create_permission()) return GlobalResult.forbidden_Permission();
+            if (!main_m_program.create_permission()) return GlobalResult.result_forbidden();
 
             Model_VersionObject version_object      = new Model_VersionObject();
             version_object.date_of_create      = new Date();
@@ -427,7 +427,7 @@ public class Controller_Grid extends Controller {
 
             Model_FileRecord.uploadAzure_Version(content.toString(), "m_program.json" , main_m_program.get_path() ,  version_object);
 
-            return GlobalResult.created( Json.toJson(  main_m_program.program_version(version_object) ) );
+            return GlobalResult.result_created( Json.toJson(  main_m_program.program_version(version_object) ) );
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -451,11 +451,11 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created",    response = Result_ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 200, message = "Successfully created",    response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Empty.class)
@@ -466,11 +466,11 @@ public class Controller_Grid extends Controller {
             Model_VersionObject version_object  = Model_VersionObject.find.byId(m_program_version_id);
 
             // Kontrola objektu
-            if (version_object == null) return GlobalResult.notFoundObject("Version_Object id not found");
-            if (version_object.m_program == null) return GlobalResult.result_BadRequest("M_Project m_project_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
+            if (version_object.m_program == null) return GlobalResult.result_badRequest("M_Project m_project_id not found");
 
             // Kontrola oprávnění
-            if (! version_object.m_program.delete_permission() ) return GlobalResult.forbidden_Permission();
+            if (! version_object.m_program.delete_permission() ) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             version_object.removed_by_user = true;
@@ -507,16 +507,16 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_MProgram.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
     public Result get_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
         try {
             Model_MProgram m_program = Model_MProgram.find.byId(m_program_id);
-            if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+            if (m_program == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
-            if (!m_program.read_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_program.read_permission())  return GlobalResult.result_forbidden();
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
@@ -548,7 +548,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Program_Version.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -557,14 +557,14 @@ public class Controller_Grid extends Controller {
         try {
             // Kontrola objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(m_program_version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
             // Kontrola oprávnění
             if (version_object.m_program == null)
-                return GlobalResult.notFoundObject("Version_Object is not version of B_Program");
+                return GlobalResult.result_notFound("Version_Object is not version of B_Program");
 
             // Kontrola oprávnění
-            if (!version_object.m_program.read_permission()) return GlobalResult.forbidden_Permission();
+            if (!version_object.m_program.read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(version_object.m_program.program_version(version_object)));
@@ -603,7 +603,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_MProject.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -612,14 +612,14 @@ public class Controller_Grid extends Controller {
         try {
 
             final Form<Swagger_M_Program_New> form = Form.form(Swagger_M_Program_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_M_Program_New help = form.get();
 
 
             Model_MProgram m_program = Model_MProgram.find.byId(m_program_id);
-            if (!m_program.edit_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_program.edit_permission())  return GlobalResult.result_forbidden();
 
-            if(m_program.m_project == null)  return GlobalResult.result_BadRequest("You cannot change program on version");
+            if(m_program.m_project == null)  return GlobalResult.result_badRequest("You cannot change program on version");
 
 
             m_program.description = help.description;
@@ -646,10 +646,10 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -657,9 +657,9 @@ public class Controller_Grid extends Controller {
         try {
 
             Model_MProgram m_program = Model_MProgram.find.byId(m_program_id);
-            if (m_program == null) return GlobalResult.notFoundObject("M_Project m_project_id not found");
+            if (m_program == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
-            if (!m_program.delete_permission())  return GlobalResult.forbidden_Permission();
+            if (!m_program.delete_permission())  return GlobalResult.result_forbidden();
             m_program.delete();
 
             return GlobalResult.result_ok();
@@ -691,7 +691,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",  response = Swagger_M_Program_Version.class),
             @ApiResponse(code = 400, message = "Bad Request - Probably token is not valid anymore", response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 477, message = "External Server is offline", response = Result_ServerOffline.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -705,7 +705,7 @@ public class Controller_Grid extends Controller {
 
 
             Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.byId(request().getQueryString("p"));
-            if(parameter == null) return GlobalResult.notFoundObject("Parameter p not found in database");
+            if(parameter == null) return GlobalResult.result_notFound("Parameter p not found in database");
 
 
             if(parameter.snapshot_settings() == Enum_MProgram_SnapShot_settings.not_in_instance){
@@ -718,15 +718,15 @@ public class Controller_Grid extends Controller {
 
             }catch (Tyrion_Exp_ForbidenPermission e){
 
-                return GlobalResult.forbidden_Permission();
+                return GlobalResult.result_forbidden();
 
             }catch (Tyrion_Exp_ObjectNotValidAnymore e){
 
-                return GlobalResult.result_BadRequest("QR token is not valid anymore");
+                return GlobalResult.result_badRequest("QR token is not valid anymore");
 
             }catch (Tyrion_Exp_Unauthorized e){
 
-                return GlobalResult.result_Unauthorized();
+                return GlobalResult.result_unauthorized();
 
             }
 
@@ -746,7 +746,7 @@ public class Controller_Grid extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Mobile_M_Project_Snapshot.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -801,10 +801,10 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful created",      response = Swagger_Mobile_Connection_Summary.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 200, message = "Successfully created",    response = Swagger_Mobile_Connection_Summary.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 477, message = "Instance is offline",     response = Result_BadRequest.class),
             @ApiResponse(code = 478, message = "External Server Error",   response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -815,34 +815,34 @@ public class Controller_Grid extends Controller {
         try{
 
             final Form<Swagger_Mobile_Connection_Request> form = Form.form(Swagger_Mobile_Connection_Request.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Mobile_Connection_Request help = form.get();
 
             Model_HomerInstanceRecord record = Model_HomerInstanceRecord.find.byId(help.instance_record_id);
-            if(record == null) return GlobalResult.notFoundObject("Instance not found");
+            if(record == null) return GlobalResult.result_notFound("Instance not found");
 
 
             // Uživatelům dovolíme se připojit na offline instanci - odpovědnost a vysvětlení přebírá Grid APP
             if(record.actual_running_instance == null){
-                return GlobalResult.result_BadRequest("Actual Instance is missing!");
+                return GlobalResult.result_badRequest("Actual Instance is missing!");
             }
 
             if(!record.actual_running_instance.instance_online()){
-                return GlobalResult.result_external_server_is_offline("Instance is offline");
+                return GlobalResult.result_externalServerIsOffline("Instance is offline");
             }
 
             Model_VersionObject version_object = Model_VersionObject.find.where().eq("id", help.version_object_id).isNotNull("m_program").findUnique();
-            if(version_object == null) return GlobalResult.notFoundObject("Version M_program_Version not found");
+            if(version_object == null) return GlobalResult.result_notFound("Version M_program_Version not found");
 
 
             if(version_object.b_program == null) System.out.println("b_program == null");
             if(version_object.m_program == null) System.out.println("m_program == null");
 
-            if(!version_object.m_program.read_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.m_program.read_permission()) return GlobalResult.result_forbidden();
 
             Model_HomerServer server = Model_HomerServer.find.where().eq("cloud_instances.instance_history.id", help.instance_record_id).findUnique();
             if(server == null){
-                return GlobalResult.notFoundObject("Server not found");
+                return GlobalResult.result_notFound("Server not found");
             }
 
             terminal_logger.debug("get_conection_url:: record ID:: "           + record.id);
@@ -861,7 +861,7 @@ public class Controller_Grid extends Controller {
 
             summary.m_program = Model_MProgram.get_m_code(version_object);
 
-            return GlobalResult.created(Json.toJson(summary));
+            return GlobalResult.result_created(Json.toJson(summary));
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -897,7 +897,7 @@ public class Controller_Grid extends Controller {
         try{
 
             final Form<Swagger_Grid_Terminal_Identf> form = Form.form(Swagger_Grid_Terminal_Identf.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Grid_Terminal_Identf help = form.get();
 
 
@@ -910,7 +910,7 @@ public class Controller_Grid extends Controller {
                 terminal.date_of_create = new Date();
                 terminal.save();
 
-                return GlobalResult.created(Json.toJson(terminal));
+                return GlobalResult.result_created(Json.toJson(terminal));
 
             }else {
 
@@ -948,8 +948,8 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",      response = Model_GridTerminal.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = Model_GridTerminal.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -958,7 +958,7 @@ public class Controller_Grid extends Controller {
         try{
 
             final Form<Swagger_Grid_Terminal_Identf> form = Form.form(Swagger_Grid_Terminal_Identf.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Grid_Terminal_Identf help = form.get();
 
             Model_GridTerminal terminal = new Model_GridTerminal();
@@ -987,7 +987,7 @@ public class Controller_Grid extends Controller {
             }
 
             terminal.save();
-            return GlobalResult.created(Json.toJson(terminal));
+            return GlobalResult.result_created(Json.toJson(terminal));
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -1027,7 +1027,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_TypeOfWidget.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1037,10 +1037,10 @@ public class Controller_Grid extends Controller {
 
             // Zpracování Json
             final Form<Swagger_TypeOfWidget_New> form = Form.form(Swagger_TypeOfWidget_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TypeOfWidget_New help = form.get();
 
-            if(Model_TypeOfWidget.get_publicByName(help.name) != null) return GlobalResult.result_BadRequest("Type of Widget with this name already exists, type a new one.");
+            if(Model_TypeOfWidget.get_publicByName(help.name) != null) return GlobalResult.result_badRequest("Type of Widget with this name already exists, type a new one.");
 
             // Vytvoření objektu
             Model_TypeOfWidget typeOfWidget = new Model_TypeOfWidget();
@@ -1053,8 +1053,8 @@ public class Controller_Grid extends Controller {
 
                 // Kontrola objektu
                 Model_Project project = Model_Project.find.byId(help.project_id);
-                if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
-                if(! project.update_permission()) return GlobalResult.forbidden_Permission();
+                if(project == null) return GlobalResult.result_notFound("Project project_id not found");
+                if(! project.update_permission()) return GlobalResult.result_forbidden();
 
                 // Úprava objektu
                 typeOfWidget.project = project;
@@ -1062,13 +1062,13 @@ public class Controller_Grid extends Controller {
             }
 
             // Kontrola oprávnění těsně před uložením podle standardu
-            if (!typeOfWidget.create_permission() ) return GlobalResult.forbidden_Permission();
+            if (!typeOfWidget.create_permission() ) return GlobalResult.result_forbidden();
 
             // Uložení objektu
             typeOfWidget.save();
 
             // Vrácení objektu
-            return GlobalResult.created( Json.toJson(typeOfWidget));
+            return GlobalResult.result_created( Json.toJson(typeOfWidget));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -1097,7 +1097,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfWidget.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1106,10 +1106,10 @@ public class Controller_Grid extends Controller {
 
             // Kontrola objektu
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
-            if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
+            if(typeOfWidget == null) return GlobalResult.result_notFound("TypeOfWidget type_of_widget_id not found");
 
             // Kontrola oprávnění
-            if (! typeOfWidget.read_permission() ) return GlobalResult.forbidden_Permission();
+            if (! typeOfWidget.read_permission() ) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(typeOfWidget));
@@ -1149,7 +1149,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfWidget.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1159,15 +1159,15 @@ public class Controller_Grid extends Controller {
 
             // Zpracování Json
             final Form<Swagger_TypeOfWidget_New> form = Form.form(Swagger_TypeOfWidget_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TypeOfWidget_New help = form.get();
 
             // Kontrola objektu
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
-            if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
+            if(typeOfWidget == null) return GlobalResult.result_notFound("TypeOfWidget type_of_widget_id not found");
 
             // Kontrola oprávnění
-            if (! typeOfWidget.edit_permission() ) return GlobalResult.forbidden_Permission();
+            if (! typeOfWidget.edit_permission() ) return GlobalResult.result_forbidden();
 
             // Úprava objektu
             typeOfWidget.description = help.description;
@@ -1177,7 +1177,7 @@ public class Controller_Grid extends Controller {
 
                 // Kontrola objektu
                 Model_Project project = Model_Project.find.byId(help.project_id);
-                if(project == null) return GlobalResult.notFoundObject("Project project_id not found");
+                if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
                 // Úprava objektu
                 typeOfWidget.project = project;
@@ -1210,10 +1210,10 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1222,10 +1222,10 @@ public class Controller_Grid extends Controller {
 
             // Kontrola objektu
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
-            if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
+            if(typeOfWidget == null) return GlobalResult.result_notFound("TypeOfWidget type_of_widget_id not found");
 
             // Kontrola oprávnění
-            if (! typeOfWidget.delete_permission()) return GlobalResult.forbidden_Permission();
+            if (! typeOfWidget.delete_permission()) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             typeOfWidget.delete();
@@ -1249,7 +1249,7 @@ public class Controller_Grid extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfWidget.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1301,7 +1301,7 @@ public class Controller_Grid extends Controller {
 
             // Získání JSON
             final Form<Swagger_Type_Of_Widget_Filter> form = Form.form(Swagger_Type_Of_Widget_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Type_Of_Widget_Filter help = form.get();
 
             // Získání všech objektů a následné odfiltrování soukormých TypeOfWidget
@@ -1341,9 +1341,9 @@ public class Controller_Grid extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1351,10 +1351,10 @@ public class Controller_Grid extends Controller {
         try{
 
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
-            if(typeOfWidget == null) return GlobalResult.notFoundObject("Tariff not found ");
+            if(typeOfWidget == null) return GlobalResult.result_notFound("Tariff not found ");
 
             // Kontrola oprávnění
-            if (! typeOfWidget.edit_permission()) return GlobalResult.forbidden_Permission();
+            if (! typeOfWidget.edit_permission()) return GlobalResult.result_forbidden();
 
             typeOfWidget.up();
 
@@ -1374,9 +1374,9 @@ public class Controller_Grid extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1384,10 +1384,10 @@ public class Controller_Grid extends Controller {
         try{
 
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
-            if(typeOfWidget == null) return GlobalResult.notFoundObject("Tariff not found");
+            if(typeOfWidget == null) return GlobalResult.result_notFound("Tariff not found");
 
             // Kontrola oprávnění
-            if (! typeOfWidget.edit_permission()) return GlobalResult.forbidden_Permission();
+            if (! typeOfWidget.edit_permission()) return GlobalResult.result_forbidden();
 
             typeOfWidget.down();
 
@@ -1430,7 +1430,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_GridWidget.class),
             @ApiResponse(code = 400, message = "Something went wrong",    response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -1441,15 +1441,15 @@ public class Controller_Grid extends Controller {
 
             // Zpracování Json
             final Form<Swagger_GridWidget_New> form = Form.form(Swagger_GridWidget_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridWidget_New help = form.get();
 
             // Kontrola objektu
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId( help.type_of_widget_id);
-            if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
+            if(typeOfWidget == null) return GlobalResult.result_notFound("TypeOfWidget type_of_widget_id not found");
 
             if (typeOfWidget.project == null && Model_GridWidget.get_publicByName(help.name) != null){
-                return GlobalResult.result_BadRequest("GridWidget with this name already exists, type a new one.");
+                return GlobalResult.result_badRequest("GridWidget with this name already exists, type a new one.");
             }
 
             // Vytvoření objektu
@@ -1461,7 +1461,7 @@ public class Controller_Grid extends Controller {
             gridWidget.type_of_widget      = typeOfWidget;
 
             // Kontrola oprávnění těsně před uložením
-            if (! gridWidget.create_permission() ) return GlobalResult.forbidden_Permission();
+            if (! gridWidget.create_permission() ) return GlobalResult.result_forbidden();
 
             // Uložení objektu
             gridWidget.save();
@@ -1470,7 +1470,7 @@ public class Controller_Grid extends Controller {
             Model_GridWidgetVersion scheme = Model_GridWidgetVersion.get_scheme();
 
             // Kontrola objektu
-            if(scheme == null) return GlobalResult.created( Json.toJson(gridWidget) );
+            if(scheme == null) return GlobalResult.result_created( Json.toJson(gridWidget) );
 
             // Vytvoření objektu první verze
             Model_GridWidgetVersion gridWidgetVersion = new Model_GridWidgetVersion();
@@ -1484,7 +1484,7 @@ public class Controller_Grid extends Controller {
             gridWidgetVersion.save();
 
             // Vrácení objektu
-            return GlobalResult.created( Json.toJson(gridWidget) );
+            return GlobalResult.result_created( Json.toJson(gridWidget) );
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -1518,7 +1518,7 @@ public class Controller_Grid extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_GridWidget.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -1529,15 +1529,15 @@ public class Controller_Grid extends Controller {
 
             // Zpracování Json
             final Form<Swagger_GridWidget_New> form = Form.form(Swagger_GridWidget_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridWidget_New help = form.get();
 
             // Kontrola objektu
             Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
-            if (gridWidget == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
+            if (gridWidget == null) return GlobalResult.result_notFound("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.edit_permission() ) return GlobalResult.forbidden_Permission();
+            if (! gridWidget.edit_permission() ) return GlobalResult.result_forbidden();
 
             // Úprava objektu
             gridWidget.description        = help.description;
@@ -1545,7 +1545,7 @@ public class Controller_Grid extends Controller {
 
             // Kontrola objektu
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(  help.type_of_widget_id);
-            if(typeOfWidget == null) return GlobalResult.notFoundObject("TypeOfWidget type_of_widget_id not found");
+            if(typeOfWidget == null) return GlobalResult.result_notFound("TypeOfWidget type_of_widget_id not found");
 
             // Úprava objektu
             gridWidget.type_of_widget = typeOfWidget;
@@ -1582,7 +1582,7 @@ public class Controller_Grid extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_GridWidgetVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -1591,10 +1591,10 @@ public class Controller_Grid extends Controller {
         try {
             // Kontrola objektu
             Model_GridWidgetVersion version = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
-            if(version == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
+            if(version == null) return GlobalResult.result_notFound("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
-            if (!version.read_permission() ) return GlobalResult.forbidden_Permission("You have no permission to get that");
+            if (!version.read_permission() ) return GlobalResult.result_forbidden("You have no permission to get that");
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(version));
@@ -1625,7 +1625,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_GridWidget.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1633,10 +1633,10 @@ public class Controller_Grid extends Controller {
         try {
             // Kontrola objektu
             Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
-            if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
+            if(gridWidget == null) return GlobalResult.result_notFound("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.read_permission() ) return GlobalResult.forbidden_Permission();
+            if (! gridWidget.read_permission() ) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(gridWidget));
@@ -1681,7 +1681,7 @@ public class Controller_Grid extends Controller {
 
             // Získání JSON
             final Form<Swagger_GridWidget_Filter> form = Form.form(Swagger_GridWidget_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridWidget_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
@@ -1720,10 +1720,10 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1732,10 +1732,10 @@ public class Controller_Grid extends Controller {
 
             // Kontrola objektu
             Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
-            if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
+            if(gridWidget == null) return GlobalResult.result_notFound("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.delete_permission()) return GlobalResult.forbidden_Permission();
+            if (! gridWidget.delete_permission()) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             gridWidget.delete();
@@ -1762,10 +1762,10 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1774,10 +1774,10 @@ public class Controller_Grid extends Controller {
 
             // Kontrola objektu
             Model_GridWidgetVersion version = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
-            if(version == null) return GlobalResult.notFoundObject("GridWidgetVersion grid_widget_version_id not found");
+            if(version == null) return GlobalResult.result_notFound("GridWidgetVersion grid_widget_version_id not found");
 
             // Kontrola oprávnění
-            if (! version.delete_permission()) return GlobalResult.forbidden_Permission();
+            if (! version.delete_permission()) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             version.delete();
@@ -1820,7 +1820,7 @@ public class Controller_Grid extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_GridWidgetVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -1831,15 +1831,15 @@ public class Controller_Grid extends Controller {
 
             // Zpracování Json
             final Form<Swagger_GridWidgetVersion_New> form = Form.form(Swagger_GridWidgetVersion_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridWidgetVersion_New help = form.get();
 
             // Kontrola názvu
-            if(help.version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
+            if(help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
 
             // Kontrola objektu
             Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
-            if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget not found");
+            if(gridWidget == null) return GlobalResult.result_notFound("GridWidget not found");
 
             // Vytvoření objektu
             Model_GridWidgetVersion version = new Model_GridWidgetVersion();
@@ -1853,13 +1853,13 @@ public class Controller_Grid extends Controller {
             version.author = Controller_Security.get_person();
 
             // Kontrola oprávnění
-            if (! version.create_permission()) return GlobalResult.forbidden_Permission();
+            if (! version.create_permission()) return GlobalResult.result_forbidden();
 
             // Uložení objektu
             version.save();
 
             // Vrácení objektu
-            return GlobalResult.created(Json.toJson(gridWidget));
+            return GlobalResult.result_created(Json.toJson(gridWidget));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -1895,7 +1895,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_GridWidgetVersion.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1905,15 +1905,15 @@ public class Controller_Grid extends Controller {
 
             // Zpracování Json
             final Form<Swagger_GridWidgetVersion_Edit> form = Form.form(Swagger_GridWidgetVersion_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridWidgetVersion_Edit help = form.get();
 
             // Kontrola názvu
-            if(help.version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
+            if(help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
 
             // Kontrola objektu
             Model_GridWidgetVersion version = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
-            if(version == null) return GlobalResult.notFoundObject("grid_widget_version_id not found");
+            if(version == null) return GlobalResult.result_notFound("grid_widget_version_id not found");
 
             // Úprava objektu
             version.version_name = help.version_name;
@@ -1961,7 +1961,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_GridWidgetVersion.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -1970,10 +1970,10 @@ public class Controller_Grid extends Controller {
 
             // Kontrola objektu
             Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
-            if (gridWidget == null) return GlobalResult.notFoundObject("GridWidget grid_widget_id not found");
+            if (gridWidget == null) return GlobalResult.result_notFound("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.read_permission()) return GlobalResult.forbidden_Permission();
+            if (! gridWidget.read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(gridWidget.grid_widget_versions));
@@ -2003,7 +2003,7 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_GridWidgetVersion.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -2012,10 +2012,10 @@ public class Controller_Grid extends Controller {
 
             // Kontrola objektu
             Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
-            if(gridWidgetVersion == null) return GlobalResult.notFoundObject("GridWidgetVersion grid_widget_version_id not found");
+            if(gridWidgetVersion == null) return GlobalResult.result_notFound("GridWidgetVersion grid_widget_version_id not found");
 
             // Kontrola orávnění
-            if(!(gridWidgetVersion.edit_permission())) return GlobalResult.forbidden_Permission();
+            if(!(gridWidgetVersion.edit_permission())) return GlobalResult.result_forbidden();
 
             // Úprava objektu
             gridWidgetVersion.approval_state = Enum_Approval_state.pending;
@@ -2040,9 +2040,9 @@ public class Controller_Grid extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -2050,10 +2050,10 @@ public class Controller_Grid extends Controller {
         try{
 
             Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
-            if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget not found");
+            if(gridWidget == null) return GlobalResult.result_notFound("GridWidget not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.edit_permission()) return GlobalResult.forbidden_Permission();
+            if (! gridWidget.edit_permission()) return GlobalResult.result_forbidden();
 
             gridWidget.up();
 
@@ -2073,9 +2073,9 @@ public class Controller_Grid extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
@@ -2083,10 +2083,10 @@ public class Controller_Grid extends Controller {
         try{
 
             Model_GridWidget gridWidget =  Model_GridWidget.get_byId(grid_widget_id);
-            if(gridWidget == null) return GlobalResult.notFoundObject("GridWidget not found");
+            if(gridWidget == null) return GlobalResult.result_notFound("GridWidget not found");
 
             // Kontrola oprávnění
-            if (!gridWidget.edit_permission()) return GlobalResult.forbidden_Permission();
+            if (!gridWidget.edit_permission()) return GlobalResult.result_forbidden();
 
             gridWidget.down();
 
@@ -2106,12 +2106,12 @@ public class Controller_Grid extends Controller {
 
             // Získání JSON
             final Form<Swagger_GridObject_Approval> form = Form.form(Swagger_GridObject_Approval.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridObject_Approval help = form.get();
 
             // Kontrola objektu
             Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_byId(help.object_id);
-            if (gridWidgetVersion == null) return GlobalResult.notFoundObject("grid_widget_version not found");
+            if (gridWidgetVersion == null) return GlobalResult.result_notFound("grid_widget_version not found");
 
             // Změna stavu schválení
             gridWidgetVersion.approval_state = Enum_Approval_state.disapproved;
@@ -2149,19 +2149,19 @@ public class Controller_Grid extends Controller {
 
             // Získání JSON
             final Form<Swagger_GridObject_Approve_withChanges> form = Form.form(Swagger_GridObject_Approve_withChanges.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridObject_Approve_withChanges help = form.get();
 
             // Kontrola názvu
-            if(help.grid_widget_version_name.equals("version_scheme")) return GlobalResult.result_BadRequest("This name is reserved for the system");
+            if(help.grid_widget_version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
 
             // Kontrola objektu
             Model_GridWidgetVersion privateGridWidgetVersion = Model_GridWidgetVersion.get_byId(help.object_id);
-            if (privateGridWidgetVersion == null) return GlobalResult.notFoundObject("grid_widget_version not found");
+            if (privateGridWidgetVersion == null) return GlobalResult.result_notFound("grid_widget_version not found");
 
             // Kontrola objektu
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(help.grid_widget_type_of_widget_id);
-            if (typeOfWidget == null) return GlobalResult.notFoundObject("type_of_widget not found");
+            if (typeOfWidget == null) return GlobalResult.result_notFound("type_of_widget not found");
 
             // Vytvoření objektu
             Model_GridWidget gridWidget = new Model_GridWidget();
@@ -2220,12 +2220,12 @@ public class Controller_Grid extends Controller {
 
             // Získání JSON
             final Form<Swagger_GridWidgetVersion_Scheme_Edit> form = Form.form(Swagger_GridWidgetVersion_Scheme_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridWidgetVersion_Scheme_Edit help = form.get();
 
             // Kontrola objektu
             Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_scheme();
-            if (gridWidgetVersion == null) return GlobalResult.notFoundObject("Scheme not found");
+            if (gridWidgetVersion == null) return GlobalResult.result_notFound("Scheme not found");
 
             // Úprava objektu
             gridWidgetVersion.design_json = help.design_json;
@@ -2249,7 +2249,7 @@ public class Controller_Grid extends Controller {
 
             // Kontrola objektu
             Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_scheme();
-            if (gridWidgetVersion == null) return GlobalResult.notFoundObject("Scheme not found");
+            if (gridWidgetVersion == null) return GlobalResult.result_notFound("Scheme not found");
 
             // Vytvoření výsledku
             Swagger_GridWidgetVersion_scheme result = new Swagger_GridWidgetVersion_scheme();
@@ -2270,11 +2270,11 @@ public class Controller_Grid extends Controller {
         try {
 
             Model_GridWidgetVersion scheme = Model_GridWidgetVersion.get_scheme();
-            if (scheme != null) return GlobalResult.result_BadRequest("Scheme already exists.");
+            if (scheme != null) return GlobalResult.result_badRequest("Scheme already exists.");
 
             // Získání JSON
             final Form<Swagger_GridWidgetVersion_Scheme_Edit> form = Form.form(Swagger_GridWidgetVersion_Scheme_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridWidgetVersion_Scheme_Edit help = form.get();
 
             // Úprava objektu

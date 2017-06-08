@@ -14,19 +14,10 @@ public class Swagger_Tariff_New {
     @Constraints.Required public String color;
 
     @Constraints.Required public boolean company_details_required;
-    @Constraints.Required public boolean payment_mode_required;
     @Constraints.Required public boolean payment_method_required;
 
     @Constraints.Required public boolean credit_card_support;
     @Constraints.Required public boolean bank_transfer_support;
-
-
-    @Constraints.Required public boolean mode_annually;
-    @Constraints.Required public boolean mode_credit;
-
-    @Constraints.Required public boolean free_tariff;
-
-    @Constraints.Required public boolean payment_required;
 
     @Constraints.Required public Double  credit_for_beginning;
 }

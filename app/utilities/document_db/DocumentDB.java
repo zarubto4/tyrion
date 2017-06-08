@@ -21,7 +21,7 @@ public class DocumentDB {
 
     public static void set_no_SQL_collection(){
         set_online_status_collection();
-        set_blocko_request_collection();
+        //set_blocko_request_collection();
     }
 
 

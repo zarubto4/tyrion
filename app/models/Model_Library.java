@@ -72,6 +72,10 @@ public class Model_Library extends Model{
         help.name = this.name;
         help.description = this.description;
 
+        for (Model_TypeOfBoard typeOfBoard : this.type_of_boards) {
+            help.type_of_board_names.add(typeOfBoard.name);
+        }
+
         help.edit_permission   = this.edit_permission();
         help.update_permission = this.update_permission();
         help.delete_permission = this.delete_permission();
@@ -79,7 +83,8 @@ public class Model_Library extends Model{
         return help;
     }
 
-    @Transient @JsonIgnore public Swagger_Library_Version library_version(Model_VersionObject version_object){
+    @JsonIgnore
+    public Swagger_Library_Version library_version(Model_VersionObject version_object){
         try {
 
             Swagger_Library_Version help = new Swagger_Library_Version();
@@ -89,15 +94,13 @@ public class Model_Library extends Model{
             help.version_description = version_object.version_description;
             help.delete_permission = delete_permission();
             help.update_permission = update_permission();
-            //help.author = library.autho - není možnost ho získat TODO
+            help.author = version_object.author();
 
             for (Model_CProgram cProgram : version_object.examples) {
                 help.examples.add(cProgram.get_example_short_detail());
             }
 
             for (Model_FileRecord file : version_object.files) {
-
-                System.out.println("get_short_library_version:: " + file.file_name);
 
                 JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
@@ -109,7 +112,6 @@ public class Model_Library extends Model{
             }
 
             return help;
-
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);

@@ -13,7 +13,7 @@ public class Result_NotValidated {
     @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
     public Integer code = 705;
 
-    @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
+    @ApiModelProperty(value = "message", required = true, readOnly = true)
     public String message = "Your account is not validated.";
 
 }

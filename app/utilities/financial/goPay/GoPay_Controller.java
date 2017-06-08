@@ -17,6 +17,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.enums.Enum_Currency;
+import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
 
 import utilities.enums.Enum_Recurrence_cycle;
@@ -136,21 +137,10 @@ public class GoPay_Controller extends Controller {
         payment.currency = Enum_Currency.CZK;
         payment.order_description = payment_description;
 
-        if (!product.on_demand && !(product.mode == Enum_Payment_mode.free || product.mode == Enum_Payment_mode.per_credit)) {
+        if (product.on_demand && product.gopay_id == null) {
 
             payment.recurrence = new Recurrence();
             payment.recurrence.recurrence_cycle = Enum_Recurrence_cycle.ON_DEMAND;
-
-            Calendar cal = Calendar.getInstance();
-
-            if (product.mode == Enum_Payment_mode.monthly) {
-
-                product.monthly_day_period = cal.get(Calendar.DAY_OF_MONTH) > 28 ? 28 : cal.get(Calendar.DAY_OF_MONTH);
-
-            } else if (product.mode == Enum_Payment_mode.annual) {
-
-                product.monthly_year_period = cal.get(Calendar.DAY_OF_YEAR);
-            }
         }
 
         GoPay_Payer payer = new GoPay_Payer();
@@ -231,7 +221,6 @@ public class GoPay_Controller extends Controller {
                     product.archiveEvent("On demand payment", "On demand GoPay payment number: " + invoice.gopay_id + " was set", invoice.id);
 
                     product.gopay_id = invoice.gopay_id;
-                    product.on_demand = true;
                     product.update();
                 }
             }
@@ -289,6 +278,7 @@ public class GoPay_Controller extends Controller {
 
             } catch (Exception e) {
                 terminal_logger.internalServerError("onDemandPayment: ", new Exception("Error getting result"));
+                Thread.sleep(2500);
                 continue;
             }
         /*
@@ -484,18 +474,18 @@ public class GoPay_Controller extends Controller {
 
             // Binding Json with help object
             final Form<Swagger_Payment_Refund> form = Form.form(Swagger_Payment_Refund.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.formExcepting(form.errorsAsJson());
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Payment_Refund help = form.get();
 
             // Finding in DB
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
-            if(invoice == null) return GlobalResult.notFoundObject("Invoice not found");
+            if(invoice == null) return GlobalResult.result_notFound("Invoice not found");
 
             invoice.getProduct().archiveEvent("Refund payment", "Request for refund for this reason: " + help.reason, null);
 
             if (help.whole) refundPayment(invoice, invoice.total_price());
             else if (help.amount != null) refundPayment(invoice, (long) (help.amount * 1000));
-            else return GlobalResult.result_BadRequest("Set 'whole' parameter to true or specify amount.");
+            else return GlobalResult.result_badRequest("Set 'whole' parameter to true or specify amount.");
 
             return GlobalResult.result_ok();
 

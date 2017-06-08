@@ -13,10 +13,10 @@ import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
-import utilities.response.response_objects.Result_JsonValueMissing;
+import utilities.response.response_objects.Result_InvalidBody;
 import utilities.response.response_objects.Result_NotFound;
-import utilities.response.response_objects.Result_PermissionRequired;
-import utilities.response.response_objects.Result_ok;
+import utilities.response.response_objects.Result_Forbidden;
+import utilities.response.response_objects.Result_Ok;
 import utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New;
 
 import java.util.List;
@@ -60,8 +60,8 @@ public class Controller_ExternalServer extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_HomerServer.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -70,7 +70,7 @@ public class Controller_ExternalServer extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Cloud_Homer_Server_New> form = Form.form(Swagger_Cloud_Homer_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Vytvoření objektu
@@ -79,13 +79,13 @@ public class Controller_ExternalServer extends Controller {
             server.server_type = Enum_Cloud_HomerServer_type.public_server;
 
             // Kontrola oprávnění
-            if(!server.create_permission()) return GlobalResult.forbidden_Permission();
+            if(!server.create_permission()) return GlobalResult.result_forbidden();
 
             // Uložení objektu
             server.save();
 
             // Vrácení objektu
-            return GlobalResult.created(Json.toJson(server));
+            return GlobalResult.result_created(Json.toJson(server));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -97,12 +97,12 @@ public class Controller_ExternalServer extends Controller {
         try{
 
             Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
-            if(server == null) return GlobalResult.notFoundObject("HomerServer homer_server_id not found");
+            if(server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
 
             Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
-            if(main_server != null) return GlobalResult.result_BadRequest("HomerServer Main server is already set.");
+            if(main_server != null) return GlobalResult.result_badRequest("HomerServer Main server is already set.");
 
-            if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!server.edit_permission()) return GlobalResult.result_forbidden();
 
             server.server_type = Enum_Cloud_HomerServer_type.main_server;
             server.update();
@@ -119,14 +119,14 @@ public class Controller_ExternalServer extends Controller {
         try{
 
             Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
-            if(server == null) return GlobalResult.notFoundObject("HomerServer homer_server_id not found");
-            if(server.server_type != Enum_Cloud_HomerServer_type.public_server) return GlobalResult.result_BadRequest("Server must be in public group!");
+            if(server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
+            if(server.server_type != Enum_Cloud_HomerServer_type.public_server) return GlobalResult.result_badRequest("Server must be in public group!");
 
 
             Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.backup_server).findUnique();
-            if(backup_server != null) return GlobalResult.result_BadRequest("HomerServer Main server is already set.");
+            if(backup_server != null) return GlobalResult.result_badRequest("HomerServer Main server is already set.");
 
-            if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!server.edit_permission()) return GlobalResult.result_forbidden();
 
             server.server_type = Enum_Cloud_HomerServer_type.backup_server;
             server.update();
@@ -165,8 +165,8 @@ public class Controller_ExternalServer extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Updated successfully",    response = Model_HomerServer.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -175,15 +175,15 @@ public class Controller_ExternalServer extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Cloud_Homer_Server_New> form = Form.form(Swagger_Cloud_Homer_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.get_model(unique_identifier);
-            if (server == null) return GlobalResult.notFoundObject("Cloud_Blocko_Server server_id not found");
+            if (server == null) return GlobalResult.result_notFound("Cloud_Blocko_Server server_id not found");
 
             // Kontrola oprávnění
-            if(!server.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!server.edit_permission()) return GlobalResult.result_forbidden();
 
             // Úprava objektu
             server.personal_server_name = help.personal_server_name;
@@ -226,7 +226,7 @@ public class Controller_ExternalServer extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Model_HomerServer.class, responseContainer = "List "),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result get_All_Homer_Server(){
@@ -257,9 +257,9 @@ public class Controller_ExternalServer extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
     public Result delete_Homer_Server(@ApiParam(value = "unique_identificator ", required = true)  String unique_identificator ){
@@ -267,10 +267,10 @@ public class Controller_ExternalServer extends Controller {
 
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
-            if (server == null) return GlobalResult.notFoundObject("Cloud_Compilation_Server server_id not found");
+            if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Kontrola oprávnění
-            if(!server.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(!server.delete_permission()) return GlobalResult.result_forbidden();
 
             // Smzání objektu
             server.delete();

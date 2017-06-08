@@ -71,12 +71,12 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created", response = Model_CProgram.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 201, message = "Successfully created", response = Model_CProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result c_program_create() {
@@ -84,12 +84,12 @@ public class Controller_Code extends Controller{
 
             // Zpracování Json
             final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_program_New help = form.get();
 
             // Ověření Typu Desky
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Tvorba programu
             Model_CProgram c_program             = new Model_CProgram();
@@ -101,12 +101,12 @@ public class Controller_Code extends Controller{
             if(help.project_id != null){
                 // Ověření projektu
                 Model_Project project = Model_Project.find.byId(help.project_id);
-                if (project == null) return GlobalResult.notFoundObject("Project project_id not found");
+                if (project == null) return GlobalResult.result_notFound("Project project_id not found");
                 c_program.project = project;
             }
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!c_program.create_permission()) return GlobalResult.forbidden_Permission();
+            if (!c_program.create_permission()) return GlobalResult.result_forbidden();
 
             // Uložení C++ Programu
             c_program.save();
@@ -124,7 +124,7 @@ public class Controller_Code extends Controller{
                 version_object.public_version = (help.c_program_public_admin_create && Controller_Security.get_person().admin_permission());
 
                 // Zkontroluji oprávnění
-                if (!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+                if (!version_object.c_program.update_permission()) return GlobalResult.result_forbidden();
 
                 version_object.save();
 
@@ -156,7 +156,7 @@ public class Controller_Code extends Controller{
 
             c_program.refresh();
 
-            return GlobalResult.created(Json.toJson(c_program));
+            return GlobalResult.result_created(Json.toJson(c_program));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -182,20 +182,20 @@ public class Controller_Code extends Controller{
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_CProgram.class),
-            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result c_program_get(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
         try {
 
             // Vyhledám Objekt
             Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
-            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program not found");
+            if(c_program == null) return GlobalResult.result_notFound("C_Program c_program not found");
 
             // Zkontroluji oprávnění
-            if(! c_program.read_permission())  return GlobalResult.forbidden_Permission();
+            if(! c_program.read_permission())  return GlobalResult.result_forbidden();
 
             // Vracím Objekt
             return GlobalResult.result_ok(Json.toJson(c_program));
@@ -231,7 +231,7 @@ public class Controller_Code extends Controller{
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result c_program_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number){
@@ -240,7 +240,7 @@ public class Controller_Code extends Controller{
 
             // Získání JSON
             final Form<Swagger_C_Program_Filter> form = Form.form(Swagger_C_Program_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_Program_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
@@ -275,7 +275,7 @@ public class Controller_Code extends Controller{
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_C_Program_Version_Public_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result c_program_getPublicList(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number){
         try {
@@ -335,11 +335,11 @@ public class Controller_Code extends Controller{
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",    response = Model_CProgram.class),
-            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 404, message = "Object not found",    response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @ApiImplicitParams(
             {
@@ -358,16 +358,16 @@ public class Controller_Code extends Controller{
 
             // Zpracování Json
             final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_program_New help = form.get();
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
-            if(c_program == null ) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            if(c_program == null ) return GlobalResult.result_notFound("C_Program c_program_id not found");
 
             // Ověření objektu
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
-            if(typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if(typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Úprava objektu
             c_program.name = help.name;
@@ -375,7 +375,7 @@ public class Controller_Code extends Controller{
             c_program.type_of_board = typeOfBoard;
 
             // Zkontroluji oprávnění
-            if(!c_program.edit_permission())  return GlobalResult.forbidden_Permission();
+            if(!c_program.edit_permission())  return GlobalResult.result_forbidden();
 
             // Uložení změn
             c_program.update();
@@ -403,21 +403,21 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result c_program_delete(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id){
         try{
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
-            if(c_program == null ) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            if(c_program == null ) return GlobalResult.result_notFound("C_Program c_program_id not found");
 
             // Kontrola oprávnění
-            if(!c_program.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(!c_program.delete_permission()) return GlobalResult.result_forbidden();
 
             // Vyhledání PRoduct pro získání kontejneru
             //Model_Product product = Model_Product.find.where().eq("projects.c_programs.id", c_program_id).findUnique();
@@ -449,7 +449,7 @@ public class Controller_Code extends Controller{
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result get_C_Program_List_by_Project(@ApiParam(value = "project_id String query", required = true) String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
 
@@ -492,13 +492,13 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created",        response = Swagger_C_Program_Version.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_JsonValueMissing.class),
+            @ApiResponse(code = 201, message = "Successfully created",        response = Swagger_C_Program_Version.class),
+            @ApiResponse(code = 400, message = "Invalid body",   response = Result_InvalidBody.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result c_programVersion_create(@ApiParam(value = "version_id String query", required = true)  String c_program_id){
@@ -506,15 +506,15 @@ public class Controller_Code extends Controller{
 
             // Zpracování Json
             Form<Swagger_C_Program_Version_New> form = Form.form(Swagger_C_Program_Version_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_Program_Version_New help = form.get();
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
-            if(c_program == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            if(c_program == null) return GlobalResult.result_notFound("C_Program c_program_id not found");
 
             // Zkontroluji oprávnění
-            if(!c_program.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!c_program.update_permission()) return GlobalResult.result_forbidden();
 
             // První nová Verze
             Model_VersionObject version_object = new Model_VersionObject();
@@ -526,7 +526,7 @@ public class Controller_Code extends Controller{
             version_object.public_version      = false;
 
             // Zkontroluji oprávnění
-            if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.c_program.update_permission()) return GlobalResult.result_forbidden();
 
             version_object.save();
 
@@ -537,7 +537,7 @@ public class Controller_Code extends Controller{
             version_object.compile_program_thread();
 
             // Vracím vytvořený objekt
-            return GlobalResult.created(Json.toJson(c_program.program_version(version_object)));
+            return GlobalResult.result_created(Json.toJson(c_program.program_version(version_object)));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -564,23 +564,23 @@ public class Controller_Code extends Controller{
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_Version.class),
             @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 404, message = "Object not found",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result c_programVersion_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
         try {
 
             // Vyhledám Objekt
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
+            if(version_object == null) return GlobalResult.result_notFound("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
-            if(! version_object.c_program.read_permission())  return GlobalResult.forbidden_Permission();
+            if(! version_object.c_program.read_permission())  return GlobalResult.result_forbidden();
 
             // Vracím Objekt
             return GlobalResult.result_ok(Json.toJson(version_object.c_program.program_version(version_object)));
@@ -619,8 +619,8 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_VersionObject.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result c_programVersion_update(@ApiParam(value = "version_id String query",   required = true)  String version_id){
@@ -628,15 +628,15 @@ public class Controller_Code extends Controller{
 
             // Zpracování Json
             final Form<Swagger_C_Program_Version_Edit> form = Form.form(Swagger_C_Program_Version_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_Program_Version_Edit help = form.get();
 
             // Ověření objektu
             Model_VersionObject version_object= Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Kontrola oprávnění
-            if(!version_object.c_program.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.c_program.edit_permission()) return GlobalResult.result_forbidden();
 
             //Uprava objektu
             version_object.version_name = help.version_name;
@@ -668,24 +668,24 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_ok.class),
-            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 200, message = "Ok Result", response =  Result_Ok.class),
+            @ApiResponse(code = 404, message = "Object not found",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result c_programVersion_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id){
         try{
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version version_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
             // Kontrola oprávnění
-            if(!version_object.c_program.delete_permission()) return GlobalResult.forbidden_Permission();
+            if(!version_object.c_program.delete_permission()) return GlobalResult.result_forbidden();
 
             version_object.removed_by_user = true;
 
@@ -715,34 +715,34 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "The user has entered more than three channels. Or other problem :(", response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_PermissionRequired.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result c_programVersion_makePublic(@ApiParam(value = "version_id String query", required = true)  String version_id){
         try {
 
             // Kontrola objektu
             Model_VersionObject version = Model_VersionObject.find.byId(version_id);
-            if(version == null) return GlobalResult.notFoundObject("Version not found");
+            if(version == null) return GlobalResult.result_notFound("Version not found");
 
-            if(version.c_program == null )return GlobalResult.notFoundObject("Version not found");
+            if(version.c_program == null )return GlobalResult.result_notFound("Version not found");
 
 
             if(Model_VersionObject.find.where().eq("approval_state", Enum_Approval_state.pending.name())
                     .eq("c_program.project.participants.person.id", Controller_Security.get_person().id)
-                    .findList().size() > 3) return GlobalResult.result_BadRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
+                    .findList().size() > 3) return GlobalResult.result_badRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
 
-            if(version.approval_state != null)  return GlobalResult.result_BadRequest("You cannot publish same program twice!");
+            if(version.approval_state != null)  return GlobalResult.result_badRequest("You cannot publish same program twice!");
 
             // Úprava objektu
             version.approval_state = Enum_Approval_state.pending;
 
             // Kontrola oprávnění
-            if(!(version.c_program.edit_permission())) return GlobalResult.forbidden_Permission();
+            if(!(version.c_program.edit_permission())) return GlobalResult.result_forbidden();
 
             // Uložení změn
             version.update();
@@ -762,13 +762,13 @@ public class Controller_Code extends Controller{
 
             // Vyhledám Objekt
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if(version_object == null) return GlobalResult.notFoundObject("Version_Object version_object not found");
+            if(version_object == null) return GlobalResult.result_notFound("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.result_BadRequest("Version_Object its not version of C_Program");
+            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
-            if(! version_object.c_program.read_permission())  return GlobalResult.forbidden_Permission();
+            if(! version_object.c_program.read_permission())  return GlobalResult.result_forbidden();
 
 
             Swagger_C_Program_Version_For_Public_Decision version = new Swagger_C_Program_Version_For_Public_Decision();
@@ -793,19 +793,19 @@ public class Controller_Code extends Controller{
 
             // Získání Json
             final Form<Swagger_C_Program_Version_Approve_WithChanges> form = Form.form(Swagger_C_Program_Version_Approve_WithChanges.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_Program_Version_Approve_WithChanges help = form.get();
 
             // Kontrola objektu
             Model_VersionObject version_old = Model_VersionObject.find.byId(help.version_id);
-            if(version_old == null) return GlobalResult.notFoundObject("Version not found");
+            if(version_old == null) return GlobalResult.result_notFound("Version not found");
 
             // Ověření objektu
             Model_CProgram c_program_old = Model_CProgram.find.byId(version_old.c_program.id);
-            if(c_program_old == null) return GlobalResult.notFoundObject("C_Program c_program_id not found");
+            if(c_program_old == null) return GlobalResult.result_notFound("C_Program c_program_id not found");
 
             // Zkontroluji oprávnění
-            if(!c_program_old.update_permission()) return GlobalResult.forbidden_Permission();
+            if(!c_program_old.update_permission()) return GlobalResult.result_forbidden();
 
 
             if(help.decision){
@@ -821,7 +821,7 @@ public class Controller_Code extends Controller{
                 c_program.type_of_board = c_program_old.type_of_board;
 
                 // Zkontroluji oprávnění
-                if(!c_program.create_permission()) return GlobalResult.forbidden_Permission();
+                if(!c_program.create_permission()) return GlobalResult.result_forbidden();
                 c_program.save();
 
                 Model_VersionObject version_object = new Model_VersionObject();
@@ -833,7 +833,7 @@ public class Controller_Code extends Controller{
                 version_object.author              = version_old.author;
 
                 // Zkontroluji oprávnění
-                if(!version_object.c_program.update_permission()) return GlobalResult.forbidden_Permission();
+                if(!version_object.c_program.update_permission()) return GlobalResult.result_forbidden();
                 version_object.save();
 
                 // Nahraje do Azure a připojí do verze soubor
@@ -955,12 +955,12 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful created", response = Model_CProgram.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_JsonValueMissing.class),
-            @ApiResponse(code = 400, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 201, message = "Successfully created", response = Model_CProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_Admin.class)
@@ -969,12 +969,12 @@ public class Controller_Code extends Controller{
 
             // Zpracování Json
             final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.formExcepting(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_C_program_New help = form.get();
 
             // Ověření Typu Desky
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.notFoundObject("TypeOfBoard type_of_board_id not found");
+            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Tvorba programu
             Model_CProgram c_program        = new Model_CProgram();
@@ -985,12 +985,12 @@ public class Controller_Code extends Controller{
             c_program.type_of_board_default = typeOfBoard;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!c_program.create_permission()) return GlobalResult.forbidden_Permission();
+            if (!c_program.create_permission()) return GlobalResult.result_forbidden();
 
             // Uložení C++ Programu
             c_program.save();
 
-            return GlobalResult.created(Json.toJson(c_program));
+            return GlobalResult.result_created(Json.toJson(c_program));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -1005,15 +1005,15 @@ public class Controller_Code extends Controller{
 
             // Kontrola objektu
             Model_CProgram cProgram = Model_CProgram.find.byId(c_program_id);
-            if (cProgram == null) return GlobalResult.notFoundObject("CProgram c_program_id not found");
+            if (cProgram == null) return GlobalResult.result_notFound("CProgram c_program_id not found");
 
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.notFoundObject("Version_Object version_object_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version_Object version_object_id not found");
 
-            if (version_object.c_program == null || version_object.c_program.type_of_board_default == null) return GlobalResult.result_BadRequest("Version_object is not version of c_program or is not default firmware");
+            if (version_object.c_program == null || version_object.c_program.type_of_board_default == null) return GlobalResult.result_badRequest("Version_object is not version of c_program or is not default firmware");
 
             // Kontrola oprávnění
-            if(!cProgram.edit_permission()) return GlobalResult.forbidden_Permission();
+            if(!cProgram.edit_permission()) return GlobalResult.result_forbidden();
 
             if (cProgram.default_main_version != null){
                 cProgram.default_main_version.default_program = null;

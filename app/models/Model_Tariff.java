@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.enums.Enum_BusinessModel;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_mode;
 import utilities.logger.Class_Logger;
@@ -31,14 +32,13 @@ public class Model_Tariff extends Model {
     @Column(unique = true)  public String identifier;
 
                 @JsonIgnore public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
+                @Enumerated(EnumType.STRING)
+                @JsonIgnore public Enum_BusinessModel business_model;
 
                 @JsonIgnore public Integer order_position;
 
                             public boolean company_details_required;
-                            public boolean payment_mode_required;
                             public boolean payment_method_required;
-
-                @JsonIgnore public boolean payment_required; // Říká, zda se po zaregistrování okamžitě vytvoří faktura a další procedury pro zaplacení
 
                 @JsonIgnore public Long credit_for_beginning; // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
 
@@ -47,15 +47,9 @@ public class Model_Tariff extends Model {
                 @JsonIgnore public boolean bank_transfer_support;
                 @JsonIgnore public boolean credit_card_support;
 
-                @JsonIgnore public boolean mode_annually;
-                @JsonIgnore public boolean mode_credit;
-                @JsonIgnore public boolean free_tariff;
-
-
                 @OneToMany(mappedBy="tariff",          cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<Model_TariffLabel> labels = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_included = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="tariff",          cascade = CascadeType.ALL, fetch = FetchType.LAZY)                                 public List<Model_Product> product = new ArrayList<>(); //Vazba na uživateli zaregistrované produkty
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -66,7 +60,7 @@ public class Model_Tariff extends Model {
 
         if(bank_transfer_support) methods.add( new Pair( Enum_Payment_method.bank_transfer.name(), "Bank transfers") );
         if(credit_card_support)   methods.add( new Pair( Enum_Payment_method.credit_card.name()  , "Credit Card Payment"));
-        if(free_tariff)           methods.add( new Pair( Enum_Payment_method.free.name()         , "I want it free"));
+        //if(free_tariff)           methods.add( new Pair( Enum_Payment_method.free.name()         , "I want it free"));
 
         return methods;
     }
@@ -76,9 +70,9 @@ public class Model_Tariff extends Model {
 
         List<Pair> modes = new ArrayList<>();
 
-        if(mode_annually)  modes.add( new Pair( Enum_Payment_mode.monthly.name()   , "Annual monthly / yearly payment"));
-        if(mode_credit)    modes.add( new Pair( Enum_Payment_mode.per_credit.name(), "Pre-paid credit"));
-        if(free_tariff)    modes.add( new Pair( Enum_Payment_mode.free.name()      , "I want it free"));
+        //if(mode_annually)  modes.add( new Pair( Enum_Payment_mode.monthly.name()   , "Annual monthly / yearly payment"));
+        //if(mode_credit)    modes.add( new Pair( Enum_Payment_mode.per_credit.name(), "Pre-paid credit"));
+        //if(free_tariff)    modes.add( new Pair( Enum_Payment_mode.free.name()      , "I want it free"));
 
         return modes;
     }

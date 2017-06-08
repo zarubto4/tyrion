@@ -27,6 +27,7 @@ import views.html.c_program.aproval_community_procedure.approval_procedure_c_pro
 import views.html.c_program.aproval_community_procedure.approval_procedure_list;
 import views.html.c_program.c_libraries.library;
 import views.html.c_program.c_libraries.library_list;
+import views.html.c_program.c_libraries.library_version;
 import views.html.c_program.public_c_programs.public_c_code;
 import views.html.c_program.public_c_programs.public_c_code_list;
 import views.html.demo_data.demo_data_main;
@@ -269,7 +270,7 @@ public class Controller_Dashboard extends Controller {
                     ObjectNode result = Json.newObject();
                     result.put("status", "Becki terminal is not connected now");
 
-                    return GlobalResult.result_BadRequest(result);
+                    return GlobalResult.result_badRequest(result);
                 }
 
             }else {
@@ -277,7 +278,7 @@ public class Controller_Dashboard extends Controller {
                 ObjectNode result = Json.newObject();
                 result.put("status", "Becki terminal is not connected now");
 
-                return GlobalResult.result_BadRequest(result);
+                return GlobalResult.result_badRequest(result);
             }
 
         }catch (Exception e){
@@ -408,7 +409,7 @@ public class Controller_Dashboard extends Controller {
 
             if(type_of_board == null) {
 
-                return GlobalResult.notFoundObject("Type of Board not found!");
+                return GlobalResult.result_notFound("Type of Board not found!");
 
             }else {
                 Html content = bootloader_settings.render(type_of_board);
@@ -587,6 +588,20 @@ public class Controller_Dashboard extends Controller {
         }
     }
 
+    public Result public_library_version(String version_id){
+        try {
+
+            Model_VersionObject version = Model_VersionObject.find.byId(version_id);
+            if (version == null) return GlobalResult.result_notFound("Version not found");
+
+            Html content = library_version.render(version);
+            return return_page(content);
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
     public Result grid_public(){
         try {
 
@@ -624,7 +639,7 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_Project project = Model_Project.find.byId(id);
-            if (project == null) return GlobalResult.notFoundObject("Project not found");
+            if (project == null) return GlobalResult.result_notFound("Project not found");
 
             Html project_detail_content = project_detail.render(project);
             return return_page(project_detail_content);
@@ -638,7 +653,7 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_Product product = Model_Product.get_byId(id);
-            if (product == null) return GlobalResult.notFoundObject("Product not found");
+            if (product == null) return GlobalResult.result_notFound("Product not found");
 
             Html product_detail_content = product_detail.render(product);
             return return_page(product_detail_content);
@@ -652,7 +667,7 @@ public class Controller_Dashboard extends Controller {
         try {
 
             Model_Invoice inv = Model_Invoice.find.byId(id);
-            if (inv == null) return GlobalResult.notFoundObject("Invoice not found");
+            if (inv == null) return GlobalResult.result_notFound("Invoice not found");
 
             Html content = invoice.render(inv);
             return return_page(content);

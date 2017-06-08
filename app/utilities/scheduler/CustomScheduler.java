@@ -14,6 +14,7 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.repeatHourlyForever;
+import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class CustomScheduler {
@@ -55,12 +56,32 @@ public class CustomScheduler {
 
             // Minutové - hodinové klíče
             TriggerKey every_10_min_key7 = TriggerKey.triggerKey("every_ten_minutes"); // 7)
-            TriggerKey every_five_minute_key = TriggerKey.triggerKey("every_five_minute");
+            TriggerKey spend_credit_key = TriggerKey.triggerKey("spend_credit_key");
             TriggerKey every_minute_key2 = TriggerKey.triggerKey("every_minute2");
             TriggerKey every_minute_key = TriggerKey.triggerKey("every_minute");
             TriggerKey every_hour_key = TriggerKey.triggerKey("every_hour");
 
             //-------------------------
+
+            // Spending credit period
+            CronScheduleBuilder spend_credit_period;
+            switch (Server.financial_spendDailyPeriod) {
+
+                case 1: spend_credit_period = dailyAtHourAndMinute(3,15);break;
+                case 2: spend_credit_period = cronSchedule("0 0 3,15 * * ?");break;
+                case 3: spend_credit_period = cronSchedule("0 0 3,11,19, * * ?");break;
+                case 4: spend_credit_period = cronSchedule("0 0 0,3,7,12,16,20 * * ?");break;
+                case 12: spend_credit_period = cronSchedule("0 0 3/2 * * ?");break;
+                case 24: spend_credit_period = cronSchedule("0 0 * * * ?");break;
+                case 48: spend_credit_period = cronSchedule("0 0,30 * * * ?");break;
+                default: {
+                    terminal_logger.internalServerError("start:", new Exception("Cannot start scheduler job - SpendingCredit, wrong configuration - using default '1'. " +
+                            "Check the conf/application.conf file. Property Financial.{mode}.spendDailyPeriod should contain only 1-4, 12, 24 or 48."));
+                    spend_credit_period = dailyAtHourAndMinute(3,15);
+                    Server.financial_spendDailyPeriod = 1;
+                    break;
+                }
+            }
 
             // Mažu scheduler v operační paměti po předchozí instanci - není doporučeno mít aktivní
             // slr pomáhá v případě problémů s operační pamětí - v režimu developer  je v metodě která ukončuje server třeba při buildu procedura, která vyčistí RAM
@@ -116,15 +137,15 @@ public class CustomScheduler {
                                 .withSchedule(dailyAtHourAndMinute(3,30))// Spuštění každý den v 03:30 AM
                                 .build()
                 );
-
+/*
                 // 5) Kontrola a fakturace klientů na měsíční bázi
                 terminal_logger.debug("start: Scheduling new Job - Spending Credit");
                 scheduler.scheduleJob( newJob(Job_SpendingCredit.class).withIdentity( JobKey.jobKey("spending_credit") ).build(),
-                        newTrigger().withIdentity(every_five_minute_key).startNow()
-                                .withSchedule(cronSchedule("10 0/5 * * * ?"))// Spuštění každých 5 minut
+                        newTrigger().withIdentity(spend_credit_key).startNow()
+                                .withSchedule(repeatMinutelyForever())// Spuštění každých 5 minut
                                 .build()
                 );
-
+*/
                 // 6) Slouží ke kontrole plateb na localhostu, kam nám gopay nemůže poslat notifikace
                 if(Server.server_mode == Enum_Tyrion_Server_mode.developer ) {
                     terminal_logger.debug("start: Scheduling new Job - Artificial Financial Callback");

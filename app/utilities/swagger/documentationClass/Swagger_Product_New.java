@@ -24,10 +24,6 @@ public class Swagger_Product_New {
     @ApiModelProperty(required = true, value =  "Required: always. The name length must be between 4 and 60 characters")
     public String name;
 
-
-    @ApiModelProperty(required = false, value =  "Required: only in if payment_mode_required is true")
-    public Enum_Payment_mode payment_mode;
-
     @ApiModelProperty(required = false, value =  "Required: only in if payment_method_required is true  values =>[bank_transfer, credit_card]")
     public Enum_Payment_method payment_method;
 
@@ -98,7 +94,6 @@ public class Swagger_Product_New {
     @Constraints.Email
     @ApiModelProperty(required = true, value =  "Required: always, Email must be valid")
     public String invoice_email;
-
 
     @ApiModelProperty(required = false, value = "List of Ids of Extensions")
     public List<String> extension_ids = new ArrayList<>();

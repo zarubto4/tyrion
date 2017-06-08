@@ -1,13 +1,14 @@
 package utilities.financial.extensions;
 
 import models.Model_ProductExtension.Config;
-import utilities.enums.Enum_ExtensionType;
+import play.Configuration;
+import utilities.Server;
 
 public class Extension_Database implements Extension {
 
-    public static final String name = Enum_ExtensionType.Database.name();
-    public static final String description = "This is an extension for database.";
-    public static final Long price = (long) 700;
+    public static final String name = Configuration.root().getString("Financial.extensions.database.name");
+    public static final String description = Configuration.root().getString("Financial.extensions.database.description");
+    public static final Long price = Configuration.root().getLong("Financial.extensions.database.price") / Server.financial_spendDailyPeriod;
     public static final Integer count = 1;
 
     public Long getPrice(Config config) {
