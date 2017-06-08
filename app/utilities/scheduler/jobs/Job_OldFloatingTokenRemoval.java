@@ -44,7 +44,7 @@ public class Job_OldFloatingTokenRemoval implements Job {
 
                 while (true) {
 
-                    List<Model_FloatingPersonToken> tokens = Model_FloatingPersonToken.find.where().gt("access_age", new Date()).setMaxRows(100).findList();
+                    List<Model_FloatingPersonToken> tokens = Model_FloatingPersonToken.find.where().lt("access_age", new Date().getTime()).setMaxRows(100).findList();
                     if (tokens.isEmpty()) {
                         terminal_logger.debug("remove_floating_person_token_thread: no tokens to remove");
                         break;
