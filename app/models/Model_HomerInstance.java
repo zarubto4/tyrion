@@ -1130,7 +1130,6 @@ public class Model_HomerInstance extends Model {
 
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
 
-
             final Form<WS_Message_Online_states_devices> form = Form.form(WS_Message_Online_states_devices.class).bind(node);
             if(form.hasErrors()){terminal_logger.error("WS_Online_states_devices:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Online_states_devices();}
 
