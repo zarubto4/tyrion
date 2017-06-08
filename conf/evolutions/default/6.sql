@@ -1,5 +1,4 @@
 
-/* Verze 1.9.5 */
 # --- !Ups
 
 alter table model_version_object
