@@ -45,9 +45,12 @@ public class Model_Person extends Model {
                                                  @JsonIgnore    public boolean freeze_account; // Zmražený účet - Účty totiž nechceme mazat!
                                                  @JsonIgnore    public boolean mailValidated;
 
+                                                 @JsonIgnore    public String facebook_oauth_id;
+                                                 @JsonIgnore    public String github_oauth_id;
+
     @JsonIgnore  @Column(length = 64)                           public byte[] shaPassword;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public Model_PasswordRecoveryToken passwordRecoveryToken;
-    @JsonIgnore  @OneToOne(mappedBy = "person")                 public Model_ChangePropertyToken changePropertyToken;
+    @JsonIgnore  @OneToOne(mappedBy = "person")                 public Model_ChangePropertyToken   changePropertyToken;
 
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_PaymentDetails>     payment_details      = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant> projects_participant = new ArrayList<>();

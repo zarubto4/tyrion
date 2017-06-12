@@ -11,10 +11,12 @@ import models.Model_HomerInstanceRecord;
 import models.Model_Permission;
 import models.Model_Person;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
+import play.libs.ws.WSResponse;
 import play.mvc.*;
 import utilities.Server;
 import utilities.UtilTools;
@@ -35,6 +37,7 @@ import utilities.swagger.outboundClass.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 import views.html.common.login;
+import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;
@@ -445,35 +448,59 @@ public class Controller_Security extends Controller {
             if (!response.isSuccessful()) redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
 
 
-            JsonNode jsonNode = Json.parse(response.getBody());
+            JsonNode json_response_from_github = Json.parse(response.getBody());
 
-            floatingPersonToken.provider_user_id = jsonNode.get("id").asText();
+            floatingPersonToken.provider_user_id = json_response_from_github.get("id").asText();
             floatingPersonToken.update();
 
 
-            List<Model_FloatingPersonToken> before_registred = Model_FloatingPersonToken.find.where().eq("provider_user_id", floatingPersonToken.provider_user_id).where().ne("connection_id", floatingPersonToken.connection_id).findList();
-            if (!before_registred.isEmpty()) {
+            Model_Person person = Model_Person.find.where().eq("github_oauth_id",json_response_from_github.get("id").asText() ).findUnique();
+            if (person != null) {
+
                 System.out.println("Tento uživatel se nepřihlašuje poprvné");
 
-                // Zreviduji stav z GitHubu
-                // TODO
+                // Zrevidovat stav??
+                if (json_response_from_github.has("mail"))   person.mail = json_response_from_github.get("mail").asText();
+                if (json_response_from_github.has("login"))  person.nick_name = json_response_from_github.get("login").asText();
+                if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null"))   person.full_name = json_response_from_github.get("name").asText();
+                if (json_response_from_github.has("avatar_url")) person.azure_picture_link = json_response_from_github.get("avatar_url").asText();
+                person.update();
 
-                floatingPersonToken.person = before_registred.get(0).person;
+                floatingPersonToken.person = person;
                 floatingPersonToken.update();
 
             } else {
+
                 System.out.println("Tento uživatel se přihlašuje poprvé");
-                System.out.println("Json::" + jsonNode.toString());
+                System.out.println("Json::" + json_response_from_github.toString());
 
-                Model_Person person = new Model_Person();
+                if(json_response_from_github.has("mail")) person = Model_Person.find.where().eq("mail", json_response_from_github.get("mail").asText()).findUnique();
 
-                if (jsonNode.has("mail"))   person.mail = jsonNode.get("mail").asText();
-                if (jsonNode.has("login"))  person.nick_name = jsonNode.get("login").asText();
-                if (jsonNode.has("name") && jsonNode.get("name") != null &&  !jsonNode.get("name").equals("") && !jsonNode.get("name").equals("null"))   person.full_name = jsonNode.get("name").asText();
-                if (jsonNode.has("avatar_url")) person.azure_picture_link = jsonNode.get("avatar_url").asText();
+                if(person != null){
+
+                    System.out.println("13. Uživatel existuje s emailem ale bez github tokenu - a tak jen doplním token");
+
+                    person = Model_Person.find.where().eq("mail", json_response_from_github.get("mail").asText()).findUnique();
+                    person.github_oauth_id = json_response_from_github.get("id").asText();
+                    if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null")) person.full_name = json_response_from_github.get("name").asText();
+                    if (person.picture == null && json_response_from_github.has("avatar_url")) person.azure_picture_link = json_response_from_github.get("avatar_url").asText();
+                    person.update();
+
+                }else {
+
+                    System.out.println("13. Uživatel neexistuje - tvořím nového ");
+
+                    person = new Model_Person();
+                    person.github_oauth_id = json_response_from_github.get("id").asText();
+                    if (json_response_from_github.has("mail"))   person.mail = json_response_from_github.get("mail").asText();
 
 
-                person.save();
+                    if (json_response_from_github.has("login")) if(Model_Person.find.where().eq("nick_name", json_response_from_github.get("login").asText()).findUnique() == null) person.nick_name = json_response_from_github.get("login").asText();
+                    if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null"))  person.full_name = json_response_from_github.get("name").asText();
+                    if (json_response_from_github.has("avatar_url")) person.azure_picture_link = json_response_from_github.get("avatar_url").asText();
+                    person.save();
+                }
+
                 floatingPersonToken.person = person;
                 floatingPersonToken.update();
 
@@ -485,6 +512,7 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
+            terminal_logger.internalServerError(e);
             return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail );
         }
 
@@ -558,17 +586,9 @@ public class Controller_Security extends Controller {
 
             final Response response = service.execute(request);
 
-            System.out.println("Got it! Lets see what we found...");
-            System.out.println();
-            System.out.println(response.getCode());
-            System.out.println(response.getBody());
+            System.out.println("5. Got it! Lets see what we found...");
+            System.out.println("6. Code: " + response.getCode());
 
-            System.out.println();
-            System.out.println("Thats it man! Go and build something awesome with ScribeJava! :)");
-
-
-
-            terminal_logger.debug("GET_facebook_oauth:: Get Response for Token:: " + response.getBody());
 
             if (!response.isSuccessful()){
 
@@ -592,36 +612,73 @@ public class Controller_Security extends Controller {
             }
 
 
-            terminal_logger.debug("GET_facebook_oauth:: Get Response was succesfull :)  ");
+            System.out.println("7. GET_facebook_oauth:: Get Response was successful");
 
             JsonNode jsonNode = Json.parse(response.getBody());
+            System.out.println("8. Převedl jsem body na JSON:: " + jsonNode.toString());
 
-            WSRequest wsrequest = ws.url("https://graph.facebook.com/v2.5/"+ jsonNode.get("id").asText());
-            WSRequest complexRequest = wsrequest.setQueryParameter("access_token", accessToken.getAccessToken())
-                                                .setQueryParameter("fields", "id,name,first_name,last_name,email,birthday,languages");
 
-            F.Promise<JsonNode> jsonPromise = wsrequest.get().map(rsp -> { return rsp.asJson();});
-            JsonNode jsonRequest = jsonPromise.get(10000);
+            System.out.println("9. Chystám se udělat request");
 
-            List<Model_FloatingPersonToken> before_registred = Model_FloatingPersonToken.find.where().eq("provider_user_id", jsonRequest.get("id").asText() ).where().ne("connection_id", floatingPersonToken.connection_id).findList();
-            if (!before_registred.isEmpty()){
-                floatingPersonToken.person = before_registred.get(0).person;
-                floatingPersonToken.provider_user_id = jsonRequest.get("id").asText();
+
+            WSRequest complexRequest = ws.url("https://graph.facebook.com/v2.8/" + jsonNode.get("id").asText())
+                                            .setQueryParameter("access_token", accessToken.getAccessToken())
+                                            .setQueryParameter("fields", "id,name,first_name,last_name,email");
+
+            F.Promise<WSResponse> responsePromise = complexRequest.get();
+            JsonNode json_response_from_facebook = responsePromise.get(5000).asJson();
+
+            System.out.println("10. JsonRequest: " + json_response_from_facebook.toString());
+
+
+
+            Model_Person person = Model_Person.find.where().eq("facebook_oauth_id",json_response_from_facebook.get("id").asText() ).findUnique();
+            if (person != null) {
+
+                System.out.println("Tento uživatel se nepřihlašuje poprvné - pouze updajtuji jeho informace");
+
+                System.out.println("13. Seznam není prázdný - uživatel se už někdy registroval skrze facebook");
+
+                if (json_response_from_facebook.has("email")) person.mail = json_response_from_facebook.get("email").asText();
+                if (json_response_from_facebook.has("name")) person.full_name = json_response_from_facebook.get("name").asText();
+                person.update();
+
+                floatingPersonToken.person = person;
+                floatingPersonToken.provider_user_id = jsonNode.get("id").asText();
                 floatingPersonToken.update();
             }
             else{
 
-                Model_Person person = new Model_Person();
-                if (jsonRequest.has("mail")) person.mail = jsonRequest.get("mail").asText();
-                if (jsonRequest.has("first_name")) person.full_name = jsonRequest.get("first_name").asText();
+                System.out.println("13. Uživatel neexistuje s tímto id tvořím nového ale ještě před tím zkontroluji zda už nění registrovaný klasicky přes email");
 
-                if (jsonRequest.has("last_name")) person.full_name += " " +jsonRequest.get("last_name").asText();
+                if(json_response_from_facebook.has("email")) person = Model_Person.find.where().eq("mail", json_response_from_facebook.get("email").asText()).findUnique();
 
-                person.save();
+                if(person != null){
+
+                    System.out.println("13. Uživatel existuje s emailem ale bez facebook tokenu - a tak jen doplním token");
+
+                    person = Model_Person.find.where().eq("mail", json_response_from_facebook.get("email").asText()).findUnique();
+                    person.facebook_oauth_id = jsonNode.get("id").asText();
+                    if (json_response_from_facebook.has("name")) person.full_name = json_response_from_facebook.get("name").asText();
+                    person.update();
+
+                }else {
+
+                    person = new Model_Person();
+                    person.facebook_oauth_id = jsonNode.get("id").asText();
+                    if (json_response_from_facebook.has("email")) person.mail = json_response_from_facebook.get("email").asText();
+                    if (json_response_from_facebook.has("name")) person.full_name = json_response_from_facebook.get("name").asText();
+
+                    person.save();
+                }
+
+
                 floatingPersonToken.person = person;
                 floatingPersonToken.update();
             }
 
+
+            System.out.println("16. floatingPersonToken.return_url " + floatingPersonToken.return_url);
             return redirect(floatingPersonToken.return_url);
 
 
@@ -651,14 +708,16 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result GitHub( @ApiParam(value = "this is return full url address in format  http//portal.byzance.cz/something", required = true)  String return_link){
+    public Result GitHub( @ApiParam(value = "this is return full url address in format  https://portal.byzance.cz/something", required = true)  String return_link){
         try {
+
+            System.out.print("Link k přesměrování při přihlášení přes github:: " + return_link);
 
             terminal_logger.debug("GitHub  request for login:: return link:: {}", return_link);
 
-            if(return_link.equals("/login-failed") || return_link.equals("/")){
-                return_link = "http://localhost:8080/dashboard";
-                terminal_logger.error("Na Becki jsou idioti!!!!");
+            if(return_link.contains("/login-failed")){
+                return_link = "https://portal.stage.byzance.cz/dashboard";
+                terminal_logger.error("Na Becki jsou líní to fixnout už měsíc!");
             }
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("GitHub");
@@ -710,11 +769,21 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result Facebook(@ApiParam(value = "this is return full url address in format  http//*.byzance.cz/something", required = true)  String return_link){
+    public Result Facebook(@ApiParam(value = "this is return full url address in format  https://*.byzance.cz/something", required = true)  String return_link){
         try {
+
+            System.out.println("Link k přesměrování při přihlášení přes facebook:: " + return_link);
+
+            terminal_logger.debug("Facebook request for login:: return link:: {}", return_link);
+
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("Facebook");
 
-            floatingPersonToken.return_url = return_link.replace("/facebook/", "");
+            if(return_link.contains("/login-failed")){
+                return_link = "https://portal.stage.byzance.cz/dashboard";
+                terminal_logger.error("Na Becki jsou líní to fixnout už měsíc!");
+            }
+
+            floatingPersonToken.return_url = return_link;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
