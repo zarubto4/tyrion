@@ -270,7 +270,7 @@ public class Model_Project extends Model {
 
     @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()      {return (Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_edit");}
     @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission()    {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().eq("state", Enum_Participant_status.owner).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_delete");}
-    @JsonIgnore                                      public boolean financial_permission() {return this.product.financial_permission("Project");}
+    @JsonIgnore                                      public boolean financial_permission() {return this.product.financial_permission("project");}
 
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin}
 

@@ -16,5 +16,6 @@ public class Swagger_Library_Filter {
     @ApiModelProperty(required = false)
     public boolean inlclude_public = false;
 
+    @ApiModelProperty(hidden = true)
     public List<String> type_of_board_ids = new ArrayList<>();
 }

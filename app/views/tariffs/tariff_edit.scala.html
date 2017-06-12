@@ -173,7 +173,6 @@
                                 <th>Type</th>
                                 <th>Price (per day)</th>
                                 <th>Price (per month)</th>
-                                <th>Default count </th>
                                 <th>Color</th>
                                 <th>Description (on mouseover)</th>
                                 <th>Up</th>
@@ -188,15 +187,14 @@
                                     <td>@extension.order_position</td>
                                     <td>@extension.name</td>
                                     <td>@extension.getExtensionTypeName</td>
-                                    <td>@{ extension.getActualPrice / 1000 } USD</td>
-                                    <td>@{ extension.getActualPrice * 30 / 1000 } USD</td>
-                                    <td>@extension.getConfig.count</td>
+                                    <td>@extension.getDoubleDailyPrice USD</td>
+                                    <td>@{extension.getDoubleDailyPrice * 30} USD</td>
                                     <td>@extension.color</td>
                                     <td>@extension.description</td>
                                     <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')">Up</button>}</td>
                                     <td>@if(tariff.extensions_included.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')">Down</button>}</td>
                                     <td>
-                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', @extension.getConfig.price, @extension.getConfig.count, @{extension.tariff_included != null} )">Edit</button>
+                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', 'TODO', 'TODO', @{extension.tariff_included != null} )">Edit</button>
                                     </td>
 
                                     <td>
@@ -215,7 +213,7 @@
                                 <th></th>
                                 <th></th>
                                 <th>Total Per Month</th>
-                                <th>@( tariff.total_per_month() / 1000) USD</th>
+                                <th>@tariff.total_per_month() USD</th>
                                 <th></th>
                                 <th></th>
                                 <th></th>
@@ -235,7 +233,6 @@
                                 <th>Type</th>
                                 <th>Price (per day)</th>
                                 <th>Price (per month)</th>
-                                <th>Default count </th>
                                 <th>Color</th>
                                 <th>Description (on mouseover)</th>
                                 <th>Up</th>
@@ -250,15 +247,14 @@
                                     <td>@extension.order_position</td>
                                     <td>@extension.name</td>
                                     <td>@extension.getExtensionTypeName</td>
-                                    <td>@{extension.getActualPrice / 1000 } USD</td>
-                                    <td>@{extension.getActualPrice * 30 / 1000 } USD </td>
-                                    <td>@extension.getConfig.count</td>
+                                    <td>@extension.getDoubleDailyPrice USD</td>
+                                    <td>@{extension.getDoubleDailyPrice * 30} USD</td>
                                     <td>@extension.color</td>
                                     <td>@extension.description</td>
                                     <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')">Up</button>}</td>
                                     <td>@if(tariff.extensions_optional.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')">Down</button>}</td>
                                     <td>
-                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', @extension.getConfig.price, @extension.getConfig.count, @{extension.tariff_included != null})">Edit</button></td>
+                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', 'TODO', 'TODO', @{extension.tariff_included != null})">Edit</button></td>
                                     <td>
                                     @if(!extension.active) {
                                         <button class="btn btn-xs btn-block btn-danger" type="button" onclick="activateExtension('@extension.id')" title="Activate">Deactivated</button>

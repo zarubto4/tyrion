@@ -534,23 +534,23 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_ProductExtension extensions_1 = new Model_ProductExtension();
             extensions_1.name = "Extension 1";
             extensions_1.description = "description extension 1";
-            extensions_1.type = Enum_ExtensionType.Project;
+            extensions_1.type = Enum_ExtensionType.project;
             extensions_1.active = true;
             extensions_1.removed = false;
             extensions_1.color = "blue-madison";
             extensions_1.tariff_included = tariff_1;
-            extensions_1.config = "{\"price\":1000,\"count\":1}";
+            extensions_1.configuration = "{\"price\":1000,\"count\":1}";
             extensions_1.save();
 
             Model_ProductExtension extensions_2 = new Model_ProductExtension();
             extensions_2.name = "Extension 2";
             extensions_2.description = "description extension 2";
-            extensions_2.type = Enum_ExtensionType.Log;
+            extensions_2.type = Enum_ExtensionType.log;
             extensions_2.active = true;
             extensions_2.removed = false;
             extensions_2.color = "blue-chambray";
             extensions_2.tariff_optional = tariff_1;
-            extensions_2.config = "{\"price\":400,\"count\":2}";
+            extensions_2.configuration = "{\"price\":400,\"count\":2}";
             extensions_2.save();
 
             // Pro geeky
@@ -675,45 +675,45 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_ProductExtension business_tariff_extensions_4 = new Model_ProductExtension();
             business_tariff_extensions_4.name = "Extension Project";
             business_tariff_extensions_4.description = "description extension sadafdfv";
-            business_tariff_extensions_4.type = Enum_ExtensionType.Project;
+            business_tariff_extensions_4.type = Enum_ExtensionType.project;
             business_tariff_extensions_4.active = true;
             business_tariff_extensions_4.removed = false;
             business_tariff_extensions_4.color = "blue-chambray";
             business_tariff_extensions_4.tariff_included = business_tariff;
-            business_tariff_extensions_4.config = "{\"price\":2600,\"count\":4}";
+            business_tariff_extensions_4.configuration = "{\"price\":2600,\"count\":4}";
             business_tariff_extensions_4.save();
 
             Model_ProductExtension business_tariff_extensions_3 = new Model_ProductExtension();
             business_tariff_extensions_3.name = "Extension 1";
             business_tariff_extensions_3.description = "description extension djsdjs";
-            business_tariff_extensions_3.type = Enum_ExtensionType.Project;
+            business_tariff_extensions_3.type = Enum_ExtensionType.project;
             business_tariff_extensions_3.active = true;
             business_tariff_extensions_3.removed = false;
             business_tariff_extensions_3.color = "blue-chambray";
             business_tariff_extensions_3.tariff_included = business_tariff;
-            business_tariff_extensions_3.config = "{\"price\":600,\"count\":5}";
+            business_tariff_extensions_3.configuration = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_3.save();
 
             Model_ProductExtension business_tariff_extensions_2 = new Model_ProductExtension();
             business_tariff_extensions_2.name = "Extension sadas";
             business_tariff_extensions_2.description = "description extasdension 1";
-            business_tariff_extensions_2.type = Enum_ExtensionType.Project;
+            business_tariff_extensions_2.type = Enum_ExtensionType.project;
             business_tariff_extensions_2.active = true;
             business_tariff_extensions_2.removed = false;
             business_tariff_extensions_2.color = "blue-chambray";
             business_tariff_extensions_2.tariff_optional = business_tariff;
-            business_tariff_extensions_2.config = "{\"price\":600,\"count\":5}";
+            business_tariff_extensions_2.configuration = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_2.save();
 
             Model_ProductExtension business_tariff_extensions_1 = new Model_ProductExtension();
             business_tariff_extensions_1.name = "Extension sadasa";
             business_tariff_extensions_1.description = "description extensioasdan 1";
-            business_tariff_extensions_1.type = Enum_ExtensionType.Project;
+            business_tariff_extensions_1.type = Enum_ExtensionType.project;
             business_tariff_extensions_1.active = true;
             business_tariff_extensions_1.removed = false;
             business_tariff_extensions_1.color = "blue-chambray";
             business_tariff_extensions_1.tariff_optional = business_tariff;
-            business_tariff_extensions_1.config = "{\"price\":600,\"count\":5}";
+            business_tariff_extensions_1.configuration = "{\"price\":600,\"count\":5}";
             business_tariff_extensions_1.save();
 
             // Další placený
@@ -769,56 +769,56 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_ProductExtension business_tariff2_extensions_5 = new Model_ProductExtension();
             business_tariff2_extensions_5.name = "Extension saasa";
             business_tariff2_extensions_5.description = "description extensioasn 1";
-            business_tariff2_extensions_5.type = Enum_ExtensionType.Project;
+            business_tariff2_extensions_5.type = Enum_ExtensionType.project;
             business_tariff2_extensions_5.active = true;
             business_tariff2_extensions_5.removed = false;
             business_tariff2_extensions_5.color = "blue-chambray";
             business_tariff2_extensions_5.tariff_included = business_tariff_2;
-            business_tariff2_extensions_5.config = "{\"price\":600,\"count\":5}";
+            business_tariff2_extensions_5.configuration = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_5.save();
 
             Model_ProductExtension business_tariff2_extensions_4 = new Model_ProductExtension();
             business_tariff2_extensions_4.name = "Extension sasa";
             business_tariff2_extensions_4.description = "description extensdan 1";
-            business_tariff2_extensions_4.type = Enum_ExtensionType.Project;
+            business_tariff2_extensions_4.type = Enum_ExtensionType.project;
             business_tariff2_extensions_4.active = true;
             business_tariff2_extensions_4.removed = false;
             business_tariff2_extensions_4.color = "blue-chambray";
             business_tariff2_extensions_4.tariff_included = business_tariff_2;
-            business_tariff2_extensions_4.config = "{\"price\":600,\"count\":5}";
+            business_tariff2_extensions_4.configuration = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_4.save();
 
             Model_ProductExtension business_tariff2_extensions_3 = new Model_ProductExtension();
             business_tariff2_extensions_3.name = "Extension dasa";
             business_tariff2_extensions_3.description = "description extensioan 1";
-            business_tariff2_extensions_3.type = Enum_ExtensionType.Project;
+            business_tariff2_extensions_3.type = Enum_ExtensionType.project;
             business_tariff2_extensions_3.active = true;
             business_tariff2_extensions_3.removed = false;
             business_tariff2_extensions_3.color = "blue-chambray";
             business_tariff2_extensions_3.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_3.config = "{\"price\":600,\"count\":5}";
+            business_tariff2_extensions_3.configuration = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_3.save();
 
             Model_ProductExtension business_tariff2_extensions_2 = new Model_ProductExtension();
             business_tariff2_extensions_2.name = "Extension ssa";
             business_tariff2_extensions_2.description = "description extenssdan 1";
-            business_tariff2_extensions_2.type = Enum_ExtensionType.Project;
+            business_tariff2_extensions_2.type = Enum_ExtensionType.project;
             business_tariff2_extensions_2.active = true;
             business_tariff2_extensions_2.removed = false;
             business_tariff2_extensions_2.color = "blue-chambray";
             business_tariff2_extensions_2.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_2.config = "{\"price\":600,\"count\":5}";
+            business_tariff2_extensions_2.configuration = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_2.save();
 
             Model_ProductExtension business_tariff2_extensions_1 = new Model_ProductExtension();
             business_tariff2_extensions_1.name = "Extension sadaska";
             business_tariff2_extensions_1.description = "description extenssaioasdan 1";
-            business_tariff2_extensions_1.type = Enum_ExtensionType.Project;
+            business_tariff2_extensions_1.type = Enum_ExtensionType.project;
             business_tariff2_extensions_1.active = true;
             business_tariff2_extensions_1.removed = false;
             business_tariff2_extensions_1.color = "blue-chambray";
             business_tariff2_extensions_1.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_1.config = "{\"price\":600,\"count\":5}";
+            business_tariff2_extensions_1.configuration = "{\"price\":600,\"count\":5}";
             business_tariff2_extensions_1.save();
 
             Model_Tariff illegal_tariff = new Model_Tariff();

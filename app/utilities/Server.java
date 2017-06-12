@@ -129,40 +129,17 @@ public class Server {
 
                 server_mode = Enum_Tyrion_Server_mode.developer;
 
-                // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress = "http://" + Configuration.root().getString("Server." + server_mode);
-                tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server." + server_mode);
-
-                // Nastavení pro Becki Adresy
-                becki_mainUrl           = "http://" + Configuration.root().getString("Becki." + server_mode + ".mainUrl");
-
                 // Nastavení adresy, kde běží Grid APP
                 grid_app_main_url       = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8888";
-
-                // Swagger URL Redirect - Actual Rest Api docu
-                link_api_swagger        = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
-
-                financial_spendDailyPeriod = checkPeriod(Configuration.root().getInt("Financial.developer.spendDailyPeriod"));
 
                 break;
             }
             case "production" : {
 
                 server_mode = Enum_Tyrion_Server_mode.production;
-                // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress = "https://" + Configuration.root().getString("Server." + server_mode);
-                tyrion_webSocketAddress = "wss://" + Configuration.root().getString("Server." + server_mode);
-
-                // Nastavení pro Becki Adresy
-                becki_mainUrl                   = "https://" + Configuration.root().getString("Becki." + server_mode + ".mainUrl");
 
                 // Nastavení adresy, kde běží Grid APP
-                grid_app_main_url               = "https://" + Configuration.root().getString("Grid_App." + server_mode + ".mainUrl");
-
-                // Swagger URL Redirect - Actual Rest Api docu
-                link_api_swagger    = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
-
-                financial_spendDailyPeriod = checkPeriod(Configuration.root().getInt("Financial.production.spendDailyPeriod"));
+                grid_app_main_url                   = "https://" + Configuration.root().getString("Grid_App." + server_mode.name() + ".mainUrl");
 
                 break;
             }
@@ -170,20 +147,8 @@ public class Server {
 
                 server_mode = Enum_Tyrion_Server_mode.stage;
 
-                // Nastavení pro Tyrion Adresy
-                tyrion_serverAddress        = "https://" + Configuration.root().getString("Server." + server_mode);
-                tyrion_webSocketAddress     = "wss://" + Configuration.root().getString("Server." + server_mode);
-
-                // Nastavení pro Becki Adresy
-                becki_mainUrl               = "https://" + Configuration.root().getString("Becki." + server_mode + ".mainUrl");
-
                 // Nastavení adresy, kde běží Grid APP
-                grid_app_main_url           = "https://" + Configuration.root().getString("Grid_App." + server_mode + ".mainUrl");
-
-                // Swagger URL Redirect - Actual Rest Api docu
-                link_api_swagger            = "https://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
-
-                financial_spendDailyPeriod = checkPeriod(Configuration.root().getInt("Financial.stage.spendDailyPeriod"));
+                grid_app_main_url                   = "https://" + Configuration.root().getString("Grid_App." + server_mode.name() + ".mainUrl");
 
                 break;
             }
@@ -192,6 +157,18 @@ public class Server {
                 Runtime.getRuntime().exit(10);
             }
         }
+
+        // Nastavení pro Tyrion Adresy
+        tyrion_serverAddress = "http://" + Configuration.root().getString("Server." + server_mode.name());
+        tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server." + server_mode.name());
+
+        // Nastavení pro Becki Adresy
+        becki_mainUrl           = "http://" + Configuration.root().getString("Becki." + server_mode.name() + ".mainUrl");
+
+        // Swagger URL Redirect - Actual Rest Api docu
+        link_api_swagger        = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
+
+        financial_spendDailyPeriod = checkPeriod(Configuration.root().getInt("Financial." + server_mode.name() + ".spendDailyPeriod"));
 
         //  Becki Config -------------------------------------------------------------------------------------------------------------
 

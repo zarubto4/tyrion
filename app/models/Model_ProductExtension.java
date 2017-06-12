@@ -8,9 +8,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.libs.Json;
+import play.mvc.Result;
 import utilities.enums.Enum_ExtensionType;
 import utilities.financial.extensions.Extension;
+import utilities.financial.extensions.configurations.*;
 import utilities.logger.Class_Logger;
+import utilities.swagger.documentationClass.Swagger_ProductExtension_New;
 import utilities.swagger.outboundClass.Swagger_ProductExtension_Type;
 
 import javax.persistence.*;
@@ -38,7 +41,7 @@ public class Model_ProductExtension extends Model{
                                         @ApiModelProperty(required = true) public String color;
 
            @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_ExtensionType type;
-                                                               @JsonIgnore public String config;
+                            @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
                                         @ApiModelProperty(required = true) public Integer order_position;
 
                                         @ApiModelProperty(required = true) public boolean active;
@@ -57,17 +60,8 @@ public class Model_ProductExtension extends Model{
     public Price price(){
         try {
             Price price = new Price();
-            price.USD = ((double) getActualPrice()) / 1000;
+            price.USD = getDoubleDailyPrice();
             return price;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @JsonProperty @ApiModelProperty(required = true)
-    public Integer count(){
-        try {
-            return getConfig().count;
         } catch (Exception e) {
             return null;
         }
@@ -127,7 +121,7 @@ public class Model_ProductExtension extends Model{
         super.delete();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void up(){
 
         if(tariff_included != null) {
@@ -143,7 +137,7 @@ public class Model_ProductExtension extends Model{
         this.update();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void down(){
 
         if(tariff_included != null){
@@ -162,15 +156,22 @@ public class Model_ProductExtension extends Model{
 
     }
 
+    /**
+     * This method is used to get calculated price. Credit can be spent more than once per day.
+     * Returned value corresponds to the daily period of spending.
+     * @return Long price divided by spendDailyPeriod.
+     */
     @JsonIgnore
     public Long getActualPrice() {
         try {
 
             Extension extension = getExtensionType();
-
             if (extension == null) return null;
 
-            return (extension.getActualPrice(getConfig()));
+            Object configuration = getConfiguration();
+            if (configuration == null) return null;
+
+            return extension.getActualPrice(configuration);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("getActualPrice:", e);
@@ -178,18 +179,44 @@ public class Model_ProductExtension extends Model{
         }
     }
 
+    /**
+     * Method gets calculated price of an extension for one day.
+     * @return Long price of extension for one day.
+     */
     @JsonIgnore
     public Long getDailyPrice() {
         try {
 
             Extension extension = getExtensionType();
-
             if (extension == null) return null;
 
-            return (extension.getDailyPrice(getConfig()));
+            Object configuration = getConfiguration();
+            if (configuration == null) return null;
+
+            return extension.getDailyPrice(configuration);
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getActualPrice:", e);
+            terminal_logger.internalServerError("getDailyPrice:", e);
+            return null;
+        }
+    }
+
+    /**
+     * Method serves for information purposes only.
+     * Returned value is shown to users, because real price is Double USD * 1000
+     * @return
+     */
+    @JsonIgnore
+    public Double getDoubleDailyPrice() {
+        try {
+
+            Long price = getDailyPrice();
+            if (price == null) return null;
+
+            return (double) price / 1000;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("getDoubleDailyPrice:", e);
             return null;
         }
     }
@@ -197,13 +224,6 @@ public class Model_ProductExtension extends Model{
     @JsonIgnore
     public boolean isActive() {
         return active;
-    }
-
-    @JsonIgnore
-    public Config getConfig() {
-        Form<Config> form = Form.form(Config.class).bind(Json.parse(this.config));
-        if(form.hasErrors()) return null;
-        return form.get();
     }
 
     @JsonIgnore
@@ -228,7 +248,34 @@ public class Model_ProductExtension extends Model{
 
     @JsonIgnore
     public String getExtensionTypeName(){
-        return this.type.name();
+
+        Extension extension = getExtensionType();
+        if (extension == null) return null;
+
+        return extension.getName();
+    }
+
+    @JsonIgnore
+    public String getExtensionTypeDescription(){
+
+        Extension extension = getExtensionType();
+        if (extension == null) return null;
+
+        return extension.getDescription();
+    }
+
+    /**
+     * Prerequisite is an assigned type of Extension.
+     * Gets the default daily price, this price is used when new extension is created.
+     * @return Long price of given extension type.
+     */
+    @JsonIgnore
+    public Long getExtensionTypePrice(){
+
+        Extension extension = getExtensionType();
+        if (extension == null) return null;
+
+        return extension.getDefaultDailyPrice();
     }
 
     @JsonIgnore
@@ -271,18 +318,150 @@ public class Model_ProductExtension extends Model{
         extension.type = ext.type;
         extension.active = true;
         extension.removed = false;
-        extension.config = ext.config;
+        extension.configuration = ext.configuration;
 
         return extension;
     }
 
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore
+    public Object getConfiguration(){
+        try {
 
-    public static class Config {
+            Form<?> form;
 
-        public Long price;
-        public int count;
+            switch (type) {
+
+                case project:{
+                    form = Form.form(Configuration_Project.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case database:{
+                    form = Form.form(Configuration_Database.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case log:{
+                    form = Form.form(Configuration_Log.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case rest_api:{
+                    form = Form.form(Configuration_RestApi.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case support:{
+                    form = Form.form(Configuration_Support.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case instance:{
+                    form = Form.form(Configuration_Instance.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                case homer_server:{
+                    form = Form.form(Configuration_HomerServer.class).bind(Json.parse(configuration));
+                    break;
+                }
+
+                default: throw new Exception("Extension type is unknown.");
+            }
+
+            if(form.hasErrors()) throw new Exception("Error parsing product configuration. Errors: " + form.errorsAsJson());
+            return form.get();
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("getConfiguration:",e);
+            return null;
+        }
     }
+
+    @JsonIgnore
+    public Result setConfiguration(Swagger_ProductExtension_New help) throws Exception{
+
+        Object configuration;
+
+        switch (type) {
+
+            case project:{
+
+                Configuration_Project project = new Configuration_Project();
+                project.count = help.count;
+                project.price = getExtensionTypePrice();
+
+                configuration = project;
+                break;
+            }
+
+            case database:{
+
+                Configuration_Database database = new Configuration_Database();
+                database.price = getExtensionTypePrice();
+
+                configuration = database;
+                break;
+            }
+
+            case log:{
+
+                Configuration_Log log = new Configuration_Log();
+                log.count = help.count;
+                log.price = getExtensionTypePrice();
+
+                configuration = log;
+                break;
+            }
+
+            case rest_api:{
+
+                Configuration_RestApi restApi = new Configuration_RestApi();
+                restApi.available_requests = 30L;
+                restApi.price = getExtensionTypePrice();
+
+                configuration = restApi;
+                break;
+            }
+
+            case support:{
+
+                Configuration_Support support = new Configuration_Support();
+                support.nonstop = true;
+                support.price = getExtensionTypePrice();
+
+                configuration = support;
+                break;
+            }
+
+            case instance:{
+
+                Configuration_Instance instance = new Configuration_Instance();
+                instance.count = 5L;
+                instance.price = getExtensionTypePrice();
+
+                configuration = instance;
+                break;
+            }
+
+            case homer_server:{
+
+                Configuration_HomerServer homerServer = new Configuration_HomerServer();
+                homerServer.price = getExtensionTypePrice();
+
+                configuration = homerServer;
+                break;
+            }
+
+            default: throw new Exception("Extension type is unknown.");
+        }
+
+        this.configuration = Json.toJson(configuration).toString();
+
+        return null;
+    }
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     public class Price {
         @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK")

@@ -64,18 +64,6 @@ public class Model_Tariff extends Model {
         return methods;
     }
 
-
-    @JsonProperty public List<Pair> payment_modes(){
-
-        List<Pair> modes = new ArrayList<>();
-
-        //if(mode_annually)  modes.add( new Pair( Enum_Payment_mode.monthly.name()   , "Annual monthly / yearly payment"));
-        //if(mode_credit)    modes.add( new Pair( Enum_Payment_mode.per_credit.name(), "Pre-paid credit"));
-        //if(free_tariff)    modes.add( new Pair( Enum_Payment_mode.free.name()      , "I want it free"));
-
-        return modes;
-    }
-
     @JsonProperty public List<String> payment_currency(){
 
         List<String> payment_currency = new ArrayList<>();
@@ -108,14 +96,14 @@ public class Model_Tariff extends Model {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     public Double total_per_month(){
-        Long total_price = (long) 0;
+        Long total_price = 0L;
         for(Model_ProductExtension extension : this.extensions_included){
-            Long price = extension.getActualPrice();
+            Long price = extension.getDailyPrice();
 
             if(price != null)
                 total_price += price;
         }
-        return ((double) total_price*30) ;
+        return (double) total_price * 30 / 1000;
     }
 
     @JsonIgnore @Override

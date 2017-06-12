@@ -413,62 +413,6 @@ public class Controller_Project extends Controller {
         }
     }
 
-    @ApiOperation(value = "add participant to a Project",
-            tags = {"Project"},
-            notes = "adds Person to a Project, every piece of information is held in Invitation",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",            response = Model_Project.class),
-            @ApiResponse(code = 404, message = "Object not found",     response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",    response = Result_InternalServerError.class)
-    })
-    public Result project_addParticipant(String id, boolean decision ){
-        try{
-
-            // Kontroly objektů
-            Model_Invitation invitation = Model_Invitation.find.byId(id);
-            if(invitation == null) return GlobalResult.result_notFound("Invitation no longer exists");
-
-            Model_Person person = Model_Person.find.where().eq("mail", invitation.mail).findUnique();
-            if(person == null) return GlobalResult.result_notFound("Person does not exist");
-
-            Model_Project project = invitation.project;
-            if(project == null) return GlobalResult.result_notFound("Project no longer exists");
-
-            if ((Model_ProjectParticipant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique() == null)&&(decision)) {
-
-                Model_ProjectParticipant participant = new Model_ProjectParticipant();
-                participant.person = person;
-                participant.project = project;
-                participant.state = Enum_Participant_status.member;
-
-                participant.save();
-            }
-
-            // Odeslání notifikace podle rozhodnutí uživatele
-            if(!decision){
-                project.notification_project_invitation_rejected(invitation.owner);
-            }else{
-                project.notification_project_invitation_accepted(invitation.owner);
-            }
-
-            Model_Notification notification = null;
-            if(invitation.notification_id != null)
-                notification = Model_Notification.find.byId(invitation.notification_id);
-            if(notification != null) notification.confirm();
-
-            // Smazání pozvánky
-            invitation.delete();
-
-            return GlobalResult.result_ok();
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
     @ApiOperation(value = "change participant status",
             tags = {"Project"},
             notes = "Changes participant status ",

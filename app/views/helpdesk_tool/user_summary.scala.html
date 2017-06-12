@@ -1,7 +1,6 @@
 @import models.Model_Person
 @import models.Model_Product
 @import utilities.enums.Enum_Payment_method
-@import utilities.enums.Enum_Payment_mode
 @import utilities.Server
 
 @(person: Model_Person)
@@ -116,14 +115,6 @@
                         }
                     </select>
                     <input type="text" class="form-control form-group" name="name" placeholder="Name of product">
-
-
-                    <select name="payment_mode" class="form-control form-group select2" title="Payment mode">
-                        <option selected="selected" disabled>Choose mode</option>
-                        @for(payment_mode <- Enum_Payment_mode.values()){
-                            <option value="@payment_mode.name()">@payment_mode.name()</option>
-                        }
-                    </select>
                     <select name="payment_method" class="form-control form-group select2" title="Payment method">
                         <option selected="selected" disabled>Choose method</option>
                         @for(method <- Enum_Payment_method.values()){

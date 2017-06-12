@@ -2,13 +2,13 @@ package utilities.financial.extensions;
 
 import play.Configuration;
 import utilities.Server;
-import utilities.financial.extensions.configurations.Configuration_Log;
+import utilities.financial.extensions.configurations.Configuration_Participant;
 
-public class Extension_Log implements Extension {
+public class Extension_Participant implements Extension {
 
-    public static final String name = Configuration.root().getString("Financial.extensions.log.name");
-    public static final String description = Configuration.root().getString("Financial.extensions.log.description");
-    public static final Long price = Configuration.root().getLong("Financial.extensions.log.price");
+    public static final String name = Configuration.root().getString("Financial.extensions.participant.name");
+    public static final String description = Configuration.root().getString("Financial.extensions.participant.description");
+    public static final Long price = Configuration.root().getLong("Financial.extensions.participant.price");
 
     /*
      !!!Important!!!
@@ -21,13 +21,13 @@ public class Extension_Log implements Extension {
 
     public Long getDailyPrice(Object configuration) {
 
-        Configuration_Log log = ((Configuration_Log) configuration);
+        Configuration_Participant participant = ((Configuration_Participant) configuration);
 
-        return log.price * log.count;
+        return participant.price * participant.count;
     }
 
     public Long getDefaultMonthlyPrice() {
-        return price *  30;
+        return price * 30;
     }
 
     public Long getDefaultDailyPrice() {

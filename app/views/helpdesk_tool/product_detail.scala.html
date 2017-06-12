@@ -174,7 +174,6 @@
                                         <th>ID</th>
                                         <th>Name</th>
                                         <th>Description</th>
-                                        <th>Count</th>
                                         <th>Price (daily)</th>
                                         <th>Active</th>
                                         <th>Delete</th>
@@ -183,8 +182,7 @@
                                         <tr>
                                             <td>@extension.id</td>
                                             <td>@extension.getExtensionTypeName</td>
-                                            <td>@extension.getExtensionType.getDescription</td>
-                                            <td>@extension.getConfig.count</td>
+                                            <td>@extension.getExtensionTypeDescription</td>
                                             <td>@extension.getDailyPrice</td>
                                             <td>@if(extension.active){
                                                 <button class="btn btn-xs btn-block btn-success" type="button" onclick="deactivateExtension('@extension.id')" title="Deactivate">Activated</button>

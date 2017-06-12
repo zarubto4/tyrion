@@ -1,28 +1,29 @@
 package utilities.financial.extensions;
 
-import models.Model_ProductExtension.Config;
 import play.Configuration;
 import utilities.Server;
+import utilities.financial.extensions.configurations.Configuration_Project;
 
 public class Extension_Project implements Extension {
 
     public static final String name = Configuration.root().getString("Financial.extensions.project.name");
     public static final String description = Configuration.root().getString("Financial.extensions.project.description");
     public static final Long price = Configuration.root().getLong("Financial.extensions.project.price");
-    public static final Integer count = 5;
 
     /*
      !!!Important!!!
      Final calculated price must be divided by Server.financial_spendDailyPeriod.
       */
-    public Long getActualPrice(Config config) {
+    public Long getActualPrice(Object configuration) {
 
-        return getDailyPrice(config) / Server.financial_spendDailyPeriod;
+        return getDailyPrice(configuration) / Server.financial_spendDailyPeriod;
     }
 
-    public Long getDailyPrice(Config config) {
+    public Long getDailyPrice(Object configuration) {
 
-        return config.price * config.count;
+        Configuration_Project project = ((Configuration_Project) configuration);
+
+        return project.price * project.count;
     }
 
     public Long getDefaultMonthlyPrice() {
@@ -31,10 +32,6 @@ public class Extension_Project implements Extension {
 
     public Long getDefaultDailyPrice() {
         return price;
-    }
-
-    public Integer getDefaultCount() {
-        return count;
     }
 
     public String getName() {

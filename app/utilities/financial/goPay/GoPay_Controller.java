@@ -17,9 +17,6 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.enums.Enum_Currency;
-import utilities.enums.Enum_Payment_method;
-import utilities.enums.Enum_Payment_mode;
-
 import utilities.enums.Enum_Recurrence_cycle;
 import utilities.financial.goPay.helps_objects.*;
 import utilities.logger.Class_Logger;

@@ -366,14 +366,14 @@ public class Model_HomerServer extends Model{
 
             if (token == null) {
 
-                terminal_logger.warn("invalid_person_token_for_homer_server:: Token not found!");
+                terminal_logger.warn("invalid_person_token_for_homer_server: Token not found!");
 
                 homer.write_without_confirmation(message.make_request_unsuccess());
                 return;
             }
 
             token.delete();
-            terminal_logger.debug("invalid_person_token_for_homer_server:: Token found and remove");
+            terminal_logger.debug("invalid_person_token_for_homer_server: Token found and removed.");
 
             homer.write_without_confirmation(message.make_request_success());
 
@@ -387,7 +387,7 @@ public class Model_HomerServer extends Model{
             if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Get_instance_list().make_request(), 1000 * 4, 0, 3);
             final Form<WS_Message_Get_instance_list> form = Form.form(WS_Message_Get_instance_list.class).bind(node);
-            if(form.hasErrors()){terminal_logger.error("WS_Get_instance_list:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return  new WS_Message_Get_instance_list();}
+            if(form.hasErrors()){terminal_logger.error("get_homer_server_listOfInstance: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return  new WS_Message_Get_instance_list();}
             return form.get();
 
         }catch (InterruptedException|TimeoutException e){
@@ -403,7 +403,7 @@ public class Model_HomerServer extends Model{
             if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Number_of_instances_homer_server().make_request(), 1000 * 4, 0, 3);
             final Form<WS_Message_Number_of_instances_homer_server> form = Form.form(WS_Message_Number_of_instances_homer_server.class).bind(node);
-            if(form.hasErrors()){terminal_logger.error("WS_Message_Number_of_instances_homer_server:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return  new WS_Message_Number_of_instances_homer_server();}
+            if(form.hasErrors()){terminal_logger.error("get_homer_server_number_of_instance: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return  new WS_Message_Number_of_instances_homer_server();}
 
             return form.get();
         }catch (InterruptedException|TimeoutException e){
@@ -431,7 +431,7 @@ public class Model_HomerServer extends Model{
         }catch (InterruptedException|TimeoutException e){
             return false;
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("is_instance_exist:",e);
             return false;
         }
     }

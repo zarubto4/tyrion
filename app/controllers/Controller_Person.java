@@ -16,9 +16,11 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.Email;
+import utilities.enums.Enum_Notification_action;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
+import utilities.notifications.NotificationActionHandler;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -31,11 +33,6 @@ import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
 public class Controller_Person extends Controller {
-
-    @Inject
-    Controller_Project controllerProject;
-    @Inject WSClient ws;
-
     
 // LOGGER ##############################################################################################################
 
@@ -118,9 +115,9 @@ public class Controller_Person extends Controller {
                 person.update();
 
                 try {
-                    return controllerProject.project_addParticipant(invitation.id, true);
+                    NotificationActionHandler.perform(Enum_Notification_action.accept_project_invitation, invitation.id);
                 }catch(Exception e){
-                    return Server_Logger.result_internalServerError(e, request());
+                    // TODO co vrátit?
                 }
             }
 

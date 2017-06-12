@@ -1,29 +1,29 @@
 package utilities.financial.extensions;
 
-import models.Model_ProductExtension;
-import models.Model_ProductExtension.Config;
 import play.Configuration;
 import utilities.Server;
+import utilities.financial.extensions.configurations.Configuration_Database;
 
 public class Extension_Database implements Extension {
 
     public static final String name = Configuration.root().getString("Financial.extensions.database.name");
     public static final String description = Configuration.root().getString("Financial.extensions.database.description");
     public static final Long price = Configuration.root().getLong("Financial.extensions.database.price");
-    public static final Integer count = 1;
 
     /*
      !!!Important!!!
      Final calculated price must be divided by Server.financial_spendDailyPeriod.
       */
-    public Long getActualPrice(Config config) {
+    public Long getActualPrice(Object configuration) {
 
-        return getDailyPrice(config) / Server.financial_spendDailyPeriod;
+        return getDailyPrice(configuration) / Server.financial_spendDailyPeriod;
     }
 
-    public Long getDailyPrice(Config config) {
+    public Long getDailyPrice(Object configuration) {
 
-        return config.price * config.count;
+        Configuration_Database database = ((Configuration_Database) configuration);
+
+        return database.price;
     }
 
     public Long getDefaultMonthlyPrice() {
@@ -32,10 +32,6 @@ public class Extension_Database implements Extension {
 
     public Long getDefaultDailyPrice() {
         return price;
-    }
-
-    public Integer getDefaultCount() {
-        return count;
     }
 
     public String getName() {
