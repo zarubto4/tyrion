@@ -36,7 +36,7 @@ public class Controller_Library extends Controller {
     
     @ApiOperation(value = "create new Library",
             tags = {"Library"},
-            notes = "TODO",
+            notes = "Create Library for C programs ",
             produces = "application/json",
             protocols = "https",
             code = 201,
@@ -221,7 +221,7 @@ public class Controller_Library extends Controller {
 
     @ApiOperation(value = "update Library",
             tags = {"Library"},
-            notes = "TODO",
+            notes = "Update Library",
             produces = "application/json",
             protocols = "https",
             code = 200,

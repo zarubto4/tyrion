@@ -449,7 +449,7 @@ public class Controller_Board extends Controller {
 
             List<Model_BPair> b_pairs = new ArrayList<>();
 
-            if(help.board_pairs.isEmpty()) return GlobalResult.badRequest("List is Empty");
+            if(help.board_pairs.isEmpty()) return GlobalResult.result_badRequest("List is Empty");
 
             for(Swagger_Board_CProgram_Pair board_update_pair : help.board_pairs) {
 
@@ -2020,7 +2020,7 @@ public class Controller_Board extends Controller {
                 // Autobacku je statický
                 }else{
 
-                    if(board_backup_pair.c_program_version_id == null || board_backup_pair.c_program_version_id.equals("")) return GlobalResult.badRequest("If backup_mode is set to false, c_program_version_id is required");
+                    if(board_backup_pair.c_program_version_id == null || board_backup_pair.c_program_version_id.equals("")) return GlobalResult.result_badRequest("If backup_mode is set to false, c_program_version_id is required");
 
                     terminal_logger.debug("Controller_Board:: board_update_backup:: To FALSE:: Board Id: {} has dynamic Backup or already set static backup", board_backup_pair.board_id);
 

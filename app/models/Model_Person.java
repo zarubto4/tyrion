@@ -76,6 +76,8 @@ public class Model_Person extends Model {
         if(this.azure_picture_link == null){
             return null;
         }
+
+        if(azure_picture_link.contains("http")) return azure_picture_link;  // Its probably link from GitHub or profile picture from facebook
         return Server.azure_blob_Link + azure_picture_link;
     }
 

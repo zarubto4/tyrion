@@ -27,9 +27,14 @@ public class WS_Send_message {
     private ObjectNode result = null;   // Výyledek - který je se zpožděním do objektu vložen - a měl by být okamžitě vrácen
 
     public ObjectNode time_out_exception_error_response() {
+
+
         ObjectNode request = Json.newObject();
             json.put("error", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_message());
             json.put("error_code", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_code());
+
+        if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
+
         return request;
     }
 
@@ -56,8 +61,8 @@ public class WS_Send_message {
         try {
 
             if(sender_object.sendMessageMap.size() > 10) terminal_logger.error("insert_result:: Map contains " + sender_object.sendMessageMap.size() + " objects");
+            sender_object.sendMessageMap.remove(messageId);
 
-            sender_object.sendMessageMap.remove(result.get("messageId").asText());
         }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
 
 
@@ -139,9 +144,16 @@ public class WS_Send_message {
                 return time_out_exception_error_response();
 
             }catch (InterruptedException|CancellationException e){
+
+                if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
+
                 throw e;
+
             } catch (Exception e) {
+
+                if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
                 terminal_logger.internalServerError(e);
+
                 throw e;
             }
         }

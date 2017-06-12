@@ -709,7 +709,7 @@ public class Controller_Grid extends Controller {
 
 
             if(parameter.snapshot_settings() == Enum_MProgram_SnapShot_settings.not_in_instance){
-                return GlobalResult.badRequest("QR token is not valid anymore");
+                return GlobalResult.result_badRequest("QR token is not valid anymore");
             }
 
             try{

@@ -1163,7 +1163,7 @@ public class Controller_Person extends Controller {
                 person.update();
                 fileRecord.delete();
             }else{
-                return GlobalResult.badRequest("There is no picture to remove.");
+                return GlobalResult.result_badRequest("There is no picture to remove.");
             }
 
             return GlobalResult.result_ok("Picture successfully removed");

@@ -23,6 +23,7 @@ import utilities.UtilTools;
 import utilities.enums.Enum_Token_type;
 import utilities.enums.Enum_Where_logged_tag;
 import utilities.financial.FinancialPermission;
+import utilities.independent_threads.Check_Online_Status_after_user_login;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -214,6 +215,9 @@ public class Controller_Security extends Controller {
             // Jestli není účet blokován
             if (!person.mailValidated) return GlobalResult.result_notValidated();
             if (person.freeze_account) return GlobalResult.result_badRequest("Your account has been temporarily suspended");
+
+            // Volání Cache
+            new Check_Online_Status_after_user_login(person.id).run();
 
             // Vytvářim objekt tokenu pro přihlášení (na něj jsou vázány co uživatel kde a jak dělá) - Historie pro využití v MongoDB widgety atd..
             Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
@@ -483,6 +487,7 @@ public class Controller_Security extends Controller {
 
             terminal_logger.debug("GET_github_oauth:: Return URL:: " + floatingPersonToken.return_url);
 
+            new Check_Online_Status_after_user_login(person.id).run();
             return redirect(floatingPersonToken.return_url.replace("%ss%", "success"));
 
 
@@ -635,6 +640,7 @@ public class Controller_Security extends Controller {
 
 
             System.out.println("16. floatingPersonToken.return_url " + floatingPersonToken.return_url);
+            new Check_Online_Status_after_user_login(person.id).run();
             return redirect(floatingPersonToken.return_url.replace("%ss%", "success"));
 
 

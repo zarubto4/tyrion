@@ -140,14 +140,20 @@ public class GlobalResult extends Controller {
     public static Result result_externalServerError(JsonNode o){
 
         CoreResponse.cors();
+        Result_ExternalServerSideError result = new Result_ExternalServerSideError();
+
         return Controller.status(478, o);
 
     }
 
     public static Result result_externalServerError(String message){
 
+
         CoreResponse.cors();
-        return Controller.status(478, message);
+        Result_ExternalServerSideError result = new Result_ExternalServerSideError();
+        result.message = message;
+
+        return Controller.status(478, Json.toJson(result));
 
     }
 
