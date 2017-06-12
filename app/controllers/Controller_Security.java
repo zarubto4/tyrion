@@ -11,7 +11,6 @@ import models.Model_HomerInstanceRecord;
 import models.Model_Permission;
 import models.Model_Person;
 import play.data.Form;
-import play.i18n.Lang;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -33,12 +32,12 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Login_IncomingLogin;
 import utilities.swagger.documentationClass.Swagger_Blocko_Token_validation_request;
-import utilities.swagger.outboundClass.Login_Social_Network;
+import utilities.swagger.documentationClass.Swagger_SocialNetwork_Login;
+import utilities.swagger.outboundClass.Swagger_SocialNetwork_Result;
 import utilities.swagger.outboundClass.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
 import views.html.common.login;
-import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
 import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;
@@ -392,7 +391,7 @@ public class Controller_Security extends Controller {
                     Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique();
                     floatingPersonToken.delete();
 
-                    return redirect(floatingPersonToken.return_url.replace("%ss%", "fail"));
+                    return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail"));
 
                 }
             }
@@ -409,7 +408,7 @@ public class Controller_Security extends Controller {
 
                terminal_logger.error("GET_github_oauth:: Not recognize URL fragment!!!!!! ");
 
-                return redirect(floatingPersonToken.return_url.replace("%ss%", "fail"));
+                return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail"));
             }
 
             floatingPersonToken.social_token_verified = true;
@@ -488,7 +487,7 @@ public class Controller_Security extends Controller {
             terminal_logger.debug("GET_github_oauth:: Return URL:: " + floatingPersonToken.return_url);
 
             new Check_Online_Status_after_user_login(person.id).run();
-            return redirect(floatingPersonToken.return_url.replace("%ss%", "success"));
+            return redirect(floatingPersonToken.return_url.replace("[_status_]", "success"));
 
 
         } catch (Exception e) {
@@ -512,7 +511,7 @@ public class Controller_Security extends Controller {
 
                 if (map.containsKey("state"))
                 Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
-                return redirect(url.replace("%ss%", "fail"));
+                return redirect(url.replace("[_status_]", "fail"));
             }
 
 
@@ -534,7 +533,7 @@ public class Controller_Security extends Controller {
             if (floatingPersonToken == null){
 
                 terminal_logger.warn("GET_facebook_oauth:: floatingPersonToken not found! ");
-                return redirect(url.replace("%ss%", "fail"));
+                return redirect(url.replace("[_status_]", "fail"));
             }
 
             terminal_logger.debug("GET_facebook_oauth:: floatingPersonToken set as verified! ");
@@ -569,7 +568,7 @@ public class Controller_Security extends Controller {
 
                 terminal_logger.warn("GET_facebook_oauth:: Get Response wasnt succesfull :(  ");
 
-                return redirect(url.replace("%ss%", "fail"));
+                return redirect(url.replace("[_status_]", "fail"));
             }
 
 
@@ -641,7 +640,7 @@ public class Controller_Security extends Controller {
 
             System.out.println("16. floatingPersonToken.return_url " + floatingPersonToken.return_url);
             new Check_Online_Status_after_user_login(person.id).run();
-            return redirect(floatingPersonToken.return_url.replace("%ss%", "success"));
+            return redirect(floatingPersonToken.return_url.replace("[_status_]", "success"));
 
 
         } catch (Exception e) {
@@ -660,31 +659,46 @@ public class Controller_Security extends Controller {
                     "just ask via this Api and cloud_blocko_server responds with object where is token and redirection link. After that redirect user " +
                     "to this link and after returning to your success page you have to ask again (api - get Person by token ) for information about logged Person",
             produces = "application/json",
-            response =  Login_Social_Network.class,
+            response =  Swagger_SocialNetwork_Result.class,
             protocols = "https",
             code = 200
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_SocialNetwork_Login",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created",      response = Login_Social_Network.class),
+            @ApiResponse(code = 200, message = "Successfully created",      response = Swagger_SocialNetwork_Result.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result GitHub( @ApiParam(value = "this is return full url address in format  https://portal.byzance.cz/something", required = true)  String return_link){
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result GitHub(){
         try {
 
-            System.out.print("Link k přesměrování při přihlášení přes github:: " + return_link);
 
-            terminal_logger.debug("GitHub  request for login:: return link:: {}", return_link);
+            // Zpracování Json
+            final Form<Swagger_SocialNetwork_Login> form = Form.form(Swagger_SocialNetwork_Login.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_SocialNetwork_Login help = form.get();
 
-            if(return_link.contains("/login-failed")){
-                return_link = "https://portal.stage.byzance.cz/dashboard";
-                terminal_logger.error("Na Becki jsou líní to fixnout už měsíc!");
-            }
+
+            System.out.print("Link k přesměrování při přihlášení přes github:: " + help.redirect_url);
+
+            terminal_logger.debug("GitHub  request for login:: return link:: {}", help.redirect_url);
+
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("GitHub");
 
-            floatingPersonToken.return_url = return_link;
+            floatingPersonToken.return_url = help.redirect_url;
             floatingPersonToken.where_logged = Enum_Where_logged_tag.BECKI_WEBSITE;
 
 
@@ -699,7 +713,7 @@ public class Controller_Security extends Controller {
 
             OAuth20Service service = Socials.GitHub( floatingPersonToken.provider_key);
 
-            Login_Social_Network result = new Login_Social_Network();
+            Swagger_SocialNetwork_Result result = new Swagger_SocialNetwork_Result();
             result.type = "GitHub";
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;
@@ -721,31 +735,49 @@ public class Controller_Security extends Controller {
                     "just ask via this Api and cloud_blocko_server responds with object where is token and redirection link. After that redirect user " +
                     "to this link and after returning to your success page you have to ask again (api - get Person by token ) for information about logged Person",
             produces = "application/json",
-            response =  Login_Social_Network.class,
+            response =  Swagger_SocialNetwork_Result.class,
             protocols = "https",
             code = 200
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_SocialNetwork_Login",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created",    response = Login_Social_Network.class),
+            @ApiResponse(code = 200, message = "Successfully created",    response = Swagger_SocialNetwork_Result.class),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password", response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result Facebook(@ApiParam(value = "this is return full url address in format  https://*.byzance.cz/something", required = true)  String return_link){
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result Facebook(){
         try {
 
-            System.out.println("Link k přesměrování při přihlášení přes facebook:: " + return_link);
 
-            terminal_logger.debug("Facebook request for login:: return link:: {}", return_link);
+            // Zpracování Json
+            final Form<Swagger_SocialNetwork_Login> form = Form.form(Swagger_SocialNetwork_Login.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_SocialNetwork_Login help = form.get();
+            
+            System.out.println("Link k přesměrování při přihlášení přes facebook:: " + help.redirect_url);
+
+            terminal_logger.debug("Facebook request for login:: return link:: {}", help.redirect_url);
 
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("Facebook");
 
-            if(return_link.contains("/login-failed")){
-                return_link = "https://portal.stage.byzance.cz/dashboard";
+            if(help.redirect_url.contains("/login-failed")){
+                help.redirect_url = "https://portal.stage.byzance.cz/dashboard";
                 terminal_logger.error("Na Becki jsou líní to fixnout už měsíc!");
             }
 
-            floatingPersonToken.return_url = return_link;
+            floatingPersonToken.return_url = help.redirect_url;
 
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
@@ -754,7 +786,7 @@ public class Controller_Security extends Controller {
 
             OAuth20Service service = Socials.Facebook(floatingPersonToken.provider_key);
 
-            Login_Social_Network result = new Login_Social_Network();
+            Swagger_SocialNetwork_Result result = new Swagger_SocialNetwork_Result();
             result.type = "Facebook";
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.authToken;

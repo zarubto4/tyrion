@@ -29,8 +29,8 @@ POST      /logout                                                       @control
 GET       /login/facebook/*url                                          @controllers.Controller_Security.GET_facebook_oauth(url)
 GET       /login/github/*url                                            @controllers.Controller_Security.GET_github_oauth(url)
 
-GET       /facebook/*return_link                                        @controllers.Controller_Security.Facebook(return_link)
-GET       /github/*return_link                                          @controllers.Controller_Security.GitHub(return_link)
+POST      /facebook                                                     @controllers.Controller_Security.Facebook()
+POST      /github                                                       @controllers.Controller_Security.GitHub()
 
 GET       /login/person                                                 @controllers.Controller_Security.getPersonByToken
 

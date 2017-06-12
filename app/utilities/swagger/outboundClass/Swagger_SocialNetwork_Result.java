@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Json Model for new Basic Login throw the social networks",
           value = "Social_Login")
-public class Login_Social_Network {
+public class Swagger_SocialNetwork_Result {
     @ApiModelProperty(readOnly = true, allowableValues = "Facebook,GitHub" )
     public String type;
 

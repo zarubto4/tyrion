@@ -1,5 +1,6 @@
 package utilities.response;
 
+import org.apache.commons.lang.StringUtils;
 import play.mvc.Controller;
 import utilities.Server;
 import utilities.logger.Class_Logger;
@@ -34,7 +35,9 @@ public class CoreResponse extends Controller {
     public static void cors(String url) {
         try {
 
-            response().setHeader("Access-Control-Link", url + "," + Server.becki_mainUrl);
+            String escape_url = StringUtils.replaceEach(url, new String[]{"&", "\"", "<", ">"}, new String[]{"&amp;", "&quot;", "&lt;", "&gt;"});
+
+            response().setHeader("Access-Control-Link", escape_url + "," + Server.becki_mainUrl);
             response().setHeader("Access-Control-Allow-Origin", "*"); // Zde bude web se kterým to může komunikovat (url frontendu)
             response().setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
             response().setHeader("Access-Control-Max-Age", "72000");
