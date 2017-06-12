@@ -1,5 +1,6 @@
 package web_socket.services;
 
+import com.avaje.ebeaninternal.server.lib.util.Str;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
@@ -15,7 +16,9 @@ import web_socket.message_objects.tyrion_with_becki.WS_Message_Subscribe_Notific
 import web_socket.message_objects.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class WS_Becki_Website extends WS_Interface_type {
 
@@ -27,7 +30,7 @@ public class WS_Becki_Website extends WS_Interface_type {
 
     public static final String CHANNEL = "becki";
 
-    public Map<String, WS_Interface_type> all_person_Connections = new HashMap<>();
+    public Map<String, WS_Becki_Single_Connection> all_person_Connections = new HashMap<>();
     public Model_Person person;
     public String identifikator;
 
@@ -44,7 +47,6 @@ public class WS_Becki_Website extends WS_Interface_type {
             for(String key :  Controller_WebSocket.homer_servers.keySet() ){
                 System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
             }
-
 
             out.write(" Něco posílám???");
             return true;
@@ -68,8 +70,22 @@ public class WS_Becki_Website extends WS_Interface_type {
 
     @Override
     public void onClose() {
+
         terminal_logger.debug("Local_Terminal onClose " + identifikator);
-        this.close();
+
+        if (!all_person_Connections.isEmpty()) {
+
+            Set<String> keys = all_person_Connections.keySet();
+
+            if(!keys.isEmpty()){
+
+                // It cannot be in for or while cycle -> Exception type: java.util.ConcurrentModificationException
+                // all_person_Connections.xx.OnClose() changes the contents of the all_person_Connections Array (HashMap) at runtime
+                all_person_Connections.get(keys.iterator().next()).onClose();
+                onClose();
+
+            }
+        }
     }
 
 
@@ -77,11 +93,7 @@ public class WS_Becki_Website extends WS_Interface_type {
     public void write_without_confirmation(ObjectNode json) {
         try {
 
-            terminal_logger.debug("          Reálné odesílání notifikace na počet odběrů jednoho uživatele Becki_Website:: " + all_person_Connections.size());
-
-            for (Map.Entry<String,WS_Interface_type> entry : all_person_Connections.entrySet()) {
-                terminal_logger.debug("          Reálné odesílání notifikace na Identifikator WS odběru :: " + entry.getValue().get_identificator());
-
+            for (Map.Entry<String,WS_Becki_Single_Connection> entry : all_person_Connections.entrySet()) {
                entry.getValue().write_without_confirmation(json);
             }
 

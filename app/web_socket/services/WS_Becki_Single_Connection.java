@@ -63,6 +63,7 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
             Controller_WebSocket.becki_website.remove(person_connection.identifikator);
         }
 
+
     }
 
 

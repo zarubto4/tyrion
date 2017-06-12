@@ -343,13 +343,9 @@ public class Controller_Security extends Controller {
 
                     // Úklid přihlášených websocketů
                     WS_Becki_Website becki_website = (WS_Becki_Website) Controller_WebSocket.becki_website.get(token_model.person.id);
+                    becki_website.onClose();
 
-                    if ( becki_website.all_person_Connections != null)
-                    for(String key : becki_website.all_person_Connections.keySet() ){
-                        becki_website.all_person_Connections.get(key).onClose();
-                    }
-
-                    token_model .deleteAuthToken();
+                    token_model.deleteAuthToken();
                 }
 
             }catch (Exception e){
@@ -545,15 +541,17 @@ public class Controller_Security extends Controller {
 
             OAuth20Service service = Socials.Facebook(state);
 
-            System.out.println("Trading the Request Token for an Access Token...");
+            System.out.println("0. Trading the Request Token for an Access Token...");
             OAuth2AccessToken accessToken = service.getAccessToken(code);
 
-            System.out.println("Got the Access Token!");
-            System.out.println("(if your curious it looks like this: " + accessToken + ", 'rawResponse'='" + accessToken.getRawResponse() + "')");
+            System.out.println("1. Got the Access Token!");
+            System.out.println("2. (if your curious it looks like this: " + accessToken + ", 'rawResponse'='" + accessToken.getRawResponse() + "')");
             System.out.println();
 
             // Now let's go and ask for a protected resource!
-            System.out.println("Now we're going to access a protected resource...");
+            System.out.println("3. Now we're going to access a protected resource...");
+
+            System.out.println("4. Facebook URL: " + Server.Facebook_url);
 
             OAuthRequest request = new OAuthRequest(Verb.GET, Server.Facebook_url);
             service.signRequest(accessToken, request);

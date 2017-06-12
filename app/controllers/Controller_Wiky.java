@@ -12,6 +12,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import utilities.logger.Class_Logger;
+import utilities.scheduler.jobs.Job_OldFloatingTokenRemoval;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Wiky extends Controller {
@@ -23,31 +24,10 @@ public class Controller_Wiky extends Controller {
      public Result test1(){
          try {
 
-             // Chci zpracovat JSON o Pepovi
-           //  JsonNode muj_json = request().body().asJson();
 
-             String muj_sstring = request().body().asText();
+             new Job_OldFloatingTokenRemoval().execute(null);
 
-             // Vypíšu si co je uvnitř
-             System.out.println(  muj_sstring );
-
-
-             String name;
-             String prijmeni;
-             Integer age;
-             String street;
-
-
-             // - Napiš Cyklus - Kterej
-
-
-             ObjectNode co_vracim = Json.newObject();
-          //   co_vracim.put("name", muj_json.get("jeho_name").textValue() + " je drsoň"   );
-             co_vracim.put("sadfsadasafd", "asdfsfasdfsdfs");
-          //   co_vracim.put("age" , muj_json.get("jeho_age").asInt() );
-
-
-             return ok( co_vracim );
+             return ok(  );
 
          }catch (Exception e){
              e.printStackTrace();

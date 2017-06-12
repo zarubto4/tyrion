@@ -65,24 +65,24 @@ public class Model_FloatingPersonToken extends Model {
     @JsonIgnore @Transient
     public boolean isValid(){
 
-        return true;
-        //TODO Cleerio hotfix
-
-        /**
         try {
             if(this.access_age.getTime() < new Date().getTime()){
+
                 this.delete();
                 return false;
+
             }else {
-                this.access_age = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(72));
+
+                this.access_age = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(24*3) + TimeUnit.MINUTES.toMillis(30));
                 this.update();
                 return true;
+
             }
         } catch (Exception e){
             terminal_logger.error("isValid() :: Error:: ", e);
             return false;
         }
-        */
+
     }
 
     // If userDB/system make log out

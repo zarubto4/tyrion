@@ -221,7 +221,7 @@ public class Server {
 
         Facebook_callBack       = tyrion_serverAddress + Configuration.root().getString("Facebook." + server_mode.name() +".callBack");
         Facebook_clientSecret   = Configuration.root().getString("Facebook." + server_mode.name() +".clientSecret");
-        Facebook_url            = Configuration.root().getString("Facebook." + server_mode.name() +".stage.url");
+        Facebook_url            = Configuration.root().getString("Facebook." + server_mode.name() +".url");
         Facebook_apiKey         = Configuration.root().getString("Facebook." + server_mode.name() +".apiKey  ");
 
         // Go Pay Config ------------------------------------------------------------------------------------------------------------
