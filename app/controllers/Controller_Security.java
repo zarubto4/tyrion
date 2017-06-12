@@ -386,24 +386,9 @@ public class Controller_Security extends Controller {
                 if (map.containsKey("state")){
 
                     Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique();
-
-                    if(floatingPersonToken.return_url.contains(".cz")) {
-
-                        String[] parts = floatingPersonToken.return_url.split(".cz");
-
-                        floatingPersonToken.delete();
-                        return redirect(parts[1] + "/" + Server.becki_redirectFail );
-
-                    }else if(floatingPersonToken.return_url.contains(".com")){
-                        String[] parts = floatingPersonToken.return_url.split(".com");
-
-                        floatingPersonToken.delete();
-                        return redirect(parts[1] + "/" + Server.becki_redirectFail );
-                    }
-
-                    else terminal_logger.error("GET_github_oauth:: Not recognize URL fragment!!!!!! ");
                     floatingPersonToken.delete();
-                    return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
+
+                    return redirect(floatingPersonToken.return_url.replace("%ss%", "fail"));
 
                 }
             }
@@ -418,19 +403,9 @@ public class Controller_Security extends Controller {
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
             if (floatingPersonToken == null){
 
-                if(floatingPersonToken.return_url.contains(".cz")) {
-                    String[] parts = floatingPersonToken.return_url.split(".cz");
+               terminal_logger.error("GET_github_oauth:: Not recognize URL fragment!!!!!! ");
 
-                    return redirect(parts[1] + "/" + Server.becki_redirectFail );
-
-                }else if(floatingPersonToken.return_url.contains(".com")){
-                    String[] parts = floatingPersonToken.return_url.split(".com");
-
-                    return redirect(parts[1] + "/" + Server.becki_redirectFail );
-                }
-
-                else terminal_logger.error("GET_github_oauth:: Not recognize URL fragment!!!!!! ");
-                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
+                return redirect(floatingPersonToken.return_url.replace("%ss%", "fail"));
             }
 
             floatingPersonToken.social_token_verified = true;
@@ -508,14 +483,13 @@ public class Controller_Security extends Controller {
 
             terminal_logger.debug("GET_github_oauth:: Return URL:: " + floatingPersonToken.return_url);
 
-            return redirect(floatingPersonToken.return_url);
+            return redirect(floatingPersonToken.return_url.replace("%ss%", "success"));
 
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
-            return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail );
+            return Server_Logger.result_internalServerError(e, request());
         }
-
 
     }
 
@@ -533,12 +507,8 @@ public class Controller_Security extends Controller {
 
                 if (map.containsKey("state"))
                 Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
-                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
+                return redirect(url.replace("%ss%", "fail"));
             }
-
-
-            System.out.println(" ");
-
 
 
             for(String parameter : map.keySet()){
@@ -559,7 +529,7 @@ public class Controller_Security extends Controller {
             if (floatingPersonToken == null){
 
                 terminal_logger.warn("GET_facebook_oauth:: floatingPersonToken not found! ");
-                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
+                return redirect(url.replace("%ss%", "fail"));
             }
 
             terminal_logger.debug("GET_facebook_oauth:: floatingPersonToken set as verified! ");
@@ -594,21 +564,7 @@ public class Controller_Security extends Controller {
 
                 terminal_logger.warn("GET_facebook_oauth:: Get Response wasnt succesfull :(  ");
 
-                if(floatingPersonToken.return_url.contains(".cz")) {
-                    String[] parts = floatingPersonToken.return_url.split(".cz");
-
-                    terminal_logger.warn("GET_facebook_oauth:: redirdct to fail::: " + parts[1] + "/" + Server.becki_redirectFail);
-                    return redirect(parts[1] + "/" + Server.becki_redirectFail );
-
-                }else if(floatingPersonToken.return_url.contains(".com")){
-                    String[] parts = floatingPersonToken.return_url.split(".com");
-
-                    terminal_logger.warn("GET_facebook_oauth:: redirdct to fail::: " + parts[1] + "/" + Server.becki_redirectFail);
-                    return redirect(parts[1] + "/" + Server.becki_redirectFail );
-                }
-
-                else terminal_logger.error("GET_facebook_oauth:: Not recognize URL fragment!!!!!! ");
-                return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail );
+                return redirect(url.replace("%ss%", "fail"));
             }
 
 
@@ -679,12 +635,12 @@ public class Controller_Security extends Controller {
 
 
             System.out.println("16. floatingPersonToken.return_url " + floatingPersonToken.return_url);
-            return redirect(floatingPersonToken.return_url);
+            return redirect(floatingPersonToken.return_url.replace("%ss%", "success"));
 
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
-            return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail );
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 
