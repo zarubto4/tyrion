@@ -128,7 +128,7 @@ public class Model_CompilationServer extends Model {
 
             ObjectNode node = get_compilation.send_with_response();
 
-            terminal_logger.trace("make_Compilation:: Result is here!!! ", node.toString());
+            terminal_logger.trace("make_Compilation:: Result is here:: {} ", node.toString());
 
             final Form<WS_Message_Make_compilation> form = Form.form(WS_Message_Make_compilation.class).bind(node);
             if(form.hasErrors()){terminal_logger.error("WS_Make_compilation:: Incoming Json from Compilation Server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Make_compilation();}
@@ -137,7 +137,10 @@ public class Model_CompilationServer extends Model {
 
             if(compilation_request.has("interface_code")) compilation.interface_code = compilation_request.get("interface_code").toString();
 
-            if(compilation.buildUrl != null) compilation.status = "success";
+            if(compilation.buildUrl != null){
+                terminal_logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.buildUrl);
+                compilation.status = "success";
+            }
 
             return compilation;
 
