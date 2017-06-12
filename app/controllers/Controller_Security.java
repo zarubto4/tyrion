@@ -454,6 +454,7 @@ public class Controller_Security extends Controller {
 
                 if(json_response_from_github.has("mail")) person = Model_Person.find.where().eq("mail", json_response_from_github.get("mail").asText()).findUnique();
 
+
                 if(person != null){
 
                     System.out.println("13. Uživatel existuje s emailem ale bez github tokenu - a tak jen doplním token");
@@ -473,7 +474,7 @@ public class Controller_Security extends Controller {
                     if (json_response_from_github.has("mail"))   person.mail = json_response_from_github.get("mail").asText();
 
 
-                    if (json_response_from_github.has("login")) if(Model_Person.find.where().eq("nick_name", json_response_from_github.get("login").asText()).findUnique() == null) person.nick_name = json_response_from_github.get("login").asText();
+                    if (json_response_from_github.has("login") && Model_Person.find.where().eq("nick_name", json_response_from_github.get("login").asText()).findUnique() == null) person.nick_name = json_response_from_github.get("login").asText();
                     if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null"))  person.full_name = json_response_from_github.get("name").asText();
                     if (json_response_from_github.has("avatar_url")) person.azure_picture_link = json_response_from_github.get("avatar_url").asText();
                     person.save();
