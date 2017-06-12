@@ -294,13 +294,13 @@ public class Server_Logger extends Controller {
     private static void error(String id, String summary, String description, String stack_trace, String cause) {
 
         Model_LoggyError error = Model_LoggyError.find.where().eq("stack_trace", stack_trace).findUnique();
-        if (error == null) {
+        //if (error == null) {
             error = new Model_LoggyError(id, summary, description, stack_trace, cause); // zapíšu do databáze
             error.save();
-        } else {
-            error.repetition++;
-            error.update();
-        }
+        //} else {
+        //    error.repetition++;
+        //    error.update();
+        //}
 
         if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post(error);
     }
