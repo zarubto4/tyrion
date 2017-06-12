@@ -25,5 +25,6 @@ public class Swagger_Library_New {
     @ApiModelProperty(required = false, value = "Length must be between 8 and 255 characters.")
     public String description;
 
+    @ApiModelProperty(hidden = true)
     public List<String> type_of_board_ids = new ArrayList<>();
 }

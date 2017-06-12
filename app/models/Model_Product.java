@@ -620,11 +620,10 @@ public class Model_Product extends Model {
 
     @JsonIgnore
     public static List<Model_Product> get_applicableByOwner(String owner_id) {
-        return find.where().eq("active",true).eq("payment_details.person.id", owner_id).select("id").select("name").select("tariff").findList();
+        return find.where().eq("active",true).eq("payment_details.person.id", owner_id).select("id").select("name").findList();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model.Finder<String,Model_Product> find = new Finder<>(Model_Product.class);
-
 }

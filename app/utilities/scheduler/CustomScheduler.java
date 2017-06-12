@@ -36,8 +36,6 @@ public class CustomScheduler {
             // Nastavení schedulleru (Aktivity, která se pravidelně v časových úsecích vykonává)
             //scheduler = StdSchedulerFactory.getDefaultScheduler();
 
-
-
             //-------------------------
 
             // Klíč / identifikátor Trrigru definující, kdy se konkrétní job zapne.

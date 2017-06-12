@@ -39,31 +39,33 @@ public class Model_RequestLog extends Model{
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        terminal_logger.debug("save: Creating new Object");
 
         date_of_create = new Date();
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_RequestLog.find.byId(this.id) == null) break;
+            if (find.byId(this.id) == null) break;
         }
         super.save();
     }
 
-    @JsonIgnore @Override public void update() {
+    @JsonIgnore @Override
+    public void update() {
 
-        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        terminal_logger.debug("update: Update object value: {}",  this.id);
 
         super.update();
 
     }
 
-    @JsonIgnore @Override public void delete() {
+    @JsonIgnore @Override
+    public void delete() {
 
-        terminal_logger.error("delete :: This object is not legitimate to remove. ");
-        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
-
+        terminal_logger.error("delete: This object is not legitimate to remove. ");
+        super.delete();
     }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

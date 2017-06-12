@@ -161,7 +161,6 @@ GET       /project                                                      @control
 DELETE    /project/:project_id                                          @controllers.Controller_Project.project_delete(project_id)
 PUT       /project/shareProject/:project_id                             @controllers.Controller_Project.project_invite(project_id)
 PUT       /project/unshareProject/:project_id                           @controllers.Controller_Project.project_removeParticipant(project_id)
-PUT       /project/addParticipant/:invitation_id/:decision              @controllers.Controller_Project.project_addParticipant(invitation_id, decision: Boolean)
 PUT       /project/change_participant_state/:project_id                 @controllers.Controller_Project.project_changeParticipantStatus(project_id)
 
 #Program

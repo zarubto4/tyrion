@@ -29,7 +29,9 @@ public class Swagger_ProductExtension_New {
     @ApiModelProperty(required = true, value = "Enumerated type of extension")
     public Enum_ExtensionType type;
 
-    @Constraints.Required
-    @ApiModelProperty(required = true)
-    public Integer count;
+    @ApiModelProperty(required = false)
+    public Long count;
+
+    @ApiModelProperty(hidden = true, value = "Whether the extension should be included in tariff or not. Only for Tyrion front-end.")
+    public boolean included;
 }

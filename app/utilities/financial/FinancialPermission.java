@@ -1,21 +1,14 @@
 package utilities.financial;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.microsoft.azure.documentdb.Document;
-import com.microsoft.azure.documentdb.DocumentClientException;
 import models.Model_Person;
 import models.Model_Product;
 import models.Model_ProductExtension;
 import models.Model_Project;
-import play.libs.Json;
-import utilities.Server;
-import utilities.document_db.DocumentDB;
-import utilities.document_db.document_objects.DM_RestApiRequestRecord;
 import utilities.enums.Enum_ExtensionType;
+import utilities.financial.extensions.configurations.Configuration_Project;
+import utilities.financial.extensions.configurations.Configuration_RestApi;
 import utilities.logger.Class_Logger;
 
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,14 +30,14 @@ public class FinancialPermission {
 
         switch (action) {
 
-            case "Project": {
+            case "project": {
 
-                List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == Enum_ExtensionType.Project).collect(Collectors.toList());
+                List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == Enum_ExtensionType.project).collect(Collectors.toList());
 
                 int available = 0;
 
                 for (Model_ProductExtension extension : filtered) {
-                    available += extension.count();
+                    available += ((Configuration_Project)extension.getConfiguration()).count;
                 }
 
                 return Model_Project.find.where().eq("product.id", product.id).findRowCount() < available;
@@ -130,7 +123,7 @@ public class FinancialPermission {
 
         if (product != null) {
 
-            List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == Enum_ExtensionType.RestApi).collect(Collectors.toList());
+            List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == Enum_ExtensionType.rest_api).collect(Collectors.toList());
 
             terminal_logger.debug("checkRestApiRequest: filtered extensions");
 
@@ -143,7 +136,7 @@ public class FinancialPermission {
 
                 // TODO může se cacheovat
                 for (Model_ProductExtension extension : filtered) {
-                    available += extension.count();
+                    available += ((Configuration_RestApi)extension.getConfiguration()).available_requests;
                 }
 
                 terminal_logger.debug("checkRestApiRequest: counted available requests");

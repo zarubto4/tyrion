@@ -118,7 +118,7 @@ public class Server_Logger extends Controller {
         description.append("    Tyrion mode: " + Server.server_mode.name());
         description.append("\n");
 
-        error(id, summary, description.toString());
+        error(id, summary, description.toString(), null, null);
         logger.error(t_class, log_message, args);
     }
 
@@ -128,6 +128,8 @@ public class Server_Logger extends Controller {
         String id = UUID.randomUUID().toString();
 
         StringBuilder description = new StringBuilder();     // stavění obsahu
+        StringBuilder stack_trace = new StringBuilder();
+        StringBuilder cause_summary = new StringBuilder();
 
         String summary = "Internal Server Error - " + origin + " - " + t_class.getName();
 
@@ -145,16 +147,35 @@ public class Server_Logger extends Controller {
         description.append("    Tyrion mode: " + Server.server_mode.name());
         description.append("\n");
 
-        description.append("    Stack trace: \n");
+        stack_trace.append("    Stack trace: \n");
         for (StackTraceElement element : exception.getStackTrace()) {    // formátování stack trace
-            description.append("        ");
-            description.append(element);
-            description.append("\n");
+            stack_trace.append("        ");
+            stack_trace.append(element);
+            stack_trace.append("\n");
         }
-        description.append("\n");    // random whitespace
+        stack_trace.append("\n");
 
-        error(id, summary, description.toString());
-        logger.error(t_class, description.toString());
+        // If exception only wraps another one.
+        Throwable cause = exception.getCause();
+        if (cause != null) {
+            cause_summary.append("    Caused by: ");
+            cause_summary.append(cause.getClass().getName());
+            cause_summary.append("\n");
+            cause_summary.append("    Cause message: ");
+            cause_summary.append(cause.getMessage());
+            cause_summary.append("\n");
+            cause_summary.append("    Cause stack trace: ");
+            cause_summary.append("\n");
+
+            for (StackTraceElement element : cause.getStackTrace()) {    // formátování stack trace
+                cause_summary.append("        ");
+                cause_summary.append(element);
+                cause_summary.append("\n");
+            }
+        }
+
+        error(id, summary, description.toString(), stack_trace.toString(), cause == null ? null : cause_summary.toString());
+        logger.error(t_class, description.toString() + stack_trace.toString());
     }
 
 /* CONTROLLER LOGGER ---------------------------------------------------------------------------------------------------*/
@@ -170,15 +191,16 @@ public class Server_Logger extends Controller {
             if (Model_LoggyError.find.byId(id) == null) break;
         }
 
-
         StringBuilder description = new StringBuilder();     // stavění obsahu
+        StringBuilder stack_trace = new StringBuilder();
+        StringBuilder cause_summary = new StringBuilder();
 
         String summary = "Internal Server Error - " + request.method() + " " + request.path();
 
         description.append("\n");
         description.append("    Exception type: " + exception.getClass().getName());
         description.append("\n");
-        description.append("    Exception message: " +exception.getMessage());
+        description.append("    Exception message: " + exception.getMessage());
         description.append("\n");
         description.append("    Time: " + new Date().toString());
         description.append("\n");
@@ -195,15 +217,34 @@ public class Server_Logger extends Controller {
         description.append("    User: " + (Controller_Security.get_person() != null ? Controller_Security.get_person().mail : "null"));
         description.append("\n");
 
-        description.append("    Stack trace: \n");
+        stack_trace.append("    Stack trace: \n");
         for (StackTraceElement element : exception.getStackTrace()) {    // formátování stack trace
-            description.append("        ");
-            description.append(element);
-            description.append("\n");
+            stack_trace.append("        ");
+            stack_trace.append(element);
+            stack_trace.append("\n");
         }
-        description.append("\n");
+        stack_trace.append("\n");
 
-        error(id, summary, description.toString());
+        // If exception only wraps another one.
+        Throwable cause = exception.getCause();
+        if (cause != null) {
+            cause_summary.append("    Caused by: ");
+            cause_summary.append(cause.getClass().getName());
+            cause_summary.append("\n");
+            cause_summary.append("    Cause message: ");
+            cause_summary.append(cause.getMessage());
+            cause_summary.append("\n");
+            cause_summary.append("    Cause stack trace: ");
+            cause_summary.append("\n");
+
+            for (StackTraceElement element : cause.getStackTrace()) {    // formátování stack trace
+                cause_summary.append("        ");
+                cause_summary.append(element);
+                cause_summary.append("\n");
+            }
+        }
+
+        error(id, summary, description.toString(), stack_trace.toString(), cause == null ? null : cause_summary.toString());
 
         return GlobalResult.result_internalServerError(summary + "\n" + exception.getMessage());
     }
@@ -245,15 +286,21 @@ public class Server_Logger extends Controller {
 /* SERVICES ---------------------------------------------------------------------------------------------------*/
 
     /**
-     * Saves error to database and sends it to Slack channel #servers if mode is not "developer".
+     * Saves error to database or increments "repetition" and sends it to Slack channel #servers if mode is not "developer".
      * @param id Identifier of model error
      * @param summary String title of error
      * @param description String details of error
      */
-    private static void error(String id, String summary, String description) {
+    private static void error(String id, String summary, String description, String stack_trace, String cause) {
 
-        Model_LoggyError error = new Model_LoggyError(id, summary, description); // zapíšu do databáze
-        error.save();
+        Model_LoggyError error = Model_LoggyError.find.where().eq("stack_trace", stack_trace).findUnique();
+        if (error == null) {
+            error = new Model_LoggyError(id, summary, description, stack_trace, cause); // zapíšu do databáze
+            error.save();
+        } else {
+            error.repetition++;
+            error.update();
+        }
 
         if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post(error);
     }
@@ -305,7 +352,7 @@ public class Server_Logger extends Controller {
     }
 
     public static List<Model_LoggyError> getErrors(){
-        return Model_LoggyError.find.where().orderBy().asc("").findList();
+        return Model_LoggyError.find.where().orderBy().asc("created").findList();
     }
 
     public static Model_LoggyError getError(String id) {

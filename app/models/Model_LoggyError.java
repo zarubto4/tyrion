@@ -18,9 +18,13 @@ public class Model_LoggyError extends Model {
     @Id                                 public String id;
     @Column(columnDefinition = "TEXT")  public String summary;
     @Column(columnDefinition = "TEXT")  public String description;
+    @Column(columnDefinition = "TEXT")  public String stack_trace;
+    @Column(columnDefinition = "TEXT")  public String cause;
                                         public String youtrack_url;
 
-                                        public Date date_of_create;
+                                        public Long repetition;
+
+                                        public Date created;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -32,10 +36,14 @@ public class Model_LoggyError extends Model {
     }
 
     @JsonIgnore
-    public Model_LoggyError(String id, String summary, String description) {
+    public Model_LoggyError(String id, String summary, String description, String stack_trace, String cause) {
         this.id = id;
         this.summary = summary;
         this.description = description;
+        this.stack_trace = stack_trace;
+        this.cause = cause;
+        this.repetition = 1L;
+        this.created = new Date();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

@@ -15,11 +15,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-
-
 public abstract class WS_Interface_type {
 
-    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
     private static final Class_Logger terminal_logger = new Class_Logger(WS_Interface_type.class);
 
     public WS_Interface_type webSCtype;
@@ -35,12 +33,10 @@ public abstract class WS_Interface_type {
     public abstract void add_to_map();
     public abstract boolean is_online();
 
-
-
     public void onMessage(String message){
         try {
 
-            terminal_logger.debug("Incoming message: " + message);
+            terminal_logger.debug("onMessage: Incoming message: " + message);
 
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
@@ -53,7 +49,7 @@ public abstract class WS_Interface_type {
             onMessage(json);
 
         }catch (JsonParseException e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("onMessage:",e);
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "JsonUnrecognized JsonParseException");
@@ -61,7 +57,7 @@ public abstract class WS_Interface_type {
 
         }catch (Exception e){
 
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("onMessage:",e);
 
             ObjectNode result = Json.newObject();
             result.put("messageType", "JsonUnrecognized " + e.getClass().getSimpleName());
@@ -86,7 +82,6 @@ public abstract class WS_Interface_type {
         };
     }
 
-
     /**
      * Odesílání zpráv: Zprávy lze odesílat s vyžadovanou odpovědí, nebo bez ní. Pokud vyžaduji odpověď (jako potvrzení
      * že se akce povedla, nebo co se událo v reakci na zprávu), spustí se vlákno v metodě write_with_confirmation. Odeslaná
@@ -99,7 +94,6 @@ public abstract class WS_Interface_type {
 
     public Map<String,WS_Send_message> sendMessageMap = new HashMap<>(); // MessageId, Message
 
-
     public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException {
 
         String messageId = UUID.randomUUID().toString();
@@ -110,9 +104,7 @@ public abstract class WS_Interface_type {
 
         // Může vyvolat i vyjímku o nedoručení
         return  send_message.send_with_response();
-
     }
-
 
     // Odeslání bez nutnosti vyčkat na potvrzení
     public void write_without_confirmation(ObjectNode json){
@@ -124,9 +116,4 @@ public abstract class WS_Interface_type {
         json.put("messageId", messageId );
         out.write( json.toString() );
     }
-
-
-
-
-
 }

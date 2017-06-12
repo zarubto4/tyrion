@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import utilities.enums.Enum_Payment_method;
-import utilities.enums.Enum_Payment_mode;
 
 import java.util.ArrayList;
 import java.util.List;

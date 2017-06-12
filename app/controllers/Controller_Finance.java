@@ -300,7 +300,7 @@ public class Controller_Finance extends Controller {
 
     @ApiOperation(value = "create Product Extension",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
             protocols = "https",
             code = 201
@@ -332,7 +332,7 @@ public class Controller_Finance extends Controller {
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ProductExtension_New help = form.get();
 
-            Model_Product product = Model_Product.find.byId(help.product_id);
+            Model_Product product = Model_Product.get_byId(help.product_id);
             if(product == null) return GlobalResult.result_notFound("Product not found");
 
             Model_ProductExtension extension = new Model_ProductExtension();
@@ -344,11 +344,8 @@ public class Controller_Finance extends Controller {
             extension.removed = false;
             extension.product = product;
 
-            Model_ProductExtension.Config config = new Model_ProductExtension.Config();
-            config.price = extension.getExtensionType().getDefaultDailyPrice();
-            config.count = help.count;
-
-            extension.config = Json.toJson(config).toString();
+            Result configuration_result = extension.setConfiguration(help);
+            if(configuration_result != null) return configuration_result;
 
             if (!extension.create_permission()) return GlobalResult.result_forbidden();
 
@@ -363,7 +360,7 @@ public class Controller_Finance extends Controller {
 
     @ApiOperation(value = "get Product Extension by ID",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -393,7 +390,7 @@ public class Controller_Finance extends Controller {
 
     @ApiOperation(value = "get all Product Extension of logged user",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -415,7 +412,7 @@ public class Controller_Finance extends Controller {
 
     @ApiOperation(value = "get all Product Extension types",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -490,7 +487,7 @@ public class Controller_Finance extends Controller {
 
     @ApiOperation(value = "activate Product Extension",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -526,7 +523,7 @@ public class Controller_Finance extends Controller {
 
     @ApiOperation(value = "deactivate Product Extension",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -562,7 +559,7 @@ public class Controller_Finance extends Controller {
 
     @ApiOperation(value = "delete Product Extension",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on config and type) extend product capabilities. (e.g. how many projects can user have)",
+            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -598,11 +595,11 @@ public class Controller_Finance extends Controller {
     public Result tariffExtension_create(){
         try{
 
-            final Form<Swagger_TariffExtension_New> form = Form.form(Swagger_TariffExtension_New.class).bindFromRequest();
+            final Form<Swagger_ProductExtension_New> form = Form.form(Swagger_ProductExtension_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_TariffExtension_New help = form.get();
+            Swagger_ProductExtension_New help = form.get();
 
-            Model_Tariff tariff = Model_Tariff.find.byId(help.id);
+            Model_Tariff tariff = Model_Tariff.find.byId(help.product_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             Model_ProductExtension extension = new Model_ProductExtension();
@@ -612,11 +609,8 @@ public class Controller_Finance extends Controller {
             extension.type = help.type;
             extension.active = true;
 
-            Model_ProductExtension.Config config = new Model_ProductExtension.Config();
-            config.price = (long) (help.price * 1);
-            config.count = help.count;
-
-            extension.config = Json.toJson(config).toString();
+            Result configuration_result = extension.setConfiguration(help);
+            if(configuration_result != null) return configuration_result;
 
             if (help.included){
                 extension.tariff_included = tariff;
@@ -640,11 +634,11 @@ public class Controller_Finance extends Controller {
     public Result tariffExtension_update(){
         try{
 
-            final Form<Swagger_TariffExtension_New> form = Form.form(Swagger_TariffExtension_New.class).bindFromRequest();
+            final Form<Swagger_ProductExtension_New> form = Form.form(Swagger_ProductExtension_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_TariffExtension_New help = form.get();
+            Swagger_ProductExtension_New help = form.get();
 
-            Model_ProductExtension extension = Model_ProductExtension.find.byId(help.id);
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(help.product_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.name = help.name;
@@ -653,11 +647,8 @@ public class Controller_Finance extends Controller {
             extension.color = help.color;
             extension.active = true;
 
-            Model_ProductExtension.Config config = new Model_ProductExtension.Config();
-            config.price = (long) (help.price * 1);
-            config.count = help.count;
-
-            extension.config = Json.toJson(config).toString();
+            Result configuration_result = extension.setConfiguration(help);
+            if(configuration_result != null) return configuration_result;
 
             if (!extension.edit_permission()) return GlobalResult.result_forbidden();
 
@@ -799,8 +790,7 @@ public class Controller_Finance extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Created successfully - payment is required",    response = Model_Invoice.class),
-            @ApiResponse(code = 201, message = "Created successfully - payment not required",   response = Model_Product.class),
+            @ApiResponse(code = 201, message = "Created successfully",      response = Model_Product.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -931,35 +921,7 @@ public class Controller_Finance extends Controller {
             product.refresh();
 
             return GlobalResult.result_created(Json.toJson(product));
-            /*
 
-            terminal_logger.debug("product_create:: Creating invoice");
-
-            Model_Invoice invoice = new Model_Invoice();
-            invoice.method = product.method;
-            invoice.product = product;
-
-            Model_InvoiceItem invoice_item = new Model_InvoiceItem();
-            invoice_item.name = "TODO"; // TODO invoice items
-            invoice_item.unit_price = product.price() * 30;
-            invoice_item.quantity = (long) 1;
-            invoice_item.unit_name = "Currency";
-            invoice_item.currency = Enum_Currency.USD;
-
-            invoice.invoice_items.add(invoice_item);
-
-
-            terminal_logger.debug("product_create:: Saving invoice");
-
-            terminal_logger.debug("product_create::  Creating Proforma in fakturoid");
-            invoice = Fakturoid_Controller.create_proforma(invoice);
-            if (invoice == null) return GlobalResult.result_badRequest("Failed to make an invoice, check your provided payment information");
-            terminal_logger.debug("product_create::  Proforma done");
-
-            invoice = GoPay_Controller.singlePayment("First Payment", product, invoice);
-
-            return Controller.ok(Json.toJson(invoice));
-            */
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }

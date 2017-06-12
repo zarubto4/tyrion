@@ -1,28 +1,29 @@
 package utilities.financial.extensions;
 
-import models.Model_ProductExtension.Config;
 import play.Configuration;
 import utilities.Server;
+import utilities.financial.extensions.configurations.Configuration_RestApi;
 
 public class Extension_RestApi implements Extension {
 
-    public static final String name = Configuration.root().getString("Financial.extensions.restApi.name");
-    public static final String description = Configuration.root().getString("Financial.extensions.restApi.description");
-    public static final Long price = Configuration.root().getLong("Financial.extensions.restApi.price");
-    public static final Integer count = 5;
+    public static final String name = Configuration.root().getString("Financial.extensions.rest_api.name");
+    public static final String description = Configuration.root().getString("Financial.extensions.rest_api.description");
+    public static final Long price = Configuration.root().getLong("Financial.extensions.rest_api.price");
 
     /*
      !!!Important!!!
      Final calculated price must be divided by Server.financial_spendDailyPeriod.
       */
-    public Long getActualPrice(Config config) {
+    public Long getActualPrice(Object configuration) {
 
-        return getDailyPrice(config) / Server.financial_spendDailyPeriod;
+        return getDailyPrice(configuration) / Server.financial_spendDailyPeriod;
     }
 
-    public Long getDailyPrice(Config config) {
+    public Long getDailyPrice(Object configuration) {
 
-        return config.price * config.count;
+        Configuration_RestApi restApi = ((Configuration_RestApi) configuration);
+
+        return restApi.price * restApi.available_requests;
     }
 
     public Long getDefaultMonthlyPrice() {
@@ -31,10 +32,6 @@ public class Extension_RestApi implements Extension {
 
     public Long getDefaultDailyPrice() {
         return price;
-    }
-
-    public Integer getDefaultCount() {
-        return count;
     }
 
     public String getName() {

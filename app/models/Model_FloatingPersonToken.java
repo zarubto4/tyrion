@@ -52,10 +52,6 @@ public class Model_FloatingPersonToken extends Model {
 
     @ApiModelProperty(required = true)                      public boolean social_token_verified;       // Pro ověření, že token byl sociální sítí ověřen
 
-    @ApiModelProperty(required = true)                      public boolean notification_subscriber;     // Pokud se s tímto tokenem frontend přihlásí k odebírání notifikací nastaví se mu hodnota true
-                                                                                                        // a to z důvodů rychlého filtrování, protože uživatel může být přihlášen na 50 zařízeních a na 15 odebírá notifikace
-                                                                                                        // v případě uzavření notifikačního kanálu se musí token přenastavit na false!
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 

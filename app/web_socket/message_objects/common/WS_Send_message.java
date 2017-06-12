@@ -75,19 +75,19 @@ public class WS_Send_message {
         try {
 
             if(this.messageId == null) {
-                terminal_logger.error("send_with_response:: messageId is null!!!");
+                terminal_logger.internalServerError("send_with_response:", new Exception("messageId is null."));
             }
 
             if(this.json == null){
-                terminal_logger.error("send_with_response:: Json is null!!!");
+                terminal_logger.internalServerError("send_with_response:", new Exception("JSON is null."));
             }
 
-            terminal_logger.trace("send_with_response:: Sending message: {} Message :: {} " , this.messageId, json );
+            terminal_logger.trace("send_with_response: Sending message: {} Message :: {} " , this.messageId, json );
 
             if(future != null) {
                 return future.get();
             }else {
-                terminal_logger.error("send_with_response:: future parameter is null");
+                terminal_logger.internalServerError("send_with_response:", new Exception("future parameter is null"));
                 throw new TimeoutException();
             }
         }catch (CancellationException e){
@@ -103,16 +103,20 @@ public class WS_Send_message {
         public ObjectNode call() throws Exception {
             try {
 
-               Thread.sleep(delay);
+                Thread.sleep(delay);
 
-               int i = 0;
+                int i = 0;
+
+                terminal_logger.trace("thread: ");
+
+                if (number_of_retries == null) throw new NullPointerException("Number of retries was null. MessageId was " + messageId + ". Message JSON was " + (json != null ? json : "null"));
 
                 while (number_of_retries >= 0) {
 
 
                     if(json != null) {
 
-                        terminal_logger.trace("thread:: MessageID:: {} , MessageType:: {} , Number of RetiresTime:: {} , RecurencyTime:: {} ", messageId, json.get("messageType"), number_of_retries, time);
+                        terminal_logger.trace("thread: MessageID:: {} , MessageType:: {} , Number of RetiresTime:: {} , RecurencyTime:: {} ", messageId, json.get("messageType"), number_of_retries, time);
 
                         sender_object.out.write(json.toString());
                         --number_of_retries;
@@ -124,24 +128,24 @@ public class WS_Send_message {
                         }
 
                     }else {
-                        terminal_logger.trace("thread:: MessageID:: {} , MessageType:: {} , Nothing for sending - just waiting for result - It can be from Compilator? Cycle:: {}", messageId, i++);
+                        terminal_logger.trace("thread: MessageID:: {} , MessageType:: {} , Nothing for sending - just waiting for result - It can be from Compilator? Cycle:: {}", messageId, i++);
                     }
 
                     Thread.sleep(time);
                 }
 
                 if(!sender_object.is_online())  {
-                    terminal_logger.error("thread:: MessageID:: {} , MessageType:: {} ,  Sender is offine!!! ", messageId ,  json.get("messageType"));
+                    terminal_logger.internalServerError("thread:", new Exception("Sender is offline. MessageID: " + messageId + ", MessageType: " + json.get("messageType")));
                     sender_object.close();
                 }
 
-                terminal_logger.error("thread:: Message ID:: {}  time is gone!! :( Responde with Error!!", messageId );
+                terminal_logger.internalServerError("thread:" , new Exception("Timeout. Responding with Error. Message ID: " + messageId));
                 return time_out_exception_error_response();
 
             }catch (InterruptedException|CancellationException e){
                 throw e;
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("call:", e);
                 throw e;
             }
         }
