@@ -370,13 +370,14 @@ public class Controller_Project extends Controller {
                     invitation.save();
                 }
 
-                String link =Server.becki_mainUrl + "/" +  Server.becki_invitationToCollaborate + URLEncoder.encode(mail, "UTF-8");
+                String link = Server.becki_mainUrl + "/" +  Server.becki_invitationToCollaborate + URLEncoder.encode(mail, "UTF-8");
 
                 // Odeslání emailu s linkem pro registraci
                 try {
 
                     new Email()
-                            .text("User " + Email.bold(Controller_Security.get_person().full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
+                            .text("User " + Email.bold(Controller_Security.get_person().full_name) + " invites you to collaborate on the project "
+                                    + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
                             .divider()
                             .link("Register here and collaborate",link)
                             .send(mail, "Invitation to Collaborate");

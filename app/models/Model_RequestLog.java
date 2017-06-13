@@ -21,7 +21,7 @@ public class Model_RequestLog extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                        @Id public String id;
+                        @Id public UUID id;
     @Column(unique = true)  public String request;
                             public Long call_count;
 
@@ -43,10 +43,6 @@ public class Model_RequestLog extends Model{
 
         date_of_create = new Date();
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (find.byId(this.id) == null) break;
-        }
         super.save();
     }
 
@@ -62,7 +58,7 @@ public class Model_RequestLog extends Model{
     @JsonIgnore @Override
     public void delete() {
 
-        terminal_logger.error("delete: This object is not legitimate to remove. ");
+        terminal_logger.debug("delete: Remove object value: {}",  this.id);
         super.delete();
     }
 
