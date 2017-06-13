@@ -147,6 +147,13 @@ public class Model_MProgramInstanceParameter extends Model {
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
                 summary.instance_id = get_instance().blocko_instance_name;
 
+
+                // Separátor verzí
+
+
+
+
+
                 return summary;
             }
 
@@ -232,6 +239,26 @@ public class Model_MProgramInstanceParameter extends Model {
 
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* Helper Class --------------------------------------------------------------------------------------------------------*/
+
+
+    private class M_Program_Parser{
+
+
+    }
+
+    private class Screen_Parser{
+
+    }
+
+    private class Main_Parser{
+
+    }
+
+    private class Widget_Parser{
+
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

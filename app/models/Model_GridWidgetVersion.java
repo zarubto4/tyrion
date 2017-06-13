@@ -64,6 +64,20 @@ public class Model_GridWidgetVersion extends Model{
         return help;
     }
 
+    @JsonIgnore
+    public Swagger_GridWidgetVersion_Short_Detail get_short_gridwidget_version_for_grid(){
+
+        Swagger_GridWidgetVersion_Short_Detail help = new Swagger_GridWidgetVersion_Short_Detail();
+        help.id = this.id;
+        // help.name = this.version_name;
+        // help.description = this.version_description;
+        // help.date_of_create = this.date_of_create;
+        help.design_json = this.design_json;
+        // help.author = this.author.get_short_person();
+
+        return help;
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
