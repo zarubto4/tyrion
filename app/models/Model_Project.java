@@ -63,7 +63,7 @@ public class Model_Project extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_name() { return product.name;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id() { return product.id;}
-    //@JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}
+
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
 
         List<Model_ProjectParticipant> project_participants = this.participants;

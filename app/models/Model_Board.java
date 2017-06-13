@@ -104,10 +104,10 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_name()       { return       project == null ? null : project.name; }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_version_name()     { return  actual_boot_loader == null ? null : actual_boot_loader.name; }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_id()               { return  actual_boot_loader == null ? null : actual_boot_loader.id;}
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_id()               { return  actual_boot_loader == null ? null : actual_boot_loader.id.toString();}
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_version_name()  { return  type_of_board.main_boot_loader  == null ? null :  type_of_board.main_boot_loader.name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_id()            { return  type_of_board.main_boot_loader  == null ? null :  type_of_board.main_boot_loader.id; }
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_id()            { return  type_of_board.main_boot_loader  == null ? null :  type_of_board.main_boot_loader.id.toString(); }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) List<Enum_Board_Alert> alert_list(){
         try {
@@ -903,6 +903,8 @@ public class Model_Board extends Model {
             procedure.type_of_update = type_of_update;
             procedure.save();
 
+            new Model_BootLoader().notification_bootloader_procedure_first_information_list(boot_loader, board_for_update);
+
             for (Model_Board board : board_for_update) {
                 List<Model_CProgramUpdatePlan> procedures_for_overriding = Model_CProgramUpdatePlan
                         .find
@@ -1045,6 +1047,10 @@ public class Model_Board extends Model {
                 return;
             }
 
+            // Teoretricky sem lze dát typy update procedury pro které je to platné - například
+            // Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL
+            Model_Board.notification_set_static_backup_procedure_first_information_list(board_for_update);
+
             List<Model_CProgramUpdatePlan> plans = new ArrayList<>();
 
             for (Model_BPair b_pair : board_for_update) {
@@ -1156,7 +1162,6 @@ public class Model_Board extends Model {
                 terminal_logger.internalServerError(e);
             }
         }).start();
-
     }
 
     @JsonIgnore @Transient
@@ -1178,6 +1183,65 @@ public class Model_Board extends Model {
                 terminal_logger.internalServerError(e);
             }
         }).start();
+    }
+
+    // Backup ......
+    @JsonIgnore
+    public static void notification_set_static_backup_procedure_first_information_single(Model_BPair board_for_update){
+        try {
+
+            new Thread( () -> {
+
+                new Model_Notification()
+                        .setImportance(Enum_Notification_importance.low)
+                        .setLevel(Enum_Notification_level.warning)
+                        .setText(new Notification_Text().setText("You set Static Backup program: "))
+                        .setObject(board_for_update.c_program_version.c_program)
+                        .setText(new Notification_Text().setText(", in Version "))
+                        .setObject(board_for_update.c_program_version)
+                        .setText(new Notification_Text().setText(" for device "))
+                        .setObject(board_for_update.board)
+                        .setText(new Notification_Text().setText(". "))
+                        .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
+                                "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
+                                "In the details of the instance or hardware overview, you can see the status of each procedure. " +
+                                "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
+                        .send_under_project(board_for_update.board.project_id());
+
+            }).start();
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notification_set_static_backup_procedure_first_information_single:", e);
+        }
+    }
+
+    @JsonIgnore
+    public static void notification_set_static_backup_procedure_first_information_list( List<Model_BPair> board_for_update){
+        try {
+
+            new Thread( () -> {
+
+                if( board_for_update.size() == 0 )  throw new IllegalArgumentException("notification_set_static_backup_procedure_first_information_list:: List is empty! ");
+                if( board_for_update.size() == 1 ){
+                    notification_set_static_backup_procedure_first_information_single(board_for_update.get(0));
+                    return;
+                }
+
+                new Model_Notification()
+                        .setImportance(Enum_Notification_importance.low)
+                        .setLevel(Enum_Notification_level.warning)
+                        .setText(new Notification_Text().setText("You set Static Backup program for Hardware Collection (" + board_for_update.size() + "). "))
+                        .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
+                                "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
+                                "In the details of the instance or hardware overview, you can see the status of each procedure. " +
+                                "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
+                        .send_under_project(board_for_update.get(0).board.project_id());
+
+            }).start();
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notification_set_static_backup_procedure_first_information_list:", e);
+        }
     }
 
 

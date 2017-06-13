@@ -8,7 +8,11 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
+import utilities.enums.Enum_Notification_importance;
+import utilities.enums.Enum_Notification_level;
 import utilities.logger.Class_Logger;
+import utilities.notifications.helps_objects.Becki_color;
+import utilities.notifications.helps_objects.Notification_Text;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -28,7 +32,7 @@ public class Model_BootLoader extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Id
-    @ApiModelProperty(required = true)    public String id;
+    @ApiModelProperty(required = true)    public UUID id;
 
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,
@@ -57,20 +61,79 @@ public class Model_BootLoader extends Model {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+    // Bootloader
+    @JsonIgnore
+    public void notification_bootloader_procedure_first_information_single(final Model_BootLoader bootLoader, final Model_Board board){
+        try {
+
+            new Thread( () -> {
+
+                new Model_Notification()
+                        .setImportance(Enum_Notification_importance.low)
+                        .setLevel(Enum_Notification_level.warning)
+                        .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
+                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(bootLoader.version_identificator + " "))
+                        .setText(new Notification_Text().setText(" for device"))
+                        .setObject(board)
+                        .setText(new Notification_Text().setText(". "))
+                        .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
+                                "Do not disconnect the device from the power supply during the update. " +
+                                "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! " +
+                                "We show you in hardware overview only what's currently on the device. " +
+                                "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
+                                "In the details of the instance or hardware overview, you can see the status of each procedure. " +
+                                "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
+                        .send_under_project(board.project_id());
+
+            }).start();
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notification_bootloader_procedure_first_information_single:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notification_bootloader_procedure_first_information_list(final Model_BootLoader bootLoader,  final List<Model_Board> boards){
+        try {
+
+            new Thread( () -> {
+
+                if( boards.size() == 0 )  throw new IllegalArgumentException("notification_set_static_backup_procedure_first_information_list:: List is empty! ");
+                if( boards.size() == 1 ) {
+                    notification_bootloader_procedure_first_information_single(bootLoader, boards.get(0));
+                    return;
+                }
+
+                new Model_Notification()
+                        .setImportance(Enum_Notification_importance.low)
+                        .setLevel(Enum_Notification_level.warning)
+                        .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
+                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(bootLoader.version_identificator + " "))
+                        .setText(new Notification_Text().setText("for " + boards.size() + " devices. "))
+                        .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
+                                "Do not disconnect the device from the power supply during the update. " +
+                                "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! " +
+                                "We show you in hardware overview only what's currently on the device. " +
+                                "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
+                                "In the details of the instance or hardware overview, you can see the status of each procedure. " +
+                                "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
+                        .send_under_project(boards.get(0).project_id());
+
+            }).start();
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notification_bootloader_procedure_first_information_list:", e);
+        }
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
-
-        while(true){
-            // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            this.azure_product_link = get_Container().getName() + "/" + this.id;
-            if (Model_BootLoader.find.byId(this.id) == null) break;
-        }
 
         super.save();
 

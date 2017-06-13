@@ -10,9 +10,11 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
+import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
+import javax.jws.WebParam;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -415,62 +417,65 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_complete(){
         try {
 
-            terminal_logger.warn("notification_update_procedure_complete :: operation ");
+            new Thread( () -> {
 
-            Model_Notification notification =  new Model_Notification();
+                terminal_logger.warn("notification_update_procedure_complete :: operation ");
 
-            notification.setImportance( Enum_Notification_importance.normal )
-                        .setLevel( Enum_Notification_level.success );
+                Model_Notification notification =  new Model_Notification();
 
-            // Individual update
-            if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
+                notification.setImportance( Enum_Notification_importance.normal )
+                            .setLevel( Enum_Notification_level.success );
 
-                if(state == Enum_Update_group_procedure_state.successful_complete) {
-                    notification.setText(new Notification_Text().setText("Update Procedure "))
-                            .setObject(this)
-                            .setText(new Notification_Text().setText(" is complete."));
-                } else{
-                    notification.setText(new Notification_Text().setText("Update Procedure "))
-                            .setObject(this)
-                            .setText(new Notification_Text().setText(" is set as complete but something is wrong. Check Update procedure details."));
+                // Individual update
+                if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
+
+                    if(state == Enum_Update_group_procedure_state.successful_complete) {
+                        notification.setText(new Notification_Text().setText("Update Procedure "))
+                                .setObject(this)
+                                .setText(new Notification_Text().setText(" is complete."));
+                    } else{
+                        notification.setText(new Notification_Text().setText("Update Procedure "))
+                                .setObject(this)
+                                .setText(new Notification_Text().setText(" is set as complete but something is wrong. Check Update procedure details."));
+                    }
+
+                    notification.send_under_project(get_project_id());
+                    return;
                 }
 
-                notification.send_under_project(get_project_id());
-                return;
-            }
+                if(state == Enum_Update_group_procedure_state.successful_complete) {
 
-            if(state == Enum_Update_group_procedure_state.successful_complete) {
-
-                notification.setText( new Notification_Text().setText("Update Procedure "))
-                        .setObject(this)
-                        .setText(new Notification_Text().setText(" started at: "))
-                        .setDate(date_of_create)
-                        .setText(new Notification_Text().setText(" is done with no errors or other issues."));
-
-                notification.send_under_project(get_project_id());
-                return;
-            }
-
-            if(state == Enum_Update_group_procedure_state.complete) {
-
-                notification.setText( new Notification_Text().setText("Update Procedure "))
+                    notification.setText( new Notification_Text().setText("Update Procedure "))
                             .setObject(this)
                             .setText(new Notification_Text().setText(" started at: "))
                             .setDate(date_of_create)
-                            .setText(new Notification_Text().setText(" is done but something is not right. For more information, please visit the update procedure details."));
+                            .setText(new Notification_Text().setText(" is done with no errors or other issues."));
 
-                notification.send_under_project(get_project_id());
-                return;
+                    notification.send_under_project(get_project_id());
+                    return;
+                }
 
-            }
+                if(state == Enum_Update_group_procedure_state.complete) {
 
+                    notification.setText( new Notification_Text().setText("Update Procedure "))
+                                .setObject(this)
+                                .setText(new Notification_Text().setText(" started at: "))
+                                .setDate(date_of_create)
+                                .setText(new Notification_Text().setText(" is done but something is not right. For more information, please visit the update procedure details."));
+
+                    notification.send_under_project(get_project_id());
+                    return;
+
+                }
+
+            }).start();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
     }
 
 
-/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  --------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 

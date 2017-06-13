@@ -203,7 +203,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
                 result.type_of_board            = typeOfBoard.target_name();
 
                 result.firmware_version_id      = firmware.c_compilations_binary_file.version_object.id;
-                result.bootloader_id            = bootloader.boot_loader.id;
+                result.bootloader_id            = bootloader.boot_loader.id.toString();
                 // Vložím Programy v base64
                 result.firmware_base64          = firmware.get_fileRecord_from_Azure_inString();
                 result.bootloader_base64        = bootloader.get_fileRecord_from_Azure_inString();
@@ -309,7 +309,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             if(state == Enum_Garfield_burning_state.complete) {
 
                 record.state = state;
-                record.bootloader_id = bootLoader.id;
+                record.bootloader_id = bootLoader.id.toString();
                 record.firmware_version_id = firmware_version.id;
                 record.full_id = help.full_id;
                 record.mac_address = help.mac_address;

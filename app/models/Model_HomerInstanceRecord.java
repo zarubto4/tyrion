@@ -305,89 +305,6 @@ public class Model_HomerInstanceRecord extends Model {
         }
     }
 
-    @JsonIgnore @Transient
-    public void add_new_actualization_request_bootloader() {
-        try {
-
-            // Projedu seznam HW - podle skupin instancí jak jsou poskládané podle Yody
-            for(Model_BProgramHwGroup group : version_object.b_program_hw_groups) {
-
-                Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
-                procedure.date_of_create = new Date();
-                procedure.state = Enum_Update_group_procedure_state.not_start_yet;
-                procedure.homer_instance_record = this;
-
-                // ID C_programu aktuálního != požadovanému -> zařadím do aktualizační procedury!
-                if(!group.main_board_pair.board.actual_boot_loader.id.equals(group.main_board_pair.board.type_of_board.main_boot_loader.id)){
-
-                    Model_CProgramUpdatePlan plan_master_board = new Model_CProgramUpdatePlan();
-                    plan_master_board.board = group.main_board_pair.board;
-                    plan_master_board.firmware_type = Enum_Firmware_type.BOOTLOADER;
-                    plan_master_board.state = Enum_CProgram_updater_state.not_start_yet;
-                    plan_master_board.bootloader = group.main_board_pair.board.type_of_board.main_boot_loader;
-                    procedure.updates.add(plan_master_board);
-
-                }
-
-
-                for (Model_BPair pair : group.device_board_pairs) {
-
-                    //1. Najdu předchozí procedury, které nejsou nějakým způsobem ukončené
-                    List<Model_CProgramUpdatePlan> old_plans = Model_CProgramUpdatePlan.find.where()
-                            .eq("board.id", pair.board.id).where()
-                            .eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name())
-                            .disjunction()
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                            .add(Expr.isNull("state"))
-                            .endJunction()
-                            .findList();
-
-                    //2 Měl bych zkontrolovat zda ještě nejsou nějaké aktualizace v chodu
-                    terminal_logger.debug("add_new_actualization_request_bootloader:: The number still valid update plans that must be override: {}", old_plans.size());
-
-                    //3. Neukončené procedury ukončím
-                    for (Model_CProgramUpdatePlan old_plan : old_plans) {
-                        terminal_logger.debug("add_new_actualization_request_bootloader:: Old plan for override under B_Program in Cloud: {}", old_plan.id);
-                        old_plan.state = Enum_CProgram_updater_state.overwritten;
-                        old_plan.update();
-                    }
-
-
-                    if(!pair.c_program_version_id().equals(pair.board.actual_c_program_version.id)) {
-                        terminal_logger.debug("add_new_actualization_request_bootloader:: Crating new update plan procedure ");
-                        // Vytvářím nový aktualizační plán protože požadovaná verze je jiná než aktuální!!
-
-                        Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
-                        plan.board = pair.board;
-                        plan.firmware_type = Enum_Firmware_type.BOOTLOADER;
-                        plan.state = Enum_CProgram_updater_state.not_start_yet;
-                        plan.c_program_version_for_update = pair.c_program_version;
-                        plan.actualization_procedure = procedure;
-                        procedure.updates.add(plan);
-
-                        terminal_logger.debug("add_new_actualization_request_bootloader:: Crating update procedure done");
-                    }
-                }
-
-                // Mohu nahrávat instanci která nemusí mít vůbec žádný update hardwaru a tak je zbytečné vytvářet objekt
-                if(procedure.updates.size() > 0){
-                    this.procedures.add(procedure);
-                    procedure.save();
-
-                    terminal_logger.debug("add_new_actualization_request_bootloader:: Sending new Actualization procedure to Master Updater");
-                    Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
-                }
-            }
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
-    }
-
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     public class Homer_InstanceRecord_Short_detail{
@@ -399,6 +316,7 @@ public class Model_HomerInstanceRecord extends Model {
 
 
     }
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

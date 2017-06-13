@@ -174,6 +174,7 @@ public class Model_CompilationServer extends Model {
     }
 
     @JsonIgnore @Transient public  void check_after_connection(){
+
         // Po připojení compilačního serveru s nastartuje procedura zpětné kompilace všeho.
         // Předpoklad je že se připojí více serverů (třeba po pádu nebo udpatu) a tím by došlo k průseru kdy by si
         // servery kompilovali verze navzájem.
@@ -186,6 +187,8 @@ public class Model_CompilationServer extends Model {
             terminal_logger.debug("check_after_connection:: 0 c_program versions for compilations");
             return;
         }
+
+        make_log_connect();
 
         // b) pokud ano pošlu to do Compilation_After_BlackOut
         Compilation_After_BlackOut.getInstance().start(this);

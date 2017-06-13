@@ -88,14 +88,12 @@ public class Model_CProgramUpdatePlan extends Model {
         if(bootloader == null ) return null;
 
         Bootloader_Update_program bootloader_update_detail  = new  Bootloader_Update_program();
-        bootloader_update_detail.bootloader_id                      = bootloader.id;
+        bootloader_update_detail.bootloader_id                      = bootloader.id.toString();
         bootloader_update_detail.bootloader_name                    = bootloader.name;
         bootloader_update_detail.version_identificator   = bootloader.version_identificator;
 
         return bootloader_update_detail;
     }
-
-
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
     public Board_detail board_detail(){
@@ -137,7 +135,7 @@ public class Model_CProgramUpdatePlan extends Model {
         }
 
         if(detail.firmware_type == Enum_Firmware_type.BOOTLOADER ){
-            detail.bootloader_id           = bootloader.id;
+            detail.bootloader_id           = bootloader.id.toString();
             detail.bootloader_name         = bootloader.name;
             detail.version_identificator   = bootloader.version_identificator;
         }

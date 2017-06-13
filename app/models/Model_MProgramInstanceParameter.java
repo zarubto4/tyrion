@@ -185,6 +185,7 @@ public class Model_MProgramInstanceParameter extends Model {
                 summary.url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
                 summary.token = connection_token();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
+                summary.instance_id = get_instance().blocko_instance_name;
 
                 return summary;
             }
@@ -198,6 +199,7 @@ public class Model_MProgramInstanceParameter extends Model {
                 summary.url += instance.cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
                 summary.token = request_connection_token;
+                summary.instance_id = get_instance().blocko_instance_name;
 
                 return summary;
 
@@ -229,6 +231,7 @@ public class Model_MProgramInstanceParameter extends Model {
                 summary.url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + terminal.terminal_token;
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
                 summary.token = terminal.terminal_token;
+                summary.instance_id = get_instance().blocko_instance_name;
 
                 return summary;
             }
@@ -239,6 +242,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
                 summary.url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
+                summary.instance_id = get_instance().blocko_instance_name;
 
                 return summary;
             }
