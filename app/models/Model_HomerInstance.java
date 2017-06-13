@@ -732,7 +732,7 @@ public class Model_HomerInstance extends Model {
                         for(Model_MProjectProgramSnapShot snap_shot : latest_version.version_object.b_program_version_snapshots){
 
                             // Programy
-                            for(Model_MProgramInstanceParameter old_parameter : snap_shot.m_program_snapshots()){
+                            for(Model_MProgramInstanceParameter old_parameter : snap_shot.m_program_parameter_snapshots()){
 
 
                                 Model_MProgramInstanceParameter new_parameter = Model_MProgramInstanceParameter.find.where()

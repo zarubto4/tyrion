@@ -1734,6 +1734,7 @@ public class Controller_Board extends Controller {
                     if (!board.read_permission()) return GlobalResult.result_forbidden();
                 }
 
+                // Aktuální Bootloader ID
                 Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards, null);
             }
 

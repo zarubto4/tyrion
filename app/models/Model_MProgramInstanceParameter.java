@@ -51,32 +51,6 @@ public class Model_MProgramInstanceParameter extends Model {
 
     public static final String parameter_prefix = "part_";
 
-    @JsonProperty @Transient String connection_token(){
-
-        // If there is no instance - token is not required for showing.
-        if(get_instance() == null) {
-            return null;
-
-        }else {
-
-            if( snapshot_settings() == Enum_MProgram_SnapShot_settings.absolutely_public  && ( connection_token == null || connection_token.length() < 1) ){
-
-                System.out.println("connection_token() absolutely_public nastavuji UUID");
-                connection_token = parameter_prefix + UUID.randomUUID().toString();   // parameter token _
-                this.update();
-            }else {
-
-                System.out.println("connection_token() absolutely_public UUID je nastavené ");
-            }
-
-
-        }
-
-
-            return connection_token;
-
-    }
-
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public Enum_MProgram_SnapShot_settings snapshot_settings()  {
 
         if( get_instance() == null) return Enum_MProgram_SnapShot_settings.not_in_instance;
@@ -90,47 +64,13 @@ public class Model_MProgramInstanceParameter extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String grid_app_url()  {
 
-      switch (snapshot_settings()){
-
-          case not_in_instance:{
+          if( snapshot_settings() == Enum_MProgram_SnapShot_settings.not_in_instance){
                   return null;
           }
 
+          // Má předgenerovaný token - který svou platnost pozbývá jen zrušením (přechodem na jiný typ sdílení)
+          return Server.grid_app_main_url + "/" + connection_token();
 
-            case absolutely_public:{
-
-                // Má předgenerovaný token - který svou platnost pozbývá jen zrušením (přechodem na jiný typ sdílení)
-
-                return Server.grid_app_main_url + "/grid?"
-                        + "p="      + this.id.toString()                      // p >> id
-                        + "&t="       + connection_token()                    // t >> conection token
-                        + "&l=1";
-            }
-
-            case public_with_token:{
-
-                return Server.grid_app_main_url + "/grid?"
-                        + "p="      + this.id.toString()                      // p >> id
-                        + "&l=1";
-            }
-
-            case only_for_project_members:{
-
-                return Server.grid_app_main_url + "/grid?"
-                        + "p="      + this.id.toString()                      // p >> id
-                        + "&l=1";
-            }
-
-            case only_for_project_members_and_imitated_emails:{
-
-                return Server.grid_app_main_url + "/grid?"
-                        + "p="      + this.id.toString()                      // p >> id
-                        + "&l=1";
-            }
-        }
-
-        terminal_logger.error("grid_app_url:: Not recognize snapshot_settings");
-        return null;
     }
 
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String m_program_id()  { return m_program_version.m_program.id;}
@@ -153,13 +93,34 @@ public class Model_MProgramInstanceParameter extends Model {
         return instance;
     }
 
-    /**
-     *
-     * @param request_connection_token - Can be null!!
-     * @return Swagger_Mobile_Connection_Summary
-     * @throws VerifyError
-     */
-    @JsonIgnore  @Transient public Swagger_Mobile_Connection_Summary get_connection_summary(String request_connection_token, Http.Context context) throws Tyrion_Exp_ForbidenPermission, Tyrion_Exp_ObjectNotValidAnymore, Tyrion_Exp_Unauthorized {
+
+    @JsonIgnore @Transient String connection_token(){
+
+        // If there is no instance - token is not required for showing.
+        if(get_instance() == null) {
+            return null;
+
+        }else {
+
+            if( snapshot_settings() == Enum_MProgram_SnapShot_settings.absolutely_public  && ( connection_token == null || connection_token.length() < 1) ){
+
+                System.out.println("connection_token() absolutely_public nastavuji UUID");
+                connection_token = parameter_prefix + UUID.randomUUID().toString();   // parameter token _
+                this.update();
+            }else {
+
+                System.out.println("connection_token() absolutely_public UUID je nastavené ");
+            }
+
+
+        }
+
+
+        return connection_token;
+
+    }
+
+    @JsonIgnore  @Transient public Swagger_Mobile_Connection_Summary get_connection_summary(Http.Context context) throws Tyrion_Exp_ForbidenPermission, Tyrion_Exp_ObjectNotValidAnymore, Tyrion_Exp_Unauthorized {
 
         // OBJEKT který se variabilně naplní a vrátí
         Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
@@ -167,9 +128,9 @@ public class Model_MProgramInstanceParameter extends Model {
 
         // Nastavení SSL
         if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-            summary.url = "ws://";
+            summary.grid_app_url = "ws://";
         }else{
-            summary.url = "wss://";
+            summary.grid_app_url = "wss://";
         }
 
         switch (snapshot_settings()){
@@ -182,28 +143,13 @@ public class Model_MProgramInstanceParameter extends Model {
 
             case absolutely_public:{
 
-                summary.url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
-                summary.token = connection_token();
+                summary.grid_app_url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
                 summary.instance_id = get_instance().blocko_instance_name;
 
                 return summary;
             }
 
-            case public_with_token:{
-
-                if( request_connection_token == null){
-                    throw new Tyrion_Exp_Unauthorized("Token is required");
-                }
-
-                summary.url += instance.cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
-                summary.m_program = Model_MProgram.get_m_code(m_program_version);
-                summary.token = request_connection_token;
-                summary.instance_id = get_instance().blocko_instance_name;
-
-                return summary;
-
-            }
 
             case only_for_project_members:{
 
@@ -228,24 +174,25 @@ public class Model_MProgramInstanceParameter extends Model {
                 terminal.person = person;
                 terminal.save();
 
-                summary.url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + terminal.terminal_token;
+                summary.grid_app_url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + terminal.terminal_token;
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
-                summary.token = terminal.terminal_token;
                 summary.instance_id = get_instance().blocko_instance_name;
 
                 return summary;
             }
 
 
-            // TODO doimplementovat
+            /* TODO doimplementovat v budoucnu
+
             case only_for_project_members_and_imitated_emails:{
 
-                summary.url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
+                summary.grid_app_url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
                 summary.instance_id = get_instance().blocko_instance_name;
 
                 return summary;
             }
+            */
 
         }
 
@@ -283,46 +230,6 @@ public class Model_MProgramInstanceParameter extends Model {
         super.save();
     }
 
-
-    @JsonIgnore @Transient
-    public void synchronize() {
-
-        terminal_logger.debug("Update :: Save object Id: {}",  this.id);
-
-        switch (snapshot_settings()){
-
-            case not_in_instance:{
-                if(connection_token != null) connection_token = null;
-                break;
-            }
-
-            case absolutely_public:{
-                if(connection_token != null) connection_token = null;
-                break;
-            }
-
-            case public_with_token:{
-
-                if(connection_token == null || connection_token.length() < 1){
-                    this.connection_token = UUID.randomUUID().toString() + "-" +  UUID.randomUUID().toString() + "-" +  UUID.randomUUID().toString();
-                }
-
-                break;
-            }
-
-            case only_for_project_members:{
-                if(connection_token != null) connection_token = null;
-                break;
-            }
-
-            case only_for_project_members_and_imitated_emails:{
-                if(connection_token != null) connection_token = null;
-                break;
-            }
-        }
-
-
-    }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 

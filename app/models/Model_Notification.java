@@ -12,10 +12,7 @@ import play.libs.Json;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.notifications.NotificationHandler;
-import utilities.notifications.helps_objects.Notification_Button;
-import utilities.notifications.helps_objects.Notification_Date;
-import utilities.notifications.helps_objects.Notification_Link;
-import utilities.notifications.helps_objects.Notification_Text;
+import utilities.notifications.helps_objects.*;
 import utilities.swagger.outboundClass.Swagger_Notification_Button;
 import utilities.swagger.outboundClass.Swagger_Notification_Element;
 import web_socket.services.WS_Becki_Website;
@@ -137,6 +134,12 @@ public class Model_Notification extends Model {
     @JsonIgnore @Transient
     public Model_Notification setText(Notification_Text text){
         array.add(text.element);
+        return this;
+    }
+
+    @JsonIgnore @Transient
+    public Model_Notification setnewLine(){
+        array.add( new Notification_NewLine().element );
         return this;
     }
 

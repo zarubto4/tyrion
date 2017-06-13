@@ -366,6 +366,34 @@ public class Model_ActualizationProcedure extends Model {
 
             Model_Notification notification =  new Model_Notification();
 
+
+            // Single Update
+            if(this.updates.size() == 1 && ( type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP) ){
+
+                terminal_logger.debug("notification_update_procedure_final_report :: Notification is for single update");
+
+                // Bootloader
+                if(this.updates.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER) {
+
+                    terminal_logger.debug("notification_update_procedure_final_report :: Single Update bootloader");
+
+                    Model_BootLoader.notification_bootloader_procedure_success_information_single(this.updates.get(0));
+                    return;
+                }
+
+                // Backup
+                if(this.updates.get(0).firmware_type == Enum_Firmware_type.BACKUP) {
+
+                    terminal_logger.debug("notification_update_procedure_final_report :: Single Update backup");
+                    terminal_logger.debug("TODOTOTO TODO TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  ");
+
+                }
+
+
+            }
+
+
+
             notification.setImportance( Enum_Notification_importance.low )
                         .setLevel( Enum_Notification_level.success );
 
@@ -399,11 +427,13 @@ public class Model_ActualizationProcedure extends Model {
                     .setText(new Notification_Text().setText("Successfully updated: " + successfully_updated + ". " ));
 
             if(waiting_for_device != 0){
-                notification.setText(new Notification_Text().setText("Unavailable \"offline\" devices: "  + waiting_for_device + ". " ));
+                notification.setnewLine();
+                notification.setText(new Notification_Text().setText("-> Unavailable \"offline\" devices: "  + waiting_for_device + ". " ));
             }
 
             if(error_device != 0){
-                notification.setText(new Notification_Text().setText("Unsuccessful updates "  + error_device + ". " ));
+                notification.setnewLine();
+                notification.setText(new Notification_Text().setText("-> Unsuccessful updates "  + error_device + ". " ));
             }
             
             notification.send_under_project(get_project_id());

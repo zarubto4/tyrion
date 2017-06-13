@@ -612,8 +612,12 @@ public class Model_Board extends Model {
                    continue;
                }
 
-               if(procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP){
+               if(procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP
+                       || procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME
+                       || procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
+
                    new Thread(procedure::notification_update_procedure_final_report).start();
+
                }
 
 
@@ -891,8 +895,10 @@ public class Model_Board extends Model {
     }
 
     @JsonIgnore @Transient public static void update_bootloader(Enum_Update_type_of_update type_of_update, List<Model_Board> board_for_update, Model_BootLoader boot_loader){
-        // Attention!! Value  boot_loader can be null - in this case - system will used
 
+        // Attention!!
+        // Value  boot_loader can be null - in this case - system will used
+        // Attention!!
         try {
 
             terminal_logger.debug("update_bootloader :: operation");
@@ -903,7 +909,8 @@ public class Model_Board extends Model {
             procedure.type_of_update = type_of_update;
             procedure.save();
 
-            new Model_BootLoader().notification_bootloader_procedure_first_information_list(boot_loader, board_for_update);
+
+
 
             for (Model_Board board : board_for_update) {
                 List<Model_CProgramUpdatePlan> procedures_for_overriding = Model_CProgramUpdatePlan
@@ -937,6 +944,8 @@ public class Model_Board extends Model {
 
                 }
 
+
+
                 Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
                 plan.board = board;
 
@@ -958,6 +967,9 @@ public class Model_Board extends Model {
             }
 
             procedure.refresh();
+
+            Model_BootLoader.notification_bootloader_procedure_first_information_list(procedure.updates);
+
             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
 
         }catch (Exception e){

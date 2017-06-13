@@ -374,8 +374,6 @@ DELETE    /m_program/version/:m_program_version_id                      @control
 
 # Terminals Aps
 GET       /m_program/app/token/*qr_token                                @controllers.Controller_Grid.get_M_Program_byQR_Token_forMobile(qr_token)
-GET       /m_program/app/all_m_programs                                 @controllers.Controller_Grid.get_M_Project_all_forTerminal()
-PUT       /m_program/app/url                                            @controllers.Controller_Grid.get_conection_url()
 
 PUT       /websocket/terminal/identificator                             @controllers.Controller_Grid.get_identificator()
 PUT       /websocket/terminal/identificator/:terminal_id                @controllers.Controller_Grid.check_identifiactor(terminal_id)

@@ -138,18 +138,11 @@ public class NotificationHandler {
                         message.put("id", notification.id);
                         terminal_logger.debug("sendNotification: Notification has its own ID: {}" , notification.id);
 
-                    }else {
-                        if(notification.id == null) {
+                    }
 
-                            // TODO Tomáš - není zavádějící přidávat to JSONu id notifikace, když je to nesmyslná hodnota? Když se notifikace neuloží do databáze, tak není nutné znát id.
-                            message.put("id", UUID.randomUUID().toString());
-                            terminal_logger.debug("sendNotification: Notification has not own id and its not set for save ID:" +  message.get("id").asText());
-                        }else {
 
-                            // TODO proč 2x?
-                            message.put("id", notification.id);
-                            message.put("notification_id", notification.id);
-                        }
+                    if(notification.id == null) {
+                        message.put("id", UUID.randomUUID().toString());
                     }
 
                     // Send notification to all user's websocket connections

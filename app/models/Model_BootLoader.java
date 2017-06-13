@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
+import utilities.enums.Enum_Notification_type;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 
 @Entity
 @ApiModel(description = "Model of BootLoader",
@@ -64,55 +66,87 @@ public class Model_BootLoader extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+
+
     // Bootloader
     @JsonIgnore
-    public void notification_bootloader_procedure_first_information_single(final Model_BootLoader bootLoader, final Model_Board board){
+    public static void notification_bootloader_procedure_first_information_single(Model_CProgramUpdatePlan plan){
         try {
 
-            new Thread( () -> {
+                        new Model_Notification()
+                                .setImportance(Enum_Notification_importance.low)
+                                .setLevel(Enum_Notification_level.warning)
+                                .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
+                                .setId(plan.id)
+                                .setText(new Notification_Text().setText("Attention. You have entered the bootloader update command for Bootloader version "))
+                                .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
+                                .setText(new Notification_Text().setText(" for device "))
+                                .setObject(plan.board)
+                                .setText(new Notification_Text().setText(". "))
+                                .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
+                                        "Do not disconnect the device from the power supply during the update. " +
+                                        "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! "))
+                                .setnewLine()
+                                .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
+                                        "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
+                                        "In the details of the instance or hardware overview, you can see the status of each procedures. " +
+                                        "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
+                                .send_under_project(plan.board.project_id());
 
-                new Model_Notification()
-                        .setImportance(Enum_Notification_importance.low)
-                        .setLevel(Enum_Notification_level.warning)
-                        .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
-                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(bootLoader.version_identificator + " "))
-                        .setText(new Notification_Text().setText(" for device"))
-                        .setObject(board)
-                        .setText(new Notification_Text().setText(". "))
-                        .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
-                                "Do not disconnect the device from the power supply during the update. " +
-                                "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! " +
-                                "We show you in hardware overview only what's currently on the device. " +
-                                "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
-                                "In the details of the instance or hardware overview, you can see the status of each procedure. " +
-                                "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(board.project_id());
-
-            }).start();
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notification_bootloader_procedure_first_information_single:", e);
         }
     }
 
+    // Bootloader
     @JsonIgnore
-    public void notification_bootloader_procedure_first_information_list(final Model_BootLoader bootLoader,  final List<Model_Board> boards){
+    public static void notification_bootloader_procedure_success_information_single(Model_CProgramUpdatePlan plan){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.low)
+                    .setLevel(Enum_Notification_level.success)
+                    .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
+                    .setId(plan.id)
+                    .setText(new Notification_Text().setText("Success! Bootloader update is done! Version "))
+                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
+                    .setText(new Notification_Text().setText(" for device "))
+                    .setObject(plan.board)
+                    .setText(new Notification_Text().setText(". "))
+                    .setText(new Notification_Text().setText("Have a nice Day!"))
+                    .send_under_project(plan.board.project_id());
+
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("notification_bootloader_procedure_first_information_single:", e);
+        }
+    }
+
+
+
+
+
+    @JsonIgnore
+    public static void notification_bootloader_procedure_first_information_list(List<Model_CProgramUpdatePlan> plans){
         try {
 
             new Thread( () -> {
 
-                if( boards.size() == 0 )  throw new IllegalArgumentException("notification_set_static_backup_procedure_first_information_list:: List is empty! ");
-                if( boards.size() == 1 ) {
-                    notification_bootloader_procedure_first_information_single(bootLoader, boards.get(0));
+                if( plans.size() == 0 )  throw new IllegalArgumentException("notification_set_static_backup_procedure_first_information_list:: List is empty! ");
+                if( plans.size() == 1 ) {
+                    notification_bootloader_procedure_first_information_single(plans.get(0));
                     return;
                 }
 
                 new Model_Notification()
                         .setImportance(Enum_Notification_importance.low)
                         .setLevel(Enum_Notification_level.warning)
+                        .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
+                        .setId(plans.get(0).actualization_procedure.id)
                         .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
-                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(bootLoader.version_identificator + " "))
-                        .setText(new Notification_Text().setText("for " + boards.size() + " devices. "))
+                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).bootloader.version_identificator + " "))
+                        .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))
                         .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
                                 "Do not disconnect the device from the power supply during the update. " +
                                 "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! " +
@@ -120,7 +154,7 @@ public class Model_BootLoader extends Model {
                                 "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                                 "In the details of the instance or hardware overview, you can see the status of each procedure. " +
                                 "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(boards.get(0).project_id());
+                        .send_under_project(plans.get(0).board.project_id());
 
             }).start();
 

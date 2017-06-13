@@ -26,6 +26,7 @@ public class Swagger_Notification_Element {
     @ApiModelProperty(required =  true)                                 public boolean button = false;
 
 
+
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public Date date           = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String url          = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String name         = null;

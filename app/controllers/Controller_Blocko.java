@@ -897,9 +897,6 @@ public class Controller_Blocko extends Controller{
             // Měním parameter
             program_parameter.snapshot_settings = settings;
 
-            // Měním oprávnění - Uvnitř třídy update se vše provede
-            program_parameter.synchronize();
-
             // Update
             program_parameter.update();
 

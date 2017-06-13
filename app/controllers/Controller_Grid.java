@@ -699,22 +699,20 @@ public class Controller_Grid extends Controller {
     public Result get_M_Program_byQR_Token_forMobile(String qr_token){
         try{
 
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Parameter id: "      + request().getQueryString("p"));
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Connection token: "  + request().getQueryString("t"));
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Lock: "              + request().getQueryString("l"));
 
+            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Connection token: " + qr_token);
 
-            Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.byId(request().getQueryString("p"));
+            Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find
+                    .where()
+                    .eq("connection_token" , qr_token)
+                    .isNotNull("m_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
+                    .findUnique();
+
             if(parameter == null) return GlobalResult.result_notFound("Parameter p not found in database");
-
-
-            if(parameter.snapshot_settings() == Enum_MProgram_SnapShot_settings.not_in_instance){
-                return GlobalResult.result_badRequest("QR token is not valid anymore");
-            }
 
             try{
 
-                return GlobalResult.result_ok(Json.toJson(parameter.get_connection_summary( request().getQueryString("t"), ctx() )));
+                return GlobalResult.result_ok(Json.toJson(parameter.get_connection_summary( ctx())));
 
             }catch (Tyrion_Exp_ForbidenPermission e){
 
@@ -736,138 +734,6 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all M_Project( Programs) by Logged Person",
-            tags = {"APP-Api"},
-            notes = "get list of M_Programs by logged Person accasable and connectable to Homer server",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Mobile_M_Project_Snapshot.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_API.class)
-    public Result get_M_Project_all_forTerminal(){
-        try{
-
-            List<Model_HomerInstanceRecord> list = Model_HomerInstanceRecord.find.where()
-                    .isNotNull("actual_running_instance")
-                        .eq("main_instance_history.b_program.project.participants.person.id",  Controller_Security.get_person().id)
-                        .select("version_object")
-                        .select("main_instance_history")
-                    .select("id")
-                    .findList();
-
-
-            List<Swagger_Mobile_M_Project_Snapshot> result = new ArrayList<>();
-            for(Model_HomerInstanceRecord instnace_record : list){
-
-                Swagger_Mobile_M_Project_Snapshot o = new Swagger_Mobile_M_Project_Snapshot();
-                o.b_program_name = instnace_record.main_instance_history.b_program_name();
-                o.b_program_description = instnace_record.main_instance_history.b_program_description();
-
-                o.instance_record_id = instnace_record.id;
-                o.snapshots = instnace_record.m_project_snapshot();
-
-                result.add(o);
-            }
-
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get url + m_program code for Terminal",
-            tags = {"APP-Api"},
-            notes = "",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Mobile_Connection_Request",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created",    response = Swagger_Mobile_Connection_Summary.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 477, message = "Instance is offline",     response = Result_BadRequest.class),
-            @ApiResponse(code = 478, message = "External Server Error",   response = Result_BadRequest.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_API.class)
-    public Result get_conection_url(){
-        try{
-
-            final Form<Swagger_Mobile_Connection_Request> form = Form.form(Swagger_Mobile_Connection_Request.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_Mobile_Connection_Request help = form.get();
-
-            Model_HomerInstanceRecord record = Model_HomerInstanceRecord.find.byId(help.instance_record_id);
-            if(record == null) return GlobalResult.result_notFound("Instance not found");
-
-
-            // Uživatelům dovolíme se připojit na offline instanci - odpovědnost a vysvětlení přebírá Grid APP
-            if(record.actual_running_instance == null){
-                return GlobalResult.result_badRequest("Actual Instance is missing!");
-            }
-
-            if(!record.actual_running_instance.instance_online()){
-                return GlobalResult.result_externalServerIsOffline("Instance is offline");
-            }
-
-            Model_VersionObject version_object = Model_VersionObject.find.where().eq("id", help.version_object_id).isNotNull("m_program").findUnique();
-            if(version_object == null) return GlobalResult.result_notFound("Version M_program_Version not found");
-
-
-            if(version_object.b_program == null) System.out.println("b_program == null");
-            if(version_object.m_program == null) System.out.println("m_program == null");
-
-            if(!version_object.m_program.read_permission()) return GlobalResult.result_forbidden();
-
-            Model_HomerServer server = Model_HomerServer.find.where().eq("cloud_instances.instance_history.id", help.instance_record_id).findUnique();
-            if(server == null){
-                return GlobalResult.result_notFound("Server not found");
-            }
-
-            terminal_logger.debug("get_conection_url:: record ID:: "           + record.id);
-            terminal_logger.debug("get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance.blocko_instance_name);
-            terminal_logger.debug("get_conection_url:: cloud_homer_server identificator::"             + server.unique_identificator);
-            terminal_logger.debug("get_conection_url:: cloud_homer_server Grid Port::"                 + server.grid_port);
-
-
-            Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
-
-            if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-                summary.url = "ws://" + server.server_url + ":" + server.grid_port + "/" + record.actual_running_instance.blocko_instance_name + "/";
-            }else {
-                summary.url = "wss://" + server.server_url + ":" + server.grid_port + "/" + record.actual_running_instance.blocko_instance_name + "/";
-            }
-
-            summary.m_program = Model_MProgram.get_m_code(version_object);
-
-            return GlobalResult.result_created(Json.toJson(summary));
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
 
     @ApiOperation(value = "check Terminal terminal_id",
             tags = {"APP-Api"},

@@ -44,7 +44,7 @@ public class Model_MProjectProgramSnapShot extends Model {
     @JsonProperty @ApiModelProperty(required = true) public boolean admin_permission ()    {return true;}
 
 
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProgramInstanceParameter> m_program_snapshots(){
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProgramInstanceParameter> m_program_parameter_snapshots(){
         try{
 
             return m_program_snapshots;

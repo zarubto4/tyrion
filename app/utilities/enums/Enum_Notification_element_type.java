@@ -8,7 +8,8 @@ public enum Enum_Notification_element_type {
     @EnumValue("link")    link,
     @EnumValue("object")  object,
     @EnumValue("text")    text,
-    @EnumValue("date")    date;
+    @EnumValue("date")    date,
+    @EnumValue("newLine") newLine;
 
     @JsonCreator
     public static Enum_Notification_element_type fromString(String key) {
