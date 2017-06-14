@@ -104,7 +104,7 @@ public class Check_Board_Status_after_homer_connection  extends Thread{
                            }
 
                         }catch (Exception e){
-                            terminal_logger.internalServerError(e);
+                            terminal_logger.internalServerError("run:", e);
                         }
                     }
 
@@ -116,7 +116,7 @@ public class Check_Board_Status_after_homer_connection  extends Thread{
             model_server.check_HW_updates_on_server();
 
         }catch(Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("run:", e);
 
         }
     }

@@ -69,7 +69,7 @@ public class Model_MProject extends Model {
             return swagger_m_project_short_detail;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_short_m_project:", e);
             return null;
         }
     }

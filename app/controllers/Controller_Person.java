@@ -107,7 +107,7 @@ public class Controller_Person extends Controller {
                             .send(validationToken.personEmail, "Email Verification");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("person_create:", e);
                 }
 
             }else{
@@ -115,9 +115,16 @@ public class Controller_Person extends Controller {
                 person.update();
 
                 try {
+
                     NotificationActionHandler.perform(Enum_Notification_action.accept_project_invitation, invitation.id);
-                }catch(Exception e){
-                    // TODO co vrátit?
+
+                } catch (IllegalArgumentException e) {
+
+                    person.notification_error(e.getMessage());
+
+                } catch (Exception e) {
+
+                    terminal_logger.internalServerError("person_create:", e);
                 }
             }
 
@@ -201,7 +208,7 @@ public class Controller_Person extends Controller {
                         .send(validationToken.personEmail, "Email Verification");
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("person_authenticationSendEmail:", e);
             }
 
             return GlobalResult.result_ok();
@@ -274,7 +281,7 @@ public class Controller_Person extends Controller {
                         .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("person_passwordRecoverySendEmail:", e);
             }
             return GlobalResult.result_ok();
         }catch (Exception e) {
@@ -348,7 +355,7 @@ public class Controller_Person extends Controller {
                         .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("person_passwordRecovery:", e);
             }
 
             return GlobalResult.result_ok("Password was changed successfully");
@@ -964,7 +971,7 @@ public class Controller_Person extends Controller {
                         .send(Controller_Security.get_person().mail, subject);
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("person_changeLoginProperty:", e);
             }
 
             return GlobalResult.result_ok("Change was requested. You must authorize the change in next 4 hours via your email. Authorization email was sent.");
@@ -1020,7 +1027,7 @@ public class Controller_Person extends Controller {
                                 .send(validationToken.personEmail, "Email Verification");
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        terminal_logger.internalServerError("person_authorizePropertyChange:", e);
                     }
                     break;
                 }

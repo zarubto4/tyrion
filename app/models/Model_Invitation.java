@@ -34,8 +34,22 @@ public class Model_Invitation extends Model{
     @JsonProperty @ApiModelProperty(required = true)
     public Model_Person invited_person(){return Model_Person.find.where().eq("mail", this.mail).findUnique();}
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
- /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+    public void delete_notification() {
+        try {
+
+            if (notification_id != null) {
+
+                Model_Notification notification = Model_Notification.find.byId(notification_id);
+                if (notification != null) notification.delete();
+            }
+        } catch (Exception e) {
+            terminal_logger.internalServerError("delete_notification:", e);
+        }
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
    @JsonIgnore @Override
     public void save() {
@@ -60,7 +74,7 @@ public class Model_Invitation extends Model{
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        terminal_logger.debug("delete: Delete object Id: {} ", this.id);
 
         super.delete();
     }

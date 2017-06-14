@@ -97,7 +97,7 @@ public class SynchronizeHomerServer extends Thread {
         }catch (TimeoutException e){
             terminal_logger.error("synchronize_configuration:: TimeoutException");
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("run", e);
 
         }
 

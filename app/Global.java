@@ -98,11 +98,14 @@ public class Global extends GlobalSettings {
 
         terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Shutting down the server on {}" + Enum_Terminal_Color.ANSI_RESET, new Date());
 
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Disconnecting all Becki applications" + Enum_Terminal_Color.ANSI_RESET);
+        Controller_WebSocket.disconnectBeckiApplications();
+
         terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Disconnecting all Blocko Servers" + Enum_Terminal_Color.ANSI_RESET);
-        Controller_WebSocket.disconnect_all_homer_Servers();
+        Controller_WebSocket.disconnectHomerServers();
 
         terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Disconnecting all Compilation Servers" + Enum_Terminal_Color.ANSI_RESET);
-        Controller_WebSocket.disconnect_all_Compilation_Servers();
+        Controller_WebSocket.disconnectCodeServers();
 
         terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Closing cache layer" + Enum_Terminal_Color.ANSI_RESET);
         Server_Cache.stopCache();
@@ -114,7 +117,7 @@ public class Global extends GlobalSettings {
                 CustomScheduler.stopScheduler();
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("onStop", e);
             }
         }
 

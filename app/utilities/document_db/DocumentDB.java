@@ -67,7 +67,7 @@ public class DocumentDB {
             }
 
         } catch ( Exception e ){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("set_online_status_collection:", e);
         }
     }
 
@@ -103,7 +103,7 @@ public class DocumentDB {
             }
 
         } catch ( Exception e ){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("set_blocko_request_collection", e);
         }
     }
 }

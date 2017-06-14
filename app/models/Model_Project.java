@@ -85,7 +85,6 @@ public class Model_Project extends Model {
         }
 
         return  project_participants;
-
     }
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -207,15 +206,13 @@ public class Model_Project extends Model {
     }
 
     @JsonIgnore @Transient
-    public void notification_project_invitation_accepted(Model_Person owner){
-
-        Model_Person person = Controller_Security.get_person();
+    public void notification_project_invitation_accepted(Model_Person invitee, Model_Person owner){
 
         new Model_Notification()
                 .setImportance(Enum_Notification_importance.normal)
                 .setLevel(Enum_Notification_level.info)
                 .setText(new Notification_Text().setText("User "))
-                .setObject(person)
+                .setObject(invitee)
                 .setText(new Notification_Text().setText(" accepted your invitation to the project "))
                 .setObject(this)
                 .setText(new Notification_Text().setText("."))

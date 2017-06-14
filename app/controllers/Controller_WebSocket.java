@@ -172,7 +172,7 @@ public class Controller_WebSocket extends Controller {
                         server.security_token_confirm_procedure();
 
                     } catch (InterruptedException e) {
-                        terminal_logger.internalServerError(e);
+                        terminal_logger.internalServerError("homer_cloud_server_connection:", e);
                     }
                 }
             };
@@ -193,36 +193,36 @@ public class Controller_WebSocket extends Controller {
     }
 
     @ApiOperation(value = "Compilation Server Connection", tags = {"WebSocket"})
-    public  WebSocket<String>  compilator_server_connection (String unique_identificator){
+    public  WebSocket<String> code_server_connection(String unique_identificator){
         try{
 
-            terminal_logger.debug("compilator_server_connection:: Server is connecting. Server: "+ unique_identificator);
+            terminal_logger.debug("code_server_connection:: Server is connecting. Server: "+ unique_identificator);
 
-            terminal_logger.trace("compilator_server_connection:: Control Server and its unique names!");
+            terminal_logger.trace("code_server_connection:: Control Server and its unique names!");
             Model_CompilationServer cloud_compilation_server = Model_CompilationServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
             if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
 
             if(compiler_cloud_servers.containsKey(unique_identificator)) {
 
                 try {
-                    terminal_logger.warn("compilator_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
+                    terminal_logger.warn("code_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
 
                     WS_CompilerServer ws_compilerServer = (WS_CompilerServer) compiler_cloud_servers.get(unique_identificator);
                     WS_Message_Ping_compilation_server result = ws_compilerServer.server.ping();
                     if (!result.status.equals("success")) {
-                        terminal_logger.warn("compilator_server_connection:: Ping Failed - Tyrion remove previous connection");
+                        terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
                         if (homer_servers.containsKey(unique_identificator)) {
                             homer_servers.get(unique_identificator).onClose();
                         }
                         return null;
                     }
 
-                    terminal_logger.warn("compilator_server_connection:: Server is already connected and working!! Its prohibited connected to Tyrion with same unique name");
+                    terminal_logger.warn("code_server_connection:: Server is already connected and working!! Its prohibited connected to Tyrion with same unique name");
                     return WebSocket.reject(forbidden("Server side error - already connected"));
 
                 }catch (NullPointerException e){
 
-                    terminal_logger.warn("compilator_server_connection:: Ping Failed - Tyrion remove previous connection");
+                    terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
                     if(homer_servers.containsKey(unique_identificator)) homer_servers.get(unique_identificator).onClose();
 
                 }
@@ -234,15 +234,14 @@ public class Controller_WebSocket extends Controller {
             cloud_compilation_server.check_after_connection();
 
             // Připojím se
-            terminal_logger.debug("compilator_server_connection:: Sever connect");
+            terminal_logger.debug("code_server_connection:: Sever connect");
             return server.connection();
 
         }catch (Exception e){
-            terminal_logger.error("compilator_server_connection:: Web Socket connection", e);
+            terminal_logger.error("code_server_connection:: Web Socket connection", e);
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
-
 
     @ApiOperation(value = "FrontEnd Becki Connection", tags = {"WebSocket"})
     public  WebSocket<String>  becki_website_connection (String security_token){
@@ -286,15 +285,10 @@ public class Controller_WebSocket extends Controller {
             return website_connection.connection();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("becki_website_connection:", e);
             return WebSocket.reject(forbidden("Server side error"));
         }
-
     }
-
-
-
-
 
 /* Test & Control API --------------------------------------------------------------------------------------------------*/
 
@@ -307,7 +301,7 @@ public class Controller_WebSocket extends Controller {
         }catch(Exception e){}
     }
 
-    public static void disconnect_all_homer_Servers() {
+    public static void disconnectHomerServers() {
 
         terminal_logger.warn("disconnect_all_Homer_Servers::  Trying to safely disconnect all Homer Servers");
 
@@ -316,15 +310,23 @@ public class Controller_WebSocket extends Controller {
         }
     }
 
-    public static void disconnect_all_Compilation_Servers() {
+    public static void disconnectCodeServers() {
 
-        terminal_logger.warn("disconnect_all_Compilation_Servers:: Trying to safety disconnect all Compilation Servers");
+        terminal_logger.warn("disconnectCodeServers:: Trying to safely disconnect all Code Servers");
 
         for (Map.Entry<String, WS_CompilerServer> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet()) {
             server_violently_terminate_terminal(entry.getValue());
         }
     }
 
+    public static void disconnectBeckiApplications() {
 
+        terminal_logger.warn("disconnectBeckiApplications:: Trying to safely disconnect all Becki applications");
 
+        for (Map.Entry<String, WS_Becki_Website> entry :  Controller_WebSocket.becki_website.entrySet()) {
+            for (Map.Entry<String, WS_Becki_Single_Connection> single : entry.getValue().all_person_Connections.entrySet()) {
+                server_violently_terminate_terminal(single.getValue());
+            }
+        }
+    }
 }

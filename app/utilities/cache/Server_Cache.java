@@ -140,7 +140,7 @@ public class Server_Cache {
                     .withExpiry(Expirations.timeToIdleExpiration(Duration.of(12, TimeUnit.HOURS))).build());
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("initCache:", e);
         }
     }
 

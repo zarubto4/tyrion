@@ -91,7 +91,7 @@ public class Compilation_After_BlackOut {
                         version_object.compile_program_procedure();
                     }
                 }catch(Exception e){
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("run:", e);
                 }
             }
     }

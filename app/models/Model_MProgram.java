@@ -74,7 +74,7 @@ public class Model_MProgram extends Model{
 
             return help;
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_m_program_short_detail:", e);
             return null;
         }
     }
@@ -111,7 +111,7 @@ public class Model_MProgram extends Model{
             return m_program_versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("program_version:", e);
             return null;
         }
     }
@@ -129,7 +129,7 @@ public class Model_MProgram extends Model{
             return Json.newObject();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_m_code:", e);
             return Json.newObject();
         }
     }
@@ -149,7 +149,7 @@ public class Model_MProgram extends Model{
             return versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("program_versions_interface:", e);
             return null;
         }
     }

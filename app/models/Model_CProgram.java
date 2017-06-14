@@ -193,7 +193,7 @@ public class Model_CProgram extends Model {
             return c_program_versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("program_version", e);
           return null;
         }
     }

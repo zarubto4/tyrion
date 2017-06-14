@@ -98,7 +98,7 @@ public class WS_Becki_Website extends WS_Interface_type {
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("write_without_confirmation:", e);
         }
 
     }

@@ -520,7 +520,7 @@ public class Controller_Grid extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_M_Program:", e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -700,7 +700,7 @@ public class Controller_Grid extends Controller {
         try{
 
 
-            terminal_logger.debug("get_M_Program_byQR_Token_forMobile:: Connection token: " + qr_token);
+            terminal_logger.debug("get_M_Program_byQR_Token_forMobile: Connection token: " + qr_token);
 
             Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find
                     .where()
@@ -1567,7 +1567,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("gridWidget_getByFilter:", e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -2061,8 +2061,7 @@ public class Controller_Grid extends Controller {
                             .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget edited");
 
                 } catch (Exception e) {
-                    terminal_logger.error ("gridApproval:: Sending mail -> critical error", e);
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("grid_widget_public_Approval:", e);
                 }
             }
             else privateGridWidgetVersion.approval_state = Enum_Approval_state.approved;

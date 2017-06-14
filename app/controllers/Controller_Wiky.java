@@ -39,12 +39,12 @@ public class Controller_Wiky extends Controller {
     public Result test2(){
         try {
 
-            return ok();
+            throw new Exception("Test error hahaha dsdsdsdad");
+
         }catch (Exception e){
-            e.printStackTrace();
+            terminal_logger.internalServerError("test2", e);
             return badRequest();
         }
-
     }
 
 

@@ -64,9 +64,9 @@ public class Email {
                 terminal_logger.info("send():: reject_reason:" + messageStatusReports[0].getRejectReason());
             }
         } catch (IOException e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("send:",e);
         } catch (MandrillApiError e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("send:",e);
         }
 
     }

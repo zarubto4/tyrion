@@ -104,7 +104,6 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_created(Json.toJson(project));
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -338,7 +337,7 @@ public class Controller_Project extends Controller {
             if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.share_permission() )   return GlobalResult.result_forbidden();
+            if (!project.share_permission()) return GlobalResult.result_forbidden();
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
@@ -347,15 +346,14 @@ public class Controller_Project extends Controller {
             // Roztřídění seznamů
             for (String mail : help.persons_mail){
                 Model_Person person =  Model_Person.find.where().eq("mail",mail).findUnique();
-                if(!(person == null)){
+                if (person != null) {
                     listIn.add(person);
                     toRemove.add(person.mail);
                 }
             }
+            help.persons_mail.removeAll(toRemove);
 
-            for (String mail : toRemove){
-                help.persons_mail.remove(mail);
-            }
+            String full_name = Controller_Security.get_person().full_name;
 
             // Vytvoření pozvánky pro nezaregistrované uživatele
             for (String mail :  help.persons_mail){
@@ -376,15 +374,13 @@ public class Controller_Project extends Controller {
                 try {
 
                     new Email()
-                            .text("User " + Email.bold(Controller_Security.get_person().full_name) + " invites you to collaborate on the project "
-                                    + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
+                            .text("User " + Email.bold(full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
                             .divider()
                             .link("Register here and collaborate",link)
                             .send(mail, "Invitation to Collaborate");
 
                 } catch (Exception e) {
-                    terminal_logger.error ("project_invite:: Sending mail -> critical error", e);
-                    e.printStackTrace();
+                    terminal_logger.internalServerError("project_invite:", e);
                 }
             }
 
@@ -398,6 +394,16 @@ public class Controller_Project extends Controller {
                     invitation.owner = Controller_Security.get_person();
                     invitation.project = project;
                     invitation.save();
+                }
+
+                try {
+
+                    new Email()
+                            .text("User " + Email.bold(full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, log in to your Byzance account.")
+                            .send(person.mail, "Invitation to Collaborate");
+
+                } catch (Exception e) {
+                    terminal_logger.internalServerError("project_invite:", e);
                 }
 
                 project.notification_project_invitation(person, invitation);
@@ -514,10 +520,10 @@ public class Controller_Project extends Controller {
 
             //Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
-            if(project == null) return GlobalResult.result_notFound("Project project_id not found");
+            if(project == null) return GlobalResult.result_notFound("Project not found");
 
             // Kontrola oprávnění
-            if (!project.unshare_permission() )   return GlobalResult.result_forbidden();
+            if (!project.unshare_permission()) return GlobalResult.result_forbidden();
 
             List<Model_Person> list = new ArrayList<>();
 
@@ -548,6 +554,7 @@ public class Controller_Project extends Controller {
             }
 
             for (Model_Invitation invitation : invitations) {
+                invitation.delete_notification();
                 invitation.delete();
             }
 

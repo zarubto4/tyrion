@@ -294,7 +294,7 @@ public class Model_HomerServer extends Model{
                     }
                 }
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("Messages:", e);
             }
 
         }).start();
@@ -329,7 +329,7 @@ public class Model_HomerServer extends Model{
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("check_person_permission_for_homer_server:", e);
         }
     }
 
@@ -355,7 +355,7 @@ public class Model_HomerServer extends Model{
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("check_person_token_for_homer_server:", e);
         }
     }
 
@@ -378,7 +378,7 @@ public class Model_HomerServer extends Model{
             homer.write_without_confirmation(message.make_request_success());
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("invalid_person_token_for_homer_server:", e);
         }
     }
 
@@ -393,7 +393,7 @@ public class Model_HomerServer extends Model{
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Get_instance_list();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_homer_server_listOfInstance", e);
             return new WS_Message_Get_instance_list();
         }
     }
@@ -409,7 +409,7 @@ public class Model_HomerServer extends Model{
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Number_of_instances_homer_server();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_homer_server_number_of_instance:", e);
             return new WS_Message_Number_of_instances_homer_server();
         }
     }
@@ -486,7 +486,7 @@ public class Model_HomerServer extends Model{
             check.start();
 
         }catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("set_new_configuration_on_homer:", e);
         }
     }
 
@@ -590,7 +590,7 @@ public class Model_HomerServer extends Model{
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Connect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("make_log_connect:", e);
             }
         }).start();
     }
@@ -600,7 +600,7 @@ public class Model_HomerServer extends Model{
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Disconnect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("make_log_disconnect:", e);
             }
         }).start();
     }

@@ -65,7 +65,7 @@ public class Check_update_for_hw_under_homer_ws  {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("run:", e);
 
                 }
             }

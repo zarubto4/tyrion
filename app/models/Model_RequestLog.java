@@ -60,7 +60,6 @@ public class Model_RequestLog extends Model{
 
         terminal_logger.debug("delete: Remove object value: {}",  this.id);
         super.delete();
-
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

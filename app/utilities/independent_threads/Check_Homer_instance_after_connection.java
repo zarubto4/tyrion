@@ -136,7 +136,7 @@ public class Check_Homer_instance_after_connection extends Thread {
                     }
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("run:", e);
 
                 }
             }
@@ -144,7 +144,7 @@ public class Check_Homer_instance_after_connection extends Thread {
             model_server.synchronize_all_device_state_with_cache();
 
         }catch(Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("run:", e);
         }
     }
 }

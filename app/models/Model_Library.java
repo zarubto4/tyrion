@@ -114,7 +114,7 @@ public class Model_Library extends Model{
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("library_version:", e);
             return null;
         }
     }

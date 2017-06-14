@@ -222,16 +222,18 @@ public class Controller_Notification extends Controller {
 
               NotificationActionHandler.perform(help.action, help.payload);
 
-              notification.confirm();
-
-              return GlobalResult.result_ok();
-
           } catch (IllegalArgumentException e) {
 
-              terminal_logger.internalServerError("notification_confirm:", e);
+              Controller_Security.get_person().notification_error(e.getMessage());
 
-              return GlobalResult.result_badRequest("Unknown action or provided info invalid");
+          } catch (Exception e) {
+
+              terminal_logger.internalServerError("notification_confirm:", e);
           }
+
+          notification.confirm();
+
+          return GlobalResult.result_ok();
       } catch (Exception e){
           return Server_Logger.result_internalServerError(e, request());
       }

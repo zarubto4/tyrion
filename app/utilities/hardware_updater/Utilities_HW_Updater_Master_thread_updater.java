@@ -86,7 +86,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("comprimator_thread:", e);
                 }
             }
         }
@@ -338,7 +338,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                    plan.update();
 
                }catch(Exception e) {
-                   terminal_logger.internalServerError(e);
+                   terminal_logger.internalServerError("actualization_update_procedure:", e);
                    plan.state = Enum_CProgram_updater_state.critical_error;
                    plan.update();
                    break;

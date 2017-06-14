@@ -735,7 +735,7 @@ public class Controller_Dashboard extends Controller {
             return index();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("not_found:", e);
             return ok();
         }
     }

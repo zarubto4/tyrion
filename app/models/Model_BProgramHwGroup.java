@@ -49,7 +49,7 @@ public class Model_BProgramHwGroup extends Model {
             return false;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("contains_HW:", e);
             return false;
         }
     }

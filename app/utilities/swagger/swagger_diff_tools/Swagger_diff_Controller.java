@@ -179,7 +179,7 @@ public class Swagger_diff_Controller extends Controller {
 
 
         }catch (Exception e ) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("set_API_Changes:", e);
             throw new NullPointerException("Došlo k chybě");
         }
 

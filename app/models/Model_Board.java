@@ -117,7 +117,7 @@ public class Model_Board extends Model {
 
             return list;
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("alert_list:", e);
             return null;
         }
     }
@@ -132,18 +132,18 @@ public class Model_Board extends Model {
                     plans.add(plan.get_short_version_for_board());
 
                 }catch (Exception e){
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("updates:", e);
                 }
             }
 
             return plans;
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("updates:", e);
             return null;
         }
     }
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status()       {
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Board_Status status() {
 
         try{
 
@@ -256,7 +256,7 @@ public class Model_Board extends Model {
 
             return board_status;
         }catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("status:", e);
             return null;
         }
 
@@ -285,15 +285,14 @@ public class Model_Board extends Model {
                 swagger_board_short_detail.board_online_status = is_online();
 
             }catch (Exception e){
-                terminal_logger.error("get_short_board:: Error Get online status!");
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("get_short_board:", e);
                 swagger_board_short_detail.board_online_status = false;
             }
 
             return swagger_board_short_detail;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_short_board:", e);
             return null;
         }
     }
@@ -326,7 +325,7 @@ public class Model_Board extends Model {
             return board_for_fast_upload_detail;
 
          }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_short_board_for_fast_upload:", e);
             return null;
         }
 
@@ -406,7 +405,7 @@ public class Model_Board extends Model {
             Model_Board.hardware_firmware_state_check(server, master_device, help);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("master_device_Connected:", e);
         }
     }
 
@@ -429,7 +428,7 @@ public class Model_Board extends Model {
             Model_Board.cache_status.put(help.deviceId, false);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("master_device_Disconnected:", e);
         }
     }
 
@@ -453,7 +452,7 @@ public class Model_Board extends Model {
             Model_Board.hardware_firmware_state_check( server, device, help);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("device_Connected:", e);
         }
     }
 
@@ -478,7 +477,7 @@ public class Model_Board extends Model {
             Model_Board.cache_status.put(help.deviceId, false);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("device_Disconnected:", e);
         }
     }
 
@@ -600,7 +599,7 @@ public class Model_Board extends Model {
                         plan.update();
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        terminal_logger.internalServerError("update_report_from_homer:", e);
                     }
                 }
 
@@ -623,7 +622,7 @@ public class Model_Board extends Model {
 
             }
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("update_report_from_homer:", e);
         }
 
     }
@@ -664,7 +663,7 @@ public class Model_Board extends Model {
             terminal_logger.error("device_autoBackUp_echo phase {} not recognize!", report.phase);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("device_autoBackUp_echo:", e);
         }
     }
 
@@ -801,7 +800,7 @@ public class Model_Board extends Model {
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("hardware_firmware_state_check:", e);
         }
     }
 
@@ -886,11 +885,10 @@ public class Model_Board extends Model {
 
             }
 
-
-            terminal_logger.error("device_change_server:: Device not found for Transfer!");
+            throw new Exception("Device not found for Transfer!");
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("device_change_server", e);
         }
     }
 
@@ -973,7 +971,7 @@ public class Model_Board extends Model {
             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("update_bootloader", e);
         }
     }
 
@@ -1036,7 +1034,7 @@ public class Model_Board extends Model {
             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("update_firmware:", e);
         }
     }
 
@@ -1114,7 +1112,7 @@ public class Model_Board extends Model {
             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("update_backup:", e);
         }
     }
 
@@ -1148,7 +1146,7 @@ public class Model_Board extends Model {
         }catch (TimeoutException e){
             return new WS_Message_Board_set_autobackup();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("set_auto_backup", e);
             return new WS_Message_Board_set_autobackup();
         }
 
@@ -1171,7 +1169,7 @@ public class Model_Board extends Model {
                         .send_under_project(project_id());
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("notification_board_connect:", e);
             }
         }).start();
     }
@@ -1192,7 +1190,7 @@ public class Model_Board extends Model {
                     .send_under_project(project_id());
 
             }catch (Exception e){
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("notification_board_disconnect:", e);
             }
         }).start();
     }
@@ -1264,7 +1262,7 @@ public class Model_Board extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("make_log_connect:", e);
             }
         }).start();
     }
@@ -1274,7 +1272,7 @@ public class Model_Board extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("make_log_disconnect:", e);
             }
         }).start();
     }
@@ -1284,7 +1282,7 @@ public class Model_Board extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_BackupIncident.make_request_success_backup(this.id), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("make_log_backup_arrise_change:", e);
             }
         }).start();
     }
@@ -1427,14 +1425,13 @@ public class Model_Board extends Model {
                 cache_status.put(id, false );
                 return false;
             }catch (Exception e){
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("is_online:", e);
                 return false;
             }
         }else {
             return status;
         }
     }
-
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_Board> find = new Finder<>(Model_Board.class);

@@ -145,7 +145,7 @@ public class Model_CompilationServer extends Model {
             return compilation;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("make_Compilation:", e);
             return new WS_Message_Make_compilation();
         }
     }
@@ -205,7 +205,7 @@ public class Model_CompilationServer extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("make_log_connect:", e);
             }
         }).start();
     }
@@ -215,7 +215,7 @@ public class Model_CompilationServer extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("make_log_disconnect:", e);
             }
         }).start();
     }

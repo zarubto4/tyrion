@@ -169,7 +169,7 @@ public class Model_ActualizationProcedure extends Model {
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("update_state:",e);
         }
     }
 
@@ -328,7 +328,7 @@ public class Model_ActualizationProcedure extends Model {
             notification.send_under_project(get_project_id());
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("notification_update_procedure_start:", e);
         }
     }
 
@@ -354,7 +354,7 @@ public class Model_ActualizationProcedure extends Model {
                         .send_under_project(get_project_id());
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("notification_update_procedure_progress:", e);
         }
     }
 
@@ -439,7 +439,7 @@ public class Model_ActualizationProcedure extends Model {
             notification.send_under_project(get_project_id());
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("notification_update_procedure_final_report:", e);
         }
     }
 
@@ -500,7 +500,7 @@ public class Model_ActualizationProcedure extends Model {
 
             }).start();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("notification_update_procedure_complete:", e);
         }
     }
 

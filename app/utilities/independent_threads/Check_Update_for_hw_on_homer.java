@@ -47,7 +47,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
         try {
             sleep(1000 * 30);
         } catch (InterruptedException e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("run:", e);
         }
 
         try {
@@ -95,7 +95,7 @@ public class Check_Update_for_hw_on_homer extends Thread {
                     });
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("run:", e);
         }
     }
 

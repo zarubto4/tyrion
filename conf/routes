@@ -15,7 +15,7 @@ GET       /test2                                                        @control
 ###################################################################################f#################################################################################
 
 GET       /websocket/homer_server/:identificator                        @controllers.Controller_WebSocket.homer_cloud_server_connection(identificator)
-GET       /websocket/compilation_server/:identificator                  @controllers.Controller_WebSocket.compilator_server_connection(identificator)
+GET       /websocket/compilation_server/:identificator                  @controllers.Controller_WebSocket.code_server_connection(identificator)
 GET       /websocket/becki/:secure_token                                @controllers.Controller_WebSocket.becki_website_connection(secure_token)
 GET       /websocket/access_token                                       @controllers.Controller_WebSocket.get_Websocket_token()
 

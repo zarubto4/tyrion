@@ -2066,7 +2066,7 @@ public class Controller_Board extends Controller {
                     try {
                         Model_Board.update_backup(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, board_pairs);
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        terminal_logger.internalServerError("board_updateBackup:", e);
                     }
                 }).start();
             }
