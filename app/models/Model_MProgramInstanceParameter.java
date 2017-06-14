@@ -145,6 +145,8 @@ public class Model_MProgramInstanceParameter extends Model {
                 summary.grid_app_url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.m_project_id = m_program_version.m_program.m_project_id();
+                summary.m_program_id = m_program_id();
+                summary.m_program_version_id = m_program_version.id;
                 summary.instance_id = get_instance().blocko_instance_name;
                 summary.source_code_list = version_separator(Model_MProgram.get_m_code(m_program_version));
 
@@ -181,6 +183,8 @@ public class Model_MProgramInstanceParameter extends Model {
                 summary.grid_app_url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + terminal.terminal_token;
                 summary.m_project_id = m_program_version.m_program.m_project_id();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
+                summary.m_program_id = m_program_id();
+                summary.m_program_version_id = m_program_version.id;
                 summary.instance_id = get_instance().blocko_instance_name;
                 summary.source_code_list = version_separator(Model_MProgram.get_m_code(m_program_version));
 
