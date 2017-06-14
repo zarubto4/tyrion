@@ -708,7 +708,7 @@ public class Controller_Grid extends Controller {
                     .isNotNull("m_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
                     .findUnique();
 
-            if(parameter == null) return GlobalResult.result_notFound("Parameter p not found in database");
+            if(parameter == null) return GlobalResult.result_notFound("MProgramInstanceParameter by token not found in database");
 
             try{
 

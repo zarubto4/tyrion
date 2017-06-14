@@ -4,8 +4,14 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
+import play.data.Form;
+import play.i18n.Lang;
+import play.libs.Json;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
@@ -15,12 +21,17 @@ import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
 import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
 import utilities.logger.Class_Logger;
 import utilities.login_entities.Secured_API;
+import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
+import utilities.swagger.documentationClass.Swagger_GridWidgetVersion_GridApp_source;
+import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Mobile_Connection_Summary;
 import web_socket.message_objects.homer_instance.WS_Message_Grid_token_verification;
+import web_socket.message_objects.homer_instance.WS_Message_Remove_yoda_from_instance;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.UUID;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.util.*;
 
 
 @Entity
@@ -101,23 +112,8 @@ public class Model_MProgramInstanceParameter extends Model {
             return null;
 
         }else {
-
-            if( snapshot_settings() == Enum_MProgram_SnapShot_settings.absolutely_public  && ( connection_token == null || connection_token.length() < 1) ){
-
-                System.out.println("connection_token() absolutely_public nastavuji UUID");
-                connection_token = parameter_prefix + UUID.randomUUID().toString();   // parameter token _
-                this.update();
-            }else {
-
-                System.out.println("connection_token() absolutely_public UUID je nastavené ");
-            }
-
-
+           return  connection_token;
         }
-
-
-        return connection_token;
-
     }
 
     @JsonIgnore  @Transient public Swagger_Mobile_Connection_Summary get_connection_summary(Http.Context context) throws Tyrion_Exp_ForbidenPermission, Tyrion_Exp_ObjectNotValidAnymore, Tyrion_Exp_Unauthorized {
@@ -144,14 +140,11 @@ public class Model_MProgramInstanceParameter extends Model {
             case absolutely_public:{
 
                 summary.grid_app_url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
-                summary.m_program = Model_MProgram.get_m_code(m_program_version);
+                summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.instance_id = get_instance().blocko_instance_name;
-
+                summary.source_code_list = version_separator(Model_MProgram.get_m_code(m_program_version));
 
                 // Separátor verzí
-
-
-
 
 
                 return summary;
@@ -182,8 +175,9 @@ public class Model_MProgramInstanceParameter extends Model {
                 terminal.save();
 
                 summary.grid_app_url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + terminal.terminal_token;
-                summary.m_program = Model_MProgram.get_m_code(m_program_version);
+                summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.instance_id = get_instance().blocko_instance_name;
+                summary.source_code_list = version_separator(Model_MProgram.get_m_code(m_program_version));
 
                 return summary;
             }
@@ -234,6 +228,8 @@ public class Model_MProgramInstanceParameter extends Model {
 
         terminal_logger.debug("Save :: Save object Id: {}",  this.id);
 
+        connection_token =  parameter_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+
         super.save();
     }
 
@@ -242,22 +238,75 @@ public class Model_MProgramInstanceParameter extends Model {
 
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
+    /**
+     * Modelové schéma určené k parsování m_programu která přišla z Becki
+     */
+    private List<Swagger_GridWidgetVersion_GridApp_source> version_separator(JsonNode m_program){
 
-    private class M_Program_Parser{
+        try {
 
+            // List for returning
+            List<Swagger_GridWidgetVersion_GridApp_source> list = new ArrayList<>();
+
+            // Parsing Json
+            Form<M_Program_Parser> form = Form.form(M_Program_Parser.class).bind( (ObjectNode) new ObjectMapper().readTree(m_program.asText()));
+            if(form.hasErrors()){terminal_logger.error("M_Program_Parser:: Parsing from Blob Server:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new ArrayList<Swagger_GridWidgetVersion_GridApp_source>();}
+
+            // Create object
+            M_Program_Parser program_parser = form.get();
+
+            // Loking for objects
+            for(Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets){
+
+                Swagger_GridWidgetVersion_GridApp_source detail = new Swagger_GridWidgetVersion_GridApp_source();
+                detail.id          = widget_parser.type.version_id;
+                detail.logic_json = Model_GridWidgetVersion.find.byId(widget_parser.type.version_id).logic_json;
+
+                list.add(detail);
+            }
+            return list;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<Swagger_GridWidgetVersion_GridApp_source>();
+        }
+    }
+
+    public static class M_Program_Parser{
+
+        public M_Program_Parser(){}
+
+        @Valid  public Screen_Parser screens;
+    }
+
+    public static  class Screen_Parser{
+
+        public Screen_Parser(){}
+
+        @Valid public List<Main_Parser> main = new ArrayList<>();
 
     }
 
-    private class Screen_Parser{
+    public static  class Main_Parser{
+
+        public Main_Parser(){}
+
+        @Valid public List<Widget_Parser> widgets  = new ArrayList<>();
+    }
+
+    public static  class Widget_Parser{
+
+        public Widget_Parser(){}
+
+        @Valid  public Type_Parser type;
 
     }
 
-    private class Main_Parser{
+    public static  class Type_Parser{
 
-    }
+        public Type_Parser(){}
 
-    private class Widget_Parser{
-
+        @Valid public String version_id;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -115,21 +116,21 @@ public class Model_MProgram extends Model{
         }
     }
 
-    @JsonIgnore @Transient public static String get_m_code(Model_VersionObject version_object) {
+    @JsonIgnore @Transient public static JsonNode get_m_code(Model_VersionObject version_object) {
         try{
 
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
 
             if (fileRecord != null) {
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
-                return json.get("m_code").asText();
+                return json.get("m_code");
             }
 
-            return null;
+            return Json.newObject();
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
-            return null;
+            return Json.newObject();
         }
     }
 
