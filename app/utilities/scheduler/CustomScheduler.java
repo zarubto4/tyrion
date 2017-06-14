@@ -178,7 +178,7 @@ public class CustomScheduler {
             scheduler.start();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("start:", e);
         }
     }
 
@@ -188,7 +188,7 @@ public class CustomScheduler {
         try {
             customScheduler.start();
         } catch (SchedulerException e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("startScheduler:", e);
         }
     }
 
@@ -196,7 +196,7 @@ public class CustomScheduler {
         try {
             customScheduler.scheduler.clear();
         } catch (SchedulerException e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("stopScheduler:", e);
         }
     }
 }

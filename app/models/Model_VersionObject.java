@@ -134,7 +134,7 @@ public class Model_VersionObject extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_short_library_version:", e);
             return null;
         }
     }
@@ -160,7 +160,7 @@ public class Model_VersionObject extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_short_c_program_version:", e);
             return null;
         }
     }
@@ -180,7 +180,7 @@ public class Model_VersionObject extends Model {
            return help;
 
        }catch (Exception e){
-           terminal_logger.internalServerError(e);
+           terminal_logger.internalServerError("get_short_b_program_version:", e);
            return null;
        }
     }
@@ -200,7 +200,7 @@ public class Model_VersionObject extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_short_m_program_version:", e);
             return null;
         }
     }
@@ -220,7 +220,7 @@ public class Model_VersionObject extends Model {
                 try {
                     version.compile_program_procedure();
                 }catch (Exception e){
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("run:", e);
                 }
             }
         };

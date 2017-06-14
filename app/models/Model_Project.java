@@ -63,7 +63,7 @@ public class Model_Project extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_name() { return product.name;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id() { return product.id;}
-    //@JsonProperty @Transient @ApiModelProperty(required = true) public String tier_name()  { return product.product_type();}
+
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
 
         List<Model_ProjectParticipant> project_participants = this.participants;
@@ -85,7 +85,6 @@ public class Model_Project extends Model {
         }
 
         return  project_participants;
-
     }
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -207,15 +206,13 @@ public class Model_Project extends Model {
     }
 
     @JsonIgnore @Transient
-    public void notification_project_invitation_accepted(Model_Person owner){
-
-        Model_Person person = Controller_Security.get_person();
+    public void notification_project_invitation_accepted(Model_Person invitee, Model_Person owner){
 
         new Model_Notification()
                 .setImportance(Enum_Notification_importance.normal)
                 .setLevel(Enum_Notification_level.info)
                 .setText(new Notification_Text().setText("User "))
-                .setObject(person)
+                .setObject(invitee)
                 .setText(new Notification_Text().setText(" accepted your invitation to the project "))
                 .setObject(this)
                 .setText(new Notification_Text().setText("."))

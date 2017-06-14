@@ -3,11 +3,9 @@ package utilities.notifications;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
-import models.Model_Invitation;
 import models.Model_Notification;
 import models.Model_Person;
 import play.libs.Json;
-import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
 import utilities.logger.Class_Logger;
 import web_socket.services.WS_Becki_Website;
@@ -117,10 +115,12 @@ public class NotificationHandler {
             message.put("state", notification.state.name());
             message.set("notification_body", Json.toJson(notification.notification_body()));
             message.put("confirmation_required", notification.confirmation_required);
-            message.put("confirmed", notification.confirmation_required);
+            message.put("confirmed", notification.confirmed);
             message.put("was_read", notification.was_read);
             message.put("created", notification.created.getTime());
             message.set("buttons", Json.toJson(notification.buttons()) );
+
+            terminal_logger.trace("sendNotification: without id: {}", Json.toJson(message).toString());
 
             terminal_logger.trace("sendNotification: The number of recipients is {}", notification.list_of_ids_receivers.size());
 

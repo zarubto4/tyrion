@@ -122,7 +122,7 @@ public class Model_TypeOfBoard extends Model {
         try {
             return Server.blobClient.getContainerReference("pictures");
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_Container", e);
             throw new NullPointerException();
         }
     }

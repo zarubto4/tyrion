@@ -86,7 +86,7 @@ public class Controller_Security extends Controller {
              return person_id;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_person_id:", e);
             return null;
         }
     }
@@ -101,7 +101,7 @@ public class Controller_Security extends Controller {
             return Model_Person.get_byId(person_id );
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_person:", e);
             return null;
         }
     }
@@ -355,8 +355,7 @@ public class Controller_Security extends Controller {
                 }
 
             }catch (Exception e){
-                terminal_logger.error("logout:: Error:: ", e);
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("logout:", e);
             }
 
             // JE nutné garantovat vždy odpověď ok za všech situací kromě kritického selhální
@@ -492,7 +491,7 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("GET_github_oauth:", e);
             return Server_Logger.result_internalServerError(e, request());
         }
 
@@ -645,7 +644,7 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("GET_facebook_oauth:", e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -724,7 +723,7 @@ public class Controller_Security extends Controller {
             return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("GitHub:", e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }

@@ -200,7 +200,7 @@ public class Model_HomerInstance extends Model {
                 .send(Controller_Security.get_person());
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("notification_instance_start_upload:", e);
         }
     }
 
@@ -218,7 +218,7 @@ public class Model_HomerInstance extends Model {
                     .send_under_project(project.id);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("notification_instance_successful_upload:", e);
         }
     }
 
@@ -242,7 +242,7 @@ public class Model_HomerInstance extends Model {
                     .send_under_project(project.id);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("notification_instance_unsuccessful_upload:", e);
         }
     }
 
@@ -258,7 +258,7 @@ public class Model_HomerInstance extends Model {
                     .send_under_project(b_program.project_id());
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("notification_new_actualization_request_instance:", e);
         }
     }
 
@@ -420,7 +420,7 @@ public class Model_HomerInstance extends Model {
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("Messages:", e);
             }
         }).start();
     }
@@ -444,7 +444,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Instance_status();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_instance_status:", e);
             return new WS_Message_Instance_status();
         }
     }
@@ -463,7 +463,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Ping_instance();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("ping:", e);
             return new WS_Message_Ping_instance();
         }
     }
@@ -477,7 +477,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return null;
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("devices_commands:", e);
             return null;
         }
     }
@@ -506,7 +506,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Add_yoda_to_instance();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("add_Yoda_to_instance:", e);
             return new WS_Message_Add_yoda_to_instance();
         }
     }
@@ -526,7 +526,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Remove_yoda_from_instance();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("remove_Yoda_from_instance:", e);
             return new WS_Message_Remove_yoda_from_instance();
         }
     }
@@ -558,7 +558,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Remove_yoda_from_instance();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("remove_Yoda_from_instance:", e);
             return new WS_Message_Remove_yoda_from_instance();
         }
     }
@@ -578,7 +578,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Add_device_to_instance();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("add_Device_to_instance:", e);
             return new WS_Message_Add_device_to_instance();
         }
     }
@@ -598,7 +598,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Remove_device_from_instance();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("remove_Device_from_instance:", e);
             return new WS_Message_Remove_device_from_instance();
         }
     }
@@ -637,7 +637,7 @@ public class Model_HomerInstance extends Model {
 
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("add_instance_to_server:", e);
             return new WS_Message_Update_device_summary_collection();
         }
     }
@@ -683,7 +683,7 @@ public class Model_HomerInstance extends Model {
             return result_instance;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("remove_instance_from_server:", e);
             return new WS_Message_Destroy_instance();
         }
     }
@@ -788,7 +788,7 @@ public class Model_HomerInstance extends Model {
                     }
 
                 }catch (Exception e){
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("upload_Record_immediately:", e);
                 }
             }
         ).start();
@@ -900,7 +900,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return  new WS_Message_Upload_blocko_program();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("upload_blocko_program:", e);
             return  new WS_Message_Upload_blocko_program();
         }
     }
@@ -1111,7 +1111,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return;
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("update_device_summary_collection:", e);
         }
     }
 
@@ -1138,7 +1138,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Online_states_devices();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_devices_online_state:", e);
             return new WS_Message_Online_states_devices();
         }
     }
@@ -1159,7 +1159,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Get_summary_information();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_summary_information:", e);
             return new WS_Message_Get_summary_information();
         }
     }
@@ -1179,7 +1179,7 @@ public class Model_HomerInstance extends Model {
         }catch (InterruptedException|TimeoutException e){
             return new WS_Message_Get_Hardware_list();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_hardware_list:", e);
             return new WS_Message_Get_Hardware_list();
         }
     }
@@ -1191,7 +1191,7 @@ public class Model_HomerInstance extends Model {
             homer_server.check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("summary_information:", e);
         }
     }
 
@@ -1218,6 +1218,7 @@ public class Model_HomerInstance extends Model {
             // Terminal is not null - Ita clasic terminal connection
             if(terminal != null){
 
+                // TODO TOM - nechybí tu "terminal ="
                 Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
 
                 if(terminal == null){
@@ -1263,7 +1264,7 @@ public class Model_HomerInstance extends Model {
 
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("cloud_verification_token_GRID:", e);
 
         }
 
@@ -1288,7 +1289,7 @@ public class Model_HomerInstance extends Model {
             return;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("cloud_verification_token_WEBVIEW:", e);
         }
 
     }

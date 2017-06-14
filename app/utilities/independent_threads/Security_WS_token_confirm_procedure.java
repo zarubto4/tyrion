@@ -89,7 +89,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
 
             }catch(NullPointerException e){
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("run:", e);
                 try {
                     sleep(1000 * 10  * ++number_of_tries);
                 } catch (InterruptedException e1) {}
@@ -104,7 +104,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
                 terminal_logger.warn("run:: TimeoutException");
                 break;
             }catch(Exception e){
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("run:", e);
                 break;
             }
 

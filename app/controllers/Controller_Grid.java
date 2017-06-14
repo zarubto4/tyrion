@@ -520,7 +520,7 @@ public class Controller_Grid extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_M_Program:", e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -811,7 +811,7 @@ public class Controller_Grid extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result get_conection_url(){
+    public Result get_connection_url(){
         try{
 
             final Form<Swagger_Mobile_Connection_Request> form = Form.form(Swagger_Mobile_Connection_Request.class).bindFromRequest();
@@ -845,10 +845,10 @@ public class Controller_Grid extends Controller {
                 return GlobalResult.result_notFound("Server not found");
             }
 
-            terminal_logger.debug("get_conection_url:: record ID:: "           + record.id);
-            terminal_logger.debug("get_conection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance.blocko_instance_name);
-            terminal_logger.debug("get_conection_url:: cloud_homer_server identificator::"             + server.unique_identificator);
-            terminal_logger.debug("get_conection_url:: cloud_homer_server Grid Port::"                 + server.grid_port);
+            terminal_logger.debug("get_connection_url:: record ID:: "           + record.id);
+            terminal_logger.debug("get_connection_url:: record.actual_running_instance ID:: "           + record.actual_running_instance.blocko_instance_name);
+            terminal_logger.debug("get_connection_url:: cloud_homer_server identificator::"             + server.unique_identificator);
+            terminal_logger.debug("get_connection_url:: cloud_homer_server Grid Port::"                 + server.grid_port);
 
 
             Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
@@ -864,7 +864,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_created(Json.toJson(summary));
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_connection_url:", e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -1701,7 +1701,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("gridWidget_getByFilter:", e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -2196,7 +2196,7 @@ public class Controller_Grid extends Controller {
 
                 } catch (Exception e) {
                     terminal_logger.error ("gridApproval:: Sending mail -> critical error", e);
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("grid_widget_public_Approval:", e);
                 }
             }
             else privateGridWidgetVersion.approval_state = Enum_Approval_state.approved;

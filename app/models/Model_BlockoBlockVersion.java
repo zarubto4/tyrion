@@ -52,7 +52,7 @@ public class Model_BlockoBlockVersion extends Model {
             return this.author.get_short_person();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("author:", e);
             return null;
         }
     }
@@ -76,7 +76,7 @@ public class Model_BlockoBlockVersion extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_short_blockoblock_version:", e);
             return null;
         }
     }

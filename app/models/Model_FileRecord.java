@@ -69,7 +69,7 @@ public class Model_FileRecord extends Model {
             return utf8str;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_fileRecord_from_Azure_inString:", e);
             return null;
         }
     }
@@ -80,7 +80,7 @@ public class Model_FileRecord extends Model {
             return new ObjectMapper().readTree(this.get_fileRecord_from_Azure_inString());
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_file_As_Json", e);
             return null;
         }
     }
@@ -113,7 +113,7 @@ public class Model_FileRecord extends Model {
             return fileRecord;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("uploadAzure_Version:", e);
             return null;
         }
     }
@@ -151,7 +151,7 @@ public class Model_FileRecord extends Model {
             return fileRecord;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("uploadAzure_Version:", e);
             return null;
         }
     }
@@ -218,7 +218,7 @@ public class Model_FileRecord extends Model {
             blob.delete();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("remove_file_from_Azure:", e);
         }
     }
 

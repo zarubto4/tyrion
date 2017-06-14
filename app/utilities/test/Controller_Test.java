@@ -67,7 +67,7 @@ public class Controller_Test extends Controller {
             return new Controller_Dashboard().return_page(test_content);
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("test", e);
             return ok();
         }
     }

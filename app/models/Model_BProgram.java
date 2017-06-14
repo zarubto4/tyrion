@@ -103,7 +103,7 @@ public class Model_BProgram extends Model {
             return state;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("instance_details:", e);
             return null;
         }
     }
@@ -126,7 +126,7 @@ public class Model_BProgram extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_b_program_short_detail:", e);
             return null;
         }
     }

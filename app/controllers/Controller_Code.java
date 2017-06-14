@@ -864,7 +864,7 @@ public class Controller_Code extends Controller{
                                 .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        terminal_logger.internalServerError("approve_decision:", e);
                     }
 
 
@@ -886,7 +886,7 @@ public class Controller_Code extends Controller{
                                 .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        terminal_logger.internalServerError("approve_decision:", e);
                     }
                 }
 
@@ -912,7 +912,7 @@ public class Controller_Code extends Controller{
                             .send(version_old.c_program.project.product.payment_details.person.mail, "Publishing your program" );
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    terminal_logger.internalServerError("approve_decision:", e);
                 }
 
             }

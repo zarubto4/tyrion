@@ -58,7 +58,7 @@ public class Job_UnauthenticatedPersonRemoval implements Job {
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("remove_person_thread", e);
             }
 
             terminal_logger.debug("Job_UnauthenticatedPersonRemoval:: remove_person_thread: thread stopped on {}", new Date());

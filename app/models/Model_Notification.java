@@ -34,7 +34,6 @@ public class Model_Notification extends Model {
 
     private static final Class_Logger terminal_logger = new Class_Logger(Model_Notification.class);
 
-
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
              @Id   @JsonProperty @ApiModelProperty(required = true) public String id;
@@ -57,7 +56,6 @@ public class Model_Notification extends Model {
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY) public Model_Person person;
 
-
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";
@@ -65,7 +63,6 @@ public class Model_Notification extends Model {
 
     @JsonProperty @ApiModelProperty(required = true) public String messageType(){ return messageType;}
     @JsonProperty @ApiModelProperty(required = true) public String messageChannel(){ return messageChannel;}
-
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Swagger_Notification_Element> notification_body(){
@@ -99,7 +96,6 @@ public class Model_Notification extends Model {
 
     @JsonIgnore @Transient List<Swagger_Notification_Element> array = new ArrayList<>();
     @JsonIgnore @Transient List<Swagger_Notification_Button> buttons = new ArrayList<>();
-
 
     @JsonIgnore
     public Model_Notification(){
@@ -265,7 +261,6 @@ public class Model_Notification extends Model {
         return this;
     }
 
-
     @JsonIgnore @Transient
     public Model_Notification setLink(Notification_Link link){
         array.add(link.element);
@@ -289,7 +284,7 @@ public class Model_Notification extends Model {
         try {
             throw new Exception("Not supported! Notifications are saved automatically using save_object()");
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("save:", e);
         }
     }
 
@@ -299,7 +294,7 @@ public class Model_Notification extends Model {
             this.state = Enum_Notification_state.deleted;
             this.send();
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("delete:", e);
         }
         super.delete();
     }
@@ -348,8 +343,6 @@ public class Model_Notification extends Model {
         this.send();
     }
 
-
-
     @JsonIgnore @Transient public List<String> list_of_ids_receivers = new ArrayList<>(); // List ofon_ids Pers
 
     @JsonIgnore @Transient
@@ -390,9 +383,8 @@ public class Model_Notification extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Notification_delete") ;}
-    @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(Controller_Security.get_person().id) || Controller_Security.get_person().has_permission("Notification_confirm") ;}
-
+    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_delete") ;}
+    @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_confirm") ;}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

@@ -96,7 +96,7 @@ public class Model_BlockoBlock extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_blocko_block_short_detail:", e);
             return null;
         }
     }

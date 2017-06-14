@@ -20,7 +20,7 @@ public class NotificationActionHandler {
      * @param payload String payload from notification.
      * @throws IllegalArgumentException Exception is thrown when the action is unknown.
      */
-    public static void perform(Enum_Notification_action action, String payload) throws IllegalArgumentException{
+    public static void perform(Enum_Notification_action action, String payload) throws Exception{
 
         terminal_logger.debug("perform: Performing new notification action {}", action.name());
 
@@ -32,7 +32,7 @@ public class NotificationActionHandler {
 
             case reject_project_invitation: rejectProjectInvitation(payload); break;
 
-            default: throw new IllegalArgumentException("Unknown notification action");
+            default: throw new Exception("Unknown notification action");
         }
     }
 
@@ -41,16 +41,16 @@ public class NotificationActionHandler {
      * and sends a notification to inform the invitation owner.
      * @param invitation_id String id of related invitation.
      */
-    private static void acceptProjectInvitation(String invitation_id){
+    private static void acceptProjectInvitation(String invitation_id) throws Exception{
 
         Model_Invitation invitation = Model_Invitation.find.byId(invitation_id);
-        if(invitation == null) throw new IllegalArgumentException("Invitation no longer exists");
+        if (invitation == null) throw new IllegalArgumentException("Failed to add you to the project. Invitation no longer exists, it might have been drawn back.");
 
         Model_Person person = Model_Person.find.where().eq("mail", invitation.mail).findUnique();
-        if(person == null) throw new IllegalArgumentException("Person does not exist");
+        if (person == null) throw new Exception("Person does not exist.");
 
         Model_Project project = invitation.project;
-        if(project == null) throw new IllegalArgumentException("Project no longer exists");
+        if (project == null) throw new IllegalArgumentException("Failed to add you to the project. Project no longer exists.");
 
         if (Model_ProjectParticipant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique() == null) {
 
@@ -62,7 +62,7 @@ public class NotificationActionHandler {
             participant.save();
         }
 
-        project.notification_project_invitation_accepted(invitation.owner);
+        project.notification_project_invitation_accepted(person, invitation.owner);
 
         invitation.delete();
     }
@@ -71,19 +71,19 @@ public class NotificationActionHandler {
      * Deletes invitation and sends a notification to inform the invitation owner.
      * @param invitation_id String id of related invitation.
      */
-    private static void rejectProjectInvitation(String invitation_id){
+    private static void rejectProjectInvitation(String invitation_id) throws Exception{
 
         // Kontroly objektů
         Model_Invitation invitation = Model_Invitation.find.byId(invitation_id);
-        if(invitation == null) throw new IllegalArgumentException("Invitation no longer exists");
+        if(invitation == null) throw new IllegalArgumentException("Invitation no longer exists.");
 
         Model_Person person = Model_Person.find.where().eq("mail", invitation.mail).findUnique();
-        if(person == null) throw new IllegalArgumentException("Person does not exist");
+        if(person == null) throw new Exception("Person does not exist.");
 
         Model_Project project = invitation.project;
-        if(project == null) throw new IllegalArgumentException("Project no longer exists");
+        if(project == null) throw new IllegalArgumentException("Project no longer exists.");
 
-        project.notification_project_invitation_accepted(invitation.owner);
+        project.notification_project_invitation_rejected(invitation.owner);
 
         invitation.delete();
     }

@@ -84,21 +84,11 @@ public class Server_Logger extends Controller {
 
 /* CLASS LOGGER --------------------------------------------------------------------------------------------------------*/
 
-    public static void trace(Class<?> t_class, String log_message) {
-        logger.trace(t_class, log_message);
-    }
-    public static void trace(Class<?> t_class, String log_message, Object... args ) { logger.trace(t_class, log_message, args);}
+    public static void trace(Class<?> t_class, String log_message, Object... args) {logger.trace(t_class, log_message, args);}
+    public static void info (Class<?> t_class, String log_message, Object... args) {logger.info (t_class, log_message, args);}
+    public static void debug(Class<?> t_class, String log_message, Object... args) {logger.debug(t_class, log_message, args);}
+    public static void warn (Class<?> t_class, String log_message, Object... args) {logger.warn (t_class, log_message, args);}
 
-    public static void info(Class<?> t_class, String log_message) {logger.info(t_class, log_message);}
-    public static void info(Class<?> t_class, String log_message, Object... args) {logger.info(t_class, log_message, args);}
-
-    public static void debug(Class<?> t_class, String log_message) {logger.debug(t_class, log_message);}
-    public static void debug(Class<?> t_class, String log_message, Object... args ) {logger.debug(t_class, log_message, args);}
-
-    public static void warn(Class<?> t_class, String log_message) {logger.warn(t_class, log_message);}
-    public static void warn(Class<?> t_class, String log_message, Object... args ) {logger.warn(t_class, log_message, args);}
-
-    public static void error(Class<?> t_class, String log_message) {error(t_class, log_message,"");}
     public static void error(Class<?> t_class, String log_message, Object... args ) {
 
         String id = UUID.randomUUID().toString();
@@ -127,11 +117,11 @@ public class Server_Logger extends Controller {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder description = new StringBuilder();     // stavění obsahu
+        StringBuilder description = new StringBuilder();
         StringBuilder stack_trace = new StringBuilder();
         StringBuilder cause_summary = new StringBuilder();
 
-        String summary = "Internal Server Error - " + origin + " - " + t_class.getName();
+        String summary = "Internal Server Error - " + t_class.getName() + "::" + origin;
 
         description.append("\n");
         description.append("    Exception type: " + exception.getClass().getName());
@@ -293,14 +283,22 @@ public class Server_Logger extends Controller {
      */
     private static void error(String id, String summary, String description, String stack_trace, String cause) {
 
-        Model_LoggyError error = Model_LoggyError.find.where().eq("stack_trace", stack_trace).findUnique();
-        //if (error == null) {
+        // Just temporary protection, later every error will be unique
+        List<Model_LoggyError> errors = Model_LoggyError.find.where().isNotNull("stack_trace").eq("stack_trace", stack_trace).findList();
+        if (errors.size() > 1) {
+            for (Model_LoggyError e : errors) {
+                e.delete();
+            }
+        }
+
+        Model_LoggyError error = Model_LoggyError.find.where().isNotNull("stack_trace").eq("stack_trace", stack_trace).findUnique();
+        if (error == null) {
             error = new Model_LoggyError(id, summary, description, stack_trace, cause); // zapíšu do databáze
             error.save();
-        //} else {
-        //    error.repetition++;
-        //    error.update();
-        //}
+        } else {
+            error.repetition++;
+            error.update();
+        }
 
         if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post(error);
     }

@@ -373,7 +373,7 @@ public class Server {
             Server_Cache.initCache();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("initCache:", e);
         }
 
     }

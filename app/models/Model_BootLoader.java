@@ -102,7 +102,7 @@ public class Model_BootLoader extends Model {
             return Server.blobClient.getContainerReference("bootloaders"); // Jméno kontejneru
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_Container:", e);
             return null;
         }
 

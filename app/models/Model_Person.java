@@ -11,7 +11,13 @@ import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
 import play.data.validation.Constraints;
 import utilities.Server;
+import utilities.enums.Enum_Notification_action;
+import utilities.enums.Enum_Notification_importance;
+import utilities.enums.Enum_Notification_level;
 import utilities.logger.Class_Logger;
+import utilities.notifications.helps_objects.Becki_color;
+import utilities.notifications.helps_objects.Notification_Button;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.*;
@@ -140,7 +146,7 @@ public class Model_Person extends Model {
         try {
             return Server.blobClient.getContainerReference("pictures");
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_Container:", e);
             throw new NullPointerException();
         }
     }
@@ -150,6 +156,16 @@ public class Model_Person extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public void notification_error(String text){
+
+        new Model_Notification()
+                .setImportance(Enum_Notification_importance.normal)
+                .setLevel(Enum_Notification_level.error)
+                .setText(new Notification_Text().setText(text))
+                .setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("null").setColor(Becki_color.byzance_blue).setText("OK")  )
+                .send(this);
+    }
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
@@ -158,7 +174,7 @@ public class Model_Person extends Model {
 
     @JsonIgnore   @Transient public boolean create_permission()     {  return true;  }
     @JsonIgnore   @Transient public boolean read_permission()       {  return true;  }
-    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person().id.equals(this.id) || Controller_Security.get_person().has_permission("Person_edit"));}
+    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person_id().equals(this.id) || Controller_Security.get_person().has_permission("Person_edit"));}
     @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().has_permission("Person_activation");}
     @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().has_permission("Person_delete");}
     @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().has_permission("Byzance_employee");}

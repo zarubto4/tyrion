@@ -59,7 +59,7 @@ public class Model_TypeOfBlock extends Model {
             return short_detail_blocks;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("blocks:", e);
             return null;
         }
     }

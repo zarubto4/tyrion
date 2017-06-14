@@ -62,7 +62,7 @@ public class Model_RequestLog extends Model{
     @JsonIgnore @Override
     public void delete() {
 
-        terminal_logger.error("delete: This object is not legitimate to remove. ");
+        terminal_logger.debug("delete: deleting request log");
         super.delete();
     }
 

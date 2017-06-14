@@ -77,7 +77,7 @@ public class Job_StuckCompilationCheck implements Job {
                 }
 
             }catch(Exception e){
-                terminal_logger.internalServerError(e);
+                terminal_logger.internalServerError("compilation_check_thread:", e);
             }
 
             terminal_logger.debug("compilation_check_thread:: thread stopped on {}", new Date());

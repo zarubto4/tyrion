@@ -110,7 +110,7 @@ public class Model_HomerInstanceRecord extends Model {
             return contains > 0;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("contains_HW:", e);
             return false;
         }
     }
@@ -301,7 +301,7 @@ public class Model_HomerInstanceRecord extends Model {
 
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("create_actualization_request:", e);
         }
     }
 
@@ -383,7 +383,7 @@ public class Model_HomerInstanceRecord extends Model {
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("add_new_actualization_request_bootloader:", e);
         }
     }
 

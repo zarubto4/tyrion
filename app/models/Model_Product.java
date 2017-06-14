@@ -568,7 +568,7 @@ public class Model_Product extends Model {
         try {
             return Server.blobClient.getContainerReference("product");
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError("get_Container:",e);
             throw new NullPointerException();
         }
 
