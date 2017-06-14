@@ -110,8 +110,11 @@ public class Model_MProgramInstanceParameter extends Model {
         // If there is no instance - token is not required for showing.
         if(get_instance() == null) {
             return null;
-
         }else {
+
+            if(connection_token == null) connection_token = parameter_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+            update();
+
            return  connection_token;
         }
     }
@@ -228,7 +231,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
         terminal_logger.debug("Save :: Save object Id: {}",  this.id);
 
-        connection_token =  parameter_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+        connection_token = parameter_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();
 
         super.save();
     }
