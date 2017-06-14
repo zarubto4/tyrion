@@ -32,6 +32,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static com.avaje.ebeaninternal.util.SortByClause.ASC;
+
 @Entity
 @ApiModel( value = "Version_Object", description = "Model of Version_Object")
 public class Model_VersionObject extends Model {
@@ -90,7 +92,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)     public List<Model_BProgramHwGroup> b_program_hw_groups = new ArrayList<>();
 
 
-    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions")   public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
+    @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions") public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
 
     // B_Program - Instance
     @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();

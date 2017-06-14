@@ -36,18 +36,10 @@ public class Model_MProjectProgramSnapShot extends Model {
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_name()        { return m_project.name;}
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_description() { return m_project.description;}
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore                                      public boolean read_permission()      {return true;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean unshare_permission()   {return true;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean share_permission ()    {return true;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean admin_permission ()    {return true;}
-
-
     @JsonProperty @ApiModelProperty(required = true) public List<Model_MProgramInstanceParameter> m_program_snapshots(){
         try{
 
-            return m_program_snapshots;
+            return Model_MProgramInstanceParameter.find.where().eq("m_project_program_snapshot.id", id).order().asc("m_program_version.m_program.name").findList();
 
         }catch (Exception e){
 
@@ -56,6 +48,10 @@ public class Model_MProjectProgramSnapShot extends Model {
         }
 
     }
+
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+
 
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -88,6 +84,11 @@ public class Model_MProjectProgramSnapShot extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore                                      public boolean read_permission()      {return true;}
+    @JsonProperty @ApiModelProperty(required = true) public boolean unshare_permission()   {return true;}
+    @JsonProperty @ApiModelProperty(required = true) public boolean share_permission ()    {return true;}
+    @JsonProperty @ApiModelProperty(required = true) public boolean admin_permission ()    {return true;}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
