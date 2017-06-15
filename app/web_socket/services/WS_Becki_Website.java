@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * WS_Becki_Website is the layer that envelops user websocket connection.
+ * Each user can be logged in multiple times. Which means that it is necessary to keep the map of each connection.
+ */
 public class WS_Becki_Website extends WS_Interface_type {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -28,18 +32,26 @@ public class WS_Becki_Website extends WS_Interface_type {
 
 /* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
-    public static final String CHANNEL = "becki";
+    public static final String CHANNEL = "becki"; // WebSocket Channel Name for conection between Becki Portal and Tyrion Server
 
-    public Map<String, WS_Becki_Single_Connection> all_person_Connections = new HashMap<>();
-    public Model_Person person;
-    public String identifikator;
+    public Map<String, WS_Becki_Single_Connection> all_person_Connections = new HashMap<>(); // <person_id, WS_Becki_Single_Connection>
+    public String identifikator;  // Person ID is main identificator for WS_Becki_Website
+
+
+/* CONSTRUCTOR  --------------------------------------------------------------------------------------------------------*/
 
     public WS_Becki_Website(Model_Person person) {
+
         super();
-        this.person = person;
         identifikator = person.id;
+
     }
 
+    /**
+     *
+     * @return Return True of False for online status - It is necessary to check each login separately
+     * returns true if there is at least one online
+     */
     @Override
     public boolean is_online() {
         try {
@@ -49,12 +61,18 @@ public class WS_Becki_Website extends WS_Interface_type {
             }
 
             out.write(" Něco posílám???");
+
             return true;
         }catch (Exception e){
             return false;
         }
     }
 
+    /**
+     * Přidá nové websocket spojení do mapy spojení WS_Becki_Website, které zastřešuje jednoho uživatle.
+     * Každé spojení představuje jednu spuštěbnou instanci websocketu (nový Tab v prohložeči,
+     * nové okno prohlížeče, přihlášení na druhém počítači atd.)
+     */
     @Override
     public void add_to_map() {
         Controller_WebSocket.becki_website.put(identifikator, this);
@@ -65,9 +83,19 @@ public class WS_Becki_Website extends WS_Interface_type {
         return identifikator;
     }
 
+    /**
+     * Jelikož třída WS_Becki_Website maskuje kolekci připojení n spojení jednoho uživatele, je nutné jí
+     * implementovat pro celkovou jednotnost
+     */
     @Override
-    public WebSocket<String> connection(){return null;}
+    public WebSocket<String> connection(){
+        terminal_logger.internalServerError("It is not allowed and desirable to call the connection() method. It is not usable for any purpose due to concealment of user connections!", new IllegalAccessException() );
+        return null;
+    }
 
+    /**
+     *
+     */
     @Override
     public void onClose() {
 
