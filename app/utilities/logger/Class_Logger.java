@@ -12,6 +12,7 @@ public class Class_Logger{
     public void info (String log_message, Object... args) {Server_Logger.info (t_class, log_message, args);}
     public void debug(String log_message, Object... args) {Server_Logger.debug(t_class, log_message, args);}
     public void warn (String log_message, Object... args) {Server_Logger.warn (t_class, log_message, args);}
+
     @Deprecated
     public void error(String log_message, Object... args) {Server_Logger.error(t_class, log_message, args);}
 

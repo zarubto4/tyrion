@@ -692,8 +692,38 @@ public class Model_Board extends Model {
             terminal_logger.debug("hardware_firmware_state_check::     Actual firmware_id by HW::: " + report.firmware_build_id);
 
 
-            if (board.actual_c_program_version == null) terminal_logger.debug("hardware_firmware_state_check::      Actual firmware_id by DB not recognized - Device has not firmware from Tyrion");
-            else  terminal_logger.debug("hardware_firmware_state_check::        Actual firmware_id by DB:: " + board.actual_c_program_version.c_compilation.firmware_build_id);
+            if (board.actual_c_program_version == null){
+
+                terminal_logger.debug("hardware_firmware_state_check::      Actual firmware_id by DB not recognized - Device has not firmware from Tyrion");
+                terminal_logger.debug("hardware_firmware_state_check::      Tyrion Try to find Defaul C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
+
+                // Nastavím default firmware
+                if(board.type_of_board.version_scheme.default_main_version != null){
+
+                    terminal_logger.debug("hardware_firmware_state_check::      Yes, Default Version for Type Of Device {} is set", board.type_of_board.name);
+
+                    List<Model_BPair> b_pairs = new ArrayList<>();
+
+                    Model_BPair b_pair = new Model_BPair();
+                    b_pair.board = board;
+                    b_pair.c_program_version = board.type_of_board.version_scheme.default_main_version;
+
+                    b_pairs.add(b_pair);
+
+                    board.notification_board_not_databased_version();
+
+                    Model_Board.update_firmware(Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
+
+                    return;
+
+                }else {
+                    terminal_logger.internalServerError("hardware_firmware_state_check::      For Type Of Board " + board.type_of_board.name + " is not set Main default C_Program version! ", new IllegalArgumentException());
+                }
+
+
+            } else {
+                terminal_logger.debug("hardware_firmware_state_check::        Actual firmware_id by DB:: " + board.actual_c_program_version.c_compilation.firmware_build_id);
+            }
 
             if (board.actual_boot_loader == null)       terminal_logger.debug("hardware_firmware_state_check::      Actual bootloader_id by DB not recognized :: " + report.bootloader_build_id);
             else terminal_logger.debug("hardware_firmware_state_check::    Actual bootloader_id by DB:: " + board.actual_boot_loader.version_identificator);
@@ -709,78 +739,307 @@ public class Model_Board extends Model {
                         .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
                         .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                     .endJunction()
-                    .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
+                    .disjunction()
+                        .add(Expr.eq("firmware_type", Enum_Firmware_type.FIRMWARE.name()))
+                        .add(Expr.eq("firmware_type", Enum_Firmware_type.BACKUP.name()))
+                        .add(Expr.eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name()))
                     .findList();
 
             terminal_logger.debug("hardware_firmware_state_check::      Total CProgramUpdatePlans for this device (not complete):: " + firmware_plans.size());
+            terminal_logger.debug("hardware_firmware_state_check::      Message form Homer:: " + Json.toJson(report));
 
             if(firmware_plans.size() == 0){
 
-                if(report.firmware_build_id != null)                // Hází to null pointer exception při náběhu instnací na homerovi a touhle stupidní kaskádou se hledalo na čem
-                if(board.actual_c_program_version != null)
-                if(board.actual_c_program_version.c_compilation != null)
-                if(!report.firmware_build_id.equals( board.actual_c_program_version.c_compilation.firmware_build_id)){
+                terminal_logger.debug("hardware_firmware_state_check::     There is no Active Updates for Firmware, Backup or Bootloader");
+                terminal_logger.debug("hardware_firmware_state_check::     But its time ti check actual versions for database collisions ");
 
-                    terminal_logger.debug("hardware_firmware_state_check::     Different versions versus database");
-                    terminal_logger.debug("hardware_firmware_state_check::     Auto-backup on Hardware is set to :: " + board.backup_mode );
+                // Firmware
+                terminal_logger.debug("hardware_firmware_state_check::     First Check Firmware! ");
+                if(report.firmware_build_id != null) // Hází to null pointer exception při náběhu instancí na homerovi a touhle stupidní kaskádou se hledalo na čem
+                    if(board.actual_c_program_version != null)
+                        if(board.actual_c_program_version.c_compilation != null)
+                            if(!report.firmware_build_id.equals( board.actual_c_program_version.c_compilation.firmware_build_id)){
 
-                    if(board.actual_backup_c_program_version != null &&  board.actual_c_program_version.c_compilation != null   ){
+                                terminal_logger.debug("hardware_firmware_state_check::     Different firmware versions versus database");
 
-                        if(board.actual_c_program_version.c_compilation.firmware_build_id .equals(report.firmware_build_id )){
+                                // Nejpravděpodobnější varianta proč tam není správná verze je nasazený Backup
+                                // Pokud je aktuální backup podle DB shodný firmwarem na hardwaru - měl bych oznámit kritickou chybu uživatelovi
+                                // A zároven označit firmware verzi za nestabilní
+                                // Nastavit aktuální verzi firmwaru na backup který naběhnul
 
-                            terminal_logger.warn("hardware_firmware_state_check::     On device is Backup!!! TODO"); //TODO
+                                if(board.actual_backup_c_program_version.id.equals(report.bootloader_build_id)){
 
-                        }
-                    }else {
-                        terminal_logger.warn("hardware_firmware_state_check::     No Backup, No right version.. What to do??? TODO"); //TODO
+                                    terminal_logger.warn("hardware_firmware_state_check::     We have problem with firmware version. Backup is now running");
 
-                    }
-                }
+
+                                    // Notifikace uživatelovi
+                                    board.notification_board_unstable_actual_firmware_version(board.actual_c_program_version);
+
+                                    // Označit firmare za nestabilní
+                                    board.actual_c_program_version.c_compilation.status = Enum_Compile_status.hardware_unstable;
+                                    board.actual_c_program_version.c_compilation.update();
+
+                                    // Přemapovat hardware
+                                    board.actual_c_program_version = board.actual_backup_c_program_version;
+                                    board.update();
+
+                                    return;
+
+                                }
+
+                                // Backup to není
+                                else {
+
+                                    terminal_logger.warn("hardware_firmware_state_check::     Wrong version on hardware - or null version on hardware");
+                                    terminal_logger.warn("hardware_firmware_state_check::     Now System set Default Firmware or Firmware by Database!!!");
+
+                                    // Nastavuji nový systémový update
+                                    List<Model_BPair> b_pairs = new ArrayList<>();
+
+                                    Model_BPair b_pair = new Model_BPair();
+                                    b_pair.board = board;
+                                    b_pair.c_program_version = board.actual_c_program_version;
+
+                                    b_pairs.add(b_pair);
+
+                                    Model_Board.update_firmware(Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
+
+                                    return;
+
+                                }
+
+                            }
+
+                 // Bootloader
+                terminal_logger.debug("hardware_firmware_state_check::     Second Check Bootloader! ");
+                if(report.bootloader_build_id != null)
+                    if(board.actual_boot_loader != null)
+                        if(board.actual_boot_loader != null)
+                            if(board.actual_boot_loader.main_type_of_board != null)
+                                if(!report.bootloader_build_id.equals(board.actual_boot_loader.id.toString())){
+
+                                    terminal_logger.debug("hardware_firmware_state_check::     Different bootloader on hardware versus database");
+
+                                    List<Model_Board> boards_for_bootloader_update = new ArrayList<>();
+                                    boards_for_bootloader_update.add(board);
+
+                                    terminal_logger.debug("hardware_firmware_state_check::     Creating update procedure");
+                                    Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards_for_bootloader_update, board.actual_boot_loader);
+
+                                }
+
+
+                terminal_logger.debug("hardware_firmware_state_check::     Third Check Backup! ");
+                if(report.backup_build_id != null) // Hází to null pointer exception při náběhu instancí na homerovi a touhle stupidní kaskádou se hledalo na čem
+                        if(board.actual_backup_c_program_version != null)
+                            if(board.actual_backup_c_program_version.c_compilation != null)
+                                if(!report.backup_build_id.equals( board.actual_backup_c_program_version.c_compilation.firmware_build_id)){
+
+                                    terminal_logger.debug("hardware_firmware_state_check::     Inconsistent backup state on hardware with Database - Start new Update Procedure");
+
+                                    // Nastavuji nový systémový update
+                                    List<Model_BPair> b_pairs = new ArrayList<>();
+
+                                    Model_BPair b_pair = new Model_BPair();
+                                    b_pair.board = board;
+                                    b_pair.c_program_version = board.actual_c_program_version;
+
+                                    b_pairs.add(b_pair);
+
+                                    Model_Board.update_backup(Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
+                                    return;
+
+                                 }
+                return;
             }
 
-            if (firmware_plans.size() > 0) {
 
-                terminal_logger.debug("hardware_firmware_state_check::     there is still some not finished firmware_plans");
+            /**
+             * Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
+             * To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
+             * Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
+             * Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
+             */
 
-                if (firmware_plans.size() > 1) {
-                    for (int i = 1; i < firmware_plans.size(); i++) {
+            if (firmware_plans.size() > 1) {
 
-                        terminal_logger.debug("hardware_firmware_state_check::      overwritten previous update procedure");
+                terminal_logger.debug("hardware_firmware_state_check::  there is still some not finished firmware_plans");
+
+                // Kontrola Firmwaru
+                int pointer = -1;
+
+                for (int i = 0; i < firmware_plans.size(); i++) {
+
+                    if(pointer == -1 && firmware_plans.get(i).firmware_type == Enum_Firmware_type.FIRMWARE){
+                        pointer = i;
+                        continue;
+                    }
+
+                    if(firmware_plans.get(i).firmware_type  == Enum_Firmware_type.FIRMWARE){
+                        firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                        firmware_plans.get(i).update();
+                    }
+
+                }
+
+                pointer = -1;
+
+                // Kontrola Bootloader
+                for (int i = 0; i < firmware_plans.size(); i++) {
+
+                    if(pointer == -1 && firmware_plans.get(i).firmware_type == Enum_Firmware_type.BOOTLOADER){
+                        pointer = i;
+                        continue;
+                    }
+
+                    if(firmware_plans.get(i).firmware_type  == Enum_Firmware_type.BOOTLOADER){
                         firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
                         firmware_plans.get(i).update();
                     }
                 }
 
+                pointer = -1;
+
+                // Kontrola Backupu
+                for (int i = 0; i < firmware_plans.size(); i++) {
+
+                    if(pointer == -1 && firmware_plans.get(i).firmware_type == Enum_Firmware_type.BACKUP){
+                        pointer = i;
+                        continue;
+                    }
+
+                    if(firmware_plans.get(i).firmware_type  == Enum_Firmware_type.BACKUP){
+                        firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                        firmware_plans.get(i).update();
+                    }
+                }
+
+                // Projedu seznam a do nového seznamu vložím jen ty se kterými chci nadále pracovat
+                List<Model_CProgramUpdatePlan> firmware_separated_plans = new ArrayList<>();
+                for(int i = 0;  i < firmware_plans.size(); i++){
+                    if(firmware_plans.get(0).state != Enum_CProgram_updater_state.overwritten) firmware_separated_plans.add(firmware_plans.get(0));
+                }
+
+                firmware_plans = firmware_separated_plans;
+            }
+
+
+            if (firmware_plans.size() > 0) {
+
+
                 terminal_logger.trace("hardware_firmware_state_check:: Firmware");
 
-                // Mám shodu oproti očekávánemů
-                if (firmware_plans.get(0).board.actual_c_program_version != null) {
+                for(Model_CProgramUpdatePlan plan : firmware_plans) {
 
-                    // Verze se rovnají
-                    if (firmware_plans.get(0).board.actual_c_program_version.c_compilation.firmware_build_id.equals(firmware_plans.get(0).c_program_version_for_update.c_compilation.firmware_build_id)) {
 
-                        terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are equal. Procedure done");
-                        firmware_plans.get(0).state = Enum_CProgram_updater_state.complete;
-                        firmware_plans.get(0).update();
+                    // Mám shodu firmwaru oproti očekávánemů
+                    if(plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
 
-                    } else {
+                        if (plan.board.actual_c_program_version != null) {
 
-                        terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal,System start with and try the new update");
-                        firmware_plans.get(0).state = Enum_CProgram_updater_state.not_start_yet;
-                        terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal, System start with and try the new update. Number of Tries:: {} " , firmware_plans.get(0).count_of_tries);
-                        firmware_plans.get(0).count_of_tries++;
-                        firmware_plans.get(0).update();
-                        Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(firmware_plans.get(0).actualization_procedure);
+                            // Verze se rovnají
+                            if (plan.board.actual_c_program_version.c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+
+                                terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are equal. Procedure done");
+                                plan.state = Enum_CProgram_updater_state.complete;
+                                plan.update();
+
+                            } else {
+
+                                terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal, System start with and try the new update");
+                                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                                terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal, System start with and try the new update. Number of Tries:: {} ", plan.count_of_tries);
+                                plan.count_of_tries++;
+                                plan.update();
+                                Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
+
+                            }
+
+                        } else {
+
+                            terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal because there is no on the hardware at all. System start with a new update");
+                            plan.state = Enum_CProgram_updater_state.not_start_yet;
+                            plan.count_of_tries++;
+                            plan.update();
+
+                            Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
+
+                        }
+
+                        continue;
+                    }
+
+                    if(plan.firmware_type == Enum_Firmware_type.BOOTLOADER){
+
+                        if (plan.board.actual_boot_loader != null) {
+
+                            // Verze se rovnají
+                            if (plan.board.actual_boot_loader.version_identificator.equals(plan.bootloader.version_identificator)) {
+
+                                terminal_logger.debug("hardware_firmware_state_check:: Bootloader versions are equal. Procedure done");
+                                plan.state = Enum_CProgram_updater_state.complete;
+                                plan.update();
+
+                            } else {
+
+                                terminal_logger.debug("hardware_firmware_state_check:: Bootloader versions are not equal, System start with and try the new update");
+                                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                                terminal_logger.debug("hardware_firmware_state_check:: Bootloader versions are not equal, System start with and try the new update. Number of Tries:: {} ", plan.count_of_tries);
+                                plan.count_of_tries++;
+                                plan.update();
+                                Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
+
+                            }
+
+                        } else {
+
+                            terminal_logger.debug("hardware_firmware_state_check:: Bootloader versions are not equal because there is no on the hardware at all. System start with a new update");
+                            plan.state = Enum_CProgram_updater_state.not_start_yet;
+                            plan.count_of_tries++;
+                            plan.update();
+
+                            Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
+
+                        }
+
+                        continue;
 
                     }
 
-                } else {
 
-                    terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are not equal because there is no on the hardware at all. System start with a new update");
-                    firmware_plans.get(0).state = Enum_CProgram_updater_state.not_start_yet;
-                    firmware_plans.get(0).update();
+                    if(plan.firmware_type == Enum_Firmware_type.BACKUP) {
 
-                    Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(firmware_plans.get(0).actualization_procedure);
+                        if (plan.board.actual_backup_c_program_version != null) {
+
+                            // Verze se rovnají
+                            if (plan.board.actual_backup_c_program_version.c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+
+                                terminal_logger.debug("hardware_firmware_state_check:: Backup versions are equal. Procedure done");
+                                plan.state = Enum_CProgram_updater_state.complete;
+                                plan.update();
+
+                            } else {
+
+                                terminal_logger.debug("hardware_firmware_state_check:: Backup versions are not equal, System start with and try the new update");
+                                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                                terminal_logger.debug("hardware_firmware_state_check:: Backup versions are not equal, System start with and try the new update. Number of Tries:: {} ", plan.count_of_tries);
+                                plan.count_of_tries++;
+                                plan.update();
+                                Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
+
+                            }
+
+                        } else {
+
+                            terminal_logger.debug("hardware_firmware_state_check:: Backup versions are not equal because there is no on the hardware at all. System start with a new update");
+                            plan.state = Enum_CProgram_updater_state.not_start_yet;
+                            plan.count_of_tries++;
+                            plan.update();
+
+                            Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
+
+                        }
+                    }
 
                 }
             }
@@ -1191,6 +1450,66 @@ public class Model_Board extends Model {
 
             }catch (Exception e){
                 terminal_logger.internalServerError("notification_board_disconnect:", e);
+            }
+        }).start();
+    }
+
+    @JsonIgnore @Transient
+    public void notification_board_unstable_actual_firmware_version(Model_VersionObject firmware_version){
+        new Thread( () -> {
+
+            // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
+            if(project == null) return;
+
+            try{
+
+                new Model_Notification()
+                        .setImportance( Enum_Notification_importance.high)
+                        .setLevel(Enum_Notification_level.error)
+                        .setText(new Notification_Text().setText("Attention! We note the highest critical error on your device "))
+                        .setObject(this)
+                        .setText(new Notification_Text().setText(" There was a collapse of the running firmware "))
+                        .setObject(firmware_version.c_program)
+                        .setText(new Notification_Text().setText(" version "))
+                        .setObject(firmware_version)
+                        .setText(new Notification_Text().setText(". But stay calm. The hardware has successfully restarted and uploaded a backup version. " +
+                                "This can cause a data collision in your Blocko Program, but you have the chance to fix the firmware. " +
+                                "Incorrect version of Firmware has been flagged as unreliable."))
+                        .send_under_project(project_id());
+
+            }catch (Exception e){
+                terminal_logger.internalServerError("notification_board_unstable_actual_firmware_version:", e);
+            }
+        }).start();
+    }
+
+    @JsonIgnore @Transient
+    public void notification_board_not_databased_version(){
+        new Thread( () -> {
+
+            // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
+            if(project == null) return;
+
+            try{
+
+                new Model_Notification()
+                        .setImportance( Enum_Notification_importance.normal)
+                        .setLevel(Enum_Notification_level.info)
+                        .setText(new Notification_Text().setText("Attention! Device "))
+                        .setObject(this)
+                        .setText(new Notification_Text().setText(" has logged in. Unfortunately, we do not have a synchronized knowledge of the " +
+                                "device status of what device firmware is running on. Perhaps this is the factory setting. " +
+                                "We are now updating to the default firmware on device."))
+                        .setnewLine()
+                        .setText(new Notification_Text().setText("You do not have to do anything. Have a nice day."))
+                        .setnewLine()
+                        .setText(new Notification_Text().setText("Byzance"))
+                        .send_under_project(project_id());
+
+
+
+            }catch (Exception e){
+                terminal_logger.internalServerError("notification_board_unstable_actual_firmware_version:", e);
             }
         }).start();
     }

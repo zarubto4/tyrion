@@ -109,9 +109,9 @@ public class Model_BootLoader extends Model {
                     .setLevel(Enum_Notification_level.success)
                     .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
                     .setId(plan.id)
-                    .setText(new Notification_Text().setText("Success! Bootloader update is done! Version "))
+                    .setText(new Notification_Text().setText("Success! Bootloader version "))
                     .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
-                    .setText(new Notification_Text().setText(" for device "))
+                    .setText(new Notification_Text().setText("  is done for device "))
                     .setObject(plan.board)
                     .setText(new Notification_Text().setText(". "))
                     .setText(new Notification_Text().setText("Have a nice Day!"))
