@@ -42,10 +42,10 @@ public class Server_Logger extends Controller {
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     @Inject
-    static WSClient wsClient; // používat přes getWSClient()
+    private static WSClient wsClient; // používat přes getWSClient()
 
-    static String token = "";       // token na youtrack
-    static long tokenExpire = 0;    // kdy expiruje token na youtrack
+    private static String token = "";       // token na youtrack
+    private static long tokenExpire = 0;    // kdy expiruje token na youtrack
 
     private static Interface_Server_Logger logger;                      // Vlastní Loggy objekt definovaný konfigurací
 
@@ -250,11 +250,9 @@ public class Server_Logger extends Controller {
     }
 
     // Nahraje konkrétní bug na Youtrack
-    public F.Promise<Result> loggy_report_bug_to_youtrack(String bug_id) {
+    public Result loggy_report_bug_to_youtrack(String bug_id) {
 
-
-        F.Promise<Result> p = Server_Logger.upload_to_youtrack(bug_id);
-        return p.map((result) -> redirect("/admin/bugs"));
+        return upload_to_youtrack(bug_id);
     }
 
     // Odstraní konkrétní bug ze seznamu (souboru)
@@ -327,22 +325,24 @@ public class Server_Logger extends Controller {
         } catch (Exception e) {}
     }
 
-    public static F.Promise<Result> upload_to_youtrack(String id) {
-        if (System.currentTimeMillis() > tokenExpire-10000) { // pokud nemám platný token, získám ho a metodu spustím znovu
-            return youtrack_login().flatMap((result) -> upload_to_youtrack(id));
+    public static Result upload_to_youtrack(String id) {
+        if (System.currentTimeMillis() > tokenExpire - 10000) { // pokud nemám platný token, získám ho a metodu spustím znovu
+            if (youtrack_login().get(5000).status() != 200) {
+                return GlobalResult.result_badRequest("Cannot login to YouTrack");
+            }
         }
         Model_LoggyError e = getError(id);
         if (e == null) {
-            return F.Promise.promise(Results::badRequest);
+            return GlobalResult.result_notFound("Error not found");
         }
         // sestavím request na nahrání
         WSRequest request = getWSClient().url(Configuration.root().getString("Loggy.youtrackUrl") + "/youtrack/rest/issue");
         request.setQueryParameter("project", Configuration.root().getString("Loggy.youtrackProject"));
         request.setQueryParameter("summary", e.summary);
-        request.setQueryParameter("description", e.description);
+        request.setQueryParameter("description", e.description + e.stack_trace + e.cause);
         request.setHeader("Authorization", "Bearer "+token);
         F.Promise<WSResponse> promise = request.put("");
-        return promise.map(response -> youtrack_checkUploadResponse(response, e)); // zpracuje odpověď a zapíše url do erroru
+        return youtrack_checkUploadResponse(promise.get(10000), e); // zpracuje odpověď a zapíše url do erroru
     }
 
     public static List<Model_LoggyError> getErrors(Integer a){
@@ -350,7 +350,7 @@ public class Server_Logger extends Controller {
     }
 
     public static List<Model_LoggyError> getErrors(){
-        return Model_LoggyError.find.where().orderBy().asc("created").findList();
+        return Model_LoggyError.find.where().orderBy().desc("created").findList();
     }
 
     public static Model_LoggyError getError(String id) {
@@ -375,6 +375,10 @@ public class Server_Logger extends Controller {
     }
 
     private static Result youtrack_checkLoginResponse(WSResponse response) {
+
+        System.out.println(response.getStatus());
+        System.out.println(response.asJson().toString());
+
         if (response.getStatus() == 200) {  // pokud úspěšné, uložím token a jeho expiraci
             JsonNode content = response.asJson();
             token = content.get("access_token").asText();

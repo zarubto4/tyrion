@@ -29,9 +29,8 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
         try {
 
             for(String key :  Controller_WebSocket.homer_servers.keySet() ){
-                System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
+                terminal_logger.trace("In {}  is identifier: {}", getClass().getSimpleName(), key);
             }
-
 
             out.write(" Něco posílám???");
             return true;

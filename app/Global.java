@@ -28,7 +28,6 @@ public class Global extends GlobalSettings {
 
     @Override
     public void onStart(Application app) {
-
         try {
 
             // Set Logs
@@ -39,7 +38,7 @@ public class Global extends GlobalSettings {
             Server.setLogback();
 
             //2
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +  "onStart: Setting global values" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Setting global values" + Enum_Terminal_Color.ANSI_RESET);
             Server.setServerValues();
 
             //3
@@ -67,7 +66,7 @@ public class Global extends GlobalSettings {
             DocumentDB.set_no_SQL_collection();
 
             //9
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW +"onStart: Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
             Server.setAdministrator();
 
             if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion server in Mode " + Server.server_mode.name() + " version: " + Server.server_version + " started on " + new Date().toString() + ".");
@@ -76,16 +75,16 @@ public class Global extends GlobalSettings {
             System.out.println("");
             System.out.println("");
             System.out.println("");
-            terminal_logger.error("#########################################################################################");
-            terminal_logger.error("##                                                                                     ##");
-            terminal_logger.error("##       Tyrion is not configured properly!!!!                                         ##");
-            terminal_logger.error("##       Please - Check Global Class!!!!                                               ##");
-            terminal_logger.error("##                                                                                     ##");
-            terminal_logger.error("#########################################################################################");
+            System.err.println("#########################################################################################");
+            System.err.println("##                                                                                     ##");
+            System.err.println("##       Tyrion is not configured properly!!!!                                         ##");
+            System.err.println("##       Please - Check Global Class!!!!                                               ##");
+            System.err.println("##                                                                                     ##");
+            System.err.println("#########################################################################################");
             System.out.println("");
             System.out.println("");
             System.out.println("");
-            terminal_logger.error("onStart Error", e);
+            terminal_logger.internalServerError(e);
        }
 
     }
@@ -117,7 +116,7 @@ public class Global extends GlobalSettings {
                 CustomScheduler.stopScheduler();
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("onStop", e);
+                terminal_logger.internalServerError(e);
             }
         }
 

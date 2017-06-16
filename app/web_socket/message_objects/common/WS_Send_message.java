@@ -35,6 +35,9 @@ public class WS_Send_message {
 
         if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
 
+        // Ukončím běžící vlákno čekající na odpověď
+        future.cancel(true);
+
         return request;
     }
 
@@ -66,10 +69,10 @@ public class WS_Send_message {
         }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
 
 
-        terminal_logger.trace("insert_result:: MessageID:: {}  saving result to variable " , messageId );
+        terminal_logger.trace("insert_result: MessageID: {}  saving result to variable " , messageId );
         this.result = result;
 
-        terminal_logger.trace("insert_result:: MessageID:: {}  Terminating message thread");
+        terminal_logger.trace("insert_result: MessageID: {}  Terminating message thread");
         future.cancel(true); // Terminuji zprávu k odeslání
 
     }
@@ -80,11 +83,11 @@ public class WS_Send_message {
         try {
 
             if(this.messageId == null) {
-                terminal_logger.internalServerError("send_with_response:", new Exception("messageId is null."));
+                terminal_logger.internalServerError(new Exception("messageId is null."));
             }
 
             if(this.json == null){
-                terminal_logger.internalServerError("send_with_response:", new Exception("JSON is null."));
+                terminal_logger.internalServerError(new Exception("JSON is null."));
             }
 
             terminal_logger.trace("send_with_response: Sending message: {} Message :: {} " , this.messageId, json );
@@ -92,7 +95,7 @@ public class WS_Send_message {
             if(future != null) {
                 return future.get();
             }else {
-                terminal_logger.internalServerError("send_with_response:", new Exception("future parameter is null"));
+                terminal_logger.internalServerError(new Exception("future parameter is null"));
                 throw new TimeoutException();
             }
         }catch (CancellationException e){
@@ -110,18 +113,14 @@ public class WS_Send_message {
 
                 Thread.sleep(delay);
 
-                int i = 0;
-
                 terminal_logger.trace("thread: ");
-
-                if (number_of_retries == null) throw new NullPointerException("Number of retries was null. MessageId was " + messageId + ". Message JSON was " + (json != null ? json : "null"));
 
                 while (number_of_retries >= 0) {
 
 
                     if(json != null) {
 
-                        terminal_logger.trace("thread: MessageID:: {} , MessageType:: {} , Number of RetiresTime:: {} , RecurencyTime:: {} ", messageId, json.get("messageType"), number_of_retries, time);
+                        terminal_logger.trace("thread: MessageID: {} , MessageType: {} , Number of RetiresTime: {} , Time to wait: {} ", messageId, json.get("messageType"), number_of_retries, time);
 
                         sender_object.out.write(json.toString());
                         --number_of_retries;
@@ -133,21 +132,27 @@ public class WS_Send_message {
                         }
 
                     }else {
-                        terminal_logger.trace("thread: MessageID:: {} , MessageType:: {} , Nothing for sending - just waiting for result - It can be from Compilator? Cycle:: {}", messageId, i++);
+                        terminal_logger.trace("thread: MessageID: {}, Waiting for the result", messageId);
                     }
 
                     Thread.sleep(time);
                 }
 
                 if(!sender_object.is_online())  {
-                    terminal_logger.internalServerError("thread:", new Exception("Sender is offline. MessageID: " + messageId + ", MessageType: " + json.get("messageType")));
+                    terminal_logger.internalServerError(new Exception("Sender is offline. MessageID: " + messageId + ", MessageType: " + json.get("messageType")));
                     sender_object.close();
                 }
 
-                terminal_logger.internalServerError("thread:" , new Exception("Timeout. Responding with Error. Message ID: " + messageId));
+                terminal_logger.internalServerError(new Exception("Timeout. Responding with Error. Message ID: " + messageId));
                 return time_out_exception_error_response();
 
-            }catch (InterruptedException|CancellationException e){
+            } catch (NullPointerException e){
+
+                terminal_logger.warn("thread: MessageId = {}, JSON = {}, number of retries = {}, time = {}, delay = {}", messageId, json, number_of_retries, time, delay);
+
+                throw e;
+
+            } catch (InterruptedException|CancellationException e){
 
                 if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
 
@@ -157,12 +162,9 @@ public class WS_Send_message {
 
                 if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
 
-                terminal_logger.internalServerError("call:", e);
+                terminal_logger.internalServerError(e);
                 throw e;
             }
         }
     }
 }
-
-
-

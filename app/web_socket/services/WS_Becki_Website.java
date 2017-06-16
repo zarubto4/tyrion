@@ -1,6 +1,5 @@
 package web_socket.services;
 
-import com.avaje.ebeaninternal.server.lib.util.Str;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
@@ -16,7 +15,6 @@ import web_socket.message_objects.tyrion_with_becki.WS_Message_Subscribe_Notific
 import web_socket.message_objects.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,7 +55,7 @@ public class WS_Becki_Website extends WS_Interface_type {
         try {
 
             for(String key :  Controller_WebSocket.homer_servers.keySet() ){
-                System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
+                terminal_logger.trace("In {}  is identifier: {}", getClass().getSimpleName(), key);
             }
 
             out.write(" Něco posílám???");

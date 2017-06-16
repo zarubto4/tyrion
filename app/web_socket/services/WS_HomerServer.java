@@ -53,7 +53,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
             for(String key :  Controller_WebSocket.homer_servers.keySet() ){
                 // TODO jednou smazat
-                System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
+                terminal_logger.trace("In {}  is identifier: {}", getClass().getSimpleName(), key);
             }
 
             terminal_logger.trace("is_online:: Test online state Server ID {} ", identifikator);
