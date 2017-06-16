@@ -7,6 +7,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.Json;
 import play.mvc.Result;
 import utilities.enums.Enum_ExtensionType;
@@ -165,16 +166,24 @@ public class Model_ProductExtension extends Model{
     public Long getActualPrice() {
         try {
 
+            terminal_logger.trace("getActualPrice: Getting price for extension of type '{}' with id: {}", this.type.name(), this.id);
+
             Extension extension = getExtensionType();
             if (extension == null) return null;
 
             Object configuration = getConfiguration();
             if (configuration == null) return null;
 
-            return extension.getActualPrice(configuration);
+            terminal_logger.debug("getActualPrice: Got extension type and configuration.");
+
+            Long price = extension.getActualPrice(configuration);
+
+            terminal_logger.debug("getActualPrice: Returned value is {}", price);
+
+            return price;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getActualPrice:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -187,24 +196,28 @@ public class Model_ProductExtension extends Model{
     public Long getDailyPrice() {
         try {
 
+            terminal_logger.trace("getActualPrice: Getting price for extension of type {}", this.type.name());
+
             Extension extension = getExtensionType();
             if (extension == null) return null;
 
             Object configuration = getConfiguration();
             if (configuration == null) return null;
 
+            terminal_logger.debug("getDailyPrice: Got extension type and configuration.");
+
             return extension.getDailyPrice(configuration);
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getDailyPrice:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
 
     /**
      * Method serves for information purposes only.
-     * Returned value is shown to users, because real price is Double USD * 1000
-     * @return
+     * Returned value is shown to users, because real price is Double USD * 1000.
+     * @return Real price in Double.
      */
     @JsonIgnore
     public Double getDoubleDailyPrice() {
@@ -216,7 +229,7 @@ public class Model_ProductExtension extends Model{
             return (double) price / 1000;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getDoubleDailyPrice:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -241,7 +254,7 @@ public class Model_ProductExtension extends Model{
             return extension;
 
         } catch (Exception e){
-            terminal_logger.internalServerError("getExtensionType:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -303,7 +316,7 @@ public class Model_ProductExtension extends Model{
             return types;
 
         } catch (Exception e){
-            terminal_logger.internalServerError("getExtensionTypes:", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
@@ -326,6 +339,8 @@ public class Model_ProductExtension extends Model{
     @JsonIgnore
     public Object getConfiguration(){
         try {
+
+            terminal_logger.trace("getConfiguration: Binding JSON: {}", this.configuration);
 
             Form<?> form;
 
@@ -369,11 +384,14 @@ public class Model_ProductExtension extends Model{
                 default: throw new Exception("Extension type is unknown.");
             }
 
-            if(form.hasErrors()) throw new Exception("Error parsing product configuration. Errors: " + form.errorsAsJson());
+            if(form.hasErrors()) throw new Exception("Error parsing product configuration. Errors: " + form.errorsAsJson(Lang.forCode("en-US")));
+
+            terminal_logger.debug("getConfiguration: Seems like the configuration is ok");
+
             return form.get();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getConfiguration:",e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }

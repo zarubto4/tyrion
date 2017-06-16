@@ -325,7 +325,7 @@ public class Model_CProgramUpdatePlan extends Model {
     public static void update_procedure_state(WS_Message_UpdateProcedure_result procedure_result){
         try{
 
-            System.out.println("Příšel mi rychlý update o progresu větší update procedury");
+            terminal_logger.trace("update_procedure_state: Got quick update about progress of bigger update procedure");
 
             Model_CProgramUpdatePlan plan = get_model(procedure_result.updatePlanId);
 

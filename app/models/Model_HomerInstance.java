@@ -705,7 +705,7 @@ public class Model_HomerInstance extends Model {
 
                     if( instance.actual_instance != null) {
 
-                        System.out.println("Actual Instnace != null -> InstanceRecord ID: " + instance.actual_instance.id);
+                        terminal_logger.debug("upload_Record_immediately: Actual Instnace != null -> InstanceRecord ID: {}", instance.actual_instance.id);
 
                         terminal_logger.debug("upload_Record_immediately:: Record overwriting previous instance record:: " + instance.actual_instance.id);
 
@@ -865,16 +865,11 @@ public class Model_HomerInstance extends Model {
             // cloud_homer_server.get_server_webSocket_connection().check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
 
 
-            System.out.println("------------------------------------------");
-
-
             actual_instance.refresh();
             for(Model_ActualizationProcedure procedure : actual_instance.procedures) {
-                System.out.println("Procedure:: Id:: " + procedure.id + " state:: " + procedure.state);
+                terminal_logger.debug("update_instance_to_actual_instance_record: Procedure: Id: {} state: {}",procedure.id , procedure.state);
                 Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
             }
-
-
 
             WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
             response.status = "success";
@@ -1128,7 +1123,7 @@ public class Model_HomerInstance extends Model {
 
             if(!server_is_online()) throw new InterruptedException();
 
-            System.out.print("get_devices_online_state:: List contains " + device_id.size());
+            terminal_logger.trace("get_devices_online_state: List contains {}", device_id.size());
 
             JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
 

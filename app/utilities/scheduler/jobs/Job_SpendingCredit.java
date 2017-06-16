@@ -89,7 +89,7 @@ public class Job_SpendingCredit implements Job {
                     }
                 }
             } catch (Exception e) {
-                terminal_logger.internalServerError("spend_credit_thread:", e);
+                terminal_logger.internalServerError(e);
             }
 
             terminal_logger.debug("spend_credit_thread: thread stopped on {}", new Date());
@@ -159,7 +159,7 @@ public class Job_SpendingCredit implements Job {
                 }
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError("spend:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 

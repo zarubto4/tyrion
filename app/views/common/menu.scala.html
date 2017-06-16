@@ -121,13 +121,13 @@
                                 @if(file.file.isFile) {
                                     <li>
                                         <a href='@routes.Controller_Dashboard.show_wiki(file.file_path)'>
-                                            <i class="fa fa-graduation-cap"></i>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</a>
+                                            <i class="fa fa-graduation-cap"></i>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ").replace(".md", "")</a>
                                     </li>
 
                                 } else {
                                     <li class="treeview">
                                         <a href="#">
-                                            <i class="fa fa-circle"></i> <span>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</span>
+                                            <i class="fa fa-circle"></i> <span>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ").replace(".md", "")</span>
                                             <i class="fa fa-angle-left pull-right"></i>
                                         </a>
                                         <ul class="treeview-menu">
@@ -146,12 +146,12 @@
                             @if(file.file.isFile) {
                                 <li>
                                     <a href='@routes.Controller_Dashboard.show_wiki(file.file_path)' >
-                                        <i class="fa fa-graduation-cap"></i>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</a>
+                                        <i class="fa fa-graduation-cap"></i>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ").replace(".md", "")</a>
                                 </li>
                             } else {
                                 <li class="treeview">
                                     <a href="#">
-                                        <i class="fa fa-circle"></i> <span>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ")</span>
+                                        <i class="fa fa-circle"></i> <span>@file.file_name.substring(0, 1).toUpperCase()@file.file_name.substring(1).replace("_", " ").replace(".md", "")</span>
                                         <i class="fa fa-angle-left pull-right"></i>
                                     </a>
                                     <ul class="treeview-menu">

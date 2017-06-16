@@ -120,7 +120,7 @@ public class Model_Project extends Model {
 
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
         //removed_by_user = true;
-        super.update();
+        super.delete();
     }
 
 
@@ -234,13 +234,6 @@ public class Model_Project extends Model {
                 .setText(new Notification_Text().setText(" to " + participant.state.name() + ". You have different permissions now."))
                 .send(participant.person);
     }
-
-
-
-
-
-
-
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 

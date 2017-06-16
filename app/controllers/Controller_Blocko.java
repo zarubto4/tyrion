@@ -993,8 +993,8 @@ public class Controller_Blocko extends Controller{
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Instance_UpdateCode help = form.get();
 
-            JsonNode json = Json.parse(help.code);
-            System.out.println(json.toString());
+            // JsonNode json = Json.parse(help.code);
+            // System.out.println(json.toString());
 
             // Kontrola objektu
             Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name",instance_name).findUnique();

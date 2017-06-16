@@ -352,8 +352,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
         if(procedure.state != Enum_Update_group_procedure_state.in_progress){
 
-            System.out.println("Přepisuji stav update procedury na in progress");
-            
+            terminal_logger.debug("actualization_update_procedure: updating state of procedure to 'in progress'");
             
             procedure.state = Enum_Update_group_procedure_state.in_progress;
             procedure.update();
@@ -370,7 +369,6 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
                 terminal_logger.debug("  Summary: Program :: {} " , program.program_identificator);
                 terminal_logger.debug("  Summary: Type of Update :: {} " , program.type_of_update);
-
 
                 Utilities_HW_Updater_Actualization_procedure actualization_procedure = new Utilities_HW_Updater_Actualization_procedure();
 

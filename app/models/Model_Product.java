@@ -99,13 +99,21 @@ public class Model_Product extends Model {
 
     @JsonIgnore
     public Long price(){
+
+        terminal_logger.debug("price: Beginning to count product price");
+
         Long total = 0L;
         for(Model_ProductExtension extension : this.extensions){
             Long price = extension.getActualPrice();
 
+            terminal_logger.trace("price: Returned value: {}", price);
+
             if(price != null)
                 total += price;
         }
+
+        terminal_logger.debug("price: Summarized = {}", total);
+
         return total;
     }
 
