@@ -136,6 +136,7 @@ public class NotificationHandler {
                         notification.save_object();
 
                         message.put("id", notification.id);
+                        message.put("notification_id", notification.id);
                         terminal_logger.debug("sendNotification: Notification has its own ID: {}" , notification.id);
 
                     }
@@ -143,6 +144,10 @@ public class NotificationHandler {
 
                     if(notification.id == null) {
                         message.put("id", UUID.randomUUID().toString());
+                        message.put("notification_id", UUID.randomUUID().toString());
+                    }else {
+                        message.put("id", notification.id);
+                        message.put("notification_id", notification.id);
                     }
 
                     // Send notification to all user's websocket connections
