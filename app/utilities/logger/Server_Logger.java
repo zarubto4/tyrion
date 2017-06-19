@@ -332,9 +332,8 @@ public class Server_Logger extends Controller {
             }
         }
         Model_LoggyError e = getError(id);
-        if (e == null) {
-            return GlobalResult.result_notFound("Error not found");
-        }
+        if (e == null) return GlobalResult.result_notFound("Error not found");
+
         // sestavím request na nahrání
         WSRequest request = getWSClient().url(Configuration.root().getString("Loggy.youtrackUrl") + "/youtrack/rest/issue");
         request.setQueryParameter("project", Configuration.root().getString("Loggy.youtrackProject"));
@@ -358,14 +357,14 @@ public class Server_Logger extends Controller {
     }
 
     private static F.Promise<Result> youtrack_login() {
-        WSRequest request = getWSClient().url(Configuration.root().getString("Loggy.youtrackUrl") + "/hub/rest/oauth2/token");
+        WSRequest request = getWSClient().url(Configuration.root().getString("Loggy.youtrackUrl") + "/hub/api/rest/oauth2/token");
         request.setContentType("application/x-www-form-urlencoded");
         request.setHeader("Authorization",
                 "Basic "+ new String(Base64.getEncoder().encode(    // zakódování přihlašovacích údajů
                         (Configuration.root().getString("Loggy.youtrackId") + ":" + Configuration.root().getString("Loggy.youtrackSecret"))
                                 .getBytes())));
         F.Promise<WSResponse> promise = request.post(               // odešlu request na token
-                "grant_type=password"
+                "response_type=token&grant_type=password"
                         +"&scope="+Configuration.root().getString("Loggy.youtrackScopeId")
                         +"&username="+Configuration.root().getString("Loggy.youtrackUsername")
                         +"&password="+Configuration.root().getString("Loggy.youtrackPassword")
@@ -375,9 +374,6 @@ public class Server_Logger extends Controller {
     }
 
     private static Result youtrack_checkLoginResponse(WSResponse response) {
-
-        System.out.println(response.getStatus());
-        System.out.println(response.asJson().toString());
 
         if (response.getStatus() == 200) {  // pokud úspěšné, uložím token a jeho expiraci
             JsonNode content = response.asJson();

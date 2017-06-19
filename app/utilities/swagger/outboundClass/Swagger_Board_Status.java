@@ -19,7 +19,7 @@ public class Swagger_Board_Status {
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String homer_server_id;
 
-    @ApiModelProperty(value = "Only if Boar is under person Instance (in Blocko)", readOnly = true, required = true)
+    @ApiModelProperty(value = "Only if Board is under person Instance (in Blocko)", readOnly = true, required = true)
     public String instance_id;
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
@@ -31,7 +31,7 @@ public class Swagger_Board_Status {
     @ApiModelProperty(readOnly = true, required = true)
     public boolean server_online_status;
 
-    @ApiModelProperty(value = "Only if Boar is under person Instance (in Blocko)", readOnly = true, required = true)
+    @ApiModelProperty(value = "Only if Board is under person Instance (in Blocko)", readOnly = true, required = true)
     public boolean instance_online_status;
 
 //*****

@@ -35,9 +35,6 @@ public class WS_Send_message {
 
         if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
 
-        // Ukončím běžící vlákno čekající na odpověď
-        future.cancel(true);
-
         return request;
     }
 
@@ -93,7 +90,13 @@ public class WS_Send_message {
             terminal_logger.trace("send_with_response: Sending message: {} Message :: {} " , this.messageId, json );
 
             if(future != null) {
-                return future.get();
+
+                ObjectNode result = future.get();
+
+                // Ukončím běžící vlákno čekající na odpověď
+                future.cancel(true);
+
+                return result;
             }else {
                 terminal_logger.internalServerError(new Exception("future parameter is null"));
                 throw new TimeoutException();

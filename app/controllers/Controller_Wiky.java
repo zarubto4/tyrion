@@ -1,11 +1,14 @@
 package controllers;
 
 import io.swagger.annotations.Api;
+import models.Model_Board;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.Class_Logger;
 import utilities.scheduler.jobs.Job_OldFloatingTokenRemoval;
 import utilities.scheduler.jobs.Job_SpendingCredit;
+
+import java.util.Date;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Wiky extends Controller {
@@ -30,7 +33,11 @@ public class Controller_Wiky extends Controller {
     public Result test2(){
         try {
 
-            terminal_logger.error("Test error hahaha dsdsdsdad");
+            Model_Board board = Model_Board.find.where().eq("personal_description", "[G]").findUnique();
+
+            Date time = board.last_online();
+
+            System.out.println(time.toString());
 
             return ok();
 
