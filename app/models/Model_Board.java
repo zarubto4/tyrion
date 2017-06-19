@@ -152,6 +152,7 @@ public class Model_Board extends Model {
 
             Swagger_Board_Status board_status = new Swagger_Board_Status();
             board_status.status = is_online() ? Enum_Board_status.online : Enum_Board_status.offline;
+            board_status.last_online = last_online();
             if(project == null) board_status.where = Enum_Board_type_of_connection.connected_to_server_unregistered;
 
 
@@ -288,6 +289,8 @@ public class Model_Board extends Model {
                 swagger_board_short_detail.board_online_status = false;
             }
 
+            swagger_board_short_detail.last_online = last_online();
+
             return swagger_board_short_detail;
 
         }catch (Exception e){
@@ -359,9 +362,11 @@ public class Model_Board extends Model {
     public Date last_online(){
         try {
 
-            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r WHERE r.device_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
+            if (this.is_online()) return new Date();
 
-            terminal_logger.debug("last_online: number of retrieved documents = {} (should be only one)", documents.size());
+            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.device_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
+
+            terminal_logger.debug("last_online: number of retrieved documents = {}", documents.size());
 
             if (documents.size() > 0) {
 
@@ -373,6 +378,8 @@ public class Model_Board extends Model {
                     record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
 
                 } else {
+
+                    terminal_logger.debug("last_online: result = {}", documents.get(0).toJson());
 
                     record = documents.get(0).toObject(DM_Board_Disconnected.class);
                 }

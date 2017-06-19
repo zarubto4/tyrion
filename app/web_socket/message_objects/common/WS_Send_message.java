@@ -60,7 +60,7 @@ public class WS_Send_message {
         // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
         try {
 
-            if(sender_object.sendMessageMap.size() > 10) terminal_logger.error("insert_result:: Map contains " + sender_object.sendMessageMap.size() + " objects");
+            if(sender_object.sendMessageMap.size() > 10) terminal_logger.internalServerError(new Exception("insert_result:: Map contains " + sender_object.sendMessageMap.size() + " objects"));
             sender_object.sendMessageMap.remove(messageId);
 
         }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
@@ -68,10 +68,6 @@ public class WS_Send_message {
 
         terminal_logger.trace("insert_result: MessageID: {}  saving result to variable " , messageId );
         this.result = result;
-
-        terminal_logger.trace("insert_result: MessageID: {}  Terminating message thread");
-        future.cancel(true); // Terminuji zprávu k odeslání
-
     }
 
 
@@ -91,12 +87,7 @@ public class WS_Send_message {
 
             if(future != null) {
 
-                ObjectNode result = future.get();
-
-                // Ukončím běžící vlákno čekající na odpověď
-                future.cancel(true);
-
-                return result;
+                return future.get();
             }else {
                 terminal_logger.internalServerError(new Exception("future parameter is null"));
                 throw new TimeoutException();

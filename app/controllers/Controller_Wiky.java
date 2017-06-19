@@ -2,6 +2,7 @@ package controllers;
 
 import io.swagger.annotations.Api;
 import models.Model_Board;
+import models.Model_Product;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.Class_Logger;
@@ -20,12 +21,17 @@ public class Controller_Wiky extends Controller {
      public Result test1(){
          try {
 
-             new Job_SpendingCredit().execute(null);
+             String id = request().body().asJson().get("id").asText();
+             if (id == null) return badRequest("id is null");
 
-             return ok();
+             Model_Product product = Model_Product.get_byId(id);
+
+             Job_SpendingCredit.spend(product);
+
+             return ok("Credit was spent");
 
          }catch (Exception e){
-             e.printStackTrace();
+             terminal_logger.internalServerError(e);
              return badRequest();
          }
      }
@@ -33,11 +39,7 @@ public class Controller_Wiky extends Controller {
     public Result test2(){
         try {
 
-            Model_Board board = Model_Board.find.where().eq("personal_description", "[G]").findUnique();
-
-            Date time = board.last_online();
-
-            System.out.println(time.toString());
+            new Job_SpendingCredit().execute(null);
 
             return ok();
 

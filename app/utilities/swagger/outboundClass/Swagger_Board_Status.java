@@ -6,6 +6,7 @@ import utilities.enums.Enum_Board_status;
 import utilities.enums.Enum_Board_type_of_connection;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @ApiModel(description = "Json Model for Status and all information about embedded Hardware",
@@ -24,6 +25,9 @@ public class Swagger_Board_Status {
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public Enum_Board_status status;
+
+    @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
+    public Date last_online;
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public Enum_Board_type_of_connection where;
