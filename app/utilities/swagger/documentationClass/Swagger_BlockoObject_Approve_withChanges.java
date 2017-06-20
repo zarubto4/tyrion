@@ -19,8 +19,6 @@ public class Swagger_BlockoObject_Approve_withChanges {
     @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters.")
     public String blocko_block_name;
 
-    @Constraints.Required
-    @Constraints.MinLength(value = 24, message = "The description must have at least 24 characters")
     @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
     public String blocko_block_general_description;
 

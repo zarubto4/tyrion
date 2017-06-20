@@ -103,6 +103,8 @@ public class Swagger_Boards_For_Blocko {
         @ApiModelProperty(required = false, value = "It can be null if server has not image of compilation restored in database", readOnly = true)
         public String virtual_input_output;
 
+
+
     }
 
 // M_Projects ----------------------------------------------------------------------------------------------------------

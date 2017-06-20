@@ -127,7 +127,7 @@ public class Model_Board extends Model {
         try {
             List<Swagger_C_Program_Update_plan_Short_Detail> plans = new ArrayList<>();
 
-            for (Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().asc("date_of_create").findList()) {
+            for (Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().desc("date_of_create").findList()) {
                 try {
                     plans.add(plan.get_short_version_for_board());
 
