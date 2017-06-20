@@ -11,11 +11,14 @@ import java.util.Date;
 
 public class DM_Board_Disconnected {
 
+    public String device_id;
+    public Long time;
+
     @JsonIgnore public static final String document_type = "DEVICE_STATUS";
     @JsonIgnore private static final String document_type_sub_type = "DEVICE_DISCONNECT";
 
     @JsonIgnore
-    public ObjectNode make_request(String board_id) {
+    public static ObjectNode make_request(String board_id) {
 
         ObjectNode request = Json.newObject();
 

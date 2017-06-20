@@ -6,6 +6,7 @@ import utilities.enums.Enum_Board_status;
 import utilities.enums.Enum_Board_type_of_connection;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @ApiModel(description = "Json Model for Status and all information about embedded Hardware",
@@ -19,11 +20,14 @@ public class Swagger_Board_Status {
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public String homer_server_id;
 
-    @ApiModelProperty(value = "Only if Boar is under person Instance (in Blocko)", readOnly = true, required = true)
+    @ApiModelProperty(value = "Only if Board is under person Instance (in Blocko)", readOnly = true, required = true)
     public String instance_id;
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public Enum_Board_status status;
+
+    @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
+    public Date last_online;
 
     @ApiModelProperty(value = "Can be with null value", readOnly = true, required = true)
     public Enum_Board_type_of_connection where;
@@ -31,7 +35,7 @@ public class Swagger_Board_Status {
     @ApiModelProperty(readOnly = true, required = true)
     public boolean server_online_status;
 
-    @ApiModelProperty(value = "Only if Boar is under person Instance (in Blocko)", readOnly = true, required = true)
+    @ApiModelProperty(value = "Only if Board is under person Instance (in Blocko)", readOnly = true, required = true)
     public boolean instance_online_status;
 
 //*****

@@ -21,7 +21,6 @@ public class Swagger_C_Program_Version {
     @ApiModelProperty(required = true, readOnly = true)
     public Model_VersionObject version_object;
 
-
     @ApiModelProperty(required = true, readOnly = true)
     public Enum_Compile_status status;
 

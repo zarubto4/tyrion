@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
@@ -17,6 +18,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.document_db.document_objects.DM_Board_BackupIncident;
 import utilities.document_db.document_objects.DM_Board_Connect;
+import utilities.document_db.document_objects.DM_Board_Disconnected;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_procedure;
@@ -36,10 +38,7 @@ import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Is_device_c
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Unregistred_device_connected;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 
@@ -153,6 +152,7 @@ public class Model_Board extends Model {
 
             Swagger_Board_Status board_status = new Swagger_Board_Status();
             board_status.status = is_online() ? Enum_Board_status.online : Enum_Board_status.offline;
+            board_status.last_online = last_online();
             if(project == null) board_status.where = Enum_Board_type_of_connection.connected_to_server_unregistered;
 
 
@@ -289,6 +289,8 @@ public class Model_Board extends Model {
                 swagger_board_short_detail.board_online_status = false;
             }
 
+            swagger_board_short_detail.last_online = last_online();
+
             return swagger_board_short_detail;
 
         }catch (Exception e){
@@ -354,6 +356,45 @@ public class Model_Board extends Model {
         if(type_of_board.main_boot_loader == null || actual_boot_loader == null) return true;
         return (!this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id));
 
+    }
+
+    @JsonIgnore
+    public Date last_online(){
+        try {
+
+            if (this.is_online()) return null;
+
+            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.device_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
+
+            terminal_logger.debug("last_online: number of retrieved documents = {}", documents.size());
+
+            if (documents.size() > 0) {
+
+                DM_Board_Disconnected record;
+
+                if (documents.size() > 1) {
+
+                    terminal_logger.debug("last_online: more than 1 record, finding latest record");
+                    record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
+
+                } else {
+
+                    terminal_logger.debug("last_online: result = {}", documents.get(0).toJson());
+
+                    record = documents.get(0).toObject(DM_Board_Disconnected.class);
+                }
+
+                terminal_logger.debug("last_online: device_id: {}", record.device_id);
+
+                return new Date(record.time);
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
 
@@ -1589,7 +1630,7 @@ public class Model_Board extends Model {
     public void make_log_disconnect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Disconnected.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError("make_log_disconnect:", e);
             }
@@ -1663,7 +1704,7 @@ public class Model_Board extends Model {
     }
 
     @JsonIgnore @Override public void delete() {
-        terminal_logger.error("This object is not legitimate to remove. ");
+        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
         throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
     }
 

@@ -420,8 +420,24 @@
             },
             error:function(e) {
                 $("#editLibraryModalMessage").css("display", "block");
-                $("#editLibraryModalMessage p").text(JSON.parse(e.responseText).message);
-                $("#editLibraryModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
+                $("#editLibraryModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
+            }
+        })
+    }
+
+    function removeLibrary(){
+        $.ajax({
+            url: '/library/' + openedLibrary.id,
+            type: 'DELETE',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            dataType: 'json',
+            success:function(json){
+                window.location.reload();
+            },
+            error:function(e) {
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
     }
