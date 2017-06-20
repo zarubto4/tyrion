@@ -71,12 +71,12 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response = Model_CProgram.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_CProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result c_program_create() {
@@ -181,11 +181,11 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_CProgram.class),
-            @ApiResponse(code = 404, message = "Object not found",    response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result c_program_get(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
         try {
@@ -245,7 +245,7 @@ public class Controller_Code extends Controller{
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.get_person().id);
+            query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if((help.project_id != null)&&!(help.project_id.equals(""))){
@@ -273,9 +273,9 @@ public class Controller_Code extends Controller{
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_C_Program_Version_Public_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_C_Program_Version_Public_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
     public Result c_program_getPublicList(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number){
         try {
@@ -309,11 +309,45 @@ public class Controller_Code extends Controller{
         try {
 
             // Vytřídění objektů
-            Query<Model_VersionObject> query = Ebean.find(Model_VersionObject.class);
             List<Model_CProgram> programs = Model_CProgram.find.where().isNull("project").eq("type_of_board.id", type_of_board_id).findList();
 
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(programs));
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get C_program public by Filter",
+            tags = {"C_Program"},
+            hidden = true,
+            notes = "get public C_programs by filter",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @Security.Authenticated(Secured_Admin.class)
+    public Result c_program_getPublicByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number){
+        try {
+
+            final Form<Swagger_C_Program_Filter> form = Form.form(Swagger_C_Program_Filter.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_C_Program_Filter help = form.get();
+
+            Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
+
+            query.where().isNull("project");
+
+            if (!help.type_of_board_ids.isEmpty()){
+                query.where().in("type_of_board.id", help.type_of_board_ids);
+            }
+
+            Swagger_C_Program_List result = new Swagger_C_Program_List(query, page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -334,12 +368,12 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",    response = Model_CProgram.class),
-            @ApiResponse(code = 404, message = "Object not found",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @ApiImplicitParams(
             {
@@ -407,7 +441,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result c_program_delete(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id){
         try{
@@ -456,7 +490,7 @@ public class Controller_Code extends Controller{
         try {
 
             Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("project.id",project_id);
+            query.where().eq("project.participants.person.id", Controller_Security.get_person_id()).eq("project.id",project_id);
 
             Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
 
@@ -492,13 +526,13 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",        response = Swagger_C_Program_Version.class),
-            @ApiResponse(code = 400, message = "Invalid body",   response = Result_InvalidBody.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_C_Program_Version.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result c_programVersion_create(@ApiParam(value = "version_id String query", required = true)  String c_program_id){
@@ -562,12 +596,12 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_Version.class),
-            @ApiResponse(code = 400, message = "Something is wrong - details in message ",  response = Result_BadRequest.class),
-            @ApiResponse(code = 404, message = "Object not found",    response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_C_Program_Version.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result c_programVersion_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
         try {
@@ -617,10 +651,10 @@ public class Controller_Code extends Controller{
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_VersionObject.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result c_programVersion_update(@ApiParam(value = "version_id String query",   required = true)  String version_id){
@@ -668,11 +702,11 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response =  Result_Ok.class),
-            @ApiResponse(code = 404, message = "Object not found",    response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",                 response =  Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result c_programVersion_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id){
         try{
@@ -733,7 +767,7 @@ public class Controller_Code extends Controller{
 
 
             if(Model_VersionObject.find.where().eq("approval_state", Enum_Approval_state.pending.name())
-                    .eq("c_program.project.participants.person.id", Controller_Security.get_person().id)
+                    .eq("c_program.project.participants.person.id", Controller_Security.get_person_id())
                     .findList().size() > 3) return GlobalResult.result_badRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
 
             if(version.approval_state != null)  return GlobalResult.result_badRequest("You cannot publish same program twice!");
@@ -955,12 +989,12 @@ public class Controller_Code extends Controller{
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response = Model_CProgram.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_CProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_Admin.class)
