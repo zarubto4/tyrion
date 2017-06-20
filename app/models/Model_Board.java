@@ -362,7 +362,7 @@ public class Model_Board extends Model {
     public Date last_online(){
         try {
 
-            if (this.is_online()) return new Date();
+            if (this.is_online()) return null;
 
             List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.device_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
