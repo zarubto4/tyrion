@@ -41,9 +41,9 @@ public class Model_GridTerminal extends Model {
 
 
     // lokální nedořešené oprávnění
-    @ApiModelProperty(required = true)  public boolean ws_permission;       // TODO smazat
-    @ApiModelProperty(required = true)  public boolean m_program_access;    // TODO smazat
-    @ApiModelProperty(required = true)  public boolean up_to_date;          // TODO smazat
+    @ApiModelProperty(required = true)  public boolean ws_permission;       // TODO TOM smazat?
+    @ApiModelProperty(required = true)  public boolean m_program_access;    // TODO TOM smazat?
+    @ApiModelProperty(required = true)  public boolean up_to_date;          // TODO TOM smazat?
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 

@@ -100,7 +100,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
         Board_detail board_detail = new Board_detail();
         board_detail.board_id = board.id;
-        board_detail.personal_description = board.personal_description;
+        board_detail.personal_description = board.name;
         board_detail.type_of_board_id = board.type_of_board.id;
         board_detail.type_of_board_name = board.type_of_board.name;
 

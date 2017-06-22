@@ -11,7 +11,7 @@
 
 
 <section class="content-header">
-    <h1> Instance <small> detail: @instance.blocko_instance_name</small> </h1>
+    <h1> Instance <small> detail: @instance.id</small> </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-heart"></i> Websocket connections </li>
@@ -25,7 +25,7 @@
                 <div id="instance_detail" class="box-body box-profile">
                     <h3 class="text-center">Instance:</h3>
 
-                    <p class="text-muted text-center"> @instance.blocko_instance_name</p>
+                    <p class="text-muted text-center"> @instance.id</p>
 
                         @if(instance.instance_type == Enum_Homer_instance_type.VIRTUAL) {
                             <p class="text-orange text-center"> Virtual Instance </p>
@@ -90,7 +90,7 @@
                     </ul>
 
                     <a onclick="showAddMasterDeviceModal()" class="btn btn-warning btn-block"> <b>Add Master board to Instance</b> </a>
-                    <a onclick="showUploadBlockoProgram('@instance.blocko_instance_name')"  class="btn btn-primary btn-block"> <b>Upload Blocko Program</b>        </a>
+                    <a onclick="showUploadBlockoProgram('@instance.id')"  class="btn btn-primary btn-block"> <b>Upload Blocko Program</b>        </a>
                 </div>
             </div>
         </div>
@@ -103,10 +103,10 @@
                             <div class="box box-primary">
                                 <div class="box-body table-responsive no-padding">
                                     <div class="box-header">
-                                        <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.personal_description </h3>
+                                        <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.name </h3>
                                         <h3 class="box-title">
 
-                                        @if( x.main_board_pair.board.is_online()  == true){
+                                        @if(x.main_board_pair.board.is_online){
                                                 <p class="text-green"> Online</p>
                                         }else{
                                                 <p class="text-red"> Offline</p>
@@ -160,7 +160,7 @@
                                             <tr>
                                                 <td> <a href='@routes.Controller_Dashboard.board_detail("")@b_pair.board.id' > @b_pair.board.id</a>  </td>
                                                 <td> @b_pair.board.type_of_board.name</td>
-                                                <td> @b_pair.board.personal_description</td>
+                                                <td> @b_pair.board.name</td>
 
                                                 <td>
                                                 @if(b_pair.board.is_online() == true){
@@ -774,7 +774,7 @@
                 formData.append('file', file);
 
                 $.ajax({
-                    url: '/admin_binary/' + '@instance.blocko_instance_name' + target_id + "/" +  build_id + "/" + firmwareType ,
+                    url: '/admin_binary/' + '@instance.id' + target_id + "/" +  build_id + "/" + firmwareType ,
                     type: 'POST',
                     processData: false,  // tell jQuery not to process the data
                     contentType: false,  // tell jQuery not to set contentType
@@ -820,7 +820,7 @@
             function executeCommand(target_id, command){
 
                 $.ajax({
-                    url: '/instance/command/' + '@instance.blocko_instance_name' +"/" + target_id + "/" + command,
+                    url: '/instance/command/' + '@instance.id' +"/" + target_id + "/" + command,
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -903,7 +903,7 @@
                         <label for="addMasterDeviceForm" class="col-sm-2 control-label">Instance ID:</label>
 
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" name="instanceId" id="instanceId" value="@instance.blocko_instance_name" readonly>
+                            <input type="text" class="form-control" name="instanceId" id="instanceId" value="@instance.id" readonly>
                         </div>
                     </div>
 
@@ -980,7 +980,7 @@
               var master_board_id = document.getElementById("addDeviceForm").elements.namedItem("master_board_id").value;
 
               $.ajax({
-                  url: '/instance/add_device/' +  '@instance.blocko_instance_name' + "/" + master_board_id + "/" + device_id,
+                  url: '/instance/add_device/' +  '@instance.id' + "/" + master_board_id + "/" + device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken"),
@@ -1009,7 +1009,7 @@
           function removeDevice(master_board_id, device_id){
 
               $.ajax({
-                  url: '/instance/remove_device/' + '@instance.blocko_instance_name' + "/" + master_board_id + "/" + device_id,
+                  url: '/instance/remove_device/' + '@instance.id' + "/" + master_board_id + "/" + device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken"),
@@ -1039,7 +1039,7 @@
               var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
 
               $.ajax({
-                  url: '@routes.Controller_Blocko.instance_add_yoda( instance.blocko_instance_name, "")' + master_device_id,
+                  url: '@routes.Controller_Blocko.instance_add_yoda( instance.id, "")' + master_device_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken")
@@ -1069,7 +1069,7 @@
           function removeMasterDevice(id){
 
               $.ajax({
-                  url: '@routes.Controller_Blocko.instance_remove_yoda( instance.blocko_instance_name, "" )' + id,
+                  url: '@routes.Controller_Blocko.instance_remove_yoda( instance.id, "" )' + id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken")

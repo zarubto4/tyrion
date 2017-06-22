@@ -21,6 +21,7 @@ import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
+import utilities.scheduler.CustomScheduler;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
@@ -625,14 +626,14 @@ public class Controller_Blocko extends Controller{
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
-            if (version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
+            if (version_object == null) return GlobalResult.result_notFound("VersionObject not found");
 
             // Kontrola objektu: B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
-            if (version_object.b_program == null) return GlobalResult.result_badRequest("Version_Object is not version of B_Program");
+            if (version_object.b_program == null) return GlobalResult.result_badRequest("VersionObject is not version of BProgram");
             Model_BProgram b_program = version_object.b_program;
 
             // Kontrola oprávnění
-            if (! b_program.update_permission() ) return GlobalResult.result_forbidden();
+            if (!b_program.update_permission()) return GlobalResult.result_forbidden();
 
             Model_HomerInstanceRecord record = new Model_HomerInstanceRecord();
             record.main_instance_history = b_program.instance;
@@ -641,9 +642,11 @@ public class Controller_Blocko extends Controller{
 
             if(help.upload_time != null) {
 
-                // Zkontroluji smysluplnost časvé známky
-                if (!help.upload_time.after(new Date()))  return GlobalResult.result_badRequest("time must be set in the future");
-                record.planed_when = help.upload_time;
+                Date upload_time = new Date(help.upload_time);
+
+                // Zkontroluji smysluplnost časové známky
+                if (!upload_time.after(new Date()))  return GlobalResult.result_badRequest("time must be set in the future");
+                record.planed_when = upload_time;
 
             } else{
                 Date date_from = new Date();
@@ -652,20 +655,16 @@ public class Controller_Blocko extends Controller{
             }
             record.save();
 
-            Long minutes = new Long("60000");
-            Long one_month = new Date().getTime() + minutes;
-            Date created = new Date(one_month);
-
             // If immidietly
-            if(record.planed_when.getTime() < created.getTime()){
+            if(help.upload_time == null){
 
                 terminal_logger.debug("upload_b_Program_ToCloud:: Set the instants immediately");
-                Model_HomerInstance.upload_Record_immediately(record);
+                Model_HomerInstance.upload_record(record);
 
             }else {
                 terminal_logger.debug("upload_b_Program_ToCloud:: Set the instants by Time scheduler (not now) ");
+                CustomScheduler.scheduleBlockoUpload(record);
             }
-
 
             return GlobalResult.result_ok();
 
@@ -674,7 +673,49 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "shutDown Instance by Instnace Id",
+    @ApiOperation(value = "updates personal info about instance",
+            tags = {"Instance"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully updated",      response = Model_HomerInstance.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_update(@ApiParam(value = "instance_id String path", required = true) String instance_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Instance_Edit> form = Form.form(Swagger_Instance_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_Instance_Edit help = form.get();
+
+            // Kontrola objektu
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_id).findUnique();
+            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
+
+            if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
+
+            homer_instance.name = help.name;
+            homer_instance.description = help.description;
+
+            homer_instance.update();
+
+            return GlobalResult.result_ok(Json.toJson(homer_instance));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "shutDown Instance by Instance Id",
             tags = {"Instance"},
             notes = "",
             produces = "application/json",
@@ -694,7 +735,7 @@ public class Controller_Blocko extends Controller{
         try{
 
             // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
@@ -948,7 +989,7 @@ public class Controller_Blocko extends Controller{
     public Result ping_instance(String instance_name){
         try{
             // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id",instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             if(!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
@@ -997,7 +1038,7 @@ public class Controller_Blocko extends Controller{
             // System.out.println(json.toString());
 
             // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name",instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id",instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             if(!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance is not online");
@@ -1017,7 +1058,7 @@ public class Controller_Blocko extends Controller{
         try{
 
             // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
@@ -1036,7 +1077,7 @@ public class Controller_Blocko extends Controller{
     public Result instance_remove_yoda(String instance_name, String yoda_id){
         try{
 
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
@@ -1061,7 +1102,7 @@ public class Controller_Blocko extends Controller{
             list_of_devices.add(device_id);
 
             // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
@@ -1085,7 +1126,7 @@ public class Controller_Blocko extends Controller{
             list_of_devices.add(device_id);
 
             // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
@@ -1115,7 +1156,7 @@ public class Controller_Blocko extends Controller{
             if(command == null) return GlobalResult.result_notFound("Command not found!");
 
             // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             JsonNode result = homer_instance.devices_commands(target_id, command);

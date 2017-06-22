@@ -26,7 +26,7 @@ public class WS_Message_Board_set_autobackup extends WS_AbstractMessage_Instance
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerInstance.CHANNEL);
-        request.put("instanceId", instance.blocko_instance_name);
+        request.put("instanceId", instance.id);
         request.put("targetId", board.id);
 
         return request;

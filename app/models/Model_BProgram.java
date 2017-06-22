@@ -82,9 +82,9 @@ public class Model_BProgram extends Model {
 
             if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
                 // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
-                state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.web_view_port + "/" + instance.blocko_instance_name + "/#token";
+                state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.web_view_port + "/" + instance.id + "/#token";
             } else {
-                state.instance_remote_url = "wss://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.web_view_port + "/" + instance.blocko_instance_name + "/#token";
+                state.instance_remote_url = "wss://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.web_view_port + "/" + instance.id + "/#token";
             }
 
 
@@ -93,7 +93,7 @@ public class Model_BProgram extends Model {
             state.version_name = instance.actual_instance.version_object.version_name;
 
             // Instnace ID
-            state.instance_id = instance.blocko_instance_name;
+            state.instance_id = instance.id;
 
             // Informace o Serveru
             state.server_id = instance.cloud_homer_server.unique_identificator;

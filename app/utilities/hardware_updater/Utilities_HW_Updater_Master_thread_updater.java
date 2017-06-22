@@ -208,7 +208,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                    }
 
 
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Updates is for Homer_instance id: {} Server {} " , procedure.id , plan.id,homer_instance.blocko_instance_name, homer_instance.cloud_homer_server.personal_server_name);
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Updates is for Homer_instance id: {} Server {} " , procedure.id , plan.id,homer_instance.id, homer_instance.cloud_homer_server.personal_server_name);
 
                    if(!homer_instance.cloud_homer_server.server_is_online()){
                        terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id,homer_instance.cloud_homer_server.personal_server_name);
@@ -221,29 +221,29 @@ public class Utilities_HW_Updater_Master_thread_updater {
                        terminal_logger.error("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} is offline. Putting off the task for later. This is not standart situation but bug in State Machine!!!!! ", procedure.id, plan.id, homer_instance.cloud_homer_server.personal_server_name);
 
                        // Pokusím se instanci zase nahodit.
-                       terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} is offline. Try to add instance to server.", procedure.id, plan.id, homer_instance.blocko_instance_name);
+                       terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} is offline. Try to add instance to server.", procedure.id, plan.id, homer_instance.id);
                        WS_Message_Update_device_summary_collection add_instance = homer_instance.add_instance_to_server();
 
                        if (add_instance.status.equals("success")) {
-                           terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {}  Instance {} Upload instance was successful" , procedure.id, plan.id, homer_instance.blocko_instance_name);
+                           terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {}  Instance {} Upload instance was successful" , procedure.id, plan.id, homer_instance.id);
                            plan.state = Enum_CProgram_updater_state.instance_inaccessible;
                            plan.update();
                            continue;
 
                        } else if (add_instance.status.equals("error")) {
-                           terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} Fail when Tyrion try to add instance from Blocko cloud_blocko_server Response Message:: {} ", procedure.id, plan.id, homer_instance.blocko_instance_name, add_instance.toString());
+                           terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} Fail when Tyrion try to add instance from Blocko cloud_blocko_server Response Message:: {} ", procedure.id, plan.id, homer_instance.id, add_instance.toString());
                        }
 
                    }
 
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {}  of blocko program is online and connected with Tyrion", procedure.id, plan.id, homer_instance.blocko_instance_name);
+                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {}  of blocko program is online and connected with Tyrion", procedure.id, plan.id, homer_instance.id);
 
 
                    // Založím ve Struktuře seznam instnací
-                  if (!structure.instances.containsKey(homer_instance.blocko_instance_name)) {
+                  if (!structure.instances.containsKey(homer_instance.id)) {
                       Instance instance = new Instance();
                       instance.instance = homer_instance;
-                      structure.instances.put(homer_instance.blocko_instance_name, instance);
+                      structure.instances.put(homer_instance.id, instance);
                   }
 
                   String program_identificator = null;
@@ -314,7 +314,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
 
                   // Pod instnací podle typu programu vytvořím program
-                  if(!structure.instances.get(homer_instance.blocko_instance_name).programs.containsKey(program_identificator)){
+                  if(!structure.instances.get(homer_instance.id).programs.containsKey(program_identificator)){
 
                       Program program = new Program();
 
@@ -324,7 +324,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                       program.file_record = file_record;
                       program.name = name;
                       program.version = version;
-                      structure.instances.get(homer_instance.blocko_instance_name).programs.put(program_identificator, program);
+                      structure.instances.get(homer_instance.id).programs.put(program_identificator, program);
 
                   }
 
@@ -332,7 +332,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
                    pair.targetId = plan.board.id;
                    pair.c_program_update_plan_id = plan.id;
 
-                   structure.instances.get(homer_instance.blocko_instance_name).programs.get(program_identificator).target_pairs.add(pair);
+                   structure.instances.get(homer_instance.id).programs.get(program_identificator).target_pairs.add(pair);
 
                    plan.state = Enum_CProgram_updater_state.in_progress;
                    plan.update();
@@ -360,7 +360,7 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
         for (Instance instance : structure.instances.values()) {
 
-            terminal_logger.debug("Summary: Instance ::" + instance.instance.blocko_instance_name);
+            terminal_logger.debug("Summary: Instance ::" + instance.instance.id);
 
             Utilities_HW_Updater_Actualization_Task task = new Utilities_HW_Updater_Actualization_Task();
             task.instance = instance.instance;

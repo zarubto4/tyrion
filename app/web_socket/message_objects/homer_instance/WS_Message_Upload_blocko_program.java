@@ -25,7 +25,7 @@ public class WS_Message_Upload_blocko_program extends WS_AbstractMessage_Instanc
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerInstance.CHANNEL);
-        request.put("instanceId", instance.blocko_instance_name);
+        request.put("instanceId", instance.id);
         request.put("programId", program_id);
         request.put("program", fileRecord.get_fileRecord_from_Azure_inString());
 

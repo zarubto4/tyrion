@@ -97,46 +97,27 @@ public class Job_SpendingCredit implements Job {
     };
 
     /**
-     * This method takes all extensions of the product and sums up their prices.
-     * Then it subtracts the calculated credit. Based on business model decides what to do next.
+     * Based on business model decides what to do with the product.
      * @param product Model product the credit is spent for.
      */
     public static void spend(Model_Product product){
         try {
 
             terminal_logger.info("spend: product ID: {}", product.id );
-            Long total_spending = product.price(); // Extension prices summary
-            int daily = Server.financial_spendDailyPeriod; // The number determines how many times on one day is credit spent.
-
-            terminal_logger.debug("spend: total spending: {}", total_spending);
-            terminal_logger.debug("spend: state before: {}", product.credit);
-
-            product.credit_spend(total_spending);
-
-            terminal_logger.debug("spend: actual state: {}", product.credit);
-
-            Long daily_spending = daily * total_spending;
-
-            double double_days = (double)product.credit / (double)daily_spending;
-
-            int days; // Determines how many days will credit suffice.
-
-            if (double_days >= 0) days = (int) (double_days + 0.5);
-            else days = (int) (double_days - 0.5);
 
             switch (product.business_model){
                 case alpha:{
-                    terminal_logger.debug("spend: product is ALPHA - nothing happens"); // TODO
+                    terminal_logger.debug("spend: product is ALPHA - nothing happens"); // TODO někdy Alfa asi skončí
                     break;
                 }
                 case saas:{
 
-                    spendCreditSaas(product, daily_spending, days);
+                    spendCreditSaas(product);
                     break;
                 }
                 case fee:{
 
-                    spendCreditFee(product, days);
+                    spendCreditFee(product);
                     break;
                 }
                 case cal:{
@@ -164,16 +145,34 @@ public class Job_SpendingCredit implements Job {
     }
 
     /**
+     * This method takes all extensions of the product and sums up their prices.
+     * Then it subtracts the calculated credit.
      * Does appropriate action depending on how many days will credit suffice.
      * If it is needed the method will create an invoice and sends it to the user or creates a payment.
      * If the product has on_demand true, the method will try to take money from credit card.
      * If the payment is not yet received, the method will send a warning to the user.
      * Deactivates the product, if the user reaches negative limit.
      * @param product Given product for spending.
-     * @param daily_spending Long amount of credit to spend.
-     * @param days Integer how many days will credit suffice.
      */
-    private static void spendCreditSaas(Model_Product product, Long daily_spending, int days){
+    private static void spendCreditSaas(Model_Product product){
+
+        Long total_spending = product.price(); // Extension prices summary
+
+        terminal_logger.debug("spendCreditSaas: total spending: {}", total_spending);
+        terminal_logger.debug("spendCreditSaas: state before: {}", product.credit);
+
+        product.credit_spend(total_spending);
+
+        terminal_logger.debug("spendCreditSaas: actual state: {}", product.credit);
+
+        Long daily_spending = Server.financial_spendDailyPeriod * total_spending; // Expenses for one day
+
+        double double_days = (double)product.credit / (double)daily_spending;
+
+        int days; // Determines how many days will credit suffice.
+
+        if (double_days >= 0) days = (int) (double_days + 0.5);
+        else days = (int) (double_days - 0.5);
 
         terminal_logger.debug("spendCreditSaas: daily_spending: {}, days: {}", daily_spending, days);
 
@@ -338,7 +337,7 @@ public class Job_SpendingCredit implements Job {
         }
     }
 
-    private static void spendCreditFee(Model_Product product, int days){
+    private static void spendCreditFee(Model_Product product){
 
         // TODO
     }

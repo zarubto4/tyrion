@@ -58,10 +58,9 @@ public class Model_Board extends Model {
 
                                        @ApiModelProperty(required = true)   public String wifi_mac_address;     // Mac addressa wifi čipu
                                        @ApiModelProperty(required = true)   public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
-                                       @ApiModelProperty(required = true)   public String generation_description;  // Info  výrobní generaci
 
-
-    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String personal_description;
+                                       @ApiModelProperty(required = true)   public String name;
+    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String description;
                                        @JsonIgnore  @ManyToOne              public Model_TypeOfBoard type_of_board;
                                        @JsonIgnore                          public boolean is_active;
                                        @JsonIgnore                          public boolean backup_mode;
@@ -163,7 +162,7 @@ public class Model_Board extends Model {
             if(instance != null && instance.instance_type == Enum_Homer_instance_type.INDIVIDUAL) {
 
                 board_status.where = Enum_Board_type_of_connection.in_person_instance;
-                board_status.instance_id = instance.blocko_instance_name;
+                board_status.instance_id = instance.id;
                 board_status.instance_online_status = instance.instance_online();
 
                 if (instance.getB_program() != null) board_status.b_program_id = instance.getB_program().id;
@@ -271,7 +270,7 @@ public class Model_Board extends Model {
 
             Swagger_Board_Short_Detail swagger_board_short_detail = new Swagger_Board_Short_Detail();
             swagger_board_short_detail.id = id;
-            swagger_board_short_detail.personal_description = personal_description;
+            swagger_board_short_detail.personal_description = name;
             swagger_board_short_detail.type_of_board_id = type_of_board_id();
             swagger_board_short_detail.type_of_board_name = type_of_board_name();
 
@@ -305,7 +304,7 @@ public class Model_Board extends Model {
 
             Swagger_Board_for_fast_upload_detail board_for_fast_upload_detail = new Swagger_Board_for_fast_upload_detail();
             board_for_fast_upload_detail.id = id;
-            board_for_fast_upload_detail.personal_description = personal_description;
+            board_for_fast_upload_detail.personal_description = name;
 
             terminal_logger.debug("get_short_board_for_fast_upload:: Board " + id);
 
@@ -1430,7 +1429,7 @@ public class Model_Board extends Model {
             }
 
             if(!instance.instance_online()){
-                terminal_logger.error("set_auto_backup:: instanceId:: " + instance.blocko_instance_name + " is offline");
+                terminal_logger.error("set_auto_backup:: instanceId:: " + instance.id + " is offline");
 
                 WS_Message_Board_set_autobackup result = new WS_Message_Board_set_autobackup();
                 return result;

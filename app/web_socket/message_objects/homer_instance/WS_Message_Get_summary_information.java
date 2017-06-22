@@ -60,7 +60,7 @@ public class WS_Message_Get_summary_information extends WS_AbstractMessage_Insta
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerInstance.CHANNEL);
-        request.put("instanceId", instance.blocko_instance_name);
+        request.put("instanceId", instance.id);
 
         return request;
     }

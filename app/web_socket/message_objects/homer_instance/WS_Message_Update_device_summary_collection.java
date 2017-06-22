@@ -27,7 +27,7 @@ public class WS_Message_Update_device_summary_collection extends WS_AbstractMess
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerInstance.CHANNEL);
-        request.put("instanceId", instance.blocko_instance_name);
+        request.put("instanceId", instance.id);
         request.set("devices", Json.toJson(hw_groups));
 
         return request;

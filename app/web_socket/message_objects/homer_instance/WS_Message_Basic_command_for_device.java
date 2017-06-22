@@ -25,7 +25,7 @@ public class WS_Message_Basic_command_for_device extends WS_AbstractMessage_Inst
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerInstance.CHANNEL);
-        request.put("instanceId", instance.blocko_instance_name);
+        request.put("instanceId", instance.id);
         request.put("commandType", command.get_command());
         request.put("targetId", targetId);
 

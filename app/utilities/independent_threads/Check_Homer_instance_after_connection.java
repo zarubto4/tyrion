@@ -56,10 +56,10 @@ public class Check_Homer_instance_after_connection extends Thread {
                         List<Model_HomerInstance> instances_in_database_for_uploud = new ArrayList<>();
 
                         // Přidám všechny reálné instance, které mají běžet.
-                        instances_in_database_for_uploud.addAll(Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator).ne("removed_by_user", true).eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL).isNotNull("actual_instance").select("blocko_instance_name").findList());
+                        instances_in_database_for_uploud.addAll(Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator).ne("removed_by_user", true).eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL).isNotNull("actual_instance").select("id").findList());
 
                         // Přidám všechny virtuální instance, kde je ještě alespoň jeden Yoda
-                        instances_in_database_for_uploud.addAll(Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator).ne("removed_by_user", true).eq("instance_type", Enum_Homer_instance_type.VIRTUAL).isNotNull("boards_in_virtual_instance").select("blocko_instance_name").findList());
+                        instances_in_database_for_uploud.addAll(Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", model_server.unique_identificator).ne("removed_by_user", true).eq("instance_type", Enum_Homer_instance_type.VIRTUAL).isNotNull("boards_in_virtual_instance").select("id").findList());
 
                         terminal_logger.trace("Check_Homer_instance_after_connection:: run::  The number of instances that would have run on the server::  {} ",instances_in_database_for_uploud.size());
 
@@ -69,7 +69,7 @@ public class Check_Homer_instance_after_connection extends Thread {
                         for (String identificator : list_instances.instances) {
 
                             // NAjdu jestli instance má oprávnění být nazasená podle parametrů nasaditelné instnace
-                            Integer size = Model_HomerInstance.find.where().eq("blocko_instance_name", identificator)
+                            Integer size = Model_HomerInstance.find.where().eq("id", identificator)
                                     .disjunction()
                                     .conjunction()
                                     .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL)
@@ -103,21 +103,21 @@ public class Check_Homer_instance_after_connection extends Thread {
 
                         for (Model_HomerInstance instance : instances_in_database_for_uploud) {
 
-                            terminal_logger.trace("Check_Homer_instance_after_connection:: run::  Connection:: Procedure for {}" ,  instance.blocko_instance_name);
+                            terminal_logger.trace("Check_Homer_instance_after_connection:: run::  Connection:: Procedure for {}" ,  instance.id);
 
-                            if (list_instances.instances.contains(instance.blocko_instance_name)) {
-                                terminal_logger.trace("Check_Homer_instance_after_connection:: run:: {} is on server already", instance.blocko_instance_name );
+                            if (list_instances.instances.contains(instance.id)) {
+                                terminal_logger.trace("Check_Homer_instance_after_connection:: run:: {} is on server already", instance.id);
                             } else {
 
                                 if (instance.instance_type == Enum_Homer_instance_type.VIRTUAL) {
-                                    terminal_logger.trace("Check_Homer_instance_after_connection:: run:: Instance:: {} its Virtual instance", instance.blocko_instance_name );
+                                    terminal_logger.trace("Check_Homer_instance_after_connection:: run:: Instance:: {} its Virtual instance", instance.id);
                                     if (instance.getBoards_in_virtual_instance().size() == 0) {
-                                        terminal_logger.trace("Check_Homer_instance_after_connection:: run:: Instance {} its Virtual instance and is empty - for cycle continue", instance.blocko_instance_name );
+                                        terminal_logger.trace("Check_Homer_instance_after_connection:: run:: Instance {} its Virtual instance and is empty - for cycle continue", instance.id);
                                         continue;
                                     }
                                 }
 
-                                terminal_logger.trace("Check_Homer_instance_after_connection:: run:: {} add instance to server",  instance.blocko_instance_name );
+                                terminal_logger.trace("Check_Homer_instance_after_connection:: run:: {} add instance to server",  instance.id);
                                 WS_Message_Update_device_summary_collection add_instance = instance.add_instance_to_server();
 
                                 if (add_instance.status.equals("success")) {

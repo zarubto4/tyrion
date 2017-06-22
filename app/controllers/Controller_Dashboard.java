@@ -301,7 +301,7 @@ public class Controller_Dashboard extends Controller {
     public Result ping_homer_instance(String instance_id) {
         try {
 
-            Model_HomerInstance instance = Model_HomerInstance.find.where().eq("blocko_instance_name", instance_id).findUnique();
+            Model_HomerInstance instance = Model_HomerInstance.find.where().eq("id", instance_id).findUnique();
             WS_Message_Ping_instance result = instance.ping();
             return GlobalResult.result_ok(Json.toJson(result));
         }catch (Exception e){

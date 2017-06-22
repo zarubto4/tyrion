@@ -1,5 +1,6 @@
 package utilities.scheduler;
 
+import models.Model_HomerInstanceRecord;
 import org.quartz.*;
 
 import com.google.inject.Guice;
@@ -10,11 +11,13 @@ import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Class_Logger;
 import utilities.scheduler.jobs.*;
 
+import java.util.*;
+import java.util.Calendar;
+
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.repeatHourlyForever;
-import static org.quartz.SimpleScheduleBuilder.repeatMinutelyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class CustomScheduler {
@@ -170,6 +173,18 @@ public class CustomScheduler {
                             .build()
                 );
 
+                try {
+
+                    List<Model_HomerInstanceRecord> records = Model_HomerInstanceRecord.find.where().gt("planed_when", new Date()).findList();
+
+                    terminal_logger.debug("start: Scheduling new Job - Upload Blocko To Cloud for {} record(s)", records.size());
+
+                    records.forEach(CustomScheduler::scheduleBlockoUpload);
+
+                } catch (Exception e) {
+                    terminal_logger.internalServerError(e);
+                }
+
             }else {
                 terminal_logger.warn("start: CRON (Every-Day) is in RAM yet. Be careful with that!");
             }
@@ -178,7 +193,7 @@ public class CustomScheduler {
             scheduler.start();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("start:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -198,5 +213,48 @@ public class CustomScheduler {
         } catch (SchedulerException e) {
             terminal_logger.internalServerError("stopScheduler:", e);
         }
+    }
+
+    /**
+     * Schedules a new job to be executed on the given date. Job will be executed only once and uploads blocko to homer.
+     * @param record of instance to upload to cloud.
+     */
+    public static void scheduleBlockoUpload(Model_HomerInstanceRecord record) {
+        try {
+
+            String name = "upload-" + record.main_instance_history.id;
+
+            terminal_logger.debug("scheduleJob: Scheduling new Job - {}", name);
+
+            customScheduler.scheduler.scheduleJob(newJob(Job_UploadBlockoToCloud.class).withIdentity(JobKey.jobKey(name)).usingJobData("record_id", record.id).build(),
+                    newTrigger().withIdentity(name + "-key").startNow().withSchedule(toCron(record.planed_when)).build()); // Spuštění na základě data
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+    /**
+     * Converts java Date to Cron schedule.
+     * @param date the cron expression will be build from.
+     * @return cron like schedule.
+     */
+    public static CronScheduleBuilder toCron(Date date){
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        Integer second  = calendar.get(Calendar.SECOND);
+        Integer minute  = calendar.get(Calendar.MINUTE);
+        Integer hour    = calendar.get(Calendar.HOUR_OF_DAY);
+        Integer day     = calendar.get(Calendar.DAY_OF_MONTH);
+        Integer month   = calendar.get(Calendar.MONTH) + 1; // Months starts at zero
+        Integer year    = calendar.get(Calendar.YEAR);
+
+        String cron = second.toString() + " " + minute.toString() + " " + hour.toString() + " " + day.toString() + " " + month.toString() + " ? " + year.toString();
+
+        terminal_logger.debug("toCron: expression = {}", cron);
+
+        return cronSchedule(cron);
     }
 }

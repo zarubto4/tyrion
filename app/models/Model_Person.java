@@ -232,6 +232,4 @@ public class Model_Person extends Model {
     public static Model_Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
 
     public static Model.Finder<String,Model_Person>  find = new Model.Finder<>(Model_Person.class);
-
-
 }

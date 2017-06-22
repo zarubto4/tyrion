@@ -278,10 +278,10 @@ public class Utilities_Demo_data_Controller extends Controller {
             for (Pair yoda_pair : yodas) {
                 Model_Board yoda = new Model_Board();
                 yoda.id = yoda_pair.id;
-                yoda.personal_description = yoda_pair.name;
+                yoda.name = yoda_pair.name;
                 yoda.type_of_board = yoda_type;
                 yoda.date_of_create = new Date();
-                yoda.generation_description = "G2.0";
+                yoda.description = "G2.0";
                 yoda.save();
             }
 
@@ -325,10 +325,10 @@ public class Utilities_Demo_data_Controller extends Controller {
             for (Pair WrlsKitG2_pair : WrlsKitG2) {
                 Model_Board wrls = new Model_Board();
                 wrls.id = WrlsKitG2_pair.id;
-                wrls.personal_description = WrlsKitG2_pair.name;
+                wrls.name = WrlsKitG2_pair.name;
                 wrls.type_of_board = wireles_type;
                 wrls.date_of_create = new Date();
-                wrls.generation_description = "G2.0";
+                wrls.description = "G2.0";
                 wrls.save();
             }
 
@@ -374,10 +374,10 @@ public class Utilities_Demo_data_Controller extends Controller {
             for (Pair bskpair : BusKitG2) {
                 Model_Board bsk = new Model_Board();
                 bsk.id = bskpair.id;
-                bsk.personal_description = bskpair.name;
+                bsk.name = bskpair.name;
                 bsk.type_of_board = buskit_type;
                 bsk.date_of_create = new Date();
-                bsk.generation_description = "G2.0";
+                bsk.description = "G2.0";
                 bsk.save();
             }
 
@@ -905,7 +905,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             participant_1.save();
 
             // Zaregistruji pod ně Yody
-            Model_Board yoda_G  = Model_Board.find.where().eq("personal_description","[Q]").findUnique();
+            Model_Board yoda_G  = Model_Board.find.where().eq("name","[Q]").findUnique();
             yoda_G.project = project_1;
             yoda_G.virtual_instance_under_project = project_1.private_instance;
             yoda_G.update();

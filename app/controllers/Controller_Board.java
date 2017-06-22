@@ -1892,15 +1892,15 @@ public class Controller_Board extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
-            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Board.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_updateDescription(@ApiParam(required = true)  String board_id){
+    public Result board_update(@ApiParam(required = true)  String board_id){
         try {
 
             // Zpracování Json
@@ -1916,7 +1916,8 @@ public class Controller_Board extends Controller {
             if(!board.edit_permission()) return GlobalResult.result_forbidden();
 
             // Uprava desky
-            board.personal_description = help.personal_description;
+            board.name = help.name;
+            board.description = help.description;
 
             // Uprava objektu v databázi
             board.update();

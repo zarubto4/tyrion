@@ -24,7 +24,7 @@ public class WS_Message_Remove_device_from_instance extends WS_AbstractMessage_I
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerInstance.CHANNEL);
-        request.put("instanceId", instance.blocko_instance_name);
+        request.put("instanceId", instance.id);
         request.put("yodaId", yoda_id);
         request.set("devicesId", Json.toJson(devices_id));
 

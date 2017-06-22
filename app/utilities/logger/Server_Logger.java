@@ -294,6 +294,8 @@ public class Server_Logger extends Controller {
             error = new Model_LoggyError(id, summary, description, stack_trace, cause); // zapíšu do databáze
             error.save();
         } else {
+            error.summary = summary;
+            error.description = description;
             error.repetition++;
             error.update();
         }

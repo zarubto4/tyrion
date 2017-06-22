@@ -59,6 +59,12 @@ public class Server_Cache {
          *
          */
 
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Project");
+            Model_Project.cache = cacheManager.createCache(Model_Project.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Project.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_Project.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
+
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Project Frontend Connection List of Person_ID_Tokens");
             Model_Project.token_cache = cacheManager.createCache(Model_Project.CACHE_BECKI_CONNECTED_PERSONS,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, IdsList.class,

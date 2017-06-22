@@ -58,6 +58,7 @@ public class Model_Product extends Model {
 
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String financial_history;
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
+                                                                                public boolean removed_by_user;
 
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Project>          projects    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Invoice>          invoices    = new ArrayList<>();
@@ -77,7 +78,9 @@ public class Model_Product extends Model {
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @ApiModelProperty(required = false)
     public Double remaining_credit(){
 
-        if (this.business_model == Enum_BusinessModel.saas) return ((double) this.credit) / 1000;
+        if (this.business_model == Enum_BusinessModel.saas && this.method != Enum_Payment_method.free)
+            return ((double) this.credit) / 1000;
+
         return null;
     }
 
@@ -140,7 +143,10 @@ public class Model_Product extends Model {
 
                 this.credit += credit;
 
-                if (!this.active && this.credit > 0) this.active = true; // TODO notifikace - různé stavy
+                if (!this.active && this.credit > 0) {
+                    this.active = true;
+                    this.notificationActivation();
+                }
 
                 this.update();
 
@@ -181,7 +187,11 @@ public class Model_Product extends Model {
 
                 this.credit -= credit;
 
-                if (this.active && this.credit < 0) this.active = false; // TODO notifikace - různé stavy
+                if (this.active && this.credit < 0) {
+
+                    this.active = false;
+                    this.notificationDeactivation();
+                }
 
                 this.update();
 
@@ -440,15 +450,48 @@ public class Model_Product extends Model {
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
         throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
-
     }
 
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public void notificationActivation(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.success)
+                    .setText(new Notification_Text().setText("Your product "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" was activated."))
+                    .send(this.payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationDeactivation(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setText(new Notification_Text().setText("Your product "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" was deactivated."))
+                    .send(this.payment_details.person);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+    }
 
     @JsonIgnore
     private void notificationCreditSuccess(Long credit){

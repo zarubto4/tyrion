@@ -28,7 +28,7 @@ public class WS_Message_Add_device_to_instance extends WS_AbstractMessage_Instan
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerInstance.CHANNEL);
-        request.put("instanceId", instance.blocko_instance_name);
+        request.put("instanceId", instance.id);
         request.put("yodaId", yodaId);
         request.set("devicesId", Json.toJson(devicesId) );
 

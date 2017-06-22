@@ -65,13 +65,13 @@ public class Check_Update_for_hw_on_homer extends Thread {
                                 .isNotNull("boards_in_virtual_instance")
                             .endJunction()
                         .endJunction()
-                     .order().asc("blocko_instance_name").findEachWhile((Model_HomerInstance instance) -> {
+                     .order().asc("id").findEachWhile((Model_HomerInstance instance) -> {
 
                         // Zajímá mě stav HW
 
                         try {
 
-                            terminal_logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.blocko_instance_name);
+                            terminal_logger.debug("Check_Update_for_hw_on_homer:: Run:: Instance:: " + instance.id);
 
                             WS_Message_Get_summary_information summary_information = instance.get_summary_information();
 

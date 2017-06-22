@@ -6,6 +6,7 @@ import models.Model_Product;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.Class_Logger;
+import utilities.scheduler.CustomScheduler;
 import utilities.scheduler.jobs.Job_OldFloatingTokenRemoval;
 import utilities.scheduler.jobs.Job_SpendingCredit;
 
@@ -39,7 +40,9 @@ public class Controller_Wiky extends Controller {
     public Result test2(){
         try {
 
-            new Job_SpendingCredit().execute(null);
+            CustomScheduler.toCron(new Date());
+
+            CustomScheduler.toCron(new Date(new Date().getTime() + 3600000));
 
             return ok();
 

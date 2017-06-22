@@ -179,6 +179,7 @@ GET       /instance/project/:project_id                                 @control
 GET       /instance/get/:instance_id                                    @controllers.Controller_Blocko.get_b_program_instance(instance_id)
 PUT       /instance/filter                                              @controllers.Controller_Blocko.get_b_program_instance_by_filter()
 PUT       /instance/grid_app                                            @controllers.Controller_Blocko.instance_change_settings_grid_App()
+PUT       /instance/update/:instance_id                                 @controllers.Controller_Blocko.instance_update(instance_id)
 
 #Instance/Record
 GET       /instance_record/get/:instance_record_id                      @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
@@ -311,7 +312,7 @@ DELETE    /processor/:processor_id                                      @control
 
 #Board
 POST      /board                                                        @controllers.Controller_Board.board_create()
-PUT       /board/userDescription/:board_id                              @controllers.Controller_Board.board_updateDescription(board_id)
+PUT       /board/userDescription/:board_id                              @controllers.Controller_Board.board_update(board_id)
 PUT       /board/backup                                                 @controllers.Controller_Board.board_updateBackup()
 
 PUT       /board/filter                                                 @controllers.Controller_Board.board_getByFilter()

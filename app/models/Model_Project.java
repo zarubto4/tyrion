@@ -8,6 +8,8 @@ import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import org.ehcache.spi.loaderwriter.CacheLoadingException;
+import org.ehcache.spi.loaderwriter.CacheWritingException;
 import utilities.cache.helps_objects.IdsList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
@@ -34,6 +36,7 @@ public class Model_Project extends Model {
                                                                       @Id public String id;
                                                                           public String name;
                                                                           public String description;
+                                                                          public boolean removed_by_user;
 
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgram>                b_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgram>                c_programs        = new ArrayList<>();
@@ -111,14 +114,24 @@ public class Model_Project extends Model {
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        terminal_logger.debug("update: Update object value: {}",  this.id);
+
+        try {
+
+            if (cache.containsKey(this.id))
+                cache.replace(this.id, this);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+
         super.update();
 
     }
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        terminal_logger.debug("delete: Delete object Id: {} ", this.id);
         //removed_by_user = true;
         super.delete();
     }
@@ -264,23 +277,26 @@ public class Model_Project extends Model {
 
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin}
 
-
-
-
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static final String CACHE                          = Model_Project.class.getSimpleName();
     public static final String CACHE_BECKI_CONNECTED_PERSONS  = Model_Project.class.getSimpleName() + "_BECKI_CONNECTED_PERSONS_ID";
 
-
-    // TODO přidat další chache >>> public static Cache<String, Model_Project> cache = null;       // < Project_Id, Model_Project>
+    public static Cache<String, Model_Project> cache = null;
     public static Cache<String, IdsList> token_cache = null;  // < Project_Id, List<Person_id>> // Only connected on Websocket with Becki
 
+    public static Model_Project get_byId(String id){
 
-    public static Model_Project get_byId(String project_id){
+        Model_Project project = cache.get(id);
+        if (project == null){
 
-        // TODO Velký todo pro LEXU!!!
-        return Model_Project.find.byId(project_id);
+            project = find.byId(id);
+            if (project == null) return null;
+
+            cache.put(id, project);
+        }
+
+        return project;
     }
 
     public static void becki_person_id_subscribe(String person_id){
@@ -303,9 +319,9 @@ public class Model_Project extends Model {
                 token_cache.put(project.id, idlist);
 
             }else {
+
                 if(!idlist.list.contains(person_id)) idlist.list.add(person_id);
             }
-
         }
     }
 
@@ -325,11 +341,8 @@ public class Model_Project extends Model {
             if(idlist != null){
                 idlist.list.remove(person_id);
             }
-
         }
-
     }
-
 
     public static List<String> get_project_becki_person_ids_list(String project_id){
 
@@ -355,10 +368,7 @@ public class Model_Project extends Model {
         return idlist.list;
     }
 
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static Model.Finder<String,Model_Project> find = new Finder<>(Model_Project.class);
-
-
 }
-

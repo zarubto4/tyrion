@@ -23,7 +23,7 @@ public class WS_Message_Remove_yoda_from_instance extends WS_AbstractMessage_Ins
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_HomerInstance.CHANNEL);
-        request.put("instanceId", instance.blocko_instance_name);
+        request.put("instanceId", instance.id);
         request.put("yodaId", yodaId);
 
         return request;

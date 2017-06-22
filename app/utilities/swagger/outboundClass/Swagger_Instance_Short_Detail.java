@@ -9,6 +9,8 @@ import io.swagger.annotations.ApiModelProperty;
 public class Swagger_Instance_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true) public String id;
+    @ApiModelProperty(required = true, readOnly = true) public String name;
+    @ApiModelProperty(required = true, readOnly = true) public String description;
     @ApiModelProperty(required = true, readOnly = true) public String b_program_id;
     @ApiModelProperty(required = true, readOnly = true) public String b_program_name;
     @ApiModelProperty(required = true, readOnly = true) public String b_program_description;

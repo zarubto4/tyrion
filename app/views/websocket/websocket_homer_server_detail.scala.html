@@ -427,9 +427,9 @@
 
                 $.each(instancies.content, function (k, v) {
                     content += "<tr>";
-                    content += "<td>" + v.blocko_instance_name +"</td>";
+                    content += "<td>" + v.id +"</td>";
                     content += "<td>" + v.instance_type +"</td>";
-                    content += "<td>" + v.personal_description +"</td>";
+                    content += "<td>" + v.name +"</td>";
 
                     if(v.instance_online == true){
                         content += "<td><span class=\"label label-success\">Online</span></td>";
@@ -437,7 +437,7 @@
                         content += "<td><span class=\"label label-danger\">Offline</span></td>";
                     }
 
-                    content += "<td><a href=\"" + '@routes.Controller_Dashboard.show_instance_detail("")' + v.blocko_instance_name + "\"><button class=\"btn btn-block btn-info btn-xs\">Details</button></a></td>";
+                    content += "<td><a href=\"" + '@routes.Controller_Dashboard.show_instance_detail("")' + v.id + "\"><button class=\"btn btn-block btn-info btn-xs\">Details</button></a></td>";
                     content += "<td> Edit </td>";
                     content += "<td> Disconect </td>";
                     content += "</tr>";

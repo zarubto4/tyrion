@@ -32,10 +32,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
-import static models.Model_GridTerminal.private_prefix;
-import static models.Model_GridTerminal.public_prefix;
-import static models.Model_MProgramInstanceParameter.parameter_prefix;
-
 
 @Entity
 @ApiModel(description = "Model of HomerInstance",
@@ -48,8 +44,10 @@ public class Model_HomerInstance extends Model {
     
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                  @Id               public String blocko_instance_name;
+                                                  @Id               public String id;
                              @JsonIgnore @ManyToOne()               public Model_HomerServer cloud_homer_server;
+                                                                    public String name;
+                                 @Column(columnDefinition = "TEXT") public String description;
 
 
     @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
@@ -84,9 +82,9 @@ public class Model_HomerInstance extends Model {
             if(actual_instance != null) {
 
                 if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-                    return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + blocko_instance_name + "/#token";
+                    return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + id + "/#token";
                 }else{
-                    return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + blocko_instance_name + "/#token";
+                    return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + id + "/#token";
                 }
 
             }
@@ -108,7 +106,9 @@ public class Model_HomerInstance extends Model {
         try {
 
             Swagger_Instance_Short_Detail help = new Swagger_Instance_Short_Detail();
-            help.id = blocko_instance_name;
+            help.id = id;
+            help.name = name;
+            help.description = description;
             help.b_program_id = getB_program().id;
             help.b_program_name = getB_program().name;
             help.b_program_description = this.getB_program().description;
@@ -129,12 +129,12 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore             public Model_BProgram getB_program()   { return b_program;}
     @JsonIgnore @Transient  public List<Model_Board>  getBoards_in_virtual_instance() {
-        return Model_Board.find.where().eq("virtual_instance_under_project.blocko_instance_name", blocko_instance_name).findList();
+        return Model_Board.find.where().eq("virtual_instance_under_project.id", id).findList();
     }
 
     @JsonIgnore @Transient  public Model_Project get_project() {
-        if(instance_type == Enum_Homer_instance_type.INDIVIDUAL) return Model_Project.find.where().eq("b_programs.instance.blocko_instance_name", blocko_instance_name).findUnique();
-        else return Model_Project.find.where().eq("private_instance.blocko_instance_name", blocko_instance_name).findUnique();
+        if(instance_type == Enum_Homer_instance_type.INDIVIDUAL) return Model_Project.find.where().eq("b_programs.instance.id", id).findUnique();
+        else return Model_Project.find.where().eq("private_instance.id", id).findUnique();
     }
 
 
@@ -146,36 +146,36 @@ public class Model_HomerInstance extends Model {
         terminal_logger.debug("save :: Creating new Object");
         
         while(true){ // I need Unique Value
-            this.blocko_instance_name = UUID.randomUUID().toString();
-            if (Model_HomerInstance.find.where().eq("blocko_instance_name", blocko_instance_name ).findUnique() == null) break;
+            this.id = UUID.randomUUID().toString();
+            if (Model_HomerInstance.find.where().eq("id", id).findUnique() == null) break;
         }
 
 
         super.save();
 
 
-        cache.put(this.blocko_instance_name, this);
+        cache.put(this.id, this);
     }
 
 
     @Override
     public void update(){
 
-        terminal_logger.debug("update :: Update object blocko_instance_name: {}",  this.blocko_instance_name);
+        terminal_logger.debug("update :: Update object id: {}",  this.id);
 
         super.update();
-        cache.put(this.blocko_instance_name, this);
+        cache.put(this.id, this);
     }
     
     @Override
     public void delete(){
 
-        terminal_logger.debug("update :: Delete object blocko_instance_name: {} ", this.blocko_instance_name);
+        terminal_logger.debug("update :: Delete object id: {} ", this.id);
         
         this.removed_by_user = true;
         super.update();
 
-        cache.put(this.blocko_instance_name, this);
+        cache.put(this.id, this);
     }
 
 
@@ -264,7 +264,7 @@ public class Model_HomerInstance extends Model {
 
 
 
-/* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER---------------------------------------------------------------------------------*/
+/* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER-----------------------------------------------------------------------*/
 
     public static final String CHANNEL = "instance";
     
@@ -672,7 +672,7 @@ public class Model_HomerInstance extends Model {
             if(!instance_online()) return new WS_Message_Destroy_instance();
 
             // Vytvořím Instanci
-            WS_Message_Destroy_instance result_instance  = this.cloud_homer_server.remove_instance(this.blocko_instance_name);
+            WS_Message_Destroy_instance result_instance  = this.cloud_homer_server.remove_instance(this.id);
 
             if(this.actual_instance != null) {
                 this.actual_instance.running_to = new Date();
@@ -691,23 +691,20 @@ public class Model_HomerInstance extends Model {
     }
 
     @JsonIgnore @Transient
-    public static void upload_Record_immediately(Model_HomerInstanceRecord record) {
+    public static void upload_record(Model_HomerInstanceRecord record) {
 
         new Thread(() -> {
                 try {
 
-                    terminal_logger.debug("upload_Record_immediately:: thread is running under record ID:: " + record.id);
+                    terminal_logger.debug("upload_record: thread is running under record ID:: " + record.id);
 
                     Model_HomerInstance instance = record.main_instance_history;
 
-
-
-
                     if( instance.actual_instance != null) {
 
-                        terminal_logger.debug("upload_Record_immediately: Actual Instnace != null -> InstanceRecord ID: {}", instance.actual_instance.id);
+                        terminal_logger.debug("upload_record Actual Instnace != null -> InstanceRecord ID: {}", instance.actual_instance.id);
 
-                        terminal_logger.debug("upload_Record_immediately:: Record overwriting previous instance record:: " + instance.actual_instance.id);
+                        terminal_logger.debug("upload_record: Record overwriting previous instance record:: " + instance.actual_instance.id);
 
                         Model_HomerInstanceRecord previous_version = instance.actual_instance;
 
@@ -717,15 +714,13 @@ public class Model_HomerInstance extends Model {
                         previous_version.update();
 
                     }else {
-                        terminal_logger.debug("upload_Record_immediately:: First uploading of instnace:: ");
+                        terminal_logger.debug("upload_record: First uploading of instance");
                     }
-
-
 
                     // Synchronize Grid App settings from last config
                     // Try Find Latest runing Record with latest configuration - it can be instance.actual_instance from previous step or
                     // record that was turned off and on again.
-                    Model_HomerInstanceRecord latest_version = Model_HomerInstanceRecord.find.where().eq("main_instance_history.blocko_instance_name", record.main_instance_history.blocko_instance_name).isNotNull("running_to").orderBy().desc("running_to").setMaxRows(1).findUnique();
+                    Model_HomerInstanceRecord latest_version = Model_HomerInstanceRecord.find.where().eq("main_instance_history.id", record.main_instance_history.id).isNotNull("running_to").orderBy().desc("running_to").setMaxRows(1).findUnique();
 
                     if(latest_version != null){
 
@@ -733,7 +728,6 @@ public class Model_HomerInstance extends Model {
 
                             // Programy
                             for(Model_MProgramInstanceParameter old_parameter : snap_shot.m_program_snapshots()){
-
 
                                 Model_MProgramInstanceParameter new_parameter = Model_MProgramInstanceParameter.find.where()
                                         .eq("m_project_program_snapshot.instance_versions.instance_record.id", record.id)
@@ -772,7 +766,6 @@ public class Model_HomerInstance extends Model {
                         }
                     }
 
-
                         // Ověřím připojený server
                     if (!Controller_WebSocket.homer_servers.containsKey(instance.cloud_homer_server.unique_identificator)) {
                         terminal_logger.warn("Server je offline!! Upload instance will be as soon as possible!!");
@@ -786,11 +779,11 @@ public class Model_HomerInstance extends Model {
                         instance.update_instance_to_actual_instance_record();
 
                     } catch (Exception e) {
-                        terminal_logger.error("Error while upload_Record_immediately tried upload Instance Record to Homer", e);
+                        terminal_logger.error("Error while upload_record tried upload Instance Record to Homer", e);
                     }
 
                 }catch (Exception e){
-                    terminal_logger.internalServerError("upload_Record_immediately:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         ).start();
@@ -1010,7 +1003,7 @@ public class Model_HomerInstance extends Model {
 
                     if (b_program_hw_group.main_board_pair != null) {
 
-                        terminal_logger.debug("update_device_summary_collection:: Iteration {}  Main Board ID:: {} Check. ", b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description);
+                        terminal_logger.debug("update_device_summary_collection:: Iteration {}  Main Board ID:: {} Check. ", b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name);
 
                         // Neobsahuje Yodu - Tak vytvořím skupinu s Yodou a devicama
                         if(!yodas_id_on_instance.contains(b_program_hw_group.main_board_pair.board_id())) {
@@ -1021,7 +1014,7 @@ public class Model_HomerInstance extends Model {
                             group.yodaId = b_program_hw_group.main_board_pair.board.id;
 
                             for (Model_BPair pair : b_program_hw_group.device_board_pairs) {
-                                terminal_logger.debug("update_device_summary_collection:: Iteration {} Instance not contain this Yoda device. Group was created bud Yoda has own MESH device id {} ", b_program_hw_group.id , pair.board.personal_description);
+                                terminal_logger.debug("update_device_summary_collection:: Iteration {} Instance not contain this Yoda device. Group was created bud Yoda has own MESH device id {} ", b_program_hw_group.id , pair.board.name);
                                 group.devicesId.add(pair.board.id);
                             }
 
@@ -1029,7 +1022,7 @@ public class Model_HomerInstance extends Model {
                             continue;
                         }
 
-                        terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance - it not required add that to new group",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description);
+                        terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance - it not required add that to new group",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name);
 
                         // Obsahuje Yodu - takže kontroluji ještě Devices
                         List<String> devices_id_under_yoda = new ArrayList<>();
@@ -1037,21 +1030,21 @@ public class Model_HomerInstance extends Model {
                         WS_Message_Help_Yoda_only_hardware_Id_list yodaList = summary_information.getListWithYoda(b_program_hw_group.main_board_pair.board_id());
 
                         if(yodaList == null){
-                            terminal_logger.error("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but summary_information (WS_Message_Get_Hardware_list) not contains yodaList!!!",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description );
+                            terminal_logger.error("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but summary_information (WS_Message_Get_Hardware_list) not contains yodaList!!!",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name);
                             continue;
                         }
 
                         for(Model_BPair bPair : b_program_hw_group.device_board_pairs){
-                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but summary_information (WS_Message_Get_Hardware_list) not contains yodaList!!!",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description );
+                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but summary_information (WS_Message_Get_Hardware_list) not contains yodaList!!!",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name);
 
                             if(!yodaList.devicesId.contains( bPair.board_id())){
-                                terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but device {} is also required in group. Device was Add to group. ",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description , bPair.board_id() );
+                                terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but device {} is also required in group. Device was Add to group. ",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name, bPair.board_id() );
                                 devices_id_under_yoda.add(bPair.board_id());
                             }
                         }
 
                         if(!devices_id_under_yoda.isEmpty()){
-                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {}. Add device under Yoda immediately on Instance id {} ",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.personal_description , this.blocko_instance_name );
+                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {}. Add device under Yoda immediately on Instance id {} ",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name, this.id);
                             add_Device_to_instance(b_program_hw_group.main_board_pair.board_id(), devices_id_under_yoda);
                         }
                     }
@@ -1228,10 +1221,10 @@ public class Model_HomerInstance extends Model {
 
                 if(terminal.person == null) {
                     terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
-                    size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId).eq("actual_instance.version_object.public_version", true).findRowCount();
+                    size = Model_HomerInstance.find.where().eq("id", help.instanceId).eq("actual_instance.version_object.public_version", true).findRowCount();
                 }else {
                     terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
-                    size = Model_HomerInstance.find.where().eq("blocko_instance_name", help.instanceId)
+                    size = Model_HomerInstance.find.where().eq("id", help.instanceId)
                             .disjunction()
                             .eq("b_program.project.participants.person.id", terminal.person.id)
                             .eq("actual_instance.version_object.public_version", true)
@@ -1341,10 +1334,10 @@ public class Model_HomerInstance extends Model {
 
     public boolean get_status(){
 
-        Boolean status = cache_status.get(this.blocko_instance_name);
+        Boolean status = cache_status.get(this.id);
         if (status == null){
 
-            status = this.cloud_homer_server.is_instance_exist(this.blocko_instance_name);
+            status = this.cloud_homer_server.is_instance_exist(this.id);
         }
 
         return status;

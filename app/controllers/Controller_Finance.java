@@ -825,7 +825,7 @@ public class Controller_Finance extends Controller {
             product.name            = help.name;
             product.active          = true;
             product.method          = Enum_Payment_method.free;
-            product.business_model  = Enum_BusinessModel.saas;
+            product.business_model  = Enum_BusinessModel.alpha;
 
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
             payment_details.person = person;
@@ -871,6 +871,8 @@ public class Controller_Finance extends Controller {
             if(tariff.payment_method_required) {
 
                 terminal_logger.debug("product_create: Payment method Required");
+
+                product.business_model = Enum_BusinessModel.saas;
 
                 if(help.payment_method == null) return GlobalResult.result_badRequest("payment_method is required with this tariff");
 
@@ -1042,6 +1044,8 @@ public class Controller_Finance extends Controller {
             product.active = false;
             product.update();
 
+            product.notificationDeactivation();
+
             // Vrácení potvrzení
             return GlobalResult.result_ok(Json.toJson(product));
 
@@ -1080,6 +1084,8 @@ public class Controller_Finance extends Controller {
             // Aktivování
             product.active = true;
             product.update();
+
+            product.notificationActivation();
 
             // Vrácení potvrzení
             return GlobalResult.result_ok(Json.toJson(product));
@@ -1148,24 +1154,9 @@ public class Controller_Finance extends Controller {
             invoice = Fakturoid_Controller.create_proforma(invoice);
             if (invoice == null) return GlobalResult.result_badRequest("Failed to make an invoice, check your provided payment information");
 
-            switch (product.method){
+            if (product.method == Enum_Payment_method.credit_card){
 
-                case bank_transfer:{
-
-                    // TODO
-
-                    break;
-                }
-
-                case credit_card:{
-
-                    invoice = GoPay_Controller.singlePayment("Credit upload payment", product, invoice);
-                    // TODO
-
-                    break;
-                }
-
-                default: return GlobalResult.result_badRequest("Payment method is undefined");
+                invoice = GoPay_Controller.singlePayment("Credit upload payment", product, invoice);
             }
 
             // Return serialized object
@@ -1564,6 +1555,7 @@ public class Controller_Finance extends Controller {
             if(!invoice.delete_permission()) return GlobalResult.result_forbidden();
 
             // TODO - Chybí navázání na fakturoid - smazání faktury (nějaký proces?)
+            //Fakturoid_Controller.fakturoid_delete()
 
             // Vykonání operace
             invoice.delete();
@@ -1576,12 +1568,7 @@ public class Controller_Finance extends Controller {
     }
 
     @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    public Result invoice_connectProduct(String product_id, String fakturoid_reference_number){
-        return TODO;
-    }
-
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    public Result synchonize_invoice_with_fakutoid(String invoice_id){
+    public Result invoice_synchronizeFakturoid(String invoice_id){
         return TODO;
     }
 

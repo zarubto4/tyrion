@@ -193,7 +193,7 @@ public class Model_Notification extends Model {
                 Model_Board board = (Model_Board)object;
                 element.name = class_name;
                 element.id = board.id;
-                element.text = board.personal_description;
+                element.text = board.name;
                 element.project_id = board.project != null ? board.project.id : null;
                 break;
             }
@@ -240,7 +240,7 @@ public class Model_Notification extends Model {
             case "HomerInstance" : {
                 Model_HomerInstance homerInstance = (Model_HomerInstance) object;
                 element.name = class_name;
-                element.id = homerInstance.blocko_instance_name;
+                element.id = homerInstance.id;
                 if(homerInstance.project != null) element.project_id = homerInstance.project.id;
                 else element.project_id = homerInstance.b_program.project_id();
 

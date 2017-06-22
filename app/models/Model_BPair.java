@@ -43,7 +43,7 @@ public class Model_BPair extends Model {
     @JsonProperty   @Transient public String type_of_board_name()            { return board.type_of_board_name();  }
 
     @JsonProperty   @Transient public String board_id()                      { return board.id;}
-    @JsonProperty   @Transient public String board_personal_description()    { return board.personal_description;}
+    @JsonProperty   @Transient public String board_personal_description()    { return board.name;}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

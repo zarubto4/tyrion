@@ -439,7 +439,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Add_new_instance add_instance(Model_HomerInstance instance){
         try {
 
-            if (is_instance_exist(instance.blocko_instance_name) ) return new WS_Message_Add_new_instance();
+            if (is_instance_exist(instance.id) ) return new WS_Message_Add_new_instance();
             if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Add_new_instance().make_request(instance), 1000 * 5, 0, 3);
 

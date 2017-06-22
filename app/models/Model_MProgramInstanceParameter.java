@@ -11,7 +11,6 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
-import play.libs.Json;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
@@ -21,12 +20,9 @@ import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
 import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
 import utilities.logger.Class_Logger;
 import utilities.login_entities.Secured_API;
-import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_GridWidgetVersion_GridApp_source;
-import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Mobile_Connection_Summary;
 import web_socket.message_objects.homer_instance.WS_Message_Grid_token_verification;
-import web_socket.message_objects.homer_instance.WS_Message_Remove_yoda_from_instance;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -142,12 +138,12 @@ public class Model_MProgramInstanceParameter extends Model {
 
             case absolutely_public:{
 
-                summary.grid_app_url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + connection_token();
+                summary.grid_app_url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.id + "/" + connection_token();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.m_project_id = m_program_version.m_program.m_project_id();
                 summary.m_program_id = m_program_id();
                 summary.m_program_version_id = m_program_version.id;
-                summary.instance_id = get_instance().blocko_instance_name;
+                summary.instance_id = get_instance().id;
                 summary.source_code_list = version_separator(Model_MProgram.get_m_code(m_program_version));
 
                 // Separátor verzí
@@ -180,12 +176,12 @@ public class Model_MProgramInstanceParameter extends Model {
                 terminal.person = person;
                 terminal.save();
 
-                summary.grid_app_url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.blocko_instance_name + "/" + terminal.terminal_token;
+                summary.grid_app_url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.id + "/" + terminal.terminal_token;
                 summary.m_project_id = m_program_version.m_program.m_project_id();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.m_program_id = m_program_id();
                 summary.m_program_version_id = m_program_version.id;
-                summary.instance_id = get_instance().blocko_instance_name;
+                summary.instance_id = get_instance().id;
                 summary.source_code_list = version_separator(Model_MProgram.get_m_code(m_program_version));
 
                 return summary;
@@ -198,7 +194,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
                 summary.grid_app_url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
                 summary.m_program = Model_MProgram.get_m_code(m_program_version);
-                summary.instance_id = get_instance().blocko_instance_name;
+                summary.instance_id = get_instance().id;
 
                 return summary;
             }
@@ -213,7 +209,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
     @JsonIgnore  @Transient public boolean verify_token_for_homer_grid_connection(WS_Message_Grid_token_verification verification){
 
-       if(!get_instance().blocko_instance_name.equals( verification.instanceId)) return false;
+       if(!get_instance().id.equals( verification.instanceId)) return false;
 
        switch (snapshot_settings()){
 
