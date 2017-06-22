@@ -20,7 +20,10 @@
                         <div class="box">
                             <div class="box-header with-border">
                                 <h3 class="box-title">Basic Information</h3>
-                                <button class="btn btn-xs btn-danger pull-right" data-toggle="modal" data-target="#deleteModal" onclick="alert('Be careful with this operation!');">Delete</button>
+                                <div class="btn-group pull-right">
+                                    <button class="btn btn-xs btn-danger" type="button" data-toggle="modal" data-target="#deleteModal" onclick="alert('Be careful with this operation!');" title="Delete"><i class="fa fa-times"></i></button>
+                                    <button class="btn btn-xs btn-info" type="button" data-toggle="modal" data-target="#editModal" title="Edit"><i class="fa fa-edit"></i></button>
+                                </div>
                             </div>
                             <div class="box-body">
                                 <table  class="table table-bordered">
@@ -333,6 +336,27 @@
     </div>
 </div>
 
+<div id="editModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="editModalTitle" class="modal-title">Edit Board</h4>
+            </div>
+            <div class="modal-body">
+                <form id="edit_board">
+                    <input class="form-control form-group" title="Name" type="text" name="name" value="@board.name">
+                    <input class="form-control form-group" title="Description" type="text" name="description" value="@board.description">
+                </form>
+                <div id="editModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-success" type="button" onclick="editBoard()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <script>
 
         function deleteBoard() {
@@ -349,6 +373,27 @@
                 error:function(e) {
                     $("#deleteModalMessage").css("display", "block");
                     $("#deleteModalMessage p").text(JSON.parse(e.responseText).message);
+                }
+            });
+        }
+
+        function editBoard() {
+            $.ajax({
+                url: '@routes.Controller_Board.board_update(board.id)',
+                type: 'PUT',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                dataType: 'json',
+                data: JSON.stringify($("#edit_board").serializeObject()),
+                success:function(json){
+                    location.reload();
+                },
+                error:function(e) {
+                    $("#editModalMessage").css("display", "block");
+                    $("#editModalMessage p").text(JSON.parse(e.responseText).message);
                 }
             });
         }

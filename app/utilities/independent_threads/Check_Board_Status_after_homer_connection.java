@@ -50,7 +50,7 @@ public class Check_Board_Status_after_homer_connection  extends Thread{
 
                         try{
 
-                           Model_HomerInstance instance = Model_HomerInstance.get_model(identificator);
+                           Model_HomerInstance instance = Model_HomerInstance.get_byId(identificator);
 
                            List<String> boards_ids = new ArrayList<>();
 
