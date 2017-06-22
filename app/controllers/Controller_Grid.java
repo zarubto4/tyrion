@@ -434,57 +434,6 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "Remove  Version of M_Program",
-            tags = {"M_Program"},
-            notes = "remove version of M_Program",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Program.remove_permission", value = Model_MProgram.read_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "M_Program_remove" )
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created",    response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Empty.class)
-    public Result remove_M_Program_version( @ApiParam(value = "m_program_version_id", required = true) String m_program_version_id) {
-        try {
-
-            // Získání objektu
-            Model_VersionObject version_object  = Model_VersionObject.find.byId(m_program_version_id);
-
-            // Kontrola objektu
-            if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
-            if (version_object.m_program == null) return GlobalResult.result_badRequest("M_Project m_project_id not found");
-
-            // Kontrola oprávnění
-            if (! version_object.m_program.delete_permission() ) return GlobalResult.result_forbidden();
-
-            // Smazání objektu
-            version_object.removed_by_user = true;
-            version_object.update();
-
-            // Vrácení potvrzení
-            return GlobalResult.result_ok();
-
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
     @ApiOperation(value = "get M_Program",
             tags = {"M_Program"},
             notes = "get M_Program by quarry m_program_id",
@@ -524,7 +473,6 @@ public class Controller_Grid extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "get M_Program Version",
             tags = {"M_Program"},
@@ -574,7 +522,6 @@ public class Controller_Grid extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "update M_Program",
             tags = {"M_Program"},
@@ -633,6 +580,67 @@ public class Controller_Grid extends Controller {
         }
     }
 
+    @ApiOperation(value = "edit M_Program Version",
+            tags = {"M_Program"},
+            notes = "edit M_Program Version by quarry = m_program_version_id",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Program.edit_permision", value = "true"),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_M_Program_Version_Edit",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result edit_M_Program_version(@ApiParam(value = "m_program_version_id String query", required = true) String m_program_version_id){
+        try {
+
+            final Form<Swagger_M_Program_Version_Edit> form = Form.form(Swagger_M_Program_Version_Edit.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_M_Program_Version_Edit help = form.get();
+
+            // Získání objektu
+            Model_VersionObject version_object  = Model_VersionObject.find.byId(m_program_version_id);
+
+            // Kontrola objektu
+            if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
+            if (version_object.m_program == null) return GlobalResult.result_badRequest("M_Project m_project_id not found");
+
+            // Kontrola oprávnění
+            if (! version_object.m_program.edit_permission() ) return GlobalResult.result_forbidden();
+
+            // Úprava objektu
+            version_object.version_description = help.version_description;
+            version_object.version_name        = help.version_name;
+
+            version_object.update();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "remove M_Program",
             tags = {"M_Program"},
             notes = "remove M_Program by quarry = m_program_id",
@@ -669,6 +677,56 @@ public class Controller_Grid extends Controller {
         }
     }
 
+    @ApiOperation(value = "Remove  Version of M_Program",
+            tags = {"M_Program"},
+            notes = "remove version of M_Program",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "M_Program.remove_permission", value = Model_MProgram.read_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "M_Program_remove" )
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully created",    response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Empty.class)
+    public Result remove_M_Program_version( @ApiParam(value = "m_program_version_id", required = true) String m_program_version_id) {
+        try {
+
+            // Získání objektu
+            Model_VersionObject version_object  = Model_VersionObject.find.byId(m_program_version_id);
+
+            // Kontrola objektu
+            if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
+            if (version_object.m_program == null) return GlobalResult.result_badRequest("M_Project m_project_id not found");
+
+            // Kontrola oprávnění
+            if (! version_object.m_program.delete_permission() ) return GlobalResult.result_forbidden();
+
+            // Smazání objektu
+            version_object.removed_by_user = true;
+            version_object.update();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
 //######################################################################################################################
 
     // Příkazy pro Terminál

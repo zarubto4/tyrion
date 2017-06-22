@@ -254,9 +254,9 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "create new Version of B Program",
+    @ApiOperation(value = "create Version B Program",
             tags = {"B_Program"},
-            notes = "edit Blocko program / new Version in B_Program object",
+            notes = "create new vesion in Blocko program",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -287,7 +287,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result update_b_program_new_version(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
+    public  Result update_b_Program_new_version(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
         try{
 
             // Zpracování Json
@@ -470,6 +470,68 @@ public class Controller_Blocko extends Controller{
 
             // Smazání objektu
             program.delete();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "edit Version",
+            tags = {"B_Program"},
+            notes = "edit Version object",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Version_Edit",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public  Result edit_b_Program_version(@ApiParam(value = "version_id String path", required = true) String version_id){
+        try{
+
+
+            // Zpracování Json
+            final Form<Swagger_B_Program_Version_Edit> form = Form.form(Swagger_B_Program_Version_Edit.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_B_Program_Version_Edit help = form.get();
+
+            // Získání objektu
+            Model_VersionObject version_object  = Model_VersionObject.find.byId(version_id);
+
+            version_object.version_name = help.version_name;
+            version_object.version_description = help.version_description;
+
+
+            // Kontrola oprávnění
+            if (! version_object.b_program.edit_permission() ) return GlobalResult.result_forbidden();
+
+            // Smazání objektu
+            version_object.update();
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();

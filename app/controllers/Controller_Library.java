@@ -442,7 +442,7 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "update basic information in Version of Library",
+    @ApiOperation(value = "edit Library Version",
             tags = {"Library"},
             notes = "For update basic (name and description) information in Version of Library. If you want update code. You have to create new version. " +
                     "And after that you can delete previous version",

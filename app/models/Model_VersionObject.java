@@ -107,7 +107,6 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "m_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
 
 
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty
@@ -209,7 +208,6 @@ public class Model_VersionObject extends Model {
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
-
 
     @JsonIgnore @Transient  public void compile_program_thread() {
 

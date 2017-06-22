@@ -164,15 +164,16 @@ PUT       /project/unshareProject/:project_id                           @control
 PUT       /project/change_participant_state/:project_id                 @controllers.Controller_Project.project_changeParticipantStatus(project_id)
 
 #Program
+POST      /b_program/version/:b_program_id                              @controllers.Controller_Blocko.update_b_Program_new_version(b_program_id)
+PUT       /b_program/version/:version_id                                @controllers.Controller_Blocko.edit_b_Program_version(version_id)
+GET       /b_program/version/:version_id                                @controllers.Controller_Blocko.get_b_Program_version(version_id)
+DELETE    /b_program/version/:version_id                                @controllers.Controller_Blocko.remove_b_Program_version(version_id)
+
 POST      /b_program/:project_id                                        @controllers.Controller_Blocko.new_b_Program(project_id)
 GET       /b_program/:b_program_id                                      @controllers.Controller_Blocko.get_b_Program(b_program_id)
 PUT       /b_program/:b_program_id                                      @controllers.Controller_Blocko.edit_b_Program(b_program_id)
 DELETE    /b_program/:b_program_id                                      @controllers.Controller_Blocko.remove_b_Program(b_program_id)
 PUT       /b_program/list/:page_number                                  @controllers.Controller_Blocko.get_b_Program_by_Filter(page_number:Int )
-        
-PUT       /b_program/version/:b_program_id                              @controllers.Controller_Blocko.update_b_program_new_version(b_program_id)
-GET       /b_program/version/:version_id                                @controllers.Controller_Blocko.get_b_Program_version(version_id)
-DELETE    /b_program/version/:version_id                                @controllers.Controller_Blocko.remove_b_Program_version(version_id)
 
 #Instance
 GET       /instance/project/:project_id                                 @controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
@@ -365,14 +366,17 @@ PUT       /m_project/:m_project_id                                      @control
 DELETE    /m_project/:m_project_id                                      @controllers.Controller_Grid.remove_M_Project(m_project_id)
 
 #M Program
+POST      /m_program/version/:m_program_id                              @controllers.Controller_Grid.new_M_Program_version(m_program_id)
+PUT       /m_program/version/:m_program_version_id                      @controllers.Controller_Grid.edit_M_Program_version(m_program_version_id)
+GET       /m_program/version/:m_program_version_id                      @controllers.Controller_Grid.get_M_Program_version(m_program_version_id)
+DELETE    /m_program/version/:m_program_version_id                      @controllers.Controller_Grid.remove_M_Program_version(m_program_version_id)
+
 POST      /m_program/:m_project_id                                      @controllers.Controller_Grid.new_M_Program(m_project_id)
 GET       /m_program/:m_progrm_id                                       @controllers.Controller_Grid.get_M_Program(m_progrm_id)
 PUT       /m_program/:m_progrm_id                                       @controllers.Controller_Grid.edit_M_Program(m_progrm_id)
 DELETE    /m_program/:m_progrm_id                                       @controllers.Controller_Grid.remove_M_Program(m_progrm_id)
 
-POST      /m_program/version/:m_program_id                              @controllers.Controller_Grid.new_M_Program_version(m_program_id)
-GET       /m_program/version/:m_program_version_id                      @controllers.Controller_Grid.get_M_Program_version(m_program_version_id)
-DELETE    /m_program/version/:m_program_version_id                      @controllers.Controller_Grid.remove_M_Program_version(m_program_version_id)
+
 
 # Terminals Aps
 GET       /m_program/app/token/*qr_token                                @controllers.Controller_Grid.get_M_Program_byQR_Token_forMobile(qr_token)

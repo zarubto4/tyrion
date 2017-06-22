@@ -26,6 +26,13 @@ public class Swagger_GridWidgetVersion_Short_Detail {
     public String design_json;
 
     @ApiModelProperty(required = true, readOnly = true)
+    public boolean edit_permission;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean delete_permission;
+
+    @ApiModelProperty(required = true, readOnly = true)
     public Swagger_Person_Short_Detail author;
+
 
 }

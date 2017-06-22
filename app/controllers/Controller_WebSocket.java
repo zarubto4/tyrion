@@ -168,7 +168,7 @@ public class Controller_WebSocket extends Controller {
                 public void run() {
                     try {
 
-                        sleep(500);
+                        sleep(500); //Záměrna hodnota čekání pro strabilizaci komunikace
                         server.security_token_confirm_procedure();
 
                     } catch (InterruptedException e) {
