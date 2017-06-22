@@ -1703,8 +1703,16 @@ public class Model_Board extends Model {
     }
 
     @JsonIgnore @Override public void delete() {
-        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
-        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+        try {
+
+            if (cache.containsKey(this.id))
+                cache.remove((this.id));
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+
+        super.delete();
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

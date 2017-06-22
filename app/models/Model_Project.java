@@ -1,16 +1,12 @@
 package models;
 
 import com.avaje.ebean.*;
-import com.avaje.ebeaninternal.server.lib.util.NotFoundException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
-import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import org.ehcache.spi.loaderwriter.CacheLoadingException;
-import org.ehcache.spi.loaderwriter.CacheWritingException;
 import utilities.cache.helps_objects.IdsList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
@@ -64,6 +60,7 @@ public class Model_Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()    { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    for( Model_TypeOfWidget m    : get_type_of_widgets_not_deleted())l.add(m.get_typeOfWidget_short_detail());  return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()         { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    for( Model_HomerInstance m   : get_instances_not_deleted()) l.add(m.get_instance_short_detail());  return l;}
 
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean active() { return product.active;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_name() { return product.name;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id() { return product.id;}
@@ -329,10 +326,7 @@ public class Model_Project extends Model {
         if (project == null){
 
             project = find.where().eq("id", id).eq("removed_by_user", false).findUnique();
-            if (project == null){
-                terminal_logger.internalServerError("Model_Project get_byId", new NotFoundException("Model Project in get_byId with ID " + id + " not found"));
-                return null;
-            }
+            if (project == null) return null;
 
             cache.put(id, project);
         }

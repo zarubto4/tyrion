@@ -414,6 +414,15 @@ public class Model_Product extends Model {
         }
     }
 
+    @JsonIgnore
+    public List<Model_Project> projects(){
+
+        if (projects == null)
+            projects = Model_Project.find.where().eq("product.id", this.id).findList();
+
+        return projects;
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
