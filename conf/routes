@@ -462,6 +462,7 @@ GET       /admin/request_stats                                          @utiliti
 DELETE    /admin/request_stats                                          @utilities.request_counter.RequestCounter.reset_request_stats()
 
 # Admin - Hardware
+DELETE    /admin/board/:board_id                                        @controllers.Controller_Board.board_delete(board_id)
 GET       /admin/board_settings                                         @controllers.Controller_Dashboard.basic_board_management()
 GET       /admin/board_summary                                          @controllers.Controller_Dashboard.board_summary()
 GET       /admin/board_detail/:board_id                                 @controllers.Controller_Dashboard.board_detail(board_id)

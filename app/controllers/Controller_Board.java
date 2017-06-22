@@ -2471,4 +2471,27 @@ public class Controller_Board extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+    @Security.Authenticated(Secured_Admin.class)
+    public Result board_delete(String board_id){
+        try {
+
+            // Kontrola objektu
+            Model_Board board = Model_Board.get_byId(board_id);
+            if(board == null ) return GlobalResult.result_notFound("Board not found");
+
+            // Kontrola oprávnění
+            if(!board.delete_permission()) return GlobalResult.result_forbidden();
+
+            if (board.project != null || board.virtual_instance_under_project != null || board.date_of_user_registration != null)
+                return GlobalResult.result_badRequest("Board is already in use.");
+
+            board.delete();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
 }
