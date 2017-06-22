@@ -118,22 +118,30 @@ public class Model_Project extends Model {
 
         try {
 
-            if (cache.containsKey(this.id))
-                cache.replace(this.id, this);
+            if (cache.containsKey(this.id)) cache.replace(this.id, this);
+
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }
 
         super.update();
-
     }
 
     @JsonIgnore @Override public void delete() {
 
         terminal_logger.debug("delete: Delete object Id: {} ", this.id);
-        //removed_by_user = true;
-        super.delete();
+        removed_by_user = true;
+
+        try {
+
+            if (cache.containsKey(this.id)) cache.remove(this.id);
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+
+        update();
     }
 
 
@@ -290,7 +298,7 @@ public class Model_Project extends Model {
         Model_Project project = cache.get(id);
         if (project == null){
 
-            project = find.byId(id);
+            project = find.where().eq("id", id).eq("removed_by_user", true).findUnique();
             if (project == null) return null;
 
             cache.put(id, project);
@@ -312,16 +320,11 @@ public class Model_Project extends Model {
 
             IdsList idlist = token_cache.get(project.id);
 
-            if(idlist == null){
+            if(idlist == null) idlist = new IdsList();
 
-                idlist = new IdsList();
-                if(!idlist.list.contains(person_id)) idlist.list.add(person_id);
-                token_cache.put(project.id, idlist);
+            if(!idlist.list.contains(person_id)) idlist.list.add(person_id);
 
-            }else {
-
-                if(!idlist.list.contains(person_id)) idlist.list.add(person_id);
-            }
+            token_cache.put(project.id, idlist);
         }
     }
 
@@ -352,14 +355,14 @@ public class Model_Project extends Model {
 
             idlist = new IdsList();
 
-            for(Model_ProjectParticipant participant : get_byId(project_id).participants){
+            Model_Project project = get_byId(project_id);
+            if (project == null) return idlist.list;
+
+            for(Model_ProjectParticipant participant : project.participants){
 
                 if(participant.state == Enum_Participant_status.invited ) continue;
 
-                if(Controller_WebSocket.becki_website.containsKey(participant.person.id)){
-                   if(!idlist.list.contains(participant.person.id))  idlist.list.add(participant.person.id);
-                 }
-
+                if(!idlist.list.contains(participant.person.id))  idlist.list.add(participant.person.id);
             }
 
             token_cache.put(project_id, idlist);

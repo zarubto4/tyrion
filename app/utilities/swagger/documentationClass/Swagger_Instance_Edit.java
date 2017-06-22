@@ -4,12 +4,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 @ApiModel(description = "",
-        value = "Instance_Filter")
+            value = "Instance_Edit")
 public class Swagger_Instance_Edit {
 
     @Constraints.Required
