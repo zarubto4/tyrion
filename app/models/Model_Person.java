@@ -136,9 +136,14 @@ public class Model_Person extends Model {
 
     @JsonIgnore @Transient
     public boolean has_permission(String permission){
+        try {
 
-            return  Model_Permission.find.where().eq("value", permission).eq("roles.persons.id", this.id).findRowCount() +
+            return Model_Permission.find.where().eq("value", permission).eq("roles.persons.id", this.id).findRowCount() +
                     Model_Permission.find.where().eq("value", permission).eq("persons.id", this.id).findRowCount() > 0;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return false;
+        }
     }
 
     @JsonIgnore @Transient

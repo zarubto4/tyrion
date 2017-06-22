@@ -66,21 +66,28 @@ public class Model_Library extends Model{
 
     @JsonIgnore
     public Swagger_Library_Short_Detail get_short_library(){
-        Swagger_Library_Short_Detail help = new Swagger_Library_Short_Detail();
+        try{
 
-        help.id = this.id;
-        help.name = this.name;
-        help.description = this.description;
+            Swagger_Library_Short_Detail help = new Swagger_Library_Short_Detail();
 
-        for (Model_TypeOfBoard typeOfBoard : this.type_of_boards) {
-            help.type_of_board_names.add(typeOfBoard.name);
+            help.id = this.id;
+            help.name = this.name;
+            help.description = this.description;
+
+            for (Model_TypeOfBoard typeOfBoard : this.type_of_boards) {
+                help.type_of_board_names.add(typeOfBoard.name);
+            }
+
+            help.edit_permission   = this.edit_permission();
+            help.update_permission = this.update_permission();
+            help.delete_permission = this.delete_permission();
+
+
+            return help;
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_short_library:", e);
+            return null;
         }
-
-        help.edit_permission   = this.edit_permission();
-        help.update_permission = this.update_permission();
-        help.delete_permission = this.delete_permission();
-
-        return help;
     }
 
     @JsonIgnore
@@ -171,11 +178,48 @@ public class Model_Library extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  if(project_id != null) return Model_Project.get_byId(project_id).update_permission(); return Controller_Security.get_person().has_permission("Library_create");}
+    @JsonIgnore   @Transient                                    public boolean create_permission(){
+        try {
+            if(project_id != null) return Model_Project.get_byId(project_id).update_permission(); return Controller_Security.get_person().has_permission("Library_create");
+        }catch (NullPointerException exception){
+            terminal_logger.warn("create_permission null pointer exception - project is not probably in cache");
+            return false;
+        }
+    }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  if(project_id != null) return Model_Project.get_byId(project_id).update_permission(); return Controller_Security.get_person().has_permission("Library_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  if(project_id != null) return Model_Project.get_byId(project_id).update_permission(); return Controller_Security.get_person().has_permission("Library_delete"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  if(project_id != null) return Model_Project.get_byId(project_id).update_permission(); return Controller_Security.get_person().has_permission("Library_update"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {
+        try {
+          
+            if (project_id != null) return Model_Project.get_byId(project_id).update_permission();
+            return Controller_Security.get_person().has_permission("Library_edit");
+
+        }catch (NullPointerException exception){
+            terminal_logger.warn("edit_permission null pointer exception - project is not probably in cache");
+            return false;
+        }
+    }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){
+        try {
+
+             if(project_id != null) return Model_Project.get_byId(project_id).update_permission();
+             return Controller_Security.get_person().has_permission("Library_delete");
+
+        }catch (NullPointerException exception){
+            terminal_logger.warn("delete_permission null pointer exception - project is not probably in cache");
+            return false;
+        }
+    }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){
+        try {
+
+            if(project_id != null) return Model_Project.get_byId(project_id).update_permission();
+            return Controller_Security.get_person().has_permission("Library_update");
+
+        }catch (NullPointerException exception){
+            terminal_logger.warn("update_permission null pointer exception - project is not probably in cache");
+            return false;
+        }
+   }
 
     public enum permissions{Library_create, Library_edit, Library_delete, Library_update}
 

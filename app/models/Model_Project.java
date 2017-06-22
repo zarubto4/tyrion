@@ -1,6 +1,7 @@
 package models;
 
 import com.avaje.ebean.*;
+import com.avaje.ebeaninternal.server.lib.util.NotFoundException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
@@ -151,43 +152,72 @@ public class Model_Project extends Model {
 
     @JsonIgnore
     public List<Model_CProgram> get_c_programs_not_deleted(){
-        return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        try {
+            return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_c_programs_not_deleted", e);
+            return new ArrayList<Model_CProgram>();
+        }
     }
 
     @JsonIgnore
     public List<Model_Library> get_c_privates_project_libraries_not_deleted(){
-        return Model_Library.find.where().eq("project_id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        try {
+            return Model_Library.find.where().eq("project_id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_c_privates_project_libraries_not_deleted", e);
+            return new ArrayList<Model_Library>();
+        }
     }
 
     @JsonIgnore
     public List<Model_BProgram> get_b_programs_not_deleted(){
-
-        return Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
-
+        try{
+            return Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_b_programs_not_deleted", e);
+            return new ArrayList<Model_BProgram>();
+        }
     }
 
     @JsonIgnore
     public List<Model_MProject> get_m_projects_not_deleted(){
-
-        return Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
-
+        try{
+            return Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_m_projects_not_deleted", e);
+            return new ArrayList<Model_MProject>();
+        }
     }
 
     @JsonIgnore
     public List<Model_TypeOfWidget> get_type_of_widgets_not_deleted(){
-        return Model_TypeOfWidget.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        try{
+            return Model_TypeOfWidget.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_type_of_widgets_not_deleted", e);
+            return new ArrayList<Model_TypeOfWidget>();
+        }
     }
 
     @JsonIgnore
     public List<Model_TypeOfBlock> get_type_of_blocks_not_deleted(){
-        return Model_TypeOfBlock.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        try{
+            return Model_TypeOfBlock.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_type_of_blocks_not_deleted", e);
+            return new ArrayList<Model_TypeOfBlock>();
+        }
     }
 
     @JsonIgnore
     public List<Model_HomerInstance> get_instances_not_deleted(){
-
-        return Model_HomerInstance.find.where().ne("removed_by_user", true).isNotNull("actual_instance").eq("b_program.project.id", id).findList();
-
+        try{
+            return Model_HomerInstance.find.where().ne("removed_by_user", true).isNotNull("actual_instance").eq("b_program.project.id", id).findList();
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_instances_not_deleted", e);
+            return new ArrayList<Model_HomerInstance>();
+        }
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -298,8 +328,11 @@ public class Model_Project extends Model {
         Model_Project project = cache.get(id);
         if (project == null){
 
-            project = find.where().eq("id", id).eq("removed_by_user", true).findUnique();
-            if (project == null) return null;
+            project = find.where().eq("id", id).eq("removed_by_user", false).findUnique();
+            if (project == null){
+                terminal_logger.internalServerError("Model_Project get_byId", new NotFoundException("Model Project in get_byId with ID " + id + " not found"));
+                return null;
+            }
 
             cache.put(id, project);
         }
