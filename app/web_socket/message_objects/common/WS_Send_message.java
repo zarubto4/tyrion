@@ -68,6 +68,7 @@ public class WS_Send_message {
 
         terminal_logger.trace("insert_result: MessageID: {}  saving result to variable " , messageId );
         this.result = result;
+        future.cancel(true);
     }
 
 

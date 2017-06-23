@@ -72,7 +72,7 @@ public class Model_MProjectProgramSnapShot extends Model {
 
     @JsonIgnore @Override
     public void delete() {
-        terminal_logger.error("update :: This Object is not allow to remove");
+        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

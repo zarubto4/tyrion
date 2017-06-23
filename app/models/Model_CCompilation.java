@@ -90,8 +90,7 @@ public class Model_CCompilation extends Model {
 
 
     @JsonIgnore @Override public void delete() {
-        terminal_logger.error("delete:: This object is not legitimate to remove. ");
-
+        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
     }
 
 

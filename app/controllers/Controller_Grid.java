@@ -2049,8 +2049,7 @@ public class Controller_Grid extends Controller {
                         .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget disapproved" );
 
             } catch (Exception e) {
-                terminal_logger.error ("gridDisapprove:: Sending mail -> critical error", e);
-                e.printStackTrace();
+                terminal_logger.internalServerError (e);
             }
 
             // Uložení změn

@@ -131,7 +131,7 @@ public class Model_CompilationServer extends Model {
             terminal_logger.trace("make_Compilation:: Result is here:: {} ", node.toString());
 
             final Form<WS_Message_Make_compilation> form = Form.form(WS_Message_Make_compilation.class).bind(node);
-            if(form.hasErrors()){terminal_logger.error("WS_Make_compilation:: Incoming Json from Compilation Server has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Make_compilation();}
+            if(form.hasErrors()) throw new Exception("WS_Message_Make_compilation: Incoming Json from Compilation Server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             WS_Message_Make_compilation compilation = form.get();
 
@@ -145,7 +145,7 @@ public class Model_CompilationServer extends Model {
             return compilation;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("make_Compilation:", e);
+            terminal_logger.internalServerError(e);
             return new WS_Message_Make_compilation();
         }
     }
@@ -159,11 +159,12 @@ public class Model_CompilationServer extends Model {
             JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
 
             final Form<WS_Message_Ping_compilation_server> form = Form.form(WS_Message_Ping_compilation_server.class).bind(node);
-            if(form.hasErrors()){terminal_logger.error("WS_Ping_compilation_server:: Incoming Json for Yoda has not right Form");return new WS_Message_Ping_compilation_server();}
+            if(form.hasErrors()) throw new Exception("WS_Message_Ping_compilation_server: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")));
 
             return form.get();
 
         }catch (Exception e){
+            terminal_logger.internalServerError(e);
             return new WS_Message_Ping_compilation_server();
         }
     }
@@ -194,9 +195,7 @@ public class Model_CompilationServer extends Model {
         Compilation_After_BlackOut.getInstance().start(this);
     }
 
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
@@ -205,7 +204,7 @@ public class Model_CompilationServer extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError("make_log_connect:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -215,12 +214,10 @@ public class Model_CompilationServer extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request(this.unique_identificator), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError("make_log_disconnect:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
-
-
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -230,7 +227,6 @@ public class Model_CompilationServer extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-
     @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.get_person().has_permission("Cloud_Compilation_Server_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("Cloud_Compilation_Server_edit");   }
@@ -238,10 +234,8 @@ public class Model_CompilationServer extends Model {
 
     public enum permissions{Cloud_Compilation_Server_create, Cloud_Compilation_Server_edit, Cloud_Compilation_Server_delete}
 
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static Model.Finder<String,Model_CompilationServer> find = new Model.Finder<>(Model_CompilationServer.class);
-
-
 }
 

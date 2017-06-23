@@ -89,8 +89,6 @@ public class Check_Update_for_hw_on_homer extends Thread {
                         } catch (Exception e) {
 
                         }
-
-
                         return true;
                     });
 
@@ -98,7 +96,6 @@ public class Check_Update_for_hw_on_homer extends Thread {
             terminal_logger.internalServerError("run:", e);
         }
     }
-
 
     public static void check_Update(WS_HomerServer homer_server, WS_Message_Get_summary_information summary_information){
 
@@ -112,14 +109,9 @@ public class Check_Update_for_hw_on_homer extends Thread {
             }
 
             Model_Board yoda = Model_Board.get_byId(yoda_connected.deviceId);
-            if(yoda == null){
-                terminal_logger.error("check_Update:: unknow Device!!! ");
-            }
+            if(yoda == null) terminal_logger.internalServerError(new Exception("Unknown Device!"));
 
             Model_Board.hardware_firmware_state_check(homer_server, yoda, yoda_connected);
-
         }
-
     }
-
 }

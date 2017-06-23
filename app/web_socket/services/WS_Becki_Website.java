@@ -167,7 +167,6 @@ public class WS_Becki_Website extends WS_Interface_type {
                         }
                     }
                 }
-
             }
 
         }else {
@@ -175,21 +174,19 @@ public class WS_Becki_Website extends WS_Interface_type {
         }
     }
     
-    
     public static void Messages_HomerInstance(WS_HomerServer homer, ObjectNode json){
-        terminal_logger.error("Messages_HomerInstance:: Message from Homer server {} Incoming message from server to Becki has not implemented !!!! Message {}", homer.get_identificator(), json.toString());
+        terminal_logger.warn("Messages_HomerInstance: Message from Homer server {} Incoming message from server to Becki has not implemented !!!! Message {}", homer.get_identificator(), json.toString());
     }
-
 
     public void becki_subscribe_notification (ObjectNode json){
         try {
 
             final Form<WS_Message_Subscribe_Notifications> form = Form.form(WS_Message_Subscribe_Notifications.class).bind(json);
-            if(form.hasErrors()){terminal_logger.error("WS_Message_Subscribe_Notifications:: Incoming Json has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return;}
+            if(form.hasErrors()) throw new Exception("WS_Message_Subscribe_Notifications: Incoming Json has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             WS_Message_Subscribe_Notifications subscribe_notifications =  form.get();
 
-            WS_Becki_Single_Connection single_connection = (WS_Becki_Single_Connection) all_person_Connections.get( subscribe_notifications.single_connection_token);
+            WS_Becki_Single_Connection single_connection = all_person_Connections.get( subscribe_notifications.single_connection_token);
             single_connection.notification_subscriber = true;
 
             Model_Project.becki_person_id_subscribe(identifikator);
@@ -197,39 +194,31 @@ public class WS_Becki_Website extends WS_Interface_type {
             single_connection.write_without_confirmation( subscribe_notifications.messageId ,  WS_Message_Subscribe_Notifications.approve_result() );
 
         }catch (Exception e){
-            terminal_logger.error("becki_subscribe_notification:: Error: ", e);
+            terminal_logger.internalServerError(e);
         }
-
     }
 
     public void becki_unsubscribe_notification (ObjectNode json){
         try{
 
             final Form<WS_Message_UnSubscribe_Notifications> form = Form.form(WS_Message_UnSubscribe_Notifications.class).bind(json);
-            if(form.hasErrors()){terminal_logger.error("WS_Message_Subscribe_Notifications:: Incoming Json has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return;}
+            if(form.hasErrors()) throw new Exception("WS_Message_UnSubscribe_Notifications: Incoming Json has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             WS_Message_UnSubscribe_Notifications un_subscribe_notifications =  form.get();
 
-            WS_Becki_Single_Connection single_connection = (WS_Becki_Single_Connection) all_person_Connections.get( un_subscribe_notifications.single_connection_token);
+            WS_Becki_Single_Connection single_connection = all_person_Connections.get(un_subscribe_notifications.single_connection_token);
             single_connection.notification_subscriber = false;
 
             Model_Project.becki_person_id_unsubscribe(identifikator);
 
-            single_connection.write_without_confirmation( un_subscribe_notifications.messageId,  WS_Message_UnSubscribe_Notifications.approve_result() );
+            single_connection.write_without_confirmation(un_subscribe_notifications.messageId, WS_Message_UnSubscribe_Notifications.approve_result() );
 
         }catch (Exception e){
-            terminal_logger.error("becki_unsubscribe_notification:: Error: ", e);
+            terminal_logger.internalServerError(e);
         }
     }
-
 
     public void becki_notification_confirmation_from_becki( JsonNode json){
         // Tady dosátvám potvrzení, že becki dostala notifikaci
     }
-
-
 }
-
-
-//**********************************************************************************************************************
-

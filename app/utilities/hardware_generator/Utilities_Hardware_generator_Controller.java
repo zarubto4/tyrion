@@ -86,7 +86,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
             return address;
 
         }catch (NullPointerException e){
-            terminal_logger.error("HardwareGeneratorController:: get_macAddress_type_of_board_from:: ERROR! targetName is not set in configuration file!!",e);
+            terminal_logger.internalServerError(new Exception("TargetName is not set in configuration file!",e));
             return "ERROR! targetName is not set in configuration file!!";
         }
     }

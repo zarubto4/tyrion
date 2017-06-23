@@ -171,180 +171,169 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
         terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} . Number of C_Procedures By database for execution:: {}" , procedure.id , plans.size());
 
-           for (Model_CProgramUpdatePlan plan : plans) {
-               try {
+        for (Model_CProgramUpdatePlan plan : plans) {
+            try {
+
+                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id);
+                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
+                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
+
+                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries  ", procedure.id , plan.id,  plan.count_of_tries);
+
+                if( plan.count_of_tries > 5 ){
+                    plan.state = Enum_CProgram_updater_state.critical_error;
+                    plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
+                    plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
+                    plan.update();
+                    terminal_logger.warn("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
+                    continue;
+                }
+
+                // Najdu instanci - pod kterou deska běží
+                Model_HomerInstance homer_instance = Model_HomerInstance.find.where()
+                        .disjunction()
+                           .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", plan.board.id))
+                           .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", plan.board.id))
+                           .add(Expr.eq("boards_in_virtual_instance.id", plan.board.id))
+                        .endJunction()
+                .findUnique();
+
+                if (homer_instance == null) {
+
+                    terminal_logger.internalServerError(new Exception("Procedure ID = " + procedure.id + "  plan ID = " + plan.id + " Device has not own instance! There is place for fix it!")); // TODO
+                    plan.state = Enum_CProgram_updater_state.instance_inaccessible;
+                    plan.update();
+                    continue;
+                }
 
 
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id);
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
+                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Updates is for Homer_instance id: {} Server {} " , procedure.id , plan.id,homer_instance.id, homer_instance.cloud_homer_server.personal_server_name);
 
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries  ", procedure.id , plan.id,  plan.count_of_tries);
-
-                   if( plan.count_of_tries > 5 ){
-                       plan.state = Enum_CProgram_updater_state.critical_error;
-                       plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
-                       plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
-                       plan.update();
-                       terminal_logger.warn("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
-                       continue;
-                   }
-
-                   // Najdu instanci - pod kterou deska běží
-                   Model_HomerInstance homer_instance = Model_HomerInstance.find.where()
-                           .disjunction()
-                              .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", plan.board.id))
-                              .add(Expr.eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", plan.board.id))
-                              .add(Expr.eq("boards_in_virtual_instance.id", plan.board.id))
-                           .endJunction()
-                   .findUnique();
-
-                   if (homer_instance == null) {
-
-                       terminal_logger.error("actualization_update_procedure:: Procedure id:: {}  plan {} Device has not own instance! There is place for fix it!!!!"); // TODO
-                       plan.state = Enum_CProgram_updater_state.instance_inaccessible;
-                       plan.update();
-                       continue;
-                   }
-
-
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Updates is for Homer_instance id: {} Server {} " , procedure.id , plan.id,homer_instance.id, homer_instance.cloud_homer_server.personal_server_name);
-
-                   if(!homer_instance.cloud_homer_server.server_is_online()){
-                       terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id,homer_instance.cloud_homer_server.personal_server_name);
-                      plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
-                      plan.update();
-                      continue;
-                   }
-
-                   if (!homer_instance.instance_online()) {
-                       terminal_logger.error("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} is offline. Putting off the task for later. This is not standart situation but bug in State Machine!!!!! ", procedure.id, plan.id, homer_instance.cloud_homer_server.personal_server_name);
-
-                       // Pokusím se instanci zase nahodit.
-                       terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} is offline. Try to add instance to server.", procedure.id, plan.id, homer_instance.id);
-                       WS_Message_Update_device_summary_collection add_instance = homer_instance.add_instance_to_server();
-
-                       if (add_instance.status.equals("success")) {
-                           terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {}  Instance {} Upload instance was successful" , procedure.id, plan.id, homer_instance.id);
-                           plan.state = Enum_CProgram_updater_state.instance_inaccessible;
-                           plan.update();
-                           continue;
-
-                       } else if (add_instance.status.equals("error")) {
-                           terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} Fail when Tyrion try to add instance from Blocko cloud_blocko_server Response Message:: {} ", procedure.id, plan.id, homer_instance.id, add_instance.toString());
-                       }
-
-                   }
-
-                   terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {}  of blocko program is online and connected with Tyrion", procedure.id, plan.id, homer_instance.id);
-
-
-                   // Založím ve Struktuře seznam instnací
-                  if (!structure.instances.containsKey(homer_instance.id)) {
-                      Instance instance = new Instance();
-                      instance.instance = homer_instance;
-                      structure.instances.put(homer_instance.id, instance);
-                  }
-
-                  String program_identificator = null;
-                  Model_FileRecord file_record = null;
-                  String name = null;
-                  String version = null;
-
-
-                  if(plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
-
-                            program_identificator = "firmware_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
-
-                            if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
-                                terminal_logger.debug("actualization_update_procedure for Firmware:: User create own C_program and cloud_blocko_server has bin file of that");
-                                file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
-                                name = plan.c_program_version_for_update.c_program.name;
-                                version =   plan.c_program_version_for_update.version_name;
-                            }
-                            else{
-                                terminal_logger.error("..........V Blob serveru nebyla - musí se vytvořit");
-                                terminal_logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
-                                terminal_logger.error("..........Tato procedura chybí!");
-                                plan.state = Enum_CProgram_updater_state.bin_file_not_found;
-                                plan.update();
-                                continue;
-                            }
-
-                  }if(plan.firmware_type == Enum_Firmware_type.BACKUP) {
-
-                       program_identificator = "backup_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
-
-                       if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
-                           terminal_logger.debug("actualization_update_procedure for Backup:: User create own C_program and cloud_blocko_server has bin file of that");
-                           file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
-                           name = plan.c_program_version_for_update.c_program.name;
-                           version =   plan.c_program_version_for_update.version_name;
-                       }
-                       else{
-                           terminal_logger.error("..........V Blob serveru nebyla - musí se vytvořit");
-                           terminal_logger.error("..........Spouštím proceduru dodatečné procedury protože kompilačku v azure nemám");
-                           terminal_logger.error("..........Tato procedura chybí!");
-                           plan.state = Enum_CProgram_updater_state.bin_file_not_found;
-                           plan.update();
-                           continue;
-                       }
-
-                   }else if(plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
-
-                            program_identificator = "boot_loader_" + plan.bootloader.version_identificator;
-                            file_record = plan.bootloader.file;
-                            name = plan.bootloader.name;
-                            version = plan.bootloader.version_identificator;
-
-                  // Update vlastního firmwaru
-                  }else if(plan.binary_file != null) {
-                            program_identificator = "f" + plan.binary_file.id;
-                            file_record = plan.binary_file;
-                  }
-
-
-
-
-
-                   if(program_identificator == null){
-                       terminal_logger.error("actualization_update_procedure:: C_program updateter has not any object for uploud! (Program, Bootloader, File) ");
-                       continue;
-                   }
-
-
-                  // Pod instnací podle typu programu vytvořím program
-                  if(!structure.instances.get(homer_instance.id).programs.containsKey(program_identificator)){
-
-                      Program program = new Program();
-
-                      program.type_of_update = plan.actualization_procedure.type_of_update;
-                      program.program_identificator = program_identificator;
-                      program.firmware_type  = plan.firmware_type;
-                      program.file_record = file_record;
-                      program.name = name;
-                      program.version = version;
-                      structure.instances.get(homer_instance.id).programs.put(program_identificator, program);
-
-                  }
-
-                   Utilities_HW_Updater_Target_pair pair = new Utilities_HW_Updater_Target_pair();
-                   pair.targetId = plan.board.id;
-                   pair.c_program_update_plan_id = plan.id;
-
-                   structure.instances.get(homer_instance.id).programs.get(program_identificator).target_pairs.add(pair);
-
-                   plan.state = Enum_CProgram_updater_state.in_progress;
+                if(!homer_instance.cloud_homer_server.server_is_online()){
+                    terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id,homer_instance.cloud_homer_server.personal_server_name);
+                   plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
                    plan.update();
+                   continue;
+                }
 
-               }catch(Exception e) {
-                   terminal_logger.internalServerError("actualization_update_procedure:", e);
-                   plan.state = Enum_CProgram_updater_state.critical_error;
-                   plan.update();
-                   break;
-               }
-           }
+                if (!homer_instance.instance_online()) {
+                    terminal_logger.internalServerError(new Exception("Procedure  ID = " + procedure.id + "  plan ID = " + plan.id + " Instance " + homer_instance.cloud_homer_server.personal_server_name + " is offline. Putting off the task for later. This is not standard situation but bug in State Machine!"));
 
+                    // Pokusím se instanci zase nahodit.
+                    terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} is offline. Try to add instance to server.", procedure.id, plan.id, homer_instance.id);
+                    WS_Message_Update_device_summary_collection add_instance = homer_instance.add_instance_to_server();
+
+                    if (add_instance.status.equals("success")) {
+                        terminal_logger.trace("actualization_update_procedure:: Procedure id:: {}  plan {}  Instance {} Upload instance was successful" , procedure.id, plan.id, homer_instance.id);
+                        plan.state = Enum_CProgram_updater_state.instance_inaccessible;
+                        plan.update();
+                        continue;
+
+                    } else if (add_instance.status.equals("error")) {
+                        terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {} Fail when Tyrion try to add instance from Blocko cloud_blocko_server Response Message:: {} ", procedure.id, plan.id, homer_instance.id, add_instance.toString());
+                    }
+
+                }
+
+                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} Instance {}  of blocko program is online and connected with Tyrion", procedure.id, plan.id, homer_instance.id);
+
+                // Založím ve Struktuře seznam instnací
+                if (!structure.instances.containsKey(homer_instance.id)) {
+                    Instance instance = new Instance();
+                    instance.instance = homer_instance;
+                    structure.instances.put(homer_instance.id, instance);
+                }
+
+                String program_identifier = null;
+                Model_FileRecord file_record = null;
+                String name = null;
+                String version = null;
+
+
+                if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
+
+                    program_identifier = "firmware_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
+
+                    if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
+
+                        terminal_logger.debug("actualization_update_procedure for Firmware:: User create own C_program and cloud_blocko_server has bin file of that");
+                        file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
+                        name = plan.c_program_version_for_update.c_program.name;
+                        version =   plan.c_program_version_for_update.version_name;
+                    } else {
+
+                        terminal_logger.internalServerError(new Exception("Missing FileRecord, compilation was probably not uploaded to Azure. (TODO procedure for fixing this state.)"));
+                        plan.state = Enum_CProgram_updater_state.bin_file_not_found;
+                        plan.update();
+                        continue;
+                    }
+
+                } if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
+
+                    program_identifier = "backup_" + plan.c_program_version_for_update.c_compilation.firmware_build_id;
+
+                    if(plan.c_program_version_for_update.c_compilation.bin_compilation_file != null) {
+
+                        terminal_logger.debug("actualization_update_procedure for Backup:: User create own C_program and cloud_blocko_server has bin file of that");
+                        file_record = plan.c_program_version_for_update.c_compilation.bin_compilation_file;
+                        name = plan.c_program_version_for_update.c_program.name;
+                        version =   plan.c_program_version_for_update.version_name;
+                    } else {
+
+                        terminal_logger.internalServerError(new Exception("Missing FileRecord, compilation was probably not uploaded to Azure. (TODO procedure for fixing this state.)"));
+                        plan.state = Enum_CProgram_updater_state.bin_file_not_found;
+                        plan.update();
+                        continue;
+                    }
+
+                } else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
+
+                    program_identifier = "boot_loader_" + plan.bootloader.version_identificator;
+                    file_record = plan.bootloader.file;
+                    name = plan.bootloader.name;
+                    version = plan.bootloader.version_identificator;
+
+                // Update vlastního firmwaru
+                } else if (plan.binary_file != null) {
+                    program_identifier = "f" + plan.binary_file.id;
+                    file_record = plan.binary_file;
+                }
+
+                if(program_identifier == null){
+                    terminal_logger.internalServerError(new Exception("C_program updater has not any object for upload! (Program, Bootloader, File)"));
+                    continue;
+                }
+
+                // Pod instnací podle typu programu vytvořím program
+                if(!structure.instances.get(homer_instance.id).programs.containsKey(program_identifier)){
+
+                    Program program = new Program();
+
+                    program.type_of_update = plan.actualization_procedure.type_of_update;
+                    program.program_identificator = program_identifier;
+                    program.firmware_type  = plan.firmware_type;
+                    program.file_record = file_record;
+                    program.name = name;
+                    program.version = version;
+                    structure.instances.get(homer_instance.id).programs.put(program_identifier, program);
+                }
+
+                Utilities_HW_Updater_Target_pair pair = new Utilities_HW_Updater_Target_pair();
+                pair.targetId = plan.board.id;
+                pair.c_program_update_plan_id = plan.id;
+
+                structure.instances.get(homer_instance.id).programs.get(program_identifier).target_pairs.add(pair);
+
+                plan.state = Enum_CProgram_updater_state.in_progress;
+                plan.update();
+
+            } catch(Exception e) {
+                terminal_logger.internalServerError("actualization_update_procedure:", e);
+                plan.state = Enum_CProgram_updater_state.critical_error;
+                plan.update();
+                break;
+            }
+        }
 
         terminal_logger.debug("Summary for actualizations");
 
@@ -383,7 +372,6 @@ public class Utilities_HW_Updater_Master_thread_updater {
                     terminal_logger.debug("       Summary: Targets :: " + pair.targetId + " update_procedure_id:: " + pair.c_program_update_plan_id);
                 }
 
-
                 actualization_procedure.targetPairs.addAll(program.target_pairs);
 
                 task.procedures.add(actualization_procedure);
@@ -391,7 +379,5 @@ public class Utilities_HW_Updater_Master_thread_updater {
 
             instance.instance.cloud_homer_server.add_task(task);
         }
-
-
     }
 }

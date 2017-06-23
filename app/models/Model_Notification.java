@@ -68,8 +68,8 @@ public class Model_Notification extends Model {
             return array;
 
         }catch (Exception e){
-            terminal_logger.error("notification_body:: Parsing notification body error", e);
-            return new ArrayList<Swagger_Notification_Element>();   // Vracím prázdný list - ale reportuji chybu
+            terminal_logger.internalServerError(e);
+            return new ArrayList<>();   // Vracím prázdný list - ale reportuji chybu
         }
     }
 
@@ -83,8 +83,8 @@ public class Model_Notification extends Model {
             return buttons;
 
         }catch (Exception e){
-            terminal_logger.error("buttons:: Parsing notification buttons error", e);
-            return new ArrayList<Swagger_Notification_Button>();   // Vracím prázdný list - ale reportuji chybu
+            terminal_logger.internalServerError(e);
+            return new ArrayList<>();   // Vracím prázdný list - ale reportuji chybu
         }
 
     }
@@ -373,7 +373,7 @@ public class Model_Notification extends Model {
         try {
             NotificationHandler.addToQueue(this);
         }catch (NullPointerException npe){
-            terminal_logger.error("Method probably misused, use this method only when you resend notifications. If notification contains person.");
+            terminal_logger.internalServerError(new Exception("Method probably misused, use this method only when you resend notifications. If notification contains person."));
         }
 
     }

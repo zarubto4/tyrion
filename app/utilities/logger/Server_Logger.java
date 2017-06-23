@@ -88,29 +88,7 @@ public class Server_Logger extends Controller {
     public static void info (Class<?> t_class, String log_message, Object... args) {logger.info (t_class, log_message, args);}
     public static void debug(Class<?> t_class, String log_message, Object... args) {logger.debug(t_class, log_message, args);}
     public static void warn (Class<?> t_class, String log_message, Object... args) {logger.warn (t_class, log_message, args);}
-
-    public static void error(Class<?> t_class, String log_message, Object... args ) {
-
-        String id = UUID.randomUUID().toString();
-
-        StringBuilder description = new StringBuilder();  // stavění obsahu
-
-        // TODO tady nic nedělám s Object... args ???
-        String summary = "Internal Server Error - " + log_message;
-
-        description.append("\n");
-        description.append("    Time: " + new Date().toString());
-        description.append("\n");
-        description.append("    Unique Identifier: " + id);
-        description.append("\n");
-        description.append("    Tyrion version: " + Server.server_version);
-        description.append("\n");
-        description.append("    Tyrion mode: " + Server.server_mode.name());
-        description.append("\n");
-
-        error(id, summary, description.toString(), null, null);
-        logger.error(t_class, log_message, args);
-    }
+    public static void error(Class<?> t_class, String log_message, Object... args) {logger.error(t_class, log_message, args);}
 
     public static void internalServerError(Class<?> t_class, String origin, Exception exception){
 

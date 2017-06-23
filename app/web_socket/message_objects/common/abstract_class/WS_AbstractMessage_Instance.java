@@ -26,12 +26,6 @@ public abstract class WS_AbstractMessage_Instance {
 
     @JsonIgnore @Transient public Model_HomerInstance get_instance(){
 
-        Model_HomerInstance instance = Model_HomerInstance.find.byId(instanceId);
-
-        if(instance == null ) {
-            terminal_logger.error("get_instance:: Instance ID {} not found. ", instanceId);
-        }
-
-        return instance;
+        return Model_HomerInstance.find.byId(instanceId);
     }
 }

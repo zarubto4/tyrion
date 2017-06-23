@@ -174,7 +174,7 @@ public class Controller_Board extends Controller {
 
                 if (lib_version == null || lib_version.library == null){
 
-                    terminal_logger.error("compile_C_Program_code::  Error in reading libraries version not found! Version ID: {} " , lib_version);
+                    terminal_logger.internalServerError(new Exception("Error in reading libraries version not found! Version ID = " + lib_version));
 
                     ObjectNode error = Json.newObject();
                     error.put("status", "error");
@@ -196,7 +196,7 @@ public class Controller_Board extends Controller {
                         Form<Swagger_Library_File_Load> lib_form = Form.form(Swagger_Library_File_Load.class).bind(json_library);
                         if (lib_form.hasErrors()){
 
-                            terminal_logger.error("compile_C_Program_code::  Error in reading libraries from files! Model_FileRecord Id: {} ", f.id);
+                            terminal_logger.internalServerError(new Exception("Error reading libraries from files! Model_FileRecord ID = " + f.id));
 
                             ObjectNode error = Json.newObject();
                             error.put("status", "error");

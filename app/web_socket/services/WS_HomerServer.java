@@ -78,7 +78,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
         this.update_thread.stop();
         Controller_WebSocket.homer_servers.remove(identifikator);
-        Model_HomerServer.get_model(identifikator).is_disconnect();
+        Model_HomerServer.get_byId(identifikator).is_disconnect();
     }
 
     @Override
@@ -148,7 +148,7 @@ public class WS_HomerServer extends WS_Interface_type {
     //
     public ObjectNode super_write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries)  throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException {
         if(procedure == null) {
-            terminal_logger.error(this.identifikator + " It is prohibited to send WS message to Homer server with Super - its allowed only for Security_WS_token_confirm_procedure");
+            terminal_logger.internalServerError(new Exception("Message " + this.identifikator + ". It is prohibited to send WS message to Homer server with Super - its allowed only for Security_WS_token_confirm_procedure"));
         }
         return super.write_with_confirmation(json,time,delay, number_of_retries);
     }
@@ -247,7 +247,7 @@ public class WS_HomerServer extends WS_Interface_type {
                             task_list.remove(task);
                         }
                         else {
-                            terminal_logger.error("update_thread: Instance noc Exxist ");
+                            terminal_logger.internalServerError(new Exception("Instance does not exist."));
                         }
 
                     } else {

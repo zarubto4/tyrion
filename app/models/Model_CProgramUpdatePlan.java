@@ -161,7 +161,7 @@ public class Model_CProgramUpdatePlan extends Model {
         }
         super.save();
 
-        cache_model_update_plan.put(id, this);
+        cache.put(id, this);
     }
 
     @JsonIgnore @Override
@@ -186,7 +186,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
         }
 
-        cache_model_update_plan.put(id, this);
+        cache.put(id, this);
     }
 
     @JsonIgnore @Override public void delete() {
@@ -225,20 +225,15 @@ public class Model_CProgramUpdatePlan extends Model {
 
     @JsonIgnore @Transient
     public static void update_procedure_progress(WS_Message_UpdateProcedure_progress progress_message){
-
         try {
 
             if(progress_message.percentageProgress == null || progress_message.percentageProgress < 1) return;
 
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_model(progress_message.updatePlanId);
+            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_byId(progress_message.updatePlanId);
 
-            if (plan == null) {
-                terminal_logger.error( "update_procedure_progress:: Error:: Model_CProgramUpdatePlan id " + progress_message.updatePlanId + " not found");
-                return;
-            }
+            if (plan == null) throw new Exception("Model_CProgramUpdatePlan ID = " + progress_message.updatePlanId + " not found");
 
             if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.MAKING_BACKUP) {
-
                 try {
 
                     Model_Notification notification = new Model_Notification();
@@ -257,7 +252,7 @@ public class Model_CProgramUpdatePlan extends Model {
                             .send_under_project(plan.actualization_procedure.get_project_id());
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("update_procedure_progress", e);
+                    terminal_logger.internalServerError(e);
                 }
 
             } else if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_TO_YODA) {
@@ -280,7 +275,7 @@ public class Model_CProgramUpdatePlan extends Model {
                             .send_under_project(plan.actualization_procedure.get_project_id());
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("update_procedure_progress", e);
+                    terminal_logger.internalServerError(e);
                 }
 
             } else if (Enum_UpdateProcedure_progress_type.fromString(progress_message.typeOfProgress) == Enum_UpdateProcedure_progress_type.TRANSFER_DATA_FROM_YODA_TO_DEVICE) {
@@ -313,11 +308,11 @@ public class Model_CProgramUpdatePlan extends Model {
                 // TODO Tom - rozmyslet zda neskipnout pro prozatimní nevyužitelnost ??
                 System.err.println("Checking devie TODOO");
             } else {
-                terminal_logger.error("update_procedure_progress:: Error:: Enum_UpdateProcedure_progress_type id " + progress_message.typeOfProgress + " not recognize");
+                throw new Exception("Enum_UpdateProcedure_progress_type " + progress_message.typeOfProgress + " not recognized.");
             }
 
         }catch (Exception e) {
-            terminal_logger.internalServerError("update_procedure_progress", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -327,23 +322,15 @@ public class Model_CProgramUpdatePlan extends Model {
 
             terminal_logger.trace("update_procedure_state: Got quick update about progress of bigger update procedure");
 
-            Model_CProgramUpdatePlan plan = get_model(procedure_result.updatePlanId);
+            Model_CProgramUpdatePlan plan = get_byId(procedure_result.updatePlanId);
 
-            if(plan == null){
-                terminal_logger.error("update_procedure_state:: Error: Model_CProgramUpdatePlan not found under id:: " + procedure_result.updatePlanId);
-                return;
-            }
+            if(plan == null) throw new Exception("Model_CProgramUpdatePlan ID = " + procedure_result.updatePlanId + " not found");
 
-            if(plan.state == Enum_CProgram_updater_state.overwritten){
-                return;
-            }
+            if (plan.state == Enum_CProgram_updater_state.overwritten) return;
 
             Enum_HardwareHomerUpdate_state update_state = Enum_HardwareHomerUpdate_state.getUpdate_state(procedure_result.updateState);
 
-            if(update_state == null){
-                terminal_logger.error( "update_procedure_state:: Error: Enum_HardwareHomerUpdate_state not recognize:: " + procedure_result.updateState);
-                return;
-            }
+            if(update_state == null) throw new Exception( "Enum_HardwareHomerUpdate_state not recognized: " + procedure_result.updateState);
 
             if(update_state == Enum_HardwareHomerUpdate_state.SUCCESSFULLY_UPDATE){
 
@@ -384,15 +371,12 @@ public class Model_CProgramUpdatePlan extends Model {
               ){
                 plan.state = Enum_CProgram_updater_state.critical_error;
                 plan.update();
-                return;
             }
-
-
-
-        }catch (Exception e) {
-            terminal_logger.internalServerError(Model_CProgramUpdatePlan.class.getClass().getSimpleName() + ":: update_procedure_state :: Error", e);
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
         }
     }
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
@@ -403,31 +387,26 @@ public class Model_CProgramUpdatePlan extends Model {
 
     public static final String CACHE = Model_CProgramUpdatePlan.class.getName() + "_MODEL";
 
-    public static Cache<String, Model_CProgramUpdatePlan> cache_model_update_plan = null; // Server_cache Override during server initialization
+    public static Cache<String, Model_CProgramUpdatePlan> cache = null; // Server_cache Override during server initialization
 
-    public static Model_CProgramUpdatePlan get_model(String id){
+    public static Model_CProgramUpdatePlan get_byId(String id){
 
-        Model_CProgramUpdatePlan model = cache_model_update_plan.get(id);
+        Model_CProgramUpdatePlan plan = cache.get(id);
+        if(plan == null){
 
-        if(model == null){
+            plan = find.byId(id);
 
-            model = Model_CProgramUpdatePlan.find.byId(id);
+            if (plan == null) return null;
 
-            if (model == null) {
-                terminal_logger.error( ":: get_model :: id not found:: " + id);
-                return null;
-            }
-
-            cache_model_update_plan.put(id, model);
+            cache.put(id, plan);
         }
 
-        return model;
+        return plan;
     }
 
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_CProgramUpdatePlan> find = new Model.Finder<>(Model_CProgramUpdatePlan.class);
 
+    public static Model.Finder<String,Model_CProgramUpdatePlan> find = new Model.Finder<>(Model_CProgramUpdatePlan.class);
 }
 
 

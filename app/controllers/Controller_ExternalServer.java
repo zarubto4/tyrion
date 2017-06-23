@@ -179,7 +179,7 @@ public class Controller_ExternalServer extends Controller {
             Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.get_model(unique_identifier);
+            Model_HomerServer server = Model_HomerServer.get_byId(unique_identifier);
             if (server == null) return GlobalResult.result_notFound("Cloud_Blocko_Server server_id not found");
 
             // Kontrola oprávnění
@@ -233,7 +233,7 @@ public class Controller_ExternalServer extends Controller {
         try{
 
             // Získání seznamu
-            List<Model_HomerServer> servers = Model_HomerServer.get_model_all();
+            List<Model_HomerServer> servers = Model_HomerServer.get_all();
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(servers));
@@ -266,7 +266,7 @@ public class Controller_ExternalServer extends Controller {
         try{
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
+            Model_HomerServer server = Model_HomerServer.get_byId(unique_identificator);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Kontrola oprávnění

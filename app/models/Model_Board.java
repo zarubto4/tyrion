@@ -35,7 +35,7 @@ import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Board;
 import web_socket.message_objects.homer_instance.*;
 import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Is_device_connected;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Unregistred_device_connected;
+import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Unregistered_device_connected;
 
 import javax.persistence.*;
 import java.util.*;
@@ -426,14 +426,9 @@ public class Model_Board extends Model {
 
             terminal_logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.deviceId);
 
-
             Model_Board master_device = Model_Board.get_byId(help.deviceId);
 
-            if(master_device == null){
-                terminal_logger.error("master_device_Connected:: Hardware not found:: Message from Homer server:: ID {} ", server.identifikator);
-                terminal_logger.error("master_device_Connected:: Unregistered Hardware:: Id:: {} ",  help.deviceId);
-                return;
-            }
+            if(master_device == null) throw new Exception("Hardware not found. Message from Homer server: ID = " + server.identifikator + ". Unregistered Hardware Id: " + help.deviceId);
 
             if(cache_status.get(help.deviceId) == null || !cache_status.get(help.deviceId) ){
                 cache_status.put(help.deviceId, true);
@@ -445,7 +440,7 @@ public class Model_Board extends Model {
             Model_Board.hardware_firmware_state_check(server, master_device, help);
 
         }catch (Exception e){
-            terminal_logger.internalServerError("master_device_Connected:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -457,10 +452,7 @@ public class Model_Board extends Model {
 
             Model_Board master_device =  Model_Board.get_byId(help.deviceId);
 
-            if(master_device == null){
-                terminal_logger.error("master_device_Disconnected:: Hardware not found:: Id:" + help.deviceId);
-                return;
-            }
+            if(master_device == null) throw new NullPointerException("Hardware not found: ID = " + help.deviceId);
 
             master_device.notification_board_disconnect();
             master_device.make_log_disconnect();
@@ -468,7 +460,7 @@ public class Model_Board extends Model {
             Model_Board.cache_status.put(help.deviceId, false);
 
         }catch (Exception e){
-            terminal_logger.internalServerError("master_device_Disconnected:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -480,19 +472,15 @@ public class Model_Board extends Model {
 
             Model_Board device = Model_Board.get_byId(help.deviceId);
 
-            if(device == null){
-                terminal_logger.error("device_Connected:: Unregistered Hardware connected to Blocko cloud_blocko_server:: "+ server.identifikator);
-                terminal_logger.error("device_Connected:: Unregistered Hardware:: "+  help.deviceId);
-                return;
-            }
-            device.notification_board_connect();
+            if(device == null) throw new Exception("Unregistered Hardware connected to cloud_blocko_server: ID = " + server.identifikator + ". Unregistered Hardware ID = " +  help.deviceId);
 
+            device.notification_board_connect();
             device.make_log_connect();
 
-            Model_Board.hardware_firmware_state_check( server, device, help);
+            Model_Board.hardware_firmware_state_check(server, device, help);
 
         }catch (Exception e){
-            terminal_logger.internalServerError("device_Connected:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -505,23 +493,19 @@ public class Model_Board extends Model {
 
             Model_Board device =  Model_Board.get_byId(help.deviceId);
 
-            if(device == null){
-                terminal_logger.error("device_Disconnected:: Hardware not found:: Id:" + help.deviceId);
-                return;
-            }
+            if(device == null) throw new NullPointerException("Hardware not found: ID = " + help.deviceId);
 
             device.notification_board_disconnect();
-
             device.make_log_disconnect();
 
             Model_Board.cache_status.put(help.deviceId, false);
 
         }catch (Exception e){
-            terminal_logger.internalServerError("device_Disconnected:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
-    @JsonIgnore @Transient public static void un_registered_device_connected(WS_HomerServer homer_server, WS_Message_Unregistred_device_connected report) {
+    @JsonIgnore @Transient public static void un_registered_device_connected(WS_HomerServer homer_server, WS_Message_Unregistered_device_connected report) {
         terminal_logger.debug("un_registered_device_connected:: " + report.deviceId);
 
         Model_Board board = Model_Board.get_byId(report.deviceId);
@@ -531,8 +515,8 @@ public class Model_Board extends Model {
         }
 
         if(board.project == null){
-            terminal_logger.debug("un_registered_device_connected:: is registed under server:: " + homer_server.identifikator + " Server name:: " + Model_HomerServer.get_model(homer_server.identifikator).personal_server_name);
-            board.connected_server = Model_HomerServer.get_model(homer_server.identifikator);
+            terminal_logger.debug("un_registered_device_connected:: is registed under server:: " + homer_server.identifikator + " Server name:: " + Model_HomerServer.get_byId(homer_server.identifikator).personal_server_name);
+            board.connected_server = Model_HomerServer.get_byId(homer_server.identifikator);
             board.is_active = true;
             board.update();
             return;
@@ -553,14 +537,11 @@ public class Model_Board extends Model {
     }
 
     @JsonIgnore @Transient public static void update_report_from_homer(WS_Message_Update_device_firmware report){
-
         try {
 
             for (WS_Message_Update_device_firmware.UpdateDeviceInformation updateDeviceInformation : report.procedure_list) {
 
-
                 for (WS_Message_Update_device_firmware.UpdateDeviceInformation_Device updateDeviceInformation_device : updateDeviceInformation.device_state_list) {
-
                     try {
 
                         Enum_HardwareHomerUpdate_state status = Enum_HardwareHomerUpdate_state.getUpdate_state(updateDeviceInformation_device.update_state);
@@ -614,7 +595,7 @@ public class Model_Board extends Model {
                                 continue;
                             }
 
-                            terminal_logger.error("update_report_from_homer:: ERROR: Its not Firmware, BACKUP or Bootloader!!! ");
+                            terminal_logger.internalServerError(new Exception("Its not Firmware, Backup or Bootloader!"));
 
                         }
 
@@ -639,15 +620,14 @@ public class Model_Board extends Model {
                         plan.update();
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("update_report_from_homer:", e);
+                        terminal_logger.internalServerError(e);
                     }
                 }
-
 
                Model_ActualizationProcedure procedure = Model_ActualizationProcedure.find.byId( updateDeviceInformation.actualizationProcedureId );
 
                if(procedure == null) {
-                   terminal_logger.error("update_report_from_homer:: Model_ActualizationProcedure not found under id:: " +updateDeviceInformation.actualizationProcedureId  );
+                   terminal_logger.internalServerError(new Exception("Model_ActualizationProcedure not found under id: " + updateDeviceInformation.actualizationProcedureId));
                    continue;
                }
 
@@ -656,15 +636,11 @@ public class Model_Board extends Model {
                        || procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
 
                    new Thread(procedure::notification_update_procedure_final_report).start();
-
                }
-
-
             }
         }catch (Exception e){
-            terminal_logger.internalServerError("update_report_from_homer:", e);
+            terminal_logger.internalServerError(e);
         }
-
     }
 
     @JsonIgnore @Transient public static void device_autoBackUp_echo(WS_Message_AutoBackUp_progress report){
@@ -672,14 +648,9 @@ public class Model_Board extends Model {
 
             terminal_logger.debug("device_autoBackUp_echo:: Deive send Echo about backup device ID:: {} ", report.deviceId);
 
-
             Model_Board device = Model_Board.get_byId(report.deviceId);
 
-            if(device == null){
-                terminal_logger.error("master_device_Connected:: Unregistered Hardware:: Id:: {} ",  report.deviceId);
-                return;
-            }
-
+            if(device == null) throw new Exception("Unregistered Hardware. Id = " + report.deviceId);
 
             if(report.phase.equals("start")){
                 terminal_logger.debug("device_autoBackUp_echo - Device ID {} started with autobackup procedure",report.deviceId);
@@ -689,10 +660,7 @@ public class Model_Board extends Model {
             if(report.phase.equals("done")){
 
                 Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", report.build_id).findUnique();
-                if(c_program_version == null){
-                    terminal_logger.error("device_autoBackUp_echo Firmware with build ID {} not find in database!", report.build_id);
-                    return;
-                }
+                if(c_program_version == null) throw new Exception("Firmware with build ID = " + report.build_id + " was not found in the database!");
 
                 device.actual_backup_c_program_version = c_program_version;
                 device.update();
@@ -700,10 +668,10 @@ public class Model_Board extends Model {
                 return;
             }
 
-            terminal_logger.error("device_autoBackUp_echo phase {} not recognize!", report.phase);
+            throw new Exception("Phase '" + report.phase + "' not recognized!");
 
         }catch (Exception e){
-            terminal_logger.internalServerError("device_autoBackUp_echo:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -714,7 +682,7 @@ public class Model_Board extends Model {
 
             if(report.error != null){
 
-                terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , board.id, report.errorCode, report.error);
+                terminal_logger.debug("hardware_firmware_state_check: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , board.id, report.errorCode, report.error);
 
                 if(report.errorCode == ErrorCode.YODA_IS_OFFLINE.error_code() || report.errorCode == ErrorCode.DEVICE_IS_NOT_ONLINE.error_code()){
                     terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} is offline" , board.id);
@@ -723,24 +691,19 @@ public class Model_Board extends Model {
 
             }
 
-
-            terminal_logger.debug("hardware_firmware_state_check:: Summary information of connected master board: " + board.id);
-
-            terminal_logger.debug("hardware_firmware_state_check:: Board Check");
-
-            terminal_logger.debug("hardware_firmware_state_check::     Board Id:: " + board.id);
-            terminal_logger.debug("hardware_firmware_state_check::     Actual firmware_id by HW::: " + report.firmware_build_id);
+            terminal_logger.debug("hardware_firmware_state_check: Summary information of connected master board: ID = " + board.id);
+            terminal_logger.debug("hardware_firmware_state_check: Actual firmware_id from HW = " + report.firmware_build_id);
 
 
             if (board.actual_c_program_version == null){
 
-                terminal_logger.debug("hardware_firmware_state_check::      Actual firmware_id by DB not recognized - Device has not firmware from Tyrion");
-                terminal_logger.debug("hardware_firmware_state_check::      Tyrion Try to find Defaul C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
+                terminal_logger.debug("hardware_firmware_state_check: Actual firmware_id is not recognized by the DB - Device has not firmware from Tyrion");
+                terminal_logger.debug("hardware_firmware_state_check: Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
 
                 // Nastavím default firmware
                 if(board.type_of_board.version_scheme.default_main_version != null){
 
-                    terminal_logger.debug("hardware_firmware_state_check::      Yes, Default Version for Type Of Device {} is set", board.type_of_board.name);
+                    terminal_logger.debug("hardware_firmware_state_check: Yes, Default Version for Type Of Device {} is set", board.type_of_board.name);
 
                     List<Model_BPair> b_pairs = new ArrayList<>();
 
@@ -757,17 +720,15 @@ public class Model_Board extends Model {
                     return;
 
                 }else {
-                    terminal_logger.internalServerError("hardware_firmware_state_check::      For Type Of Board " + board.type_of_board.name + " is not set Main default C_Program version! ", new IllegalArgumentException());
+                    terminal_logger.internalServerError(new Exception("Default main code version is not set for Type Of Board " + board.type_of_board.name));
                 }
 
-
             } else {
-                terminal_logger.debug("hardware_firmware_state_check::        Actual firmware_id by DB:: " + board.actual_c_program_version.c_compilation.firmware_build_id);
+                terminal_logger.debug("hardware_firmware_state_check: Actual firmware_id by DB:: " + board.actual_c_program_version.c_compilation.firmware_build_id);
             }
 
-            if (board.actual_boot_loader == null)       terminal_logger.debug("hardware_firmware_state_check::      Actual bootloader_id by DB not recognized :: " + report.bootloader_build_id);
-            else terminal_logger.debug("hardware_firmware_state_check::    Actual bootloader_id by DB:: " + board.actual_boot_loader.version_identificator);
-
+            if (board.actual_boot_loader == null)       terminal_logger.debug("hardware_firmware_state_check:: Actual bootloader_id by DB not recognized :: " + report.bootloader_build_id);
+            else terminal_logger.debug("hardware_firmware_state_check: Actual bootloader_id by DB: " + board.actual_boot_loader.version_identificator);
 
             // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
 
@@ -785,22 +746,22 @@ public class Model_Board extends Model {
                         .add(Expr.eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name()))
                     .findList();
 
-            terminal_logger.debug("hardware_firmware_state_check::      Total CProgramUpdatePlans for this device (not complete):: " + firmware_plans.size());
-            terminal_logger.debug("hardware_firmware_state_check::      Message form Homer:: " + Json.toJson(report));
+            terminal_logger.debug("hardware_firmware_state_check: Total CProgramUpdatePlans for this device (not complete): " + firmware_plans.size());
+            terminal_logger.debug("hardware_firmware_state_check: Message form Homer: " + Json.toJson(report));
 
             if(firmware_plans.size() == 0){
 
-                terminal_logger.debug("hardware_firmware_state_check::     There is no Active Updates for Firmware, Backup or Bootloader");
-                terminal_logger.debug("hardware_firmware_state_check::     But its time ti check actual versions for database collisions ");
+                terminal_logger.debug("hardware_firmware_state_check: There is no Active Updates for Firmware, Backup or Bootloader");
+                terminal_logger.debug("hardware_firmware_state_check: But its time ti check actual versions for database collisions ");
 
                 // Firmware
-                terminal_logger.debug("hardware_firmware_state_check::     First Check Firmware! ");
+                terminal_logger.debug("hardware_firmware_state_check: First Check Firmware! ");
                 if(report.firmware_build_id != null) // Hází to null pointer exception při náběhu instancí na homerovi a touhle stupidní kaskádou se hledalo na čem
                     if(board.actual_c_program_version != null)
                         if(board.actual_c_program_version.c_compilation != null)
                             if(!report.firmware_build_id.equals( board.actual_c_program_version.c_compilation.firmware_build_id)){
 
-                                terminal_logger.debug("hardware_firmware_state_check::     Different firmware versions versus database");
+                                terminal_logger.debug("hardware_firmware_state_check: Different firmware versions versus database");
 
                                 // Nejpravděpodobnější varianta proč tam není správná verze je nasazený Backup
                                 // Pokud je aktuální backup podle DB shodný firmwarem na hardwaru - měl bych oznámit kritickou chybu uživatelovi
@@ -809,8 +770,7 @@ public class Model_Board extends Model {
 
                                 if(board.actual_backup_c_program_version.id.equals(report.bootloader_build_id)){
 
-                                    terminal_logger.warn("hardware_firmware_state_check::     We have problem with firmware version. Backup is now running");
-
+                                    terminal_logger.warn("hardware_firmware_state_check: We have problem with firmware version. Backup is now running");
 
                                     // Notifikace uživatelovi
                                     board.notification_board_unstable_actual_firmware_version(board.actual_c_program_version);
@@ -824,7 +784,6 @@ public class Model_Board extends Model {
                                     board.update();
 
                                     return;
-
                                 }
 
                                 // Backup to není
@@ -845,9 +804,7 @@ public class Model_Board extends Model {
                                     Model_Board.update_firmware(Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
 
                                     return;
-
                                 }
-
                             }
 
                  // Bootloader
@@ -865,9 +822,7 @@ public class Model_Board extends Model {
 
                                     terminal_logger.debug("hardware_firmware_state_check::     Creating update procedure");
                                     Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards_for_bootloader_update, board.actual_boot_loader);
-
                                 }
-
 
                 terminal_logger.debug("hardware_firmware_state_check::     Third Check Backup! ");
                 if(report.backup_build_id != null) // Hází to null pointer exception při náběhu instancí na homerovi a touhle stupidní kaskádou se hledalo na čem
@@ -888,7 +843,6 @@ public class Model_Board extends Model {
 
                                     Model_Board.update_backup(Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
                                     return;
-
                                  }
                 return;
             }
@@ -919,7 +873,6 @@ public class Model_Board extends Model {
                         firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
                         firmware_plans.get(i).update();
                     }
-
                 }
 
                 pointer = -1;
@@ -963,14 +916,11 @@ public class Model_Board extends Model {
                 firmware_plans = firmware_separated_plans;
             }
 
-
             if (firmware_plans.size() > 0) {
-
 
                 terminal_logger.trace("hardware_firmware_state_check:: Firmware");
 
                 for(Model_CProgramUpdatePlan plan : firmware_plans) {
-
 
                     // Mám shodu firmwaru oproti očekávánemů
                     if(plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
@@ -1003,7 +953,6 @@ public class Model_Board extends Model {
                             plan.update();
 
                             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
-
                         }
 
                         continue;
@@ -1028,7 +977,6 @@ public class Model_Board extends Model {
                                 plan.count_of_tries++;
                                 plan.update();
                                 Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
-
                             }
 
                         } else {
@@ -1039,13 +987,10 @@ public class Model_Board extends Model {
                             plan.update();
 
                             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
-
                         }
 
                         continue;
-
                     }
-
 
                     if(plan.firmware_type == Enum_Firmware_type.BACKUP) {
 
@@ -1077,18 +1022,14 @@ public class Model_Board extends Model {
                             plan.update();
 
                             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(plan.actualization_procedure);
-
                         }
                     }
-
                 }
             }
-
 
             // TODO Bootloader TOM jde vlastně téměř o kopii předchozího
 
             // TODO Backup TOM jde vlastně téměř o kopii předchozího
-
 
             if(report instanceof WS_Message_Yoda_connected){
 
@@ -1099,7 +1040,7 @@ public class Model_Board extends Model {
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError("hardware_firmware_state_check:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -1109,18 +1050,17 @@ public class Model_Board extends Model {
             JsonNode node = instance.send_to_instance().write_with_confirmation(new WS_Message_Update_device_firmware().make_request(instance, procedures), 1000 * 30, 0, 3);
 
             final Form<WS_Message_Update_device_firmware> form = Form.form(WS_Message_Update_device_firmware.class).bind(node);
-            if(form.hasErrors()){terminal_logger.error("WS_Update_device_firmware:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Update_device_firmware();}
+            if(form.hasErrors()) throw new Exception("WS_Message_Update_device_firmware: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
         }catch (Exception e){
+            terminal_logger.internalServerError(e);
             return new WS_Message_Update_device_firmware();
         }
     }
 
-
     @JsonIgnore @Transient public void device_change_server(Model_HomerServer homerServer){
-
         try {
 
             terminal_logger.debug("device_change_server :: operation :: Device Id:: " + this.id);
@@ -1166,28 +1106,25 @@ public class Model_Board extends Model {
                     // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-499
                 }
 
-
                 // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-499
                 return;
-
             }
 
             terminal_logger.debug("device_change_server:: Server not found - All servers will be checked");
             // Po zé ze zoufalosti zkusím všechny servery popořadě zeptat se zda ho někdo neviděl (JE to záloha selhání nevalidního přepsání!)
-            for (Model_HomerServer find_server : Model_HomerServer.get_model_all()) {
+            for (Model_HomerServer find_server : Model_HomerServer.get_all()) {
 
                 if (!find_server.server_is_online()) continue;
 
                 WS_Message_Is_device_connected result = find_server.is_device_connected(this.id);
 
                 // TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-499
-
             }
 
-            throw new Exception("Device not found for Transfer!");
+            throw new Exception("Device was not found for the transfer!");
 
         }catch (Exception e){
-            terminal_logger.internalServerError("device_change_server", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -1338,7 +1275,6 @@ public class Model_Board extends Model {
     }
 
     @JsonIgnore @Transient public static void update_backup(Enum_Update_type_of_update type_of_update, List<Model_BPair> board_for_update){
-
         try {
 
             terminal_logger.debug("update_backup :: operation");
@@ -1350,10 +1286,10 @@ public class Model_Board extends Model {
             procedure.save();
 
             if (board_for_update.isEmpty()) {
-                terminal_logger.error("update_backup:: Array is empty");
                 procedure.state = Enum_Update_group_procedure_state.complete_with_error;
                 procedure.update();
-                return;
+
+                throw new Exception("Array is empty");
             }
 
             // Teoretricky sem lze dát typy update procedury pro které je to platné - například
@@ -1400,7 +1336,6 @@ public class Model_Board extends Model {
 
                 }
 
-
                 plan.save();
                 plans.add(plan);
             }
@@ -1411,7 +1346,7 @@ public class Model_Board extends Model {
             Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
 
         }catch (Exception e){
-            terminal_logger.internalServerError("update_backup:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -1421,34 +1356,23 @@ public class Model_Board extends Model {
             terminal_logger.debug("set_auto_backup :: operation");
 
             Model_HomerInstance instance = board_for_update.get_instance();
-            if(instance == null) {
-                terminal_logger.error("set_auto_backup:: on DeviceId:: " + board_for_update.id + " has not own instance");
+            if(instance == null) throw new Exception("Device ID = " + board_for_update.id + " has not own instance");
 
-                WS_Message_Board_set_autobackup result = new WS_Message_Board_set_autobackup();
-                return result;
-            }
-
-            if(!instance.instance_online()){
-                terminal_logger.error("set_auto_backup:: instanceId:: " + instance.id + " is offline");
-
-                WS_Message_Board_set_autobackup result = new WS_Message_Board_set_autobackup();
-                return result;
-            }
+            if(!instance.instance_online()) throw new Exception("set_auto_backup:: instanceId:: " + instance.id + " is offline");
 
             JsonNode node =  instance.send_to_instance().write_with_confirmation(new WS_Message_Board_set_autobackup().make_request(instance, board_for_update), 1000*3, 0, 4);
 
             final Form<WS_Message_Board_set_autobackup> form = Form.form(WS_Message_Board_set_autobackup.class).bind(node);
-            if(form.hasErrors()){terminal_logger.error("Model_HomerServer:: WS_Add_Device_to_instance:: Incoming Json from Homer server has not right Form:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return new WS_Message_Board_set_autobackup();}
+            if(form.hasErrors()) throw new Exception("WS_Message_Board_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
         }catch (TimeoutException e){
-            return new WS_Message_Board_set_autobackup();
+            terminal_logger.warn("set_auto_backup: Timeout");
         }catch (Exception e){
-            terminal_logger.internalServerError("set_auto_backup", e);
-            return new WS_Message_Board_set_autobackup();
+            terminal_logger.internalServerError(e);
         }
-
+        return new WS_Message_Board_set_autobackup();
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

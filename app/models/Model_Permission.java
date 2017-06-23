@@ -67,10 +67,7 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
     }
 
     @JsonIgnore @Override public void delete() {
-
-        terminal_logger.error("delete :: This object is not legitimate to remove. ");
-        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
-
+        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
     }
 
 

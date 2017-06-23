@@ -103,14 +103,9 @@ public class WS_CompilerServer extends WS_Interface_type {
             onMessage(json);
 
         }catch (JsonParseException e){
-
-            terminal_logger.error("WS_CompilerServer:: onMessage:: JsonParseException:: Message:: " + message);
-
-
+            terminal_logger.internalServerError(new Exception("Error while parsing json.", e));
         }catch (Exception e){
-
-            terminal_logger.error("WS_CompilerServer:: onMessage:: JsonParseException:: Message:: " + message , e);
-
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -128,18 +123,15 @@ public class WS_CompilerServer extends WS_Interface_type {
             return;
         }
 
-
         if(json.has("messageChannel")){
 
             switch (json.get("messageChannel").asText()){
 
-                default: terminal_logger.error("WS_CompilerServer:: onMessage:: not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText());
+                default: terminal_logger.internalServerError(new Exception("WS_CompilerServer: messageChanel not recognized -> " + json.get("messageChannel").asText()));
             }
 
         }else {
-            terminal_logger.error("WS_CompilerServer:: onMessage:: "+ identifikator + " Incoming message has not messageChannel!!!!");
+            terminal_logger.internalServerError(new Exception("WS_CompilerServer: " + identifikator + ". Incoming message has not messageChannel!!!!"));
         }
-
     }
-
 }

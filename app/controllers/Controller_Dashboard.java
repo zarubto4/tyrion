@@ -65,7 +65,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 /**
  * CONTROLLER je určen pro jednoduchý frontend, který slouží pro zobrazení stavu backendu, základních informací,
@@ -290,7 +289,7 @@ public class Controller_Dashboard extends Controller {
     public Result ping_homer_server(String unique_identificator) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
+            Model_HomerServer server = Model_HomerServer.get_byId(unique_identificator);
 
             return GlobalResult.result_ok(Json.toJson(server.ping()));
         }catch (Exception e){
@@ -359,7 +358,7 @@ public class Controller_Dashboard extends Controller {
 
     public Result  show_websocket_server_detail(String unique_identificator) {
 
-        Model_HomerServer server = Model_HomerServer.get_model(unique_identificator);
+        Model_HomerServer server = Model_HomerServer.get_byId(unique_identificator);
         if(server == null) return show_web_socket_stats();
 
 
@@ -730,7 +729,7 @@ public class Controller_Dashboard extends Controller {
     public Result not_found(){
         try {
 
-            terminal_logger.error("Link Not found");
+            terminal_logger.warn("Link Not found");
             // TODO - přesměrování na page 404 Not found http://youtrack.byzance.cz/youtrack/issue/TYRION-504
             return index();
 

@@ -251,9 +251,7 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Override
     public void delete(){
-
-        terminal_logger.error("delete :: This object is not legitimate to remove. ");
-        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -320,15 +318,13 @@ public class Model_ActualizationProcedure extends Model {
 
             }else {
 
-                terminal_logger.error( "notification_update_procedure_start :: Update procedure has not set type_of_update");
-                return;
+                throw new Exception( "Update procedure has not set the type_of_update.");
             }
-
 
             notification.send_under_project(get_project_id());
 
         }catch (Exception e){
-            terminal_logger.internalServerError("notification_update_procedure_start:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 

@@ -99,7 +99,7 @@ public class Controller_WebSocket extends Controller {
 
             WS_Token token = new WS_Token();
             token.token = web_socket_token;
-            token.person_id = Controller_Security.get_person().id;
+            token.person_id = Controller_Security.get_person_id();
 
             tokenCache.put(web_socket_token, token);
 
@@ -122,7 +122,7 @@ public class Controller_WebSocket extends Controller {
 
             terminal_logger.debug("homer_cloud_server_connection:: Incoming connection: Server:  "+ unique_identificator);
 
-            Model_HomerServer homer_server = Model_HomerServer.get_model(unique_identificator);
+            Model_HomerServer homer_server = Model_HomerServer.get_byId(unique_identificator);
             if(homer_server== null){
 
                 // Připojím se
@@ -133,8 +133,8 @@ public class Controller_WebSocket extends Controller {
             if(homer_servers.containsKey(unique_identificator)) {
                 terminal_logger.warn("homer_cloud_server_connection::  Server is connected -> Tyrion try to send ping");
 
-                WS_HomerServer ws_blockoServer = (WS_HomerServer) homer_servers.get(unique_identificator);
-                WS_Message_Ping_server result = Model_HomerServer.get_model(ws_blockoServer.identifikator).ping();
+                WS_HomerServer ws_blockoServer = homer_servers.get(unique_identificator);
+                WS_Message_Ping_server result = Model_HomerServer.get_byId(ws_blockoServer.identifikator).ping();
                 if(!result.status.equals("success")){
                     terminal_logger.warn("homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
                     if(homer_servers.containsKey(unique_identificator)){
@@ -186,8 +186,7 @@ public class Controller_WebSocket extends Controller {
             return webSocket;
 
         }catch (Exception e){
-            terminal_logger.error("homer_cloud_server_connection:: Fail connection");
-            terminal_logger.error("homer_cloud_server_connection:: Something was wrong", e);
+            terminal_logger.internalServerError(new Exception("Connection failed.", e));
             return WebSocket.reject(forbidden());
         }
     }
@@ -207,7 +206,7 @@ public class Controller_WebSocket extends Controller {
                 try {
                     terminal_logger.warn("code_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
 
-                    WS_CompilerServer ws_compilerServer = (WS_CompilerServer) compiler_cloud_servers.get(unique_identificator);
+                    WS_CompilerServer ws_compilerServer = compiler_cloud_servers.get(unique_identificator);
                     WS_Message_Ping_compilation_server result = ws_compilerServer.server.ping();
                     if (!result.status.equals("success")) {
                         terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
@@ -238,7 +237,7 @@ public class Controller_WebSocket extends Controller {
             return server.connection();
 
         }catch (Exception e){
-            terminal_logger.error("code_server_connection:: Web Socket connection", e);
+            terminal_logger.internalServerError(new Exception("Connection failed.", e));
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
@@ -271,7 +270,7 @@ public class Controller_WebSocket extends Controller {
             WS_Becki_Website website;
 
             if(becki_website.containsKey(person.id)) {
-                website = (WS_Becki_Website) becki_website.get(person.id);
+                website = becki_website.get(person.id);
             }else{
                 website = new WS_Becki_Website(person);
                 becki_website.put(person.id , website);

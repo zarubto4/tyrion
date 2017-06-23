@@ -93,10 +93,9 @@ public class Check_Homer_instance_after_connection extends Thread {
                             for (String identificator : instances_for_removing) {
                                 WS_Message_Destroy_instance remove_result = model_server.remove_instance(identificator);
                                 if (!remove_result.status.equals("success"))
-                                    terminal_logger.error("Blocko Server: Removing instance Error: " + remove_result.toString());
+                                    terminal_logger.internalServerError(new Exception("Blocko Server: Error while removing instance: " + remove_result.toString()));
                             }
                         }
-
 
                         // Nahraji tam ty co tam patří
                         terminal_logger.trace("Check_Homer_instance_after_connection:: run:: Connection::Starting to uploud new instances to cloud_blocko_server {}" , instances_in_database_for_uploud.size());
@@ -132,19 +131,17 @@ public class Check_Homer_instance_after_connection extends Thread {
 
                         terminal_logger.trace("Check_Homer_instance_after_connection:: run:: Successfully finished connection procedure");
                         break;
-
                     }
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("run:", e);
-
+                    terminal_logger.internalServerError(e);
                 }
             }
 
             model_server.synchronize_all_device_state_with_cache();
 
         }catch(Exception e){
-            terminal_logger.internalServerError("run:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 }

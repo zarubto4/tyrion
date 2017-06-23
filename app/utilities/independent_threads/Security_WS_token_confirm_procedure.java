@@ -41,7 +41,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 final Form<WS_Message_Check_homer_server_permission> form = Form.form(WS_Message_Check_homer_server_permission.class).bind(ask_for_token);
                 if (form.hasErrors()) {
-                    terminal_logger.error("run:: Error:: Some value missing:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());
+                    terminal_logger.internalServerError(new Exception("Invalid body: " + form.errorsAsJson(Lang.forCode("en-US")).toString()));
                     sleep(1000 * 10  * ++number_of_tries);
                     server.close();
                     break;
@@ -62,14 +62,12 @@ public class Security_WS_token_confirm_procedure extends Thread {
                     continue;
                 }
 
-
                 ObjectNode approve_result = server.super_write_with_confirmation(new WS_Message_Approve_homer_server().make_request(), 1000 * 5, 0, 2);
                 final Form<WS_Message_Approve_homer_server> form_approve = Form.form(WS_Message_Approve_homer_server.class).bind(ask_for_token);
-                if (form_approve.hasErrors()) {terminal_logger.error("run:: WS_Approve_homer_server: Error:: Some value missing:: " + form_approve.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                if (form_approve.hasErrors()) throw new Exception("WS_Message_Approve_homer_server: Invalid body: " + form_approve.errorsAsJson(Lang.forCode("en-US")).toString());
 
                 // Vytovření objektu
                 WS_Message_Approve_homer_server help_approve = form_approve.get();
-
 
                 // TODO tady nic nedělám s tím jestli se to povedlo nebo ne???
 
@@ -82,11 +80,10 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
                 // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
-                Model_HomerServer.get_model(server.identifikator).check_after_connection();
+                Model_HomerServer.get_byId(server.identifikator).check_after_connection();
 
                 terminal_logger.trace("run:: Connection procedure done!");
                 break;
-
 
             }catch(NullPointerException e){
                 terminal_logger.internalServerError("run:", e);
@@ -107,7 +104,6 @@ public class Security_WS_token_confirm_procedure extends Thread {
                 terminal_logger.internalServerError("run:", e);
                 break;
             }
-
         }
 
         server.procedure = null; // Smažu se - Garbarage collector mě odstraní

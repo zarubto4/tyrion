@@ -235,7 +235,7 @@ public class Model_VersionObject extends Model {
         Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", this.c_program.id).findUnique();
         if(typeOfBoard == null){
 
-            terminal_logger.error("compile_program_procedure:: Type_of_Board not found!!! - Not found way how to compile that");
+            terminal_logger.internalServerError(new Exception("Type_of_Board not found! Not found way how to compile version."));
 
             Result_BadRequest result = new Result_BadRequest();
             result.message = "Version is not version of C_Program";
@@ -258,7 +258,7 @@ public class Model_VersionObject extends Model {
         Model_FileRecord file = Model_FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", id).findUnique();
         if(file == null){
 
-            terminal_logger.error("compile_program_procedure:: File not found!!! - Version is not compilable!");
+            terminal_logger.internalServerError(new Exception("File not found! Version is not compilable!"));
 
             c_compilation.status = Enum_Compile_status.file_with_code_not_found;
             c_compilation.update();
@@ -275,14 +275,13 @@ public class Model_VersionObject extends Model {
         Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
         if(form.hasErrors()){
 
-            terminal_logger.error("compile_program_procedure:: File found but json is not parsable!!! - Version!");
+            terminal_logger.internalServerError(new Exception("File was found but json is not parsable!"));
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
 
             Result_BadRequest result = new Result_BadRequest();
             result.message = "Json code is broken - contact tech support!";
             return result;
-
         }
 
         Swagger_C_Program_Version_Update code_file = form.get();
@@ -297,14 +296,13 @@ public class Model_VersionObject extends Model {
                 Result_BadRequest result = new Result_BadRequest();
                 result.message = "Error getting libraries - library version not found";
                 return result;
-
             }
+
             if (lib_version.library == null){
 
                 Result_BadRequest result = new Result_BadRequest();
                 result.message = "Error getting libraries - some file is not a library";
                 return result;
-
             }
 
             if (!lib_version.files.isEmpty()){
@@ -381,9 +379,7 @@ public class Model_VersionObject extends Model {
 
         if(compilation.interface_code == null || compilation.buildUrl == null){
 
-            terminal_logger.error("compile_program_procedure:: Json Result from Compilation server has not required labels!");
-            terminal_logger.error("compile_program_procedure:: Json Missing value interface_code or buildUrl ");
-            terminal_logger.error("compile_program_procedure:: What Server sent:: " + Json.toJson(compilation)  );
+            terminal_logger.internalServerError(new Exception("Missing fields ('interface_code' or 'buildUrl') in result from Code Server. Result: " + Json.toJson(compilation).toString()));
 
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
@@ -395,9 +391,7 @@ public class Model_VersionObject extends Model {
 
         if(compilation.error != null || !compilation.status.equals("success")){
 
-            terminal_logger.error("compile_program_procedure:: Json Result from Compilation server has not required labels!");
-            terminal_logger.error("compile_program_procedure:: status is not succrss, but error is empty ");
-            terminal_logger.error("compile_program_procedure:: What Server sent:: " + Json.toJson(compilation)  );
+            terminal_logger.internalServerError(new Exception("Error is empty, but status is not 'success' in result from Code Server. Result: " + Json.toJson(compilation).toString()));
 
             c_compilation.status = Enum_Compile_status.compilation_server_error;
             c_compilation.update();
@@ -416,18 +410,16 @@ public class Model_VersionObject extends Model {
 
                 terminal_logger.trace("compile_program_procedure:: try to download file");
 
-
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
                 F.Promise<WSResponse> responsePromise = ws.url(compilation.buildUrl)
                         .setContentType("undefined")
                         .setRequestTimeout(7500)
                         .get();
 
-
                 byte[] body = responsePromise.get(7500).asByteArray();
 
                 if (body == null || body.length == 0){
-                    throw new FileExistsException();
+                    throw new FileExistsException("Body length is 0");
                 }
 
                 terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure");
@@ -449,7 +441,7 @@ public class Model_VersionObject extends Model {
 
             }catch (ConnectException e){
 
-                terminal_logger.error("compile_program_procedure:: Compilation Server is probably offline on URL:: " + compilation.buildUrl );
+                terminal_logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilation.buildUrl, e));
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
 
@@ -460,7 +452,7 @@ public class Model_VersionObject extends Model {
 
             }catch (FileExistsException e){
 
-                terminal_logger.error("compile_program_procedure:: FileExistsException - Body is empty");
+                terminal_logger.internalServerError(new Exception("Compilation body is empty.", e));
 
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
@@ -472,7 +464,7 @@ public class Model_VersionObject extends Model {
 
             } catch (Exception e) {
 
-                e.printStackTrace();
+                terminal_logger.internalServerError(e);
 
                 c_compilation.status = Enum_Compile_status.compilation_server_error;
                 c_compilation.update();
@@ -512,7 +504,7 @@ public class Model_VersionObject extends Model {
 
             this.id = UUID.randomUUID().toString();
             this.blob_version_link = "/versions/" + this.id;
-            if (Model_VersionObject.find.byId(this.id) == null) break;
+            if (find.byId(this.id) == null) break;
         }
 
         try {
@@ -533,7 +525,6 @@ public class Model_VersionObject extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static Model.Finder<String, Model_VersionObject> find = new Finder<>(Model_VersionObject.class);
-
-
 }

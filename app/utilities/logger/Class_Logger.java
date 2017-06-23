@@ -16,7 +16,7 @@ public class Class_Logger{
     /*
      Rather an exception should be thrown or if it is undesired,
      you can use terminal_logger.internalServerError(new Exception("Your message.")).
-     New exception creates an stack trace so it easier to track down errors and it does not pollute DB.
+     New exception creates an stack trace so it is easier to track down errors and it does not pollute DB.
       */
     @Deprecated
     public void error(String log_message, Object... args) {

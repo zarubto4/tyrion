@@ -52,11 +52,11 @@ public class Swagger_diff_Controller extends Controller {
             return Json.parse(IOUtils.toString(Play.application().resourceAsStream("/swagger_history/" + file_name + ".json")));
 
         }catch (JsonMappingException a){
-            terminal_logger.error("file with Json Documentation is empty or damaged!");
+            terminal_logger.internalServerError(new Exception("File with Json Documentation is empty or damaged!"));
             return Json.newObject();
 
         } catch (NullPointerException e) {
-            terminal_logger.error("file with Json Documentation not found!");
+            terminal_logger.internalServerError(new Exception("File with Json Documentation not found!"));
             return null;
         }
     }

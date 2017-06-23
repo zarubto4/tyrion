@@ -128,7 +128,7 @@ public class NotificationTester extends Controller {
                                 .send(person);
 
                     }catch (Exception e){
-                        terminal_logger.error("Check_update_for_hw_under_homer_ws:: Error", e);
+                        terminal_logger.internalServerError(e);
                     }
                 }
             };

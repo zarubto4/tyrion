@@ -93,7 +93,7 @@ public class _Model_ExampleModelName extends Model{
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        terminal_logger.debug("delete: Delete object Id: {} ", this.id);
 
         // Case 1.1 :: We delete the object
         super.delete();
@@ -110,8 +110,8 @@ public class _Model_ExampleModelName extends Model{
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, "project.id", "model.id"))).start();
 
 
-        // Case 3 :: In some cases, it is not possible to delete an object - it is therefore impossible to delete the object overright by the method
-        terminal_logger.error("delete :: This object is not legitimate to remove. ");
+        // Case 3 :: In some cases, it is not possible to delete an object - it is therefore impossible to delete the object by the method
+        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
         throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
 
     }

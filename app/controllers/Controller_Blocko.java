@@ -1008,7 +1008,7 @@ public class Controller_Blocko extends Controller{
 
         } catch (IllegalArgumentException e) {
 
-            terminal_logger.error("instance_change_settings_grid_App:: Incoming snapshot_settings is invalid");
+            terminal_logger.internalServerError(new Exception("Incoming snapshot_settings is invalid."));
             return GlobalResult.result_badRequest("snapshot_settings is not valid");
 
         } catch (Exception e) {
@@ -1074,7 +1074,7 @@ public class Controller_Blocko extends Controller{
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Instance_Temporary help = form.get();
 
-            Model_HomerServer server = Model_HomerServer.get_model(help.unique_identificator);
+            Model_HomerServer server = Model_HomerServer.get_byId(help.unique_identificator);
             if(server == null) return GlobalResult.result_notFound("Server not found");
 
                 // JsonNode result = server.add_temporary_instance(help.instance_name);

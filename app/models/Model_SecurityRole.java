@@ -60,10 +60,7 @@ public class Model_SecurityRole extends Model {
     }
 
     @JsonIgnore @Override public void delete() {
-
-        terminal_logger.error("delete :: This object is not legitimate to remove. ");
-        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
-
+        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

@@ -31,24 +31,22 @@ public class SynchronizeHomerServer extends Thread {
 
     @Override
     public void run() {
-
         try{
 
             ObjectNode ask_for_configuration = homer_server.write_with_confirmation( new WS_Message_Get_homer_server_configuration().make_request() , 1000 * 5, 0, 2);
-            final Form<WS_Message_Get_homer_server_configuration> form_get = Form.form(WS_Message_Get_homer_server_configuration.class).bind(ask_for_configuration);
-            if(form_get.hasErrors()){terminal_logger.error("WS_Get_homer_server_configuration:: Incoming Json for Yoda has not right Form" +  form_get.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+            final Form<WS_Message_Get_homer_server_configuration> form = Form.form(WS_Message_Get_homer_server_configuration.class).bind(ask_for_configuration);
+            if(form.hasErrors()) throw new Exception("WS_Message_Get_homer_server_configuration: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            WS_Message_Get_homer_server_configuration help = form.get();
 
-            WS_Message_Get_homer_server_configuration help = form_get.get();
-
-            if(help.get_Date().compareTo(Model_HomerServer.get_model(homer_server.identifikator).time_stamp_configuration) == 0){
+            if(help.get_Date().compareTo(Model_HomerServer.get_byId(homer_server.identifikator).time_stamp_configuration) == 0){
                 // Nedochází k žádným změnám
                 terminal_logger.trace("synchronize_configuration: configuration without changes");
 
-            }else if(help.get_Date().compareTo( Model_HomerServer.get_model(homer_server.identifikator).time_stamp_configuration) > 0){
+            }else if(help.get_Date().compareTo( Model_HomerServer.get_byId(homer_server.identifikator).time_stamp_configuration) > 0){
                 // Homer server má novější novou konfiguraci
                 terminal_logger.debug("synchronize_configuration: Homer server {} has new configuration", homer_server.identifikator);
 
-                Model_HomerServer homer = Model_HomerServer.get_model(homer_server.identifikator);
+                Model_HomerServer homer = Model_HomerServer.get_byId(homer_server.identifikator);
 
                 homer.personal_server_name = help.serverName;
                 homer.mqtt_port = help.mqttPort;
@@ -69,38 +67,33 @@ public class SynchronizeHomerServer extends Thread {
                 homer.log_level = Enum_Log_level.fromString(help.logLevel);
                 homer.update();
 
-
             }else {
                 // Tyrion server má novější konfiguraci
 
                 terminal_logger.trace("synchronize_configuration::  " + homer_server.identifikator + " Sending new Configuration to Homer Server");
-                JsonNode result = homer_server.write_with_confirmation( new WS_Message_Set_homer_server_configuration().make_request( Model_HomerServer.get_model(homer_server.identifikator)) , 1000 * 5, 0, 2);
+                JsonNode result = homer_server.write_with_confirmation( new WS_Message_Set_homer_server_configuration().make_request( Model_HomerServer.get_byId(homer_server.identifikator)) , 1000 * 5, 0, 2);
 
                 final Form<WS_Message_Set_homer_server_configuration> form_set = Form.form(WS_Message_Set_homer_server_configuration.class).bind(result);
-                if(form_set.hasErrors()){terminal_logger.error("WS_Set_homer_server_configuration:: Incoming Json for Yoda has not right Form" + form_set.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString());return;}
+                if(form_set.hasErrors()) throw new Exception("WS_Message_Set_homer_server_configuration: Incoming Json for Yoda has not right Form: " + form_set.errorsAsJson(Lang.forCode("en-US")).toString());
 
                 WS_Message_Set_homer_server_configuration help_conf = form_set.get();
 
                 if(help_conf.status.equals("success")){
                     terminal_logger.trace("synchronize_configuration:: New Config state:: success! ");
                 }else {
-                    terminal_logger.error("synchronize_configuration:: New Config state:: unsuccess! ");
+                    terminal_logger.internalServerError(new Exception("New Config state: unsuccessful!"));
                 }
-
             }
 
             terminal_logger.trace(" " + homer_server.identifikator + "synchronize_configuration: done!");
             homer_server.synchronize = null;
 
         }catch(ClosedChannelException e){
-            terminal_logger.warn("synchronize_configuration:: ClosedChannelException");
+            terminal_logger.warn("synchronize_configuration: ClosedChannelException");
         }catch (TimeoutException e){
-            terminal_logger.error("synchronize_configuration:: TimeoutException");
+            terminal_logger.warn("synchronize_configuration: TimeoutException");
         }catch (Exception e){
             terminal_logger.internalServerError("run", e);
-
         }
-
     }
-
 }

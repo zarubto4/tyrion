@@ -255,7 +255,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
             // Parsing Json
             Form<M_Program_Parser> form = Form.form(M_Program_Parser.class).bind( (ObjectNode) new ObjectMapper().readTree(m_program.asText()));
-            if(form.hasErrors()){terminal_logger.error("M_Program_Parser:: Parsing from Blob Server:: "  + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new ArrayList<Swagger_GridWidgetVersion_GridApp_source>();}
+            if(form.hasErrors()) throw new Exception("M_Program_Parser: Parsing from Blob Server: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             // Create object
             M_Program_Parser program_parser = form.get();
@@ -271,9 +271,9 @@ public class Model_MProgramInstanceParameter extends Model {
             }
             return list;
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<Swagger_GridWidgetVersion_GridApp_source>();
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return new ArrayList<>();
         }
     }
 

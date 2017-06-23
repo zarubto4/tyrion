@@ -134,11 +134,10 @@ public class Controller_Code extends Controller{
 
                     Form<Swagger_C_Program_Version_Update> scheme_form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
                     if (form.hasErrors()) {
-                        terminal_logger.error("c_program_create:: Error loading first default version of CProgram");
+                        terminal_logger.internalServerError(new Exception("Error loading first default version of CProgram."));
                         break;
                     }
                     Swagger_C_Program_Version_Update scheme_load_form = scheme_form.get();
-
 
                     // Nahraje do Azure a připojí do verze soubor
                     ObjectNode content = Json.newObject();

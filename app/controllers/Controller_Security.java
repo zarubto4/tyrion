@@ -405,9 +405,9 @@ public class Controller_Security extends Controller {
             Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
             if (floatingPersonToken == null){
 
-               terminal_logger.error("GET_github_oauth:: Not recognize URL fragment!!!!!! ");
+               terminal_logger.internalServerError(new Exception("GET_github_oauth:: Not recognize URL fragment!"));
 
-                return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail"));
+                return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail")); // TODO TOM musí vyhodit NullPointerException
             }
 
             floatingPersonToken.social_token_verified = true;
@@ -774,7 +774,7 @@ public class Controller_Security extends Controller {
 
             if(help.redirect_url.contains("/login-failed")){
                 help.redirect_url = "https://portal.stage.byzance.cz/dashboard";
-                terminal_logger.error("Na Becki jsou líní to fixnout už měsíc!");
+                terminal_logger.warn("Na Becki jsou líní to fixnout už měsíc!");
             }
 
             floatingPersonToken.return_url = help.redirect_url;

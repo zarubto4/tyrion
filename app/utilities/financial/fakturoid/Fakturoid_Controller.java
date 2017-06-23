@@ -159,10 +159,8 @@ public class Fakturoid_Controller extends Controller {
                         terminal_logger.debug("create_proforma: POST: Result: {}", result.toString());
 
                         if (!result.has("id")) {
-                            terminal_logger.error("create_proforma: Invoice From fakturoid does not contains ID");
-                            throw new NullPointerException("Invoice From fakturoid does not contains ID");
+                            throw new NullPointerException("Invoice from Fakturoid does not contain ID.");
                         }
-
 
                         invoice.proforma_id = result.get("id").asLong();
                         invoice.proforma_pdf_url = result.get("pdf_url").asText();
@@ -631,8 +629,8 @@ public class Fakturoid_Controller extends Controller {
             return response;
 
         }catch(Exception e){
-            terminal_logger.error("fakturoid_put::  Error: " + responsePromise.get(5000).toString() );
-            throw new NullPointerException();
+            terminal_logger.internalServerError(e);
+            return null;
         }
     }
 
@@ -781,7 +779,7 @@ public class Fakturoid_Controller extends Controller {
                     if (type.equals("proforma") && invoice.proforma_pdf_url != null) url = invoice.proforma_pdf_url;
                     else url = invoice.fakturoid_pdf_url;
 
-                    terminal_logger.debug("download_PDF_invoice::  Trying download PDF invoice from Fakturoid on url: " + url);
+                    terminal_logger.debug("download_PDF_invoice: Getting PDF invoice from url: {}", url);
 
                     F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(url)
                             .setAuth(Server.Fakturoid_secret_combo)
@@ -791,27 +789,22 @@ public class Fakturoid_Controller extends Controller {
 
                     WSResponse promise = responsePromise.get(5000);
 
-                    terminal_logger.debug("download_PDF_invoice:: download_PDF_invoice:: promise status " + promise.getStatus());
-
                     if (promise.getStatus() == 200) {
-                        terminal_logger.debug("download_PDF_invoice:: PDF Download successfully to byte[]");
+                        terminal_logger.debug("download_PDF_invoice: Status = {}. PDF Download successfully to byte[]", promise.getStatus());
                         return promise.asByteArray();
 
                     } else {
 
-                        terminal_logger.warn("download_PDF_invoice:: promise status" + promise.getStatus());
-                        terminal_logger.warn("download_PDF_invoice:: PDF Download un-successfully to byte[]");
+                        terminal_logger.warn("download_PDF_invoice: Status = {}. PDF Download unsuccessful.", promise.getStatus());
 
                         --terminator;
                         Thread.sleep(2500);
                     }
 
                 } catch (InterruptedException e) {
-                    terminal_logger.error("download_PDF_invoice::  Error:: Interupted exception", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
-
-        terminal_logger.error("download_PDF_invoice:: Error:: PDF Download un-successfully to byte[]");
-        throw new NullPointerException("File not found");
+        throw new NullPointerException("Unable to download PDF invoice.");
     }
 }
