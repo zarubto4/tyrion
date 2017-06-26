@@ -114,7 +114,7 @@ public class Controller_Board extends Controller {
 
     }
 
-    @ApiOperation(value = "compile C_program with Code",
+    @ApiOperation(value = "compile C_program",
             tags = {"C_Program"},
             notes = "Compile code",
             produces = "application/json",
@@ -1818,7 +1818,7 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "get List of Boards for Firmware Upload",
+    @ApiOperation(value = "get Boards for Ide Operation",
             tags = { "Board"},
             notes = "List of boards under Project for fast upload of Firmware to Board from Web IDE",
             produces = "application/json",

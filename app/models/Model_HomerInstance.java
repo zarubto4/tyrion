@@ -52,7 +52,7 @@ public class Model_HomerInstance extends Model {
 
     @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
-                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)         public Model_HomerInstanceRecord actual_instance;  // Aktuálně běžící instnace na Serveru
+                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)         public Model_HomerInstanceRecord actual_instance;  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
 
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
@@ -97,9 +97,6 @@ public class Model_HomerInstance extends Model {
         }
     }
 
-
-
-
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @Transient @JsonIgnore public Swagger_Instance_Short_Detail get_instance_short_detail(){
@@ -117,6 +114,9 @@ public class Model_HomerInstance extends Model {
             help.server_id = cloud_homer_server.unique_identificator;
             help.instance_is_online = online_state();
             help.server_is_online = server_is_online();
+            help.update_permission = getB_program().update_permission();
+            help.edit_permission = getB_program().edit_permission();
+
             return help;
 
         }catch (Exception e){
@@ -1231,6 +1231,14 @@ public class Model_HomerInstance extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore   @Transient public boolean create_permission()  {  return  b_program.read_permission()   || Controller_Security.get_person().has_permission("B_Program_create");  }
+    @JsonProperty @Transient public boolean update_permission()  {  return  b_program.update_permission() || Controller_Security.get_person().has_permission("Instance_update");  }
+    @JsonIgnore   @Transient public boolean read_permission()    {  return  b_program.read_permission()   || Controller_Security.get_person().has_permission("Instance_read");   }
+    @JsonProperty @Transient public boolean edit_permission()    {  return  b_program.edit_permission()   || Controller_Security.get_person().has_permission("Instance_edit");    }
+    @JsonProperty @Transient public boolean delete_permission()  {  return  b_program.delete_permission() || Controller_Security.get_person().has_permission("Instance_delete");  }
+
+    public enum permissions{ Instance_create, Instance_update, Instance_read, Instance_edit , Instance_delete}
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model.Finder<String, Model_HomerInstance> find = new Finder<>(Model_HomerInstance.class);
@@ -1258,7 +1266,7 @@ public class Model_HomerInstance extends Model {
         return instance;
     }
 
-    public boolean get_status(){
+    @JsonIgnore public boolean get_status(){
 
         Boolean status = cache_status.get(this.id);
         if (status == null){

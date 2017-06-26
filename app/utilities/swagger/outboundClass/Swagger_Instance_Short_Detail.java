@@ -20,4 +20,8 @@ public class Swagger_Instance_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true) public String server_id;
     @ApiModelProperty(required = true, readOnly = true) public boolean server_is_online;
     @ApiModelProperty(required = true, readOnly = true) public boolean instance_is_online;
+
+    @ApiModelProperty(required = true, readOnly = true)  public boolean edit_permission;
+    @ApiModelProperty(required = true, readOnly = true)  public boolean update_permission;
+
 }

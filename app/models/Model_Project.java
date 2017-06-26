@@ -33,7 +33,7 @@ public class Model_Project extends Model {
                                                                       @Id public String id;
                                                                           public String name;
                                                                           public String description;
-                                                                          public boolean removed_by_user;
+                                                           @JsonIgnore    public boolean removed_by_user;
 
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgram>                b_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgram>                c_programs        = new ArrayList<>();

@@ -6,10 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.enums.Enum_Update_group_procedure_state;
-import utilities.enums.Enum_CProgram_updater_state;
-import utilities.enums.Enum_Firmware_type;
-import utilities.enums.Enum_Update_type_of_update;
+import utilities.enums.*;
 import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.logger.Class_Logger;
 import web_socket.message_objects.homer_instance.WS_Message_Get_summary_information;
@@ -46,17 +43,21 @@ public class Model_HomerInstanceRecord extends Model {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_id()    {  return version_object.id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_name()  {  return version_object.version_name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String instance_record_id()      {  return this.id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_id()          {  return version_object.id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_name()        {  return version_object.version_name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_description() {  return version_object.version_description;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_id()                  {  return version_object.b_program.id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_name()                {  return version_object.b_program.name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_description()         {  return version_object.b_program.description;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String instance_record_id()            {  return this.id;}
 
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_BProgramHwGroup> hardware_group()               {  return version_object.b_program_hw_groups;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_MProjectProgramSnapShot> m_project_snapshot()    {  return version_object.b_program_version_snapshots;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String status()    {
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public Enum_Homer_instance_record_status status()    {
 
-        if(planed_when.getTime() > new Date().getTime()) return "future";
-        if(actual_running_instance != null) return "now";
-        else return "history";
+        if(planed_when.getTime() > new Date().getTime()) return Enum_Homer_instance_record_status.FUTURE;
+        if(actual_running_instance != null) return Enum_Homer_instance_record_status.NOW;
+        else return Enum_Homer_instance_record_status.HISTORY;
 
     }
 

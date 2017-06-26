@@ -743,6 +743,17 @@ public class Controller_Blocko extends Controller{
             protocols = "https",
             code = 200
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Instance_Edit",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully updated",      response = Model_HomerInstance.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
@@ -777,9 +788,10 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "shutDown Instance by Instance Id",
+    @ApiOperation(value = "start or shutDown Instance",
             tags = {"Instance"},
-            notes = "",
+            notes = "If instance is not running this Command uploud instance to cloud and starter all procedures. " +
+                    "If instance is online, stis Command shutdown instance immidietly with all procedures.",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -793,7 +805,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instance_shut_down(String instance_name){
+    public Result instance_start_or_shut_down(String instance_name){
         try{
 
             // Kontrola objektu
@@ -806,16 +818,41 @@ public class Controller_Blocko extends Controller{
                 return GlobalResult.result_badRequest("Instance not running");
             }
 
-            WS_Message_Destroy_instance result = homer_instance.remove_instance_from_server();
+            // Pokud má aktuální instance "Actual Instance record - znaemná to, že má běžet v cloudu"
+            // Proto tento záznam odstraním
+            if(homer_instance.actual_instance != null){
 
-            return GlobalResult.result_ok();
+                if(homer_instance.instance_online()){
+                    WS_Message_Destroy_instance result = homer_instance.remove_instance_from_server();
+                }
+
+                homer_instance.actual_instance = null;
+                Model_HomerInstance.cache_status.put(homer_instance.id, false);
+                homer_instance.update();
+
+                return GlobalResult.result_ok();
+
+            }else{
+
+                if(homer_instance.instance_history.isEmpty()){
+                     return GlobalResult.result_badRequest("We did not find any previous version running in the cloud. Please first select version in Blocko editor run.");
+                }
+
+                homer_instance.actual_instance = homer_instance.instance_history.get(0);
+                homer_instance.update();
+
+                homer_instance.update_instance_to_actual_instance_record();
+
+                return GlobalResult.result_ok();
+
+            }
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "get Instance by Project ID",
+    @ApiOperation(value = "get Instances by Project",
             tags = {"Instance"},
             notes = "get list of instances details under project id",
             produces = "application/json",

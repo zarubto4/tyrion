@@ -100,7 +100,8 @@ public class Model_CProgramUpdatePlan extends Model {
 
         Board_detail board_detail = new Board_detail();
         board_detail.board_id = board.id;
-        board_detail.personal_description = board.name;
+        board_detail.name = board.name;
+        board_detail.description = board.description;
         board_detail.type_of_board_id = board.type_of_board.id;
         board_detail.type_of_board_name = board.type_of_board.name;
 
@@ -213,7 +214,8 @@ public class Model_CProgramUpdatePlan extends Model {
 
     class Board_detail{
         @ApiModelProperty(required = true, readOnly = true) public String board_id;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String personal_description;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String description;
+        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String name;
         @ApiModelProperty(required = true, readOnly = true) public String type_of_board_id;
         @ApiModelProperty(required = true, readOnly = true) public String type_of_board_name;
     }

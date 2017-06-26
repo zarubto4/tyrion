@@ -108,7 +108,7 @@ public class Controller_Security extends Controller {
 
 //######################################################################################################################
 
-    @ApiOperation(value = "check Request Token for blocko REST-API blocks",
+    @ApiOperation(value = "check Request Token",
             tags = {"Blocko"},
             notes = "",
             produces = "application/json",

@@ -270,7 +270,8 @@ public class Model_Board extends Model {
 
             Swagger_Board_Short_Detail swagger_board_short_detail = new Swagger_Board_Short_Detail();
             swagger_board_short_detail.id = id;
-            swagger_board_short_detail.personal_description = name;
+            swagger_board_short_detail.name = name;
+            swagger_board_short_detail.description = description;
             swagger_board_short_detail.type_of_board_id = type_of_board_id();
             swagger_board_short_detail.type_of_board_name = type_of_board_name();
 
@@ -304,7 +305,8 @@ public class Model_Board extends Model {
 
             Swagger_Board_for_fast_upload_detail board_for_fast_upload_detail = new Swagger_Board_for_fast_upload_detail();
             board_for_fast_upload_detail.id = id;
-            board_for_fast_upload_detail.personal_description = name;
+            board_for_fast_upload_detail.name = name;
+            board_for_fast_upload_detail.description = description;
 
             terminal_logger.debug("get_short_board_for_fast_upload:: Board " + id);
 

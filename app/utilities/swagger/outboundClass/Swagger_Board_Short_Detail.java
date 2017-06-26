@@ -14,7 +14,8 @@ import java.util.List;
 public class Swagger_Board_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)  public String id;
-    @ApiModelProperty(required = true, readOnly = true)  public String personal_description;
+    @ApiModelProperty(required = true, readOnly = true)  public String name;
+    @ApiModelProperty(required = true, readOnly = true)  public String description;
 
 
     @ApiModelProperty(required = true, readOnly = true)  public List<Enum_Board_Alert> alert_list = new ArrayList<>();

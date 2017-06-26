@@ -196,7 +196,7 @@ PUT       /instance/remove_yoda/:instance_id/:yoda_id                   @control
 PUT       /instance/add_device/:instance_id/:yoda_id/:device_id         @controllers.Controller_Blocko.instance_add_device(instance_id, yoda_id, device_id)
 PUT       /instance/remove_device/:instance_id/:yoda_id/:device_id      @controllers.Controller_Blocko.instance_remove_device(instance_id, yoda_id, device_id)
 PUT       /instance/uploadToCloud/:version_id                           @controllers.Controller_Blocko.upload_b_Program_ToCloud(version_id)
-PUT       /instance/shut_down/:instance_name                            @controllers.Controller_Blocko.instance_shut_down(instance_name)
+PUT       /instance/start_or_shut_down/:instance_id                     @controllers.Controller_Blocko.instance_start_or_shut_down(instance_id)
 
 #Blocks
 POST      /blockoBlock                                                  @controllers.Controller_Blocko.blockoBlock_create()

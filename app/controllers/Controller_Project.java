@@ -291,7 +291,7 @@ public class Controller_Project extends Controller {
         }
     }
 
-    @ApiOperation(value = "share Project with Users",
+    @ApiOperation(value = "share Project",
             tags = {"Project"},
             notes = "sends Invitation to all users in list: List<persons_mail>",
             produces = "application/json",
@@ -478,7 +478,7 @@ public class Controller_Project extends Controller {
         }
     }
 
-    @ApiOperation(value = "unshare Project with Persons",
+    @ApiOperation(value = "unshare Project",
             tags = {"Project"},
             notes = "unshare Project with all users in list: List<person_id>",
             produces = "application/json",

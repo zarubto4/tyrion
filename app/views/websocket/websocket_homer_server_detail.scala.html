@@ -274,7 +274,7 @@
 
          function disconnect_instance(instance_id){
              $.ajax({
-                 url: '@routes.Controller_Blocko.instance_shut_down("")' + instance_id,
+                 url: '@routes.Controller_Blocko.instance_start_or_shut_down("")' + instance_id,
                  type: 'GET',
 
                  headers: {
