@@ -127,7 +127,7 @@ public class Controller_Project extends Controller {
         try {
 
             // Získání seznamu
-            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).eq("product.active", true).order().asc("name").findList();
+            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).order().asc("name").findList();
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson( projects ));
