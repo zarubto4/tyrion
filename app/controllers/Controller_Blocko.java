@@ -1490,11 +1490,8 @@ public class Controller_Blocko extends Controller{
     public Result typeOfBlock_getAll(){
         try {
 
-            // Získání seznamu
-            List<Model_TypeOfBlock> typeOfBlocks = Model_TypeOfBlock.get_all();
-
             // Vrácení seznamu
-            return GlobalResult.result_ok(Json.toJson(typeOfBlocks));
+            return GlobalResult.result_ok(Json.toJson(Model_TypeOfBlock.get_all()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());

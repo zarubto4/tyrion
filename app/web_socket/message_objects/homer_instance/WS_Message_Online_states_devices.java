@@ -31,9 +31,7 @@ public class WS_Message_Online_states_devices extends WS_AbstractMessage_Instanc
         public boolean online_status;
         public String error;
         public String errorCode;
-
     }
-
 
     /**
      * The map was created for large fields. To avoid having to search the list of objects, the list will be remapped
@@ -54,10 +52,6 @@ public class WS_Message_Online_states_devices extends WS_AbstractMessage_Instanc
 
        return map.get(device_id).online_status;
     }
-
-
-
-
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 

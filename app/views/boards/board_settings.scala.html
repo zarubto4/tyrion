@@ -73,7 +73,7 @@
           <h3 class="box-title">Type Of Board</h3>
           <div class="pull-right">
             <div class="btn-group">
-              <td><button class="btn btn-block btn-info" type="button" onclick="showCreateTypeOfBoardModal()">Create New One</button></td>
+              <button class="btn btn-xs btn-block btn-info" type="button" onclick="showCreateTypeOfBoardModal()">Create New One</button>
             </div><!-- /.btn-group -->
           </div><!-- /.pull-right -->
         </div>
@@ -81,7 +81,6 @@
           <label>All Types of Boards</label>
           <table id="allTypesOfBoards" class="table table-bordered">
             <tr>
-              <th>ID</th>
               <th>Name</th>
               <th>Target Name</th>
               <th>Description</th>
@@ -89,41 +88,42 @@
               <th>Default firmware</th>
               <th>Producer</th>
               <th>Processor</th>
-              <th>Connectible to Internet</th>
-              <th>Bootloader Settings</th>
-              <th>EDIT</th>
-              <th>DELETE</th>
+              <th>Internet</th>
+              <th>Settings</th>
+              <th></th>
+              <th></th>
             </tr>
               @for(typeOfBoard <- Model_TypeOfBoard.find.all()) {
                 <tr>
-                  <td>@typeOfBoard.id</td>
                   <td>@typeOfBoard.name</td>
                   <td>@typeOfBoard.compiler_target_name</td>
                   <td>@typeOfBoard.description</td>
-
                   <td>
                   @if(typeOfBoard.main_boot_loader == null){
-                    <p class="small text-red">(MAIN BOOTLOADER NOT SET!!!)</p>
+                    <span class="label label-danger">MAIN BOOTLOADER NOT SET!</span>
                   }else{
-                    <p class="small text-green">(BOOTLOADER set)</p>
+                    <span class="label label-success">BOOTLOADER set</span>
                   }
                   </td>
-
                   <td>
                   @if(typeOfBoard.version_scheme == null){
-                    <p class="small text-red">(MAIN FIRMWARE NOT SET!!!)</p>
+                    <span class="label label-danger">MAIN FIRMWARE NOT SET!</span>
                   }else{
-                    <p class="small text-green">(FIRMWARE set)</p>
+                    <span class="label label-success">FIRMWARE set</span>
                   }
                   </td>
-
-
-                  <td>@typeOfBoard.producer_id()</td>
-                  <td>@typeOfBoard.processor_id()</td>
-                  <td>@typeOfBoard.connectible_to_internet</td>
-                  <td><a href='@routes.Controller_Dashboard.bootloader_management(typeOfBoard.id)'><button class="btn btn-block btn-info" type="button"> Settings </button></a></td>
-                  <td><button class="btn btn-block btn-info"   type="button" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.compiler_target_name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor_id()', '@typeOfBoard.connectible_to_internet')">Edit</button></td>
-                  <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBoard(@typeOfBoard.id)">Delete</button></td>
+                  <td>@typeOfBoard.producer_name()</td>
+                  <td>@typeOfBoard.processor_name()</td>
+                  <td>
+                  @if(typeOfBoard.connectible_to_internet){
+                    <span class="label label-success">True</span>
+                  } else {
+                    <span class="label label-danger">False</span>
+                  }
+                  </td>
+                  <td><a href='@routes.Controller_Dashboard.bootloader_management(typeOfBoard.id)'><button class="btn btn-xs btn-block btn-info" type="button"><i class="fa fa-wrench"></i></button></a></td>
+                  <td><button class="btn btn-xs btn-block btn-info"   type="button" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.compiler_target_name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor_id()', '@typeOfBoard.connectible_to_internet')">Edit</button></td>
+                  <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteTypeOfBoard(@typeOfBoard.id)">Delete</button></td>
                 </tr>
               }
           </table>
@@ -195,7 +195,7 @@
           <h3 class="box-title">Processor</h3>
           <div class="pull-right">
             <div class="btn-group">
-              <td><button class="btn btn-block btn-info" type="button" onclick="showCreateProcessorModal()">Create New One</button></td>
+              <button class="btn btn-xs btn-block btn-info" type="button" onclick="showCreateProcessorModal()">Create New One</button>
             </div><!-- /.btn-group -->
           </div><!-- /.pull-right -->
         </div>
@@ -218,8 +218,8 @@
                 <td>@processor.description</td>
                 <td>@processor.processor_code</td>
                 <td>@processor.speed</td>
-                <td><button class="btn btn-block btn-info"   type="button" onclick="showEditFormProcessor('@processor.id', '@processor.processor_name', '@processor.description', '@processor.processor_code', '@processor.speed')">Edit</button></td>
-                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteProcessor(@processor.id)">Delete</button></td>
+                <td><button class="btn btn-xs btn-block btn-info"   type="button" onclick="showEditFormProcessor('@processor.id', '@processor.processor_name', '@processor.description', '@processor.processor_code', '@processor.speed')">Edit</button></td>
+                <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteProcessor(@processor.id)">Delete</button></td>
               </tr>
             }
           </table>
@@ -289,7 +289,7 @@
           <h3 class="box-title">Producer</h3>
           <div class="pull-right">
             <div class="btn-group">
-              <td><button class="btn btn-block btn-info" type="button" onclick="showCreateProducerModal()">Create New One</button></td>
+              <button class="btn btn-xs btn-block btn-info" type="button" onclick="showCreateProducerModal()">Create New One</button>
             </div><!-- /.btn-group -->
           </div><!-- /.pull-right -->
         </div>
@@ -309,16 +309,14 @@
                 <td>@producer.id</td>
                 <td>@producer.name</td>
                 <td>@producer.description</td>
-                <td><button class="btn btn-block btn-info"   type="button" onclick="showEditFormProducer('@producer.id', '@producer.name', '@producer.description')">Edit</button></td>
-                <td><button class="btn btn-block btn-danger" type="button" onclick="deleteProducer(@producer.id)">Delete</button></td>
+                <td><button class="btn btn-xs btn-block btn-info"   type="button" onclick="showEditFormProducer('@producer.id', '@producer.name', '@producer.description')">Edit</button></td>
+                <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteProducer(@producer.id)">Delete</button></td>
               </tr>
             }
           </table>
         </div>
         <div class="box-footer">
         </div>
-
-
       </div>
     </div>
   </div>

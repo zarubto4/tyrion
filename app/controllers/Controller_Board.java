@@ -1568,20 +1568,23 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_BootLoader_New> form = Form.form(Swagger_BootLoader_New.class).bindFromRequest();
-            if(form.hasErrors()){return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BootLoader_New help = form.get();
 
             Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
-            if(type_of_board == null) return GlobalResult.result_notFound("Type_of_board_not_found");
+            if (type_of_board == null) return GlobalResult.result_notFound("Type_of_board_not_found");
 
-            if(Model_BootLoader.find.where().eq("version_identificator", help.version_identificator ).eq("type_of_board.id", type_of_board.id).findUnique() != null) return GlobalResult.result_badRequest("Version format is not unique!");
+            String identifier = help.version_identificator.replaceAll("\\s+", "");
+
+            if (Model_BootLoader.find.where().eq("version_identificator", identifier).eq("type_of_board.id", type_of_board.id).findUnique() != null)
+                return GlobalResult.result_badRequest("Version format is not unique!");
 
             Model_BootLoader boot_loader = new Model_BootLoader();
             boot_loader.date_of_create = new Date();
             boot_loader.name = help.name;
             boot_loader.changing_note =  help.changing_notes;
             boot_loader.description = help.description;
-            boot_loader.version_identificator = help.version_identificator;
+            boot_loader.version_identificator = identifier;
             boot_loader.type_of_board = type_of_board;
 
             if(!boot_loader.create_permission()) return GlobalResult.result_forbidden();
@@ -1595,17 +1598,68 @@ public class Controller_Board extends Controller {
         }
     }
 
+    @ApiOperation(value = "edit_boot_loader", hidden = true)
+    @Security.Authenticated(Secured_Admin.class)
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result bootLoader_update(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_BootLoader_Edit> form = Form.form(Swagger_BootLoader_Edit.class).bindFromRequest();
+            if(form.hasErrors())return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_BootLoader_Edit help = form.get();
+
+            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
+            if (boot_loader == null) return GlobalResult.result_notFound("BootLoader not found");
+
+            if (!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
+
+            boot_loader.name = help.name;
+            boot_loader.changing_note = help.changing_notes;
+            boot_loader.description = help.description;
+
+            boot_loader.update();
+
+            return GlobalResult.result_ok(Json.toJson(boot_loader));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "delete_boot_loader", hidden = true)
+    @Security.Authenticated(Secured_Admin.class)
+    public Result bootLoader_delete(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+        try {
+
+            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
+            if (boot_loader == null) return GlobalResult.result_notFound("BootLoader not found");
+
+            if (!boot_loader.delete_permission()) return GlobalResult.result_forbidden();
+
+            if (!boot_loader.boards.isEmpty()) return GlobalResult.result_badRequest("Bootloader is already used on some Board. Cannot be deleted.");
+
+            boot_loader.delete();
+
+            return GlobalResult.result_ok(Json.toJson(boot_loader));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "Uploud bootloader file", hidden = true)
     @BodyParser.Of(BodyParser.MultipartFormData.class)
     public Result bootLoader_uploadFile(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
-            if(boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
+            if (boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
 
-            if(!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
+            if (!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
 
-            if(boot_loader.file != null) return GlobalResult.result_badRequest("You cannot upload file twice!");
+            if (boot_loader.file != null) boot_loader.file.delete();
+                // return GlobalResult.result_badRequest("You cannot upload file twice!");
 
             Http.MultipartFormData body = request().body().asMultipartFormData();
             List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
@@ -1615,23 +1669,18 @@ public class Controller_Board extends Controller {
             if (file == null) return GlobalResult.result_badRequest("File not found!");
             if (file.length() < 1) return GlobalResult.result_badRequest("File is Empty!");
 
-
             int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
             String file_type = files_from_request.get(0).getFilename().substring(dot);
-            String file_name = files_from_request.get(0).getFilename().substring(0, dot);
 
             // Zkontroluji soubor
             if (!file_type.equals(".bin")) return GlobalResult.result_badRequest("Wrong type of File - \"Bin\" required! ");
             if ((file.length() / 1024) > 500) return GlobalResult.result_badRequest("File is bigger than 500Kb");
 
             String binary_file = Model_FileRecord.get_encoded_binary_string_from_File(file);
-            Model_FileRecord filerecord  = Model_FileRecord.create_Binary_file( boot_loader.get_path(), binary_file, "bootloader.bin");
+            Model_FileRecord file_record = Model_FileRecord.create_Binary_file(boot_loader.get_path(), binary_file, "bootloader.bin");
 
-            boot_loader.file = filerecord;
-            filerecord.boot_loader = boot_loader;
-            filerecord.update();
-            boot_loader.update();
-
+            file_record.boot_loader = boot_loader;
+            file_record.update();
 
             // Vracím seznam
             return GlobalResult.result_ok(Json.toJson(boot_loader));
@@ -1790,25 +1839,27 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Board_New> form = Form.form(Swagger_Board_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Board_New help = form.get();
 
             // Kotrola objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId( help.type_of_board_id  );
-            if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
+            if (Model_Board.find.byId(help.hardware_unique_id) != null) return GlobalResult.result_badRequest("Board is already registered");
+
+            // Kotrola objektu
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
+            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
-            if(! typeOfBoard.register_new_device_permission()) return GlobalResult.result_forbidden();
+            if (!typeOfBoard.register_new_device_permission()) return GlobalResult.result_forbidden();
 
+            Model_Board board = new Model_Board();
+            board.id = help.hardware_unique_id;
+            board.is_active = false;
+            board.date_of_create = new Date();
+            board.type_of_board = typeOfBoard;
 
-                Model_Board board = new Model_Board();
-                board.id = help.hardware_unique_id;
-                board.is_active = false;
-                board.date_of_create = new Date();
-                board.type_of_board = typeOfBoard;
-
-                // Uložení desky do DB
-                board.save();
+            // Uložení desky do DB
+            board.save();
 
             // Vracím seznam zařízení k registraci
             return GlobalResult.result_created(Json.toJson(board));

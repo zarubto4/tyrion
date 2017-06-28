@@ -41,8 +41,7 @@ public class Model_BlockoBlock extends Model {
 
     @JsonIgnore  public Integer order_position;
 
-    @JsonIgnore              public boolean removed_by_user;
-
+    @JsonIgnore  public boolean removed_by_user;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -52,18 +51,14 @@ public class Model_BlockoBlock extends Model {
     @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    author_nick_name()  { return  author != null ? author.nick_name : null;}
 
-
     @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    producer_id()       { return producer != null ? producer.id : null;}
 
     @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
     @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    producer_name()     { return producer != null ? producer.name : null;}
 
-
     @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_id()             { return type_of_block.id; }
     @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_name()           { return type_of_block.name; }
-
-
 
     @Transient  @JsonProperty @ApiModelProperty(required = true) public  List<Swagger_BlockoBlock_Version_Short_Detail> versions(){
 
@@ -136,7 +131,6 @@ public class Model_BlockoBlock extends Model {
         super.update();
 
         if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
-
     }
 
 /* ORDER ---------------------------------------------------------------------------------------------------------------*/
@@ -175,9 +169,7 @@ public class Model_BlockoBlock extends Model {
 
         this.order_position += 1;
         this.update();
-
     }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -205,16 +197,15 @@ public class Model_BlockoBlock extends Model {
 
     @JsonIgnore
     public static Model_BlockoBlock get_byId(String id) {
-        return find.byId(id);
+        return find.where().eq("id", id).eq("remove_by_user", false).findUnique();
     }
 
     @JsonIgnore
     public static Model_BlockoBlock get_publicByName(String name) {
-        return find.where().isNull("type_of_block.project").eq("name", name).findUnique();
+        return find.where().isNull("type_of_block.project").eq("remove_by_user", false).eq("name", name).findUnique();
     }
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
     public static Model.Finder<String,Model_BlockoBlock> find = new Finder<>(Model_BlockoBlock.class);
-
 }

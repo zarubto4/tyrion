@@ -178,25 +178,24 @@ public class Model_TypeOfBlock extends Model {
 
     @JsonIgnore
     public static Model_TypeOfBlock get_byId(String id) {
-        return find.byId(id);
+        return find.where().eq("id", id).eq("removed_by_user", false).findUnique();
     }
 
     @JsonIgnore
     public static List<Model_TypeOfBlock> get_all() {
 
-        List<Model_TypeOfBlock> typeOfBlocks = find.where().isNull("project").findList();
-        typeOfBlocks.addAll( find.where().eq("project.participants.person.id", Controller_Security.get_person().id ).eq("removed_by_user", false).order().asc("name").findList() );
-        typeOfBlocks.addAll( find.where().isNull("project").eq("removed_by_user", false).order().asc("order_position").findList());
+        List<Model_TypeOfBlock> typeOfBlocks = find.where().isNull("project").eq("removed_by_user", false).order().asc("order_position").findList();
+        typeOfBlocks.addAll(find.where().eq("project.participants.person.id", Controller_Security.get_person_id()).eq("removed_by_user", false).order().asc("name").findList());
         return typeOfBlocks;
     }
 
     @JsonIgnore
     public static Model_TypeOfBlock get_publicByName(String name) {
-        return find.where().isNull("project").eq("name",name).findUnique();
+        return find.where().isNull("project").eq("removed_by_user", false).eq("name",name).findUnique();
     }
 
     @JsonIgnore
     public static List<Model_TypeOfBlock> get_public() {
-        return find.where().isNull("project").order().asc("order_position").findList();
+        return find.where().isNull("project").eq("removed_by_user", false).order().asc("order_position").findList();
     }
 }
