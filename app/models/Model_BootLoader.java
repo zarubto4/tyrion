@@ -52,9 +52,9 @@ public class Model_BootLoader extends Model {
     @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)                public Model_TypeOfBoard type_of_board;
                                                            @JsonIgnore  @OneToOne()                public Model_TypeOfBoard main_type_of_board;
 
-    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", cascade = CascadeType.ALL)              public List<Model_Board> boards  = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader")                                         public List<Model_Board> boards  = new ArrayList<>();
 
-                                                @JsonIgnore  @OneToOne(mappedBy = "boot_loader")   public Model_FileRecord file;
+                     @JsonIgnore  @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)   public Model_FileRecord file;
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -170,7 +170,6 @@ public class Model_BootLoader extends Model {
         terminal_logger.debug("save :: Creating new Object");
 
         super.save();
-
     }
 
     @JsonIgnore @Override public void update() {
@@ -188,12 +187,11 @@ public class Model_BootLoader extends Model {
     }
 
 /* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/
-    @JsonIgnore  private String azure_product_link;
 
+    @JsonIgnore  private String azure_product_link;
 
     @JsonIgnore @Transient
     public CloudBlobContainer get_Container(){
-
         try {
 
             return Server.blobClient.getContainerReference("bootloaders"); // Jméno kontejneru
@@ -202,26 +200,30 @@ public class Model_BootLoader extends Model {
             terminal_logger.internalServerError("get_Container:", e);
             return null;
         }
-
     }
 
     @JsonIgnore @Transient
     public String get_path(){
-        return  azure_product_link;
+
+        if (azure_product_link == null) {
+            this.azure_product_link = get_Container().getName() + "/" + this.id;
+            this.update();
+        }
+
+        return azure_product_link;
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return Controller_Security.get_person().has_permission("BootLoader_create");      }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return Controller_Security.get_person().has_permission("BootLoader_update"); }
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return Controller_Security.get_person().has_permission("BootLoader_create");}
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return Controller_Security.get_person().has_permission("BootLoader_update");}
     @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("BootLoader_read"); }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("BootLoader_delete"); }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("BootLoader_read");}
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("BootLoader_delete");}
 
-    public enum permissions{  BootLoader_create,  BootLoader_update, BootLoader_read ,  BootLoader_edit, BootLoader_delete; }
-
+    public enum permissions {BootLoader_create, BootLoader_update, BootLoader_read, BootLoader_edit, BootLoader_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_BootLoader> find = new Finder<>(Model_BootLoader.class);

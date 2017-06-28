@@ -344,6 +344,8 @@ POST      /bootloader/:type_of_board_id                                 @control
 PUT       /bootloader/file/:boot_loader_id                              @controllers.Controller_Board.bootLoader_uploadFile(boot_loader_id)
 PUT       /bootloader/mark/bootloader/:boot_loader_id                   @controllers.Controller_Board.bootLoader_markAsMain(boot_loader_id)
 PUT       /bootloader/update_device_list                                @controllers.Controller_Board.bootLoader_manualUpdate()
+PUT       /bootloader/:boot_loader_id                                   @controllers.Controller_Board.bootLoader_update(boot_loader_id)
+DELETE    /bootloader/:boot_loader_id                                   @controllers.Controller_Board.bootLoader_delete(boot_loader_id)
 
 #File // Skryto ve swaggeru
 GET       /file/fileRecord/:file_record_id                              @controllers.Controller_Board.fileRecord_get(file_record_id)

@@ -16,7 +16,7 @@
         </div><!-- /.btn-group -->
     </div>
     <div></div>
-    <h1> &nbsp;&nbsp;&nbsp; Type Of Board: @typeOfBoard.name </h1>
+    <h1> &nbsp;&nbsp;&nbsp; Type Of Board: @typeOfBoard.name (ID = @typeOfBoard.id) </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Server Management </li>
@@ -30,12 +30,12 @@
     <div class="col-md-12">
         <div class="box">
             <div class="box-header with-border">
-                <h3 class="box-title">Bootlooder summary</h3>
+                <h3 class="box-title">Bootloader summary</h3>
                 <div class="pull-right">
                     <div class="btn-group">
-                        <button class="btn btn-block btn-info" type="button" onclick="openNewBootLoaderModal('@typeOfBoard.id')">New Bootloader</button>
-                    </div><!-- /.btn-group -->
-                </div><!-- /.pull-right -->
+                        <button class="btn btn-xs btn-block btn-success" type="button" data-toggle="modal" data-target="#newBootLoaderModal" onclick="$('#newBootLoaderButton').val('@typeOfBoard.id');">New Bootloader</button>
+                    </div>
+                </div>
             </div>
             <div class="box-body">
                 <div id="allBootloaderVersionsWrapper">
@@ -48,37 +48,41 @@
                         <th>Changing notes</th>
                         <th>Bin file ID</th>
                         <th>Set as Main</th>
+                        <th></th>
+                        <th></th>
                     </tr>
 
                     @for(boot_loader <- Model_BootLoader.find.where().disjunction()
                                 .add(Expr.eq("type_of_board.id", typeOfBoard.id))
                                 .add(Expr.eq("main_type_of_board.id", typeOfBoard.id))
-                                .findList() ){
+                                .order()
+                                .desc("date_of_create")
+                                .findList()){
                         <tr>
-
                             <td>@boot_loader.id</td>
                             <td>@boot_loader.name</td>
                             <td>@boot_loader.version_identificator</td>
                             <td>@boot_loader.description</td>
                             <td>@boot_loader.changing_note</td>
-                            <td>@if( boot_loader.file != null ){
+                            <td>@if(boot_loader.file != null ){
                                      @boot_loader.file.id
                                 }else{
-                                    <button class="btn btn-block btn-danger" type="button" onclick="uploadBootLoaderFileModal('@boot_loader.id')">Upload file</button>
+                                    <button class="btn btn-xs btn-block btn-danger" type="button" data-toggle="modal" data-target="#newFileModal" onclick="$('#uploadBootLoaderButton').val('@boot_loader.id')">Upload file</button>
                                 }
                             </td>
-
                             <td>
                                 @if(boot_loader.main_type_of_board != null && boot_loader.file != null) {
-                                    <p class="lead text-green">(ITS Main)</p>
+                                    <span class="label label-success">Main</span>
                                 }
                                 @if(boot_loader.main_type_of_board == null && boot_loader.type_of_board != null && boot_loader.file != null){
-                                    <button class="btn btn-block btn-warning" type="button" onclick="setBootLoaderAsMain('@boot_loader.id')">SET as Main</button>
+                                    <button class="btn btn-xs btn-block btn-warning" type="button" onclick="setBootLoaderAsMain('@boot_loader.id')">Set as Main</button>
                                 }
                                 @if(boot_loader.file == null){
-                                    <p class="text-red">-----------</p>
+                                    Upload file first!
                                 }
                             </td>
+                            <td><button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editBootLoaderModal" onclick="fillEditBootLoaderForm('@boot_loader.id', '@boot_loader.name', '@boot_loader.description', '@boot_loader.changing_note');"><i class="fa fa-wrench"></i></button></td>
+                            <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteBootLoader('@boot_loader.id');"><i class="fa fa-times"></i></button></td>
                         </tr>
                     }
                 </table>
@@ -99,14 +103,11 @@
                 <h3 class="box-title">Default Device Program - FirstVersion of C_Program && First Firmware in Device! </h3>
                 <div class="pull-right">
                     @if(typeOfBoard.version_scheme == null) {
-                        <div class="btn-group">
-                            <button class="btn btn-block btn-warning" type="button" onclick="createCProgramModal('@typeOfBoard.id')">Create default program</button>
-                        </div>
+                        <button class="btn btn-xs btn-block btn-success" type="button" data-toggle="modal" data-target="#newCProgramModal" onclick="createCProgramModal('@typeOfBoard.id')">Create default program</button>
                     }else{
-                        <div class="btn-group">
-                            <a onclick="editCProgramModal( '@typeOfBoard.version_scheme.id' , '@typeOfBoard.id', '@typeOfBoard.version_scheme.name', '@typeOfBoard.version_scheme.description' )" class="btn btn-warning btn-sm"><b> Update Information </b></a>
-                            <a onclick="createCProgramVersionModal('@typeOfBoard.version_scheme.id')" class="btn btn-info btn-sm"><b>New Version </b></a>
-                        </div>
+
+                        <a href="/admin/c_program/public/@typeOfBoard.version_scheme.id" class="btn btn-info btn-xs"><i class="fa fa-wrench"></i></a>
+
                     }
                 </div>
             </div>
@@ -157,7 +158,7 @@
                                         <p class="lead text-green">(ITS Main)</p>
                                     }
                                     @if(version.default_program == null && (version.c_compilation.status == Enum_Compile_status.successfully_compiled_and_restored)){
-                                        <button class="btn btn-block btn-warning" type="button" onclick="setVersionAsMain('@typeOfBoard.version_scheme.id','@version.id')" > SET as Main </button>
+                                        <button class="btn btn-xs btn-block btn-warning" type="button" onclick="setVersionAsMain('@typeOfBoard.version_scheme.id','@version.id')" > Set as Main </button>
                                     }
                                     @if(version.default_program == null && (version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) ){
                                         <p class="text-red"> @version.c_compilation.status</p>
@@ -179,14 +180,14 @@
             <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">Picture</h3>
-                    <button style="margin-left: 10px;" id="showPictureRemoveModalButton" @if(typeOfBoard.picture_link() == null) { disabled="disabled" } class="btn btn-danger pull-right @if(typeOfBoard.picture_link() == null) { disabled }" type="button" onclick="showPictureRemoveModal('@typeOfBoard.id')">Remove Picture</button>
-                    <button class="btn btn-success pull-right" type="button" onclick="showPictureModal(  '@typeOfBoard.id' ) ">Upload Picture</button>
+                    <button style="margin-left: 10px;" id="showPictureRemoveModalButton" @if(typeOfBoard.picture_link() == null) { disabled="disabled" } class="btn btn-xs btn-danger pull-right @if(typeOfBoard.picture_link() == null) { disabled }" type="button" onclick="showPictureRemoveModal('@typeOfBoard.id')">Remove Picture</button>
+                    <button class="btn btn-xs btn-success pull-right" type="button" onclick="showPictureModal(  '@typeOfBoard.id' ) ">Upload Picture</button>
                 </div>
                 <div id="picture_container" class="box-body">
                     @if(typeOfBoard.picture_link() == null) {
                         <p>Picture is not available</p>
                     }else{
-                        <img style="" src="@typeOfBoard.picture_link()">
+                        <img style='display: block; max-width: 100%; margin-right: auto; margin-left: auto;' src="@typeOfBoard.picture_link()">
                     }
                 </div>
                 <div class="box-footer"></div>
@@ -195,117 +196,121 @@
     </div>
 </section>
 
-<div id="newBootLoaderModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
+<div id="newBootLoaderModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newBootLoaderModalTitle">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">New BootLoader</h4>
+                <h4 id="newBootLoaderModalTitle" class="modal-title">New BootLoader</h4>
             </div>
             <div class="modal-body">
                 <form id="newBootLoaderForm">
-                    <label>Name</label>                                     <input type="text" name="name"> <p>
-                    <label>Version Identificator (255.255.255)</label>      <input type="text" name="version_identificator"> <p>
-                    <label>Changing notes</label>  <p>                      <textarea name="changing_notes" class="form-control" rows="3" placeholder="What has changed... "></textarea> <p>
-                    <label>Description</label>     <p>                      <textarea name="description" class="form-control" rows="3" placeholder="Description... "></textarea> <p>
+                    <input class="form-control form-group" type="text" placeholder="Name" name="name">
+                    <input class="form-control form-group" type="text" placeholder="Version Identifier (255.255.255)" name="version_identificator">
+                    <textarea name="changing_notes" class="form-control form-group" rows="3" placeholder="What has changed... "></textarea>
+                    <textarea name="description" class="form-control form-group" rows="3" placeholder="Description... "></textarea>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBootLoaderModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="newBootLoaderButton" value="" class="btn btn-primary" type="button" onclick="createNewBootLoaderRecord()">Create</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="newCProgramModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
+<div id="editBootLoaderModal"  class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editBootLoaderModalTitle">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Create new C Program</h4>
+                <h4 id="editBootLoaderModalTitle" class="modal-title">Edit BootLoader</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editBootLoaderForm">
+                    <input id="edit_boot_loader_name" class="form-control form-group" type="text" title="Name" placeholder="Name" name="name">
+                    <textarea id="edit_boot_loader_changing_note" name="changing_notes" class="form-control form-group" rows="3" title="What has changed..." placeholder="What has changed..."></textarea>
+                    <textarea id="edit_boot_loader_description" name="description" class="form-control form-group" rows="3" title="What has changed..." placeholder="Description..."></textarea>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button id="editBootLoaderButton" value="" class="btn btn-primary" type="button" onclick="updateBootLoader(this.value)">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newCProgramModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newCProgramModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="newCProgramModalTitle" class="modal-title">Create new C Program</h4>
             </div>
             <div class="modal-body">
                 <form id="newCProgramForm">
-
-                    <div class="form-group">
-                        <label>TypeOfDevice ID</label>
-                        <input type="text" name="type_of_board_id"> <p>
-                    </div>
-
-                    <div class="form-group">
-                        <label style="">C Program name</label>
-                        <input type="text" class="form-control" name="name">
-                    </div>
-
-                    <div class="form-group">
-                        <label style="">C Program description </label>
-                        <input type="text" class="form-control" name="description">
-                    </div>
-
+                    <input type="text" class="form-control form-group" title="Type of Board" name="type_of_board_id" readonly>
+                    <input type="text" class="form-control form-group" placeholder="Name" name="name">
+                    <input type="text" class="form-control form-group" placeholder="Description" name="description">
                     <div class="form-group">
                         <label class="checkbox-inline">
                             <input name="c_program_type_of_board_default" type="checkbox" checked="checked" value="true" disabled="disabled">Public C Program</label>
                     </div>
-
-
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newCProgramModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="newCProgramButton" value="" class="btn btn-primary" type="button" onclick="createNewCProgram()">Create</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="editCProgramModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
+<div id="editCProgramModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editCProgramModalTitle">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Edit C Program</h4>
+                <h4 id="editCProgramModalTitle" class="modal-title">Edit C Program</h4>
             </div>
             <div class="modal-body">
                 <form id="editCProgramForm">
-                    <label>TypeOfDevice ID</label>                          <input type="text" name="type_of_board_id"> <p>
-                    <label>Name</label>                                     <input type="text" name="name"> <p>
-                    <label>Description</label>  <p>                         <textarea name="description" class="form-control" rows="3"></textarea> <p>
+                    <input type="text" class="form-control form-group" placeholder="Type of Board" name="type_of_board_id" readonly>
+                    <input type="text" class="form-control form-group" placeholder="Name" title="Name" name="name">
+                    <textarea class="form-control form-group" title="Description" placeholder="Description" name="description" rows="3"></textarea>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#editCProgramModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="editCProgramButton" value="" class="btn btn-primary" type="button" onclick="editCProgram(this.value)">Update</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="newCProgramVersionModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
+<div id="newCProgramVersionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newCProgramVersionModalTitle">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">New C Program version</h4>
+                <h4 id="newCProgramVersionModalTitle" class="modal-title">New C Program version</h4>
             </div>
             <div class="modal-body">
                 <form id="newCProgramVersionForm">
-                    <label>Version name</label>                 <input type="text" placeholder="1.0.5" name="version_name"> <p><p><p>
-                    <label>Version Description</label><p>       <textarea name="description" class="form-control" rows="3" placeholder="Description...."></textarea> <p><p>
-                    <label>Program</label>  <p>                 <textarea name="main" class="form-control" rows="3" placeholder="Code...."></textarea> <p>
-
-
+                    <input class="form-control form-group" type="text" placeholder="Version name (1.0.5)" name="version_name">
+                    <textarea class="form-control form-group" name="description" rows="3" placeholder="Description...."></textarea>
+                    <textarea class="form-control form-group" name="main" rows="3" placeholder="Code...."></textarea>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newCProgramVersionModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="newCProgramVersionButton" value="" class="btn btn-primary" type="button" onclick="createNewCProgramVersion(this.value)">Create</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="newFileModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
+<div id="newFileModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newFileModalTitle">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Boot Loader File</h4>
+                <h4 id="newFileModalTitle" class="modal-title">Boot Loader File</h4>
             </div>
             <div class="modal-body">
                 <form id="newFileForm">
@@ -315,18 +320,18 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newFileModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="uploadBootLoaderButton" value="" class="btn btn-primary" type="button" onclick="uploadBootLoaderFile(this.value)">Upload</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="pictureModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
+<div id="pictureModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="pictureModalTitle">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Upload Picture</h4>
+                <h4 id="pictureModalTitle" class="modal-title">Upload Picture</h4>
             </div>
             <div class="modal-body">
                 <form id="pictureForm">
@@ -336,24 +341,24 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#pictureModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="uploadPictureButton" value="" class="btn btn-success" type="button" onclick="uploadPicture(this.value)">Upload</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="pictureRemoveModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
+<div id="pictureRemoveModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="pictureRemoveModalTitle">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Remove Picture</h4>
+                <h4 id="pictureRemoveModalTitle" class="modal-title">Remove Picture</h4>
             </div>
             <div class="modal-body">
                 <p>Are you sure?</p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#pictureRemoveModal').css('display','none')">Close</button>
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                 <button id="removePictureButton" value="" class="btn btn-danger" type="button" onclick="removePicture(this.value)">Remove</button>
             </div>
         </div>
@@ -361,29 +366,25 @@
 </div>
 
 <script>
-	function openNewBootLoaderModal(type_of_board_id) {
-        $("#newBootLoaderModal").css("display", "block");
-        $('#newBootLoaderButton').val(type_of_board_id);
-    }
 
     function openVersionCode(showCodeForm) {
         $("#newBootLoaderModal").css("display", "block");
         $("#showCodeForm textarea[name=showCodeForm]").val(showCodeForm);
     }
 
-    function uploadBootLoaderFileModal(boot_loader_id) {
-        $("#newFileModal").css("display", "block");
-        $('#uploadBootLoaderButton').val(boot_loader_id);
+    function fillEditBootLoaderForm(boot_loader_id, boot_loader_name, boot_loader_description, boot_loader_changing_note) {
+        $("#editBootLoaderButton").val(boot_loader_id);
+        $("#edit_boot_loader_name").val(boot_loader_name);
+        $("#edit_boot_loader_description").val(boot_loader_description);
+        $("#edit_boot_loader_changing_note").val(boot_loader_changing_note);
     }
 
     function createCProgramModal(type_of_device_id) {
-        $("#newCProgramModal").css("display", "block");
         $('#newCProgramButton').val(type_of_device_id);
         $("#newCProgramForm input[name=type_of_board_id]").val(type_of_device_id);
     }
 
     function editCProgramModal(c_program_id, type_of_board_id, name, description) {
-        $("#editCProgramModal").css("display", "block");
         $("#editCProgramForm input[name=type_of_board_id]").val(type_of_board_id);
         $("#editCProgramForm input[name=name]").val(name);
         $("#editCProgramForm textarea[name=description]").val(description);
@@ -455,8 +456,6 @@
     }
 
     function createNewBootLoaderRecord() {
-        model_data = $("#newBootLoaderForm").serializeObject();
-
         $.ajax({
             url: '@routes.Controller_Board.bootLoader_create(typeOfBoard.id)',
             type: 'POST',
@@ -465,13 +464,13 @@
                 "X-AUTH-TOKEN": getCookie("authToken"),
                 "Content-Type": "application/json"
             },
-            data: JSON.stringify(model_data),
+            data: JSON.stringify($("#newBootLoaderForm").serializeObject()),
             dataType: 'json',
 
             success: function(data, status) {
 
                 $("#newBootLoaderForm input[type=text]").val("");
-                $("#newBootLoaderModal").css("display", "none");
+                $("#newBootLoaderModal").modal('hide');
                 $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
 
             },
@@ -492,9 +491,70 @@
         })
     }
 
-    function createNewCProgram() {
+    function updateBootLoader(id) {
+        $.ajax({
+            url: '@routes.Controller_Board.bootLoader_update("")' + id,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken"),
+                "Content-Type": "application/json"
+            },
+            data: JSON.stringify($("#editBootLoaderForm").serializeObject()),
+            dataType: 'json',
 
-        model_data = $("#newCProgramForm").serializeObject();
+            success: function(data, status) {
+
+                $("#editBootLoaderForm input[type=text]").val("");
+                $("#editBootLoaderModal").modal('hide');
+                $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
+
+            },
+            error: function(data) {
+
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function deleteBootLoader(id) {
+        $.ajax({
+            url: '@routes.Controller_Board.bootLoader_delete("")' + id,
+            type: 'DELETE',
+            headers: {
+                "X-AUTH-TOKEN": getCookie("authToken")
+            },
+            dataType: 'json',
+            success: function(json) {
+                $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
+            },
+            error: function(data) {
+                BootstrapDialog.show({
+                    message: syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself) {
+                            dialogItself.close();
+                        }
+                    }]
+
+                });
+            }
+        })
+    }
+
+    function createNewCProgram() {
 
         $.ajax({
             url: '@routes.Controller_Code.c_program_createDefault()',
@@ -504,13 +564,13 @@
                 "X-AUTH-TOKEN": getCookie("authToken"),
                 "Content-Type": "application/json"
             },
-            data: JSON.stringify(model_data),
+            data: JSON.stringify($("#newCProgramForm").serializeObject()),
             dataType: 'json',
 
             success: function(data, status) {
 
-                $("#newBootLoaderForm input[type=text]").val("");
-                $("#newCProgramModal").css("display", "none");
+                $("#newCProgramForm input[type=text]").val("");
+                $("#newCProgramModal").modal('hide');
                 $('#firmware_summary_wrapper').load(document.URL + ' #firmware_summary');
 
             },
@@ -549,7 +609,7 @@
             success: function(data, status) {
 
                 $("#editCProgramForm input[type=text]").val("");
-                $("#editCProgramModal").css("display", "none");
+                $("#editCProgramModal").modal('hide');
                 $('#firmware_summary').load(document.URL + ' #firmware_summary');
 
             },
@@ -588,7 +648,7 @@
             success: function(data, status) {
 
                 $("#newCProgramVersionForm input[type=text]").val("");
-                $("#newCProgramVersionModal").css("display", "none");
+                $("#newCProgramVersionModal").modal('hide');
                 $('#allCProgramsVersionsWrapper').load(document.URL + ' #allCProgramsVersions');
 
             },
@@ -630,20 +690,8 @@
 
             success: function(data, status) {
 
-                $("#newFileModal").css("display", "none");
+                $("#newFileModal").modal('hide')
                 $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
-
-                BootstrapDialog.show({
-                    message: "SUCCESS",
-
-                    buttons: [{
-                        label: 'Close',
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                        }
-                    }]
-                });
-
             },
             error: function(jqXHR, textStatus, errorThrown) {
 

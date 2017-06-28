@@ -275,6 +275,13 @@ public class Model_HomerInstance extends Model {
             try {
                 switch (json.get("messageType").asText()) {
 
+                    case WS_Message_Online_states_devices.messageType: {
+
+                        // TODO asi nic nedělat, zpráva je odchycena jinde?
+
+                        return;
+                    }
+
                     case WS_Message_Device_connected.messageType: {
 
                         final Form<WS_Message_Device_connected> form = Form.form(WS_Message_Device_connected.class).bind(json);
