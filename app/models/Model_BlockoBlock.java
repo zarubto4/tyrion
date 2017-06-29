@@ -197,12 +197,12 @@ public class Model_BlockoBlock extends Model {
 
     @JsonIgnore
     public static Model_BlockoBlock get_byId(String id) {
-        return find.where().eq("id", id).eq("remove_by_user", false).findUnique();
+        return find.where().eq("id", id).eq("removed_by_user", false).findUnique();
     }
 
     @JsonIgnore
     public static Model_BlockoBlock get_publicByName(String name) {
-        return find.where().isNull("type_of_block.project").eq("remove_by_user", false).eq("name", name).findUnique();
+        return find.where().isNull("type_of_block.project").eq("removed_by_user", false).eq("name", name).findUnique();
     }
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/

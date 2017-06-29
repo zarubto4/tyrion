@@ -231,9 +231,10 @@
                     <label>Library</label>
                     <select id="selectLibrary" class="form-control select2" style="width: 100%;">
                         <option selected="selected" disabled>Choose Library</option>
-
-                            @for(library <- Model_Library.find.all()){
-                        <option value="@library.versions().get(0).version_id">@library.name</option>
+                        @for(library <- Model_Library.find.all()){
+                            @if(!library.versions().isEmpty){
+                                <option value="@library.versions().get(0).version_id">@library.name</option>
+                            }
                         }
                     </select>
                 </form>

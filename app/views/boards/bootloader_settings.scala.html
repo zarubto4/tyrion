@@ -6,7 +6,6 @@
 
 @(typeOfBoard: Model_TypeOfBoard)
 
-
 <section class="content-header">
     <div class="pull-left">
         <div class="btn-group">
@@ -16,7 +15,7 @@
         </div><!-- /.btn-group -->
     </div>
     <div></div>
-    <h1> &nbsp;&nbsp;&nbsp; Type Of Board: @typeOfBoard.name (ID = @typeOfBoard.id) </h1>
+    <h1> &nbsp;&nbsp;&nbsp; Type Of Board: @typeOfBoard.name </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
         <li class="active"><i class="fa fa-share"></i> Server Management </li>
@@ -27,6 +26,41 @@
 </section>
 
 <section class="content">
+<div class="row">
+    <div class="col-md-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Details</h3>
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button class="btn btn-xs btn-info" type="button" data-toggle="modal" data-target="#editTypeOfBoardModal"><i class="fa fa-wrench"></i></button>
+                        <button class="btn btn-xs btn-danger" type="button" onclick="deleteTypeOfBoard()"><i class="fa fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>ID: </label> @typeOfBoard.id <br>
+                        <label>Name: </label> @typeOfBoard.name <br>
+                        <label>Target name: </label> @typeOfBoard.compiler_target_name <br>
+                        <label>Internet: </label> @if(typeOfBoard.connectible_to_internet) { <span class="label label-success">Yes</span> } else { <span class="label label-danger">No</span> }
+                    </div>
+                    <div class="col-md-4">
+                        <label>Description: </label> @typeOfBoard.description
+                    </div>
+                    <div class="col-md-4">
+                        <label>Revision: </label> @typeOfBoard.revision <br>
+                        <label>Producer: </label> @typeOfBoard.producer_name() <br>
+                        <label>Processor: </label> @typeOfBoard.processor_name()
+                    </div>
+                </div>
+            </div>
+            <div class="box-footer">
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row">
     <div class="col-md-12">
         <div class="box">
@@ -196,6 +230,54 @@
         </div>
     </div>
 </section>
+
+<div id="editTypeOfBoardModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editTypeOfBoardModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="editTypeOfBoardModalTitle" class="modal-title">Edit Type of Board</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editTypeOfBoard">
+                    <label id="typeOfBoardId" style="display: block">ID</label>
+                    <input class="form-group form-control" placeholder="Name" title="Name" type="text" name="name" value="@typeOfBoard.name">
+                    <input class="form-group form-control" placeholder="Target name" title="Target name" type="text" name="compiler_target_name" value="@typeOfBoard.compiler_target_name">
+                    <input class="form-group form-control" placeholder="Description" title="Description" type="text" name="description" value="@typeOfBoard.description">
+                    <select title="Producer" class="form-control form-group select2" name="producer_id">
+                        <option selected="selected" disabled>Choose producer</option>
+                        @for(producer <- Model_Producer.find.all()){
+                            @if(producer.id.equals(typeOfBoard.processor_id())) {
+                                <option selected value="@producer.id">@producer.name</option>
+                            } else {
+                                <option value="@producer.id">@producer.name</option>
+                            }
+                        }
+                    </select>
+                    <select title="Producer" class="form-control form-group select2" name="processor_id">
+                        <option selected="selected" disabled>Choose producer</option>
+                        @for(processor <- Model_Processor.find.all()){
+                            @if(processor.id.equals(typeOfBoard.processor_id())) {
+                                <option selected value="@processor.id">@processor.processor_name</option>
+                            } else {
+                                <option value="@processor.id">@processor.processor_name</option>
+                            }
+                        }
+                    </select>
+                    <div class="checkbox form-group">
+                        <label>
+                            <input type="checkbox" name="connectible_to_internet" @if(typeOfBoard.connectible_to_internet) { checked } >
+                            Connectible to internet
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button id="editTypeOfBoardButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBoard(this.value)">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="newBootLoaderModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newBootLoaderModalTitle">
     <div class="modal-dialog" role="document">
@@ -368,11 +450,6 @@
 
 <script>
 
-    function openVersionCode(showCodeForm) {
-        $("#newBootLoaderModal").css("display", "block");
-        $("#showCodeForm textarea[name=showCodeForm]").val(showCodeForm);
-    }
-
     function fillEditBootLoaderForm(boot_loader_id, boot_loader_name, boot_loader_description, boot_loader_changing_note) {
         $("#editBootLoaderButton").val(boot_loader_id);
         $("#edit_boot_loader_name").val(boot_loader_name);
@@ -380,21 +457,58 @@
         $("#edit_boot_loader_changing_note").val(boot_loader_changing_note);
     }
 
-    function createCProgramModal(type_of_device_id) {
-        $('#newCProgramButton').val(type_of_device_id);
-        $("#newCProgramForm input[name=type_of_board_id]").val(type_of_device_id);
+    function editTypeOfBoard(id){
+        $.ajax({
+            url: '@routes.Controller_Board.typeOfBoard_update("")' + id ,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken"),
+                "Content-Type":"application/json"
+            },
+            data: JSON.stringify($("#editTypeOfBoard").serializeObject()),
+            dataType: 'json',
+            success:function(e){
+                location.reload();
+            },
+            error:function(data) {
+                BootstrapDialog.show({
+                    message:  syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself){
+                            dialogItself.close();
+                        }
+                    }]
+                });
+            }
+        })
     }
 
-    function editCProgramModal(c_program_id, type_of_board_id, name, description) {
-        $("#editCProgramForm input[name=type_of_board_id]").val(type_of_board_id);
-        $("#editCProgramForm input[name=name]").val(name);
-        $("#editCProgramForm textarea[name=description]").val(description);
-        $('#editCProgramButton').val(c_program_id);
-    }
-
-    function createCProgramVersionModal(c_program_id) {
-        $("#newCProgramVersionModal").css("display", "block");
-        $('#newCProgramVersionButton').val(c_program_id);
+    function deleteTypeOfBoard(){
+        $.ajax({
+            url: '@routes.Controller_Board.typeOfBoard_delete(typeOfBoard.id)',
+            type: 'DELETE',
+            headers: {
+                "X-AUTH-TOKEN":getCookie("authToken")
+            },
+            success:function(e){
+                location.replace("/admin/board_settings")
+            },
+            error:function(data) {
+                BootstrapDialog.show({
+                    message:  syntaxHighlight(data),
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [{
+                        label: 'Close',
+                        action: function(dialogItself){
+                            dialogItself.close();
+                        }
+                    }]
+                });
+            }
+        })
     }
 
     function setBootLoaderAsMain(boot_loader_id) {

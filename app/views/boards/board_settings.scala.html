@@ -16,36 +16,6 @@
 
 <section class="content">
 
-  <div id="editTypeOfBoardModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editTypeOfBoardModalTitle">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 id="editTypeOfBoardModalTitle" class="modal-title">Edit Type of Board</h4>
-        </div>
-        <div class="modal-body">
-          <form id="editTypeOfBoard">
-            <label id="typeOfBoardId" style="display: block">ID</label>
-            <input class="form-group form-control" placeholder="Name" title="Name" type="text" name="name">
-            <input class="form-group form-control" placeholder="Target name" title="Target name" type="text" name="compiler_target_name">
-            <input class="form-group form-control" placeholder="Description" title="Description" type="text" name="description">
-            <input class="form-group form-control" placeholder="Producer id" title="Producer id" type="text" name="producer_id">
-            <input class="form-group form-control" placeholder="Processor id" title="Processor id" type="text" name="processor_id">
-            <div class="checkbox form-group">
-              <label>
-                <input type="checkbox" name="connectible_to_internet">
-                Connectible to internet
-              </label>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
-          <button id="editTypeOfBoardButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBoard(this.value)">Save</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div id="createTypeOfBoardModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="createTypeOfBoardModalTitle">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -57,8 +27,18 @@
             <input class="form-group form-control" placeholder="Name" title="Name" type="text" name="name" >
             <input class="form-group form-control" placeholder="Target name" title="Target name" type="text" name="compiler_target_name">
             <input class="form-group form-control" placeholder="Description" title="Description" type="text" name="description">
-            <input class="form-group form-control" placeholder="Producer id" title="Producer id" type="text" name="producer_id">
-            <input class="form-group form-control" placeholder="Processor id" title="Processor id" type="text" name="processor_id">
+            <select title="Producer" class="form-control form-group select2" name="producer_id">
+              <option selected="selected" disabled>Choose producer</option>
+              @for(producer <- Model_Producer.find.all()){
+                  <option value="@producer.id">@producer.name</option>
+              }
+            </select>
+            <select title="Producer" class="form-control form-group select2" name="processor_id">
+              <option selected="selected" disabled>Choose producer</option>
+              @for(processor <- Model_Processor.find.all()){
+                <option value="@processor.id">@processor.processor_name</option>
+              }
+            </select>
             <div class="checkbox form-group">
               <label>
                 <input type="checkbox" name="connectible_to_internet">
@@ -97,7 +77,6 @@
               <th>Internet</th>
               <th>Settings</th>
               <th></th>
-              <th></th>
             </tr>
               @for(typeOfBoard <- Model_TypeOfBoard.find.all()) {
                 <tr>
@@ -127,8 +106,7 @@
                     <span class="label label-danger">False</span>
                   }
                   </td>
-                  <td><a href='@routes.Controller_Dashboard.bootloader_management(typeOfBoard.id)'><button class="btn btn-xs btn-block btn-info" type="button">Open</button></a></td>
-                  <td><button class="btn btn-xs btn-block btn-info"   type="button" title="Edit" data-toggle="modal" data-target="#editTypeOfBoardModal" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.compiler_target_name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor_id()', '@typeOfBoard.connectible_to_internet')"><i class="fa fa-wrench"></i></button></td>
+                  <td><a href='@routes.Controller_Dashboard.bootloader_management(typeOfBoard.id)'><button class="btn btn-xs btn-block btn-info" type="button"><i class="fa fa-wrench"></i></button></a></td>
                   <td><button class="btn btn-xs btn-block btn-danger" type="button" title="Delete" onclick="deleteTypeOfBoard(@typeOfBoard.id)"><i class="fa fa-times"></i></button></td>
                 </tr>
               }
@@ -346,39 +324,6 @@
             }
           })
         }
-
-        function editTypeOfBoard(id){
-          model_data = $("#editTypeOfBoard").serializeObject();
-
-          $.ajax({
-            url: '@routes.Controller_Board.typeOfBoard_update("")' + id ,
-            type: 'PUT',
-            contentType: 'application/json',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
-            },
-            data: JSON.stringify(model_data),
-            dataType: 'json',
-            success:function(e){
-              $("#editTypeOfBoard input[type=text]").val("");
-              $("#editTypeOfBoardModal").css("display","none");
-              $('#allTypesOfBoards').load(document.URL +  ' #allTypesOfBoards');
-            },
-            error:function(data) {
-              BootstrapDialog.show({
-                message:  syntaxHighlight(data),
-                type: BootstrapDialog.TYPE_DANGER,
-                buttons: [{
-                  label: 'Close',
-                  action: function(dialogItself){
-                    dialogItself.close();
-                  }
-                }]
-
-              });
-            }
-          })}
 
         function deleteTypeOfBoard(id){
 
