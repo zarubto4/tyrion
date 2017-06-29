@@ -4,18 +4,32 @@
 @import utilities.wiki.Wiki
 @import utilities.enums.Enum_Tyrion_Server_mode
 
+@(request: String)
+
     <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
         <section class="sidebar">
         <!-- sidebar menu: : style can be found in sidebar.less -->
             <ul class="sidebar-menu">
                 <li class="header">MAIN NAVIGATION</li>
-
-                <li>
+                @if(request.equals("/")) {
+                    <li class="active">
+                } else {
+                    <li>
+                }
                     <a href='@routes.Controller_Dashboard.index()' >
                         <i class="fa fa-globe"></i> <span>Dashboard</span>
                     </a>
                 </li>
+                @if(request.equals("/admin/bugs")){
+                <li class="treeview active">
+                    <a href="#">
+                        <i class="fa fa-bug"></i> <span>Bugs</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu active menu-open">
+                        <li class="active">
+                } else {
                 <li class="treeview">
                     <a href="#">
                         <i class="fa fa-bug"></i> <span>Bugs</span>
@@ -23,6 +37,7 @@
                     </a>
                     <ul class="treeview-menu">
                         <li>
+                }
                             <a href='/admin/bugs'>
                                 <i class="fa  fa-bug"></i> <span>Bug Reporting</span>
                                 @if( Server_Logger.number_of_reported_errors() > 0) { <small class="label pull-right bg-red">@Server_Logger.number_of_reported_errors()</small>}
@@ -36,7 +51,6 @@
                         </li>
                     </ul>
                 </li>
-
                 @if(Server.server_mode == Enum_Tyrion_Server_mode.developer || Server.server_mode == Enum_Tyrion_Server_mode.stage){
                 <li class="treeview">
                     <a href="#">
@@ -44,7 +58,6 @@
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-
                         <li class="treeview">
                             <a href="#">
                                 <i class="fa fa-share"></i> <span>External API</span>
@@ -65,32 +78,27 @@
                                 <li><a href='@routes.Controller_Dashboard.show_diff_on_Api()' ><i class="fa fa-circle-o"></i> Diff Tools </a></li>
                             </ul>
                         </li>
-
                         <li>
                             <a href='@routes.Controller_Dashboard.show_readme()' >
                                 <i class="fa fa-graduation-cap"></i> <span>Read Me</span>
                             </a>
                         </li>
-
                         <li>
                             <a href='/admin/test' >
                                 <i class="fa fa-gears"></i> <span>Tests</span>
                             </a>
                         </li>
-
                         <li>
                             <a href='@routes.Controller_Dashboard.show_web_socket_stats()' >
                                 <i class="fa fa-heart"></i> <span>Websocket connections</span>
                                 <small class="label pull-right bg-yellow">  @( Controller_WebSocket.becki_website.size()  + Controller_WebSocket.compiler_cloud_servers.size() + Controller_WebSocket.homer_servers.size()) </small>
                             </a>
                         </li>
-
                         <li>
                             <a href='@routes.Controller_Dashboard.demo_data()' >
                                 <i class="fa fa-bomb"></i> <span>Demo Data</span>
                             </a>
                         </li>
-
                     </ul>
                 </li>
                 }else{
@@ -102,12 +110,22 @@
                     </li>
                 }
 
+                @if(request.contains("wiki")){
+                <li class="treeview active">
+                    <a href="#">
+                        <i class="fa fa-graduation-cap"></i> <span>Wiki documentation</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu active menu-open">
+                } else {
                 <li class="treeview">
                     <a href="#">
                         <i class="fa fa-graduation-cap"></i> <span>Wiki documentation</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
+                }
+
                         <li>
                             <a href="http://wiki.byzance.cz">
                                 <i class="fa fa-wikipedia-w"></i> <span>External wiki</span>
@@ -168,27 +186,65 @@
                     </ul>
                 </li>
 
+                @if(request.contains("board") ||
+                    request.contains("mac_address_generator") ||
+                    request.contains("grid") ||
+                    request.contains("blocko") ||
+                    request.contains("c_program") ||
+                    request.contains("library") ||
+                    request.contains("tariff") ||
+                    request.contains("settings") ||
+                    request.contains("summary") ||
+                    request.contains("external_servers")){
+
+                    <li class="treeview active">
+                        <a href="#">
+                            <i class="fa fa-share"></i> <span>Server Management</span>
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </a>
+                        <ul class="treeview-menu active menu-open">
+                } else {
                 <li class="treeview">
                     <a href="#">
                         <i class="fa fa-share"></i> <span>Server Management</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
+                }
 
+                    @if(request.contains("board") || request.contains("mac_address") || request.contains("bootloader")) {
+                        <li class="active">
+                            <a href="#"><i class="fa fa-wrench"></i> HW Management <i class="fa fa-angle-left pull-right"></i></a>
+                            <ul class="treeview-menu active menu-open">
+                    } else {
                         <li>
                             <a href="#"><i class="fa fa-wrench"></i> HW Management <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
+                    }
+                            @if(request.contains("board_settings") || request.contains("bootloader")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.basic_board_management()' >
                                         <i class="fa fa-wrench"></i> <span>Boards Type Management</span>
                                     </a>
                                 </li>
+
+                            @if(request.contains("board_summary") || request.contains("board_detail")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.board_summary()' >
                                         <i class="fa fa-wrench"></i> <span>Boards summary</span>
                                     </a>
                                 </li>
+                            @if(request.contains("mac_address_generator")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.mac_address_generator()' >
                                         <i class="fa fa-wrench"></i> <span>Mac Address Generator</span>
                                     </a>
@@ -197,70 +253,129 @@
                         </li>
 
 
+                    @if(request.contains("grid")) {
+                        <li class="active">
+                            <a href="#"><i class="fa fa-wrench"></i> Grid Management <i class="fa fa-angle-left pull-right"></i></a>
+                            <ul class="treeview-menu active menu-open">
+                    } else {
                         <li>
                             <a href="#"><i class="fa fa-wrench"></i> Grid Management <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
+                    }
+                            @if(request.contains("grid_management")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.grid_management()' >
                                         <i class="fa fa-wrench"></i> <span>Grid Object Settings</span>
                                     </a>
                                 </li>
+                            @if(request.contains("grid_public")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.grid_public()' >
                                         <i class="fa fa-wrench"></i> <span>Public Object Approval</span>
                                     </a>
                                 </li>
                             </ul>
                         </li>
-
+                    @if(request.contains("blocko")) {
+                        <li class="active">
+                            <a href="#"><i class="fa fa-wrench"></i> Blocko Management <i class="fa fa-angle-left pull-right"></i></a>
+                            <ul class="treeview-menu active menu-open">
+                    } else {
                         <li>
                             <a href="#"><i class="fa fa-wrench"></i> Blocko Management <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
+                    }
+
+                            @if(request.contains("blocko_management")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.blocko_management()' >
                                         <i class="fa fa-wrench"></i> <span>Blocko Object Settings</span>
                                     </a>
                                 </li>
+                            @if(request.contains("blocko_objects")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.blocko_objects()' >
                                         <i class="fa fa-wrench"></i> <span>Public Object Approval</span>
                                     </a>
                                 </li>
                             </ul>
                         </li>
+
+                    @if(request.contains("c_program") || request.contains("library")) {
+                        <li class="active">
+                            <a href="#"><i class="fa fa-wrench"></i> C Program Management <i class="fa fa-angle-left pull-right"></i></a>
+                            <ul class="treeview-menu active menu-open">
+                    } else {
                         <li>
                             <a href="#"><i class="fa fa-wrench"></i> C Program Management <i class="fa fa-angle-left pull-right"></i></a>
                             <ul class="treeview-menu">
+                    }
+                            @if(request.contains("c_program/public")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.public_c_code_list()'>
                                         <i class="fa fa-wrench"></i> <span>Public Firmware Code</span>
                                     </a>
                                 </li>
 
+                            @if(request.contains("c_program/aprove")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.public_code_approve_procedure_list()'>
                                         <i class="fa fa-wrench"></i> <span>Approval Community Code</span>
                                     </a>
                                 </li>
 
+                            @if(request.contains("library")) {
+                                <li class="active">
+                            } else {
                                 <li>
+                            }
                                     <a href='@routes.Controller_Dashboard.public_libraries()' >
                                         <i class="fa fa-wrench"></i> <span>Public Libraries</span>
                                     </a>
                                 </li>
                             </ul>
                         </li>
+                    @if(request.contains("tariff")) {
+                        <li class="active">
+                    } else {
                         <li>
+                    }
                             <a href='@routes.Controller_Dashboard.tariffs()'>
                                 <i class="fa fa-wrench"></i> <span>Tariff Management</span>
                             </a>
                         </li>
+                    @if(request.contains("external_servers")) {
+                        <li class="active">
+                    } else {
                         <li>
+                    }
                             <a href='@routes.Controller_Dashboard.external_servers()'>
                                 <i class="fa fa-wrench"></i> <span>External servers</span>
                             </a>
                         </li>
+                    @if(request.contains("permission")) {
+                        <li class="active">
+                    } else {
                         <li>
+                    }
                             <a href='@routes.Controller_Dashboard.permissions_summary()'>
                                 <i class="fa fa-wrench"></i> <span>System Roles & Permissions</span>
                             </a>
@@ -289,7 +404,11 @@
 
                     </ul>
                 </li>
-                <li>
+                @if(request.contains("helpdesk_tool")) {
+                    <li class="active">
+                } else {
+                    <li>
+                }
                     <a href='@routes.Controller_Dashboard.user_summary("")'>
                         <i class="fa fa-wrench"></i> <span>Helpdesk Tool</span>
                     </a>
@@ -299,4 +418,4 @@
         </section>
 
     <!-- /.sidebar -->
-    </aside>@import utilities.logger.Server_Logger
+    </aside>

@@ -1,7 +1,7 @@
 @import utilities.Server
 @import utilities.enums.Enum_Tyrion_Server_mode
 
-@(content: Html)
+@(request: String, content: Html)
 
 
 <!DOCTYPE html>
@@ -196,7 +196,7 @@
                 </header>
 
                     <!-- Left side column. contains the logo and sidebar -->
-                    @views.html.common.menu()
+                    @views.html.common.menu(request)
 
                     <!-- Content Wrapper. Contains page content -->
                 <div class="content-wrapper">

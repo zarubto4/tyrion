@@ -103,10 +103,10 @@
                                     <p class="lead text-red">False</p>
                                 }</td>
                                 <td>
-                                    @if(type_of_board.version_scheme == null || type_of_board.version_scheme.default_main_version != null){
-                                        C_Program has not set Version!
-                                    }else{
+                                    @if(type_of_board.version_scheme != null && type_of_board.version_scheme.default_main_version != null){
                                         @type_of_board.version_scheme.default_main_version.version_name
+                                    }else{
+                                        C_Program has not set Version!
                                     }
                                 </td>
 

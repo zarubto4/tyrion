@@ -7,6 +7,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import controllers.Controller_Dashboard;
 import controllers.Controller_Security;
 import models.Model_LoggyError;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,9 @@ public class Server_Logger extends Controller {
 
     @Inject
     private static WSClient wsClient; // používat přes getWSClient()
+
+    @Inject
+    Controller_Dashboard dashboard;
 
     private static String token = "";       // token na youtrack
     private static long tokenExpire = 0;    // kdy expiruje token na youtrack
@@ -224,7 +228,7 @@ public class Server_Logger extends Controller {
     // Vykreslí šablonu s bugy
     public Result show_all_logs() {
         Html content =  loggy.render( Server_Logger.getErrors() );
-        return ok( main.render(content) );
+        return dashboard.return_page(content);
     }
 
     // Nahraje konkrétní bug na Youtrack

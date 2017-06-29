@@ -87,15 +87,15 @@ public class Controller_Dashboard extends Controller {
 // Index (úvod) ########################################################################################################
 
     // Pomocná metoda, která skládá jednotlivé stránky dohromady
-    public Result return_page( Html content){
-        return ok( main.render(content) );
+    public Result return_page(Html content){
+        return ok(main.render(request().path(), content));
     }
 
     // Úvodní zobrazení Dashboard
     public Result index() {
 
         Html content_html = dashboard.render();
-        return ok( main.render(content_html) );
+        return return_page(content_html);
     }
 
 // README ###############################################################################################################
