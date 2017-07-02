@@ -22,11 +22,10 @@ import utilities.logger.Class_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.swagger.documentationClass.Swagger_GridWidgetVersion_GridApp_source;
 import utilities.swagger.outboundClass.Swagger_Mobile_Connection_Summary;
-import web_socket.message_objects.homer_instance.WS_Message_Grid_token_verification;
+import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 
 import javax.persistence.*;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.util.*;
 
 

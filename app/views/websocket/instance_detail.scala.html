@@ -57,20 +57,6 @@
                             </li>
                         }
 
-                        @if(instance.project != null) {
-
-                            <li class="list-group-item">
-                                <b>Project ID:: </b>
-                                @instance.project.id
-                            </li>
-
-                            <li class="list-group-item">
-                                <b>Project Název:: </b>
-                                @instance.project.name
-                            </li>
-                        }
-
-
 
                         @if(instance.actual_instance != null) {
                             <li class="list-group-item">
@@ -196,41 +182,6 @@
 
                     }
 
-                }
-            }else {
-                @for(x <- instance.getBoards_in_virtual_instance()){
-                    <div class="box box-primary">
-                        <div class="box-body table-responsive no-padding">
-                            <div class="box-header">
-                                <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.id ' > @x.id </a>  </h3>
-                                <div class="pull-right">
-                                    <div class="btn-group">
-
-                                        @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.id  ).findUnique() != null){
-                                            @if(Model_Board.get_byId( x.id ).update_boot_loader_required()) {
-                                                <a  onclick="updateBootLoader('@x.id')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
-                                            }else {
-                                                <p class="lead text-green">(Actual)</p>
-                                                <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
-                                            }
-                                        }else{
-                                            <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
-                                        }
-
-                                    <a onclick="executeCommand('@x.id ','@Enum_type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
-
-                                        @if(Model_Board.find.byId(x.id) == null) {
-                                            <a onclick="showCommandDeviceModal('@x.id ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                        }else{
-                                            <a onclick="showCommandDeviceModal('@x.id ', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                        }
-                                    <a onclick="showAddDeviceModal('@x.id ')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
-                                    <a onclick="removeMasterDevice('@x.id ')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 }
             }
             </div>
@@ -1029,64 +980,6 @@
                               }
                           }]
 
-                      });
-                  }
-              })
-          }
-
-          function addMasterDevice(){
-
-              var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
-
-              $.ajax({
-                  url: '@routes.Controller_Blocko.instance_add_yoda( instance.id, "")' + master_device_id,
-                  type: 'PUT',
-                  headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken")
-                  },
-                  success:function(e){
-
-                      $("#addMasterDeviceModal").css("display","none");
-                      $('#device_summary_table').load(document.URL +  ' #device_summary_table');
-
-                  },
-                  error:function(data) {
-                      BootstrapDialog.show({
-                          message: syntaxHighlight(data),
-                          type: BootstrapDialog.TYPE_ERROR,
-                          buttons: [{
-                              label: 'Close',
-                              action: function(dialogItself) {
-                                  dialogItself.close();
-                              }
-                          }]
-
-                      });
-                  }
-              })
-          }
-
-          function removeMasterDevice(id){
-
-              $.ajax({
-                  url: '@routes.Controller_Blocko.instance_remove_yoda( instance.id, "" )' + id,
-                  type: 'PUT',
-                  headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken")
-                  },
-                  success:function(e){
-                      $('#device_summary_table').load(document.URL +  ' #device_summary_table');
-                  },
-                  error:function(data) {
-                      BootstrapDialog.show({
-                          message: syntaxHighlight(data),
-                          type: BootstrapDialog.TYPE_ERROR,
-                          buttons: [{
-                              label: 'Close',
-                              action: function(dialogItself) {
-                                  dialogItself.close();
-                              }
-                          }]
                       });
                   }
               })

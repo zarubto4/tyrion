@@ -45,7 +45,7 @@ public class Model_Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")                            public List<Model_ProjectParticipant>      participants      = new ArrayList<>();
 
     // reference na Fake Instanci - kam připojuji Yody q- pokud nejsou připojení do vlastní instnace vytvořené v blocko programu
-    @JsonIgnore @OneToOne(fetch = FetchType.EAGER)  public Model_HomerInstance private_instance;
+
     @JsonIgnore @ManyToOne(fetch = FetchType.EAGER) public Model_Product product;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -100,12 +100,6 @@ public class Model_Project extends Model {
             if (Model_Project.find.byId(this.id) == null) break;
         }
 
-        Model_HomerInstance instance = new Model_HomerInstance();
-        instance.instance_type = Enum_Homer_instance_type.VIRTUAL;
-        instance.cloud_homer_server = Model_HomerServer.get_destination_server();
-        instance.save();
-
-        this.private_instance = instance;
         super.save();
     }
 

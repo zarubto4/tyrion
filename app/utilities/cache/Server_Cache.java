@@ -120,11 +120,13 @@ public class Server_Cache {
          *    Cache for Model_HomerInstance
          */
 
+            /**
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Instance status");
             Model_HomerInstance.cache_status = cacheManager.createCache(Model_HomerInstance.CACHE_STATUS,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerInstance.CACHE_STATUS")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
+            */
 
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Instance status");
             Model_HomerInstance.cache = cacheManager.createCache(Model_HomerInstance.CACHE,

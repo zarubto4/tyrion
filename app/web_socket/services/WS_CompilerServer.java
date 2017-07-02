@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.Model_CompilationServer;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Rejection_homer_server;
-
-import java.util.HashMap;
-import java.util.Map;
+import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Homer_Rejection;
 
 public class WS_CompilerServer extends WS_Interface_type {
 
@@ -119,7 +116,7 @@ public class WS_CompilerServer extends WS_Interface_type {
             terminal_logger.warn("WS_HomerServer:: onMessage:: This Websocket is not confirm");
 
             //security_token_confirm_procedure();
-            super.write_without_confirmation(new WS_Message_Rejection_homer_server().make_request());
+            super.write_without_confirmation(new WS_Message_Homer_Rejection().make_request());
             return;
         }
 

@@ -203,7 +203,7 @@ public class Model_BProgram extends Model {
 
       terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
-      instance.remove_instance_from_server();
+      instance.remove_from_cloud();
       instance.removed_by_user = true;
       instance.update();
 

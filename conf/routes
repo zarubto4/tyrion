@@ -186,13 +186,7 @@ PUT       /instance/update/:instance_id                                 @control
 GET       /instance_record/get/:instance_record_id                      @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
 
 
-
-PUT       /instance/command/:instance_id/:target_id/:command            @controllers.Controller_Blocko.send_command_to_instance(instance_id, target_id, command)
 PUT       /instance/program/:instance_id                                @controllers.Controller_Blocko.update_blocko_code_in_instance_with_code(instance_id)
-PUT       /instance/ping/:instance_id                                   @controllers.Controller_Blocko.ping_instance(instance_id)
-PUT       /instance/temporary_instance                                  @controllers.Controller_Blocko.instance_add_temporary_instance()
-PUT       /instance/add_yoda/:instance_id/:yoda_id                      @controllers.Controller_Blocko.instance_add_yoda(instance_id, yoda_id)
-PUT       /instance/remove_yoda/:instance_id/:yoda_id                   @controllers.Controller_Blocko.instance_remove_yoda(instance_id, yoda_id)
 PUT       /instance/add_device/:instance_id/:yoda_id/:device_id         @controllers.Controller_Blocko.instance_add_device(instance_id, yoda_id, device_id)
 PUT       /instance/remove_device/:instance_id/:yoda_id/:device_id      @controllers.Controller_Blocko.instance_remove_device(instance_id, yoda_id, device_id)
 PUT       /instance/uploadToCloud/:version_id                           @controllers.Controller_Blocko.upload_b_Program_ToCloud(version_id)
@@ -557,8 +551,6 @@ GET       /admin/bug/remove/:id                                         @utiliti
 GET       /admin/bug/report/:id                                         @utilities.logger.Server_Logger.loggy_report_bug_to_youtrack(id: String)
 
 # WEBSOCKET SERVISE PAGE
-GET       /admin/instance/ping/:id                                      @controllers.Controller_Dashboard.ping_homer_instance(id: String)
-
 GET       /admin/homer_server/ping/:id                                  @controllers.Controller_Dashboard.ping_homer_server(id)
 GET       /admin/homer_server/disconnect/:id                            @controllers.Controller_Dashboard.disconnect_blocko_server(id)
 

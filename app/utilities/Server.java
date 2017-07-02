@@ -15,7 +15,6 @@ import utilities.financial.fakturoid.Fakturoid_InvoiceCheck;
 import utilities.financial.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.grid_support.utils.IP_Founder;
-import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.logger.Class_Logger;
 import utilities.notifications.NotificationHandler;
 import utilities.scheduler.CustomScheduler;
@@ -351,9 +350,6 @@ public class Server {
     }
 
     public static void startThreads() {
-
-        //1. Nastartovat aktualizační vlákna
-        Utilities_HW_Updater_Master_thread_updater.start_thread_box();
 
         //1. Nastartovat notifikační vlákno
         NotificationHandler.startNotificationThread();

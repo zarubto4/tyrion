@@ -11,8 +11,9 @@ import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
-import web_socket.message_objects.homer_instance.WS_Message_UpdateProcedure_progress;
-import web_socket.message_objects.homer_instance.WS_Message_UpdateProcedure_result;
+import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
+import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_progress;
+import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Result;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -144,6 +145,36 @@ public class Model_CProgramUpdatePlan extends Model {
         return detail;
     }
 
+    @JsonIgnore public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server(){
+        try {
+
+            Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
+            brief_for_homer.actualization_procedure_id = actualization_procedure.id;
+            brief_for_homer.c_program_update_plan_id = id;
+            brief_for_homer.device_id = board.id;
+            brief_for_homer.type_of_update = actualization_procedure.type_of_update;
+
+            if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP){
+                brief_for_homer.blob_link =  c_program_version_for_update.c_compilation.bin_compilation_file.file_path;
+                brief_for_homer.build_id =  c_program_version_for_update.c_compilation.firmware_build_id;
+            }
+            else if(firmware_type == Enum_Firmware_type.BOOTLOADER){
+                brief_for_homer.blob_link = bootloader.file.file_path;
+                brief_for_homer.build_id = bootloader.version_identificator;
+            }
+            else{
+                brief_for_homer.blob_link = binary_file.file_path;
+                brief_for_homer.build_id = "TODO";
+            }
+
+            return brief_for_homer;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -226,7 +257,7 @@ public class Model_CProgramUpdatePlan extends Model {
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public static void update_procedure_progress(WS_Message_UpdateProcedure_progress progress_message){
+    public static void update_procedure_progress(WS_Message_Hardware_UpdateProcedure_progress progress_message){
         try {
 
             if(progress_message.percentageProgress == null || progress_message.percentageProgress < 1) return;
@@ -319,7 +350,7 @@ public class Model_CProgramUpdatePlan extends Model {
     }
 
     @JsonIgnore @Transient
-    public static void update_procedure_state(WS_Message_UpdateProcedure_result procedure_result){
+    public static void update_procedure_state(WS_Message_Hardware_UpdateProcedure_Result procedure_result){
         try{
 
             terminal_logger.trace("update_procedure_state: Got quick update about progress of bigger update procedure");

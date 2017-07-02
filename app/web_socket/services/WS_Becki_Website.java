@@ -173,8 +173,8 @@ public class WS_Becki_Website extends WS_Interface_type {
             terminal_logger.warn(""+ identifikator + " Incoming message has not messageChannel!!!!" + json.toString());
         }
     }
-    
-    public static void Messages_HomerInstance(WS_HomerServer homer, ObjectNode json){
+
+    public static void Messages(WS_HomerServer homer, ObjectNode json){
         terminal_logger.warn("Messages_HomerInstance: Message from Homer server {} Incoming message from server to Becki has not implemented !!!! Message {}", homer.get_identificator(), json.toString());
     }
 

@@ -23,7 +23,7 @@ import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_Library_Record;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
 import utilities.swagger.outboundClass.*;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compilation;
 
 import javax.persistence.*;
 import java.net.ConnectException;
@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import static com.avaje.ebeaninternal.util.SortByClause.ASC;
 
 @Entity
 @ApiModel( value = "Version_Object", description = "Model of Version_Object")

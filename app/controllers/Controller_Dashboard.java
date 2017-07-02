@@ -52,8 +52,7 @@ import views.html.websocket.instance_detail;
 import views.html.websocket.websocket;
 import views.html.websocket.websocket_homer_server_detail;
 import views.html.wiki.wiki;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
-import web_socket.message_objects.homer_instance.WS_Message_Ping_instance;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 import web_socket.services.WS_Becki_Website;
 
 import javax.inject.Inject;
@@ -296,18 +295,6 @@ public class Controller_Dashboard extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-    public Result ping_homer_instance(String instance_id) {
-        try {
-
-            Model_HomerInstance instance = Model_HomerInstance.find.where().eq("id", instance_id).findUnique();
-            WS_Message_Ping_instance result = instance.ping();
-            return GlobalResult.result_ok(Json.toJson(result));
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
 
     public Result ping_compilation_server(String identificator) {
         try {

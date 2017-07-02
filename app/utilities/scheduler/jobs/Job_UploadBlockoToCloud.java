@@ -1,6 +1,5 @@
 package utilities.scheduler.jobs;
 
-import models.Model_HomerInstance;
 import models.Model_HomerInstanceRecord;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -48,8 +47,7 @@ public class Job_UploadBlockoToCloud implements Job {
 
                 terminal_logger.trace("upload_blocko_thread: uploading the record");
 
-                Model_HomerInstance.upload_record(record);
-
+                record.set_record_into_cloud();
 
             } catch (Exception e) {
                 terminal_logger.internalServerError(e);

@@ -2,7 +2,6 @@ package controllers;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
@@ -14,7 +13,6 @@ import play.mvc.Security;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
-import utilities.enums.Enum_type_of_command;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -30,8 +28,8 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import web_socket.message_objects.homer_instance.*;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
+import web_socket.message_objects.homer_instance_with_tyrion.*;
+import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_destroy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -721,7 +719,7 @@ public class Controller_Blocko extends Controller{
             if(help.upload_time == null){
 
                 terminal_logger.debug("upload_b_Program_ToCloud:: Set the instants immediately");
-                Model_HomerInstance.upload_record(record);
+                record.set_record_into_cloud();
 
             }else {
                 terminal_logger.debug("upload_b_Program_ToCloud:: Set the instants by Time scheduler (not now) ");
@@ -823,7 +821,8 @@ public class Controller_Blocko extends Controller{
             if(homer_instance.actual_instance != null){
 
                 if(homer_instance.instance_online()){
-                    WS_Message_Destroy_instance result = homer_instance.remove_instance_from_server();
+
+                    WS_Message_Instance_destroy result = homer_instance.remove_from_cloud();
                 }
 
                 homer_instance.actual_instance = null;
@@ -841,7 +840,7 @@ public class Controller_Blocko extends Controller{
                 homer_instance.actual_instance = homer_instance.instance_history.get(0);
                 homer_instance.update();
 
-                homer_instance.update_instance_to_actual_instance_record();
+                homer_instance.actual_instance.set_record_into_cloud();
 
                 return GlobalResult.result_ok();
 
@@ -854,7 +853,7 @@ public class Controller_Blocko extends Controller{
 
     @ApiOperation(value = "get Instances by Project",
             tags = {"Instance"},
-            notes = "get list of instances details under project id",
+            notes = "get list of instance_ids details under project id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1084,46 +1083,6 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result ping_instance(String instance_name){
-        try{
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id",instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if(!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
-
-            WS_Message_Ping_instance result = homer_instance.ping();
-
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest(Json.toJson(result));
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_add_temporary_instance(){
-        try{
-
-            // Zpracování Json
-            final Form<Swagger_Instance_Temporary> form = Form.form(Swagger_Instance_Temporary.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_Instance_Temporary help = form.get();
-
-            Model_HomerServer server = Model_HomerServer.get_byId(help.unique_identificator);
-            if(server == null) return GlobalResult.result_notFound("Server not found");
-
-                // JsonNode result = server.add_temporary_instance(help.instance_name);
-
-                // if(result.get("status").asText().equals("success")) return GlobalResult.result_ok(result);
-            else return GlobalResult.result_badRequest("");
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
     @ApiOperation(value = "upload B Program (code) to instnace ", hidden = true)
     public Result update_blocko_code_in_instance_with_code(String instance_name){
         try{
@@ -1152,45 +1111,6 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_add_yoda(String instance_name, String yoda_id){
-        try{
-
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
-
-            WS_Message_Add_yoda_to_instance result = homer_instance.add_Yoda_to_instance( yoda_id);
-
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_remove_yoda(String instance_name, String yoda_id){
-        try{
-
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
-
-            WS_Message_Remove_yoda_from_instance result = homer_instance.remove_Yoda_from_instance(yoda_id);
-
-
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
 
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
     public Result instance_add_device(String instance_name, String yoda_id, String device_id){
@@ -1207,7 +1127,7 @@ public class Controller_Blocko extends Controller{
             if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
 
 
-            WS_Message_Add_device_to_instance result = homer_instance.add_Device_to_instance(yoda_id, list_of_devices);
+            WS_Message_Instance_device_add result = homer_instance.add_device_to_instance(list_of_devices);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_badRequest();
@@ -1231,7 +1151,7 @@ public class Controller_Blocko extends Controller{
             if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
 
 
-            WS_Message_Remove_device_from_instance result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
+            WS_Message_Instance_device_remove result = homer_instance.remove_device_from_instance(list_of_devices);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_badRequest();
@@ -1241,33 +1161,6 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "send command to instance", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
-    public Result send_command_to_instance(String instance_name, String target_id, String string_command){
-        try{
-
-            // Kontrola oprávnění
-            Model_Board board = Model_Board.get_byId(target_id);
-            if (board == null) return GlobalResult.result_notFound("Board targetId not found");
-
-            // Kontrola objektu
-            Enum_type_of_command command = Enum_type_of_command.getTypeCommand(string_command);
-            if(command == null) return GlobalResult.result_notFound("Command not found!");
-
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            JsonNode result = homer_instance.devices_commands(target_id, command);
-
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest(result);
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-
-    }
 
 // TYPE OF BLOCK #######################################################################################################
 

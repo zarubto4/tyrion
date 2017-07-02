@@ -5,8 +5,8 @@ import models.Model_HomerServer;
 import play.data.Form;
 import play.i18n.Lang;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Approve_homer_server;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Check_homer_server_permission;
+import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Homer_Approve_homer_server;
+import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 import web_socket.services.WS_HomerServer;
 
 import java.nio.channels.ClosedChannelException;
@@ -62,12 +62,12 @@ public class Security_WS_token_confirm_procedure extends Thread {
                     continue;
                 }
 
-                ObjectNode approve_result = server.super_write_with_confirmation(new WS_Message_Approve_homer_server().make_request(), 1000 * 5, 0, 2);
-                final Form<WS_Message_Approve_homer_server> form_approve = Form.form(WS_Message_Approve_homer_server.class).bind(ask_for_token);
-                if (form_approve.hasErrors()) throw new Exception("WS_Message_Approve_homer_server: Invalid body: " + form_approve.errorsAsJson(Lang.forCode("en-US")).toString());
+                ObjectNode approve_result = server.super_write_with_confirmation(new WS_Message_Homer_Approve_homer_server().make_request(), 1000 * 5, 0, 2);
+                final Form<WS_Message_Homer_Approve_homer_server> form_approve = Form.form(WS_Message_Homer_Approve_homer_server.class).bind(ask_for_token);
+                if (form_approve.hasErrors()) throw new Exception("WS_Message_Homer_Approve_homer_server: Invalid body: " + form_approve.errorsAsJson(Lang.forCode("en-US")).toString());
 
                 // Vytovření objektu
-                WS_Message_Approve_homer_server help_approve = form_approve.get();
+                WS_Message_Homer_Approve_homer_server help_approve = form_approve.get();
 
                 // TODO tady nic nedělám s tím jestli se to povedlo nebo ne???
 
@@ -77,10 +77,6 @@ public class Security_WS_token_confirm_procedure extends Thread {
 
                 // Sesynchronizuj Configuraci serveru s tím co ví a co zná Tyrion
                 server.synchronize_configuration();
-
-                // GET state - a vyhodnocením v jakém stavu se cloud_blocko_server nachází a popřípadě
-                // na něj nahraji nebo smažu nekonzistenntí clou dprogramy, které by na něm měly být
-                Model_HomerServer.get_byId(server.identifikator).check_after_connection();
 
                 terminal_logger.trace("run:: Connection procedure done!");
                 break;

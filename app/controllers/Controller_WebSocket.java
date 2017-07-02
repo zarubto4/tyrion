@@ -21,8 +21,8 @@ import utilities.response.response_objects.Result_Unauthorized;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
 import web_socket.message_objects.common.WS_Token;
 import web_socket.message_objects.common.service_class.WS_Message_Tyrion_restart_echo;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Ping_server;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Ping_compilation_server;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_ping;
 import web_socket.services.*;
 
 import java.util.HashMap;
@@ -134,7 +134,7 @@ public class Controller_WebSocket extends Controller {
                 terminal_logger.warn("homer_cloud_server_connection::  Server is connected -> Tyrion try to send ping");
 
                 WS_HomerServer ws_blockoServer = homer_servers.get(unique_identificator);
-                WS_Message_Ping_server result = Model_HomerServer.get_byId(ws_blockoServer.identifikator).ping();
+                WS_Message_Homer_ping result = Model_HomerServer.get_byId(ws_blockoServer.identifikator).ping();
                 if(!result.status.equals("success")){
                     terminal_logger.warn("homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
                     if(homer_servers.containsKey(unique_identificator)){
@@ -328,4 +328,5 @@ public class Controller_WebSocket extends Controller {
             }
         }
     }
+
 }

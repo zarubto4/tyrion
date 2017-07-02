@@ -20,16 +20,19 @@ import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Enum_Log_level;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.enums.Enum_Where_logged_tag;
-import utilities.hardware_updater.helps_objects.Utilities_HW_Updater_Actualization_Task;
-import utilities.independent_threads.Check_Board_Status_after_homer_connection;
-import utilities.independent_threads.Check_Homer_instance_after_connection;
-import utilities.independent_threads.Check_Update_for_hw_on_homer;
-import utilities.independent_threads.SynchronizeHomerServer;
+import utilities.independent_threads.homer_server.Synchronize_Homer_Instance_after_connection;
+import utilities.independent_threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homerServer_with_tyrion.*;
-import web_socket.message_objects.homer_instance.WS_Message_Add_new_instance;
-import web_socket.message_objects.homer_instance.WS_Message_Is_instance_exist;
+import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
+import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Update_device_firmware;
+import web_socket.message_objects.homer_with_tyrion.*;
+import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Check_homer_server_person_permission;
+import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Invalid_person_token_homer_server;
+import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Valid_person_token_homer_server;
+import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_add;
+import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_destroy;
 import web_socket.services.WS_HomerServer;
+import web_socket.services.WS_Interface_type;
 
 import javax.persistence.*;
 import java.util.*;
@@ -50,6 +53,7 @@ public class Model_HomerServer extends Model{
                                        @JsonIgnore              public String hash_certificate;
 
     @JsonIgnore                                                 public String personal_server_name;
+    @Column(columnDefinition = "TEXT")                          public String json_additional_parameter;
 
     @ApiModelProperty(required = true, readOnly = true)         public Integer mqtt_port;              // Přidává se destination_address + "/" mqtt_port
     @ApiModelProperty(required = true, readOnly = true)         public String mqtt_username;
@@ -73,9 +77,6 @@ public class Model_HomerServer extends Model{
 
 
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();
-
-    @JsonIgnore @OneToMany(mappedBy="connected_server", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_Board> latest_know_connected_board = new ArrayList<>();
-
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -232,15 +233,6 @@ public class Model_HomerServer extends Model{
             try {
                 switch (json.get("messageType").asText()) {
 
-                    case WS_Message_Unregistered_device_connected.messageType: {
-
-                        final Form<WS_Message_Unregistered_device_connected> form = Form.form(WS_Message_Unregistered_device_connected.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Unregistered_device_connected: Incoming Json from Homer Server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_Board.un_registered_device_connected(homer, form.get());
-                        return;
-                    }
-
                     case WS_Message_Check_homer_server_person_permission.messageType: {
 
                         final Form<WS_Message_Check_homer_server_person_permission> form = Form.form(WS_Message_Check_homer_server_person_permission.class).bind(json);
@@ -281,6 +273,13 @@ public class Model_HomerServer extends Model{
 
         }).start();
     }
+
+    @JsonIgnore @Transient  public WS_Interface_type sender(){
+        return Controller_WebSocket.homer_servers.get(this.unique_identificator);
+    }
+
+
+    // Permission
 
     @JsonIgnore @Transient  public static void check_person_permission_for_homer_server(WS_HomerServer homer, WS_Message_Check_homer_server_person_permission message){
         try{
@@ -361,107 +360,15 @@ public class Model_HomerServer extends Model{
         }
     }
 
-    @JsonIgnore @Transient  public WS_Message_Get_instance_list get_homer_server_listOfInstance(){
-        try {
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Get_instance_list().make_request(), 1000 * 4, 0, 3);
-            final Form<WS_Message_Get_instance_list> form = Form.form(WS_Message_Get_instance_list.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Get_instance_list: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Get_instance_list();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Get_instance_list();
-        }
-    }
-
-    @JsonIgnore @Transient  public WS_Message_Number_of_instances_homer_server get_homer_server_number_of_instance(){
-        try {
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Number_of_instances_homer_server().make_request(), 1000 * 4, 0, 3);
-            final Form<WS_Message_Number_of_instances_homer_server> form = Form.form(WS_Message_Number_of_instances_homer_server.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Number_of_instances_homer_server: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Number_of_instances_homer_server();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Number_of_instances_homer_server();
-        }
-    }
-
-    @JsonIgnore @Transient  public boolean is_instance_exist(String instance_name){
-        try {
-
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Is_instance_exist().make_request(instance_name), 1000 * 5, 0, 2);
-
-            final Form<WS_Message_Is_instance_exist> form = Form.form(WS_Message_Is_instance_exist.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Is_instance_exist:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-            WS_Message_Is_instance_exist help = form.get();
-
-            return (help.status.equals("success") && help.exist);
-
-        }catch (InterruptedException|TimeoutException e){
-            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
-
-        return false;
-    }
-
-    @JsonIgnore @Transient  public WS_Message_Add_new_instance add_instance(Model_HomerInstance instance){
-        try {
-
-            if (is_instance_exist(instance.id)) return new WS_Message_Add_new_instance();
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Add_new_instance().make_request(instance), 1000 * 5, 0, 3);
-
-            final Form<WS_Message_Add_new_instance> form = Form.form(WS_Message_Add_new_instance.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Add_new_instance: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
-
-        return new WS_Message_Add_new_instance();
-    }
-
-    @JsonIgnore @Transient  public WS_Message_Destroy_instance remove_instance(String instance_name) {
-        try {
-
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node =  get_server_webSocket_connection().write_with_confirmation( new WS_Message_Destroy_instance().make_request(instance_name), 1000 * 5, 0, 3);
-
-            final Form<WS_Message_Destroy_instance> form = Form.form(WS_Message_Destroy_instance.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Destroy_instance: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
-
-        return new WS_Message_Destroy_instance();
-    }
+    // Settings
 
     @JsonIgnore @Transient  public void set_new_configuration_on_homer(){
         try{
 
             if(!server_is_online()) return;
 
-            SynchronizeHomerServer check = new SynchronizeHomerServer(get_server_webSocket_connection());
+            Synchronize_Homer_Synchronize_Settings check = new Synchronize_Homer_Synchronize_Settings(get_server_webSocket_connection());
             check.start();
 
         }catch (Exception e) {
@@ -469,100 +376,151 @@ public class Model_HomerServer extends Model{
         }
     }
 
-    @JsonIgnore @Transient  public  void ask_for_verificationToken(){
+
+    // Get Data
+
+    @JsonIgnore @Transient  public WS_Message_Homer_Instance_list get_homer_server_list_od_instance(){
         try {
-
-            WS_HomerServer homer_server = get_server_webSocket_connection();
-            homer_server.security_token_confirm_procedure();
-
-        }catch (Exception e){
-            terminal_logger.warn("Model-HomerServer:: Server::" + unique_identificator + " is offline");
-        }
-    }
-
-    @JsonIgnore @Transient  public WS_Message_Ping_server ping(){
-        try {
-
             if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Ping_server().make_request(), 1000 * 2, 0, 2);
-
-            final Form<WS_Message_Ping_server> form = Form.form(WS_Message_Ping_server.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Ping_server: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-           return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            terminal_logger.warn("Cloud Homer server {} Id {} is offline!" , personal_server_name , unique_identificator);
-        } catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
-
-        return new WS_Message_Ping_server();
-    }
-
-    @JsonIgnore @Transient  public WS_Message_Is_device_connected is_device_connected(String device_id){
-        try {
-
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Is_device_connected().make_request(device_id), 1000*10, 0, 2);
-
-            final Form<WS_Message_Is_device_connected> form = Form.form(WS_Message_Is_device_connected.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Is_device_connected: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 4, 0, 3);
+            final Form<WS_Message_Homer_Instance_list> form = Form.form(WS_Message_Homer_Instance_list.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Homer_Instance_list: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
-        } catch (InterruptedException|TimeoutException e){
-            terminal_logger.warn("Cloud Homer server {} Id {} is offline!" , personal_server_name , unique_identificator);
-            return new WS_Message_Is_device_connected();
-        } catch (Exception e){
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Homer_Instance_list();
+        }catch (Exception e){
             terminal_logger.internalServerError(e);
-            return new WS_Message_Is_device_connected();
+            return new WS_Message_Homer_Instance_list();
         }
     }
+
+    @JsonIgnore @Transient  public WS_Message_Homer_Hardware_list get_homer_server_list_of_hardware(){
+        try {
+            if(!server_is_online()) throw new InterruptedException();
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 10, 0, 2);
+            final Form<WS_Message_Homer_Hardware_list> form = Form.form(WS_Message_Homer_Hardware_list.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Homer_Hardware_list: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Homer_Hardware_list();
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Homer_Hardware_list();
+        }
+    }
+
+    @JsonIgnore @Transient  public WS_Message_Homer_Instancie_number get_homer_server_number_of_instance(){
+        try {
+            if(!server_is_online()) throw new InterruptedException();
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instancie_number().make_request(), 1000 * 4, 0, 3);
+            final Form<WS_Message_Homer_Instancie_number> form = Form.form(WS_Message_Homer_Instancie_number.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Homer_Instancie_number: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Homer_Instancie_number();
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Homer_Instancie_number();
+        }
+    }
+
+
+    // Add & Remove Instance
+
+    @JsonIgnore @Transient  public WS_Message_Instance_add add_instance(Model_HomerInstance instance){
+        try {
+
+            if(!server_is_online()) throw new InterruptedException();
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Instance_add().make_request(instance.id), 1000 * 5, 0, 3);
+
+            final Form<WS_Message_Instance_add> form = Form.form(WS_Message_Instance_add.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Instance_add: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        }catch (InterruptedException|TimeoutException e){
+            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
+
+        return new WS_Message_Instance_add();
+    }
+
+    @JsonIgnore @Transient  public WS_Message_Instance_destroy remove_instance(List<String> instance_ids) {
+        try {
+
+            if(!server_is_online()) throw new InterruptedException();
+            JsonNode node =  get_server_webSocket_connection().write_with_confirmation( new WS_Message_Instance_destroy().make_request(instance_ids), 1000 * 5, 0, 3);
+
+            final Form<WS_Message_Instance_destroy> form = Form.form(WS_Message_Instance_destroy.class).bind(node);
+
+            return form.get();
+
+        }catch (InterruptedException|TimeoutException e){
+            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
+
+        return new WS_Message_Instance_destroy();
+    }
+
+
+    // Updates
+
+    @JsonIgnore @Transient public WS_Message_Update_device_firmware update_devices_firmware(List<Swagger_UpdatePlan_brief_for_homer> tasks){
+        try {
+
+            JsonNode node = sender().write_with_confirmation(new WS_Message_Update_device_firmware().make_request(tasks), 1000 * 60, 0, 2);
+
+            final Form<WS_Message_Update_device_firmware> form = Form.form(WS_Message_Update_device_firmware.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Update_device_firmware: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        }catch (TimeoutException e){
+            terminal_logger.warn("set_auto_backup: Timeout");
+            return new WS_Message_Update_device_firmware();
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Update_device_firmware();
+        }
+    }
+
+
+    // Supported
 
     @JsonIgnore @Transient  public void is_disconnect(){
         terminal_logger.debug("is_disconnect:: Tyrion lost connection with Homer server: " + unique_identificator);
         make_log_disconnect();
     }
 
-    @JsonIgnore @Transient  public  void add_task(Utilities_HW_Updater_Actualization_Task task){
+    @JsonIgnore @Transient  public WS_Message_Homer_ping ping(){
         try {
 
-           WS_HomerServer server =  Controller_WebSocket.homer_servers.get(this.unique_identificator);
-           server.add_task(task);
+            if(!server_is_online()) throw new InterruptedException();
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_ping().make_request(), 1000 * 2, 0, 2);
 
-        } catch (Exception e){
+            final Form<WS_Message_Homer_ping> form = Form.form(WS_Message_Homer_ping.class).bind(node);
+            if(form.hasErrors()){terminal_logger.error("WS_Add_new_instance:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Homer_ping();}
+
+            return form.get();
+
+        }catch (InterruptedException|TimeoutException e){
+            return new WS_Message_Homer_ping();
+        }catch (Exception e){
             terminal_logger.warn("Cloud Homer server {} Id {} is offline!" , personal_server_name , unique_identificator);
+            return new WS_Message_Homer_ping();
         }
     }
 
-    @JsonIgnore @Transient  public void check_after_connection(){
 
-        terminal_logger.debug("Blocko Server: Starting connection control procedure for instancies");
-
-        Check_Homer_instance_after_connection check = new Check_Homer_instance_after_connection(get_server_webSocket_connection(), this);
-        check.start();
-
-    }
-
-    @JsonIgnore @Transient  public void synchronize_all_device_state_with_cache(){
-
-        terminal_logger.debug("Blocko Server: Starting connection control procedure for devices - synchronize with cache");
-
-        Check_Board_Status_after_homer_connection check = new Check_Board_Status_after_homer_connection(get_server_webSocket_connection(), this);
-        check.start();
-
-    }
-
-
-    @JsonIgnore @Transient  public void check_HW_updates_on_server(){
-
-        terminal_logger.debug("Blocko Server: Starting connection control procedure for hardware updates");
-
-        Check_Update_for_hw_on_homer check = new Check_Update_for_hw_on_homer(get_server_webSocket_connection(), this);
-        check.start();
-
-    }
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 

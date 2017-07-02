@@ -15,6 +15,7 @@ public abstract class WS_AbstractMessage_Instance {
  /* VALUE --------------------------------------------------------------------------------------------------------------*/
 
                            public String instanceId;
+                           public String serverId = null;
 
                            public String messageType;
                            public String messageId;
@@ -22,7 +23,7 @@ public abstract class WS_AbstractMessage_Instance {
                            public String status = "error";
 
     public String error  = null;
-    public Integer errorCode  = null;
+    public Integer error_code = null;
 
     @JsonIgnore @Transient public Model_HomerInstance get_instance(){
 

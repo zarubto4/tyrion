@@ -20,7 +20,7 @@
                     <h3 class="box-title">Filter settings</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                                <button id="addDeviceButton" value="" class="btn btn-success" type="button" onclick="showAddTemporaryInstance()">ADD TEMPORARY INSTANCE</button>
+                                <!--button id="addDeviceButton" value="" class="btn btn-success" type="button" onclick="showAddTemporaryInstance()">ADD TEMPORARY INSTANCE</button-->
                         </div><!-- /.btn-group -->
                     </div><!-- /.pull-right -->
                 </div>
@@ -120,30 +120,7 @@
  <!-- /. MODALS---------------------------------------------------------------------------------------------------------->
 
 
-<div id="addTemporaryInstanceModal" style="display: none;" class="modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Add Device</h4>
-            </div>
 
-            <div class="modal-body">
-                <form id="addTemporaryInstanceForm">
-
-                    <label>Instnace ID: (Min 5 znaků) </label>
-                    <input style="display: block" type="text" id="instance_name" name="instance_name" >
-
-                    <input style="display: block" type="text" id="instance_name" name="unique_identificator" value="@homer_server.unique_identificator" >
-
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger pull-left" type="button" data-dismiss="modal" onclick="$('#addTemporaryInstanceModal').css('display','none')">Close</button>
-                <button id="addTemporaryInstanceButton" value="" class="btn btn-primary" type="button" onclick="add_TemporaryInstance()">Create temporary instance</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 
     <script>
@@ -176,101 +153,8 @@
                 }
             });
 
-         function showAddTemporaryInstance(){
-             $("#addTemporaryInstanceModal").css("display","block");
-         }
 
-         function add_TemporaryInstance(){
 
-             model_data = $("#addTemporaryInstanceForm").serializeObject();
-
-             $.ajax({
-                 url: '@routes.Controller_Blocko.instance_add_temporary_instance()',
-                 type: 'PUT',
-                 contentType: 'application/json',
-                 headers: {
-                     "X-AUTH-TOKEN":getCookie("authToken"),
-                     "Content-Type":"application/json"
-                 },
-                 data: JSON.stringify(model_data),
-                 dataType: 'json',
-                 success:function(data, status){
-
-                     console.log(data);
-                     console.log(status);
-
-                     $('#addTemporaryInstanceModal').css('display','none');
-                     $("#addTemporaryInstanceForm input[type=text]").val("");
-                     $('#homer_table').load(document.URL +  ' #homer_table');
-
-                     BootstrapDialog.show({
-                         message:  syntaxHighlight(data),
-
-                         buttons: [{
-                             label: 'Close',
-                             action: function(dialogItself){
-                                 dialogItself.close();
-                             }
-                         }]
-
-                     });
-                 },
-                 error:function(data) {
-
-                     BootstrapDialog.show({
-                         message:  syntaxHighlight(data),
-                         type: BootstrapDialog.TYPE_DANGER,
-                         buttons: [{
-                             label: 'Close',
-                             action: function(dialogItself){
-                                 dialogItself.close();
-                             }
-                         }]
-                     });
-                 }
-             })}
-
-         function ping_instance(instance_id){
-
-             $.ajax({
-                 url: '@routes.Controller_Dashboard.ping_homer_instance("")' + instance_id,
-                 data : {
-                     instance_id: instance_id
-                 },
-                 type: 'GET',
-
-                 headers: {
-                     "X-AUTH-TOKEN":getCookie("authToken")
-                 },
-
-                 success:function(data, status){
-                     console.log(data);
-                     console.log(status);
-                     BootstrapDialog.show({
-                         message:  syntaxHighlight(data),
-
-                         buttons: [{
-                             label: 'Close',
-                             action: function(dialogItself){
-                                 dialogItself.close();
-                             }
-                         }]
-
-                     });
-                 },
-                 error:function(data) {
-                     BootstrapDialog.show({
-                         message:  syntaxHighlight(data),
-                         type: BootstrapDialog.TYPE_DANGER,
-                         buttons: [{
-                             label: 'Close',
-                             action: function(dialogItself){
-                                 dialogItself.close();
-                             }
-                         }]
-                     });
-                 }
-             })}
 
          function disconnect_instance(instance_id){
              $.ajax({

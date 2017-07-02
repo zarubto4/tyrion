@@ -241,8 +241,7 @@ public class Model_Notification extends Model {
                 Model_HomerInstance homerInstance = (Model_HomerInstance) object;
                 element.name = class_name;
                 element.id = homerInstance.id;
-                if(homerInstance.project != null) element.project_id = homerInstance.project.id;
-                else element.project_id = homerInstance.b_program.project_id();
+                element.project_id = homerInstance.b_program.project_id();
 
                 break;
             }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
@@ -16,10 +17,7 @@ import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo
 
 import javax.jws.WebParam;
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @ApiModel(value = "ActualizationProcedure", description = "Model of ActualizationProcedure")
@@ -214,6 +212,10 @@ public class Model_ActualizationProcedure extends Model {
     }
 
 
+    public void execute_update_procedure(){
+        Model_Board.execute_update_procedure(this);
+    }
+
 /* SERVER WEBSOCKET ----------------------------------------------------------------------------------------------------*/
 
 
@@ -232,7 +234,12 @@ public class Model_ActualizationProcedure extends Model {
         }
 
         this.state = Enum_Update_group_procedure_state.not_start_yet;
+
+        // ORM
         super.save();
+
+        // Cache
+        cache.put(id, this);
 
         // Call notification about model update
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_HomerInstance.class, get_project_id(), this.id))).start();
@@ -243,7 +250,11 @@ public class Model_ActualizationProcedure extends Model {
 
         terminal_logger.debug("update :: Update object Id: " + this.id);
 
+        //ORM
         super.update();
+
+        // Cache
+        cache.put(id, this);
 
         // Call notification about model update
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_ActualizationProcedure.class, get_project_id(), this.id))).start();
@@ -512,6 +523,38 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Transient   public boolean read_permission()      {  return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id",id ).findUnique().read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read"); }
 
     public enum permissions{Actualization_procedure_read}
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    /**
+     *  Cachování slouží primárně pouze pro sumarizaci updatů. Pomocí get_byId() lze načíst ActualizationProcedure
+     *  která obsahuje HashMapu ID C
+     */
+    public HashMap<String, Enum_CProgram_updater_state> cProgram_updater_stateHashMap;
+    public static final String CACHE        = Model_ActualizationProcedure.class.getSimpleName();
+
+    public static Cache<String, Model_ActualizationProcedure> cache; // Server_cache Override during server initialization
+
+    public void change_state(Model_CProgramUpdatePlan plan, Enum_CProgram_updater_state state){
+
+        cProgram_updater_stateHashMap.put(plan.id, state);
+
+    }
+
+
+    public static Model_ActualizationProcedure get_byId(String id){
+
+        Model_ActualizationProcedure procedure = cache.get(id);
+
+        if(procedure == null){
+
+            procedure = Model_ActualizationProcedure.find.byId(id);
+
+            cache.put(id, procedure);
+        }
+
+        return procedure;
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_ActualizationProcedure> find = new Model.Finder<>(Model_ActualizationProcedure.class);
