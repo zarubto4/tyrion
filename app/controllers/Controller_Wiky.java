@@ -1,6 +1,7 @@
 package controllers;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import models.Model_Board;
 import models.Model_Product;
 import play.mvc.Controller;
@@ -19,6 +20,7 @@ public class Controller_Wiky extends Controller {
 
     private static final Class_Logger terminal_logger = new Class_Logger(Controller_Wiky.class);
 
+    @ApiOperation(value = "Hidden test Method", hidden = true)
      public Result test1(){
          try {
 
@@ -37,6 +39,7 @@ public class Controller_Wiky extends Controller {
          }
      }
 
+    @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test2(){
         try {
 
@@ -52,6 +55,7 @@ public class Controller_Wiky extends Controller {
         }
     }
 
+    @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test3(){
         try {
 

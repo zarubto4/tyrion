@@ -20,11 +20,10 @@ import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Enum_Log_level;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.enums.Enum_Where_logged_tag;
-import utilities.independent_threads.homer_server.Synchronize_Homer_Instance_after_connection;
 import utilities.independent_threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
-import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Update_device_firmware;
+import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 import web_socket.message_objects.homer_with_tyrion.*;
 import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Check_homer_server_person_permission;
 import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Invalid_person_token_homer_server;
@@ -474,22 +473,22 @@ public class Model_HomerServer extends Model{
 
     // Updates
 
-    @JsonIgnore @Transient public WS_Message_Update_device_firmware update_devices_firmware(List<Swagger_UpdatePlan_brief_for_homer> tasks){
+    @JsonIgnore @Transient public WS_Message_Hardware_UpdateProcedure_Command update_devices_firmware(List<Swagger_UpdatePlan_brief_for_homer> tasks){
         try {
 
-            JsonNode node = sender().write_with_confirmation(new WS_Message_Update_device_firmware().make_request(tasks), 1000 * 60, 0, 2);
+            JsonNode node = sender().write_with_confirmation(new WS_Message_Hardware_UpdateProcedure_Command().make_request(tasks), 1000 * 60, 0, 2);
 
-            final Form<WS_Message_Update_device_firmware> form = Form.form(WS_Message_Update_device_firmware.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Update_device_firmware: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            final Form<WS_Message_Hardware_UpdateProcedure_Command> form = Form.form(WS_Message_Hardware_UpdateProcedure_Command.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Command: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
         }catch (TimeoutException e){
             terminal_logger.warn("set_auto_backup: Timeout");
-            return new WS_Message_Update_device_firmware();
+            return new WS_Message_Hardware_UpdateProcedure_Command();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
-            return new WS_Message_Update_device_firmware();
+            return new WS_Message_Hardware_UpdateProcedure_Command();
         }
     }
 

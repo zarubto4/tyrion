@@ -13,8 +13,10 @@ Každá příchozí nebo odchozí zpráva na Tyrion a z Tyriona obsahuje
             "messageChannel" :  "channel_name"  
         }
 
+Známe 3 kanály. 
 
-Channel Code:: **tyrion**
+ - "homer_server"
+ - "instance"
+ - "hardware"
 
-**List of Json Objects for Communication between Tyrion and Homer Instance**
 

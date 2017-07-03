@@ -2487,6 +2487,8 @@ public class Controller_Board extends Controller {
         }
     }
 
+
+    @ApiOperation(value = "Remove Hardware from Database - Only for Administrators", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result board_delete(String board_id){
         try {

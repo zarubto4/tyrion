@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_Security;
-import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -32,15 +31,13 @@ import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
-import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_AutoBackUp_progress;
-import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Result;
-import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_progress;
-import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Update_device_firmware;
+import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
+import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
+import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Status;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 import web_socket.services.WS_HomerServer;
 
 import javax.persistence.*;
-import java.nio.channels.ClosedChannelException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -334,38 +331,29 @@ public class Model_Board extends Model {
                         return;
                     }
 
-                    case WS_Message_AutoBackUp_progress.messageType: {
+                    case WS_Message_Hardware_autobackup_maked.messageType: {
 
-                        final Form<WS_Message_AutoBackUp_progress> form = Form.form(WS_Message_AutoBackUp_progress.class).bind(json);
+                        final Form<WS_Message_Hardware_autobackup_maked> form = Form.form(WS_Message_Hardware_autobackup_maked.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_AutoBackUp_progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                         Model_Board.device_autoBackUp_echo(form.get());
                         return;
                     }
 
-                    case WS_Message_Hardware_UpdateProcedure_progress.messageType: {
+                    case WS_Message_Hardware_UpdateProcedure_Progress.messageType: {
 
-                        final Form<WS_Message_Hardware_UpdateProcedure_progress> form = Form.form(WS_Message_Hardware_UpdateProcedure_progress.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        final Form<WS_Message_Hardware_UpdateProcedure_Progress> form = Form.form(WS_Message_Hardware_UpdateProcedure_Progress.class).bind(json);
+                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                         Model_CProgramUpdatePlan.update_procedure_progress(form.get());
                         return;
                     }
 
-                    case WS_Message_Update_device_firmware.messageType: {
 
-                        final Form<WS_Message_Update_device_firmware> form = Form.form(WS_Message_Update_device_firmware.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Update_device_firmware: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                    case WS_Message_Hardware_UpdateProcedure_Status.messageType: {
 
-                        Model_Board.update_report_from_homer(form.get());
-                        return;
-
-                    }
-
-                    case WS_Message_Hardware_UpdateProcedure_Result.messageType: {
-
-                        final Form<WS_Message_Hardware_UpdateProcedure_Result> form = Form.form(WS_Message_Hardware_UpdateProcedure_Result.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Result: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        final Form<WS_Message_Hardware_UpdateProcedure_Status> form = Form.form(WS_Message_Hardware_UpdateProcedure_Status.class).bind(json);
+                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                         Model_CProgramUpdatePlan.update_procedure_state(form.get());
                         return;
@@ -430,89 +418,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static void update_report_from_homer(WS_Message_Update_device_firmware report){
-        try {
-
-            Enum_HardwareHomerUpdate_state status = Enum_HardwareHomerUpdate_state.getUpdate_state(report.update_state);
-            if (status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + report.update_state + " is not recognize in Json!");
-
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.byId(report.c_program_update_plan_id);
-            if (plan == null) throw new NullPointerException("Plan id" + report.c_program_update_plan_id + " not found!");
-
-
-            if (status == Enum_HardwareHomerUpdate_state.SUCCESSFULLY_UPDATE) {
-
-                plan.state = Enum_CProgram_updater_state.complete;
-                plan.date_of_finish = new Date();
-                plan.update();
-                Model_ActualizationProcedure.get_byId(report.actualization_procedure_id).change_state(plan, plan.state);
-
-                terminal_logger.debug("update_report_from_homer:: FirmwareType check");
-
-                Model_Board board = Model_Board.get_byId(report.device_id);
-                if (board == null) throw new NullPointerException("Device id" + report.device_id + " not found!");
-
-                if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
-
-                    terminal_logger.debug("update_report_from_homer:: Firmware");
-
-                    board.actual_c_program_version = plan.c_program_version_for_update;
-                    board.update();
-                }
-
-                else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
-
-                    terminal_logger.debug("update_report_from_homer:: BACKUP");
-
-                    board.actual_backup_c_program_version = plan.c_program_version_for_update;
-                    board.backup_mode = false;
-                    board.update();
-
-                    board.make_log_backup_arrise_change();
-
-                }
-
-                else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
-
-                    terminal_logger.debug("update_report_from_homer:: Bootloader");
-                    board.actual_boot_loader = plan.bootloader;
-                    board.update();
-
-                }
-
-                terminal_logger.internalServerError(new Exception("Its not Firmware, Backup or Bootloader!"));
-
-            }else {
-
-                if (status == Enum_HardwareHomerUpdate_state.DEVICE_WAS_OFFLINE) {
-                    plan.state = Enum_CProgram_updater_state.waiting_for_device;
-                    plan.update();
-                    Model_ActualizationProcedure.get_byId(report.actualization_procedure_id).change_state(plan, plan.state);
-                }
-
-                else if (status == Enum_HardwareHomerUpdate_state.DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION) {
-
-                    plan.state = Enum_CProgram_updater_state.not_updated;
-                    plan.date_of_finish = new Date();
-                    plan.update();
-                    Model_ActualizationProcedure.get_byId(report.actualization_procedure_id).change_state(plan, plan.state);
-
-                }
-
-                else {
-                    plan.state = Enum_CProgram_updater_state.critical_error;
-                    plan.error_code = report.error_code;
-                    plan.date_of_finish = new Date();
-                    plan.update();
-                }
-            }
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore @Transient public static void device_autoBackUp_echo(WS_Message_AutoBackUp_progress report){
+    @JsonIgnore @Transient public static void device_autoBackUp_echo(WS_Message_Hardware_autobackup_maked report){
         try {
 
             terminal_logger.debug("device_autoBackUp_echo:: Deive send Echo about backup device ID:: {} ", report.device_id);
@@ -521,23 +427,13 @@ public class Model_Board extends Model {
 
             if(device == null) throw new Exception("Unregistered Hardware. Id = " + report.device_id);
 
-            if(report.phase.equals("start")){
-                terminal_logger.debug("device_autoBackUp_echo - Device ID {} started with autobackup procedure",report.device_id);
-                return;
-            }
+            Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", report.build_id).findUnique();
+            if(c_program_version == null) throw new Exception("Firmware with build ID = " + report.build_id + " was not found in the database!");
 
-            if(report.phase.equals("done")){
+            device.actual_backup_c_program_version = c_program_version;
+            device.update();
 
-                Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", report.build_id).findUnique();
-                if(c_program_version == null) throw new Exception("Firmware with build ID = " + report.build_id + " was not found in the database!");
-
-                device.actual_backup_c_program_version = c_program_version;
-                device.update();
-
-                return;
-            }
-
-            throw new Exception("Phase '" + report.phase + "' not recognized!");
+            return;
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);

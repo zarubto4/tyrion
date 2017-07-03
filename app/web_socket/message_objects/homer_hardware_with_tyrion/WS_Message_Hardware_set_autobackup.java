@@ -13,7 +13,7 @@ import java.util.List;
 public class WS_Message_Hardware_set_autobackup extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "setAutoBackup";
+    @JsonIgnore public static final String messageType = "hardware_set_autobackup";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/

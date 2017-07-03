@@ -28,13 +28,12 @@ public class WS_Message_Hardware_change_server  extends WS_AbstractMessage {
         ObjectNode request = Json.newObject();
         request.put("messageType", messageType);
         request.put("messageChannel", Model_Board.CHANNEL);
-        request.put("mainServerUrl", server.server_url);
-        request.put("mqttPort", server.mqtt_port);
-        request.put("mqttPassword", server.mqtt_password);
-        request.put("mqttUser", server.mqtt_username);
+        request.put("main_server_url", server.server_url);
+        request.put("mqtt_port", server.mqtt_port);
+        request.put("mqtt_password", server.mqtt_password);
+        request.put("mqtt_user_name", server.mqtt_username);
         request.set("device_ids", Json.toJson(device_ids) );
 
         return request;
     }
-
 }

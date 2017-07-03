@@ -5,16 +5,19 @@ import play.data.validation.Constraints;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Instance;
 
 
-public class WS_Message_Hardware_UpdateProcedure_progress extends WS_AbstractMessage_Instance {
+public class WS_Message_Hardware_UpdateProcedure_Progress extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "updateProcedure_progress";
+    @JsonIgnore public static final String messageType = "update_hardware_progress";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public String  typeOfProgress;
-    @Constraints.Required public Integer percentageProgress;
-    @Constraints.Required public String  updatePlanId;
+    @Constraints.Required public String c_program_update_plan_id   = null;
+    @Constraints.Required public String actualization_procedure_id = null;
+
+    @Constraints.Required public String type_of_progress;
+    @Constraints.Required public Integer percentage_progress;
+
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

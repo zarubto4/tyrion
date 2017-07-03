@@ -3,10 +3,8 @@ package web_socket.message_objects.homer_hardware_with_tyrion;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_Board;
-import models.Model_HomerInstance;
 import play.libs.Json;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
-import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Instance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +12,7 @@ import java.util.List;
 public class WS_Message_Hardware_set_alias extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "set_alias";
+    @JsonIgnore public static final String messageType = "hardware_set_alias";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -40,7 +38,7 @@ public class WS_Message_Hardware_set_alias extends WS_AbstractMessage {
         for(Model_Board device : devices) {
 
             Alias_Pair pair = new Alias_Pair();
-            pair.alias = device.name;
+            pair.hardware_alias = device.name;
             pair.device_id = device.id;
             device_pair.add(pair);
         }
@@ -66,7 +64,7 @@ public class WS_Message_Hardware_set_alias extends WS_AbstractMessage {
 
     class Alias_Pair{
         public String device_id;
-        public String alias;
+        public String hardware_alias;
     }
 
 }

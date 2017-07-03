@@ -83,7 +83,8 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         public String bootloader_build_id;          // Version name Bootloader
         public String interface_name;
         public String state;
-        public boolean autobackup = false;
+        public boolean online_status;
+        public boolean autobackup;
 
     }
 

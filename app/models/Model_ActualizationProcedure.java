@@ -11,11 +11,9 @@ import org.ehcache.Cache;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
-import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
-import javax.jws.WebParam;
 import javax.persistence.*;
 import java.util.*;
 
@@ -530,18 +528,19 @@ public class Model_ActualizationProcedure extends Model {
      *  Cachování slouží primárně pouze pro sumarizaci updatů. Pomocí get_byId() lze načíst ActualizationProcedure
      *  která obsahuje HashMapu ID C
      */
-    public HashMap<String, Enum_CProgram_updater_state> cProgram_updater_stateHashMap;
-    public static final String CACHE        = Model_ActualizationProcedure.class.getSimpleName();
+    @JsonIgnore public HashMap<String, Enum_CProgram_updater_state> cProgram_updater_state = new HashMap<>();
+    @JsonIgnore public static final String CACHE        = Model_ActualizationProcedure.class.getSimpleName();
 
-    public static Cache<String, Model_ActualizationProcedure> cache; // Server_cache Override during server initialization
+    @JsonIgnore public static Cache<String, Model_ActualizationProcedure> cache; // Server_cache Override during server initialization
 
     public void change_state(Model_CProgramUpdatePlan plan, Enum_CProgram_updater_state state){
 
-        cProgram_updater_stateHashMap.put(plan.id, state);
+        cProgram_updater_state.put(plan.id, state);
 
     }
 
 
+    @JsonIgnore
     public static Model_ActualizationProcedure get_byId(String id){
 
         Model_ActualizationProcedure procedure = cache.get(id);

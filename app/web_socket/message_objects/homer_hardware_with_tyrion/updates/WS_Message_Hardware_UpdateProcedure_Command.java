@@ -14,21 +14,13 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WS_Message_Update_device_firmware extends WS_AbstractMessage_Instance {
+public class WS_Message_Hardware_UpdateProcedure_Command extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "update_state";
+    @JsonIgnore public static final String messageType = "update_hardware_execution";
+
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
-
-    public String actualization_procedure_id = null;
-    public String c_program_update_plan_id = null;
-
-    public String required_build_id = null;
-    public String actual_build_id = null;
-
-    public String device_id= null;
-    public String update_state = null;
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
