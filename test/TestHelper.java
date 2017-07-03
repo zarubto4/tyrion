@@ -76,7 +76,6 @@ public class TestHelper extends Controller{
         try {
 
             Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
-            floatingPersonToken.set_basic_values();
             floatingPersonToken.person = person;
             floatingPersonToken.user_agent = "Unknown browser";
             floatingPersonToken.save();
@@ -114,11 +113,8 @@ public class TestHelper extends Controller{
         try {
 
             Model_Product product = new Model_Product();
-            product.tariff = Model_Tariff.find.where().eq("identifier", "geek").findUnique();
             product.name = UUID.randomUUID().toString();
             product.active = true;
-            product.mode = Enum_Payment_mode.free;
-            product.paid_until_the_day = new GregorianCalendar(2016, 12, 30).getTime();
 
             product.save();
             product.refresh();
@@ -351,7 +347,7 @@ public class TestHelper extends Controller{
             Model_CProgram default_program = new Model_CProgram();
             default_program.name = UUID.randomUUID().toString();
             default_program.description = UUID.randomUUID().toString();
-            default_program.default_program_type_of_board = typeOfBoard;
+            default_program.type_of_board_default = typeOfBoard;
 
             default_program.save();
             default_program.refresh();
@@ -359,7 +355,7 @@ public class TestHelper extends Controller{
             Model_VersionObject default_version = new Model_VersionObject();
             default_version.version_name = UUID.randomUUID().toString();
             default_version.version_description = UUID.randomUUID().toString();
-            default_version.default_version_program = default_program;
+            default_version.default_program = default_program;
 
             default_version.save();
             default_program.refresh();
@@ -390,7 +386,7 @@ public class TestHelper extends Controller{
     public static Model_CProgram private_c_program_create(Model_TypeOfBoard typeOfBoard, Model_Project project){
         try {
 
-            Model_CProgram c_program             = new Model_CProgram();
+            Model_CProgram c_program        = new Model_CProgram();
             c_program.name                  = UUID.randomUUID().toString();
             c_program.description           = UUID.randomUUID().toString();
             c_program.date_of_create        = new Date();
@@ -421,7 +417,7 @@ public class TestHelper extends Controller{
     public static Model_VersionObject c_program_version_create(Model_CProgram c_program){
         try {
 
-            Model_VersionObject version_object      = new Model_VersionObject();
+            Model_VersionObject version_object = new Model_VersionObject();
             version_object.version_name        = UUID.randomUUID().toString();
             version_object.version_description = UUID.randomUUID().toString();
             version_object.author              = c_program.project.product.payment_details.person;

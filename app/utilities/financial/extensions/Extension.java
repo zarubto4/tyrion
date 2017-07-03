@@ -22,6 +22,13 @@ public interface Extension {
     Long getDailyPrice(Object configuration);
 
     /**
+     * Gets the plain price from configuration without any calculation.
+     * @param configuration The configuration of given extension.
+     * @return Long price based on the type of the extension and individual configuration.
+     */
+    Long getConfigPrice(Object configuration);
+
+    /**
      * Gets the default monthly price based on the type of the extension.
      * Method should not serve for calculating the price,
      * on the contrary it should be called just for information purposes.

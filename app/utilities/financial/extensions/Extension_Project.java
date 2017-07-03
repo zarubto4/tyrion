@@ -37,6 +37,13 @@ public class Extension_Project implements Extension {
         return project.price * project.count;
     }
 
+    public Long getConfigPrice(Object configuration) {
+
+        Configuration_Project project = (Configuration_Project) configuration;
+
+        return project.price;
+    }
+
     public Long getDefaultMonthlyPrice() {
         return price * 30;
     }

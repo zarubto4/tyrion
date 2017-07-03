@@ -1,5 +1,6 @@
 @import models.Model_Tariff
 @import utilities.enums.Enum_ExtensionType
+@import play.libs.Json
 
 @(tariff: Model_Tariff)
 
@@ -100,7 +101,7 @@
                     </form>
                 </div>
                 <div class="box-footer">
-                    <button class="btn btn-xs btn-primary pull-right" type="button" onclick="updateTariff()">Save changes</button>
+                    <button class="btn btn-xs btn-info pull-right" type="button" onclick="updateTariff()">Save changes</button>
                 </div>
             </div>
         </div>
@@ -112,9 +113,9 @@
                     <h3 class="box-title">Labels</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#newLabelModal">Add Label</button>
-                        </div><!-- /.btn-group -->
-                    </div><!-- /.pull-right -->
+                            <button class="btn btn-xs btn-block btn-success" type="button" data-toggle="modal" data-target="#newLabelModal"><i class="fa fa-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
                 <div id="allLabelsWrapper" class="box-body">
                     <table id="allLabels" class="table table-bordered">
@@ -123,12 +124,12 @@
                             <th>Order</th>
                             <th>Label</th>
                             <th>Description (On mouseover)</th>
+                            <th>Icon(render)</th>
                             <th>Icon</th>
-                            <th>Icon</th>
-                            <th>Up</th>
-                            <th>Down</th>
-                            <th>Edit</th>
-                            <th>Delete</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
                         </tr>
                         @for(label <- tariff.labels){
                             <tr>
@@ -138,9 +139,9 @@
                                 <td>@label.description</td>
                                 <td><i class="fa fa-fw @label.icon"></i></td>
                                 <td>@label.icon</td>
-                                <td>@if(label.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upLabel('@label.id')">Up</button>}</td>
-                                <td>@if(tariff.labels.length != label.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downLabel('@label.id')">Down</button>}</td>
-                                <td><button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editLabelModal" onclick="fillEditLabelModal('@label.id', '@label.label', '@label.description', '@label.icon')">Edit</button></td>
+                                <td>@if(label.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upLabel('@label.id')"><i class="fa fa-arrow-up"></i></button>}</td>
+                                <td>@if(tariff.labels.length != label.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downLabel('@label.id')"><i class="fa fa-arrow-down"></i></button>}</td>
+                                <td><button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editLabelModal" onclick="fillEditLabelModal('@label.id', '@label.label', '@label.description', '@label.icon')"><i class="fa fa-wrench"></i></button></td>
                                 <td><button class="btn btn-xs btn-block btn-danger" type="button" onclick="deleteLabel('@label.id')"><i class="fa fa-times"></i></button></td>
                             </tr>
                         }
@@ -158,7 +159,7 @@
                     <h3 class="box-title">Extensions</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#newExtensionModal">Add Extension</button>
+                            <button class="btn btn-xs btn-block btn-success" type="button" data-toggle="modal" data-target="#newExtensionModal"><i class="fa fa-plus"></i></button>
                         </div>
                     </div>
                 </div>
@@ -173,13 +174,14 @@
                                 <th>Type</th>
                                 <th>Price (per day)</th>
                                 <th>Price (per month)</th>
+                                <th>Config</th>
                                 <th>Color</th>
                                 <th>Description (on mouseover)</th>
-                                <th>Up</th>
-                                <th>Down</th>
-                                <th>Edit</th>
-                                <th>Active</th>
-                                <th>Delete</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                             @for(extension <- tariff.extensions_included){
                                 <tr>
@@ -189,14 +191,20 @@
                                     <td>@extension.getExtensionTypeName</td>
                                     <td>@extension.getDoubleDailyPrice USD</td>
                                     <td>@{extension.getDoubleDailyPrice * 30} USD</td>
+                                    <td>@{Json.toJson(extension.getConfiguration)}</td>
                                     <td>@extension.color</td>
                                     <td>@extension.description</td>
-                                    <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')">Up</button>}</td>
-                                    <td>@if(tariff.extensions_included.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')">Down</button>}</td>
+                                    <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')"><i class="fa fa-arrow-up"></i></button>}</td>
+                                    <td>@if(tariff.extensions_included.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')"><i class="fa fa-arrow-down"></i></button>}</td>
                                     <td>
-                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', 'TODO', 'TODO', @{extension.tariff_included != null} )">Edit</button>
+                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id',
+                                            '@extension.name',
+                                            '@extension.description',
+                                            '@extension.color',
+                                            '@extension.getTypeName',
+                                            '@extension.getConfigPrice',
+                                            @{extension.tariff_included != null})"><i class="fa fa-wrench"></i></button>
                                     </td>
-
                                     <td>
                                         @if(!extension.active) {
                                             <button class="btn btn-xs btn-block btn-danger" type="button" onclick="activateExtension('@extension.id')" title="Activate">Deactivated</button>
@@ -233,13 +241,14 @@
                                 <th>Type</th>
                                 <th>Price (per day)</th>
                                 <th>Price (per month)</th>
+                                <th>Config</th>
                                 <th>Color</th>
                                 <th>Description (on mouseover)</th>
-                                <th>Up</th>
-                                <th>Down</th>
-                                <th>Edit</th>
-                                <th>Active</th>
-                                <th>Delete</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                             @for(extension <- tariff.extensions_optional){
                                 <tr>
@@ -249,12 +258,20 @@
                                     <td>@extension.getExtensionTypeName</td>
                                     <td>@extension.getDoubleDailyPrice USD</td>
                                     <td>@{extension.getDoubleDailyPrice * 30} USD</td>
+                                    <td>@{Json.toJson(extension.getConfiguration)}</td>
                                     <td>@extension.color</td>
                                     <td>@extension.description</td>
-                                    <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')">Up</button>}</td>
-                                    <td>@if(tariff.extensions_optional.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')">Down</button>}</td>
+                                    <td>@if(extension.order_position != 1){<button class="btn btn-xs btn-block btn-success" type="button" onclick="upExtension('@extension.id')"><i class="fa fa-arrow-up"></i></button>}</td>
+                                    <td>@if(tariff.extensions_optional.length != extension.order_position){<button class="btn btn-xs btn-block btn-warning" type="button" onclick="downExtension('@extension.id')"><i class="fa fa-arrow-down"></i></button>}</td>
                                     <td>
-                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id', '@extension.name', '@extension.description', '@extension.color', '@extension.getExtensionTypeName', 'TODO', 'TODO', @{extension.tariff_included != null})">Edit</button></td>
+                                        <button class="btn btn-xs btn-block btn-info" type="button" data-toggle="modal" data-target="#editExtensionModal" onclick="fillEditExtensionModal('@extension.id',
+                                                '@extension.name',
+                                                '@extension.description',
+                                                '@extension.color',
+                                                '@extension.getTypeName',
+                                                '@extension.getConfigPrice',
+                                                @{extension.tariff_included != null})"><i class="fa fa-wrench"></i></button>
+                                    </td>
                                     <td>
                                     @if(!extension.active) {
                                         <button class="btn btn-xs btn-block btn-danger" type="button" onclick="activateExtension('@extension.id')" title="Activate">Deactivated</button>
@@ -344,6 +361,12 @@
                         <input type="text" class="form-control form-group" name="price" placeholder="Price (USD)">
                         <input type="text" class="form-control form-group" name="count" placeholder="Count">
                         <div class="checkbox">
+                            <label title="For extension 'support'">
+                                <input type="checkbox" class="checkbox" name="nonstop">
+                                Nonstop (optional)
+                            </label>
+                        </div>
+                        <div class="checkbox">
                             <label>
                                 <input type="checkbox" class="checkbox" name="included">
                                 Included in tariff
@@ -367,18 +390,23 @@
                 </div>
                 <div class="modal-body">
                     <form id="editExtensionForm">
-                        <input type="text" class="form-control form-group" id="extension_id" name="id" readonly title="Id">
-                        <label>Extension Name</label> <input type="text" class="form-control form-group" id="extension_name" name="name" title="Name">
-                        <label>Description</label> <input type="text" class="form-control form-group" id="extension_description" name="description" title="Description">
-                        <label>Color</label>   <input type="text" class="form-control form-group" id="extension_color" name="color" title="Color">
+                        <input type="text" class="form-control form-group" id="extension_id" name="id" readonly title="Id" placeholder="Id">
+                        <input type="text" class="form-control form-group" id="extension_name" name="name" title="Name" placeholder="Name">
+                        <input type="text" class="form-control form-group" id="extension_description" name="description" title="Description" placeholder="Description">
+                        <input type="text" class="form-control form-group" id="extension_color" name="color" title="Color" placeholder="Color">
                         <select name="type" class="form-control form-group select2" id="extension_type" title="Type of Extension">
-                            <option selected="selected" disabled>Choose one</option>
                             @for(etype <- Enum_ExtensionType.values()){
                                 <option value="@etype.name()">@etype.name()</option>
                             }
                         </select>
-                        <label>Price In USD in with 4 digits ( 1$ is 1000)</label>  <input type="text" class="form-control form-group" id="extension_price" name="price" title="Price (USD)">
-                        <label>Count</label><input type="text" class="form-control form-group" id="extension_count" name="count" title="Count">
+                        <input type="text" class="form-control form-group" id="extension_price" name="price" title="Price (USD)" placeholder="Price (USD)">
+                        <input type="text" class="form-control form-group" id="extension_count" name="count" title="Count" placeholder="Count">
+                        <div class="checkbox">
+                            <label title="For extension 'support'">
+                                <input type="checkbox" class="checkbox" name="nonstop">
+                                Nonstop (optional)
+                            </label>
+                        </div>
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" class="checkbox" id="extension_included" name="included">
@@ -409,16 +437,13 @@
         $('#edit_label_icon').val(icon);
     }
 
-    function fillEditExtensionModal(id, name, description, color, type, price, count, included) {
+    function fillEditExtensionModal(id, name, description, color, type, price, included) {
         $('#extension_id').val(id);
         $('#extension_name').val(name);
         $('#extension_description').val(description);
-
-        $("#extension_type option[value='" + type + "']").attr("selected", "selected");
-
+        $("#extension_type").val(type);
         $('#extension_color').val(color);
         $('#extension_price').val(price);
-        $('#extension_count').val(count);
         $('#extension_included').prop('checked', included);
 
 
@@ -573,8 +598,8 @@
     // Extensions
 
     function newExtension(){
-        var model_data = $("#newExtensionForm").serializeObject();
-        model_data.id = id;
+
+        model_data.product_id = id;
         $.ajax({
             url: '@routes.Controller_Finance.tariffExtension_create()',
             type: 'POST',
@@ -583,7 +608,7 @@
                 "X-AUTH-TOKEN":getCookie("authToken"),
                 "Content-Type":"application/json"
             },
-            data: JSON.stringify(model_data),
+            data: JSON.stringify($("#newExtensionForm").serializeObject()),
             dataType: 'json',
             success:function(e){
                 $("#newExtensionForm input[type=text]").val("");
@@ -599,7 +624,6 @@
     }
 
     function editExtension(){
-        var model_data = $("#editExtensionForm").serializeObject();
         $.ajax({
             url: '@routes.Controller_Finance.tariffExtension_update()',
             type: 'PUT',
@@ -608,7 +632,7 @@
                 "X-AUTH-TOKEN":getCookie("authToken"),
                 "Content-Type":"application/json"
             },
-            data: JSON.stringify(model_data),
+            data: JSON.stringify($("#editExtensionForm").serializeObject()),
             dataType: 'json',
             success:function(e){
                 $("#editExtensionForm input[type=text]").val("");

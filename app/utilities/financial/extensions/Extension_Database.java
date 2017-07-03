@@ -26,6 +26,13 @@ public class Extension_Database implements Extension {
         return database.price;
     }
 
+    public Long getConfigPrice(Object configuration) {
+
+        Configuration_Database database = ((Configuration_Database) configuration);
+
+        return database.price;
+    }
+
     public Long getDefaultMonthlyPrice() {
         return price * 30;
     }

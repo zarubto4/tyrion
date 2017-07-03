@@ -393,8 +393,11 @@ public class Controller_Dashboard extends Controller {
     public Result board_detail(String board_id){
         try {
 
-            Html content = board_detail.render( Model_Board.get_byId(board_id) );
-            return return_page ( content );
+            Model_Board board = Model_Board.get_byId(board_id);
+            if (board == null) return GlobalResult.result_notFound("Board not found");
+
+            Html content = board_detail.render(board);
+            return return_page(content);
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());

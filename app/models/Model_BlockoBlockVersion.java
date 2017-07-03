@@ -71,7 +71,7 @@ public class Model_BlockoBlockVersion extends Model {
             help.description = this.version_description;
             help.date_of_create = this.date_of_create;
             help.design_json = this.design_json;
-            help.author = this.author.get_short_person();
+            help.author = author();
             help.delete_permission = this.delete_permission();
             help.edit_permission = this.edit_permission();
 

@@ -30,7 +30,7 @@ public class Model_LoggyError extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void setYoutrack_url(String url) {
         youtrack_url = url;
     }

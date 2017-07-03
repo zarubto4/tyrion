@@ -217,8 +217,8 @@
             content +="<th>Name</th>";
             content +="<th>Description</th>";
             content +="<th>For Type of Board</th>";
-            content +="<th>OPEN</th>";
-            content +="<th>DELETE</th>";
+            content +="<th></th>";
+            content +="<th></th>";
             content +="</tr>";
 
 
@@ -231,8 +231,8 @@
                 content += "<td>" + v.name +"</td>";
                 content += "<td>" + v.description +"</td>";
                 content += "<td>" + v.type_of_board_name +"</td>";
-                content += "<td><a href='/admin/c_program/public/" + v.id + "'><button class='btn btn-xs btn-block btn-info'   type='button'> Edit </button></a></td>";
-                content += "<td><button class='btn btn-xs btn-block btn-danger' type='button' onclick=\"deleteCode('" + v.id + "')\">Delete</button></td>";
+                content += "<td><a href='/admin/c_program/public/" + v.id + "'><button class='btn btn-xs btn-block btn-info'   type='button'><i class='fa fa-wrench'></button></a></td>";
+                content += "<td><button class='btn btn-xs btn-block btn-danger' type='button' onclick=\"deleteCode('" + v.id + "')\"><i class='fa fa-times'></button></td>";
 
                 content += "</tr>";
             });

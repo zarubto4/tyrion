@@ -26,6 +26,13 @@ public class Extension_Instance implements Extension {
         return instance.price * instance.count;
     }
 
+    public Long getConfigPrice(Object configuration) {
+
+        Configuration_Instance instance = ((Configuration_Instance) configuration);
+
+        return instance.price;
+    }
+
     public Long getDefaultMonthlyPrice() {
         return price * 30;
     }

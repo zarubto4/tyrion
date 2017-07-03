@@ -10,6 +10,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.*;
+import utilities.financial.extensions.configurations.*;
 import utilities.financial.fakturoid.Fakturoid_Controller;
 import utilities.financial.goPay.GoPay_Controller;
 import utilities.logger.Class_Logger;
@@ -596,7 +597,7 @@ public class Controller_Finance extends Controller {
         try{
 
             final Form<Swagger_ProductExtension_New> form = Form.form(Swagger_ProductExtension_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_ProductExtension_New help = form.get();
 
             Model_Tariff tariff = Model_Tariff.find.byId(help.product_id);
@@ -609,8 +610,95 @@ public class Controller_Finance extends Controller {
             extension.type = help.type;
             extension.active = true;
 
-            Result configuration_result = extension.setConfiguration(help);
-            if(configuration_result != null) return configuration_result;
+            Object configuration;
+
+            if (help.price == null) return GlobalResult.result_badRequest("Price is required.");
+            Long price = (long) (help.price * 1000);
+
+            switch (extension.type) {
+
+                case project:{
+
+                    Configuration_Project project = new Configuration_Project();
+                    project.count = help.count;
+                    project.price = price;
+
+                    configuration = project;
+                    break;
+                }
+
+                case database:{
+
+                    Configuration_Database database = new Configuration_Database();
+                    database.price = price;
+
+                    configuration = database;
+                    break;
+                }
+
+                case log:{
+
+                    Configuration_Log log = new Configuration_Log();
+                    log.count = help.count;
+                    log.price = price;
+
+                    configuration = log;
+                    break;
+                }
+
+                case rest_api:{
+
+                    Configuration_RestApi restApi = new Configuration_RestApi();
+                    restApi.available_requests = help.count;
+                    restApi.price = price;
+
+                    configuration = restApi;
+                    break;
+                }
+
+                case support:{
+
+                    Configuration_Support support = new Configuration_Support();
+                    support.nonstop = true;
+                    support.price = price;
+
+                    configuration = support;
+                    break;
+                }
+
+                case instance:{
+
+                    Configuration_Instance instance = new Configuration_Instance();
+                    instance.count = 5L;
+                    instance.price = price;
+
+                    configuration = instance;
+                    break;
+                }
+
+                case homer_server:{
+
+                    Configuration_HomerServer homerServer = new Configuration_HomerServer();
+                    homerServer.price = price;
+
+                    configuration = homerServer;
+                    break;
+                }
+
+                case participant:{
+
+                    Configuration_Participant participant = new Configuration_Participant();
+                    participant.count = help.count;
+                    participant.price = price;
+
+                    configuration = participant;
+                    break;
+                }
+
+                default: throw new Exception("Extension type is unknown.");
+            }
+
+            extension.configuration = Json.toJson(configuration).toString();
 
             if (help.included){
                 extension.tariff_included = tariff;
@@ -641,16 +729,103 @@ public class Controller_Finance extends Controller {
             Model_ProductExtension extension = Model_ProductExtension.find.byId(help.product_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
+            if (!extension.edit_permission()) return GlobalResult.result_forbidden();
+
             extension.name = help.name;
             extension.description = help.description;
             extension.type = help.type;
             extension.color = help.color;
             extension.active = true;
 
-            Result configuration_result = extension.setConfiguration(help);
-            if(configuration_result != null) return configuration_result;
+            Object configuration;
 
-            if (!extension.edit_permission()) return GlobalResult.result_forbidden();
+            if (help.price == null) return GlobalResult.result_badRequest("Price is required.");
+            Long price = (long) (help.price * 1000);
+
+            switch (extension.type) {
+
+                case project:{
+
+                    Configuration_Project project = new Configuration_Project();
+                    project.count = help.count;
+                    project.price = price;
+
+                    configuration = project;
+                    break;
+                }
+
+                case database:{
+
+                    Configuration_Database database = new Configuration_Database();
+                    database.price = price;
+
+                    configuration = database;
+                    break;
+                }
+
+                case log:{
+
+                    Configuration_Log log = new Configuration_Log();
+                    log.count = help.count;
+                    log.price = price;
+
+                    configuration = log;
+                    break;
+                }
+
+                case rest_api:{
+
+                    Configuration_RestApi restApi = new Configuration_RestApi();
+                    restApi.available_requests = help.count;
+                    restApi.price = price;
+
+                    configuration = restApi;
+                    break;
+                }
+
+                case support:{
+
+                    Configuration_Support support = new Configuration_Support();
+                    support.nonstop = true;
+                    support.price = price;
+
+                    configuration = support;
+                    break;
+                }
+
+                case instance:{
+
+                    Configuration_Instance instance = new Configuration_Instance();
+                    instance.count = 5L;
+                    instance.price = price;
+
+                    configuration = instance;
+                    break;
+                }
+
+                case homer_server:{
+
+                    Configuration_HomerServer homerServer = new Configuration_HomerServer();
+                    homerServer.price = price;
+
+                    configuration = homerServer;
+                    break;
+                }
+
+                case participant:{
+
+                    Configuration_Participant participant = new Configuration_Participant();
+                    participant.count = help.count;
+                    participant.price = price;
+
+                    configuration = participant;
+                    break;
+                }
+
+                default: throw new Exception("Extension type is unknown.");
+            }
+
+            extension.configuration = Json.toJson(configuration).toString();
 
             extension.update();
 

@@ -26,6 +26,13 @@ public class Extension_Log implements Extension {
         return log.price * log.count;
     }
 
+    public Long getConfigPrice(Object configuration) {
+
+        Configuration_Log log = ((Configuration_Log) configuration);
+
+        return log.price;
+    }
+
     public Long getDefaultMonthlyPrice() {
         return price *  30;
     }

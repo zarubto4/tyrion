@@ -12,42 +12,33 @@
 </section>
 
 <section class="content">
-
-    <div id="newBoardModal" style="display: none;" class="modal">
-        <div class="modal-dialog">
+    <div id="newBoardModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="newBoardModalTitle">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Create new Board</h4>
+                    <h4 id="newBoardModalTitle" class="modal-title">Create new Board</h4>
                 </div>
                 <div class="modal-body">
                     <form id="newBoardForm">
-
                         <div class="form-group">
-                            <label>Processor ID</label>
-                            <input type="text" class="form-control" name="hardware_unique_id">
+                            <input type="text" class="form-control" placeholder="Full ID" title="Full ID" name="full_id">
                         </div>
-
-                        <div class="form-group">
-                            <label>Type of Board</label>
-                            <div class="form-group">
-                                <select name="type_of_board_id" class="form-control">
-                                @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
-                                    <option value="@type_of_board.id" name="type_of_board_id"> @type_of_board.name </option>
-                                }
-                                </select>
-                            </div>
-                        </div>
-
+                            <select title="Type of Board" name="type_of_board_id" class="form-control form-group">
+                                <option selected disabled>Choose Type of Board</option>
+                            @for(type_of_board <- Model_TypeOfBoard.find.all() ) {
+                                <option value="@type_of_board.id" name="type_of_board_id"> @type_of_board.name </option>
+                            }
+                            </select>
                     </form>
+                    <div id="newBoardModalMessage" style="display: none"><p class="text-red"></p></div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal" onclick="$('#newBoardModal').css('display','none')">Close</button>
+                    <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
                     <button id="newCProgramButton" value="" class="btn btn-primary" type="button" onclick="createNewBoard()">Create</button>
                 </div>
             </div>
         </div>
     </div>
-
     <div class="row">
         <div class="col-md-12">
             <div class="box">
@@ -55,15 +46,13 @@
                     <h3 class="box-title">Filter settings</h3>
                     <div class="pull-right">
                         <div class="btn-group">
-                            <button class="btn btn-block btn-info" type="button" onclick="showNewBoard()">New Board</button>
+                            <button class="btn btn-xs btn-block btn-success" type="button" data-toggle="modal" data-target="#newBoardModal"><i class="fa fa-plus"></i></button>
                         </div>
                     </div>
                 </div>
                 <div class="box-body">
                     <form id="boardFilterForm">
-
                         <table id="filterTable" class="table table-condensed no-padding no-margin">
-
                             <tr>
                                 <th class="col-md-2">Type of Board</th>
                                 <th class="col-md-2">Producer</th>
@@ -72,7 +61,6 @@
                                 <th class="col-md-1">Parameters</th>
                                 <th>By Something</th>
                             </tr>
-
                             <tr>
                                 <td>
                                     <div>
@@ -111,7 +99,6 @@
                                         </button>
                                     </div>
                                 </td>
-
                                 <td>
                                     <div class="checkbox">
                                         <label>
@@ -119,7 +106,6 @@
                                         </label>
                                     </div>
                                 </td>
-
                             </tr>
                         </table>
                     </form>
@@ -137,11 +123,9 @@
                     <h3 class="box-title">Board summary</h3>
                 </div>
                 <div class="box-body">
-
                     <table id="AllTable" class="table table-bordered">
 
                     </table>
-
                 </div>
                 <div class="box-footer">
                     <div class="dataTables_paginate paging_simple_numbers" id="all_table_paginate" style="text-align: center;">
@@ -156,7 +140,6 @@
         </div>
     </div>
 </section>
-
 
 <script>
 
@@ -188,13 +171,7 @@
         }
     });
 
-     function showNewBoard(){
-         $("#newBoardModal").css("display","block");
-     }
-
      function createNewBoard(){
-
-         model_data = $("#newBoardForm").serializeObject();
 
          $.ajax({
              url: '@routes.Controller_Board.board_create()',
@@ -204,10 +181,12 @@
                  "X-AUTH-TOKEN":getCookie("authToken"),
                  "Content-Type":"application/json"
              },
-             data: JSON.stringify(model_data),
+             data: JSON.stringify($("#newBoardForm").serializeObject()),
              dataType: 'json',
 
              success: function(data, status) {
+                 $("#newBoardModal").modal('hide');
+                 $("#newBoardModalMessage").css("display", "none");
                  BootstrapDialog.show({
                      message: syntaxHighlight(data),
                      type: BootstrapDialog.TYPE_SUCCESS,
@@ -220,18 +199,9 @@
                  });
              },
 
-             error: function(data) {
-                 BootstrapDialog.show({
-                     message: syntaxHighlight(data),
-                     type: BootstrapDialog.TYPE_DANGER,
-                     buttons: [{
-                         label: 'Close',
-                         action: function(dialogItself) {
-                             dialogItself.close();
-                         }
-                     }]
-
-                 });
+             error: function(e) {
+                 $("#newBoardModalMessage").css("display", "block");
+                 $("#newBoardModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
              }
          })
      }
@@ -350,7 +320,7 @@
          $('#AllTable').html(""); // Vyprázdnění tabulky
 
          content +="<tr>";
-         content +="<th>Board ID</th>";
+         content +="<th>Full ID</th>";
          content +="<th>Hash for adding</th>";
          content +="<th>Personal Description</th>";
 

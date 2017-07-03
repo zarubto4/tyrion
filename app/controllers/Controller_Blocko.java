@@ -1748,6 +1748,7 @@ public class Controller_Blocko extends Controller{
             blockoBlockVersion.logic_json = scheme.logic_json;
             blockoBlockVersion.date_of_create = new Date();
             blockoBlockVersion.blocko_block = blockoBlock;
+            blockoBlockVersion.author = Controller_Security.get_person();
             blockoBlockVersion.save();
 
             // Vrácení objektu

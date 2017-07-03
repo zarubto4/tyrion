@@ -54,7 +54,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @for(version <- library.versions){
+                                @for((version, index) <- library.versions.zipWithIndex){
+                                    @if(index == 0) {
+                                        <script>
+                                                var last_version = "@version.id";
+                                        </script>
+                                    }
                                     <tr>
                                         <td>@version.version_name @if(version.removed_by_user){ <span class="label label-danger">deleted</span> }</td>
                                         <td>@version.version_description</td>
@@ -664,5 +669,9 @@
         editor = ace.edit("editor");
         //editor.setTheme("ace/theme/eclipse");
         editor.getSession().setMode("ace/mode/c_cpp");
+
+        if (typeof last_version != 'undefined' && typeof last_version == 'string') {
+            getVersion(last_version);
+        }
     });
 </script>

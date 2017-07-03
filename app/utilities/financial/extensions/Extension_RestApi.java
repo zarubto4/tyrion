@@ -26,6 +26,13 @@ public class Extension_RestApi implements Extension {
         return restApi.price * restApi.available_requests;
     }
 
+    public Long getConfigPrice(Object configuration) {
+
+        Configuration_RestApi restApi = ((Configuration_RestApi) configuration);
+
+        return restApi.price;
+    }
+
     public Long getDefaultMonthlyPrice() {
         return price * 30;
     }

@@ -1648,17 +1648,16 @@ public class Model_Board extends Model {
 
     public static Model_Board get_byId(String id){
 
-        Model_Board board_model = cache.get(id);
+        Model_Board board = cache.get(id);
+        if (board == null) {
 
-        if(board_model == null){
-            board_model = Model_Board.find.byId(id);
+            board = Model_Board.find.byId(id);
+            if (board == null) return null;
 
-            if (board_model == null) return null;
-
-            cache.put(id, board_model);
+            cache.put(id, board);
         }
 
-        return board_model;
+        return board;
     }
 
     public static List<Model_Board> get_byIds(List<String> board_ids){

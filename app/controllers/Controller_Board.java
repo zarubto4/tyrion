@@ -1253,6 +1253,7 @@ public class Controller_Board extends Controller {
             Model_TypeOfBoard typeOfBoard = new Model_TypeOfBoard();
             typeOfBoard.name = help.name;
             typeOfBoard.description = help.description;
+            typeOfBoard.compiler_target_name = help.compiler_target_name;
             typeOfBoard.processor = processor;
             typeOfBoard.producer = producer;
             typeOfBoard.connectible_to_internet = help.connectible_to_internet;
@@ -1843,17 +1844,17 @@ public class Controller_Board extends Controller {
             Swagger_Board_New help = form.get();
 
             // Kotrola objektu
-            if (Model_Board.find.byId(help.hardware_unique_id) != null) return GlobalResult.result_badRequest("Board is already registered");
+            if (Model_Board.find.byId(help.full_id) != null) return GlobalResult.result_badRequest("Board is already registered");
 
             // Kotrola objektu
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
+            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard not found");
 
             // Kontorluji oprávnění
             if (!typeOfBoard.register_new_device_permission()) return GlobalResult.result_forbidden();
 
             Model_Board board = new Model_Board();
-            board.id = help.hardware_unique_id;
+            board.id = help.full_id;
             board.is_active = false;
             board.date_of_create = new Date();
             board.type_of_board = typeOfBoard;

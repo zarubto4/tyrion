@@ -26,6 +26,13 @@ public class Extension_Support implements Extension {
         return support.price;
     }
 
+    public Long getConfigPrice(Object configuration) {
+
+        Configuration_Support support = ((Configuration_Support) configuration);
+
+        return support.price;
+    }
+
     public Long getDefaultMonthlyPrice() {
         return price * 30;
     }

@@ -227,14 +227,22 @@ public class Server_Logger extends Controller {
 
     // Vykreslí šablonu s bugy
     public Result show_all_logs() {
-        Html content =  loggy.render( Server_Logger.getErrors() );
+        Html content = loggy.render( Server_Logger.getErrors() );
         return dashboard.return_page(content);
     }
 
     // Nahraje konkrétní bug na Youtrack
     public Result loggy_report_bug_to_youtrack(String bug_id) {
 
-        return upload_to_youtrack(bug_id);
+        String description = "";
+
+        try {
+            description = request().body().asJson().get("description").asText();
+        } catch (Exception e) {
+            System.err.println("[error] - TYRION - Server_Logger:: loggy_report_bug_to_youtrack: Error while reporting bug to YouTrack");
+        }
+
+        return upload_to_youtrack(bug_id, description);
     }
 
     // Odstraní konkrétní bug ze seznamu (souboru)
@@ -309,7 +317,7 @@ public class Server_Logger extends Controller {
         } catch (Exception e) {}
     }
 
-    public static Result upload_to_youtrack(String id) {
+    public static Result upload_to_youtrack(String id, String description) {
         if (System.currentTimeMillis() > tokenExpire - 10000) { // pokud nemám platný token, získám ho a metodu spustím znovu
             if (youtrack_login().get(5000).status() != 200) {
                 return GlobalResult.result_badRequest("Cannot login to YouTrack");
@@ -322,7 +330,7 @@ public class Server_Logger extends Controller {
         WSRequest request = getWSClient().url(Configuration.root().getString("Loggy.youtrackUrl") + "/youtrack/rest/issue");
         request.setQueryParameter("project", Configuration.root().getString("Loggy.youtrackProject"));
         request.setQueryParameter("summary", e.summary);
-        request.setQueryParameter("description", e.description + e.stack_trace + e.cause);
+        request.setQueryParameter("description", description + "\n\n" + e.description + e.stack_trace + (e.cause == null ? "" : e.cause));
         request.setHeader("Authorization", "Bearer "+token);
         F.Promise<WSResponse> promise = request.put("");
         return youtrack_checkUploadResponse(promise.get(10000), e); // zpracuje odpověď a zapíše url do erroru
@@ -372,7 +380,7 @@ public class Server_Logger extends Controller {
     private static Result youtrack_checkUploadResponse(WSResponse response, Model_LoggyError error) {
         if (response.getStatus() == 201) {
             error.setYoutrack_url(response.getHeader("Location").replace("/rest", "")); // uložím url z odpovědi
-            error.save();
+            error.update();
 
             logger.debug( Server_Logger.class , error.youtrack_url +  "---" + Model_LoggyError.find.byId(error.id).youtrack_url);
 

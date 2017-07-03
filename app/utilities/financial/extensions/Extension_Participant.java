@@ -26,6 +26,13 @@ public class Extension_Participant implements Extension {
         return participant.price * participant.count;
     }
 
+    public Long getConfigPrice(Object configuration) {
+
+        Configuration_Participant participant = ((Configuration_Participant) configuration);
+
+        return participant.price;
+    }
+
     public Long getDefaultMonthlyPrice() {
         return price * 30;
     }

@@ -246,7 +246,7 @@
                     <select title="Producer" class="form-control form-group select2" name="producer_id">
                         <option selected="selected" disabled>Choose producer</option>
                         @for(producer <- Model_Producer.find.all()){
-                            @if(producer.id.equals(typeOfBoard.processor_id())) {
+                            @if(producer.id.equals(typeOfBoard.producer_id())) {
                                 <option selected value="@producer.id">@producer.name</option>
                             } else {
                                 <option value="@producer.id">@producer.name</option>
@@ -273,7 +273,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
-                <button id="editTypeOfBoardButton" value="" class="btn btn-primary" type="button" onclick="editTypeOfBoard(this.value)">Save</button>
+                <button class="btn btn-primary" type="button" onclick="editTypeOfBoard()">Save</button>
             </div>
         </div>
     </div>
@@ -457,9 +457,9 @@
         $("#edit_boot_loader_changing_note").val(boot_loader_changing_note);
     }
 
-    function editTypeOfBoard(id){
+    function editTypeOfBoard(){
         $.ajax({
-            url: '@routes.Controller_Board.typeOfBoard_update("")' + id ,
+            url: '@routes.Controller_Board.typeOfBoard_update(typeOfBoard.id)',
             type: 'PUT',
             contentType: 'application/json',
             headers: {

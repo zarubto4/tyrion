@@ -234,9 +234,42 @@ public class Model_ProductExtension extends Model{
         }
     }
 
+    /**
+     * Method serves for information purposes only.
+     * Returned value is shown to users, because real price is Double USD * 1000.
+     * @return Real price in Double.
+     */
+    @JsonIgnore
+    public Double getConfigPrice() {
+        try {
+
+            terminal_logger.trace("getConfigPrice: Getting price for extension of type {}", this.type.name());
+
+            Extension extension = getExtensionType();
+            if (extension == null) return null;
+
+            Object configuration = getConfiguration();
+            if (configuration == null) return null;
+
+            terminal_logger.debug("getConfigPrice: Got extension type and configuration.");
+
+            return ((double) extension.getConfigPrice(configuration)) / 1000;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
     @JsonIgnore
     public boolean isActive() {
         return active;
+    }
+
+    @JsonIgnore
+    public String getTypeName(){
+
+        return type.name();
     }
 
     @JsonIgnore
@@ -381,6 +414,11 @@ public class Model_ProductExtension extends Model{
                     break;
                 }
 
+                case participant:{
+                    form = Form.form(Configuration_Participant.class).bind(Json.parse(configuration));
+                    break;
+                }
+
                 default: throw new Exception("Extension type is unknown.");
             }
 
@@ -435,7 +473,7 @@ public class Model_ProductExtension extends Model{
             case rest_api:{
 
                 Configuration_RestApi restApi = new Configuration_RestApi();
-                restApi.available_requests = 30L;
+                restApi.available_requests = help.count;
                 restApi.price = getExtensionTypePrice();
 
                 configuration = restApi;
@@ -445,7 +483,7 @@ public class Model_ProductExtension extends Model{
             case support:{
 
                 Configuration_Support support = new Configuration_Support();
-                support.nonstop = true;
+                support.nonstop = help.nonstop;
                 support.price = getExtensionTypePrice();
 
                 configuration = support;
@@ -468,6 +506,16 @@ public class Model_ProductExtension extends Model{
                 homerServer.price = getExtensionTypePrice();
 
                 configuration = homerServer;
+                break;
+            }
+
+            case participant:{
+
+                Configuration_Participant participant = new Configuration_Participant();
+                participant.count = help.count;
+                participant.price = getExtensionTypePrice();
+
+                configuration = participant;
                 break;
             }
 

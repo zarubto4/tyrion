@@ -26,6 +26,13 @@ public class Extension_HomerServer implements Extension {
         return homerServer.price;
     }
 
+    public Long getConfigPrice(Object configuration) {
+
+        Configuration_HomerServer homerServer = ((Configuration_HomerServer) configuration);
+
+        return homerServer.price;
+    }
+
     public Long getDefaultMonthlyPrice() {
         return price * 30;
     }

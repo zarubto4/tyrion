@@ -6,253 +6,254 @@
 @(board: Model_Board)
 
 <section class="content-header">
-    <h1> Board Summary </h1>
+    <h1> Board: @board.id </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
-        <li class="active"><i class="fa fa-share"></i> Server Management </li>
-        <li class="active"><i class="fa fa-wrench"></i> Board Description </li>
+        <li class="active"><i class="fa fa-wrench"></i> Server Management </li>
+        <li><a href="@routes.Controller_Dashboard.board_summary()"><i class="fa fa-wrench"></i> Board Summary </a></li>
+        <li class="active"><i class="fa fa-wrench"></i> @board.id </li>
     </ol>
 </section>
 
 <section class="content">
     <div class="row">
-                     <div class="col-md-6">
-                        <div class="box">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Basic Information</h3>
-                                <div class="btn-group pull-right">
-                                    <button class="btn btn-xs btn-danger" type="button" data-toggle="modal" data-target="#deleteModal" onclick="alert('Be careful with this operation!');" title="Delete"><i class="fa fa-times"></i></button>
-                                    <button class="btn btn-xs btn-info" type="button" data-toggle="modal" data-target="#editModal" title="Edit"><i class="fa fa-edit"></i></button>
+        <div class="col-md-6">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Basic Information</h3>
+                    <div class="btn-group pull-right">
+                        <button class="btn btn-xs btn-danger" type="button" data-toggle="modal" data-target="#deleteModal" onclick="alert('Be careful with this operation!');" title="Delete"><i class="fa fa-times"></i></button>
+                        <button class="btn btn-xs btn-info" type="button" data-toggle="modal" data-target="#editModal" title="Edit"><i class="fa fa-edit"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <table  class="table table-bordered">
+                        <tr>
+                            <td class="col-md-4">Full ID</td>
+                            <td class="col-md-8">@board.id</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Personal Name</td>
+                            <td class="col-md-8">@board.name</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Personal Description</td>
+                            <td class="col-md-8">@board.description</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Type of Board</td>
+                            <td class="col-md-8">@board.type_of_board.name</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Hash for Adding</td>
+                            <td class="col-md-8">@board.hash_for_adding</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Mac Address</td>
+                            <td class="col-md-8">@board.mac_address</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Wifi mac Address</td>
+                            <td class="col-md-8">@board.wifi_mac_address</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Project Id</td>
+                            <td class="col-md-8">@if(board.project != null ){
+                                @board.project.id
+                            }</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Status</h3>
+                </div>
+                <div class="box-body">
+                    <table  class="table table-bordered">
+                        <tr>
+                            <td class="col-md-4">Active </td>
+                            <td class="col-md-8">@board.is_active</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Online</td>
+                            @if(board.is_online()){
+                                <td> <span class="label label-success">Online</span></td>
+                            }else{
+                                <td><span class="label label-danger">Offline</span></td>
+                            }
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Backup mode</td>
+                            <td class="col-md-8">
+                                @if(!board.backup_mode){
+                                    <button id="set_backup_mode" class="btn btn-xs btn-block btn-success" type="button"  onclick="backup_mode('@board.id',true)">Turn ON Backup Mode (Now is off)</button>
+                                }else{
+                                    Auto Backup is on. Upload Static Backup for change
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Date of create</td>
+                            <td class="col-md-8">@board.date_of_create</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+           <div class="box">
+               <div class="box-header with-border">
+                   <h3 class="box-title">Actual firmware</h3>
+               </div>
+               <div class="box-body" >
+                   <table  class="table table-bordered">
+                       <tr>
+                           <td class="col-md-4">Actual Firmware ID</td>
+                           <td class="col-md-8">@if(board.actual_c_program_version != null) {
+                               @board.actual_c_program_version.id
+                           }</td>
+                       </tr>
+                       <tr>
+                           <td class="col-md-4">Actual Firmware Name</td>
+                           <td class="col-md-8">
+                               @if(board.actual_c_program_version != null) {
+                                   @board.actual_c_program_version.version_name
+                               }
+                           </td>
+                       </tr>
+                   </table>
+                   <br>
+               </div>
+               <div class="box-footer">
+               </div>
+           </div>
+        </div>
+        <div class="col-md-6">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Backup Information </h3>
+                </div>
+                <div class="box-body" >
+                    <table  class="table table-bordered">
+                        <tr>
+                            <td class="col-md-4">Actual Backup ID</td>
+                            <td class="col-md-8">@if(board.actual_backup_c_program_version != null) {
+                                @board.actual_backup_c_program_version.id
+                            }</td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Actual Backup Name</td>
+                            <td class="col-md-8">
+                            @if(board.actual_backup_c_program_version != null) {
+                                @board.actual_backup_c_program_version.version_name
+                            }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                Backup is set for AutoBackup. You can set Backup to static Backup Version.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                C Program
+                            </td>
+                            <td class="col-md-8">
+                                <div>
+                                    <select onchange="selectCProgram(this.value); this.selectedindex = -1" id="selectProgram" name="c_program_id" class="form-control">
+                                            <option selected="selected" disabled>Choose Type of Board</option>
+                                            @for(c_program <- Model_CProgram.find.where().eq("project.id", board.project_id()).eq("type_of_board.id", board.type_of_board.id).findList()) {
+                                                <option onclick="selectCProgram('@c_program.id')" value="@c_program.id" > @c_program.name </option>
+                                            }
+                                    </select>
                                 </div>
-                            </div>
-                            <div class="box-body">
-                                <table  class="table table-bordered">
-                                    <tr>
-                                        <td class="col-md-4">Board ID</td>
-                                        <td class="col-md-8">@board.id</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Personal Name</td>
-                                        <td class="col-md-8">@board.name</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Personal Description</td>
-                                        <td class="col-md-8">@board.description</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Type of Board</td>
-                                        <td class="col-md-8">@board.type_of_board.name</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Hash for Adding</td>
-                                        <td class="col-md-8">@board.hash_for_adding</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Mac Address</td>
-                                        <td class="col-md-8">@board.mac_address</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Wifi mac Address</td>
-                                        <td class="col-md-8">@board.wifi_mac_address</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Project Id</td>
-                                        <td class="col-md-8">@if(board.project != null ){
-                                            @board.project.id
-                                        }</td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <div class="box-footer">
-                            </div>
-                        </div>
-                        <div class="box">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Status</h3>
-                            </div>
-                            <div class="box-body">
-                                <table  class="table table-bordered">
-                                    <tr>
-                                        <td class="col-md-4">Active </td>
-                                        <td class="col-md-8">@board.is_active</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Online</td>
-                                        @if(board.is_online()){
-                                            <td> <span class="label label-success">Online</span></td>
-                                        }else{
-                                            <td><span class="label label-danger">Offline</span></td>
-                                        }
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Backup mode</td>
-                                        <td class="col-md-8">
-                                            @if(!board.backup_mode){
-                                                <button id="set_backup_mode" class="btn btn-block btn-success" type="button"  onclick="backup_mode('@board.id',true)">Turn ON Backup Mode (Now is off)</button>
-                                            }else{
-                                                Auto Backup is on. Upload Static Backup for change
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Date of create</td>
-                                        <td class="col-md-8">@board.date_of_create</td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <div class="box-footer">
-                            </div>
-                        </div>
-                    </div>
-                     <div class="col-md-6">
-                        <div class="box">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Actual firmware</h3>
-                            </div>
-                            <div class="box-body" >
-                                <table  class="table table-bordered">
-                                    <tr>
-                                        <td class="col-md-4">Actual Firmware ID</td>
-                                        <td class="col-md-8">@if(board.actual_c_program_version != null) {
-                                            @board.actual_c_program_version.id
-                                        }</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Actual Firmware Name</td>
-                                        <td class="col-md-8">
-                                            @if(board.actual_c_program_version != null) {
-                                                @board.actual_c_program_version.version_name
-                                            }
-                                        </td>
-                                    </tr>
-                                </table>
-                                <br>
-                            </div>
-                            <div class="box-footer">
-                            </div>
-                        </div>
-                    </div>
-                     <div class="col-md-6">
-                         <div class="box">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Backup Information </h3>
-                            </div>
-                           <div class="box-body" >
-                               <table  class="table table-bordered">
-                                           <tr>
-                                               <td class="col-md-4">Actual Backup ID</td>
-                                               <td class="col-md-8">@if(board.actual_backup_c_program_version != null) {
-                                                   @board.actual_backup_c_program_version.id
-                                               }</td>
-                                           </tr>
-                                           <tr>
-                                               <td class="col-md-4">Actual Backup Name</td>
-                                               <td class="col-md-8">
-                                               @if(board.actual_backup_c_program_version != null) {
-                                                   @board.actual_backup_c_program_version.version_name
-                                               }
-                                               </td>
-                                           </tr>
-                                            <tr>
-                                                <td colspan="2">
-                                                    Backup is set for AutoBackup. You can set Backup to static Backup Version.
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="col-md-4">
-                                                    C Program
-                                                </td>
-                                                <td class="col-md-8">
-                                                    <div>
-                                                        <select onchange="selectCProgram(this.value); this.selectedindex = -1" id="selectProgram" name="c_program_id" class="form-control">
-                                                                <option selected="selected" disabled>Choose Type of Board</option>
-                                                                @for(c_program <- Model_CProgram.find.where().eq("project.id", board.project_id()).eq("type_of_board.id", board.type_of_board.id).findList()) {
-                                                                    <option onclick="selectCProgram('@c_program.id')" value="@c_program.id" > @c_program.name </option>
-                                                                }
-                                                        </select>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="col-md-4"> Version </td>
-                                                <td class="col-md-8">
-                                                    <div>
-                                                        <select id="selectCProgramVersion" name="c_program_version_id" class="form-control">
-                                                        </select>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="col-md-4"> Upload Immediately </td>
-                                                <td>
-                                                    <button class="btn btn-block btn-warning" type="button" onclick="updateBackup()">Set Static Backup</button>
-                                                </td>
-                                            </tr>
-                                </table>
-                           </div>
-                             <div class="box-footer">
-                             </div>
-                         </div>
-                     </div>
-                     <div class="col-md-6">
-                        <div class="box">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Bootloader Information</h3>
-                            </div>
-                            <div class="box-body" >
-                                <table  class="table table-bordered">
-                                    <tr>
-                                        <td class="col-md-4">Actual Bootloader ID</td>
-                                        <td class="col-md-8"> @if(board.actual_boot_loader != null) {
-                                                @board.actual_boot_loader.version_identificator
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="col-md-4">Actual Bootloader Name</td>
-                                        <td class="col-md-8"> @if(board.actual_boot_loader != null) {
-                                            @board.actual_boot_loader.name
-                                        }
-                                        </td>
-                                    </tr>
-                                    @if(board.update_boot_loader_required()) {
-                                        <tr>
-                                            <td class="col-md-4">Required update Bootloader</td>
-                                            <td class="col-md-8">
-                                                <button class="btn btn-block btn-danger" type="button" onclick="updateBootLoader('@board.id')">Manual Update</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="col-md-4">Actual Default by Type of Board</td>
-                                            <td class="col-md-8">
-                                                @if(board.type_of_board.main_boot_loader != null){
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4"> Version </td>
+                            <td class="col-md-8">
+                                <div>
+                                    <select id="selectCProgramVersion" name="c_program_version_id" class="form-control">
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4"> Upload Immediately </td>
+                            <td>
+                                <button class="btn btn-xs btn-block btn-warning" type="button" onclick="updateBackup()">Set Static Backup</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Bootloader Information</h3>
+                </div>
+                <div class="box-body" >
+                    <table  class="table table-bordered">
+                        <tr>
+                            <td class="col-md-4">Actual Bootloader ID</td>
+                            <td class="col-md-8"> @if(board.actual_boot_loader != null) {
+                                    @board.actual_boot_loader.version_identificator
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-4">Actual Bootloader Name</td>
+                            <td class="col-md-8"> @if(board.actual_boot_loader != null) {
+                                @board.actual_boot_loader.name
+                            }
+                            </td>
+                        </tr>
+                        @if(board.update_boot_loader_required()) {
+                            <tr>
+                                <td class="col-md-4">Required update Bootloader</td>
+                                <td class="col-md-8">
+                                    <button class="btn btn-xs btn-block btn-danger" type="button" onclick="updateBootLoader('@board.id')">Manual Update</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-md-4">Actual Default by Type of Board</td>
+                                <td class="col-md-8">
+                                    @if(board.type_of_board.main_boot_loader != null){
 
-                                                    @board.type_of_board.main_boot_loader.id
+                                        @board.type_of_board.main_boot_loader.id
 
-                                                }else{
-                                                    Main Not Yet Set!
-                                                }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="col-md-4">Actual Default by Type of Board</td>
-                                            <td class="col-md-8">
-                                                @if(board.type_of_board.main_boot_loader != null){
-
-                                                    @board.type_of_board.main_boot_loader.version_identificator
-
-                                                }else{
-                                                    Main Not Yet Set!
-                                                }
-                                            </td>
-                                        </tr>
+                                    }else{
+                                        Main Not Yet Set!
                                     }
-                                </table>
-                            </div>
-                            <div class="box-footer">
-                            </div>
-                        </div>
-                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-md-4">Actual Default by Type of Board</td>
+                                <td class="col-md-8">
+                                    @if(board.type_of_board.main_boot_loader != null){
+
+                                        @board.type_of_board.main_boot_loader.version_identificator
+
+                                    }else{
+                                        Main Not Yet Set!
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
                 <div class="col-md-12">
                     <div class="box">
                         <div class="box-header with-border">
@@ -490,11 +491,8 @@
                                     dialogItself.close();
                                 }
                             }]
-
                         });
                     }
-
-
                 })
             }
 
@@ -539,9 +537,6 @@
                 $('#selectCProgramVersion').html("");
 
                 $.each(json.program_versions, function (k, v) {
-
-                    console.log("Version:: " + v.id);
-
                     if(k == 0){
                         $('#selectCProgramVersion').append("<option  selected='selected' value=\"" + v.version_id + "\">" + v.version_name + "</option>");
                     }else {
@@ -557,8 +552,6 @@
                     device_ids:[deviceId]
                 };
 
-                console.log(JSON.stringify(json));
-
                 $.ajax({
                     url: '@routes.Controller_Board.bootLoader_manualUpdate()',
                     type: 'PUT',
@@ -569,7 +562,6 @@
                     },
                     data: JSON.stringify(json),
                     dataType: 'json',
-
                     success:function(data, status){
 
                         $('#allProcedures').load(document.URL +  ' #allProcedures');
@@ -589,8 +581,6 @@
                         });
                     },
                     error:function(data) {
-                        console.log(data);
-
                         BootstrapDialog.show({
                             message:  syntaxHighlight(data),
                             type: BootstrapDialog.TYPE_DANGER,
@@ -600,11 +590,8 @@
                                     dialogItself.close();
                                 }
                             }]
-
                         });
                     }
-
-
                 })
             }
 
