@@ -1,0 +1,191 @@
+<html>
+<head>
+<title>homer_instance.md</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+.s0 { color: rgb(169,183,198); }
+.s1 { color: rgb(204,120,50); font-weight: bold; }
+.s2 { color: rgb(169,183,198); }
+.s3 { color: rgb(128,128,128); }
+</style>
+</head>
+<BODY BGCOLOR="#2b2b2b">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+homer_instance.md</FONT>
+</center></TD></TR></TABLE>
+<pre>
+<span class="s0"> 
+</span><span class="s1">## </span><span class="s2">Tyrion </span><span class="s0">&lt;</span><span class="s2">-</span><span class="s0">&gt; </span><span class="s2">Homer-Instance </span><span class="s1">##</span><span class="s0"> 
+ 
+</span><span class="s2">Channel Code</span><span class="s0">:: **</span><span class="s2">tyrion</span><span class="s0">** 
+ 
+**</span><span class="s2">List of Json Objects for Comunication between Tyrion and Homer Instance</span><span class="s0">** 
+ 
+</span><span class="s2">Any incoming or outgoing message to Tyrion and from Tyrion contains</span><span class="s0"> 
+ 
+</span><span class="s3">        {</span><span class="s0"> 
+</span><span class="s3">            &quot;messageType&quot;    :  &quot;nazev_zpravy&quot;              </span><span class="s0"> 
+</span><span class="s3">            &quot;messageId&quot;      :  &quot;some_uuid_string&quot;</span><span class="s0"> 
+</span><span class="s3">            &quot;messageChannel&quot; :  &quot;channel_name&quot;  &lt;&lt;-- In this case its instance</span><span class="s0"> 
+</span><span class="s3">            &quot;instance_id:    :  &quot;............&quot;  </span><span class="s0"> 
+</span><span class="s3">        }</span><span class="s0"> 
+         
+</span><span class="s1"> - </span><span class="s2">All Instances are in Flat structure</span><span class="s0"> 
+  
+</span><span class="s1"> - </span><span class="s2">We have also 2 kind of Commands - </span><span class="s0">&quot;</span><span class="s2">Singleton</span><span class="s0">&quot; </span><span class="s2">for only one device or Multiple Command for List od device</span><span class="s0"> 
+   </span><span class="s2">or with list of Independent Commands.</span><span class="s0"> 
+  
+  
+   
+</span><span class="s1">#### </span><span class="s0">[</span><span class="s2">1</span><span class="s0">] </span><span class="s2">SET Hardware to Instance </span><span class="s1">####</span><span class="s0"> 
+</span><span class="s2">Pokud byl hardware v jiné instanci, zpřethrá vazby a přesune se do druhé instance. </span><span class="s0"> 
+</span><span class="s2">Podle dohody jde o snapshot toho v jakém stavu to má být </span><span class="s0">(</span><span class="s2">Neexistuje ADD ani REMOVE</span><span class="s0">) 
+</span><span class="s2">V případě ADD a Remove se pošle SNAP znovu. Homer se má postarat o vyřešení stavu. </span><span class="s0"> 
+ 
+</span><span class="s3">    Request: </span><span class="s0"> 
+</span><span class="s3">        {</span><span class="s0"> 
+</span><span class="s3">           &quot;messageType&quot;    :   &quot;instance_set_hardware&quot;              </span><span class="s0"> 
+</span><span class="s3">           &quot;messageId&quot;      :   &quot;some_uuid_string&quot;</span><span class="s0"> 
+</span><span class="s3">           &quot;messageChannel&quot; :   &quot;instance&quot;  </span><span class="s0"> 
+            
+</span><span class="s3">           &quot;instance_id     :   &quot;............&quot;  </span><span class="s0"> 
+</span><span class="s3">           &quot;device_ids&quot;     :  [&quot;id_1&quot;, &quot;id_2&quot;]</span><span class="s0"> 
+</span><span class="s3">        }</span><span class="s0"> 
+     
+</span><span class="s3">    Response:</span><span class="s0"> 
+</span><span class="s3">         {</span><span class="s0"> 
+</span><span class="s3">            &quot;status&quot;         :   &quot;success | error&quot;</span><span class="s0"> 
+</span><span class="s3">            &quot;messageId&quot;      :   &quot;same_uuid_string&quot;  </span><span class="s0"> 
+                           
+</span><span class="s3">            &quot;error_code&quot;     :   414 (Int)  (Only if status is error) </span><span class="s0"> 
+             
+</span><span class="s3">         }  </span><span class="s0"> 
+                 
+ 
+</span><span class="s1">#### </span><span class="s0">[</span><span class="s2">2</span><span class="s0">] </span><span class="s2">Set Blocko Program to Instance </span><span class="s1">####</span><span class="s0"> 
+ 
+</span><span class="s3">      Request: </span><span class="s0"> 
+</span><span class="s3">          {</span><span class="s0"> 
+</span><span class="s3">               &quot;messageType&quot;    :   &quot;instance_set_program&quot;              </span><span class="s0"> 
+</span><span class="s3">               &quot;messageId&quot;      :   &quot;some_uuid_string&quot;</span><span class="s0"> 
+</span><span class="s3">               &quot;messageChannel&quot; :   &quot;instance&quot;  </span><span class="s0"> 
+                
+</span><span class="s3">               &quot;instance_id&quot;    :   &quot;............&quot;  </span><span class="s0"> 
+</span><span class="s3">               &quot;b_program_name&quot; :   &quot;............&quot;  </span><span class="s0"> 
+</span><span class="s3">               &quot;b_program_id&quot;   :   &quot;............&quot;  </span><span class="s0"> 
+</span><span class="s3">               &quot;program_version_name&quot;   :   &quot;............&quot;  </span><span class="s0"> 
+</span><span class="s3">               &quot;program_version_id&quot;     :   &quot;............&quot;  &lt;--- This ID is used for Homer API (Get File)</span><span class="s0"> 
+</span><span class="s3">          }        </span><span class="s0"> 
+ 
+</span><span class="s3">      Response: </span><span class="s0"> 
+</span><span class="s3">         {</span><span class="s0"> 
+</span><span class="s3">             &quot;status&quot;         :   &quot;success | error&quot;</span><span class="s0"> 
+</span><span class="s3">             &quot;messageId&quot;      :   &quot;same_uuid_string&quot;  </span><span class="s0"> 
+                                   
+</span><span class="s3">             &quot;error_code&quot;     :   414 (Int)  (Only if status is error)   </span><span class="s0"> 
+</span><span class="s3">         }  </span><span class="s0"> 
+          
+          
+</span><span class="s1">#### </span><span class="s0">[</span><span class="s2">3</span><span class="s0">] </span><span class="s2">Set Terminals to Instance </span><span class="s1">####         </span><span class="s0"> 
+     
+</span><span class="s3">    Request: </span><span class="s0"> 
+</span><span class="s3">          {</span><span class="s0"> 
+</span><span class="s3">               &quot;messageType&quot;    :   &quot;instance_set_terminals&quot;              </span><span class="s0"> 
+</span><span class="s3">               &quot;messageId&quot;      :   &quot;some_uuid_string&quot;</span><span class="s0"> 
+</span><span class="s3">               &quot;messageChannel&quot; :   &quot;instance&quot;  </span><span class="s0"> 
+ 
+</span><span class="s3">               &quot;terminals&quot;      :   [</span><span class="s0"> 
+</span><span class="s3">                  &quot;m_program_id&quot; : &quot;......&quot;</span><span class="s0"> 
+</span><span class="s3">                  &quot;m_program_version_id&quot; : &quot;......&quot;</span><span class="s0"> 
+</span><span class="s3">                  &quot;m_project_id&quot; : &quot;......&quot;</span><span class="s0"> 
+</span><span class="s3">                  &quot;settings&quot; : &quot;enum&quot;   &lt;--- (absolutely_public, </span><span class="s0"> 
+</span><span class="s3">                                              only_for_project_members, </span><span class="s0"> 
+</span><span class="s3">                                              only_for_project_members_and_imitated_emails) </span><span class="s0"> 
+</span><span class="s3">               ]</span><span class="s0"> 
+</span><span class="s3">          }     </span><span class="s0"> 
+                       
+</span><span class="s3">     Response:</span><span class="s0"> 
+</span><span class="s3">           {</span><span class="s0"> 
+</span><span class="s3">               &quot;status&quot;         :   &quot;success | error&quot;</span><span class="s0"> 
+</span><span class="s3">               &quot;messageId&quot;      :   &quot;same_uuid_string&quot;  </span><span class="s0"> 
+                                              
+</span><span class="s3">               &quot;error_code&quot;     :   414 (Int)  (Only if status is error)   </span><span class="s0"> 
+</span><span class="s3">           }             </span><span class="s0"> 
+            
+            
+ 
+</span><span class="s1">#### </span><span class="s0">[</span><span class="s2">4</span><span class="s0">] </span><span class="s2">Get Instance Status </span><span class="s1">####</span><span class="s0"> 
+</span><span class="s2">Nahrazuje Ping a synchro s online stavem a instance exist </span><span class="s0">(</span><span class="s2">Podle Error codu</span><span class="s0">) 
+     
+</span><span class="s3">    Request: </span><span class="s0"> 
+     
+</span><span class="s3">          {</span><span class="s0"> 
+</span><span class="s3">               &quot;messageType&quot;    :   &quot;instance_status&quot;              </span><span class="s0"> 
+</span><span class="s3">               &quot;messageId&quot;      :   &quot;some_uuid_string&quot;</span><span class="s0"> 
+</span><span class="s3">               &quot;messageChannel&quot; :   &quot;instance&quot;  </span><span class="s0"> 
+                
+</span><span class="s3">               &quot;instance_ids&quot;   :   [&quot;id_1&quot;, &quot;id_2&quot;] </span><span class="s0"> 
+</span><span class="s3">          }   </span><span class="s0"> 
+      
+</span><span class="s3">    Response:</span><span class="s0"> 
+     
+</span><span class="s3">          {</span><span class="s0"> 
+</span><span class="s3">              &quot;status&quot;         :   &quot;success | error&quot;</span><span class="s0"> 
+</span><span class="s3">              &quot;error_code&quot;     :   414 (Int)  (Only if status is error)  &lt;--- Totální selhání odpovědi </span><span class="s0"> 
+</span><span class="s3">              &quot;instance_list&quot;   : [</span><span class="s0"> 
+</span><span class="s3">                  {</span><span class="s0"> 
+</span><span class="s3">                    &quot;instance_id&quot;   : &quot;............&quot;</span><span class="s0"> 
+</span><span class="s3">                    &quot;online_status&quot; : boolean  </span><span class="s0"> 
+</span><span class="s3">                    &quot;error_code&quot;    : 123 (Integer)    &lt;-- Instnace neexistuje, atd..</span><span class="s0"> 
+</span><span class="s3">                  }</span><span class="s0"> 
+</span><span class="s3">              ]</span><span class="s0"> 
+           
+</span><span class="s3">          }</span><span class="s0"> 
+              
+ 
+ 
+</span><span class="s1">### </span><span class="s2">Message from Homer for Tyrion </span><span class="s1">###  </span><span class="s0"> 
+ 
+</span><span class="s1">#### </span><span class="s0">[</span><span class="s2">1</span><span class="s0">] </span><span class="s2">token_grid_verification </span><span class="s1">####</span><span class="s0"> 
+          
+</span><span class="s3">    Request: </span><span class="s0"> 
+     
+</span><span class="s3">        {</span><span class="s0"> 
+</span><span class="s3">           &quot;messageType&quot;    :   &quot;instance_token_grid_verification&quot;              </span><span class="s0"> 
+</span><span class="s3">           &quot;messageId&quot;      :   &quot;some_uuid_string&quot;</span><span class="s0"> 
+</span><span class="s3">           &quot;messageChannel&quot; :   &quot;instance&quot;  </span><span class="s0"> 
+             
+             
+</span><span class="s3">           &quot;token&quot;          :  &quot;string&quot;</span><span class="s0"> 
+</span><span class="s3">           &quot;instance_id:    :  &quot;............&quot; </span><span class="s0"> 
+</span><span class="s3">        }</span><span class="s0"> 
+         
+</span><span class="s3">    Response:</span><span class="s0"> 
+     
+</span><span class="s3">        {</span><span class="s0"> 
+</span><span class="s3">           &quot;&quot;</span><span class="s0"> 
+</span><span class="s3">        }</span><span class="s0"> 
+         
+</span><span class="s1">#### </span><span class="s0">[</span><span class="s2">2</span><span class="s0">] </span><span class="s2">token_webView_verification </span><span class="s1">####</span><span class="s0"> 
+         
+</span><span class="s3">    Request:  </span><span class="s0"> 
+          
+</span><span class="s3">         {</span><span class="s0"> 
+</span><span class="s3">            &quot;messageType&quot;    :  &quot;instance_token_webView_verification&quot;              </span><span class="s0"> 
+</span><span class="s3">            &quot;token&quot;          :  &quot;string&quot;</span><span class="s0"> 
+</span><span class="s3">            &quot;messageId&quot;      :  &quot;somer_uuid_string&quot;</span><span class="s0"> 
+</span><span class="s3">            &quot;messageChannel&quot; :  &quot;channel_name&quot;</span><span class="s0"> 
+</span><span class="s3">            &quot;instanceId:     :  &quot;instanceId&quot;  </span><span class="s0"> 
+</span><span class="s3">         }</span><span class="s0"> 
+         
+</span><span class="s3">    Response:</span><span class="s0"> 
+     
+</span><span class="s3">        {</span><span class="s0"> 
+</span><span class="s3">           &quot;&quot;</span><span class="s0"> 
+</span><span class="s3">        }</span><span class="s0"> 
+</span></pre>
+</body>
+</html>

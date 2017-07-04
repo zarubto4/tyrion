@@ -25,13 +25,31 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
  #### [0-A] Server is not Verify ####
  [A] Veškerou komunikaci Tyrion blokuje dokud nedojde k ověření 
  
-     Response:
+     Response: (Blokační zpráva, když není Homer ověřen)
           {  
             "message_type"    :  "homer_verification_first_required"              
             "message_id"      :  "some_uuid_string"
             "message_channel" :  "homer_server"  
           }
- 
+          
+     Po této zprávě by Homer jako první měl zaslat Tyrionovi zprávu 
+     Tato procedura je žádoucí i v případe, kdy přestane platit rest-api token. 
+          
+       Request To Tyrion From Homer:
+           {  
+              "message_type"    :  "homer_verification_first_required"              
+              "message_id"      :  "some_uuid_string"
+              "message_channel" :  "homer_server"  
+           }   
+           
+       Response from Tyrion if Success (Token sedí || nesedí):
+         {
+               "message_type"   :   "homer_verification_result"    
+               "status"         :   "success | error"   
+               "message_id"     :   "same_uuid_string" 
+               "token"          :   "rest_api_token"   <--- Only if status is success 
+         }           
+                     
  [B] Tyrion potvrdí oprávnění a homer může volně komunikovat
  
     Response:
@@ -53,22 +71,19 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
      Response from Homer:
            {
              "status"         :   "success | error"
-             "message_id"      :   "same_uuid_string"  
+             "message_id"     :   "same_uuid_string"  
              "hash_token"     :   "loooooong_hash"   <--- Only if status is success 
              "error_code"     :   414 (Int)          <--- Only if status is error
            }   
            
-     Response from Tyrion if Success (Token sedí):
+     Response from Tyrion if Success (Token sedí || nesedí):
            {
-             "message_type"    :   "get_verification_token"      
-             "message_id"      :   "new_uuid_string!!!!"  
+             "message_type"   :   "homer_verification_result"    
+             "status"         :   "success | error"   
+             "message_id"     :   "same_uuid_string" 
+             "token"          :   "rest_api_token"   <--- Only if status is success 
            }  
               
-     Response from Tyrion if Success (Token je špatně):
-           {
-              "message_type"   :   "homer_verification_first_required"      
-              "message_id"     :   "new_uuid_string!!!!"  
-           }  
  
  #### [1] Get server configuration #### 
  

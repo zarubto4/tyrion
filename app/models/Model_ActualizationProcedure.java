@@ -528,15 +528,13 @@ public class Model_ActualizationProcedure extends Model {
      *  Cachování slouží primárně pouze pro sumarizaci updatů. Pomocí get_byId() lze načíst ActualizationProcedure
      *  která obsahuje HashMapu ID C
      */
-    @JsonIgnore public HashMap<String, Enum_CProgram_updater_state> cProgram_updater_state = new HashMap<>();
+    @JsonIgnore private HashMap<String, Enum_CProgram_updater_state> cProgram_updater_state = new HashMap<>();
     @JsonIgnore public static final String CACHE        = Model_ActualizationProcedure.class.getSimpleName();
 
     @JsonIgnore public static Cache<String, Model_ActualizationProcedure> cache; // Server_cache Override during server initialization
 
     public void change_state(Model_CProgramUpdatePlan plan, Enum_CProgram_updater_state state){
-
         cProgram_updater_state.put(plan.id, state);
-
     }
 
 

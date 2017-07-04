@@ -1,6 +1,7 @@
 package controllers;
 
 import com.microsoft.azure.storage.*;
+import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
@@ -11,6 +12,7 @@ import com.microsoft.azure.storage.file.CloudFileShare;
 import com.microsoft.azure.storage.file.SharedAccessFilePermissions;
 import com.microsoft.azure.storage.file.SharedAccessFilePolicy;
 import io.swagger.annotations.*;
+import models.Model_BootLoader;
 import models.Model_HomerServer;
 import models.Model_VersionObject;
 import play.data.Form;
@@ -304,7 +306,7 @@ public class Controller_ExternalServer extends Controller {
 /// PRIVATE FILE STORAGE FOR HOMER SERVERS ###########################################################################*/
 
     @ApiOperation(value = "get B_Program File",
-            tags = {"External Server"},
+            tags = {"Homer Server API"},
             notes = "Required secure Token changed throw websocket",
             produces = "multipart/form-data",
             consumes = "text/html",
@@ -317,7 +319,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    //@Security.Authenticated(Secured_Homer_Server.class)
+    @Security.Authenticated(Secured_Homer_Server.class)
     public Result cloud_file_get_b_program_version(String b_program_version_id){
         try{
 
@@ -333,51 +335,167 @@ public class Controller_ExternalServer extends Controller {
                 return GlobalResult.result_forbidden();
             }
 
+            // Separace na Container a Blob
+            int slash = version_object.files.get(0).file_path.indexOf("/");
+            String container_name = version_object.files.get(0).file_path.substring(0,slash);
+            String real_file_path = version_object.files.get(0).file_path.substring(slash+1);
 
-            // Examle https://docs.microsoft.com/en-us/azure/storage/storage-dotnet-shared-access-signature-part-1
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
-            // https://myaccount.blob.core.windows.net/sascontainer/sasblob.txt?
-            // sv=2015-04-05
-            // &st=2015-04-29T22%3A18%3A26Z
-            // &se=2015-04-30T02%3A23%3A26Z
-            // &sr=b
-            // &sp=rw
-            // &sip=168.1.5.60-168.1.5.70
-            // &spr=https
-            // &sig=Z%2FRHIX5Xcg0Mq2rqI3OlWTjEg2tYkboXr1P9ZUXDtkk%3D
 
-            // Set Policy
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.SECOND, 30);
+
             SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
-
-            // Set Policy - Permission
-            EnumSet<SharedAccessBlobPermissions> permissions =  EnumSet.noneOf(SharedAccessBlobPermissions.class);
-            permissions.add(SharedAccessBlobPermissions.READ);  // Set only read Permision
-
-            policy.setPermissions(permissions);
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
 
 
-            String server_url = Server.azure_blob_Link;
-            String blob_url = version_object.files.get(0).file_path;
-            String sv = "&sv=2015-04-05";                                     // Storage services version. The address of the blob. Note that using HTTPS is highly recommended.
-            String st = "&st=" +Instant.now().toString();                         // Start time. Specified in UTC time. If you want the SAS to be valid immediately, omit the start time.
-            String se = "&st=" +Instant.now().plusSeconds(1000 * 60).toString();  // Expiry time
-            String sr = "&sr=b";     // Resource - only blob
-            String sp = "&sp=r";     // Permissions - only read
-            String spr = "&spr=https";     // Protocol
-            String sig = Server.blobClient.getContainerReference("product").generateSharedAccessSignature(policy, "groupPolicyIdentifier");
+            String sas = blob.generateSharedAccessSignature(policy, null);
 
-            String link = server_url + blob_url + "?" + sv + st + se + sr + sp + spr + sig;
+            System.out.println("sas " + sas);
+            System.out.println("path blobu " +  blob.getUri().getPath());
 
-            System.out.println("Link storageUri " + link);
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.debug("cloud_file_get_b_program_version:: Total Link:: " + total_link);
 
             // Přesměruji na link
-            return GlobalResult.ok(link);
+            return GlobalResult.redirect(total_link);
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
+    @ApiOperation(value = "get C_Program File",
+            tags = {"Homer Server API"},
+            notes = "Required secure Token changed throw websocket",
+            produces = "multipart/form-data",
+            consumes = "text/html",
+            protocols = "https",
+            code = 303
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Homer_Server.class)
+    public Result cloud_file_get_c_program_version(String b_program_version_id){
+        try{
+
+            // Získám soubor
+            Model_VersionObject version_object = Model_VersionObject.find.byId(b_program_version_id);
+
+            if(version_object== null){
+                return GlobalResult.result_notFound("File not found");
+            }
+
+
+            if(version_object.c_program == null){
+                return GlobalResult.result_forbidden();
+            }
+
+            // Separace na Container a Blob
+            int slash = version_object.files.get(0).file_path.indexOf("/");
+            String container_name = version_object.files.get(0).file_path.substring(0,slash);
+            String real_file_path = version_object.files.get(0).file_path.substring(slash+1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.SECOND, 30);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+            System.out.println("sas " + sas);
+            System.out.println("path blobu " +  blob.getUri().getPath());
+
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.debug("cloud_file_get_c_program_version:: Total Link:: " + total_link);
+
+            // Přesměruji na link
+            return GlobalResult.redirect(total_link);
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Bootloader File",
+            tags = {"Homer Server API"},
+            notes = "Required secure Token changed throw websocket",
+            produces = "multipart/form-data",
+            consumes = "text/html",
+            protocols = "https",
+            code = 303
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Homer_Server.class)
+    public Result cloud_file_get_bootloader(String bootloader_id){
+        try{
+
+            // Získám soubor
+            Model_BootLoader bootLoader = Model_BootLoader.find.byId(bootloader_id);
+
+            if(bootLoader == null){
+                return GlobalResult.result_notFound("File not found");
+            }
+
+            // Separace na Container a Blob
+            int slash = bootLoader.file.file_path.indexOf("/");
+            String container_name = bootLoader.file.file_path.substring(0,slash);
+            String real_file_path = bootLoader.file.file_path.substring(slash+1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.SECOND, 30);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+            System.out.println("sas " + sas);
+            System.out.println("path blobu " +  blob.getUri().getPath());
+
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.debug("cloud_file_get_bootloader_version:: Total Link:: " + total_link);
+
+            // Přesměruji na link
+            return GlobalResult.redirect(total_link);
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
 
 
 
