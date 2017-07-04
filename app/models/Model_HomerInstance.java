@@ -317,6 +317,7 @@ public class Model_HomerInstance extends Model {
 
 
     //-- Instance Status -- //
+    @JsonIgnore @Transient
     public WS_Message_Instance_status get_instance_status(){
 
         List<Model_HomerInstance> instances = new ArrayList<>();
@@ -324,7 +325,7 @@ public class Model_HomerInstance extends Model {
         return get_instance_status(instances);
 
     }
-
+    @JsonIgnore @Transient
     public static WS_Message_Instance_status get_instance_status(List<Model_HomerInstance> instances){
 
         HashMap<String, List<String>> server_map = new HashMap<>();
@@ -367,6 +368,7 @@ public class Model_HomerInstance extends Model {
 
 
     //-- Device IO operations -- //
+    @JsonIgnore @Transient
     public WS_Message_Instance_device_set_snap set_device_to_instance(List<String> device_ids){
         try{
 

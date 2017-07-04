@@ -55,11 +55,11 @@ public class Model_Notification extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";
-    @ApiModelProperty(required = true, example =  WS_Becki_Website.CHANNEL) @JsonProperty public static final String messageChannel = WS_Becki_Website.CHANNEL;
+    @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";              //TODO DB na message_type
+    @ApiModelProperty(required = true, example =  WS_Becki_Website.CHANNEL) @JsonProperty public static final String messageChannel = WS_Becki_Website.CHANNEL; //TODO DB na message_channel
 
-    @JsonProperty @ApiModelProperty(required = true) public String messageType(){ return messageType;}
-    @JsonProperty @ApiModelProperty(required = true) public String messageChannel(){ return messageChannel;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_type(){ return messageType;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_channel(){ return messageChannel;}
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Swagger_Notification_Element> notification_body(){
