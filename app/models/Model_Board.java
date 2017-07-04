@@ -171,7 +171,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true, name = "Null value, if device is online") public Date latest_online(){
+    @JsonProperty @Transient @ApiModelProperty(required = true, value = "Value is null, if device status is online.") public Date latest_online(){
         if(is_online()) return null;
         return last_online();
     }
