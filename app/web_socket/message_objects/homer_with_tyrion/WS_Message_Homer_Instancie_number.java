@@ -10,7 +10,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 public class WS_Message_Homer_Instancie_number extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "numberOfInstances";
+    @JsonIgnore public static final String message_type = "homer_instance_size";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -23,8 +23,8 @@ public class WS_Message_Homer_Instancie_number extends WS_AbstractMessage {
     public ObjectNode make_request() {
 
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_HomerServer.CHANNEL);
 
         return request;
     }

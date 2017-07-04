@@ -19,26 +19,26 @@ které má vlastní websocket je naprosto nezávislé a je tedy nutné v každé
 **Pro přihlášení k notifikacím je nutné zaslat Json v podobě:**
 
     { 
-         "messageChannel" : "becki",
-         "messageType" : "subscribe_notification", 
-         "messageId" : "your identification number"
+         "message_channel" : "becki",
+         "message_type" : "subscribe_notification", 
+         "message_id" : "your identification number"
     }
 
    Odpověď serveru v případě úspěchu:
 
     {
-         "messageChannel" : "becki",
-         "messageType" : "subscribe_notification",
-         "messageId" : " your identification number",
+         "message_channel" : "becki",
+         "message_type" : "subscribe_notification",
+         "message_id" : " your identification number",
          "status" : "success"
     }
 
    Odpověď serveru v případě neúspěchu:
 
     {
-         "messageChannel" : "becki",
-         "messageType" : "subscribe_notification",
-         "messageId" : " your identification number",
+         "message_channel" : "becki",
+         "message_type" : "subscribe_notification",
+         "message_id" : " your identification number",
          "status" : "error",
          "reason" : "Fault state of backend server"
     }
@@ -49,18 +49,18 @@ které má vlastní websocket je naprosto nezávislé a je tedy nutné v každé
 **K odhlášení odběru notifikací je nutné zaslat Json v podobě:**
 
     { 
-         "messageChannel" : "becki",
-         "messageType" : "unsubscribe_notification", 
-         "messageId" : "your identification number"
+         "message_channel" : "becki",
+         "message_type" : "unsubscribe_notification", 
+         "message_id" : "your identification number"
     }
 
 
 Odpověď serveru v případě úspěchu:
 
     {
-         "messageChannel" : "becki",
-         "messageType" : "unsubscribe_notification",
-         "messageId" : " your identification number",
+         "message_channel" : "becki",
+         "message_type" : "unsubscribe_notification",
+         "message_id" : " your identification number",
          "status" : "success"
     }
 
@@ -68,9 +68,9 @@ Odpověď serveru v případě neúspěchu: Velmi nepravděpodobné - Becki to c
 Neúspěch je často doprovázen tím, že server ani nepovolil odběr - tedy nepoví ani zrušení odběru. 
 
     {
-         "messageChannel" : "becki",
-         "messageType" : "unsubscribe_notification",
-         "messageId" : " your identification number",
+         "message_channel" : "becki",
+         "message_type" : "unsubscribe_notification",
+         "message_id" : " your identification number",
          "status" : "error",
          "reason" : "Fault state of backend server"
     }
@@ -88,9 +88,9 @@ Notifikace lze rozdělit na jednotkové a Chain (Které se dokáží sami sebe p
 #### **Jednotková Notifikace vypadá například takto:** #### 
 
     { 
-        "messageType":  "notification",
+        "message_type":  "notification",
         "id": "1",                      
-        "messageChannel": "becki",
+        "message_channel": "becki",
         "notification_type" : "INDIVIDUAL",  <<----  Jednotková notifikace - odpočet času atd. v Becki
         "notification_level" "info",
         "notification_importance":"normal",
@@ -105,13 +105,13 @@ Notifikace lze rozdělit na jednotkové a Chain (Které se dokáží sami sebe p
         "state" : "created", // enum Notification_state, pokud je na notifikaci nějaká změna, pošle se znovu, kvůli synchronizaci
         "was_read":"false",
         "created": "1466163478925",
-        "messageId" : "číslo zprávy"
+        "message_id" : "číslo zprávy"
     }
   
   
-**"messageType","messageChannel"** a **"messageId"**  obsahují notifikace poslané pouze přes websocket!
+**"message_type","message_channel"** a **"message_id"**  obsahují notifikace poslané pouze přes websocket!
 
-  * "messageType" : "notification" <--- Vyžadovaná položka - Typ Notifikace (Existují "object_update" atd..) 
+  * "message_type" : "notification" <--- Vyžadovaná položka - Typ Notifikace (Existují "object_update" atd..) 
    
 
   * **notification_level**   může nabývat pouze hodnot:

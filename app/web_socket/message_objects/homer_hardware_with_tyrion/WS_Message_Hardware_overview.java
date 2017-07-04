@@ -3,10 +3,8 @@ package web_socket.message_objects.homer_hardware_with_tyrion;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_Board;
-import models.Model_HomerInstance;
 import play.libs.Json;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
-import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Instance;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -17,7 +15,7 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
 
     // MessageType
     @JsonIgnore
-    public static final String messageType = "device_overview_list";
+    public static final String message_type = "device_overview_list";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -65,8 +63,8 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_Board.CHANNEL);
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_Board.CHANNEL);
         request.set("device_ids", Json.toJson(devices_ids));
 
         return request;

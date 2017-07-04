@@ -19,7 +19,7 @@ public abstract class WS_AbstractMessage_Instance {
 
                            public String messageType;
                            public String messageId;
-                           public String messageChannel;
+                           public String message_channel;
                            public String status = "error";
 
     public String error  = null;

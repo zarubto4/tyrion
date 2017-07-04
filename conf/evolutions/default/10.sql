@@ -3,11 +3,12 @@
 
 alter table model_board
   add column connected_server_id VARCHAR(255),
+  add COLUMN connected_instance_id VARCHAR(255),
   add column database_synchronize BOOLEAN,
   drop constraint if exists fk_model_board_virtual_instan_18,
   drop constraint if exists fk_model_board_connected_serv_19,
   DROP COLUMN IF EXISTS connected_server_unique_identificator,
-  DROP COLUMN IF EXISTS virtual_instance_under_project_blocko_instance_name;
+  DROP COLUMN IF EXISTS virtual_instance_under_project_id;
 
 
 drop index if exists ix_model_board_virtual_instan_18;
@@ -37,16 +38,12 @@ drop index if exists ix_model_project_private_inst_65;
 
 alter table model_board
   drop column if exists connected_server_id,
+  drop column if exists connected_instance_id,
   drop column if exists database_synchronize,
   validate constraint fk_model_board_virtual_instan_18,
-  validate constraint fk_model_board_connected_serv_19,
-  add constraint fk_model_board_virtual_instan_18 foreign key (virtual_instance_under_project_blocko_instance_name) references model_homer_instance (blocko_instance_name),
-  add constraint fk_model_board_connected_serv_19 foreign key (connected_server_unique_identificator) references model_homer_server (unique_identificator);
+  add constraint fk_model_board_virtual_instan_18 foreign key (virtual_instance_under_project_id) references model_homer_instance (id);
 
-
-create index ix_model_board_virtual_instan_18 on model_board (virtual_instance_under_project_blocko_instance_name);
-create index ix_model_board_connected_serv_19 on model_board (connected_server_unique_identificator);
-
+create index ix_model_board_virtual_instan_18 on model_board (virtual_instance_under_project_id);
 
 alter table public.model_homer_server
   drop COLUMN IF EXISTS json_additional_parameter;
@@ -56,8 +53,7 @@ alter table model_homer_instance
 
 
 alter table model_project
-  add constraint fk_model_project_private_inst_65 foreign key (private_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
+  add constraint fk_model_project_private_inst_65 foreign key (private_instance_id) references model_homer_instance (id);
 
 
-create index ix_model_project_private_inst_65 on model_project (private_instance_blocko_instance_name);
-
+create index ix_model_project_private_inst_65 on model_project (private_instance_id);

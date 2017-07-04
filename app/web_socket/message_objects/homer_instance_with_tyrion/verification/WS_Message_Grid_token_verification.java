@@ -9,7 +9,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Grid_token_verification extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "token_grid_verification";
+    @JsonIgnore public static final String message_type = "token_grid_verification";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
@@ -21,10 +21,10 @@ public class WS_Message_Grid_token_verification extends WS_AbstractMessage_Insta
     public ObjectNode get_result( boolean token_approve){
 
         ObjectNode result = Json.newObject();
-        result.put("messageType", messageType);
-        result.put("messageChannel", messageChannel);
+        result.put("message_type", message_type);
+        result.put("message_channel", message_channel);
         result.put("token_approve", token_approve);
-        result.put("messageId", messageId);
+        result.put("message_id", messageId);
         result.put("instanceId", instanceId);
         result.put("status" , "success");
         return result;

@@ -1112,8 +1112,13 @@ public class Controller_Blocko extends Controller{
     }
 
 
+    /**
+     *
+     * Aktuální režim Homera to nepodporuje
+     *
+     *
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_add_device(String instance_name, String yoda_id, String device_id){
+    public Result instance_add_device(String instance_name, String device_id){
         try{
 
             // Transformace na seznam
@@ -1126,8 +1131,7 @@ public class Controller_Blocko extends Controller{
 
             if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
 
-
-            WS_Message_Instance_device_add result = homer_instance.add_device_to_instance(list_of_devices);
+            WS_Message_Instance_device_set_snap result = homer_instance.set_device_to_instance(list_of_devices);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_badRequest();
@@ -1160,7 +1164,7 @@ public class Controller_Blocko extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
+    */
 
 // TYPE OF BLOCK #######################################################################################################
 

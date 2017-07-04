@@ -13,7 +13,7 @@ public class WS_Message_Update_model_echo extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public static final String messageChannel =  WS_Becki_Website.CHANNEL;
+    @JsonProperty public static final String message_channel =  WS_Becki_Website.CHANNEL;
 
     //------------------------------------------------------------------
 

@@ -36,8 +36,8 @@ public class WS_Message_Make_compilation extends WS_AbstractMessage {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType",       messageType);
-        request.put("messageChannel",    Model_CompilationServer.CHANNEL);
+        request.put("message_type",       messageType);
+        request.put("message_channel",    Model_CompilationServer.CHANNEL);
         request.put("target",            typeOfBoard.compiler_target_name);
         request.put("libVersion",        "v0"); // TODO longetrm podle verzí komplační knohovny
         request.put("versionId",         version_id);

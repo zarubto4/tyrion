@@ -14,7 +14,7 @@ public class WS_Message_Instance_exist extends WS_AbstractMessage_Instance {
 
     // MessageType
     @JsonIgnore
-    public static final String messageType = "instanceExist";
+    public static final String message_type = "instanceExist";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
@@ -37,8 +37,8 @@ public class WS_Message_Instance_exist extends WS_AbstractMessage_Instance {
     public ObjectNode make_request(List<String> instance_ids) {
 
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_HomerServer.CHANNEL);
         request.set("instance_ids", Json.toJson(instance_ids));
 
         return request;

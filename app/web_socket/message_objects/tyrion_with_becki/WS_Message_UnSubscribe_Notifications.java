@@ -20,8 +20,8 @@ public class WS_Message_UnSubscribe_Notifications extends WS_AbstractMessage {
     public static ObjectNode approve_result() {
 
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", WS_Becki_Website.CHANNEL);
+        request.put("message_type", messageType);
+        request.put("message_channel", WS_Becki_Website.CHANNEL);
         request.put("status", "success");
         return request;
 

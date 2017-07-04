@@ -269,9 +269,9 @@ public class Model_HomerInstance extends Model {
     public static void Messages(WS_HomerServer homer, ObjectNode json){
         new Thread(() -> {
             try {
-                switch (json.get("messageType").asText()) {
+                switch (json.get("message_type").asText()) {
 
-                    case WS_Message_Grid_token_verification.messageType: {
+                    case WS_Message_Grid_token_verification.message_type: {
 
                         final Form<WS_Message_Grid_token_verification> form = Form.form(WS_Message_Grid_token_verification.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_Grid_token_verification: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -291,7 +291,7 @@ public class Model_HomerInstance extends Model {
                         return;
                     }
 
-                    default: throw new Exception("Incoming message, chanel tyrion: messageType not recognized -> " + json.get("messageType").asText());
+                    default: throw new Exception("Incoming message, chanel tyrion: message_type not recognized -> " + json.get("message_type").asText());
                 }
 
             } catch (Exception e) {
@@ -341,7 +341,6 @@ public class Model_HomerInstance extends Model {
 
         WS_Message_Instance_status status = new WS_Message_Instance_status();
 
-
         for(String unique_identificator : server_map.keySet()){
             try{
 
@@ -368,64 +367,27 @@ public class Model_HomerInstance extends Model {
 
 
     //-- Device IO operations -- //
-    public WS_Message_Instance_device_add add_device_to_instance(List<String> device_ids){
+    public WS_Message_Instance_device_set_snap set_device_to_instance(List<String> device_ids){
         try{
 
             if(!this.server_is_online()) throw new InterruptedException();
-            JsonNode node = this.write_with_confirmation(new WS_Message_Instance_device_add().make_request(device_ids), 1000*3, 0, 4);
+            JsonNode node = this.write_with_confirmation(new WS_Message_Instance_device_set_snap().make_request(device_ids), 1000*3, 0, 4);
 
-            final Form<WS_Message_Instance_device_add> form = Form.form(WS_Message_Instance_device_add.class).bind(node);
+            final Form<WS_Message_Instance_device_set_snap> form = Form.form(WS_Message_Instance_device_set_snap.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_add: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
         }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Instance_device_add();
+            return new WS_Message_Instance_device_set_snap();
         }catch (Exception e){
             Model_HomerInstance.terminal_logger.internalServerError(e);
-            return new WS_Message_Instance_device_add();
-        }
-    }
-
-    public WS_Message_Instance_device_remove remove_device_from_instance(List<String> device_ids) {
-        try{
-
-            if(!this.server_is_online()) throw new InterruptedException();
-            JsonNode node = this.write_with_confirmation(new WS_Message_Instance_device_remove().make_request(device_ids), 1000*3, 0, 4);
-
-            final Form<WS_Message_Instance_device_remove> form = Form.form(WS_Message_Instance_device_remove.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_remove: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Instance_device_remove();
-        }catch (Exception e){
-            Model_HomerInstance.terminal_logger.internalServerError(e);
-            return new WS_Message_Instance_device_remove();
+            return new WS_Message_Instance_device_set_snap();
         }
     }
 
 
     //-- Instance Summary Information --//
-    @JsonIgnore @Transient public WS_Message_Instance_list_of_devices get_list_of_devices(){
-        try {
-
-            if(!this.server_is_online()) throw new InterruptedException();
-            ObjectNode node = this.write_with_confirmation( new WS_Message_Instance_list_of_devices().make_request(), 1000*5, 0, 1);
-
-            final Form<WS_Message_Instance_list_of_devices> form = Form.form(WS_Message_Instance_list_of_devices.class).bind(node);
-            if (form.hasErrors()) throw new Exception("WS_Message_Instance_list_of_devices: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Instance_list_of_devices();
-        }catch (Exception e){
-            Model_HomerInstance.terminal_logger.internalServerError("get_hardware_list:", e);
-            return new WS_Message_Instance_list_of_devices();
-        }
-    }
 
     @JsonIgnore @Transient public WS_Message_Hardware_overview get_hardware_overview(){
         try {

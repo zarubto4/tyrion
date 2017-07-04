@@ -87,9 +87,9 @@ public class WS_HomerServer extends WS_Interface_type {
             return;
         }
 
-            if(json.has("messageChannel")){
+            if(json.has("message_channel")){
 
-                switch (json.get("messageChannel").asText()){
+                switch (json.get("message_channel").asText()){
 
                     case Model_Board.CHANNEL: {    // Komunikace mezi Hardware a Tyrionem
                         Model_Board.Messages(this, json);
@@ -114,14 +114,14 @@ public class WS_HomerServer extends WS_Interface_type {
                     }
 
                     default: {
-                        terminal_logger.internalServerError(new Exception("onMessage: message not recognize incoming messageChanel!!! ->" + json.get("messageChannel").asText()));
+                        terminal_logger.internalServerError(new Exception("onMessage: message not recognize incoming messageChanel!!! ->" + json.get("message_channel").asText()));
 
                     }
 
                 }
 
             }else {
-                terminal_logger.internalServerError(new Exception(identifikator + " Incoming message has not messageChannel!!!!"));
+                terminal_logger.internalServerError(new Exception(identifikator + " Incoming message has not message_channel!!!!"));
             }
 
     }

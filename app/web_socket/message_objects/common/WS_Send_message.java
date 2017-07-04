@@ -55,9 +55,9 @@ public class WS_Send_message {
 
     public void insert_result(ObjectNode result) {
 
-        terminal_logger.trace("insert_result:: MessageID:: {}  insert result {} ", result.get("messageId").asText() , result.toString());
+        terminal_logger.trace("insert_result:: MessageID:: {}  insert result {} ", result.get("message_id").asText() , result.toString());
 
-        // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
+        // Pokud existuje zpráva v zásobníku a Json obsahuje message_id - smažu ze zásobníku
         try {
 
             if(sender_object.sendMessageMap.size() > 10) terminal_logger.internalServerError(new Exception("insert_result:: Map contains " + sender_object.sendMessageMap.size() + " objects"));
@@ -77,7 +77,7 @@ public class WS_Send_message {
         try {
 
             if(this.messageId == null) {
-                terminal_logger.internalServerError(new Exception("messageId is null."));
+                terminal_logger.internalServerError(new Exception("message_id is null."));
             }
 
             if(this.json == null){
@@ -115,7 +115,7 @@ public class WS_Send_message {
 
                     if(json != null) {
 
-                        terminal_logger.trace("thread: MessageID: {} , MessageType: {} , Number of RetiresTime: {} , Time to wait: {} ", messageId, json.get("messageType"), number_of_retries, time);
+                        terminal_logger.trace("thread: MessageID: {} , MessageType: {} , Number of RetiresTime: {} , Time to wait: {} ", messageId, json.get("message_type"), number_of_retries, time);
 
                         sender_object.out.write(json.toString());
                         --number_of_retries;
@@ -134,7 +134,7 @@ public class WS_Send_message {
                 }
 
                 if(!sender_object.is_online())  {
-                    terminal_logger.internalServerError(new Exception("Sender is offline. MessageID: " + messageId + ", MessageType: " + json.get("messageType")));
+                    terminal_logger.internalServerError(new Exception("Sender is offline. MessageID: " + messageId + ", MessageType: " + json.get("message_type")));
                     sender_object.close();
                 }
 

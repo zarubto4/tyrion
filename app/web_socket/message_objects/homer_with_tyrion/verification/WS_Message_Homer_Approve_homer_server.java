@@ -9,7 +9,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 public class WS_Message_Homer_Approve_homer_server extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "verificationTokenApprove";
+    @JsonIgnore public static final String messageType = "homer_verification_token_approve";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
@@ -22,8 +22,8 @@ public class WS_Message_Homer_Approve_homer_server extends WS_AbstractMessage {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("message_type", messageType);
+        request.put("message_channel", Model_HomerServer.CHANNEL);
 
         return request;
     }

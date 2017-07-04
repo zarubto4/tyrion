@@ -31,7 +31,6 @@ import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
-import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Status;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
@@ -311,9 +310,9 @@ public class Model_Board extends Model {
         new Thread(() -> {
             try {
 
-                switch (json.get("messageType").asText()) {
+                switch (json.get("message_type").asText()) {
 
-                    case WS_Message_Hardware_connected.messageType: {
+                    case WS_Message_Hardware_connected.message_type: {
 
                         final Form<WS_Message_Hardware_connected> form = Form.form(WS_Message_Hardware_connected.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_Hardware_connected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -322,7 +321,7 @@ public class Model_Board extends Model {
                         return;
                     }
 
-                    case WS_Message_Hardware_disconnected.messageType: {
+                    case WS_Message_Hardware_disconnected.message_type: {
 
                         final Form<WS_Message_Hardware_disconnected> form = Form.form(WS_Message_Hardware_disconnected.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_Hardware_disconnected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -331,7 +330,7 @@ public class Model_Board extends Model {
                         return;
                     }
 
-                    case WS_Message_Hardware_autobackup_maked.messageType: {
+                    case WS_Message_Hardware_autobackup_maked.message_type: {
 
                         final Form<WS_Message_Hardware_autobackup_maked> form = Form.form(WS_Message_Hardware_autobackup_maked.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_AutoBackUp_progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -360,7 +359,7 @@ public class Model_Board extends Model {
                     }
 
 
-                    default: throw new Exception("Incoming message, chanel tyrion: messageType not recognized -> " + json.get("messageType").asText());
+                    default: throw new Exception("Incoming message, chanel tyrion: message_type not recognized -> " + json.get("message_type").asText());
                 }
 
             } catch (Exception e) {
@@ -618,33 +617,6 @@ public class Model_Board extends Model {
 
 
     //-- ADD or Remove // Change Server --//
-
-    @JsonIgnore @Transient public WS_Message_Hardware_add add_to_server(){
-        List<String> device_ids = new ArrayList<>();
-        device_ids.add(this.id);
-        return add_to_server(device_ids);
-    }
-
-    @JsonIgnore @Transient public WS_Message_Hardware_add add_to_server(List<String> device_ids){
-        try{
-
-            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_add().make_request(device_ids), 1000*3, 0, 4);
-
-            final Form<WS_Message_Hardware_add> form = Form.form(WS_Message_Hardware_add.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_add: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (TimeoutException e){
-            terminal_logger.warn("set_auto_backup: Timeout");
-            return new WS_Message_Hardware_add();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Hardware_add();
-        }
-
-    }
-
     @JsonIgnore @Transient public void device_relocate_server(Model_HomerServer future_server){
         List<Model_Board> devices = new ArrayList<>();
         devices.add(this);
@@ -810,9 +782,9 @@ public class Model_Board extends Model {
 
         if(report.error != null){
 
-            terminal_logger.debug("hardware_firmware_state_check: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.errorCode, report.error);
+            terminal_logger.debug("hardware_firmware_state_check: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error);
 
-            if(report.errorCode == ErrorCode.YODA_IS_OFFLINE.error_code() || report.errorCode == ErrorCode.DEVICE_IS_NOT_ONLINE.error_code()){
+            if(report.error_code == ErrorCode.YODA_IS_OFFLINE.error_code() || report.error_code == ErrorCode.DEVICE_IS_NOT_ONLINE.error_code()){
                 terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} is offline" , this.id);
                 return;
             }

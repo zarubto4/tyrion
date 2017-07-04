@@ -15,7 +15,7 @@ import java.util.List;
 public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "instanceStatus";
+    @JsonIgnore public static final String message_type = "instance_status";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
             return null;
         }else if(map.isEmpty()) {
             for(InstanceStatus status : instance_list){
-                map.put(status.instnace_id, status);
+                map.put(status.instance_id, status);
             }
         }
 
@@ -51,8 +51,8 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerInstance.CHANNEL);
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_HomerInstance.CHANNEL);
         request.set("instance_ids", Json.toJson(instance_id));
 
         return request;
@@ -66,7 +66,7 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
 
         public InstanceStatus(){}
 
-        @Constraints.Required  public String instnace_id;
+        @Constraints.Required  public String instance_id;
         public boolean online_status;
         public String error_code;
 

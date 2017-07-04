@@ -8,10 +8,10 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 
 import java.util.List;
 
-public class WS_Message_Instance_device_add extends WS_AbstractMessage_Instance {
+public class WS_Message_Instance_device_set_snap extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "addDeviceToInstance";
+    @JsonIgnore public static final String message_type = "instance_set_hardware";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -26,8 +26,8 @@ public class WS_Message_Instance_device_add extends WS_AbstractMessage_Instance 
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerInstance.CHANNEL);
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_HomerInstance.CHANNEL);
         request.set("devices_ids", Json.toJson(devicesId) );
 
         return request;

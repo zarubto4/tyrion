@@ -8,33 +8,26 @@ Channel Code:: **hardware**
  - Any incoming or outgoing message to Tyrion and from Tyrion contains
 
         {
-            "messageType"    :  "message type"
-            "messageId"      :  "some_uuid_string"
-            "messageChannel" :  "channel_name"  <-- In this case "hardware"
+            "message_type"    :  "message type"
+            "message_Id"      :  "some_uuid_string"
+            "message_channel" :  "channel_name"  <-- In this case "hardware"
 
             "device_id":     :  "123423567854367436"   <-- Full Hardware ID
         }
  - We have also 2 kind of Commands - "Singleton" for only one device or Multiple Command for List od device
    or with list of Independent Commands.
 
- - You are sure that the name of the messageChannel starts with the prefix "hardware_"
+ - You are sure that the name of the message_channel starts with the prefix "hardware_"
+
+ - All Hardware are in Flat structure
 
 
 
 ### Tyrion Commands for Homer ###
 
-#### ADD Device (Multiple Command) ####
+#### [1] Relocate Device (Multiple Command) ####
 
-  Result (Ok)
- - Add Device
-     {
-        "messageType"    :  "hardware_add"
-        "messageId"      :  "some_uuid_string"
-        "messageChannel" :  "hardware"
-        "device_ids" : ["id", "id_2" ..]
-     }
-
-#### Relocate Device (Multiple Command) ####
+ - Pokud po diskuzi není device online a nemá úkoly, homer ho vymaže a šetří RAM
 
  - Mazání Zařízení teoreticky neexistuje - Pouze Relokace. Tyrion zašle infomraci o nutnosti relokovat device
    na Homer server. Ten z pohledu Tyriona device odstraní ale stále si objekt drží dokud se device nepřipojí a
@@ -44,58 +37,64 @@ Channel Code:: **hardware**
 
    Pokud vydá Tyrion příkaz k relocate - chápe ho jako smazaný z Konkrétního server
 
-    Result (Ok)
-    {
-     "messageType"    :  "hardware_change_server"
-     "messageId"      :  "some_uuid_string"
-     "messageChannel" :  "hardware"
 
-     "main_server_url"  :  "........."
-     "mqtt_port"        :  "........."
-     "mqtt_password"    :  "........."
-     "mqtt_user_name"   :  "........."
-     "device_ids"       : ["id", "id_2" ..]
-    }
+     Result (Ok)
+     
+        {
+         "message_type"    :  "hardware_change_server"
+         "message_Id"      :  "some_uuid_string"
+         "message_channel" :  "hardware"
+    
+         "main_server_url"  :  "........."
+         "mqtt_port"        :  "........."
+         "mqtt_password"    :  "........."
+         "mqtt_user_name"   :  "........."
+         "device_ids"       : ["id", "id_2" ..]
+        }
 
-#### Get Online Status (Multiple Command) ####
+
+#### [2] Get Online Status (Multiple Command) ####
 
     Request:
 
     {
-         "messageType"    :  "hardware_online_state"
-         "messageId"      :  "some_uuid_string"
-         "messageChannel" :  "hardware"
-         "device_ids"       : ["id", "id_2" ..]
+         "message_type"     :  "hardware_online_state"
+         "message_Id"       :  "some_uuid_string"
+         "message_channel"  :  "hardware"
+         "device_ids"       :  ["id", "id_2" ..]
     }
 
     Response:
 
     {
-        .....
-        "device_list" : [
-            {
-                "device_id" : "........"
-                "online_status" : TRUE || FALSE
-            }
-        ]
+        "status"         :   "success | error"
+        "error_code"     :   414 (Int) 
+        "device_list"    : [
+                                {
+                                    "device_id"     : "........"
+                                    "online_status" : TRUE || FALSE
+                                }
+                            ]
     }
 
 
-#### Get OverView (Multiple Command) ####
+#### [3] Get OverView (Multiple Command) ####
+(Hardware Info)
 
     Request:
 
      {
-         "messageType"    :  "hardware_online_state"
-         "messageId"      :  "some_uuid_string"
-         "messageChannel" :  "hardware"
+         "message_type"     :  "hardware_online_state"
+         "message_Id"       :  "some_uuid_string"
+         "message_channel"  :  "hardware"
          "device_ids"       : ["id", "id_2" ..]
      }
 
      Response:
 
      {
-        .....
+        "status"         :   "success | error"
+        "error_code"     :   414 (Int) 
         "device_list" : [
           {
              "device_id"            : "........"
@@ -104,7 +103,6 @@ Channel Code:: **hardware**
              "backup_build_id"      : "........"
              "bootloader_build_id"  : "........"
              "interface_name"       : "........"
-             "device_id"            : "........"
              "online_status"        : TRUE || FALSE
              "auto_backup"          : TRUE || FALSE
           }
@@ -112,32 +110,62 @@ Channel Code:: **hardware**
      }
 
 
-#### Set Parameters (Multiple Command) ####
+#### [4] Set Parameters (Multiple Command) ####
 
- - Alias
-    Result: (OK)
+ Alias (Set Alias)
+ 
+     Request:
      {
-         "messageType"    :  "hardware_set_alias"
-         "messageId"      :  "some_uuid_string"
-         "messageChannel" :  "hardware"
-         "device_pairs"   : [
-            {
-                "device_id" : "........."
-                "hardware_alias" : "........."
-            }
-
-         ]
+         "message_type"    :  "hardware_set_alias"
+         "message_Id"      :  "some_uuid_string"
+         "message_channel" :  "hardware"
+         "device_pairs"    : [
+                                {
+                                    "device_id" : "........."
+                                    "hardware_alias" : "........."
+                                }
+                             ]
      }
 
-  - Set AutoBackup : (Přepíše hardware pokud má Statický backup)
+  AutoBackup 
+  (Přepíše hardware pokud má Statický backup)
 
-     Request: (OK)
+     Request: 
+     
      {
-         "messageType"    :  "hardware_set_autobackup"
-         "messageId"      :  "some_uuid_string"
-         "messageChannel" :  "hardware"
-         "device_ids"     : ["id", "id_2" ..]
+         "message_type"    :  "hardware_set_autobackup"
+         "message_Id"      :  "some_uuid_string"
+         "message_channel" :  "hardware"
+         "device_ids"      : ["id", "id_2" ..]
      }
+
+
+
+#### [5] Ping Device ####
+
+
+    Request:
+         {
+             "message_type"    :  "hardware_set_alias"
+             "message_Id"      :  "some_uuid_string"
+             "message_channel" :  "hardware"
+             "device_pairs"    : [
+                                    {
+                                        "device_id" : "........."
+                                        "hardware_alias" : "........."
+                                    }
+    
+                                 ]
+         }
+         
+     Result:
+          {
+              "status"          :   "success | error"
+              "error_code"      :   414 (Int) 
+              "message_channel" :   "hardware"
+              "response_time"   :   123 (ms)  (Only if status is success)   
+          }    
+
 
 #### Update Device (Multiple Command) ####
 
@@ -146,7 +174,7 @@ Channel Code:: **hardware**
 
    Komentář pro vývoj: Očekává se, že Homer si každou proceduru zařadí do zásobníku v RAM a pokusí se každou proceduru splnit.
    Asynchroně každá procedura oznamuje sama za sebe v jakém je stavu (Tyrion to v Cache interpretuje uivateli)
-   Což znamená že na začátku když Tyrion pošle Homerovi proceduu je ve stavu "Pending" (Viz Enum Stavy)
+   Což znamená že na začátku když Tyrion pošle Homerovi procedu, kteoru nastaví na stav " Pending" (Viz Enum Stavy)
    Homer pokud jí začne provádět zašle tyrionovi "in_progress",
    Pokud je device offline - zašle "waiting_for_device" atd...
    Pokud dostane Homer nový update - Ten předchozí zahazuje a nahrazuje ho novým (Vždy platí ten poslední zaslaný)
@@ -160,12 +188,12 @@ Channel Code:: **hardware**
     Response: (ok)
 
     {
-       "messageChannel" :  "hardware"
-       "messageType" :  "update_hardware_execution"
+       "message_channel" :  "hardware"
+       "message_type" :  "hardware_update_execution"
        "update_task" : [
             {
-                "actualization_procedure_id" : "........."
-                "c_program_update_plan_id"   : "........."
+                "collection_tracking_id" : "........."
+                "tracking_id"   : "........."
                 "device_id"                  : "........."
                 "progress_subscribe"         : TRUE || FALSE
                 "firmware_type"              : "........." (FIRMWARE, BOOTLOADER, BACKUP, WIFI)
@@ -184,23 +212,23 @@ Message From Homer to Tyrion About Hardware.
 
 #### Device Status Change ####
 
- - device_connected  (Information about connection device throw Master-Device)
+ Device_connected  (Information about connection device throw Master-Device)
 
         Response: Not Required
 
         {
-            "messageChannel" :  "hardware"
-            "messageType" :  "hardware_connected"
+            "message_channel" :  "hardware"
+            "message_type" :  "hardware_connected"
             "device_id" : "............."
         }
 
-- device_disconnected
+ Device_disconnected
 
         Response: Not Required
 
         {
-          "messageChannel"  :  "hardware"
-          "messageType"     :  "hardware_disconnected"
+          "message_channel"  :  "hardware"
+          "message_type"     :  "hardware_disconnected"
           "device_id"       : "............."
         }
 
@@ -216,8 +244,8 @@ If Device Make autobackup on some version - Device this information send to Home
 
 
         {
-           "messageChannel"  :  "hardware"
-           "messageType"     :  "hardware_autobackup_maked"
+           "message_channel"  :  "hardware"
+           "message_type"     :  "hardware_autobackup_maked"
            "device_id"       :  "............."
            "build_id"        :  "............."     <-- Firmware backupu
         }
@@ -231,8 +259,8 @@ Status Change on Update Procedure
 
          Response: Not Required
          {
-           "messageChannel" :  "hardware"
-           "messageType" :  "hardware_connected"
+           "message_channel" :  "hardware"
+           "message_type" :  "hardware_connected"
            "status" : "............."
            "device_id"
          }
@@ -243,25 +271,24 @@ Status Change on Update Procedure
 
           Response: Not Required
           {
-            "messageChannel" :  "hardware"
-            "messageType" :  "update_hardware_status"
-            "c_program_update_plan_id" : "............."
-            "actualization_procedure_id" : "............."
+            "message_channel" :  "hardware"
+            "message_type" :  "update_hardware_status"
+            "tracking_id" : "............."
+            "collection_tracking_id" : "............."
             "update_state" : ".....ENUM..." [IN_PROGRESS, ]
             "device_id" : "............."
           }
 
-          status:
-                WAITING_IN_QUE,             // Zatím asi nepotřebný ze strany Homera - ale Tyrion dávkuje updaty po cca 100. Když toho přijde víc dává pauzy na zpracování
+          Enum status na které umí reagovat Tyrion a propisuje je do Cache Databáze:
                 IN_PROGRESS,                // Homer Updatuje device
                 SUCCESSFULLY_UPDATE,        // Homer úspěšně updatovat na požadovný stav
                 DEVICE_WAS_OFFLINE,         // Device je offline a homer na něj čeká
-                TRANSMISSION_CRC_ERROR,     // Chyby dle dokumentace
                 INVALID_DEVICE_STATE,       // Chyby dle dokumentace
                 UPDATE_PROGRESS_STACK,      // Device se během přenosu zaseknul nebo přenos selhal - Homer by to měl zkusit víckárt než Tyrionovi oznámi
                 DEVICE_NOT_RECONNECTED,     // Device se po restartu na novou verzi nepřihlásil
-                DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION,
+                DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION, (Chyba napříkad device naběhl z backupu - firmware je nestabilní)
                 ERROR;                      // NEpopsaná chyba - Zpráva obsahuuje error_code
+
 
   - Informace o Progressu
 
@@ -269,40 +296,11 @@ Status Change on Update Procedure
 
       Response: Not Required
       {
-         "messageChannel"               : "hardware"
-         "messageType"                  : "update_hardware_progress"
+         "message_channel"               : "hardware"
+         "message_type"                  : "update_hardware_progress"
          "c_program_update_plan_id"     : "............."
          "actualization_procedure_id"   : "............."
          "type_of_progress"             : ".....ENUM..."    [MAKING_BACKUP, TRANSFER_DATA_TO_DEVICE, CHECKING_RESULT]
          "percentage_progress"          : 12                // Integer 0-100
          "device_id"                    : "............."
       }
-
-
-
- - device_connected  (Information about connection device throw Master-Device)
-
-                Response: Not Required
-
-                {
-                    "messageType"  :  "deviceConnected"
-
-                    "device_id"                     : "string"
-                    "online"                        : boolean
-                    "firmware_version_core"         : "string"
-                    "firmware_version_mbed"         : "string"
-                    "firmware_version_lib"          : "string"
-                    "firmware_build_id"             : "string"   // Číslo Buildu
-                    "firmware_build_datetime"       : "string"   // Kdy bylo vybylděno
-
-                    "bootloader_version_core"       : "string"
-                    "bootloader_version_mbed"       : "string"
-                    "bootloader_build_id"           : "string"
-                    "bootloader_build_datetime"     : "string"
-
-                    "messageId"      :  "somer_uuid_string"
-                    "messageChannel" :  "channel_name"
-                    "instanceId:     :  "instanceId"
-                }¨
-
-

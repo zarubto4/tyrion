@@ -17,7 +17,7 @@ import java.util.List;
 public class WS_Message_Hardware_UpdateProcedure_Command extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "update_hardware_execution";
+    @JsonIgnore public static final String messageType = "hardware_update_execution";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -30,8 +30,8 @@ public class WS_Message_Hardware_UpdateProcedure_Command extends WS_AbstractMess
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_Board.CHANNEL);
+        request.put("message_type", messageType);
+        request.put("message_channel", Model_Board.CHANNEL);
         request.set("update_tasks", Json.toJson(tasks));
 
         return request;

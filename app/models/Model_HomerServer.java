@@ -230,7 +230,7 @@ public class Model_HomerServer extends Model{
         new Thread(() -> {
 
             try {
-                switch (json.get("messageType").asText()) {
+                switch (json.get("message_type").asText()) {
 
                     case WS_Message_Check_homer_server_person_permission.messageType: {
 
@@ -260,7 +260,7 @@ public class Model_HomerServer extends Model{
                     }
 
                     default: {
-                        terminal_logger.internalServerError(new Exception("Chanel homer-server: messageType not recognized ->" + json.get("messageType").asText()));
+                        terminal_logger.internalServerError(new Exception("Chanel homer-server: message_type not recognized ->" + json.get("message_type").asText()));
 
                         if (!Model_HomerServer.get_byId(homer.identifikator).server_is_online())
                             throw new Exception("Chanel homer-server: Prerequisite invalidly terminate of connection.");

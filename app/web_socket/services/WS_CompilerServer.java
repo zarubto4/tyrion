@@ -90,10 +90,10 @@ public class WS_CompilerServer extends WS_Interface_type {
             }
 
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
-            if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
+            if (json.has("message_id") && sendMessageMap.containsKey(json.get("message_id").asText())) {
 
                 terminal_logger.trace("WS_CompilerServer:: onMessage:: Message approve compilation start");
-                sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
+                sendMessageMap.get(json.get("message_id").asText()).insert_result(json);
                 return;
             }
 
@@ -120,15 +120,15 @@ public class WS_CompilerServer extends WS_Interface_type {
             return;
         }
 
-        if(json.has("messageChannel")){
+        if(json.has("message_channel")){
 
-            switch (json.get("messageChannel").asText()){
+            switch (json.get("message_channel").asText()){
 
-                default: terminal_logger.internalServerError(new Exception("WS_CompilerServer: messageChanel not recognized -> " + json.get("messageChannel").asText()));
+                default: terminal_logger.internalServerError(new Exception("WS_CompilerServer: messageChanel not recognized -> " + json.get("message_channel").asText()));
             }
 
         }else {
-            terminal_logger.internalServerError(new Exception("WS_CompilerServer: " + identifikator + ". Incoming message has not messageChannel!!!!"));
+            terminal_logger.internalServerError(new Exception("WS_CompilerServer: " + identifikator + ". Incoming message has not message_channel!!!!"));
         }
     }
 }

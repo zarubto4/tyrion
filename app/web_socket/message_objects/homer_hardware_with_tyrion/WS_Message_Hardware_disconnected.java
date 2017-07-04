@@ -8,7 +8,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Hardware_disconnected extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "hardware_disconnected";
+    @JsonIgnore public static final String message_type = "hardware_disconnected";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 

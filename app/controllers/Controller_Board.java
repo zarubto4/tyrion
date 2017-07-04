@@ -377,9 +377,9 @@ public class Controller_Board extends Controller {
 
 
             ObjectNode request = Json.newObject();
-            request.put("messageChannel", "tyrion");
+            request.put("message_channel", "tyrion");
             request.put("instanceId", instance_id);
-            request.put("messageType", "updateDevice");
+            request.put("message_type", "updateDevice");
             request.put("firmware_type", firmware_type.get_firmwareType());
             request.set("targetIds",  Json.toJson(list));
             request.put("build_id", build_id);

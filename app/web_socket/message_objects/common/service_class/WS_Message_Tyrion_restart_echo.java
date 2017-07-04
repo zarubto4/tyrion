@@ -20,8 +20,8 @@ public class WS_Message_Tyrion_restart_echo extends WS_AbstractMessage_Instance 
     public ObjectNode make_request() {
 
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", "Tyrion");
+        request.put("message_type", messageType);
+        request.put("message_channel", "Tyrion");
 
         return request;
     }

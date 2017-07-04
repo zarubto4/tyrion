@@ -6,14 +6,17 @@ import models.Model_HomerInstance;
 import play.libs.Json;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Instance;
 
+import javax.validation.Valid;
+
 public class WS_Message_Homer_ping extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "pingServer";
+    @JsonIgnore public static final String message_type = "homer_ping";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
+    public Integer response_time;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
@@ -21,8 +24,8 @@ public class WS_Message_Homer_ping extends WS_AbstractMessage_Instance {
     public ObjectNode make_request() {
 
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerInstance.CHANNEL);
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_HomerInstance.CHANNEL);
 
         return request;
     }

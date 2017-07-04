@@ -151,9 +151,7 @@ public class Model_CompilationServer extends Model {
 
     @JsonIgnore @Transient public WS_Message_Ping_compilation_server ping(){
         try {
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "ping");
-            request.put("messageChannel", CHANNEL);
+
 
             JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
 

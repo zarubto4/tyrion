@@ -7,7 +7,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 public class WS_Message_Hardware_connected extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "hardware_connected";
+    @JsonIgnore public static final String message_type = "hardware_connected";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/

@@ -13,7 +13,7 @@ import java.util.List;
 public class WS_Message_Homer_Instance_list extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "listInstances";
+    @JsonIgnore public static final String message_type = "listInstances";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -27,8 +27,8 @@ public class WS_Message_Homer_Instance_list extends WS_AbstractMessage {
     public ObjectNode make_request() {
 
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_HomerServer.CHANNEL);
 
         return request;
     }

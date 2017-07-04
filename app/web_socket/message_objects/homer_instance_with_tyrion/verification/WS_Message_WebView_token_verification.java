@@ -22,10 +22,10 @@ public class WS_Message_WebView_token_verification extends WS_AbstractMessage_In
     public ObjectNode get_result(boolean token_approve){
 
         ObjectNode result = Json.newObject();
-        result.put("messageType", messageType);
-        result.put("messageChannel", messageChannel);
+        result.put("message_type", messageType);
+        result.put("message_channel", message_channel);
         result.put("token_approve", token_approve);
-        result.put("messageId", messageId);
+        result.put("message_id", messageId);
         result.put("instanceId", instanceId);
         result.put("status", "success");
         return result;

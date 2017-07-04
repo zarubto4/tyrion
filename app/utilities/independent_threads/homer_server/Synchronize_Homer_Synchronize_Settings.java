@@ -7,7 +7,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import utilities.enums.Enum_Log_level;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homer_with_tyrion.configuration.WS_Message_Homer_set_configuration;
+import web_socket.message_objects.homer_with_tyrion.configuration.WS_Message_Homer_Get_configuration;
 import web_socket.message_objects.homer_with_tyrion.configuration.WS_Message_Homer_Get_homer_server_configuration;
 import web_socket.services.WS_HomerServer;
 
@@ -48,35 +48,30 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
                 Model_HomerServer homer = Model_HomerServer.get_byId(homer_server.identifikator);
 
-                homer.personal_server_name = help.serverName;
-                homer.mqtt_port = help.mqttPort;
-                homer.mqtt_password = help.mqttPassword;
-                homer.mqtt_username = help.mqttUser;
-                homer.grid_port = help.gridPort;
+                homer.personal_server_name = help.server_name;
+                homer.mqtt_port = help.mqtt_port;
+                homer.mqtt_password = help.mqtt_password;
+                homer.mqtt_username = help.mqtt_user;
+                homer.grid_port = help.grid_port;
 
-                homer.web_view_port = help.beckiPort;
-                homer.server_remote_port = help.webPort;
+                homer.web_view_port = help.becki_port;
+                homer.server_remote_port = help.web_port;
 
-                homer.mqtt_username = help.mqttUser;
-                homer.grid_port = help.gridPort;
-                homer.days_in_archive = help.daysInArchive;
-                homer.time_stamp_configuration = help.get_Date();
+                homer.mqtt_username = help.mqtt_user;
+                homer.grid_port = help.grid_port;
 
-                homer.logging = help.logging;
-                homer.interactive = help.interactive;
-                homer.log_level = Enum_Log_level.fromString(help.logLevel);
                 homer.update();
 
             }else {
                 // Tyrion server má novější konfiguraci
 
                 terminal_logger.trace("synchronize_configuration::  " + homer_server.identifikator + " Sending new Configuration to Homer Server");
-                JsonNode result = homer_server.write_with_confirmation( new WS_Message_Homer_set_configuration().make_request( Model_HomerServer.get_byId(homer_server.identifikator)) , 1000 * 5, 0, 2);
+                JsonNode result = homer_server.write_with_confirmation( new WS_Message_Homer_Get_configuration().make_request( Model_HomerServer.get_byId(homer_server.identifikator)) , 1000 * 5, 0, 2);
 
-                final Form<WS_Message_Homer_set_configuration> form_set = Form.form(WS_Message_Homer_set_configuration.class).bind(result);
-                if(form_set.hasErrors()) throw new Exception("WS_Message_Homer_set_configuration: Incoming Json for Yoda has not right Form: " + form_set.errorsAsJson(Lang.forCode("en-US")).toString());
+                final Form<WS_Message_Homer_Get_configuration> form_set = Form.form(WS_Message_Homer_Get_configuration.class).bind(result);
+                if(form_set.hasErrors()) throw new Exception("WS_Message_Homer_Get_configuration: Incoming Json for Yoda has not right Form: " + form_set.errorsAsJson(Lang.forCode("en-US")).toString());
 
-                WS_Message_Homer_set_configuration help_conf = form_set.get();
+                WS_Message_Homer_Get_configuration help_conf = form_set.get();
 
                 if(help_conf.status.equals("success")){
                     terminal_logger.trace("synchronize_configuration:: New Config state:: success! ");

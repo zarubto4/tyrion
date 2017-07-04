@@ -6,9 +6,9 @@ import models.Model_HomerServer;
 import play.libs.Json;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
-public class WS_Message_Homer_set_configuration extends WS_AbstractMessage {
+public class WS_Message_Homer_Get_configuration extends WS_AbstractMessage {
 
-    @JsonIgnore public static final String messageType = "setServerConfiguration";
+    @JsonIgnore public static final String message_type = "setServerConfiguration";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
@@ -20,16 +20,16 @@ public class WS_Message_Homer_set_configuration extends WS_AbstractMessage {
     public ObjectNode make_request(Model_HomerServer server) {
 
         ObjectNode request_conf = Json.newObject();
-        request_conf.put("messageType", messageType);
-        request_conf.put("messageChannel", Model_HomerServer.CHANNEL);
+        request_conf.put("message_type", message_type);
+        request_conf.put("message_channel", Model_HomerServer.CHANNEL);
         request_conf.put("status", "success");
-        request_conf.put("serverName", server.personal_server_name);
-        request_conf.put("mqttPort", server.mqtt_port);
-        request_conf.put("mqttPassword", server.mqtt_password);
-        request_conf.put("mqttUser", server.mqtt_username);
-        request_conf.put("gridPort", server.grid_port);
-        request_conf.put("webPort", server.server_remote_port);
-        request_conf.put("beckiPort", server.web_view_port);
+        request_conf.put("server_name", server.personal_server_name);
+        request_conf.put("mqtt_port", server.mqtt_port);
+        request_conf.put("mqtt_password", server.mqtt_password);
+        request_conf.put("mqtt_user", server.mqtt_username);
+        request_conf.put("grid_port", server.grid_port);
+        request_conf.put("web_port", server.server_remote_port);
+        request_conf.put("becki_port", server.web_view_port);
         request_conf.put("timeStamp", server.time_stamp_configuration.getTime());
         request_conf.put("daysInArchive", server.days_in_archive);
         request_conf.put("logging", server.logging);

@@ -12,7 +12,7 @@ import java.util.List;
 public class WS_Message_Hardware_set_alias extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "hardware_set_alias";
+    @JsonIgnore public static final String message_type = "hardware_set_alias";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -52,8 +52,8 @@ public class WS_Message_Hardware_set_alias extends WS_AbstractMessage {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_Board.CHANNEL);
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_Board.CHANNEL);
         request.set("device_pairs", Json.toJson(pairs));
 
         return request;

@@ -9,7 +9,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 public class WS_Message_Homer_Rejection extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "verificationFirstRequired";
+    @JsonIgnore public static final String messageType = "homer_verification_first_required";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
@@ -21,8 +21,8 @@ public class WS_Message_Homer_Rejection extends WS_AbstractMessage {
     public ObjectNode make_request() {
 
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("message_type", messageType);
+        request.put("message_channel", Model_HomerServer.CHANNEL);
         request.put("message", "Yor server is not verified yet!");
 
         return request;

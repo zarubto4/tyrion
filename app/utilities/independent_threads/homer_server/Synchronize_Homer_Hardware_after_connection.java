@@ -1,9 +1,11 @@
 package utilities.independent_threads.homer_server;
 
+import com.avaje.ebean.Model;
 import com.avaje.ebean.PagedList;
 import models.*;
 import utilities.logger.Class_Logger;
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_overview;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Hardware_list;
 import web_socket.services.WS_HomerServer;
 
 import java.util.ArrayList;
@@ -34,23 +36,31 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
             int page = 0;
             int page_size = 100;
 
+            List<String> device_ids_on_server = new ArrayList<>();
 
-            List<String> device_ids_on_server = Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_hardware().hardware_ids;
+            for(WS_Message_Homer_Hardware_list.Hardware_pair pair : Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_hardware().device_pairs){
+
+                Model_Board.cache_status.put(pair.device_id, pair.online_state);
+                device_ids_on_server.add(pair.device_id);
+
+            }
+
             List<String> device_ids_required = new ArrayList<>();
 
             while(true){
 
 
-                PagedList<Model_Board> pagingList = Model_Board.find.where().findPagedList(page, page_size);
+                PagedList<Model_Board> paging_list = Model_Board.find.where().findPagedList(page, page_size);
 
-                for(Model_Board board : pagingList.getList()){
+                for(Model_Board board : paging_list.getList()){
 
                     device_ids_required.add(board.id);
 
                     if(!device_ids_on_server.contains(board.id)){
-                        board.add_to_server();
+                        board.device_relocate_server(Model_HomerServer.get_byId(ws_homerServer.identifikator));
                     }
 
+                    // TODO dělat něco s overview??
                     WS_Message_Hardware_overview overview = board.get_devices_overview();
 
                 }
@@ -61,16 +71,22 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                     if(!device_ids_required.contains(device_id)){
 
                         terminal_logger.warn("Recolate Hardware required: {}", device_id);
-                        Model_Board.get_byId(device_id).device_relocate_server(null); // TODO
+
+                        try {
+
+                            Model_Board.get_byId(device_id).device_relocate_server(Model_HomerServer.get_byId(Model_Board.get_byId(device_id).connected_server_id)); // TODO
+
+                        }catch (Exception e){
+                            terminal_logger.internalServerError(e);
+                        }
 
                     }
 
                 }
 
 
-
                 // Pokud je počet stránek shodný
-                if( pagingList.getTotalPageCount() == page) break;
+                if( paging_list.getTotalPageCount() == page) break;
 
                 page++;
 

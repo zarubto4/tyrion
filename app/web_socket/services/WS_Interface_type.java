@@ -41,8 +41,8 @@ public abstract class WS_Interface_type {
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
-            if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
-                sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
+            if (json.has("message_id") && sendMessageMap.containsKey(json.get("message_id").asText())) {
+                sendMessageMap.get(json.get("message_id").asText()).insert_result(json);
                 return;
             }
 
@@ -52,7 +52,7 @@ public abstract class WS_Interface_type {
             terminal_logger.internalServerError("onMessage:",e);
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "JsonUnrecognized JsonParseException");
+            result.put("message_type", "JsonUnrecognized JsonParseException");
             webSCtype.write_without_confirmation(result);
 
         }catch (Exception e){
@@ -60,7 +60,7 @@ public abstract class WS_Interface_type {
             terminal_logger.internalServerError("onMessage:",e);
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "JsonUnrecognized " + e.getClass().getSimpleName());
+            result.put("message_type", "JsonUnrecognized " + e.getClass().getSimpleName());
             webSCtype.write_without_confirmation(result);
 
         }
@@ -97,7 +97,7 @@ public abstract class WS_Interface_type {
     public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException {
 
         String messageId = UUID.randomUUID().toString();
-        json.put("messageId", messageId );
+        json.put("message_id", messageId );
 
         WS_Send_message send_message = new WS_Send_message(webSCtype, json, messageId, time, delay, number_of_retries);
         sendMessageMap.put(messageId, send_message);
@@ -108,12 +108,12 @@ public abstract class WS_Interface_type {
 
     // Odeslání bez nutnosti vyčkat na potvrzení
     public void write_without_confirmation(ObjectNode json){
-        if(!json.has("messageId")) json.put("messageId", UUID.randomUUID().toString() );
+        if(!json.has("message_id")) json.put("message_id", UUID.randomUUID().toString() );
         out.write( json.toString() );
     }
 
     public void write_without_confirmation(String messageId, ObjectNode json){
-        json.put("messageId", messageId );
+        json.put("message_id", messageId );
         out.write( json.toString() );
     }
 }

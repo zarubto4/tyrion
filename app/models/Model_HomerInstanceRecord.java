@@ -211,7 +211,7 @@ public class Model_HomerInstanceRecord extends Model {
 
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
 
-            JsonNode node = actual_running_instance.write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(fileRecord, version_object), 1000 * 3, 0, 2);
+            JsonNode node = actual_running_instance.write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(version_object), 1000 * 3, 0, 2);
 
             final Form<WS_Message_Instance_upload_blocko_program> form = Form.form(WS_Message_Instance_upload_blocko_program.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Instance_upload_blocko_program: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -232,42 +232,12 @@ public class Model_HomerInstanceRecord extends Model {
         try {
 
 
-            List<Model_Board> boards_for_instance = new ArrayList<>();
-
             // Seznam - který by na instanci měl běžet!
             List<String> hardware_ids_required_by_instance = actual_running_instance.get_boards_id_required_by_record();
 
-            // Seznam - který na instnaci běží
-            List<String> hardware_actual_on_instance = actual_running_instance.get_list_of_devices().device_ids;
-
-
-            // Step 1 - Add Missing devices in Istance
-            List<String> hardware_ids_for_add_to_instance = new ArrayList<>();
-
-            for(String board_id : hardware_ids_required_by_instance){
-
-                if(!hardware_actual_on_instance.contains(board_id)){
-                    hardware_ids_for_add_to_instance.add(board_id);
-                }
-            }
-
-            if(!hardware_actual_on_instance.isEmpty()){
-                actual_running_instance.add_device_to_instance(hardware_ids_for_add_to_instance);
-            }
-
-
-            // Step 2 - Remove
-            List<String> hardware_ids_for_remove_from_instance = new ArrayList<>();
-
-            for(String board_id : hardware_actual_on_instance){
-
-                if(!hardware_ids_required_by_instance.contains(board_id)){
-                    hardware_ids_for_remove_from_instance.add(board_id);
-                }
-            }
-
-            if(!hardware_ids_for_remove_from_instance.isEmpty()){
-                actual_running_instance.remove_device_from_instance(hardware_ids_for_remove_from_instance);
+            // Přidat nový otisk hardwaru
+            if(!hardware_ids_required_by_instance.isEmpty()){
+                actual_running_instance.set_device_to_instance(hardware_ids_required_by_instance);
             }
 
 

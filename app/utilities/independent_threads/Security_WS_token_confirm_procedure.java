@@ -53,7 +53,7 @@ public class Security_WS_token_confirm_procedure extends Thread {
                 terminal_logger.debug("run:: Trying to Confirm WebSocket:: Result from Server:: " + ask_for_token.toString());
 
                 // Vyhledání DB reference
-                Model_HomerServer check_server = Model_HomerServer.find.where().eq("hash_certificate", help.hashToken).findUnique();
+                Model_HomerServer check_server = Model_HomerServer.find.where().eq("hash_certificate", help.hash_token).findUnique();
 
                 // Kontrola
                 if (!check_server.unique_identificator.equals( server.identifikator )) {

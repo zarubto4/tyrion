@@ -25,8 +25,8 @@ public class WS_Message_Ping_compilation_server extends WS_AbstractMessage_Insta
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_CompilationServer.CHANNEL);
+        request.put("message_type", messageType);
+        request.put("message_channel", Model_CompilationServer.CHANNEL);
 
         return request;
     }

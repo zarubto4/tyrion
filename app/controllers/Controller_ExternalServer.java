@@ -1,17 +1,31 @@
 package controllers;
 
+import com.microsoft.azure.storage.*;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
+import com.microsoft.azure.storage.core.PathUtility;
+import com.microsoft.azure.storage.core.Utility;
+import com.microsoft.azure.storage.file.CloudFile;
+import com.microsoft.azure.storage.file.CloudFileShare;
+import com.microsoft.azure.storage.file.SharedAccessFilePermissions;
+import com.microsoft.azure.storage.file.SharedAccessFilePolicy;
 import io.swagger.annotations.*;
 import models.Model_HomerServer;
+import models.Model_VersionObject;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
+import utilities.login_entities.Secured_Admin;
+import utilities.login_entities.Secured_Homer_Server;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_InvalidBody;
 import utilities.response.response_objects.Result_NotFound;
@@ -19,7 +33,10 @@ import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Ok;
 import utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New;
 
-import java.util.List;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.*;
 
 @Security.Authenticated(Secured_API.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -282,5 +299,87 @@ public class Controller_ExternalServer extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+
+/// PRIVATE FILE STORAGE FOR HOMER SERVERS ###########################################################################*/
+
+    @ApiOperation(value = "get B_Program File",
+            tags = {"External Server"},
+            notes = "Required secure Token changed throw websocket",
+            produces = "multipart/form-data",
+            consumes = "text/html",
+            protocols = "https",
+            code = 303
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    //@Security.Authenticated(Secured_Homer_Server.class)
+    public Result cloud_file_get_b_program_version(String b_program_version_id){
+        try{
+
+            // Získám soubor
+            Model_VersionObject version_object = Model_VersionObject.find.byId(b_program_version_id);
+
+            if(version_object== null){
+               return GlobalResult.result_notFound("File not found");
+            }
+
+
+            if(version_object.b_program == null){
+                return GlobalResult.result_forbidden();
+            }
+
+
+            // Examle https://docs.microsoft.com/en-us/azure/storage/storage-dotnet-shared-access-signature-part-1
+
+            // https://myaccount.blob.core.windows.net/sascontainer/sasblob.txt?
+            // sv=2015-04-05
+            // &st=2015-04-29T22%3A18%3A26Z
+            // &se=2015-04-30T02%3A23%3A26Z
+            // &sr=b
+            // &sp=rw
+            // &sip=168.1.5.60-168.1.5.70
+            // &spr=https
+            // &sig=Z%2FRHIX5Xcg0Mq2rqI3OlWTjEg2tYkboXr1P9ZUXDtkk%3D
+
+            // Set Policy
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+
+            // Set Policy - Permission
+            EnumSet<SharedAccessBlobPermissions> permissions =  EnumSet.noneOf(SharedAccessBlobPermissions.class);
+            permissions.add(SharedAccessBlobPermissions.READ);  // Set only read Permision
+
+            policy.setPermissions(permissions);
+
+
+            String server_url = Server.azure_blob_Link;
+            String blob_url = version_object.files.get(0).file_path;
+            String sv = "&sv=2015-04-05";                                     // Storage services version. The address of the blob. Note that using HTTPS is highly recommended.
+            String st = "&st=" +Instant.now().toString();                         // Start time. Specified in UTC time. If you want the SAS to be valid immediately, omit the start time.
+            String se = "&st=" +Instant.now().plusSeconds(1000 * 60).toString();  // Expiry time
+            String sr = "&sr=b";     // Resource - only blob
+            String sp = "&sp=r";     // Permissions - only read
+            String spr = "&spr=https";     // Protocol
+            String sig = Server.blobClient.getContainerReference("product").generateSharedAccessSignature(policy, "groupPolicyIdentifier");
+
+            String link = server_url + blob_url + "?" + sv + st + se + sr + sp + spr + sig;
+
+            System.out.println("Link storageUri " + link);
+
+            // Přesměruji na link
+            return GlobalResult.ok(link);
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+
+
+
 
 }

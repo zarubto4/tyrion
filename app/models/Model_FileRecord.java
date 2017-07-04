@@ -46,10 +46,6 @@ public class Model_FileRecord extends Model {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore @Transient public String get_path() {
-        return  file_path;
-    }
-
     @JsonIgnore @Transient public String get_fileRecord_from_Azure_inString(){
         try {
 
@@ -209,12 +205,12 @@ public class Model_FileRecord extends Model {
     public void remove_file_from_Azure(){
         try{
 
-            int slash =  this.get_path().indexOf("/");
-            String container_name =  this.get_path().substring(0, slash);
-            String file_path =  this.get_path().substring(slash+1);
+            int slash =  file_path.indexOf("/");
+            String container_name =  file_path.substring(0, slash);
+            String file_path_slash =  file_path.substring(slash+1);
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-            CloudBlob blob = container.getBlockBlobReference(file_path);
+            CloudBlob blob = container.getBlockBlobReference(file_path_slash);
             blob.delete();
 
         }catch (Exception e){

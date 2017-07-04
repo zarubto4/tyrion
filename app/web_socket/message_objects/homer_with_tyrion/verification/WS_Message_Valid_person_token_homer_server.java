@@ -25,11 +25,11 @@ public class WS_Message_Valid_person_token_homer_server extends WS_AbstractMessa
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("message_type", messageType);
+        request.put("message_channel", Model_HomerServer.CHANNEL);
         request.put("status", "error");
         request.put("message", "Token is not valid");
-        request.put("messageId", messageId);
+        request.put("message_id", message_id);
         return request;
     }
 
@@ -38,11 +38,11 @@ public class WS_Message_Valid_person_token_homer_server extends WS_AbstractMessa
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("message_type", messageType);
+        request.put("message_channel", Model_HomerServer.CHANNEL);
         request.put("status", "success");
         request.put("message", "Token is not valid");
-        request.put("messageId", messageId);
+        request.put("message_id", message_id);
         request.put("read_permission",   server.read_permission(person));
         request.put("edit_permission",   server.edit_permission(person));
         request.put("delete_permission", server.delete_permission(person));
@@ -56,8 +56,8 @@ public class WS_Message_Valid_person_token_homer_server extends WS_AbstractMessa
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("messageType", messageType);
-        request.put("messageChannel", Model_HomerServer.CHANNEL);
+        request.put("message_type", messageType);
+        request.put("message_channel", Model_HomerServer.CHANNEL);
         request.put("status", "error");
         request.put("message", "Permission Required");
 
