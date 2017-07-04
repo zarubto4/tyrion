@@ -4,7 +4,7 @@ import models.Model_HomerInstance;
 import models.Model_HomerServer;
 import utilities.enums.Enum_Homer_instance_type;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_destroy;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_list;
 import web_socket.services.WS_HomerServer;
 
@@ -55,7 +55,7 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
                 terminal_logger.trace("Synchronize_Homer_Instance_after_connection:: run::  The number of instance_ids for removing from homer server:: {}" , instances_for_removing.size());
 
-                WS_Message_Instance_destroy remove_result  = Model_HomerServer.get_byId(ws_homerServer.identifikator).remove_instance(instances_for_removing);
+                WS_Message_Homer_Instance_destroy remove_result  = Model_HomerServer.get_byId(ws_homerServer.identifikator).remove_instance(instances_for_removing);
                 if (!remove_result.status.equals("success")){
                     terminal_logger.internalServerError(new Exception("Blocko Server: Error while removing instances: " + remove_result.toString()));
                 }

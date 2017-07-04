@@ -64,7 +64,7 @@ V případě ADD a Remove se pošle SNAP znovu. Homer se má postarat o vyřeše
       Response: 
          {
              "status"         :   "success | error"
-             "message_id"      :   "same_uuid_string"  
+             "message_id"     :   "same_uuid_string"  
                                   
              "error_code"     :   414 (Int)  (Only if status is error)   
          }  

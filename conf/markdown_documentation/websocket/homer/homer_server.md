@@ -23,12 +23,17 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
  Message for Tyrion for Homer
  
  #### [0-A] Server is not Verify ####
- [A] Veškerou komunikaci Tyrion blokuje dokud nedojde k ověření 
+ [A] Veškerou komunikaci Tyrion blokuje dokud nedojde k ověření. Tu Homer server vykonává sám a to hned 
+     na začátku zasláním zprávy *message_type::homer_verification_token*. Dokud homer tuto zprávu s validním
+     klíčem nepošle, Tyrion žádnou zprávu nevputí a NEUTORIZUJE HOMER SERVER JAKO ONLINE.
+     + je dobré počítat s tím, že Tyrion může revalidovat kdykoliv ověření.
+     Token slouží ke komunikaci s Tyrionem. Vždy unikátní vždy nově generovaný. 
+     
  
      Response: (Blokační zpráva, když není Homer ověřen)
           {  
             "message_type"    :  "homer_verification_first_required"              
-            "message_id"      :  "some_uuid_string"
+            "message_id"      :  "some_uuid_string"      <---  Same as ID of incoming message
             "message_channel" :  "homer_server"  
           }
           
@@ -37,8 +42,9 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
           
        Request To Tyrion From Homer:
            {  
-              "message_type"    :  "homer_verification_first_required"              
-              "message_id"      :  "some_uuid_string"
+              "message_type"    :  "homer_verification_token"              
+              "message_id"      :  "some_uuid_string"       
+              "hash_token"      :  "hash_token_looong_token"
               "message_channel" :  "homer_server"  
            }   
            
@@ -46,45 +52,11 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
          {
                "message_type"   :   "homer_verification_result"    
                "status"         :   "success | error"   
-               "message_id"     :   "same_uuid_string" 
+               "error_code"     :   301                <--- Opravit  
+               "message_id"     :   "same_uuid_string" <---  STEJNÉ UUID JAKO PŘIŠEL HASH_TOKEN             
                "token"          :   "rest_api_token"   <--- Only if status is success 
          }           
-                     
- [B] Tyrion potvrdí oprávnění a homer může volně komunikovat
- 
-    Response:
-          {  
-            "message_type"    :  "homer_verification_token_approve"              
-            "message_id"      :  "some_uuid_string"
-            "message_channel" :  "homer_server"  
-          }    
-          
- #### [0-B] Get Verification Token ####
-         
-     Request: 
-          {
-            "message_type"    :   "homer_get_verification_token"              
-            "message_id"      :   "some_uuid_string"
-            "message_channel" :   "homer_server"  
-          }               
-      
-     Response from Homer:
-           {
-             "status"         :   "success | error"
-             "message_id"     :   "same_uuid_string"  
-             "hash_token"     :   "loooooong_hash"   <--- Only if status is success 
-             "error_code"     :   414 (Int)          <--- Only if status is error
-           }   
-           
-     Response from Tyrion if Success (Token sedí || nesedí):
-           {
-             "message_type"   :   "homer_verification_result"    
-             "status"         :   "success | error"   
-             "message_id"     :   "same_uuid_string" 
-             "token"          :   "rest_api_token"   <--- Only if status is success 
-           }  
-              
- 
+     
  #### [1] Get server configuration #### 
  
      Request: 
@@ -93,7 +65,6 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
                "message_id"      :   "some_uuid_string"
                "message_channel" :   "homer_server"  
                
-             
              }   
             
      Response:
@@ -109,29 +80,30 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
               }         
                
               
- #### [1-TODO] SET server configuration #### 
+ #### [2] SET server configuration #### 
  
       // Zatím nepodporováno TODO 
  
- #### [2] Add Instance ####
+ #### [3] Add Instance ####
      
      Request: 
          {
             "message_type"    :   "instance_create"              
             "message_id"      :   "some_uuid_string"
             "message_channel" :   "homer_server"  
-            "instance_id:    :   "id_1" 
+            "instance_id:     :   "id_1" 
          }
          
-         
-      Response:
+      Response: (Odpovídá se na příkaz, nikoliv na celou exekutivitu vkonání přidání instance) 
+      // Error - Nelze přidat stejnou instanci 
          {
            "status"         :   "success | error"
            "message_id"      :   "same_uuid_string"  
            "error_code"     :   414 (Int)  (Only if status is error) 
          }
  
- #### [3] Remove Instance #### 
+ 
+ #### [4] Remove Instance #### 
  Odstraním-li Instanci - tak veškerý hardware se z instance vyřadí, ale zůstane připojený,
  nadále hardware nevrací id instance že v ní j. 
  
@@ -144,6 +116,7 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
              }
              
      Response:
+     // Error - Lze Smazat neexistující instanci 
              {
                "status"         :   "success | error"
                "message_id"      :   "same_uuid_string"  
@@ -151,11 +124,11 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
              }      
   
   
-  #### [4] Get Instance Numbers ####  
+  #### [5] Get Instance Numbers ####  
   
     Request: 
              {
-                "message_type"    :   "homer_instance_size"              
+                "message_type"    :   "homer_instance_number"              
                 "message_id"      :   "some_uuid_string"
                 "message_channel" :   "homer_server"  
              }  
@@ -168,42 +141,59 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
                 "error_code"     :   414 (Int)  (Only if status is error) 
             }
             
-  #### [5] Get Total Online Hardware ####  
+              
+  #### [6] Get Instance List ####  
+  
+      Request: 
+               {
+                    "message_type"    :   "homer_instance_list"              
+                    "message_id"      :   "some_uuid_string"
+                    "message_channel" :   "homer_server"  
+               }  
+  
+      Result: 
+               {
+                    "status"          :   "success | error"
+                    "message_id"      :   "same_uuid_string"  
+                    "instnace_ids"    :   ["id_1", "id_2"] 
+                    "error_code"      :   414 (Int)  (Only if status is error) 
+               }
+            
+  #### [7] Get Total Online Hardware ####  
     
       Request: 
                {
-                  "message_type"    :   "homer_hardware_size"              
+                    "message_type"     :   "homer_hardware_number"              
+                    "message_id"       :   "some_uuid_string"
+                    "message_channel"  :   "homer_server"  
+               }  
+    
+      Result: 
+               {
+                    "status"           :   "success | error"
+                    "message_id"       :   "same_uuid_string"  
+                    "value"            :   123 (Int)  (Only if status is success)    
+                    "error_code"       :   414 (Int)  (Only if status is error) 
+               }          
+
+   #### [8] Get Hardware List Ids ####  
+    
+      Request: 
+               {
+                  "message_type"    :   "homer_hardware_list"              
                   "message_id"      :   "some_uuid_string"
                   "message_channel" :   "homer_server"  
                }  
     
       Result: 
-              {
+               { 
                   "status"         :   "success | error"
-                  "message_id"      :   "same_uuid_string"  
-                  "value"          :   123 (Int)  (Only if status is success)    
+                  "message_id"     :   "same_uuid_string"  
+                  "device_ids"     :   ["id_1", "id_2"] 
                   "error_code"     :   414 (Int)  (Only if status is error) 
-              }          
-
-
-  #### [6] Get Verification Token ####  
-  
-       Request: 
-                {
-                  "message_type"    :   "homer_hardware_size"              
-                  "message_id"      :   "some_uuid_string"
-                  "messag_channel" :   "homer_server"  
-                }  
+               }          
         
-       Result: 
-                {
-                   "status"         :   "success | error"
-                   "message_id"      :   "same_uuid_string"  
-                   "value"          :   123 (Int)  (Only if status is success)    
-                   "error_code"     :   414 (Int)  (Only if status is error) 
-                }          
-        
-   #### [7] Ping Homer Server ####  
+   #### [9] Ping Homer Server ####  
     
          Request: 
                   {
@@ -215,7 +205,7 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
          Result: 
                   {
                      "status"         :   "success | error"
-                     "message_id"      :   "same_uuid_string"  
+                     "message_id"     :   "same_uuid_string"  
                      "response_time"  :   123 (ms)  (Only if status is success)   
                      "error_code"     :   414 (Int) (Only if status is error) 
                   }  

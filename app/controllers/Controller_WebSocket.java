@@ -156,30 +156,6 @@ public class Controller_WebSocket extends Controller {
             terminal_logger.trace("homer_cloud_server_connection:: Connection is successful");
             WebSocket<String> webSocket = server.connection();
 
-            // Procedury kontroly - informovat třeba všechny klienty o tom, že se cloud_blocko_server připojil. Kontzrola co tam běží a další píčoviny
-            terminal_logger.trace("homer_cloud_server_connection:: Tyrion have to control what is on the cloud_blocko_server side ");
-
-
-            // Ověřím IDentitiu serveru na jeho long_hash
-            // Separatní vlákno je z důvodů nutnosti nejdříve vrátit (return webSocket) a nezávisle poté spustit ověření
-            Thread check = new Thread() {
-
-                @Override
-                public void run() {
-                    try {
-
-                        sleep(500); //Záměrna hodnota čekání pro strabilizaci komunikace
-                        server.security_token_confirm_procedure();
-
-                    } catch (InterruptedException e) {
-                        terminal_logger.internalServerError("homer_cloud_server_connection:", e);
-                    }
-                }
-            };
-
-            check.start();
-
-
             homer_servers.put(homer_server.unique_identificator, server);
 
             terminal_logger.trace("homer_cloud_server_connection:: Successfully connected");

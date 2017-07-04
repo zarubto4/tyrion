@@ -4,7 +4,9 @@ import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum ErrorCode {
-    
+
+    // Homer Nové
+    @EnumValue("UNAUTHORIZED_CONNECTION")               UNAUTHORIZED_CONNECTION( 301, "Homer Server websocket is not authorized"),
     
     @EnumValue("UNKNOWN_TOPIC")                         UNKNOWN_TOPIC                           ( 1, "Undefined Topic on HW"),
     @EnumValue("MISSING_LABEL")                         MISSING_LABEL                           ( 2, "Missing some Label"),

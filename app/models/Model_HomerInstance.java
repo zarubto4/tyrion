@@ -20,6 +20,7 @@ import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homer_instance_with_tyrion.*;
 
@@ -434,7 +435,7 @@ public class Model_HomerInstance extends Model {
 
 
     @JsonIgnore @Transient
-    public WS_Message_Instance_destroy remove_from_cloud(){
+    public WS_Message_Homer_Instance_destroy remove_from_cloud(){
 
         List<String> instances = new ArrayList<>();
         instances.add(id);

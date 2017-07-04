@@ -11,7 +11,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_add;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_add;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_upload_blocko_program;
 
 import javax.persistence.*;
@@ -117,7 +117,7 @@ public class Model_HomerInstanceRecord extends Model {
             if(!actual_running_instance.instance_online()){
 
                 // Vytvořím Instanci
-                WS_Message_Instance_add result_instance   = actual_running_instance.cloud_homer_server.add_instance(actual_running_instance);
+                WS_Message_Homer_Instance_add result_instance   = actual_running_instance.cloud_homer_server.add_instance(actual_running_instance);
                 if(!result_instance.status.equals("success")){
                     Model_HomerInstance.terminal_logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
                 }

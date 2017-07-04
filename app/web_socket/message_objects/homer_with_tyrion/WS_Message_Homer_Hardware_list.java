@@ -14,7 +14,7 @@ import java.util.List;
 public class WS_Message_Homer_Hardware_list extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String message_type = "hardware_list";
+    @JsonIgnore public static final String message_type = "homer_hardware_list";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/

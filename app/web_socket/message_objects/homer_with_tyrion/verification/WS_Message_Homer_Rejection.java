@@ -17,6 +17,10 @@ public class WS_Message_Homer_Rejection extends WS_AbstractMessage {
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
 
+    /**
+     * Automatická odpověď, když není oprávnění Homer serveru podle Tyriona validní
+     * @return
+     */
     @JsonIgnore
     public ObjectNode make_request() {
 

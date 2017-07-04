@@ -7,10 +7,13 @@ import play.data.validation.Constraints;
 import play.libs.Json;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
-public class WS_Message_Homer_Instancie_number extends WS_AbstractMessage {
+import java.util.ArrayList;
+import java.util.List;
+
+public class WS_Message_Homer_Hardware_number extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String message_type = "homer_instance_size";
+    @JsonIgnore public static final String message_type = "homer_hardware_number";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -29,4 +32,11 @@ public class WS_Message_Homer_Instancie_number extends WS_AbstractMessage {
         return request;
     }
 
+
+    public class Hardware_pair{
+
+        public String device_id;
+        public boolean online_state;
+
+    }
 }

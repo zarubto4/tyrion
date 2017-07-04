@@ -398,7 +398,6 @@ public class Model_ActualizationProcedure extends Model {
             }
 
 
-
             notification.setImportance( Enum_Notification_importance.low )
                         .setLevel( Enum_Notification_level.success );
 

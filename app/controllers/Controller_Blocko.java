@@ -28,8 +28,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import web_socket.message_objects.homer_instance_with_tyrion.*;
-import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_destroy;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -822,7 +821,7 @@ public class Controller_Blocko extends Controller{
 
                 if(homer_instance.instance_online()){
 
-                    WS_Message_Instance_destroy result = homer_instance.remove_from_cloud();
+                    WS_Message_Homer_Instance_destroy result = homer_instance.remove_from_cloud();
                 }
 
                 homer_instance.actual_instance = null;

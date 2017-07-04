@@ -1,4 +1,4 @@
-package web_socket.message_objects.homer_instance_with_tyrion;
+package web_socket.message_objects.homer_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -9,7 +9,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 import java.util.ArrayList;
 import java.util.List;
 
-public class WS_Message_Instance_add extends WS_AbstractMessage_Instance {
+public class WS_Message_Homer_Instance_add extends WS_AbstractMessage_Instance {
 
 // MessageType
     @JsonIgnore
