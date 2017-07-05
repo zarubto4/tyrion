@@ -179,6 +179,13 @@ public class WS_HomerServer extends WS_Interface_type {
                 return;
             }
 
+        }catch (NullPointerException e){
+
+            ObjectNode result = Json.newObject();
+            result.put("message_type", "JsonUnrecognized JsonParseException - Or Mission values in Verification message");
+            result.put("error_code", ErrorCode.INVALID_MESSAGE.error_code());
+            result.put("error_message", ErrorCode.INVALID_MESSAGE.error_message());
+            webSCtype.write_without_confirmation(json.get("message_id").asText(), result);
 
         }catch (Exception e){
             terminal_logger.internalServerError("Incoming data from Homer is not in valid state and also its not verified connection", e);
