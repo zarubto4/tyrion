@@ -68,6 +68,8 @@ public class Model_Board extends Model {
 
                       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)   public Model_Project project;
 
+                                                                            public boolean developer_kit;
+
                                                    @JsonIgnore @ManyToOne   public Model_VersionObject actual_c_program_version;
                                                    @JsonIgnore @ManyToOne   public Model_VersionObject actual_backup_c_program_version;
                                                    @JsonIgnore @ManyToOne   public Model_BootLoader    actual_boot_loader;
@@ -172,10 +174,44 @@ public class Model_Board extends Model {
     }
 
     @JsonProperty @Transient @ApiModelProperty(required = true, value = "Value is null, if device status is online.") public Date latest_online(){
-        if(is_online()) return null;
+        if(online_state() != Enum_Board_online_status.online) return null;
         return last_online();
     }
 
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Enum_Board_online_status online_state(){
+
+        // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
+        // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
+        if(connected_server_id == null){
+            return Enum_Board_online_status.not_yet_first_connected;
+        }
+
+        // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
+        // nebo také né - proto se vrací stav Enum_Board_online_status - na to reaguje parameter latest_online(),
+        // který následně vrací latest know online
+        if(Model_HomerServer.get_byId(connected_server_id).server_is_online()){
+
+            if(cache_status.containsKey(id)){
+                return cache_status.get(id) ? Enum_Board_online_status.online : Enum_Board_online_status.offline;
+            }else {
+                // Začnu zjišťovat stav - v separátním vlákně!
+                new Thread( () -> {
+                    try {
+
+                        Model_HomerServer.get_byId(this.connected_server_id).sender().write_without_confirmation( new WS_Message_Hardware_online_status().make_request(new ArrayList<String>() {{add(id);}} ));
+
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError("notification_board_connect:", e);
+                    }
+                }).start();
+
+                return Enum_Board_online_status.synchronization_in_progress;
+
+            }
+        } else {
+            return Enum_Board_online_status.unknown_lost_connection_with_server;
+        }
+    }
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -196,15 +232,10 @@ public class Model_Board extends Model {
 
             if(update_boot_loader_required()) swagger_board_short_detail.alert_list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
 
-            try {
-                swagger_board_short_detail.board_online_status = is_online();
 
-            }catch (Exception e){
-                terminal_logger.internalServerError("get_short_board:", e);
-                swagger_board_short_detail.board_online_status = false;
-            }
+            swagger_board_short_detail.board_online_status = online_state();
 
-            swagger_board_short_detail.last_online = last_online();
+            if( swagger_board_short_detail.board_online_status != Enum_Board_online_status.online) swagger_board_short_detail.last_online = last_online();
 
             return swagger_board_short_detail;
 
@@ -254,7 +285,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public Date last_online(){
         try {
 
-            if (this.is_online()) return null;
+            if (this.online_state() == Enum_Board_online_status.unknown_lost_connection_with_server ) return null;
 
             List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.device_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
@@ -330,6 +361,16 @@ public class Model_Board extends Model {
                         return;
                     }
 
+                    case WS_Message_Hardware_online_status.message_type: {
+
+                        final Form<WS_Message_Hardware_online_status> form = Form.form(WS_Message_Hardware_online_status.class).bind(json);
+                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_online_status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+                        Model_Board.device_online_synchronization(form.get());
+                        return;
+                    }
+
+
                     case WS_Message_Hardware_autobackup_maked.message_type: {
 
                         final Form<WS_Message_Hardware_autobackup_maked> form = Form.form(WS_Message_Hardware_autobackup_maked.class).bind(json);
@@ -359,7 +400,16 @@ public class Model_Board extends Model {
                     }
 
 
-                    default: throw new Exception("Incoming message, chanel tyrion: message_type not recognized -> " + json.get("message_type").asText());
+                    // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
+                    case WS_Message_Hardware_set_autobackup.message_type : {terminal_logger.warn("WS_Message_Hardware_set_autobackup: A message with a very high delay has arrived.");}
+                    case WS_Message_Hardware_set_alias.message_type      : {terminal_logger.warn("WS_Message_Hardware_set_alias: A message with a very high delay has arrived.");}
+                    case WS_Message_Hardware_Restart.message_type        : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");}
+                    case WS_Message_Hardware_overview.message_type       : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");}
+                    case WS_Message_Hardware_change_server.message_type  : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");}
+
+                    default: {
+                        throw new Exception("Incoming message, chanel tyrion: message_type not recognized -> " + json.get("message_type").asText());
+                    }
                 }
 
             } catch (Exception e) {
@@ -374,23 +424,34 @@ public class Model_Board extends Model {
 
             terminal_logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.device_id);
 
-            Model_Board device = Model_Board.get_byId(help.device_id);
+            if(!cache_status.get(help.device_id)){
 
-            if(device == null) throw new Exception("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.device_id);
+                Model_Board device = Model_Board.get_byId(help.device_id);
 
-            if(cache_status.get(help.device_id) == null || !cache_status.get(help.device_id) ){
+                if(device == null) throw new Exception("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.device_id);
+
                 cache_status.put(help.device_id, true);
-                device.notification_board_connect();
+
+                // Notifikce
+                if(device.developer_kit) {
+                    device.notification_board_connect();
+                }
+
+                // Standartní synchronizace
+                synchronize_online_state_with_becki(device.id, true, device.project_id());
+
+
+
+                if(!device.connected_server_id.equals(help.websocket_identificator)){
+                    device.connected_server_id = help.websocket_identificator;
+                    device.update();
+                }
+
+                device.make_log_connect();
+
+                device.hardware_firmware_state_check();
+
             }
-
-            if(!device.connected_server_id.equals(help.websocket_identificator)){
-                device.connected_server_id = help.websocket_identificator;
-                device.update();
-            }
-
-            device.make_log_connect();
-
-            device.hardware_firmware_state_check();
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -433,6 +494,24 @@ public class Model_Board extends Model {
             device.update();
 
             return;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+    @JsonIgnore @Transient public static void device_online_synchronization(WS_Message_Hardware_online_status report){
+        try{
+
+            for(WS_Message_Hardware_online_status.DeviceStatus status : report.device_list){
+
+                cache_status.put(status.device_id, status.online_status);
+
+                // Odešlu echo pomocí websocketu do becki
+                Model_Board device = get_byId(status.device_id);
+
+                synchronize_online_state_with_becki(device.id, status.online_status, device.project_id());
+            }
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -1225,6 +1304,14 @@ public class Model_Board extends Model {
     }
 
 
+/* ONLINE STATUS SYNCHRONIZATION ---------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public static void synchronize_online_state_with_becki(String device_id, boolean online_state, String project_id){
+
+    }
+
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     // Online Offline Notification
@@ -1328,7 +1415,6 @@ public class Model_Board extends Model {
             }
         }).start();
     }
-
 
     // Backup Notification
     @JsonIgnore
@@ -1518,8 +1604,9 @@ public class Model_Board extends Model {
         return board_model;
     }
 
+
     @JsonIgnore
-    public boolean is_online() {
+    public boolean is_online_get_from_cache() {
 
         Boolean status = cache_status.get(id);
 

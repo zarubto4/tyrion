@@ -90,15 +90,7 @@
                                 <div class="box-body table-responsive no-padding">
                                     <div class="box-header">
                                         <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.name </h3>
-                                        <h3 class="box-title">
-
-                                        @if(x.main_board_pair.board.is_online){
-                                                <p class="text-green"> Online</p>
-                                        }else{
-                                                <p class="text-red"> Offline</p>
-                                        }
-
-                                        </h3>
+                                        <h3 class="box-title"> @x.main_board_pair.board.online_state()</h3>
                                     </div>
 
                                     <div class="box-header">
@@ -116,15 +108,8 @@
                                                         <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b> Missing bootloader</b></a>
                                                     }
 
-                                            <a onclick="executeCommand('@x.main_board_pair.id.toString() ','@Enum_type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
+                                             <a onclick="executeCommand('@x.main_board_pair.id.toString() ','@Enum_type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
 
-                                                @if(Model_Board.find.byId(x.main_board_pair.id.toString()) == null) {
-                                                    <a onclick="showCommandDeviceModal('@x.main_board_pair.id.toString() ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                                }else{
-                                                    <a onclick="showCommandDeviceModal('@x.main_board_pair.id.toString() ', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                                }
-                                            <a onclick="showAddDeviceModal('@x.main_board_pair.id.toString() ')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
-                                            <a onclick="removeMasterDevice('@x.main_board_pair.id.toString() ')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
                                             </div>
                                         </div>
                                     </div>
@@ -148,13 +133,7 @@
                                                 <td> @b_pair.board.type_of_board.name</td>
                                                 <td> @b_pair.board.name</td>
 
-                                                <td>
-                                                @if(b_pair.board.is_online() == true){
-                                                    <p class="text-green">Online</p>
-                                                }else{
-                                                    <p class="text-red">Offline</p>
-                                                }
-                                                </td>
+                                                <td> b_pair.board.online_state() </td>
 
                                                 <td>
                                                 @if(Model_BootLoader.find.where().eq("main_type_of_board.id", b_pair.board.id ).findUnique() != null){

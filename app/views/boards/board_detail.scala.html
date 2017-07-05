@@ -74,16 +74,15 @@
                                 <table  class="table table-bordered">
                                     <tr>
                                         <td class="col-md-4">Active </td>
-                                        <td class="col-md-8">@board.is_active</td>
+                                        <td class="col-md-8">
+                                            @(board.connected_instance_id != null){
+                                                 <span class="label label-success">Active</span>
+                                            }else{
+                                                <span class="label label-danger">Not Yet Activated</span>
+                                            }
+                                        </td>
                                     </tr>
-                                    <tr>
-                                        <td class="col-md-4">Online</td>
-                                        @if(board.is_online()){
-                                            <td> <span class="label label-success">Online</span></td>
-                                        }else{
-                                            <td><span class="label label-danger">Offline</span></td>
-                                        }
-                                    </tr>
+                                    <tr> @board.online_state()</tr>
                                     <tr>
                                         <td class="col-md-4">Backup mode</td>
                                         <td class="col-md-8">

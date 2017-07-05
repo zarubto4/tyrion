@@ -36,7 +36,7 @@ V případě ADD a Remove se pošle SNAP znovu. Homer se má postarat o vyřeše
            "device_ids"     :  ["id_1", "id_2"]
         }
     
-    Response:
+    Response: (Error - Instance not exist)
          {
             "status"         :   "success | error"
             "message_id"      :   "same_uuid_string"  

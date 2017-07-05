@@ -22,9 +22,6 @@ public class WS_Message_Instance_terminal_set_snap extends WS_AbstractMessage_In
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
 
-
-
-
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -55,8 +52,8 @@ public class WS_Message_Instance_terminal_set_snap extends WS_AbstractMessage_In
 
     public class Terminal_parameter{
 
-        public String terminal_id;  // Toto chtěl David U. - nikdo tomu nerozumí proč... Ale je to prý terminologie Homera
-        public String target_id;    // Toto chtěl David U. - nikdo tomu nerozumí proč... Ale je to prý terminologie Homera
+        public String terminal_id;  // Toto chtěl David U. - nikdo tomu nerozumí proč... Ale je to prý terminologie Homera  // M_Program_snap_parameter_ID
+        public String target_id;    // Toto chtěl David U. - nikdo tomu nerozumí proč... Ale je to prý terminologie Homera  // m_project_id
 
         public Enum_MProgram_SnapShot_settings settings;    // absolutely_public, with token etc.
 
