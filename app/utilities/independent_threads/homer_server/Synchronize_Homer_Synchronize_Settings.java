@@ -35,7 +35,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
             ObjectNode ask_for_configuration = homer_server.write_with_confirmation( new WS_Message_Homer_Get_homer_server_configuration().make_request() , 1000 * 5, 0, 2);
             final Form<WS_Message_Homer_Get_homer_server_configuration> form = Form.form(WS_Message_Homer_Get_homer_server_configuration.class).bind(ask_for_configuration);
-            if(form.hasErrors()) throw new Exception("WS_Message_Homer_Get_homer_server_configuration: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            if(form.hasErrors()){throw new Exception("WS_Message_Homer_Get_homer_server_configuration: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());}
             WS_Message_Homer_Get_homer_server_configuration help = form.get();
 
             if(help.get_Date().compareTo(Model_HomerServer.get_byId(homer_server.identifikator).time_stamp_configuration) == 0){

@@ -38,7 +38,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
             sleep(1000 * 10);
 
             List<Model_CProgramUpdatePlan> old_not_finished_plans = Model_CProgramUpdatePlan.find.where()
-                    .eq("connected_server_id", ws_homerServer.identifikator)
+                    .eq("board.connected_server_id", ws_homerServer.identifikator)
                     .where()
                         .disjunction()
                             .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
