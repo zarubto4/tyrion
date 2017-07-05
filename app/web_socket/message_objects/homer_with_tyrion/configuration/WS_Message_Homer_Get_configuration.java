@@ -8,7 +8,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
 public class WS_Message_Homer_Get_configuration extends WS_AbstractMessage {
 
-    @JsonIgnore public static final String message_type = "setServerConfiguration";
+    @JsonIgnore public static final String message_type = "homer_set_configuration";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 

@@ -49,7 +49,6 @@ public abstract class WS_Interface_type {
             onMessage(json);
 
         }catch (JsonParseException e){
-            terminal_logger.internalServerError("onMessage:",e);
 
             ObjectNode result = Json.newObject();
             result.put("message_type", "JsonUnrecognized JsonParseException");

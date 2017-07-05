@@ -221,7 +221,7 @@ public class Model_HomerServer extends Model{
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  public static final String CHANNEL = "homer-server";
+    @JsonIgnore @Transient  public static final String CHANNEL = "homer_server";
     
     @JsonIgnore @Transient  public static void Messages(WS_HomerServer homer, ObjectNode json){
 

@@ -321,12 +321,8 @@ public class Model_Board extends Model {
     }
 
     @JsonIgnore @Transient public Model_HomerInstance get_instance() {
-
-        return Model_HomerInstance.find.where().disjunction()
-                .eq("actual_instance.version_object.b_program_hw_groups.main_board_pair.board.id", this.id)
-                .eq("actual_instance.version_object.b_program_hw_groups.device_board_pairs.board.id", this.id)
-                .endJunction().findUnique();
-
+        if(connected_instance_id == null) return null;
+        return Model_HomerInstance.get_byId(connected_instance_id);
     }
 
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/

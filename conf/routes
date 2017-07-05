@@ -243,8 +243,6 @@ GET       /cloud/homer_server/file/b_program/:b_program_version_id      @control
 GET       /cloud/homer_server/file/c_program/:c_program_version_id      @controllers.Controller_ExternalServer.cloud_file_get_c_program_version(c_program_version_id)
 GET       /cloud/homer_server/file/bootloader/:bootloader_version_id    @controllers.Controller_ExternalServer.cloud_file_get_bootloader(bootloader_version_id)
 
-
-
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
 ################################################################################################################################################################################
 

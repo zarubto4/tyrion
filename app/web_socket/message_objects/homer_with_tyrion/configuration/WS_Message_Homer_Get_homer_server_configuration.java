@@ -11,7 +11,7 @@ import java.util.Date;
 
 public class WS_Message_Homer_Get_homer_server_configuration extends WS_AbstractMessage {
 
-    @JsonIgnore public static final String message_type = "getServerConfiguration";
+    @JsonIgnore public static final String message_type = "homer_get_configuration";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 

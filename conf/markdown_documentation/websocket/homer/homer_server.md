@@ -61,7 +61,7 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
  
      Request: 
             {
-               "message_type"    :   "homer_get_verification_token"              
+               "message_type"    :   "homer_get_configuration"              
                "message_id"      :   "some_uuid_string"
                "message_channel" :   "homer_server"  
                
@@ -82,7 +82,7 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
               
  #### [2] SET server configuration #### 
  
-      // Zatím nepodporováno TODO 
+      // Zatím nepodporováno TODO  (homer_set_configuration) - OBOUSTRANÝ IGNOR
  
  #### [3] Add Instance ####
      
@@ -158,6 +158,23 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
                     "instnace_ids"    :   ["id_1", "id_2"] 
                     "error_code"      :   414 (Int)  (Only if status is error) 
                }
+               
+   #### [6] Get Instance Exist List ####  
+     
+         Request: 
+                  {
+                       "message_type"    :   "homer_instance_list"              
+                       "message_id"      :   "some_uuid_string"
+                       "message_channel" :   "homer_server"  
+                  }  
+     
+         Result: 
+                  {
+                       "status"          :   "success | error"
+                       "message_id"      :   "same_uuid_string"  
+                       "instnace_ids"    :   ["id_1", "id_2"] 
+                       "error_code"      :   414 (Int)  (Only if status is error) 
+                  }            
             
   #### [7] Get Total Online Hardware ####  
     

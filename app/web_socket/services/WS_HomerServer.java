@@ -7,6 +7,8 @@ import models.Model_HomerInstance;
 import models.Model_HomerServer;
 import play.data.Form;
 import play.i18n.Lang;
+import play.libs.Json;
+import utilities.errors.ErrorCode;
 import utilities.independent_threads.homer_server.Synchronize_Homer_Hardware_after_connection;
 import utilities.independent_threads.homer_server.Synchronize_Homer_Instance_after_connection;
 import utilities.independent_threads.homer_server.Synchronize_Homer_Synchronize_Settings;
@@ -91,7 +93,13 @@ public class WS_HomerServer extends WS_Interface_type {
 
         // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj - Odchytím zprávu a buď naní odpovím zamítavě nebo
         // v případě že je to zpráva s tokenem jí zařadím to metody ověřující oprávnění
+
+        System.out.println("Budu kontrolovat oprávnění");
+
         if(!security_token_confirm){
+
+            System.out.println("Token není schválen");
+
             validation_check(json);
             return;
         }
@@ -136,21 +144,39 @@ public class WS_HomerServer extends WS_Interface_type {
     }
 
     private void validation_check(ObjectNode json){
-
         try {
 
-            if(json.get("message_channel").asText().equals(Model_HomerServer.CHANNEL) && json.get("message_type").equals(WS_Message_Check_homer_server_permission.message_type)){
+            System.out.println("Zkouším oprávnění podmínky:: ");
+            if(json.get("message_channel").asText().equals(Model_HomerServer.CHANNEL) && json.get("message_type").asText().equals(WS_Message_Check_homer_server_permission.message_type)){
 
                 final Form<WS_Message_Check_homer_server_permission> form = Form.form(WS_Message_Check_homer_server_permission.class).bind(json);
-                if (form.hasErrors()) throw new Exception("WS_Message_Check_homer_server_person_permission: Incoming Json from Homer Server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                if (form.hasErrors()){
+
+                    ObjectNode result = Json.newObject();
+                    result.put("message_type", "JsonUnrecognized JsonParseException - Or Mission values in Verification message");
+                    result.set("error_log", form.errorsAsJson());
+                    result.put("error_code", ErrorCode.INVALID_MESSAGE.error_code());
+                    result.put("error_message", ErrorCode.INVALID_MESSAGE.error_message());
+                    webSCtype.write_without_confirmation(result);
+                    return;
+
+                }
 
                 Model_HomerServer.aprove_validation_for_homer_server(this, form.get());
 
             }else {
 
-                terminal_logger.warn("onMessage: This Websocket is not confirm");
-                reject_server_verification(json.get("message_id").asText());
+                System.out.println("Podmínky neprošli :(( ");
 
+                terminal_logger.warn("onMessage: This Websocket is not confirm");
+
+                ObjectNode result = Json.newObject();
+                result.put("message_type", "JsonUnrecognized JsonParseException - Or Mission values in Verification message");
+                result.put("error_code", ErrorCode.INVALID_MESSAGE.error_code());
+                result.put("error_message", ErrorCode.INVALID_MESSAGE.error_message());
+                webSCtype.write_without_confirmation(json.get("message_id").asText(), result);
+
+                return;
             }
 
 
