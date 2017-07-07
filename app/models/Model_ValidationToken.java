@@ -76,6 +76,15 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Valid
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_ValidationToken get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Model_ValidationToken> find = new Finder<>(Model_ValidationToken.class);

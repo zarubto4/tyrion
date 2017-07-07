@@ -22,6 +22,7 @@ import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.independent_threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
+import web_socket.message_objects.common.service_class.WS_Message_Invalid_Message;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 import web_socket.message_objects.homer_with_tyrion.*;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_add;
@@ -165,7 +166,7 @@ public class Model_HomerServer extends Model{
             }
 
             terminal_logger.debug("get_destination_server:: Detination server is " + unique_identificator);
-            return Model_HomerServer.find.byId(unique_identificator);
+            return Model_HomerServer.get_byId(unique_identificator);
 
         }
 
@@ -202,7 +203,7 @@ public class Model_HomerServer extends Model{
                     }
                 }
 
-                return Model_HomerServer.find.byId(unique_identificator);
+                return Model_HomerServer.get_byId(unique_identificator);
             }
         }
 
@@ -265,7 +266,7 @@ public class Model_HomerServer extends Model{
         try{
 
 
-            if(message.hash_token.equals( Model_HomerServer.find.byId(ws_homer_server.identifikator).hash_certificate)){
+            if(message.hash_token.equals( Model_HomerServer.get_byId(ws_homer_server.identifikator).hash_certificate)){
 
                 ws_homer_server.approve_server_verification(message.message_id);
 
@@ -306,12 +307,16 @@ public class Model_HomerServer extends Model{
 
     // Get Data
 
-    @JsonIgnore @Transient  public WS_Message_Homer_Instance_list get_homer_server_list_od_instance(){
+    @JsonIgnore @Transient  public WS_Message_Homer_Instance_list get_homer_server_list_of_instance(){
         try {
             if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 4, 0, 3);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 15, 0, 2);
             final Form<WS_Message_Homer_Instance_list> form = Form.form(WS_Message_Homer_Instance_list.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Homer_Instance_list: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            if(form.hasErrors()){
+                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_list.message_type, form.errorsAsJson()));
+                terminal_logger.warn("get_homer_server_list_of_instance:: Json Incorrect value");
+                return new WS_Message_Homer_Instance_list();
+            }
 
             return form.get();
 
@@ -326,9 +331,14 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Homer_Hardware_list get_homer_server_list_of_hardware(){
         try {
             if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 10, 0, 2);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 15, 0, 2);
             final Form<WS_Message_Homer_Hardware_list> form = Form.form(WS_Message_Homer_Hardware_list.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Homer_Hardware_list: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            if(form.hasErrors()){
+                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Hardware_list.message_type, form.errorsAsJson()));
+                terminal_logger.warn("get_homer_server_list_of_hardware:: Json Incorrect value");
+                return new WS_Message_Homer_Hardware_list();
+            }
+
 
             return form.get();
 
@@ -343,9 +353,13 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_number get_homer_server_number_of_instance(){
         try {
             if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_number().make_request(), 1000 * 4, 0, 3);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_number().make_request(), 1000 * 5, 0, 2);
             final Form<WS_Message_Homer_Instance_number> form = Form.form(WS_Message_Homer_Instance_number.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Homer_Instance_number: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            if(form.hasErrors()){
+                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_number.message_type, form.errorsAsJson()));
+                terminal_logger.warn("get_homer_server_list_of_hardware:: Json Incorrect value");
+                return new WS_Message_Homer_Instance_number();
+            }
 
             return form.get();
         }catch (InterruptedException|TimeoutException e){
@@ -363,7 +377,7 @@ public class Model_HomerServer extends Model{
         try {
 
             if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Homer_Instance_add().make_request(instance.id), 1000 * 5, 0, 3);
+            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Homer_Instance_add().make_request(instance.id), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Homer_Instance_add> form = Form.form(WS_Message_Homer_Instance_add.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Homer_Instance_add: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -383,7 +397,7 @@ public class Model_HomerServer extends Model{
         try {
 
             if(!server_is_online()) throw new InterruptedException();
-            JsonNode node =  get_server_webSocket_connection().write_with_confirmation( new WS_Message_Homer_Instance_destroy().make_request(instance_ids), 1000 * 5, 0, 3);
+            JsonNode node =  get_server_webSocket_connection().write_with_confirmation( new WS_Message_Homer_Instance_destroy().make_request(instance_ids), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Homer_Instance_destroy> form = Form.form(WS_Message_Homer_Instance_destroy.class).bind(node);
 

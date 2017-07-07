@@ -13,7 +13,7 @@ import java.util.List;
 public class WS_Message_Homer_Instance_list extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String message_type = "homer_instance_list";
+    @JsonIgnore public static final String message_type = "homer_instance_list_ids";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/

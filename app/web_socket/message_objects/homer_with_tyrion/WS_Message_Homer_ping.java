@@ -16,8 +16,6 @@ public class WS_Message_Homer_ping extends WS_AbstractMessage_Instance {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    public Integer response_time;
-
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore

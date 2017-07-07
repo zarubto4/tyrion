@@ -158,7 +158,7 @@ public class Controller_Security extends Controller {
 
             if(token_type == Enum_Token_type.INSTANCE_TOKEN){
 
-                Model_HomerInstanceRecord instanceRecord = Model_HomerInstanceRecord.find.byId(help.token);
+                Model_HomerInstanceRecord instanceRecord = Model_HomerInstanceRecord.get_byId(help.token);
                 if (instanceRecord == null) return GlobalResult.result_notFound("Token not found");
 
                 result.token = help.token;

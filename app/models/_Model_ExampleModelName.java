@@ -70,7 +70,7 @@ public class _Model_ExampleModelName extends Model{
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (_Model_ExampleModelName.find.byId(this.id) == null) break;
+            if (_Model_ExampleModelName.get_byId(this.id) == null) break;
         }
         super.save();
 

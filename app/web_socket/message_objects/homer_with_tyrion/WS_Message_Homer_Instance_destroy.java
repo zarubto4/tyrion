@@ -3,17 +3,20 @@ package web_socket.message_objects.homer_with_tyrion;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_HomerServer;
+import play.data.validation.Constraints;
 import play.libs.Json;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Instance;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WS_Message_Homer_Instance_destroy extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String message_type = "instance_destroy";
+    @JsonIgnore public static final String message_type = "homer_instances_destroy";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
+
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 

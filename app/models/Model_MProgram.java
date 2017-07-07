@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.libs.Json;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.documentationClass.Swagger_M_Program_Version;
@@ -45,8 +47,11 @@ public class Model_MProgram extends Model{
             dataType = "integer", readOnly = true,
             value = "UNIX time stamp in millis", example = "1458315085338")         public Date date_of_create;
 
-                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_MProject m_project;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                  public Model_MProject m_project;
     @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
+
+
+
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
@@ -59,11 +64,16 @@ public class Model_MProgram extends Model{
         return versions;
     }
 
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private List<String> cache_list_version_objects_ids = new ArrayList<>();
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     /* GET Variable short type of objects ------------------------------------------------------------------------------*/
     @Transient @JsonIgnore public Swagger_M_Program_Short_Detail get_m_program_short_detail(){
         try {
+
             Swagger_M_Program_Short_Detail help = new Swagger_M_Program_Short_Detail();
             help.id = id;
             help.name = name;
@@ -79,10 +89,36 @@ public class Model_MProgram extends Model{
         }
     }
 
-    // Objekt určený k vracení verze - Fatch lazy!!
-    @JsonIgnore @Transient
+
+    @JsonIgnore @Transient @TyrionCachedList
     public List<Model_VersionObject> getVersion_objects_not_removed_by_person() {
-        return Model_VersionObject.find.where().eq("m_program.id", this.id).eq("removed_by_user", false).order().desc("date_of_create").findList();
+
+        try{
+
+            if(cache_list_version_objects_ids.isEmpty()){
+
+                List<Model_VersionObject> versions =  Model_VersionObject.find.where().eq("m_program.id", this.id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();
+
+                // Získání seznamu
+                for (Model_VersionObject version : versions) {
+                    cache_list_version_objects_ids.add(version.id);
+                }
+
+            }
+
+            List<Model_VersionObject> versions  = new ArrayList<>();
+
+            for(String version_id : cache_list_version_objects_ids){
+                versions.add(Model_VersionObject.get_byId(version_id));
+            }
+
+            return versions;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("getVersion_objects", e);
+            return new ArrayList<Model_VersionObject>();
+        }
+
     }
 
 
@@ -94,8 +130,7 @@ public class Model_MProgram extends Model{
 
             m_program_versions.version_object = version_object;
             m_program_versions.public_mode = version_object.public_version;
-            //m_program_versions.qr_token = version_object.qr_token; TODO Tomáš
-            //m_program_versions.qr_token = version_object.qr_token;
+
             m_program_versions.virtual_input_output = version_object.m_program_virtual_input_output;
 
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
@@ -104,7 +139,6 @@ public class Model_MProgram extends Model{
 
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
                 m_program_versions.m_code = json.get("m_code").asText();
-
 
             }
 
@@ -163,7 +197,7 @@ public class Model_MProgram extends Model{
         while(true){ // I need Unique Value
             this.id = UUID.randomUUID().toString();
             this.azure_m_program_link = m_project.get_path()  + "/m-programs/"  + this.id;
-            if (Model_MProgram.find.byId(this.id) == null) break;
+            if (Model_MProgram.get_byId(this.id) == null) break;
         }
 
         if(m_project.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_MProject.class, m_project.project_id(), m_project.id))).start();
@@ -230,6 +264,34 @@ public class Model_MProgram extends Model{
 
     public enum permissions{ M_Program_create, M_Program_read, M_Program_edit, M_Program_delete }
 
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE = Model_MProgram.class.getSimpleName();
+
+    public static Cache<String, Model_MProgram> cache = null; // < ID, Model_BProgram>
+
+    @JsonIgnore
+    public static Model_MProgram get_byId(String id) {
+
+        Model_MProgram m_program = cache.get(id);
+        if (m_program == null){
+
+            m_program = Model_MProgram.find.byId(id);
+            if (m_program == null){
+                terminal_logger.warn("get Model_MProgram cache :: This object id:: " + id + " wasn't found.");
+            }
+            cache.put(id, m_program);
+        }
+
+        return m_program;
+    }
+
+
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static Model.Finder<String,Model_MProgram> find = new Finder<>(Model_MProgram.class);
+
+
 }

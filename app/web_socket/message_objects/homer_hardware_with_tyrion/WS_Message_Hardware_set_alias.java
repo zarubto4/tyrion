@@ -12,7 +12,7 @@ import java.util.List;
 public class WS_Message_Hardware_set_alias extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String message_type = "hardware_set_alias";
+    @JsonIgnore public static final String message_type = "hardware_settings";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/

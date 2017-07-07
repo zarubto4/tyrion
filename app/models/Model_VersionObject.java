@@ -9,6 +9,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.io.FileExistsException;
+import org.ehcache.Cache;
 import play.api.Play;
 import play.data.Form;
 import play.libs.F;
@@ -18,6 +19,7 @@ import play.libs.ws.WSResponse;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_Library_Record;
@@ -73,7 +75,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)                                 public Model_CCompilation c_compilation;
 
     @JsonIgnore @ManyToMany @JoinTable(name = "model_c_program_library_version",
-            joinColumns = @JoinColumn(name = "library_version_id"),
+            joinColumns = @JoinColumn(name = "library_version_id"),                                             // TODO LEXA ?? K čemu je tahle vazba???
             inverseJoinColumns = @JoinColumn(name = "c_program_version_id"))                                    public List<Model_VersionObject> library_versions = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
@@ -288,7 +290,7 @@ public class Model_VersionObject extends Model {
 
         for (String lib_id : code_file.imported_libraries) {
 
-            Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
+            Model_VersionObject lib_version = Model_VersionObject.get_byId(lib_id);
             if (lib_version == null){
 
                 Result_BadRequest result = new Result_BadRequest();
@@ -521,6 +523,29 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have \"Object\".update_permission = true, you can create / update on this Object - Or you need static/dynamic permission key";
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE = Model_VersionObject.class.getSimpleName();
+
+    public static Cache<String, Model_VersionObject> cache = null; // < ID, Model_VersionObject>
+
+    @JsonIgnore
+    public static Model_VersionObject get_byId(String id) {
+
+        Model_VersionObject version= cache.get(id);
+        if (version == null){
+
+            version = Model_VersionObject.find.byId(id);
+            if (version == null){
+                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
+            }
+            cache.put(id, version);
+        }
+
+        return version;
+    }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

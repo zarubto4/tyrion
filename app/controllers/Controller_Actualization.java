@@ -45,7 +45,7 @@ public class Controller_Actualization extends Controller {
         try {
 
             // Kontrola objektu
-            Model_ActualizationProcedure procedure = Model_ActualizationProcedure.find.byId(actualization_procedure_id);
+            Model_ActualizationProcedure procedure = Model_ActualizationProcedure.get_byId(actualization_procedure_id);
             if (procedure == null) return GlobalResult.result_notFound("Actualization_Procedure actualization_procedure_id not found");
 
             // Kontrola oprávnění
@@ -121,7 +121,7 @@ public class Controller_Actualization extends Controller {
         try {
 
             // Kontrola objektu
-            Model_ActualizationProcedure procedure = Model_ActualizationProcedure.find.byId(actualization_procedure_id);
+            Model_ActualizationProcedure procedure = Model_ActualizationProcedure.get_byId(actualization_procedure_id);
             if (procedure == null) return GlobalResult.result_notFound("Actualization_Procedure actualization_procedure_id not found");
 
             // Kontrola oprávnění

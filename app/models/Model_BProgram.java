@@ -6,10 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.Server;
 import utilities.enums.Enum_Homer_instance_type;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_B_Program_State;
@@ -172,7 +174,7 @@ public class Model_BProgram extends Model {
         while(true){ // I need Unique Value
             this.id = UUID.randomUUID().toString();
             this.azure_b_program_link = project.get_path() + "/b-programs/"  + this.id;
-            if (Model_BProgram.find.byId(this.id) == null) break;
+            if (Model_BProgram.get_byId(this.id) == null) break;
         }
 
 
@@ -226,6 +228,27 @@ public class Model_BProgram extends Model {
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE = Model_BProgram.class.getSimpleName();
+
+    public static Cache<String, Model_BProgram> cache = null; // < ID, Model_BProgram>
+
+    @JsonIgnore
+    public static Model_BProgram get_byId(String id) {
+
+        Model_BProgram b_program= cache.get(id);
+        if (b_program == null){
+
+            b_program = Model_BProgram.find.byId(id);
+            if (b_program == null){
+                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
+                return null;
+            }
+            cache.put(id, b_program);
+        }
+
+        return b_program;
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

@@ -228,7 +228,7 @@ public class Model_ActualizationProcedure extends Model {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_ActualizationProcedure.find.byId(this.id) == null) break;
+            if (Model_ActualizationProcedure.get_byId(this.id) == null) break;
         }
 
         this.state = Enum_Update_group_procedure_state.not_start_yet;

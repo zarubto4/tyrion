@@ -296,6 +296,16 @@ public class Model_Invoice extends Model {
 
     public enum permissions{Invoice_create, Invoice_update, Invoice_read, Invoice_edit, Invoice_delete}
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Invoice get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model.Finder<String,Model_Invoice> find = new Finder<>(Model_Invoice.class);

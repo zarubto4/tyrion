@@ -36,14 +36,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
             int page = 0;
             int page_size = 100;
 
-            List<String> device_ids_on_server = new ArrayList<>();
-
-            for(WS_Message_Homer_Hardware_list.Hardware_pair pair : Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_hardware().device_pairs){
-
-                Model_Board.cache_status.put(pair.device_id, pair.online_state);
-                device_ids_on_server.add(pair.device_id);
-
-            }
+            List<String> device_ids_on_server =  Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_hardware().hardware_ids;
 
             List<String> device_ids_required = new ArrayList<>();
 

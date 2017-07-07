@@ -191,8 +191,21 @@ public class Model_FloatingPersonToken extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    // Override in Model_Person
+
+    @JsonIgnore
+    public static Model_FloatingPersonToken get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_Person get_byToken(String id) {
+        return Model_Person.get_byAuthToken(id);
+    }
+
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static final Finder<String, Model_FloatingPersonToken> find = new Finder<>(Model_FloatingPersonToken.class);
+
 }

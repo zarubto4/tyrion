@@ -14,7 +14,6 @@ public class WS_Message_Hardware_Restart extends WS_AbstractMessage_Instance {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    public Integer response_time;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
@@ -25,7 +24,7 @@ public class WS_Message_Hardware_Restart extends WS_AbstractMessage_Instance {
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_HomerInstance.CHANNEL);
-        request.put("device_id", device_id);
+        request.put("hardware_id", device_id);
 
         return request;
     }

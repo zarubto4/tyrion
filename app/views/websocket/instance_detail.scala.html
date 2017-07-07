@@ -964,60 +964,8 @@
               })
           }
 
-          function showUploadBlockoProgram(id){
-              $("#uploadBlockoProgramModal").css("display","block");
-              $('#uploadBlockoProgramButton').val(id);
-              $('#instanceId').text("ID = " + id);
-          }
-
-          function uploadBlockoProgram(instanceId){
-              model_data = $("#uploadBlockoProgram").serializeObject();
-              json = JSON.stringify(model_data);
-
-              console.log(json);
 
 
-              $.ajax({
-                  url: '@routes.Controller_Blocko.update_blocko_code_in_instance_with_code("")' + instanceId,
-                  type: 'PUT',
-                  contentType: 'application/json',
-                  headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken"),
-                      "Content-Type":"application/json"
-                  },
-                  data: JSON.stringify(model_data),
-                  dataType: 'json',
-                  success:function(data, status){
-
-                      $("#uploadBlockoProgram input[type=text]").val("");
-                      $("#uploadBlockoProgramModal").css("display","none");
-
-                      BootstrapDialog.show({
-                          message:  syntaxHighlight("Úpsěšně nahráno na homer do instance"),
-
-                          buttons: [{
-                              label: 'Close',
-                              action: function(dialogItself){
-                                  dialogItself.close();
-                              }
-                          }]
-
-                      });
-                  },
-                  error:function(data) {
-                      BootstrapDialog.show({
-                          message:  syntaxHighlight(data),
-                          type: BootstrapDialog.TYPE_DANGER,
-                          buttons: [{
-                              label: 'Close',
-                              action: function(dialogItself){
-                                  dialogItself.close();
-                              }
-                          }]
-
-                      });
-                  }
-              })}
    </script>
 
 

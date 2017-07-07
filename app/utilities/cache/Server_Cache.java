@@ -63,7 +63,8 @@ public class Server_Cache {
             Model_Project.cache = cacheManager.createCache(Model_Project.CACHE,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Project.class,
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_Project.class.getSimpleName() + ".CACHE")))
-                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
+
 
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Project Frontend Connection List of Person_ID_Tokens");
             Model_Project.token_cache = cacheManager.createCache(Model_Project.CACHE_BECKI_CONNECTED_PERSONS,
@@ -71,16 +72,47 @@ public class Server_Cache {
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_Project.class.getSimpleName() + ".CACHE_BECKI_CONNECTED_PERSONS")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
 
+            // M_Project
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for MProject Model");
+            Model_MProject.cache = cacheManager.createCache(Model_MProject.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_MProject.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_MProject.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+            // M_Program
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for MProgram Model");
+            Model_MProgram.cache = cacheManager.createCache(Model_MProgram.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_MProgram.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_MProgram.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+            // C_Program
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for C_Program Model");
             Model_CProgram.cache = cacheManager.createCache(Model_CProgram.CACHE,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_CProgram.class,
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_CProgram.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
 
-            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for C_Program Model Version under C_program");
-            Model_CProgram.cache_versions = cacheManager.createCache(Model_CProgram.CACHE_VERSION,
+            // B_Program
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for B_Program Model");
+            Model_BProgram.cache = cacheManager.createCache(Model_BProgram.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_BProgram.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_BProgram.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+            // Version
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for VersionObject Model");
+            Model_VersionObject.cache = cacheManager.createCache(Model_VersionObject.CACHE,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_VersionObject.class,
-                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_CProgram.class.getSimpleName() + ".CACHE_VERSION")))
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_VersionObject.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+
+            // Library
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Library Model");
+            Model_Library.cache = cacheManager.createCache(Model_Library.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Library.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_Library.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
 
         /*
@@ -100,7 +132,14 @@ public class Server_Cache {
             Model_Board.cache_status = cacheManager.createCache(Model_Board.CACHE_STATUS,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
                     ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_Board.CACHE_STATUS")))
-                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
+
+
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Library Model");
+            Model_TypeOfBoard.cache = cacheManager.createCache(Model_TypeOfBoard.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_TypeOfBoard.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_TypeOfBoard.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(24, TimeUnit.HOURS))).build());
 
         /*
          *  Updates

@@ -79,6 +79,16 @@ public class Model_Processor extends Model {
 
     public enum permissions{Processor_create, Processor_edit, Processor_delete}
 
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Processor get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_Processor> find = new Finder<>(Model_Processor.class);
 

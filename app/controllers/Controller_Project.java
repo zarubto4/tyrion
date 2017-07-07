@@ -126,11 +126,8 @@ public class Controller_Project extends Controller {
     public Result project_getByUser(){
         try {
 
-            // Získání seznamu
-            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).order().asc("name").findList();
-
             // Vrácení seznamu
-            return GlobalResult.result_ok(Json.toJson( projects ));
+            return GlobalResult.result_ok(Json.toJson(  Controller_Security.get_person().get_user_access_projects() ));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -167,7 +164,7 @@ public class Controller_Project extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -207,14 +204,14 @@ public class Controller_Project extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
             if (!project.delete_permission())   return GlobalResult.result_forbidden();
 
            // Kvuli bezpečnosti abych nesmazal něco co nechceme
-           for(Model_CProgram c : project.c_programs){ c.delete();}
+           for(Model_CProgram c : project.get_c_programs_not_deleted()){ c.delete();}
 
 
             // Smazání objektu
@@ -269,7 +266,7 @@ public class Controller_Project extends Controller {
             Swagger_Project_Edit help = form.get();
 
             // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -333,7 +330,7 @@ public class Controller_Project extends Controller {
             Swagger_ShareProject_Person help = form.get();
 
             // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -455,7 +452,7 @@ public class Controller_Project extends Controller {
             Swagger_Project_Participant_status help = form.get();
 
             // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if(project == null) return GlobalResult.result_notFound("Project no longer exists");
 
             // Kontrola oprávnění
@@ -519,7 +516,7 @@ public class Controller_Project extends Controller {
             Swagger_ShareProject_Person help = form.get();
 
             //Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if(project == null) return GlobalResult.result_notFound("Project not found");
 
             // Kontrola oprávnění

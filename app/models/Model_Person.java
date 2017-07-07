@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
+import org.springframework.cache.annotation.Cacheable;
 import play.data.validation.Constraints;
 import utilities.Server;
 import utilities.enums.Enum_Notification_action;
@@ -75,6 +76,11 @@ public class Model_Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_Notification>         notifications        = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_GridTerminal>         grid_terminals       = new ArrayList<>(); // Přihlášený websocket uživatele
 
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient private List<String> project_ids = new ArrayList<>();
+
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -89,6 +95,27 @@ public class Model_Person extends Model {
 
 /* JSON IGNOR VALUES ----------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
+    public List<Model_Project> get_user_access_projects(){
+
+        // Chache Add Projects
+        if(project_ids.isEmpty()) {
+
+            // Získání seznamu
+            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", id).order().asc("name").select("id").findList();
+            for (Model_Project project : projects) {
+                project_ids.add(project.id);
+            }
+        }
+
+        List<Model_Project> projects = new ArrayList<>();
+
+        for(String project_id : project_ids){
+            projects.add(Model_Project.get_byId(project_id));
+        }
+
+        return projects;
+    }
 
 
 /* Security Tools @ JSON IGNORE -----------------------------------------------------------------------------------------*/
@@ -202,7 +229,9 @@ public class Model_Person extends Model {
         if (person == null){
 
             person = Model_Person.find.byId(id);
-            if (person == null) return null;
+            if (person == null) {
+                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
+            }
 
             cache.put(id, person);
         }

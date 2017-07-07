@@ -47,7 +47,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @for(b_program <- project.b_programs){
+                                @for(b_program <- project.get_b_programs_not_deleted()){
                                     <tr>
                                         <td>@b_program.id</td>
                                         <td>@b_program.name</td>
@@ -79,7 +79,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @for(c_program <- project.c_programs){
+                                @for(c_program <- project.get_c_programs_not_deleted()){
                                     <tr>
                                         <td>@c_program.id</td>
                                         <td>@c_program.name</td>
@@ -110,7 +110,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @for(m_project <- project.m_projects){
+                                @for(m_project <- project.get_m_projects_not_deleted()){
                                     <tr>
                                         <td>@m_project.id</td>
                                         <td>@m_project.name</td>
@@ -140,7 +140,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @for(type_of_block <- project.type_of_blocks){
+                                @for(type_of_block <- project.get_type_of_blocks_not_deleted()){
                                     <tr>
                                         <td>@type_of_block.id</td>
                                         <td>@type_of_block.name</td>
@@ -170,7 +170,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @for(type_of_widget <- project.type_of_widgets){
+                                @for(type_of_widget <- project.get_type_of_widgets_not_deleted()){
                                     <tr>
                                         <td>@type_of_widget.id</td>
                                         <td>@type_of_widget.name</td>
@@ -200,7 +200,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @for(board <- project.boards){
+                                @for(board <- project.get_project_boards_not_deleted()){
                                     <tr>
                                         <td>@board.id</td>
                                         <td>@board.mac_address</td>

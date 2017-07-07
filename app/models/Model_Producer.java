@@ -81,6 +81,15 @@ public class Model_Producer extends Model {
 
     public enum permissions{Producer_create, Producer_edit, Producer_delete}
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Producer get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_Producer> find = new Model.Finder<>(Model_Producer.class);
 

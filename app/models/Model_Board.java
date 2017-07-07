@@ -66,7 +66,8 @@ public class Model_Board extends Model {
                                                                             public Date date_of_create;
                                        @JsonIgnore                          public Date date_of_user_registration;
 
-                      @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)   public Model_Project project;
+
+    @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)   public Model_Project project;
 
                                                                             public boolean developer_kit;
 
@@ -80,7 +81,26 @@ public class Model_Board extends Model {
     @JsonIgnore public String connected_server_id; // Latest know Server ID
     @JsonIgnore public String connected_instance_id; // Latest know Instance ID
 
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+    // For Faster reload
+
+    @Transient @JsonIgnore public Long   cache_value_latest_online;
+
+    @Transient @JsonIgnore public String cache_value_type_of_board_id;                      // Type of Board
+
+    @Transient @JsonIgnore public String cache_value_project_id;                            // Project
+
+    @Transient @JsonIgnore public String cache_value_actual_boot_loader_id;                 // Bootloader
+
+    @Transient @JsonIgnore public String cache_value_actual_c_program_id;                   // C Program
+    @Transient @JsonIgnore public String cache_value_actual_c_program_version_id;
+
+    @Transient @JsonIgnore public String cache_value_actual_c_program_backup_id;            // Backup
+    @Transient @JsonIgnore public String cache_value_actual_c_program_backup_version_id;
+
+
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public Enum_Board_BackUpMode backup_mode(){ return backup_mode ? Enum_Board_BackUpMode.AUTO_BACKUP : Enum_Board_BackUpMode.STATIC_BACKUP;}
 
@@ -173,26 +193,65 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true, value = "Value is null, if device status is online.") public Date latest_online(){
-        if(online_state() != Enum_Board_online_status.online) return null;
-        return last_online();
+    @JsonProperty @Transient @ApiModelProperty(required = true, value = "Value is null, if device status is online.") public Long latest_online(){
+        if(online_state() != Enum_Online_status.online) return null;
+        try {
+
+            if (this.online_state() == Enum_Online_status.unknown_lost_connection_with_server ) return null;
+
+            if(cache_value_latest_online != null){
+                System.out.println("Hodnota je cachovaná ");
+                return cache_value_latest_online;
+            }
+
+            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.device_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
+
+            terminal_logger.debug("last_online: number of retrieved documents = {}", documents.size());
+
+            if (documents.size() > 0) {
+
+                DM_Board_Disconnected record;
+
+                if (documents.size() > 1) {
+
+                    terminal_logger.debug("last_online: more than 1 record, finding latest record");
+                    record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
+
+                } else {
+
+                    terminal_logger.debug("last_online: result = {}", documents.get(0).toJson());
+
+                    record = documents.get(0).toObject(DM_Board_Disconnected.class);
+                }
+
+                terminal_logger.debug("last_online: device_id: {}", record.device_id);
+
+                return new Date(record.time).getTime();
+            }
+
+            return Long.MAX_VALUE;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Enum_Board_online_status online_state(){
+    @JsonProperty @Transient @ApiModelProperty(required = true) public Enum_Online_status online_state(){
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
         if(connected_server_id == null){
-            return Enum_Board_online_status.not_yet_first_connected;
+            return Enum_Online_status.not_yet_first_connected;
         }
 
         // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
-        // nebo také né - proto se vrací stav Enum_Board_online_status - na to reaguje parameter latest_online(),
+        // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
         // který následně vrací latest know online
         if(Model_HomerServer.get_byId(connected_server_id).server_is_online()){
 
             if(cache_status.containsKey(id)){
-                return cache_status.get(id) ? Enum_Board_online_status.online : Enum_Board_online_status.offline;
+                return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
             }else {
                 // Začnu zjišťovat stav - v separátním vlákně!
                 new Thread( () -> {
@@ -205,11 +264,11 @@ public class Model_Board extends Model {
                     }
                 }).start();
 
-                return Enum_Board_online_status.synchronization_in_progress;
+                return Enum_Online_status.synchronization_in_progress;
 
             }
         } else {
-            return Enum_Board_online_status.unknown_lost_connection_with_server;
+            return Enum_Online_status.unknown_lost_connection_with_server;
         }
     }
 
@@ -235,7 +294,7 @@ public class Model_Board extends Model {
 
             swagger_board_short_detail.board_online_status = online_state();
 
-            if( swagger_board_short_detail.board_online_status != Enum_Board_online_status.online) swagger_board_short_detail.last_online = last_online();
+            if( swagger_board_short_detail.board_online_status != Enum_Online_status.online) swagger_board_short_detail.last_online = latest_online();
 
             return swagger_board_short_detail;
 
@@ -280,44 +339,6 @@ public class Model_Board extends Model {
         if(type_of_board.main_boot_loader == null || actual_boot_loader == null) return true;
         return (!this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id));
 
-    }
-
-    @JsonIgnore @Transient public Date last_online(){
-        try {
-
-            if (this.online_state() == Enum_Board_online_status.unknown_lost_connection_with_server ) return null;
-
-            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.device_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
-
-            terminal_logger.debug("last_online: number of retrieved documents = {}", documents.size());
-
-            if (documents.size() > 0) {
-
-                DM_Board_Disconnected record;
-
-                if (documents.size() > 1) {
-
-                    terminal_logger.debug("last_online: more than 1 record, finding latest record");
-                    record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
-
-                } else {
-
-                    terminal_logger.debug("last_online: result = {}", documents.get(0).toJson());
-
-                    record = documents.get(0).toObject(DM_Board_Disconnected.class);
-                }
-
-                terminal_logger.debug("last_online: device_id: {}", record.device_id);
-
-                return new Date(record.time);
-            }
-
-            return null;
-
-        } catch (Exception e) {
-            terminal_logger.internalServerError(e);
-            return null;
-        }
     }
 
     @JsonIgnore @Transient public Model_HomerInstance get_instance() {
@@ -418,15 +439,15 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static void device_Connected(WS_Message_Hardware_connected help){
         try {
 
-            terminal_logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.device_id);
+            terminal_logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.hardware_id);
 
-            if(!cache_status.get(help.device_id)){
+            if(!cache_status.get(help.hardware_id)){
 
-                Model_Board device = Model_Board.get_byId(help.device_id);
+                Model_Board device = Model_Board.get_byId(help.hardware_id);
 
-                if(device == null) throw new Exception("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.device_id);
+                if(device == null) throw new Exception("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.hardware_id);
 
-                cache_status.put(help.device_id, true);
+                cache_status.put(help.hardware_id, true);
 
                 // Notifikce
                 if(device.developer_kit) {
@@ -457,17 +478,17 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static void device_Disconnected(WS_Message_Hardware_disconnected help){
         try {
 
-            terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.device_id + " on offline ");
-            cache_status.put(help.device_id, false);
+            terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.hardware_id + " on offline ");
+            cache_status.put(help.hardware_id, false);
 
-            Model_Board master_device =  Model_Board.get_byId(help.device_id);
+            Model_Board master_device =  Model_Board.get_byId(help.hardware_id);
 
-            if(master_device == null) throw new NullPointerException("Hardware not found: ID = " + help.device_id);
+            if(master_device == null) throw new NullPointerException("Hardware not found: ID = " + help.hardware_id);
 
             master_device.notification_board_disconnect();
             master_device.make_log_disconnect();
 
-            Model_Board.cache_status.put(help.device_id, false);
+            Model_Board.cache_status.put(help.hardware_id, false);
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -499,12 +520,12 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static void device_online_synchronization(WS_Message_Hardware_online_status report){
         try{
 
-            for(WS_Message_Hardware_online_status.DeviceStatus status : report.device_list){
+            for(WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list){
 
-                cache_status.put(status.device_id, status.online_status);
+                cache_status.put(status.hardware_id, status.online_status);
 
                 // Odešlu echo pomocí websocketu do becki
-                Model_Board device = get_byId(status.device_id);
+                Model_Board device = get_byId(status.hardware_id);
 
                 synchronize_online_state_with_becki(device.id, status.online_status, device.project_id());
             }
@@ -611,7 +632,7 @@ public class Model_Board extends Model {
                 final Form<WS_Message_Hardware_online_status> form = Form.form(WS_Message_Hardware_online_status.class).bind(json_result);
                 if (form.hasErrors()) throw new Exception("WS_Message_Hardware_online_status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-                result.device_list.addAll(form.get().device_list);
+                result.hardware_list.addAll(form.get().hardware_list);
 
             }catch (Exception e){
                 terminal_logger.internalServerError("get_devices_online_state:", e);
@@ -657,7 +678,7 @@ public class Model_Board extends Model {
                 final Form<WS_Message_Hardware_overview> form = Form.form(WS_Message_Hardware_overview.class).bind(json_result);
                 if (form.hasErrors()) throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-                result.device_list.addAll(form.get().device_list);
+                result.hardware_list.addAll(form.get().hardware_list);
 
 
             }catch (Exception e){

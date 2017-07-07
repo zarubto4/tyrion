@@ -88,7 +88,7 @@ public class Controller_Code extends Controller{
             Swagger_C_program_New help = form.get();
 
             // Ověření Typu Desky
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(help.type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Tvorba programu
@@ -100,7 +100,7 @@ public class Controller_Code extends Controller{
 
             if(help.project_id != null){
                 // Ověření projektu
-                Model_Project project = Model_Project.find.byId(help.project_id);
+                Model_Project project = Model_Project.get_byId(help.project_id);
                 if (project == null) return GlobalResult.result_notFound("Project project_id not found");
                 c_program.project = project;
             }
@@ -190,7 +190,7 @@ public class Controller_Code extends Controller{
         try {
 
             // Vyhledám Objekt
-            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+            Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
             if(c_program == null) return GlobalResult.result_notFound("C_Program c_program not found");
 
             // Zkontroluji oprávnění
@@ -395,11 +395,11 @@ public class Controller_Code extends Controller{
             Swagger_C_program_New help = form.get();
 
             // Ověření objektu
-            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+            Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
             if(c_program == null ) return GlobalResult.result_notFound("C_Program c_program_id not found");
 
             // Ověření objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(help.type_of_board_id);
             if(typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Úprava objektu
@@ -446,7 +446,7 @@ public class Controller_Code extends Controller{
         try{
 
             // Ověření objektu
-            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+            Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
             if(c_program == null ) return GlobalResult.result_notFound("C_Program c_program_id not found");
 
             // Kontrola oprávnění
@@ -543,7 +543,7 @@ public class Controller_Code extends Controller{
             Swagger_C_Program_Version_New help = form.get();
 
             // Ověření objektu
-            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+            Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
             if(c_program == null) return GlobalResult.result_notFound("C_Program c_program_id not found");
 
             // Zkontroluji oprávnění
@@ -606,7 +606,7 @@ public class Controller_Code extends Controller{
         try {
 
             // Vyhledám Objekt
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if(version_object == null) return GlobalResult.result_notFound("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
@@ -665,7 +665,7 @@ public class Controller_Code extends Controller{
             Swagger_C_Program_Version_Edit help = form.get();
 
             // Ověření objektu
-            Model_VersionObject version_object= Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object= Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Kontrola oprávnění
@@ -711,7 +711,7 @@ public class Controller_Code extends Controller{
         try{
 
             // Ověření objektu
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k C_Programu
@@ -759,7 +759,7 @@ public class Controller_Code extends Controller{
         try {
 
             // Kontrola objektu
-            Model_VersionObject version = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version = Model_VersionObject.get_byId(version_id);
             if(version == null) return GlobalResult.result_notFound("Version not found");
 
             if(version.c_program == null )return GlobalResult.result_notFound("Version not found");
@@ -794,7 +794,7 @@ public class Controller_Code extends Controller{
         try {
 
             // Vyhledám Objekt
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if(version_object == null) return GlobalResult.result_notFound("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
@@ -830,11 +830,11 @@ public class Controller_Code extends Controller{
             Swagger_C_Program_Version_Approve_WithChanges help = form.get();
 
             // Kontrola objektu
-            Model_VersionObject version_old = Model_VersionObject.find.byId(help.version_id);
+            Model_VersionObject version_old = Model_VersionObject.get_byId(help.version_id);
             if(version_old == null) return GlobalResult.result_notFound("Version not found");
 
             // Ověření objektu
-            Model_CProgram c_program_old = Model_CProgram.find.byId(version_old.c_program.id);
+            Model_CProgram c_program_old = Model_CProgram.get_byId(version_old.c_program.id);
             if(c_program_old == null) return GlobalResult.result_notFound("C_Program c_program_id not found");
 
             // Zkontroluji oprávnění
@@ -1006,7 +1006,7 @@ public class Controller_Code extends Controller{
             Swagger_C_program_New help = form.get();
 
             // Ověření Typu Desky
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(help.type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Tvorba programu
@@ -1037,10 +1037,10 @@ public class Controller_Code extends Controller{
         try {
 
             // Kontrola objektu
-            Model_CProgram cProgram = Model_CProgram.find.byId(c_program_id);
+            Model_CProgram cProgram = Model_CProgram.get_byId(c_program_id);
             if (cProgram == null) return GlobalResult.result_notFound("CProgram c_program_id not found");
 
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version_Object version_object_id not found");
 
             if (version_object.c_program == null || version_object.c_program.type_of_board_default == null) return GlobalResult.result_badRequest("Version_object is not version of c_program or is not default firmware");

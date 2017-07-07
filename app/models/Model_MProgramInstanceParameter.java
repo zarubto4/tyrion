@@ -264,7 +264,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
                 Swagger_GridWidgetVersion_GridApp_source detail = new Swagger_GridWidgetVersion_GridApp_source();
                 detail.id          = widget_parser.type.version_id;
-                detail.logic_json = Model_GridWidgetVersion.find.byId(widget_parser.type.version_id).logic_json;
+                detail.logic_json = Model_GridWidgetVersion.get_byId(widget_parser.type.version_id).logic_json;
 
                 list.add(detail);
             }
@@ -336,9 +336,19 @@ public class Model_MProgramInstanceParameter extends Model {
         return false;
     }
 
-
     public enum permissions{Library_create, Library_edit, Library_delete, Library_update}
 
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_MProgramInstanceParameter get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static Model.Finder<String,Model_MProgramInstanceParameter> find = new Model.Finder<>(Model_MProgramInstanceParameter.class);
 }

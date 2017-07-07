@@ -475,7 +475,7 @@ public class GoPay_Controller extends Controller {
             Swagger_Payment_Refund help = form.get();
 
             // Finding in DB
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if(invoice == null) return GlobalResult.result_notFound("Invoice not found");
 
             invoice.getProduct().archiveEvent("Refund payment", "Request for refund for this reason: " + help.reason, null);

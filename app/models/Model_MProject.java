@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_M_Program_Short_Detail;
@@ -34,7 +36,7 @@ public class Model_MProject extends Model {
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
             value = "UNIX time stamp in millis", example = "14618543121234")                        public Date    date_of_create;
 
-                                                                            @JsonIgnore @ManyToOne  public Model_Project project;
+                                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Project project;
 
 
     @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "m_project")  public List<Model_MProjectProgramSnapShot> snapShots = new ArrayList<>();
@@ -42,6 +44,12 @@ public class Model_MProject extends Model {
 
 
     @JsonIgnore  public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
+    @JsonIgnore @Transient @TyrionCachedList private List<String> m_programs_ids = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -78,7 +86,32 @@ public class Model_MProject extends Model {
 
     @JsonIgnore
     public List<Model_MProgram> get_m_programs_not_deleted(){
-        return Model_MProgram.find.where().eq("m_project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+        try{
+
+            if(m_programs_ids.isEmpty()){
+
+                List<Model_MProgram> m_programs =  Model_MProgram.find.where().eq("m_project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_MProgram m_program : m_programs) {
+                    m_programs_ids.add(m_program.id);
+                }
+
+            }
+
+            List<Model_MProgram> m_programs  = new ArrayList<>();
+
+            for(String version_id : m_programs_ids){
+                m_programs.add(Model_MProgram.get_byId(version_id));
+            }
+
+            return m_programs;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("getVersion_objects", e);
+            return new ArrayList<Model_MProgram>();
+        }
+
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -90,7 +123,7 @@ public class Model_MProject extends Model {
         while(true){ // I need Unique Value
             this.id = UUID.randomUUID().toString();
             this.azure_m_project_link = project.get_path()  + "/m-projects/"  + this.id;
-            if (Model_MProject.find.byId(this.id) == null) break;
+            if (Model_MProject.get_byId(this.id) == null) break;
         }
 
         super.save();
@@ -152,6 +185,29 @@ public class Model_MProject extends Model {
     @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return ( Model_MProject.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("M_Project_delete"); }
 
     public enum permissions{  M_Project_create, M_Project_update, M_Project_read,  M_Project_edit, M_Project_delete; }
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE = Model_MProject.class.getSimpleName();
+
+    public static Cache<String, Model_MProject> cache = null; // < ID, Model_BProgram>
+
+    @JsonIgnore
+    public static Model_MProject get_byId(String id) {
+
+        Model_MProject m_project= cache.get(id);
+        if (m_project == null){
+
+            m_project = Model_MProject.find.byId(id);
+            if (m_project == null){
+                terminal_logger.warn("get Model_MProject cache :: This object id:: " + id + " wasn't found.");
+            }
+            cache.put(id, m_project);
+        }
+
+        return m_project;
+    }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Model_MProject> find = new Finder<>(Model_MProject.class);

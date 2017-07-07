@@ -11,9 +11,9 @@ import java.util.List;
 
 public class WS_Message_Homer_Instance_add extends WS_AbstractMessage_Instance {
 
-// MessageType
+    // MessageType
     @JsonIgnore
-    public static final String message_type = "instance_create";
+    public static final String message_type = "homer_instances_create";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 

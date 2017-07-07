@@ -10,12 +10,12 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 public class WS_Message_Homer_Instance_number extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String message_type = "homer_instance_number";
+    @JsonIgnore public static final String message_type = "homer_instances_count";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public int value;
+    @Constraints.Required public int count;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 

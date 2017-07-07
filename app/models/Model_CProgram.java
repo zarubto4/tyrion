@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.libs.Json;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
@@ -42,26 +43,87 @@ public class Model_CProgram extends Model {
     @ApiModelProperty(required = false, value = "can be empty") @Column(columnDefinition = "TEXT")      public String description;
     @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)                       public Model_Project project;
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)                     public Model_TypeOfBoard type_of_board;
+    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                      public Model_TypeOfBoard type_of_board;
 
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;
 
     @JsonIgnore  public boolean removed_by_user;
 
-    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)@OrderBy("date_of_create desc")   public List<Model_VersionObject> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  private List<Model_VersionObject> version_objects = new ArrayList<>();
 
-                                                                              @JsonIgnore @OneToOne     public Model_TypeOfBoard type_of_board_default;
-                       @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL)   public Model_VersionObject default_main_version;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                  public Model_TypeOfBoard   type_of_board_default;
+    @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL) public Model_VersionObject default_main_version;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                 public Model_VersionObject example_library;          // Program je příklad pro použití knihovny
 
-                                                                             @JsonIgnore @ManyToOne     public Model_VersionObject example_library; // Program je příklad pro použití knihovny
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private List<String> cache_list_version_objects_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_name;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_name;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient public String project_id()           { return project != null ? project.id : null; }
-    @JsonProperty  @Transient public String project_name()         { return project != null ? project.name : null;}
-    @JsonProperty  @Transient public String type_of_board_id()     { return type_of_board == null ? null : type_of_board.id;}
-    @JsonProperty  @Transient public String type_of_board_name()   { return type_of_board == null ? null : type_of_board.name;}
+    @JsonProperty  @Transient public String project_id()           {
+
+        if(cache_value_project_id == null){
+            Model_Project project = Model_Project.find.where().eq("c_programs.id", id).select("id").findUnique();
+            cache_value_project_id = project.id;
+        }
+
+        return cache_value_project_id;
+
+
+    }
+    @JsonProperty  @Transient public String project_name()         {
+        try {
+
+            if(cache_value_project_name == null){
+                cache_value_project_name = Model_Project.get_byId(project_id()).name;
+            }
+
+            return cache_value_project_name;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @JsonProperty  @Transient public String type_of_board_id()     {
+
+        try {
+
+            if(cache_value_type_of_board_id == null){
+                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", id).select("id").findUnique();
+                cache_value_type_of_board_id = typeOfBoard.id;
+            }
+
+            return cache_value_type_of_board_id;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @JsonProperty  @Transient public String type_of_board_name()   {
+
+        try {
+
+            if(cache_value_type_of_board_name == null){
+                cache_value_type_of_board_name = Model_TypeOfBoard.get_byId(type_of_board_id()).name;
+            }
+
+            return cache_value_type_of_board_name;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+
+    }
 
     @JsonProperty @Transient public List<Swagger_C_Program_Version_Short_Detail> program_versions() {
 
@@ -117,8 +179,8 @@ public class Model_CProgram extends Model {
             help.name = name;
             help.description = description;
 
-            if (this.version_objects.size() > 0){
-                for (Model_FileRecord file : this.version_objects.get(0).files){
+            if (this.getVersion_objects().size() > 0){
+                for (Model_FileRecord file : this.getVersion_objects().get(0).files){
 
                     JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
@@ -142,8 +204,33 @@ public class Model_CProgram extends Model {
         }
     }
 
-    @Transient @JsonIgnore public List<Model_VersionObject> getVersion_objects() {
-        return Model_VersionObject.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList();
+    @Transient @JsonIgnore @TyrionCachedList public List<Model_VersionObject> getVersion_objects(){
+
+        try{
+
+            if(cache_list_version_objects_ids.isEmpty()){
+
+                List<Model_VersionObject> versions =  Model_VersionObject.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();;
+
+                // Získání seznamu
+                for (Model_VersionObject version : versions) {
+                    cache_list_version_objects_ids.add(version.id);
+                }
+
+            }
+
+            List<Model_VersionObject> versions  = new ArrayList<>();
+
+            for(String version_id : cache_list_version_objects_ids){
+                versions.add(Model_VersionObject.get_byId(version_id));
+            }
+
+            return versions;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("getVersion_objects", e);
+            return new ArrayList<Model_VersionObject>();
+        }
     }
 
     @Transient @JsonIgnore public List<Model_VersionObject> getVersion_objects_all_For_Admin() {
@@ -173,7 +260,7 @@ public class Model_CProgram extends Model {
 
                 for( String imported_library_version_id : version_new.imported_libraries){
 
-                    Model_VersionObject library_version = Model_VersionObject.find.byId(imported_library_version_id);
+                    Model_VersionObject library_version = Model_VersionObject.get_byId(imported_library_version_id);
 
                     if(library_version == null) continue;
 
@@ -213,7 +300,7 @@ public class Model_CProgram extends Model {
             while(true){ // I need Unique Value
                 this.id = UUID.randomUUID().toString();
                 this.azure_c_program_link = project.get_path()  + "/c-programs/"  + this.id;
-                if (Model_CProgram.find.byId(this.id) == null) break;
+                if (Model_CProgram.get_byId(this.id) == null) break;
             }
         }
 
@@ -225,7 +312,7 @@ public class Model_CProgram extends Model {
             while(true){ // I need Unique Value
                 this.id = UUID.randomUUID().toString();
                 this.azure_c_program_link = "public-c-programs/"  + this.id;
-                if (Model_CProgram.find.byId(this.id) == null) break;
+                if (Model_CProgram.get_byId(this.id) == null) break;
             }
         }
 
@@ -297,7 +384,6 @@ public class Model_CProgram extends Model {
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static final String CACHE         = Model_CProgram.class.getSimpleName();
-    public static final String CACHE_VERSION = Model_CProgram.class.getSimpleName() + "_VERSION";
 
     public static Cache<String, Model_CProgram> cache = null;               // < Model_CProgram_id, Model_CProgram>
     public static Cache<String, Model_VersionObject> cache_versions = null; // < Model_VersionObject_id, Model_VersionObject>
@@ -318,24 +404,6 @@ public class Model_CProgram extends Model {
         }
 
         return c_program;
-    }
-
-    @JsonIgnore
-    public static Model_VersionObject get_version_byId(String id) {
-
-        Model_VersionObject c_program_version = cache_versions.get(id);
-        if (c_program_version == null){
-
-            c_program_version = Model_VersionObject.find.byId(id);
-            if (c_program_version == null){
-                Server_Logger.warn( Model_CProgram.class, "get_version_byId :: This object id:: " + id + " wasn't found.");
-                return null;
-            }
-
-            cache_versions.put(id, c_program_version);
-        }
-
-        return c_program_version;
     }
 
 

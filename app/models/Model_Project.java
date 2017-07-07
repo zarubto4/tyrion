@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.helps_objects.IdsList;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Becki_color;
@@ -38,9 +39,9 @@ public class Model_Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgram>                b_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgram>                c_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_MProject>                m_projects        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("UPPER(name) ASC")                   public List<Model_TypeOfBlock>             type_of_blocks    = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("UPPER(name) ASC")                   public List<Model_TypeOfWidget>            type_of_widgets   = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("date_of_user_registration desc")    public List<Model_Board>                   boards            = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_TypeOfBlock>             type_of_blocks    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_TypeOfWidget>            type_of_widgets   = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Board>                   boards            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("date_of_creation desc")             public List<Model_Invitation>              invitations       = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")                            public List<Model_ProjectParticipant>      participants      = new ArrayList<>();
 
@@ -48,9 +49,24 @@ public class Model_Project extends Model {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.EAGER) public Model_Product product;
 
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    // TODO - CHCI CACHE INGOR - NA VŠECHNY DB HODNOTY KTERÉ JSOU VÝŠE
+    // COŽ ZNAMENÁ ŽE SI CACHE PÚAMATUJE JEN ID REFERENCE
+
+    @JsonIgnore @Transient @TyrionCachedList private List<String> board_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private List<String> c_program_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private List<String> library_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private List<String> b_program_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private List<String> m_project_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private List<String> type_of_widgets_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private List<String> type_of_blocks_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private List<String> instnace_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private String product_id;
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()             { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    if(!active()) return l; for( Model_Board m           : boards)         l.add(m.get_short_board());  return l;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()             { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    if(!active()) return l; for( Model_Board m           : get_project_boards_not_deleted())         l.add(m.get_short_board());  return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()         { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    if(!active()) return l; for( Model_BProgram m        : get_b_programs_not_deleted()) l.add(m.get_b_program_short_detail()); return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()         { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    if(!active()) return l; for( Model_CProgram m        : get_c_programs_not_deleted()) l.add(m.get_c_program_short_detail()); return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Library_Short_Detail>       c_private_libraries(){ List<Swagger_Library_Short_Detail>     l = new ArrayList<>();    if(!active()) return l; for( Model_Library m         : get_c_privates_project_libraries_not_deleted()) l.add(m.get_short_library()); return l;}
@@ -139,71 +155,235 @@ public class Model_Project extends Model {
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
+    @JsonIgnore @TyrionCachedList
+    public List<Model_Board> get_project_boards_not_deleted(){
+        try {
 
-    @JsonIgnore
+            // Cache
+            if(board_ids.isEmpty()) {
+
+                List<Model_Board> boards = Model_Board.find.where().eq("project.id", id).order().asc("date_of_user_registration").select("id").findList();
+
+                // Získání seznamu
+                for (Model_Board board : boards) {
+                    board_ids.add(board.id);
+                }
+            }
+
+            List<Model_Board> boards = new ArrayList<>();
+
+            for(String board_id : board_ids){
+                boards.add(Model_Board.get_byId(board_id));
+            }
+
+            return boards;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_project_boards_not_deleted", e);
+            return new ArrayList<Model_Board>();
+        }
+    }
+
+    @JsonIgnore @TyrionCachedList
     public List<Model_CProgram> get_c_programs_not_deleted(){
         try {
-            return Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+
+            // Cache
+            if(c_program_ids.isEmpty()){
+
+                List<Model_CProgram> c_programs = Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_CProgram cProgram : c_programs) {
+                    c_program_ids.add(cProgram.id);
+                }
+            }
+
+            List<Model_CProgram> c_programs = new ArrayList<>();
+
+            for(String c_program_id : c_program_ids){
+                c_programs.add(Model_CProgram.get_byId(c_program_id));
+            }
+
+            return c_programs;
+
         }catch (Exception e){
             terminal_logger.internalServerError("get_c_programs_not_deleted", e);
             return new ArrayList<Model_CProgram>();
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @TyrionCachedList
     public List<Model_Library> get_c_privates_project_libraries_not_deleted(){
         try {
-            return Model_Library.find.where().eq("project_id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+
+            if(library_ids.isEmpty()){
+
+                List<Model_Library> libraries = Model_Library.find.where().eq("project_id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_Library library : libraries) {
+                    library_ids.add(library.id);
+                }
+
+            }
+
+            List<Model_Library> libraries = new ArrayList<>();
+
+            for(String library_id : library_ids){
+                libraries.add(Model_Library.get_byId(library_id));
+            }
+
+            return libraries;
+
+
         }catch (Exception e){
             terminal_logger.internalServerError("get_c_privates_project_libraries_not_deleted", e);
             return new ArrayList<Model_Library>();
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @TyrionCachedList
     public List<Model_BProgram> get_b_programs_not_deleted(){
         try{
-            return Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+
+            if(b_program_ids.isEmpty()){
+
+                List<Model_BProgram> b_programs = Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_BProgram b_program : b_programs) {
+                    b_program_ids.add(b_program.id);
+                }
+
+            }
+
+            List<Model_BProgram> b_programs  = new ArrayList<>();
+
+            for(String b_program_id : b_program_ids){
+                b_programs.add(Model_BProgram.get_byId(b_program_id));
+            }
+
+            return b_programs;
+
         }catch (Exception e){
             terminal_logger.internalServerError("get_b_programs_not_deleted", e);
             return new ArrayList<Model_BProgram>();
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @TyrionCachedList
     public List<Model_MProject> get_m_projects_not_deleted(){
         try{
-            return Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+
+            if(m_project_ids.isEmpty()){
+
+                List<Model_MProject> m_projects = Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_MProject m_project : m_projects) {
+                    m_project_ids.add(m_project.id);
+                }
+
+            }
+
+            List<Model_MProject> m_projects  = new ArrayList<>();
+
+            for(String m_project_id : m_project_ids){
+                m_projects.add(Model_MProject.get_byId(m_project_id));
+            }
+
+            return m_projects;
+
         }catch (Exception e){
             terminal_logger.internalServerError("get_m_projects_not_deleted", e);
             return new ArrayList<Model_MProject>();
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @TyrionCachedList
     public List<Model_TypeOfWidget> get_type_of_widgets_not_deleted(){
         try{
-            return Model_TypeOfWidget.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+
+            if(type_of_widgets_ids.isEmpty()){
+
+                List<Model_TypeOfWidget> typeOfWidgets = Model_TypeOfWidget.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_TypeOfWidget typeOfWidget : typeOfWidgets) {
+                    type_of_widgets_ids.add(typeOfWidget.id);
+                }
+
+            }
+
+            List<Model_TypeOfWidget> typeOfWidgets  = new ArrayList<>();
+
+            for(String typeOfWidget_id : type_of_widgets_ids){
+                typeOfWidgets.add(Model_TypeOfWidget.get_byId(typeOfWidget_id));
+            }
+
+            return typeOfWidgets;
+
         }catch (Exception e){
             terminal_logger.internalServerError("get_type_of_widgets_not_deleted", e);
             return new ArrayList<Model_TypeOfWidget>();
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @TyrionCachedList
     public List<Model_TypeOfBlock> get_type_of_blocks_not_deleted(){
         try{
-            return Model_TypeOfBlock.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+
+
+            if(type_of_blocks_ids.isEmpty()){
+
+                List<Model_TypeOfBlock> typeOfBlocks = Model_TypeOfBlock.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_TypeOfBlock typeOfBlock : typeOfBlocks) {
+                    type_of_blocks_ids.add(typeOfBlock.id);
+                }
+
+            }
+
+            List<Model_TypeOfBlock> typeOfBlocks  = new ArrayList<>();
+
+            for(String type_of_blocks_id : type_of_blocks_ids){
+                typeOfBlocks.add(Model_TypeOfBlock.get_byId(type_of_blocks_id));
+            }
+
+            return typeOfBlocks;
+
         }catch (Exception e){
             terminal_logger.internalServerError("get_type_of_blocks_not_deleted", e);
             return new ArrayList<Model_TypeOfBlock>();
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @TyrionCachedList
     public List<Model_HomerInstance> get_instances_not_deleted(){
         try{
-            return Model_HomerInstance.find.where().ne("removed_by_user", true).isNotNull("actual_instance").eq("b_program.project.id", id).findList();
+
+
+            if(instnace_ids.isEmpty()){
+
+                List<Model_HomerInstance> instances = Model_HomerInstance.find.where().ne("removed_by_user", true).isNotNull("actual_instance").eq("b_program.project.id", id).select("id").findList();
+
+                // Získání seznamu
+                for (Model_HomerInstance instance : instances) {
+                    instnace_ids.add(instance.id);
+                }
+
+            }
+
+            List<Model_HomerInstance> instances  = new ArrayList<>();
+
+            for(String type_of_blocks_id : instnace_ids){
+                instances.add(Model_HomerInstance.get_byId(type_of_blocks_id));
+            }
+
+            return instances;
+
         }catch (Exception e){
             terminal_logger.internalServerError("get_instances_not_deleted", e);
             return new ArrayList<Model_HomerInstance>();
@@ -317,6 +497,8 @@ public class Model_Project extends Model {
 
         Model_Project project = cache.get(id);
         if (project == null){
+
+            terminal_logger.debug("Project {} is not in cache", id);
 
             project = find.where().eq("id", id).eq("removed_by_user", false).findUnique();
             if (project == null) return null;

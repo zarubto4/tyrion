@@ -20,18 +20,18 @@ public class WS_Message_Hardware_Ping extends WS_AbstractMessage_Instance {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    public Integer response_time;
+    @Valid public List<DevicePingStatus> hardware_list = new ArrayList<>();
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request(String device_id) {
+    public ObjectNode make_request(List<String> device_ids) {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_HomerInstance.CHANNEL);
-        request.put("device_id", device_id);
+        request.set("hardware_ids", Json.toJson(device_ids));
 
         return request;
     }
@@ -39,5 +39,14 @@ public class WS_Message_Hardware_Ping extends WS_AbstractMessage_Instance {
 
 
 /* HELP CLASS  -------------------------------------------------------------------------------------------------------*/
+
+    public static class DevicePingStatus{
+
+        public DevicePingStatus(){}
+
+        @Constraints.Required  public String hardware_id;
+        @Constraints.Required  public Integer response_time;       // timestamp in milis  Limit 30 000  (30 sekund)
+
+    }
 
 }

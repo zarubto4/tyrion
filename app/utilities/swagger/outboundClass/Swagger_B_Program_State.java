@@ -3,6 +3,7 @@ package utilities.swagger.outboundClass;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.enums.Enum_Online_status;
 
 @ApiModel(description = "Json Model for B_Program state",
         value = "B_Program_State")
@@ -12,7 +13,7 @@ public class Swagger_B_Program_State {
     public boolean uploaded;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public boolean instance_online;
+    public Enum_Online_status instance_online;
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean server_online;

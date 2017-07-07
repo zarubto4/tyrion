@@ -71,7 +71,41 @@ public class Model_HomerInstance extends Model {
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.personal_server_name;}
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.unique_identificator;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean instance_online()          {  return this.online_state();}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  Enum_Online_status instance_online() {
+
+        // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
+        // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
+        if(actual_instance == null){
+            return Enum_Online_status.not_yet_first_connected;
+        }
+
+        // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
+        // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
+        // který následně vrací latest know online
+        if(cloud_homer_server.server_is_online()){
+
+            if(cache_status.containsKey(id)){
+                return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
+            }else {
+                // Začnu zjišťovat stav - v separátním vlákně!
+                new Thread( () -> {
+                    try {
+
+                        cloud_homer_server.sender().write_without_confirmation( new WS_Message_Instance_exist().make_request(new ArrayList<String>() {{add(id);}} ));
+
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError("notification_board_connect:", e);
+                    }
+                }).start();
+
+                return Enum_Online_status.synchronization_in_progress;
+
+            }
+        } else {
+            return Enum_Online_status.unknown_lost_connection_with_server;
+        }
+        // return this.online_state();
+    }
     @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return cloud_homer_server.server_is_online();}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
@@ -110,7 +144,7 @@ public class Model_HomerInstance extends Model {
 
             help.server_name = cloud_homer_server.unique_identificator;
             help.server_id = cloud_homer_server.unique_identificator;
-            help.instance_is_online = online_state();
+            help.instance_is_online = instance_online();
             help.server_is_online = server_is_online();
             help.update_permission = getB_program().update_permission();
             help.edit_permission = getB_program().edit_permission();
@@ -128,7 +162,7 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore             public Model_BProgram getB_program(){ return b_program;}
 
     @JsonIgnore @Transient  public Model_Project get_project() {
-        return Model_Project.find.where().eq("private_instance.id", id).findUnique();
+        return Model_Project.find.where().eq("b_programs.id", b_program.id).findUnique();
     }
 
     @JsonIgnore @Transient  public List<String> get_boards_id_required_by_record() {
@@ -410,22 +444,6 @@ public class Model_HomerInstance extends Model {
             return new WS_Message_Hardware_overview();
         }
     }
-
-
-    //-- Online state checker --//
-    @JsonIgnore @Transient
-    public boolean online_state(){
-
-        if(cache_status.containsKey(id)){
-            return cache_status.get(id);
-        }
-
-        WS_Message_Instance_status.InstanceStatus status = get_instance_status().get_status(id);
-        cache_status.put(id, status.online_status);
-
-        return cache_status.get(id);
-    }
-
 
     //-- Helper Commands --//
     @JsonIgnore @Transient

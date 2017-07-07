@@ -34,6 +34,7 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
             terminal_logger.info("Synchronize_Homer_Instance_after_connection:: run:: Tyrion send to Homer Server request for listInstances");
 
+
             List<String> instances_required_by_tyrion = required_instance_on_server();
             List<String> instances_actual_on_server = actual_on_server();
 
@@ -77,6 +78,8 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
             terminal_logger.trace("Synchronize_Homer_Instance_after_connection:: run:: Successfully finished connection procedure");
 
+        }catch(InterruptedException e){
+            terminal_logger.warn("Synchronize_Homer_Instance_after_connection:: run:: Connection Error: TimeOutException - Tyrion close connection");
 
         }catch(Exception e){
             terminal_logger.internalServerError(e);
@@ -109,11 +112,18 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
     }
 
-    private List<String> actual_on_server(){
+    private List<String> actual_on_server() throws InterruptedException{
 
-        WS_Message_Homer_Instance_list list_instances = Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_od_instance();
-        return list_instances.instance_ids;
+        try {
 
+            WS_Message_Homer_Instance_list list_instances = Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_instance();
+            return list_instances.instance_ids;
+
+        }catch (Exception e){
+            terminal_logger.warn("Homer server not response for Get WS_Message_Homer_Instance_list");
+            ws_homerServer.close();
+            throw new InterruptedException();
+        }
     }
 
 }

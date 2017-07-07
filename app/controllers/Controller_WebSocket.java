@@ -46,7 +46,8 @@ public class Controller_WebSocket extends Controller {
      *
      *      <Model_HomerServer.unique_identificator, WS_HomerServer>
      */
-    public static Map<String, WS_HomerServer> homer_servers = new HashMap<>();
+    public static Map<String, WS_HomerServer> homer_servers = new HashMap<>();                  // Sem se vkládají servery z not_synchronize_homer_servers, kde úspěšně proběhla synchronizace
+    public static Map<String, WS_HomerServer> not_synchronize_homer_servers = new HashMap<>();  // Sem se vkládají servery, které jsou připojené, ale ještě nejsou synchronizované
 
     /*
      *      Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
@@ -237,7 +238,7 @@ public class Controller_WebSocket extends Controller {
 
 
             terminal_logger.trace("becki_website_connection:: Controlling of incoming token "+ security_token);
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if(person == null){
                 terminal_logger.warn("becki_website_connection: Person with this id not exist!");
                 return WebSocket.reject(forbidden());

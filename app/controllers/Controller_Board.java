@@ -72,7 +72,7 @@ public class Controller_Board extends Controller {
             terminal_logger.debug("Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if(version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
             // Smažu předchozí kompilaci
@@ -157,7 +157,7 @@ public class Controller_Board extends Controller {
             if (help.type_of_board_id.isEmpty()) return GlobalResult.result_badRequest("type_of_board_id is missing!");
 
             // Ověření objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(help.type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             if(!Model_CompilationServer.is_online()) return GlobalResult.result_externalServerIsOffline("Compilation Server offilne");
@@ -168,7 +168,7 @@ public class Controller_Board extends Controller {
             for (String lib_id : help.imported_libraries) {
 
                 terminal_logger.trace("compile_C_Program_code:: Looking for library Version Id " + lib_id);
-                Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
+                Model_VersionObject lib_version = Model_VersionObject.get_byId(lib_id);
 
                 if (lib_version == null || lib_version.library == null){
 
@@ -295,7 +295,7 @@ public class Controller_Board extends Controller {
             System.out.println("Body " + request().body().asText());
 
             // Vyhledání objektů
-            Board board = Board.find.byId(board_id);
+            Board board = Board.get_byId(board_id);
             if (board == null) return GlobalResult.result_notFound("Board board_id object not found");
 
             if (!board.update_permission()) return GlobalResult.result_forbidden();
@@ -504,7 +504,7 @@ public class Controller_Board extends Controller {
             Swagger_Cloud_Compilation_Server_New help = form.get();
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.find.byId(server_id);
+            Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Zkontroluji oprávnění
@@ -581,7 +581,7 @@ public class Controller_Board extends Controller {
         try{
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.find.byId(server_id);
+            Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -682,7 +682,7 @@ public class Controller_Board extends Controller {
         try {
 
             //Zkontroluji validitu
-            Model_Processor processor = Model_Processor.find.byId(processor_id);
+            Model_Processor processor = Model_Processor.get_byId(processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Vracím objekt
@@ -764,7 +764,7 @@ public class Controller_Board extends Controller {
             Swagger_Processor_New help = form.get();
 
             // Kontroluji validitu
-            Model_Processor processor = Model_Processor.find.byId(processor_id);
+            Model_Processor processor = Model_Processor.get_byId(processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -812,7 +812,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontroluji validitu
-            Model_Processor processor = Model_Processor.find.byId(processor_id);
+            Model_Processor processor = Model_Processor.get_byId(processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -968,7 +968,7 @@ public class Controller_Board extends Controller {
             Swagger_Producer_New help = form.get();
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(producer_id);
+            Model_Producer producer = Model_Producer.get_byId(producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontorluji oprávnění těsně před uložením
@@ -1047,7 +1047,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(producer_id);
+            Model_Producer producer = Model_Producer.get_byId(producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Vrácneí objektu
@@ -1084,7 +1084,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(producer_id);
+            Model_Producer producer = Model_Producer.get_byId(producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontorluji oprávnění
@@ -1145,11 +1145,11 @@ public class Controller_Board extends Controller {
             Swagger_TypeOfBoard_New help = form.get();
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(help.producer_id);
+            Model_Producer producer = Model_Producer.get_byId(help.producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontrola objektu
-            Model_Processor processor = Model_Processor.find.byId(help.processor_id);
+            Model_Processor processor = Model_Processor.get_byId(help.processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Tvorba objektu
@@ -1215,15 +1215,15 @@ public class Controller_Board extends Controller {
             Swagger_TypeOfBoard_New help = form.get();
 
             // Kontrola objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(help.producer_id);
+            Model_Producer producer = Model_Producer.get_byId(help.producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontrola objektu
-            Model_Processor processor = Model_Processor.find.byId(help.processor_id);
+            Model_Processor processor = Model_Processor.get_byId(help.processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Kontorluji oprávnění
@@ -1274,7 +1274,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_board_id);
             if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found") ;
 
             // Kontorluji oprávnění
@@ -1349,7 +1349,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola validity objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_board_id);
             if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
@@ -1367,7 +1367,7 @@ public class Controller_Board extends Controller {
     public Result typeOfBoard_uploadPicture(@ApiParam(required = true) String type_of_board_id){
         try {
 
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
             if (type_of_board == null) return GlobalResult.result_notFound("Type of board does not exist");
 
             // Přijmu soubor
@@ -1442,7 +1442,7 @@ public class Controller_Board extends Controller {
     public Result typeOfBoard_removePicture(@ApiParam(required = true) String type_of_board_id){
         try {
 
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
             if (type_of_board == null) return GlobalResult.result_notFound("Type of Board does not exist");
 
             if(!(type_of_board.picture == null)) {
@@ -1474,7 +1474,7 @@ public class Controller_Board extends Controller {
             if(form.hasErrors()){return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BootLoader_New help = form.get();
 
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
             if(type_of_board == null) return GlobalResult.result_notFound("Type_of_board_not_found");
 
             if(Model_BootLoader.find.where().eq("version_identificator", help.version_identificator ).eq("type_of_board.id", type_of_board.id).findUnique() != null) return GlobalResult.result_badRequest("Version format is not unique!");
@@ -1503,7 +1503,7 @@ public class Controller_Board extends Controller {
     public Result bootLoader_uploadFile(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
-            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
+            Model_BootLoader boot_loader = Model_BootLoader.get_byId(boot_loader_id);
             if(boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
 
             if(!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
@@ -1549,7 +1549,7 @@ public class Controller_Board extends Controller {
     public Result bootLoader_markAsMain(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
-            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
+            Model_BootLoader boot_loader = Model_BootLoader.get_byId(boot_loader_id);
             if(boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
 
             if(!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
@@ -1633,7 +1633,7 @@ public class Controller_Board extends Controller {
 
                 if(help.bootloader_id != null) {
 
-                    pair.bootLoader = Model_BootLoader.find.byId(help.bootloader_id);
+                    pair.bootLoader = Model_BootLoader.get_byId(help.bootloader_id);
                     if (pair.bootLoader == null) return GlobalResult.result_notFound("BootLoader not found");
 
                 } else{
@@ -1711,7 +1711,7 @@ public class Controller_Board extends Controller {
             Swagger_Board_New help = form.get();
 
             // Kotrola objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId( help.type_of_board_id  );
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId( help.type_of_board_id  );
             if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
@@ -1760,7 +1760,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kotrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if(project == null ) return GlobalResult.result_notFound("Project project not found");
 
             // Kontrola oprávnění
@@ -1901,7 +1901,7 @@ public class Controller_Board extends Controller {
             for(Swagger_Board_CProgram_Pair board_update_pair : help.board_pairs) {
 
                 // Ověření objektu
-                Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_update_pair.c_program_version_id);
+                Model_VersionObject c_program_version = Model_VersionObject.get_byId(board_update_pair.c_program_version_id);
                 if (c_program_version == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
@@ -2007,7 +2007,7 @@ public class Controller_Board extends Controller {
             for(Swagger_Board_Backup_settings.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
 
                 // Kotrola objektu
-                Model_Board board = Model_Board.find.byId(board_backup_pair.board_id);
+                Model_Board board = Model_Board.get_byId(board_backup_pair.board_id);
                 if (board == null) return GlobalResult.result_notFound("Board board_id not found");
 
                 // Kontrola oprávnění
@@ -2054,7 +2054,7 @@ public class Controller_Board extends Controller {
                     terminal_logger.debug("Controller_Board:: board_update_backup:: To FALSE:: Board Id: {} has dynamic Backup or already set static backup", board_backup_pair.board_id);
 
                     // Uprava desky na statický backup
-                    Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_backup_pair.c_program_version_id);
+                    Model_VersionObject c_program_version = Model_VersionObject.get_byId(board_backup_pair.c_program_version_id);
                     if (c_program_version == null) return GlobalResult.result_notFound("Version_Object c_program_version_id not found");
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
@@ -2221,7 +2221,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kotrola objektu
-            Model_Board board = Model_Board.find.byId(board_id);
+            Model_Board board = Model_Board.get_byId(board_id);
             if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kontrola oprávnění
@@ -2364,7 +2364,7 @@ public class Controller_Board extends Controller {
             if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kotrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -2462,7 +2462,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -2473,7 +2473,7 @@ public class Controller_Board extends Controller {
             boards_for_blocko.add_M_Projects(project.get_m_projects_not_deleted());
             boards_for_blocko.add_C_Programs(project.get_c_programs_not_deleted());
 
-            for (Model_Board board : project.boards) boards_for_blocko.boards.add(board.get_short_board());
+            for (Model_Board board : project.get_project_boards_not_deleted()) boards_for_blocko.boards.add(board.get_short_board());
 
 
             boards_for_blocko.type_of_boards = Model_TypeOfBoard.find.where().eq("boards.project.id", project.id).findList();

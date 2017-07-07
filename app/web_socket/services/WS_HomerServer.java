@@ -14,6 +14,7 @@ import utilities.independent_threads.homer_server.Synchronize_Homer_Instance_aft
 import utilities.independent_threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import utilities.independent_threads.homer_server.Synchronize_Homer_Unresolved_Updates;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.common.service_class.WS_Message_Invalid_Message;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_ping;
 import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Homer_Verification_result;
@@ -36,6 +37,8 @@ public class WS_HomerServer extends WS_Interface_type {
 /* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
     public boolean security_token_confirm;
+    private ExecutorService service;
+
     public String identifikator;
 
     public String rest_api_token;
@@ -82,6 +85,8 @@ public class WS_HomerServer extends WS_Interface_type {
 
         token_hash.remove(rest_api_token);
 
+        if(service != null) service.shutdownNow();
+
         Controller_WebSocket.homer_servers.remove(identifikator);
         Model_HomerServer.get_byId(identifikator).is_disconnect();
     }
@@ -94,12 +99,7 @@ public class WS_HomerServer extends WS_Interface_type {
         // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj - Odchytím zprávu a buď naní odpovím zamítavě nebo
         // v případě že je to zpráva s tokenem jí zařadím to metody ověřující oprávnění
 
-        System.out.println("Budu kontrolovat oprávnění");
-
         if(!security_token_confirm){
-
-            System.out.println("Token není schválen");
-
             validation_check(json);
             return;
         }
@@ -146,18 +146,12 @@ public class WS_HomerServer extends WS_Interface_type {
     private void validation_check(ObjectNode json){
         try {
 
-            System.out.println("Zkouším oprávnění podmínky:: ");
             if(json.get("message_channel").asText().equals(Model_HomerServer.CHANNEL) && json.get("message_type").asText().equals(WS_Message_Check_homer_server_permission.message_type)){
 
                 final Form<WS_Message_Check_homer_server_permission> form = Form.form(WS_Message_Check_homer_server_permission.class).bind(json);
                 if (form.hasErrors()){
 
-                    ObjectNode result = Json.newObject();
-                    result.put("message_type", "JsonUnrecognized JsonParseException - Or Mission values in Verification message");
-                    result.set("error_log", form.errorsAsJson());
-                    result.put("error_code", ErrorCode.INVALID_MESSAGE.error_code());
-                    result.put("error_message", ErrorCode.INVALID_MESSAGE.error_message());
-                    webSCtype.write_without_confirmation(result);
+                    webSCtype.write_without_confirmation(json.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Check_homer_server_permission.message_type, form.errorsAsJson()));
                     return;
 
                 }
@@ -166,26 +160,15 @@ public class WS_HomerServer extends WS_Interface_type {
 
             }else {
 
-                System.out.println("Podmínky neprošli :(( ");
-
                 terminal_logger.warn("onMessage: This Websocket is not confirm");
-
-                ObjectNode result = Json.newObject();
-                result.put("message_type", "JsonUnrecognized JsonParseException - Or Mission values in Verification message");
-                result.put("error_code", ErrorCode.INVALID_MESSAGE.error_code());
-                result.put("error_message", ErrorCode.INVALID_MESSAGE.error_message());
-                webSCtype.write_without_confirmation(json.get("message_id").asText(), result);
+                webSCtype.write_without_confirmation(json.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Check_homer_server_permission.message_type, null));
 
                 return;
             }
 
         }catch (NullPointerException e){
 
-            ObjectNode result = Json.newObject();
-            result.put("message_type", "JsonUnrecognized JsonParseException - Or Mission values in Verification message");
-            result.put("error_code", ErrorCode.INVALID_MESSAGE.error_code());
-            result.put("error_message", ErrorCode.INVALID_MESSAGE.error_message());
-            webSCtype.write_without_confirmation(json.get("message_id").asText(), result);
+            webSCtype.write_without_confirmation(json.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Check_homer_server_permission.message_type, null));
 
         }catch (Exception e){
             terminal_logger.internalServerError("Incoming data from Homer is not in valid state and also its not verified connection", e);
@@ -206,7 +189,9 @@ public class WS_HomerServer extends WS_Interface_type {
     public void synchronize_configuration(){
         try {
 
-            ExecutorService service = Executors.newFixedThreadPool(10);
+            if(service != null) service.shutdownNow();
+
+            service = Executors.newFixedThreadPool(10);
 
             // Kontrola nastavení
             Synchronize_Homer_Synchronize_Settings synchronize_homer_synchronize_settings = new Synchronize_Homer_Synchronize_Settings(this);
@@ -225,7 +210,9 @@ public class WS_HomerServer extends WS_Interface_type {
             service.submit(synchronize_homer_hardware_after_connection);
             service.submit(synchronize_homer_unresolved_updates);
 
-            service.shutdown();
+            service.shutdown(); // Odmítnutí přidání nových
+
+
 
             service.awaitTermination(5L, TimeUnit.MINUTES);
 

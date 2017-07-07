@@ -8,6 +8,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,25 +16,15 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
 
     // MessageType
     @JsonIgnore
-    public static final String message_type = "device_overview_list";
+    public static final String message_type = "device_info";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
 
     @Valid
-    public List<WS_Help_Hardware_board_overview> device_list = new ArrayList<>();
+    public List<WS_Help_Hardware_board_overview> hardware_list = new ArrayList<>();
 
-
-    @JsonIgnore
-    public WS_Help_Hardware_board_overview get_device_from_list(String device_id) {
-
-        for (WS_Help_Hardware_board_overview device : device_list) {
-            if (device.device_id.equals(device_id)) return device;
-        }
-
-        return null;
-    }
 
     /**
      * The map was created for large fields. To avoid having to search the list of objects, the list will be remapped
@@ -43,13 +34,13 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
      */
     @JsonIgnore
     HashMap<String, WS_Help_Hardware_board_overview> map = new HashMap<>();
-    public WS_Help_Hardware_board_overview get_status(String device_id) {
+    public WS_Help_Hardware_board_overview get_device_from_list(String device_id) {
 
-        if (map.isEmpty() && device_list.isEmpty()) {
+        if (map.isEmpty() && hardware_list.isEmpty()) {
             return null;
         } else if (map.isEmpty()) {
-            for (WS_Help_Hardware_board_overview status : device_list) {
-                map.put(status.device_id, status);
+            for (WS_Help_Hardware_board_overview status : hardware_list) {
+                map.put(status.hardware_id, status);
             }
         }
 
@@ -65,23 +56,34 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Board.CHANNEL);
-        request.set("device_ids", Json.toJson(devices_ids));
+        request.set("hardware_ids", Json.toJson(devices_ids));
+        request.set("info_keys", Json.toJson(Arrays.asList("target", "alias", "normal_mqtt_connection", "backup_mqtt_connection", "console", "ip",  "firmware_build_id", "backup_build_id", "bootloader_build_id", "autobackup")) );
 
         return request;
+
     }
 
 /* HELP CLASS  -------------------------------------------------------------------------------------------------------*/
 
     public static class WS_Help_Hardware_board_overview {
 
-        public String device_id;
-        public String instance_id;
+        public String hardware_id;
+
+        // public String instance_id; // Hardware to neví
+
+        public String target;                       // třeba Yoda G3
+        public String alias;                        // "pepa"
+
         public String firmware_build_id;            // Číslo Buildu
         public String backup_build_id;              // Číslo Buildu
         public String bootloader_build_id;          // Version name Bootloader
-        public String interface_name;
-        public String state;
-        public boolean online_status;
+
+        public String ip;
+        public boolean console;
+
+        public String normal_mqtt_connection;       // ip addressa:port
+        public String backup_mqtt_connection;       // ip addressa:port
+        public String state;                        // evíme k řmeu to je
         public boolean autobackup;
 
     }

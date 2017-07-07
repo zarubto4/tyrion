@@ -14,7 +14,7 @@ public class WS_Message_Homer_Instance_exist extends WS_AbstractMessage_Instance
 
 // MessageType
     @JsonIgnore
-    public static final String message_type = "homer_instance_list_exist";
+    public static final String message_type = "homer_instances_exist";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
@@ -49,7 +49,7 @@ public class WS_Message_Homer_Instance_exist extends WS_AbstractMessage_Instance
         public Instnace_pair(){}
 
         public String instnace_id;
-        public boolean exist;
+        public boolean exists;
 
     }
 }

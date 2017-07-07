@@ -330,7 +330,7 @@ public class Controller_Dashboard extends Controller {
 
         try{
 
-            Model_HomerInstance instance = Model_HomerInstance.find.byId(instance_id);
+            Model_HomerInstance instance = Model_HomerInstance.get_byId(instance_id);
             if(instance == null) return show_web_socket_stats();
 
             Html content = instance_detail.render(instance);
@@ -391,7 +391,7 @@ public class Controller_Dashboard extends Controller {
     public Result bootloader_management(String type_of_board_id){
         try {
 
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
 
             if(type_of_board == null) {
 
@@ -456,7 +456,7 @@ public class Controller_Dashboard extends Controller {
     public Result role(String role_id){
         try {
 
-            Model_SecurityRole role_object = Model_SecurityRole.find.byId(role_id);
+            Model_SecurityRole role_object = Model_SecurityRole.get_byId(role_id);
 
             Html permissions_content = role.render(role_object);
             return return_page(permissions_content);
@@ -504,7 +504,7 @@ public class Controller_Dashboard extends Controller {
     public Result public_c_code(String c_program_id){
         try {
 
-            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+            Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
 
             Html public_code_content = public_c_code.render(c_program);
             return return_page(public_code_content);
@@ -539,7 +539,7 @@ public class Controller_Dashboard extends Controller {
     public Result public_code_approve_procedure(String c_program_id){
         try {
 
-            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+            Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
 
             Html public_code_content = approval_procedure_c_program.render(c_program);
             return return_page(public_code_content);
@@ -564,7 +564,7 @@ public class Controller_Dashboard extends Controller {
     public Result public_library(String library_id){
         try {
 
-            Model_Library model_library = Model_Library.find.byId(library_id);
+            Model_Library model_library = Model_Library.get_byId(library_id);
 
             Html libraries_content = library.render(model_library);
             return return_page(libraries_content);
@@ -577,7 +577,7 @@ public class Controller_Dashboard extends Controller {
     public Result public_library_version(String version_id){
         try {
 
-            Model_VersionObject version = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version = Model_VersionObject.get_byId(version_id);
             if (version == null) return GlobalResult.result_notFound("Version not found");
 
             Html content = library_version.render(version);
@@ -624,7 +624,7 @@ public class Controller_Dashboard extends Controller {
     public Result project_detail(String id){
         try {
 
-            Model_Project project = Model_Project.find.byId(id);
+            Model_Project project = Model_Project.get_byId(id);
             if (project == null) return GlobalResult.result_notFound("Project not found");
 
             Html project_detail_content = project_detail.render(project);
@@ -652,7 +652,7 @@ public class Controller_Dashboard extends Controller {
     public Result invoice(String id){
         try {
 
-            Model_Invoice inv = Model_Invoice.find.byId(id);
+            Model_Invoice inv = Model_Invoice.get_byId(id);
             if (inv == null) return GlobalResult.result_notFound("Invoice not found");
 
             Html content = invoice.render(inv);
@@ -688,7 +688,7 @@ public class Controller_Dashboard extends Controller {
     public Result tariff_edit(String tariff_id){
         try {
 
-            Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
+            Model_Tariff tariff = Model_Tariff.get_byId(tariff_id);
 
             Html content = tariff_edit.render(tariff);
             return return_page(content);
@@ -701,7 +701,7 @@ public class Controller_Dashboard extends Controller {
     public Result extension_edit(String extension_id){
         try {
 
-            Model_ProductExtension extensions = Model_ProductExtension.find.byId(extension_id);
+            Model_ProductExtension extensions = Model_ProductExtension.get_byId(extension_id);
 
             if(extensions == null) return not_found();
 

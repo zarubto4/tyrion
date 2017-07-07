@@ -388,6 +388,19 @@ public class Model_Notification extends Model {
     @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_delete") ;}
     @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_confirm") ;}
 
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Notification get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<String,Model_Notification> find = new Finder<>(Model_Notification.class);

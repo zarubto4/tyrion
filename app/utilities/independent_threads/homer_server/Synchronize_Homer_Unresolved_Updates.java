@@ -54,6 +54,11 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
             List<Swagger_UpdatePlan_brief_for_homer> tasks = new ArrayList<>();
 
+            if(tasks.isEmpty()){
+                terminal_logger.debug("Zero execution Model_CProgramUpdatePlan for Homer Server");
+                return;
+            }
+
             for(Model_CProgramUpdatePlan plan : old_not_finished_plans){
                 tasks.add(plan.get_brief_for_update_homer_server());
             }

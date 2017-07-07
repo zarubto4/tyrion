@@ -15,12 +15,12 @@ import java.util.List;
 public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
 
     // MessageType
-    @JsonIgnore public static final String message_type = "hardware_online_state";
+    @JsonIgnore public static final String message_type = "hardware_online_status";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Valid public List<DeviceStatus> device_list = new ArrayList<>();
+    @Valid public List<DeviceStatus> hardware_list = new ArrayList<>();
 
 
     /**
@@ -32,11 +32,11 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
     @JsonIgnore HashMap<String,DeviceStatus> map = new HashMap<>();
     public boolean is_device_online(String device_id){
 
-        if(map.isEmpty() && device_list.isEmpty()){
+        if(map.isEmpty() && hardware_list.isEmpty()){
             return false;
         }else if(map.isEmpty()) {
-            for(DeviceStatus status : device_list){
-                map.put(status.device_id, status);
+            for(DeviceStatus status : hardware_list){
+                map.put(status.hardware_id, status);
             }
         }
 
@@ -54,7 +54,7 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Board.CHANNEL);
-        request.set("device_ids", Json.toJson(devicesId) );
+        request.set("hardware_ids", Json.toJson(devicesId) );
 
         return request;
     }
@@ -66,9 +66,8 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
 
         public DeviceStatus(){}
 
-        @Constraints.Required  public String device_id;
+        @Constraints.Required  public String hardware_id;
         public boolean online_status;
-        public String error_code;
 
     }
 

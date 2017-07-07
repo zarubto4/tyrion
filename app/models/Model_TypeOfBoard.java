@@ -7,6 +7,7 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.Server;
 import utilities.logger.Class_Logger;
 
@@ -140,6 +141,26 @@ public class Model_TypeOfBoard extends Model {
     public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_delete, TypeOfBoard_register_new_device}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE = Model_TypeOfBoard.class.getSimpleName();
+
+    public static Cache<String, Model_TypeOfBoard> cache = null; // < ID, Model_VersionObject>
+
+    @JsonIgnore
+    public static Model_TypeOfBoard get_byId(String id) {
+
+        Model_TypeOfBoard typeOfBoard= cache.get(id);
+        if (typeOfBoard == null){
+
+            typeOfBoard = Model_TypeOfBoard.find.byId(id);
+            if (typeOfBoard == null){
+                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
+            }
+            cache.put(id, typeOfBoard);
+        }
+
+        return typeOfBoard;
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static  Model.Finder<String, Model_TypeOfBoard> find = new Finder<>(Model_TypeOfBoard.class);

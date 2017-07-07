@@ -114,7 +114,7 @@ public class Model_HomerInstanceRecord extends Model {
                 return;
             }
 
-            if(!actual_running_instance.instance_online()){
+           if(! actual_running_instance.get_instance_status().get_status(actual_running_instance.id).online_status){
 
                 // Vytvořím Instanci
                 WS_Message_Homer_Instance_add result_instance   = actual_running_instance.cloud_homer_server.add_instance(actual_running_instance);
@@ -356,6 +356,14 @@ public class Model_HomerInstanceRecord extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_HomerInstanceRecord get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_HomerInstanceRecord> find = new Finder<>(Model_HomerInstanceRecord.class);

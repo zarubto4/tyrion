@@ -2,6 +2,7 @@ package web_socket.message_objects.homer_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.Model_Board;
 import models.Model_HomerServer;
 import play.data.validation.Constraints;
 import play.libs.Json;
@@ -19,7 +20,7 @@ public class WS_Message_Homer_Hardware_list extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required  public List<Hardware_pair> device_pairs = new ArrayList<>();
+    @Constraints.Required  public List<String> hardware_ids = new ArrayList<>();
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
@@ -34,11 +35,4 @@ public class WS_Message_Homer_Hardware_list extends WS_AbstractMessage {
         return request;
     }
 
-
-    public class Hardware_pair{
-
-        public String device_id;
-        public boolean online_state;
-
-    }
 }

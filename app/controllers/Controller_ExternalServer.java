@@ -115,7 +115,7 @@ public class Controller_ExternalServer extends Controller {
     public Result set_main_server(String homer_server_id){
         try{
 
-            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.get_byId(homer_server_id);
             if(server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
 
             Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
@@ -137,7 +137,7 @@ public class Controller_ExternalServer extends Controller {
     public Result set_backup_server(String homer_server_id){
         try{
 
-            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.get_byId(homer_server_id);
             if(server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
             if(server.server_type != Enum_Cloud_HomerServer_type.public_server) return GlobalResult.result_badRequest("Server must be in public group!");
 
@@ -324,7 +324,7 @@ public class Controller_ExternalServer extends Controller {
         try{
 
             // Získám soubor
-            Model_VersionObject version_object = Model_VersionObject.find.byId(b_program_version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(b_program_version_id);
 
             if(version_object== null){
                return GlobalResult.result_notFound("File not found");
@@ -390,7 +390,7 @@ public class Controller_ExternalServer extends Controller {
         try{
 
             // Získám soubor
-            Model_VersionObject version_object = Model_VersionObject.find.byId(b_program_version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(b_program_version_id);
 
             if(version_object== null){
                 return GlobalResult.result_notFound("File not found");
@@ -456,7 +456,7 @@ public class Controller_ExternalServer extends Controller {
         try{
 
             // Získám soubor
-            Model_BootLoader bootLoader = Model_BootLoader.find.byId(bootloader_id);
+            Model_BootLoader bootLoader = Model_BootLoader.get_byId(bootloader_id);
 
             if(bootLoader == null){
                 return GlobalResult.result_notFound("File not found");

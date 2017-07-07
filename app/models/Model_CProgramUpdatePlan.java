@@ -194,7 +194,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_CProgramUpdatePlan.find.byId(this.id) == null) break;
+            if (Model_CProgramUpdatePlan.get_byId(this.id) == null) break;
         }
         super.save();
 
@@ -338,7 +338,7 @@ public class Model_CProgramUpdatePlan extends Model {
             Enum_HardwareHomerUpdate_state status = Enum_HardwareHomerUpdate_state.getUpdate_state(report.update_state);
             if (status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + report.update_state + " is not recognize in Json!");
 
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.find.byId(report.c_program_update_plan_id);
+            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_byId(report.c_program_update_plan_id);
             if (plan == null) throw new NullPointerException("Plan id" + report.c_program_update_plan_id + " not found!");
 
 

@@ -134,11 +134,11 @@ public class WS_Send_message {
                 }
 
                 if(!sender_object.is_online())  {
-                    terminal_logger.internalServerError(new Exception("Sender is offline. MessageID: " + messageId + ", MessageType: " + json.get("message_type")));
+                    terminal_logger.warn("Sender is offline. MessageID: " + messageId + ", MessageType: " + json.get("message_type"));
                     sender_object.close();
                 }
 
-                terminal_logger.internalServerError(new Exception("Timeout. Responding with Error. Message ID: " + messageId));
+                terminal_logger.warn("Timeout. Responding with Error. Message ID: {} ", messageId);
                 return time_out_exception_error_response();
 
             } catch (NullPointerException e){

@@ -22,11 +22,8 @@ public class WS_Message_Homer_Get_homer_server_configuration extends WS_Abstract
     @Constraints.Required public String mqtt_password;
 
     @Constraints.Required public int grid_port;
-
     @Constraints.Required public int becki_port;
-
     @Constraints.Required public int web_port;
-
 
     @Constraints.Required public Long time_stamp_configuration;
 

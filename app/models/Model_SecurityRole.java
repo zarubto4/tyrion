@@ -80,6 +80,18 @@ public class Model_SecurityRole extends Model {
 
     public enum permissions{SecurityRole_create, SecurityRole_read, SecurityRole_update , SecurityRole_delete}
 
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_SecurityRole get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model_SecurityRole findByName(String name) {return find.where().eq("name", name).findUnique();}

@@ -82,7 +82,7 @@ public class Controller_Notification extends Controller {
   public Result notification_delete(@ApiParam(value = "notification_id String path", required = true) String notification_id){
     try {
 
-      Model_Notification notification = Model_Notification.find.byId(notification_id);
+      Model_Notification notification = Model_Notification.get_byId(notification_id);
       if (notification == null) return GlobalResult.result_notFound("Notification does not exist");
 
       if( !notification.delete_permission()) return GlobalResult.result_forbidden();
@@ -211,7 +211,7 @@ public class Controller_Notification extends Controller {
           if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
           Swagger_Notification_Confirm help = form.get();
 
-          Model_Notification notification = Model_Notification.find.byId(notification_id);
+          Model_Notification notification = Model_Notification.get_byId(notification_id);
           if(notification == null) return GlobalResult.result_notFound("Notification no longer exists");
 
           if (!notification.confirm_permission()) return GlobalResult.result_forbidden();

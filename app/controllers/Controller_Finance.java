@@ -88,7 +88,7 @@ public class Controller_Finance extends Controller {
 
             if (help.id == null) return GlobalResult.result_badRequest("Tariff id is required");
 
-            Model_Tariff tariff = Model_Tariff.find.byId(help.id);
+            Model_Tariff tariff = Model_Tariff.get_byId(help.id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             if (Model_Tariff.find.where().ne("id", help.id).eq("identifier", help.identifier).findUnique() != null)
@@ -120,7 +120,7 @@ public class Controller_Finance extends Controller {
     public Result tariff_deactivate(String tariff_id){
         try {
 
-            Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
+            Model_Tariff tariff = Model_Tariff.get_byId(tariff_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             if (!tariff.active) return GlobalResult.result_badRequest("Tariff is already deactivated");
@@ -141,7 +141,7 @@ public class Controller_Finance extends Controller {
     public Result tariff_activate(String tariff_id){
         try {
 
-            Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
+            Model_Tariff tariff = Model_Tariff.get_byId(tariff_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             if (tariff.active) return GlobalResult.result_badRequest("Tariff is already activated");
@@ -162,7 +162,7 @@ public class Controller_Finance extends Controller {
     public Result tariff_up(String tariff_id){
         try{
 
-            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.get_byId(tariff_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             tariff.up();
@@ -179,7 +179,7 @@ public class Controller_Finance extends Controller {
     public Result tariff_down(String tariff_id){
         try{
 
-            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.get_byId(tariff_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             tariff.down();
@@ -203,7 +203,7 @@ public class Controller_Finance extends Controller {
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TariffLabel_New help = form.get();
 
-            Model_Tariff tariff = Model_Tariff.find.byId(help.id);
+            Model_Tariff tariff = Model_Tariff.get_byId(help.id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             Model_TariffLabel label = new Model_TariffLabel();
@@ -230,7 +230,7 @@ public class Controller_Finance extends Controller {
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TariffLabel_New help = form.get();
 
-            Model_TariffLabel label = Model_TariffLabel.find.byId(help.id);
+            Model_TariffLabel label = Model_TariffLabel.get_byId(help.id);
             if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
 
             label.description = help.description;
@@ -250,7 +250,7 @@ public class Controller_Finance extends Controller {
     public Result tariffLabel_up(String label_id){
         try{
 
-            Model_TariffLabel label =  Model_TariffLabel.find.byId(label_id);
+            Model_TariffLabel label =  Model_TariffLabel.get_byId(label_id);
             if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
 
             label.up();
@@ -267,7 +267,7 @@ public class Controller_Finance extends Controller {
     public Result tariffLabel_down(String label_id){
         try{
 
-            Model_TariffLabel label =  Model_TariffLabel.find.byId(label_id);
+            Model_TariffLabel label =  Model_TariffLabel.get_byId(label_id);
             if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
 
             label.down();
@@ -284,7 +284,7 @@ public class Controller_Finance extends Controller {
     public Result tariffLabel_delete(String label_id){
         try{
 
-            Model_TariffLabel label =  Model_TariffLabel.find.byId(label_id);
+            Model_TariffLabel label =  Model_TariffLabel.get_byId(label_id);
             if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
 
             label.delete();
@@ -599,7 +599,7 @@ public class Controller_Finance extends Controller {
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ProductExtension_New help = form.get();
 
-            Model_Tariff tariff = Model_Tariff.find.byId(help.product_id);
+            Model_Tariff tariff = Model_Tariff.get_byId(help.product_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             Model_ProductExtension extension = new Model_ProductExtension();
@@ -638,7 +638,7 @@ public class Controller_Finance extends Controller {
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ProductExtension_New help = form.get();
 
-            Model_ProductExtension extension = Model_ProductExtension.find.byId(help.product_id);
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(help.product_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.name = help.name;
@@ -665,7 +665,7 @@ public class Controller_Finance extends Controller {
     public Result tariffExtension_up(String extension_id){
         try{
 
-            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
             extension.up();
 
@@ -680,7 +680,7 @@ public class Controller_Finance extends Controller {
     public Result tariffExtension_down(String extension_id){
         try{
 
-            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.down();
@@ -696,7 +696,7 @@ public class Controller_Finance extends Controller {
     public Result tariffExtension_deactivate(String extension_id){
         try{
 
-            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.active = false;
@@ -713,7 +713,7 @@ public class Controller_Finance extends Controller {
     public Result tariffExtension_activate(String extension_id){
         try{
 
-            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.active = true;
@@ -730,7 +730,7 @@ public class Controller_Finance extends Controller {
     public Result tariffExtension_delete(String extension_id){
         try{
 
-            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             extension.delete();
@@ -809,7 +809,7 @@ public class Controller_Finance extends Controller {
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Product_New help = form.get();
 
-            Model_Tariff tariff = Model_Tariff.find.byId(help.tariff_id);
+            Model_Tariff tariff = Model_Tariff.get_byId(help.tariff_id);
             if(tariff == null) return GlobalResult.result_badRequest("Tariff identifier id: {" + help.tariff_id  + "} not found or not supported now! Use only supported");
 
             Model_Person person;
@@ -1228,7 +1228,7 @@ public class Controller_Finance extends Controller {
             Swagger_PaymentDetails_Edit help = form.get();
 
             // Kontrola Objektu
-            Model_PaymentDetails payment_details = Model_PaymentDetails.find.byId(payment_details_id);
+            Model_PaymentDetails payment_details = Model_PaymentDetails.get_byId(payment_details_id);
             if(payment_details == null) return GlobalResult.result_notFound("PaymentDetails not found");
 
             // Oprávnění operace
@@ -1391,7 +1391,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
 
             if(!invoice.read_permission()) return GlobalResult.result_forbidden();
@@ -1441,7 +1441,7 @@ public class Controller_Finance extends Controller {
 
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
             if(!invoice.read_permission()) return GlobalResult.result_forbidden();
 
@@ -1472,7 +1472,7 @@ public class Controller_Finance extends Controller {
     public Result invoice_reimbursement(String invoice_id) {
         try {
 
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
 
             if(!invoice.read_permission()) return GlobalResult.result_forbidden();
@@ -1509,7 +1509,7 @@ public class Controller_Finance extends Controller {
 
             if (!kind.equals("proforma") && !kind.equals("invoice")) return GlobalResult.result_badRequest("kind should be 'proforma' or 'invoice'");
 
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if(invoice == null) return GlobalResult.result_notFound("Invoice not found");
 
             if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return GlobalResult.result_badRequest("Proforma PDF is unavailable");
@@ -1530,7 +1530,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if(invoice == null) return GlobalResult.result_notFound("Invoice not found");
 
             if(!invoice.remind_permission()) return GlobalResult.result_forbidden();
@@ -1548,7 +1548,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
+            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
 
             // Kontrola oprávnění

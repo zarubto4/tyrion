@@ -6,14 +6,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
-
 
 @Entity
 @ApiModel(description = "Model of Payment_Details",
         value = "Payment_Details")
 public class Model_PaymentDetails extends Model {
+
+    // Logger
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_PaymentDetails.class);
 
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
@@ -95,10 +98,19 @@ public class Model_PaymentDetails extends Model {
 
     @JsonProperty @Transient  public boolean edit_permission()  {  return true;  }
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_PaymentDetails get_byId(Long id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model.Finder<Long,Model_PaymentDetails> find = new Finder<>(Model_PaymentDetails.class);
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 }

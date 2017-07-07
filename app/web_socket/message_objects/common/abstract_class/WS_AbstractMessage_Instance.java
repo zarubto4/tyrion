@@ -27,6 +27,6 @@ public abstract class WS_AbstractMessage_Instance {
 
     @JsonIgnore @Transient public Model_HomerInstance get_instance(){
 
-        return Model_HomerInstance.find.byId(instanceId);
+        return Model_HomerInstance.get_byId(instanceId);
     }
 }
