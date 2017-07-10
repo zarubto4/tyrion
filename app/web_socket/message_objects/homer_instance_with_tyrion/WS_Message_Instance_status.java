@@ -15,7 +15,7 @@ import java.util.List;
 public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String message_type = "instance_status";
+    @JsonIgnore public static final String message_type = "instances_status";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/

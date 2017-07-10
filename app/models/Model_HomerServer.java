@@ -117,7 +117,7 @@ public class Model_HomerServer extends Model{
         cache.put(this.unique_identificator, this);
 
         super.update();
-        this.set_new_configuration_on_homer();
+        //this.set_new_configuration_on_homer();
     }
 
     @JsonIgnore @Override public void delete() {
@@ -300,7 +300,7 @@ public class Model_HomerServer extends Model{
 
 
     // Settings
-
+    /*
     @JsonIgnore @Transient  public void set_new_configuration_on_homer(){
         try{
 
@@ -313,7 +313,7 @@ public class Model_HomerServer extends Model{
             terminal_logger.internalServerError("set_new_configuration_on_homer:", e);
         }
     }
-
+    */
 
     // Get Data
 

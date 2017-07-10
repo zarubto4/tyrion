@@ -2108,7 +2108,7 @@ public class Controller_Blocko extends Controller{
             if (! blockoBlock.read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blockoBlock.blocko_versions));
+            return GlobalResult.result_ok(Json.toJson(blockoBlock.get_blocko_block_versions()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -2250,9 +2250,9 @@ public class Controller_Blocko extends Controller{
             // Odeslání emailu s důvodem
             try {
                 new Email()
-                        .text("Version of Block " + blockoBlockVersion.blocko_block.name + ": " + Email.bold(blockoBlockVersion.version_name) + " was not approved for this reason: ")
+                        .text("Version of Block " + blockoBlockVersion.get_blocko_block().name + ": " + Email.bold(blockoBlockVersion.version_name) + " was not approved for this reason: ")
                         .text(help.reason)
-                        .send(blockoBlockVersion.blocko_block.author.mail, "Version of Block disapproved" );
+                        .send(blockoBlockVersion.get_blocko_block().get_author().mail, "Version of Block disapproved" );
 
             } catch (Exception e) {
                 terminal_logger.internalServerError("blockoDisapprove:", e);
@@ -2297,7 +2297,7 @@ public class Controller_Blocko extends Controller{
             blockoBlock.name = help.blocko_block_name;
             blockoBlock.description = help.blocko_block_general_description;
             blockoBlock.type_of_block = typeOfBlock;
-            blockoBlock.author = privateBlockoBlockVersion.blocko_block.author;
+            blockoBlock.author = privateBlockoBlockVersion.get_blocko_block().get_author();
             blockoBlock.save();
 
             // Vytvoření objektu
@@ -2311,6 +2311,7 @@ public class Controller_Blocko extends Controller{
             blockoBlockVersion.date_of_create = new Date();
             blockoBlockVersion.save();
 
+
             // Pokud jde o schválení po ediatci
             if(help.state.equals("edit")) {
                 privateBlockoBlockVersion.approval_state = Enum_Approval_state.edited;
@@ -2318,9 +2319,9 @@ public class Controller_Blocko extends Controller{
                 // Odeslání emailu
                 try {
                     new Email()
-                            .text("Version of Block " + blockoBlockVersion.blocko_block.name + ": " + Email.bold(blockoBlockVersion.version_name) + " was edited before publishing for this reason: ")
+                            .text("Version of Block " + blockoBlockVersion.get_blocko_block().name + ": " + Email.bold(blockoBlockVersion.version_name) + " was edited before publishing for this reason: ")
                             .text(help.reason)
-                            .send(blockoBlockVersion.blocko_block.author.mail, "Version of Block edited" );
+                            .send(blockoBlockVersion.get_blocko_block().get_author().mail, "Version of Block edited" );
 
                 } catch (Exception e) {
                     terminal_logger.internalServerError("blockoApproval:", e);

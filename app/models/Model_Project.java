@@ -47,7 +47,7 @@ public class Model_Project extends Model {
 
     // reference na Fake Instanci - kam připojuji Yody q- pokud nejsou připojení do vlastní instnace vytvořené v blocko programu
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.EAGER) public Model_Product product;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Product product;
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -62,7 +62,7 @@ public class Model_Project extends Model {
     @JsonIgnore @Transient @TyrionCachedList private List<String> type_of_widgets_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private List<String> type_of_blocks_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private List<String> instance_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private String product_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_product_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -75,10 +75,10 @@ public class Model_Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()     { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    if(!active()) return l; for( Model_TypeOfBlock m     : get_type_of_blocks_not_deleted()) l.add(m.get_type_of_block_short_detail()); return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()    { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    if(!active()) return l; for( Model_TypeOfWidget m    : get_type_of_widgets_not_deleted())l.add(m.get_typeOfWidget_short_detail());  return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()         { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    if(!active()) return l; for( Model_HomerInstance m   : get_instances_not_deleted()) l.add(m.get_instance_short_detail());  return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean active() { return product.active;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean active() { return get_product().active;}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_name() { return product.name;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id() { return product.id;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_name() { return get_product().name;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id()   { return get_product().id;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
 
@@ -112,7 +112,7 @@ public class Model_Project extends Model {
         terminal_logger.debug("save :: Creating new Object");
         while(true){ // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            this.blob_project_link = product.get_path() + "/projects/" + this.id;
+            this.blob_project_link = get_product().get_path() + "/projects/" + this.id;
             if (Model_Project.find.byId(this.id) == null) break;
         }
 
@@ -390,6 +390,17 @@ public class Model_Project extends Model {
         }
     }
 
+    @JsonIgnore @TyrionCachedList
+    public Model_Product get_product(){
+
+        if(cache_value_product_id == null){
+            Model_Product product = Model_Product.find.where().eq("projects.id", id).select("id").findUnique();
+            cache_value_product_id = product.id;
+        }
+
+        return Model_Product.get_byId(cache_value_product_id);
+    }
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
@@ -471,17 +482,135 @@ public class Model_Project extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean create_permission()    {return true;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean update_permission()    {return (Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_update");}
-    @JsonIgnore                                      public boolean read_permission()      {return (Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_read");}
+    @JsonIgnore public boolean create_permission() {
+        return get_product().active && get_product().create_permission();
+    }
 
-    @JsonProperty @ApiModelProperty(required = true) public boolean unshare_permission()   {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_unshare");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean share_permission ()    {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_share");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean admin_permission ()    {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_admin");}
+    @JsonProperty public boolean update_permission()    {
 
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()      {return (Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_edit");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission()    {return (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().eq("state", Enum_Participant_status.owner).findRowCount() > 0) || Controller_Security.get_person().has_permission("Project_delete");}
-    @JsonIgnore                                      public boolean financial_permission() {return this.product.financial_permission("project");}
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("project_update_" + id)) return Controller_Security.get_person().permissions_keys.get("project_update_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("Project_update")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("project_update_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("project_update_" + id, false);
+        return false;
+    }
+    @JsonIgnore public boolean read_permission()      {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("project_read_" + id)) return Controller_Security.get_person().permissions_keys.get("project_read_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("Project_read")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("project_read_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("project_read_" + id, false);
+        return false;
+    }
+
+
+    @JsonProperty public boolean edit_permission()      {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("project_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("project_edit_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("Project_edit")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("project_edit_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("projecte_edit_" + id, false);
+        return false;
+
+    }
+
+    @JsonProperty public boolean delete_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("project_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("project_delete_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("Project_delete")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().eq("state", Enum_Participant_status.owner).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("project_delete_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("project_delete_" + id, false);
+        return false;
+
+    }
+
+    @JsonProperty public boolean unshare_permission()   {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("project_share_" + id)) return Controller_Security.get_person().permissions_keys.get("project_share_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("Project_unshare")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0){
+            Controller_Security.get_person().permissions_keys.put("project_share_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("project_share_" + id, false);
+        return false;
+    }
+
+    @JsonProperty public boolean share_permission ()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("project_unshare_" + id)) return Controller_Security.get_person().permissions_keys.get("project_unshare_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("Project_share")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0){
+            Controller_Security.get_person().permissions_keys.put("project_unshare_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("project_unshare_" + id, false);
+        return false;
+
+    }
+
+
+    @JsonProperty public boolean admin_permission ()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("project_admin_permission_" + id)) return Controller_Security.get_person().permissions_keys.get("project_admin_permission_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("Project_admin")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0){
+            Controller_Security.get_person().permissions_keys.put("project_admin_permission_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("project_admin_permission_" + id, false);
+        return false;
+
+    }
+
+    @JsonIgnore public boolean financial_permission() {return this.get_product().financial_permission("project");}
 
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin}
 

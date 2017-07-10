@@ -119,10 +119,10 @@
 
 
                   <td>@typeOfBoard.producer_id()</td>
-                  <td>@typeOfBoard.processor_id()</td>
+                  <td>@typeOfBoard.processor.id</td>
                   <td>@typeOfBoard.connectible_to_internet</td>
                   <td><a href='@routes.Controller_Dashboard.bootloader_management(typeOfBoard.id)'><button class="btn btn-block btn-info" type="button"> Settings </button></a></td>
-                  <td><button class="btn btn-block btn-info"   type="button" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.compiler_target_name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor_id()', '@typeOfBoard.connectible_to_internet')">Edit</button></td>
+                  <td><button class="btn btn-block btn-info"   type="button" onclick="showEditForm('@typeOfBoard.id', '@typeOfBoard.name', '@typeOfBoard.compiler_target_name', '@typeOfBoard.description', '@typeOfBoard.producer_id()', '@typeOfBoard.processor.id', '@typeOfBoard.connectible_to_internet')">Edit</button></td>
                   <td><button class="btn btn-block btn-danger" type="button" onclick="deleteTypeOfBoard(@typeOfBoard.id)">Delete</button></td>
                 </tr>
               }

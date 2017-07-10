@@ -113,8 +113,8 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_version_name()     { return  actual_boot_loader == null ? null : actual_boot_loader.name; }
     @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_id()               { return  actual_boot_loader == null ? null : actual_boot_loader.id.toString();}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_version_name()  { return  type_of_board.main_boot_loader  == null ? null :  type_of_board.main_boot_loader.name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_id()            { return  type_of_board.main_boot_loader  == null ? null :  type_of_board.main_boot_loader.id.toString(); }
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_version_name()  { return  type_of_board.main_boot_loader()  == null ? null :  type_of_board.main_boot_loader().name;}
+    @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_id()            { return  type_of_board.main_boot_loader()  == null ? null :  type_of_board.main_boot_loader().id.toString(); }
 
     @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Enum_Board_Alert> alert_list(){
         try {
@@ -336,8 +336,8 @@ public class Model_Board extends Model {
 
     @JsonIgnore @Transient public boolean update_boot_loader_required(){
 
-        if(type_of_board.main_boot_loader == null || actual_boot_loader == null) return true;
-        return (!this.type_of_board.main_boot_loader.id.equals(this.actual_boot_loader.id));
+        if(type_of_board.main_boot_loader() == null || actual_boot_loader == null) return true;
+        return (!this.type_of_board.cache_value_bootloader_id.equals(this.actual_boot_loader.id.toString()));
 
     }
 
@@ -1534,12 +1534,12 @@ public class Model_Board extends Model {
                                                                                       " - Or user need combination of static/dynamic permission key and Board.first_connect_permission == true";
     @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
-                                       @JsonIgnore   @Transient public boolean create_permission(){  return  Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_Create"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.get_person().has_permission("Board_edit")) ;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return Controller_Security.has_token() && ((project != null && project.read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_read"));
+                                       @JsonIgnore   @Transient public boolean create_permission(){  return  Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_Create"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("Board_edit")) ;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return Controller_Security.has_token() && ((project != null && project.read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_read"));
     }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_delete"));}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_update"));}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_delete"));}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_update"));}
 
 
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}

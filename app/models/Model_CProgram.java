@@ -285,6 +285,10 @@ public class Model_CProgram extends Model {
         }
     }
 
+    @Transient @JsonIgnore @TyrionCachedList public Model_Project get_project()           {
+            if(project_id() == null) return null;
+            return Model_Project.get_byId(project_id());
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -329,7 +333,7 @@ public class Model_CProgram extends Model {
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
 
         // Call notification about model update
-        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgram.class, project_id(), this.id))).start();
+        if(get_project() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgram.class, project_id(), this.id))).start();
 
         super.update();
 
@@ -343,7 +347,7 @@ public class Model_CProgram extends Model {
         this.removed_by_user = true;
 
         // Call notification about project update
-        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
+        if(get_project() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
 
         this.update();
     }
@@ -374,7 +378,7 @@ public class Model_CProgram extends Model {
 
         if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_create")) return true;
 
-        return project != null ? project.update_permission() : false;
+        return get_project() != null ? project.update_permission() : false;
 
     }
 

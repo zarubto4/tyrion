@@ -77,7 +77,7 @@ public class Model_HomerInstanceRecord extends Model {
 
     @JsonIgnore
     public Model_Product getProduct(){
-        return this.actual_running_instance.get_project().product;
+        return this.actual_running_instance.get_project().get_product();
     }
 
 

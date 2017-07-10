@@ -111,7 +111,6 @@ public class Model_MProject extends Model {
             terminal_logger.internalServerError("getVersion_objects", e);
             return new ArrayList<Model_MProgram>();
         }
-
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -195,7 +194,7 @@ public class Model_MProject extends Model {
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("update_" + id, false);
+        Controller_Security.get_person().permissions_keys.put("m_project_update_" + id, false);
         return false;
 
     }
@@ -207,12 +206,12 @@ public class Model_MProject extends Model {
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
         if( Model_MProject.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("m_project_read_" + id, true);
+            Controller_Security.get_person().permissions_keys.put("m_project_m_project_read_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("read_" + id, false);
+        Controller_Security.get_person().permissions_keys.put("m_project_read_" + id, false);
         return false;
 
     }
@@ -229,7 +228,7 @@ public class Model_MProject extends Model {
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("edit_" + id, false);
+        Controller_Security.get_person().permissions_keys.put("m_project_edit_" + id, false);
         return false;
 
     }

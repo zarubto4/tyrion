@@ -245,7 +245,7 @@ public class Model_TypeOfBlock extends Model {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_edit_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfWidgetedit")) return true;
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
@@ -261,7 +261,7 @@ public class Model_TypeOfBlock extends Model {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_delete_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfWidgedelete")) return true;
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_delete")) return true;
 
 
 

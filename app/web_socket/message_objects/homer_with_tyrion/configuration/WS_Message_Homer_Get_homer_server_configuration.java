@@ -15,21 +15,19 @@ public class WS_Message_Homer_Get_homer_server_configuration extends WS_Abstract
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public String server_name;
+    @Constraints.Required public String server_id;
 
     @Constraints.Required public int mqtt_port;
-    @Constraints.Required public String mqtt_user;
-    @Constraints.Required public String mqtt_password;
+    //  @Constraints.Required public String mqtt_user;
+    //  @Constraints.Required public String mqtt_password;
 
     @Constraints.Required public int grid_port;
     @Constraints.Required public int becki_port;
-    @Constraints.Required public int web_port;
+    // @Constraints.Required public int web_port;
 
-    @Constraints.Required public Long time_stamp_configuration;
+    // @Constraints.Required public Long time_stamp_configuration;
 
-    public Date get_Date(){
-        return new Date(time_stamp_configuration * 1000);
-    }
+    // public Date get_Date(){ return new Date(time_stamp_configuration * 1000);}
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

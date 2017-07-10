@@ -7,8 +7,8 @@
     <h1> @project.name </h1>
     <ol class="breadcrumb">
         <li><a href="@routes.Controller_Dashboard.index()"><i class="fa fa-globe"></i> Dashboard </a></li>
-        <li><a href="/admin/helpdesk_tool?email=@project.product.payment_details.invoice_email"><i class="fa fa-wrench"></i> Helpdesk Tool </a></li>
-        <li><a href="@routes.Controller_Dashboard.product_detail(project.product.id)"><i class="fa fa-wrench"></i> @project.product.name </a></li>
+        <li><a href="/admin/helpdesk_tool?email=@project.get_product().payment_details.invoice_email"><i class="fa fa-wrench"></i> Helpdesk Tool </a></li>
+        <li><a href="@routes.Controller_Dashboard.product_detail(project.get_product().id)"><i class="fa fa-wrench"></i> @project.product.name </a></li>
         <li class="active"><i class="fa fa-wrench"></i> @project.name </li>
     </ol>
 </section>

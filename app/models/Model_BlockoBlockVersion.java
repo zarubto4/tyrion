@@ -7,6 +7,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
@@ -34,15 +35,22 @@ public class Model_BlockoBlockVersion extends Model {
                                                             @ApiModelProperty(required = true)    public String version_description;
     @Enumerated(EnumType.STRING)                            @ApiModelProperty(required = true)    public Enum_Approval_state approval_state;
 
-                                                                        @JsonIgnore @ManyToOne    public Model_Person author;
+                                                         @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Person author;
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
             value = "UNIX time in ms", example = "1466163478925")                                 public Date date_of_create;
 
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String design_json;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
-                                                                        @JsonIgnore @ManyToOne    public Model_BlockoBlock blocko_block;
+                                                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)    public Model_BlockoBlock blocko_block;
 
     @JsonIgnore              public boolean removed_by_user;
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_blocko_block_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_author_id;
+
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -50,16 +58,39 @@ public class Model_BlockoBlockVersion extends Model {
     public Swagger_Person_Short_Detail author(){
         try{
 
-            return this.author.get_short_person();
+            return get_author().get_short_person();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("author:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
 
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @TyrionCachedList
+    public Model_Person get_author(){
+
+        if(cache_value_author_id == null){
+            Model_Person person = Model_Person.find.where().eq("blockVersionsAuthor.id", id).select("id").findUnique();
+            cache_value_author_id = person.id;
+        }
+
+        return Model_Person.get_byId(cache_value_author_id);
+    }
+
+
+    @JsonIgnore @TyrionCachedList
+    public Model_BlockoBlock get_blocko_block(){
+
+        if(cache_value_blocko_block_id == null){
+            Model_BlockoBlock blocko_block = Model_BlockoBlock.find.where().eq("blocko_versions.id", id).select("id").findUnique();
+            cache_value_blocko_block_id = blocko_block.id;
+        }
+
+        return Model_BlockoBlock.get_byId(cache_value_blocko_block_id);
+    }
 
 
     @JsonIgnore
@@ -72,14 +103,14 @@ public class Model_BlockoBlockVersion extends Model {
             help.description = this.version_description;
             help.date_of_create = this.date_of_create;
             help.design_json = this.design_json;
-            help.author = this.author.get_short_person();
+            help.author = get_author().get_short_person();
             help.delete_permission = this.delete_permission();
             help.edit_permission = this.edit_permission();
 
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_short_blockoblock_version:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -96,7 +127,7 @@ public class Model_BlockoBlockVersion extends Model {
         }
         super.save();
 
-        if(blocko_block.type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, blocko_block.type_of_block.project_id(), blocko_block.id))).start();
+        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -105,7 +136,7 @@ public class Model_BlockoBlockVersion extends Model {
 
         super.update();
 
-        if(blocko_block.type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlockVersion.class, blocko_block.type_of_block.project_id(), id))).start();
+        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlockVersion.class, get_blocko_block().get_type_of_block().project_id(), id))).start();
     }
 
     @JsonIgnore @Override public void delete() {
@@ -115,7 +146,7 @@ public class Model_BlockoBlockVersion extends Model {
         removed_by_user = true;
         super.update();
 
-        if(blocko_block.type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, blocko_block.type_of_block.project_id(), blocko_block.id))).start();
+        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id))).start();
     }
 
 
@@ -132,10 +163,10 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  blocko_block.update_permission() ||  Controller_Security.get_person().has_permission("BlockoBlock_create"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  blocko_block.read_permission()   ||  Controller_Security.get_person().has_permission("BlockoBlock_read");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {  return  blocko_block.update_permission() || Controller_Security.get_person().has_permission("BlockoBlock_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {  return  blocko_block.update_permission() ||  Controller_Security.get_person().has_permission("BlockoBlock_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_create"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  get_blocko_block().read_permission()   ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_read");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_delete"); }
 
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 

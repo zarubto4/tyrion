@@ -35,6 +35,8 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
     @Override
     public void run() {
+
+
         try{
 
 
@@ -50,6 +52,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
             WS_Message_Homer_Get_homer_server_configuration help = form.get();
 
+            /** TODO - Doplnit až bude opět Homer Config hotový
             if(help.get_Date().compareTo(Model_HomerServer.get_byId(homer_server.identifikator).time_stamp_configuration) == 0){
                 // Nedochází k žádným změnám
                 terminal_logger.trace("synchronize_configuration: configuration without changes");
@@ -60,16 +63,16 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
                 Model_HomerServer homer = Model_HomerServer.get_byId(homer_server.identifikator);
 
-                homer.personal_server_name = help.server_name;
+                //homer.personal_server_name = help.server_name;
                 homer.mqtt_port = help.mqtt_port;
-                homer.mqtt_password = help.mqtt_password;
-                homer.mqtt_username = help.mqtt_user;
+               // homer.mqtt_password = help.mqtt_password;
+               // homer.mqtt_username = help.mqtt_user;
                 homer.grid_port = help.grid_port;
 
                 homer.web_view_port = help.becki_port;
-                homer.server_remote_port = help.web_port;
+                //homer.server_remote_port = help.web_port;
 
-                homer.mqtt_username = help.mqtt_user;
+                //homer.mqtt_username = help.mqtt_user;
                 homer.grid_port = help.grid_port;
 
                 homer.update();
@@ -91,6 +94,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
                     terminal_logger.internalServerError(new Exception("New Config state: unsuccessful!"));
                 }
             }
+             */
 
             terminal_logger.trace(" " + homer_server.identifikator + "synchronize_configuration: done!");
 
@@ -101,5 +105,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
         }catch (Exception e){
             terminal_logger.internalServerError("run", e);
         }
+
+
     }
 }

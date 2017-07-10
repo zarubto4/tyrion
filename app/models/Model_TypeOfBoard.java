@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.Server;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
@@ -33,51 +34,78 @@ public class Model_TypeOfBoard extends Model {
                                                              @ApiModelProperty(required = true) public String revision;
                                                                                     @JsonIgnore public String azure_picture_link;
 
-                       @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String    description;
+                       @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String description;
                                                                         @JsonIgnore  @ManyToOne public Model_Producer producer;
                                                                         @JsonIgnore  @ManyToOne public Model_Processor processor;
-                                                             @ApiModelProperty(required = true) public Boolean   connectible_to_internet;
+                                                             @ApiModelProperty(required = true) public Boolean connectible_to_internet;
                                                                           @JsonIgnore @OneToOne public Model_FileRecord picture;
 
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL)                 public List<Model_Board>       boards      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="type_of_board")                                            public List<Model_CProgram>    c_programs  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_Board> boards = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board",                                   fetch = FetchType.LAZY)  public List<Model_CProgram> c_programs = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL)                 public List<Model_BootLoader>  boot_loaders = new ArrayList<>();
-                @OneToOne (mappedBy="main_type_of_board")                                       public Model_BootLoader main_boot_loader;
-    @JsonIgnore @OneToOne(mappedBy="type_of_board_default", cascade = CascadeType.ALL)          public Model_CProgram version_scheme;
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_BootLoader> boot_loaders = new ArrayList<>();
+    @JsonIgnore @OneToOne (mappedBy="main_type_of_board",                              fetch = FetchType.LAZY)  public Model_BootLoader main_boot_loader;
+    @JsonIgnore @OneToOne(mappedBy="type_of_board_default", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public Model_CProgram version_scheme;
 
-    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_TypeOfBoardFeatures> features = new ArrayList<>();
-    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",fetch = FetchType.LAZY)                 public List<Model_Library> libraries = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",                               fetch = FetchType.LAZY)  public List<Model_TypeOfBoardFeatures> features = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",                               fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
 
 
     @JsonIgnore              public boolean removed_by_user;
 
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_picture_link;
+    @JsonIgnore @Transient @TyrionCachedList public  String cache_value_bootloader_id;
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String processor_name    (){ return processor == null ? null : processor.processor_name;}
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String processor_id      (){ return processor == null ? null : processor.id;}
+    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_name(){ return cache_value_producer_id  != null ? cache_value_producer_id : get_producer().name;}
+    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_id(){ return cache_value_producer_id  != null ? cache_value_producer_id : get_producer().id;}
 
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_name     (){ return producer  == null ? null : producer.name;}
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_id       (){ return producer  == null ? null : producer.id;}
+    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name(){ return compiler_target_name;}
+    @ApiModelProperty(required =true) @Transient @JsonProperty public String picture_link(){
 
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name       (){ return compiler_target_name;}
+        if( cache_value_picture_link == null) {
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public String picture_link(){
+            if (this.azure_picture_link == null) {
+                return null;
+            }
 
-        terminal_logger.debug("picture_link :: ");
-
-        if(this.azure_picture_link == null){
-            terminal_logger.debug("picture_link :: is null");
-            return null;
+            terminal_logger.debug("picture_link :: {}{}", Server.azure_blob_Link, azure_picture_link);
+            cache_value_picture_link = Server.azure_blob_Link + azure_picture_link;
         }
 
-        terminal_logger.debug("picture_link :: {}{}"  , Server.azure_blob_Link , azure_picture_link);
-        return Server.azure_blob_Link + azure_picture_link;
+        return cache_value_picture_link;
+    }
+
+
+    @ApiModelProperty(required =true) @Transient @JsonProperty public Model_BootLoader main_boot_loader(){
+
+        if(cache_value_bootloader_id == null){
+            Model_BootLoader main = Model_BootLoader.find.where().eq("main_type_of_board.id", id).select("id").findUnique();
+            cache_value_bootloader_id = main.id.toString();
+        }
+
+        return Model_BootLoader.get_byId(cache_value_bootloader_id);
+
     }
 
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @TyrionCachedList
+    public Model_Producer get_producer(){
+
+        if(cache_value_producer_id == null){
+            Model_Producer producer = Model_Producer.find.where().eq("type_of_boards.id", id).select("id").findUnique();
+            cache_value_producer_id = producer.id;
+        }
+
+        return Model_Producer.get_byId(cache_value_producer_id);
+    }
 
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
