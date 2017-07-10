@@ -13,6 +13,7 @@ import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import utilities.Server;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
@@ -43,12 +44,11 @@ public class Model_HomerInstance extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                   @Id               public String id;
-                             @JsonIgnore @ManyToOne()               public Model_HomerServer cloud_homer_server;
+                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer cloud_homer_server;
                                                                     public String name;
                                  @Column(columnDefinition = "TEXT") public String description;
 
                                                        @JsonIgnore  public String project_id; // Předpřipravené pro další implementaci
-
 
     @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
@@ -57,20 +57,96 @@ public class Model_HomerInstance extends Model {
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
 
-     public Enum_Homer_instance_type instance_type;
+                 public Enum_Homer_instance_type instance_type;
 
      @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_bprogram_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_bprogram_name;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_bprogram_description;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_actual_instance_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_server_name;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_server_id;
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().id           : null;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().name         : null;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().description  : null;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.personal_server_name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.unique_identificator;}
+        if(cache_bprogram_id == null){
+            Model_BProgram b_program = Model_BProgram.find.where().eq("instance.id", id).select("id").findUnique();
+            cache_bprogram_id = b_program.id;
+        }
+
+        return cache_bprogram_id;
+
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {
+        try{
+
+            if(cache_bprogram_name != null) {
+                return cache_bprogram_name;
+            }
+
+            cache_bprogram_name = Model_BProgram.get_byId(b_program_id()).name;
+            return cache_bprogram_name;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description() {
+        try {
+
+            if (cache_bprogram_description != null) {
+                return cache_bprogram_description;
+            }
+
+            cache_bprogram_description = Model_BProgram.get_byId(b_program_id()).description;
+            return cache_bprogram_description;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {
+
+        try {
+
+        if (cache_server_name != null) {
+                return cache_server_name;
+            }
+
+            cache_server_name = Model_HomerServer.get_byId(server_id()).personal_server_name;
+            return cache_server_name;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {
+        try {
+
+            if (cache_server_id == null) {
+                Model_HomerServer homer_server = Model_HomerServer.find.where().eq("cloud_instances.id", id).select("unique_identificator").findUnique();
+                cache_server_id = homer_server.unique_identificator;
+            }
+
+            return cache_server_id;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
     @Transient @JsonProperty @ApiModelProperty(required = true) public  Enum_Online_status instance_online() {
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
@@ -82,7 +158,7 @@ public class Model_HomerInstance extends Model {
         // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
         // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
         // který následně vrací latest know online
-        if(cloud_homer_server.server_is_online()){
+        if(Model_HomerServer.get_byId(server_id()).server_is_online()){
 
             if(cache_status.containsKey(id)){
                 return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
@@ -91,7 +167,8 @@ public class Model_HomerInstance extends Model {
                 new Thread( () -> {
                     try {
 
-                        cloud_homer_server.sender().write_without_confirmation( new WS_Message_Instance_exist().make_request(new ArrayList<String>() {{add(id);}} ));
+                        WS_Message_Instance_status status = get_instance_status();
+                        cache_status.put(id, status.get_status(id).online_status);
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError("notification_board_connect:", e);
@@ -106,7 +183,7 @@ public class Model_HomerInstance extends Model {
         }
         // return this.online_state();
     }
-    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return cloud_homer_server.server_is_online();}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return Model_HomerServer.get_byId(server_id()).server_is_online();}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
         try {
@@ -114,9 +191,9 @@ public class Model_HomerInstance extends Model {
             if(actual_instance != null) {
 
                 if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-                    return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + id + "/#token";
+                    return "ws://" + Model_HomerServer.get_byId(server_id()).server_url + ":" + Model_HomerServer.get_byId(server_id()).web_view_port + "/" + id + "/#token";
                 }else{
-                    return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + id + "/#token";
+                    return "wss://" + Model_HomerServer.get_byId(server_id()).server_url + ":" + Model_HomerServer.get_byId(server_id()).web_view_port + "/" + id + "/#token";
                 }
 
             }
@@ -138,16 +215,16 @@ public class Model_HomerInstance extends Model {
             help.id = id;
             help.name = name;
             help.description = description;
-            help.b_program_id = getB_program().id;
-            help.b_program_name = getB_program().name;
-            help.b_program_description = this.getB_program().description;
+            help.b_program_id = b_program_id();
+            help.b_program_name = b_program_name();
+            help.b_program_description = b_program_description();
 
-            help.server_name = cloud_homer_server.unique_identificator;
-            help.server_id = cloud_homer_server.unique_identificator;
+            help.server_name = server_id();
+            help.server_id = server_id();
             help.instance_is_online = instance_online();
             help.server_is_online = server_is_online();
-            help.update_permission = getB_program().update_permission();
-            help.edit_permission = getB_program().edit_permission();
+            help.update_permission = Model_BProgram.get_byId(b_program_id()).update_permission();
+            help.edit_permission = Model_BProgram.get_byId(b_program_id()).edit_permission();
 
             return help;
 
@@ -159,7 +236,6 @@ public class Model_HomerInstance extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore             public Model_BProgram getB_program(){ return b_program;}
 
     @JsonIgnore @Transient  public Model_Project get_project() {
         return Model_Project.find.where().eq("b_programs.id", b_program.id).findUnique();
@@ -169,6 +245,10 @@ public class Model_HomerInstance extends Model {
         return actual_instance.get_boards_required_by_record();
     }
 
+
+    @JsonIgnore @Transient  public Model_BProgram getB_program(){
+        return Model_BProgram.get_byId(b_program_id());
+    }
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
@@ -340,13 +420,13 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{
        json.put("instance_id", id);
-       return Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator).write_with_confirmation(json, time, delay, number_of_retries);
+       return Controller_WebSocket.homer_servers.get(server_id()).write_with_confirmation(json, time, delay, number_of_retries);
     }
 
     @JsonIgnore @Transient
     public void write_without_confirmation(ObjectNode json) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{
         json.put("instance_id", id);
-        Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator).write_without_confirmation(json);
+        Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(json);
     }
 
 
@@ -367,11 +447,11 @@ public class Model_HomerInstance extends Model {
 
         for(Model_HomerInstance instance : instances){
 
-            if(!server_map.containsKey(instance.cloud_homer_server.unique_identificator)){
-                server_map.put(instance.cloud_homer_server.unique_identificator, new ArrayList<String>());
+            if(!server_map.containsKey(instance.server_id())){
+                server_map.put(instance.server_id(), new ArrayList<String>());
             }
 
-            server_map.get(instance.cloud_homer_server.unique_identificator).add(instance.id);
+            server_map.get(instance.server_id()).add(instance.id);
         }
 
 

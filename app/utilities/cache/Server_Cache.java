@@ -45,7 +45,7 @@ public class Server_Cache {
             Model_Person.token_cache = cacheManager.createCache(Model_Person.CACHE_TOKEN,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_Person.CACHE_TOKEN")))
-                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(72, TimeUnit.HOURS))).build());
 
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Person Tokens");
             Model_Person.cache = cacheManager.createCache(Model_Person.CACHE,
@@ -115,6 +115,60 @@ public class Server_Cache {
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_Library.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
 
+
+        /*
+         *  Type of Blocks && Type of Widgets
+         *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+         *  Cache for Type of Blocks
+         *  Cache for Blocko Block & Blocks Versions
+         *
+         *  Cache for Type of Widgets
+         *  Cache for Widgets & Widgets Versions
+         */
+
+            // Type of Blocks
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Type of Block Model");
+            Model_TypeOfBlock.cache = cacheManager.createCache(Model_TypeOfBlock.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_TypeOfBlock.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_TypeOfBlock.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+            // Blocko Block
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Blocko Block Model");
+            Model_BlockoBlock.cache = cacheManager.createCache(Model_BlockoBlock.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_BlockoBlock.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_BlockoBlock.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+            //Blocko Block Version
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Blocko Block Version Model");
+            Model_BlockoBlockVersion.cache = cacheManager.createCache(Model_BlockoBlockVersion.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_BlockoBlockVersion.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_BlockoBlockVersion.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+
+
+            // Type of Widget
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Type of Widget Model");
+            Model_TypeOfWidget.cache = cacheManager.createCache(Model_TypeOfWidget.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_TypeOfWidget.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_TypeOfWidget.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+            // Grid Widget
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for GridWidget Model");
+            Model_GridWidget.cache = cacheManager.createCache(Model_GridWidget.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_GridWidget.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_GridWidget.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
+
+            // Grid Widget Version
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for GridWidget Version Model");
+            Model_GridWidgetVersion.cache = cacheManager.createCache(Model_GridWidgetVersion.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_GridWidgetVersion.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_GridWidgetVersion.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
         /*
          *  Model_Board
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------

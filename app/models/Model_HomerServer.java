@@ -21,6 +21,7 @@ import utilities.enums.Enum_Log_level;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.independent_threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
 import web_socket.message_objects.common.service_class.WS_Message_Invalid_Message;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
@@ -219,6 +220,15 @@ public class Model_HomerServer extends Model{
 
     }
 
+
+
+    @JsonIgnore @Transient public String get_Grid_APP_URL(){
+        return server_url + ":" +  grid_port + "/";
+    }
+
+    @JsonIgnore @Transient public String get_WebView_APP_URL(){
+        return server_url + ":" +  web_view_port + "/";
+    }
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
 
@@ -522,7 +532,9 @@ public class Model_HomerServer extends Model{
         if(server == null){
 
             server = find.byId(id);
-            if (server == null) return null;
+            if (server == null){
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+            }
 
             cache.put(id, server);
         }

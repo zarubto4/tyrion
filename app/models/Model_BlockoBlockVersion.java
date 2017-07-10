@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.enums.Enum_Approval_state;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
@@ -144,9 +145,24 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE = Model_BlockoBlockVersion.class.getSimpleName();
+    public static Cache<String, Model_BlockoBlockVersion> cache = null;               // < Model_CProgram_id, Model_TypeOfBlock>
+
     @JsonIgnore
     public static Model_BlockoBlockVersion get_byId(String id) {
-        return find.byId(id);
+
+        Model_BlockoBlockVersion blocko_block_version = cache.get(id);
+        if (blocko_block_version == null){
+
+            blocko_block_version = Model_BlockoBlockVersion.find.byId(id);
+            if (blocko_block_version == null){
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            cache.put(id, blocko_block_version);
+        }
+
+        return blocko_block_version;
     }
 
     @JsonIgnore
@@ -158,4 +174,6 @@ public class Model_BlockoBlockVersion extends Model {
     public static List<Model_BlockoBlockVersion> get_pending() {
         return find.where().eq("approval_state", Enum_Approval_state.pending).findList();
     }
+
+
 }

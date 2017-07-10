@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
@@ -39,11 +41,23 @@ public class Model_TypeOfWidget extends Model{
 
     @JsonIgnore              public boolean removed_by_user;
 
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
+    @JsonIgnore @Transient @TyrionCachedList private List<String> grid_widgets_ids = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(value = "This value will be in Json only if TypeOfWidget is private!", readOnly = true, required = false)
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project_id() {  return project == null ? null : this.project.id; }
+    @ApiModelProperty(value = "This value will be in Json only if TypeOfWidget is private!", readOnly = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project_id() {
+
+        if(cache_value_project_id == null){
+            Model_Project project = Model_Project.find.where().eq("type_of_widgets.id", id).select("id").findUnique();
+            cache_value_project_id = project.id;
+        }
+
+        return cache_value_project_id;
+    }
 
 
     @JsonProperty @Transient public List<Swagger_GridWidget_Short_Detail> widgets() {
@@ -52,7 +66,7 @@ public class Model_TypeOfWidget extends Model{
 
             List<Swagger_GridWidget_Short_Detail> short_detail_widgets = new ArrayList<>();
 
-            for (Model_GridWidget widget :  Model_GridWidget.find.where().eq("type_of_widget.id", id).eq("removed_by_user", false).order().asc("order_position").findList()) {
+            for (Model_GridWidget widget : get_grid_widgets()) {
                 short_detail_widgets.add( widget.get_grid_widget_short_detail() ) ;
             }
 
@@ -67,6 +81,35 @@ public class Model_TypeOfWidget extends Model{
 
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @TyrionCachedList
+    public List<Model_GridWidget> get_grid_widgets(){
+        try {
+
+            // Cache
+            if(grid_widgets_ids.isEmpty()) {
+
+                List<Model_GridWidget> blockoBlocks = Model_GridWidget.find.where().eq("type_of_widget.id", id).eq("removed_by_user", false).order().asc("order_position").select("id").findList();
+
+                // Získání seznamu
+                for (Model_GridWidget blockoBlock : blockoBlocks) {
+                    grid_widgets_ids.add(blockoBlock.id);
+                }
+            }
+
+            List<Model_GridWidget> blockoBlock = new ArrayList<>();
+
+            for(String blockoBlock_id : grid_widgets_ids){
+                blockoBlock.add(Model_GridWidget.get_byId(blockoBlock_id));
+            }
+
+            return blockoBlock;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new ArrayList<Model_GridWidget>();
+        }
+    }
 
     @Transient @JsonIgnore public Swagger_TypeOfWidget_Short_Detail get_typeOfWidget_short_detail(){
         Swagger_TypeOfWidget_Short_Detail help = new Swagger_TypeOfWidget_Short_Detail();
@@ -169,11 +212,78 @@ public class Model_TypeOfWidget extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient                                      public boolean create_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfWidget_create");}
-    @JsonIgnore @Transient                                      public boolean read_permission()    {return (project == null) || (project != null && project.read_permission())   || Controller_Security.get_person().has_permission("TypeOfWidget_read");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfWidget_update");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {return                      (project != null && project.edit_permission())   || Controller_Security.get_person().has_permission("TypeOfWidget_edit");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfWidget_delete");}
+    @JsonIgnore @Transient   public boolean create_permission()  {return (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfWidget_create");}
+    @JsonIgnore @Transient   public boolean read_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_widget_read_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_widget_read_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfWidget_read")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if(project_id() != null && Model_Project.get_byId(project_id()).read_permission()){
+            Controller_Security.get_person().permissions_keys.put("type_of_widget_read_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("type_of_widget_read_" + id, false);
+        return false;
+    }
+
+    @JsonProperty @Transient public boolean update_permission()  {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_widget_update_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_widget_update_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfWidget_update")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
+            Controller_Security.get_person().permissions_keys.put("type_of_widget_update_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("type_of_widget_edit_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean edit_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_widget_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_widget_edit_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfWidget_edit")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
+            Controller_Security.get_person().permissions_keys.put("type_of_widget_edit_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("type_of_widget_edit_" + id, false);
+        return false;
+    }
+    @JsonProperty @Transient public boolean delete_permission()  {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_widget_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_widget_delete_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfWidget_delete")) return true;
+
+
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
+            Controller_Security.get_person().permissions_keys.put("type_of_widget_delete_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("type_of_widget_delete_" + id, false);
+        return false;
+    }
+
+
+
 
     public enum permissions{TypeOfWidget_create, TypeOfWidget_read, TypeOfWidget_edit , TypeOfWidget_delete, TypeOfWidget_update}
 
@@ -183,9 +293,25 @@ public class Model_TypeOfWidget extends Model{
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE = Model_TypeOfWidget.class.getSimpleName();
+    public static Cache<String, Model_TypeOfWidget> cache = null;               // < Model_CProgram_id, Model_TypeOfWidget>
+
     @JsonIgnore
     public static Model_TypeOfWidget get_byId(String id) {
-        return find.byId(id);
+
+        Model_TypeOfWidget type_of_widget = cache.get(id);
+        if (type_of_widget == null){
+
+            type_of_widget = Model_TypeOfWidget.find.byId(id);
+            if (type_of_widget == null){
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            cache.put(id, type_of_widget);
+        }
+
+        return type_of_widget;
+
     }
 
     @JsonIgnore

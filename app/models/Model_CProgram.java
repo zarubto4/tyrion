@@ -370,23 +370,88 @@ public class Model_CProgram extends Model {
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read C_program on this Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create C_program on this Project - Or you need static/dynamic permission key";
 
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return project != null ? ( project.update_permission() ) : Controller_Security.get_person().has_permission("C_program_create");      }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_update"); }
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {
-        if(project == null) return true;
-        return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_read");
-    }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_edit"); }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_delete"); }
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){
 
-    public enum permissions{  C_program_create,  C_program_update, C_program_read ,  C_program_edit, C_program_delete; }
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_create")) return true;
+
+        return project != null ? project.update_permission() : false;
+
+    }
+
+    @JsonProperty @Transient public boolean update_permission()  {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_update_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_update_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_update")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("c_program_update_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("c_program_update_" + id, false);
+        return false;
+
+    }
+    @JsonIgnore   @Transient public boolean read_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_read_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_read_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_read")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("c_program_read_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("read_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean edit_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_edit_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_edit")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("c_program_edit_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("c_program_edit_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean delete_permission()  {
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_delete_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_delete")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("c_program_delete_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("c_program_delete_" + id, false);
+        return false;
+
+    }
+
+    public enum permissions{  C_program_create,  C_program_update, C_program_read , C_program_edit, C_program_delete; }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static final String CACHE         = Model_CProgram.class.getSimpleName();
-
     public static Cache<String, Model_CProgram> cache = null;               // < Model_CProgram_id, Model_CProgram>
-    public static Cache<String, Model_VersionObject> cache_versions = null; // < Model_VersionObject_id, Model_VersionObject>
 
     @JsonIgnore
     public static Model_CProgram get_byId(String id) {
@@ -396,8 +461,7 @@ public class Model_CProgram extends Model {
 
             c_program = Model_CProgram.find.byId(id);
             if (c_program == null){
-                Server_Logger.warn( Model_CProgram.class, "get_byId :: This object id:: " + id + " wasn't found.");
-                return null;
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
             }
 
             cache.put(id, c_program);

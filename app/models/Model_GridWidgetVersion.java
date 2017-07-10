@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.enums.Enum_Approval_state;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
@@ -116,9 +117,24 @@ public class Model_GridWidgetVersion extends Model{
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE = Model_GridWidgetVersion.class.getSimpleName();
+    public static Cache<String, Model_GridWidgetVersion> cache = null;               // < ID, Model_GridWidgetVersion>
+
     @JsonIgnore
     public static Model_GridWidgetVersion get_byId(String id) {
-        return find.byId(id);
+
+        Model_GridWidgetVersion grid_widget_version = cache.get(id);
+        if (grid_widget_version == null){
+
+            grid_widget_version = Model_GridWidgetVersion.find.byId(id);
+            if (grid_widget_version == null){
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            cache.put(id, grid_widget_version);
+        }
+
+        return grid_widget_version;
     }
 
     @JsonIgnore

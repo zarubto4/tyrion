@@ -31,7 +31,7 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
      */
     @JsonIgnore
     HashMap<String,InstanceStatus> map = new HashMap<>();
-    public InstanceStatus get_status(String instnace_id){
+    public InstanceStatus get_status(String instance_id){
 
         if(map.isEmpty() && instance_list.isEmpty()){
             return null;
@@ -41,7 +41,7 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
             }
         }
 
-        return map.get(instnace_id);
+        return map.get(instance_id);
     }
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
@@ -67,6 +67,7 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
         public InstanceStatus(){}
 
         @Constraints.Required  public String instance_id;
+        @Constraints.Required  public List<String> hardware_ids = new ArrayList<>();
         public boolean online_status;
         public String error_code;
 

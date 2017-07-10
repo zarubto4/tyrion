@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
+import play.Mode;
 import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.Http;
@@ -137,7 +138,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
             case absolutely_public:{
 
-                summary.grid_app_url += get_instance().cloud_homer_server.server_url + ":" + instance.cloud_homer_server.grid_port + "/" + instance.id + "/" + connection_token();
+                summary.grid_app_url += Model_HomerServer.get_byId(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + connection_token();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.m_project_id = m_program_version.m_program.m_project_id();
                 summary.m_program_id = m_program_id();
@@ -175,7 +176,7 @@ public class Model_MProgramInstanceParameter extends Model {
                 terminal.person = person;
                 terminal.save();
 
-                summary.grid_app_url += instance.cloud_homer_server.server_url + ":" +  instance.cloud_homer_server.grid_port + "/" + instance.id + "/" + terminal.terminal_token;
+                summary.grid_app_url += Model_HomerServer.get_byId(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + terminal.terminal_token;
                 summary.m_project_id = m_program_version.m_program.m_project_id();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.m_program_id = m_program_id();

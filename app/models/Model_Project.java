@@ -61,7 +61,7 @@ public class Model_Project extends Model {
     @JsonIgnore @Transient @TyrionCachedList private List<String> m_project_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private List<String> type_of_widgets_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private List<String> type_of_blocks_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private List<String> instnace_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private List<String> instance_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String product_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -365,20 +365,20 @@ public class Model_Project extends Model {
         try{
 
 
-            if(instnace_ids.isEmpty()){
+            if(instance_ids.isEmpty()){
 
                 List<Model_HomerInstance> instances = Model_HomerInstance.find.where().ne("removed_by_user", true).isNotNull("actual_instance").eq("b_program.project.id", id).select("id").findList();
 
                 // Získání seznamu
                 for (Model_HomerInstance instance : instances) {
-                    instnace_ids.add(instance.id);
+                    instance_ids.add(instance.id);
                 }
 
             }
 
             List<Model_HomerInstance> instances  = new ArrayList<>();
 
-            for(String type_of_blocks_id : instnace_ids){
+            for(String type_of_blocks_id : instance_ids){
                 instances.add(Model_HomerInstance.get_byId(type_of_blocks_id));
             }
 

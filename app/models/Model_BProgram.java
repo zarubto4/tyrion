@@ -8,15 +8,13 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.Server;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Homer_instance_type;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.models_update_echo.Update_echo_handler;
-import utilities.swagger.outboundClass.Swagger_B_Program_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_B_Program_State;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version_Short_Detail;
+import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
@@ -44,7 +42,7 @@ public class Model_BProgram extends Model {
     @ApiModelProperty(required = true,
                      dataType = "integer", readOnly = true,
                      value = "UNIX time in ms",
-                     example = "1466163478925")              public Date last_update;
+                     example = "1466163478925")                       public Date last_update;
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,
             value = "UNIX time in ms",
@@ -53,19 +51,45 @@ public class Model_BProgram extends Model {
                                     @JsonIgnore              public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
     @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
 
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private List<String> cache_list_version_objects_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_name;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_name;
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public String   project_id() {  return project.id; }
+    @JsonProperty  @Transient public String project_id(){
+
+        if(cache_value_project_id == null){
+            Model_Project project = Model_Project.find.where().eq("c_programs.id", id).select("id").findUnique();
+            cache_value_project_id = project.id;
+        }
+
+        return cache_value_project_id;
+
+
+    }
 
     @JsonProperty @Transient public List<Swagger_B_Program_Version_Short_Detail> program_versions() {
 
-        List<Swagger_B_Program_Version_Short_Detail> versions = new ArrayList<>();
+        try {
 
-        for(Model_VersionObject version : getVersion_objects()){
-            versions.add(version.get_short_b_program_version());
+            List<Swagger_B_Program_Version_Short_Detail> versions = new ArrayList<>();
+
+            for(Model_VersionObject version : getVersion_objects()){
+                versions.add(version.get_short_b_program_version());
+            }
+
+            return versions;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("Model_BProgram:: program_versions", e);
+            return new ArrayList<>();
         }
-
-        return versions;
     }
 
     @JsonProperty @Transient public Swagger_B_Program_State instance_details(){
@@ -84,9 +108,9 @@ public class Model_BProgram extends Model {
 
             if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
                 // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
-                state.instance_remote_url = "ws://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.web_view_port + "/" + instance.id + "/#token";
+                state.instance_remote_url = "ws://" + Model_HomerServer.get_byId(instance.server_id()).get_WebView_APP_URL() + instance.id + "/#token";
             } else {
-                state.instance_remote_url = "wss://" + instance.cloud_homer_server.server_url + instance.cloud_homer_server.web_view_port + "/" + instance.id + "/#token";
+                state.instance_remote_url = "wss://" + Model_HomerServer.get_byId(instance.server_id()).get_WebView_APP_URL()  + instance.id + "/#token";
             }
 
 
@@ -98,9 +122,9 @@ public class Model_BProgram extends Model {
             state.instance_id = instance.id;
 
             // Informace o Serveru
-            state.server_id = instance.cloud_homer_server.unique_identificator;
-            state.server_name = instance.cloud_homer_server.personal_server_name;
-            state.server_online = instance.cloud_homer_server.server_is_online();
+            state.server_id = instance.server_id();
+            state.server_name = instance.server_name();
+            state.server_online = instance.server_is_online();
 
             return state;
 
@@ -135,7 +159,6 @@ public class Model_BProgram extends Model {
 
 /* Private Documentation Class -----------------------------------------------------------------------------------------*/
 
-
     // Objekt určený k vracení verze
     @JsonIgnore @Transient
     public Swagger_B_Program_Version program_version(Model_VersionObject version_object){
@@ -159,7 +182,33 @@ public class Model_BProgram extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public List<Model_VersionObject> getVersion_objects() {
-        return Model_VersionObject.find.where().eq("b_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList();
+
+        try{
+
+            if(cache_list_version_objects_ids.isEmpty()){
+
+                List<Model_VersionObject> versions =  Model_VersionObject.find.where().eq("b_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();
+
+                // Získání seznamu
+                for (Model_VersionObject version : versions) {
+                    cache_list_version_objects_ids.add(version.id);
+                }
+
+            }
+
+            List<Model_VersionObject> versions  = new ArrayList<>();
+
+            for(String version_id : cache_list_version_objects_ids){
+                versions.add(Model_VersionObject.get_byId(version_id));
+            }
+
+            return versions;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("getVersion_objects", e);
+            return new ArrayList<Model_VersionObject>();
+        }
+
     }
 
 
@@ -242,7 +291,6 @@ public class Model_BProgram extends Model {
             b_program = Model_BProgram.find.byId(id);
             if (b_program == null){
                 terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
-                return null;
             }
             cache.put(id, b_program);
         }
@@ -252,12 +300,81 @@ public class Model_BProgram extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission()  {  return  ( project.read_permission() ) || Controller_Security.get_person().has_permission("B_Program_create");  }
-    @JsonProperty @Transient public boolean update_permission()  {  return  ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("B_Program_update");  }
-    @JsonIgnore   @Transient public boolean read_permission()    {  return  ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("B_Program_read");   }
-    @JsonProperty @Transient public boolean edit_permission()    {  return  ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("B_Program_edit");    }
-    @JsonProperty @Transient public boolean delete_permission()  {  return  ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("B_Program_delete");  }
+    @JsonIgnore   @Transient public boolean create_permission()  {
 
+        if(Controller_Security.get_person().permissions_keys.containsKey("B_Program_create")) return true;
+        return (project.update_permission());
+
+    }
+    @JsonProperty @Transient public boolean update_permission()  {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("b_program_update_" + id)) return Controller_Security.get_person().permissions_keys.get("b_program_update_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("B_Program_update")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("b_program_update_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("update_" + id, false);
+        return false;
+
+    }
+    @JsonIgnore   @Transient public boolean read_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("b_program_read_" + id)) return Controller_Security.get_person().permissions_keys.get("b_program_read_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("B_Program_read")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("b_program_read_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("read_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean edit_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("b_program_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("b_program_edit_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("B_Program_edit")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("b_program_edit_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("edit_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean delete_permission()  {
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("b_program_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("b_program_delete_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("B_Program_delete")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("b_program_delete_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("b_program_delete_" + id, false);
+        return false;
+
+     }
+
+     // Statické univerzální klíče
     public enum permissions{ B_Program_create, B_Program_update, B_Program_read, B_Program_edit , B_Program_delete}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

@@ -19,7 +19,7 @@ public class Model_ChangePropertyToken extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
             @Id public String change_property_token;
-    @OneToOne   public Model_Person person;
+    @OneToOne(fetch = FetchType.LAZY)   public Model_Person person;
                 public Date   time_of_creation;
                 public String property;
                 public String value;

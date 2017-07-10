@@ -24,6 +24,7 @@ import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 import javax.persistence.*;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,8 +79,8 @@ public class Model_Person extends Model {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient private List<String> project_ids = new ArrayList<>();
-
+    @JsonIgnore @Transient public List<String> project_ids = new ArrayList<>();
+    @JsonIgnore @Transient public HashMap<String, Boolean> permissions_keys = new HashMap();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -160,7 +161,6 @@ public class Model_Person extends Model {
         this.shaPassword = shaPassword;
     }
 
-
     @JsonIgnore @Transient
     public boolean has_permission(String permission){
         try {
@@ -206,10 +206,10 @@ public class Model_Person extends Model {
 
     @JsonIgnore   @Transient public boolean create_permission()     {  return true;  }
     @JsonIgnore   @Transient public boolean read_permission()       {  return true;  }
-    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person_id().equals(this.id) || Controller_Security.get_person().has_permission("Person_edit"));}
-    @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().has_permission("Person_activation");}
-    @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().has_permission("Person_delete");}
-    @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().has_permission("Byzance_employee");}
+    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person_id().equals(this.id) || Controller_Security.get_person().permissions_keys.containsKey("Person_edit"));}
+    @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().permissions_keys.containsKey("Person_activation");}
+    @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().permissions_keys.containsKey("Person_delete");}
+    @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().permissions_keys.containsKey("Byzance_employee");}
 
     public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
 
@@ -231,6 +231,10 @@ public class Model_Person extends Model {
             person = Model_Person.find.byId(id);
             if (person == null) {
                 terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            for(Model_Permission permission : person.person_permissions){
+                person.permissions_keys.put(permission.value, true);
             }
 
             cache.put(id, person);

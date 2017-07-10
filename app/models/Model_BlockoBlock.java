@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.enums.Enum_Approval_state;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
@@ -116,7 +117,7 @@ public class Model_BlockoBlock extends Model {
         }
         super.save();
 
-        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
+        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -125,7 +126,7 @@ public class Model_BlockoBlock extends Model {
 
         super.update();
 
-        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, type_of_block.project_id(), id))).start();
+        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, type_of_block.project_id(), id))).start();
     }
 
     @JsonIgnore @Override public void delete() {
@@ -135,7 +136,7 @@ public class Model_BlockoBlock extends Model {
         removed_by_user = true;
         super.update();
 
-        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
+        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
 
     }
 
@@ -203,10 +204,28 @@ public class Model_BlockoBlock extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE = Model_BlockoBlock.class.getSimpleName();
+    public static Cache<String, Model_BlockoBlock> cache = null;               // < String id, Model_BlockoBlock>
+
     @JsonIgnore
     public static Model_BlockoBlock get_byId(String id) {
-        return find.byId(id);
+
+        Model_BlockoBlock blocko_block = cache.get(id);
+        if (blocko_block == null){
+
+            blocko_block = Model_BlockoBlock.find.byId(id);
+            if (blocko_block == null){
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            cache.put(id, blocko_block);
+        }
+
+        return blocko_block;
+
     }
+
+
 
     @JsonIgnore
     public static Model_BlockoBlock get_publicByName(String name) {

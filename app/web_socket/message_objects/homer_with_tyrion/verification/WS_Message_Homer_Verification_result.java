@@ -23,16 +23,16 @@ public class WS_Message_Homer_Verification_result extends WS_AbstractMessage {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
+        request.put("message_channel", Model_HomerServer.CHANNEL);
+        request.put("message_type", "homer_verification_result");
 
         if(verify) {
-
-            request.put("message_type", "homer_verification_result");
             request.put("status", "success");
             request.put("token", token);
             return request;
 
         }else {
-            request.put("message_type", "homer_verification_result");
+
             request.put("status", "error");
             request.put("error_message", ErrorCode.UNAUTHORIZED_CONNECTION.error_message());
             request.put("error_code", ErrorCode.UNAUTHORIZED_CONNECTION.error_code());

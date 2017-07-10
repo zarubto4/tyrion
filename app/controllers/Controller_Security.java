@@ -92,18 +92,11 @@ public class Controller_Security extends Controller {
     }
 
     public static Model_Person get_person() {
-        try {
 
-            String person_id = get_person_id();
+        String person_id = get_person_id();
 
-            if (person_id == null) return null;
+        return Model_Person.get_byId(person_id);
 
-            return Model_Person.get_byId(person_id );
-
-        }catch (Exception e){
-            terminal_logger.internalServerError("get_person:", e);
-            return null;
-        }
     }
 
 //######################################################################################################################
@@ -232,7 +225,10 @@ public class Controller_Security extends Controller {
 
             // Ukládám do Cahce pamětí pro další operace
             Model_Person.token_cache.put(floatingPersonToken.authToken, person.id);
-            Model_Person.cache.put(person.id, person);
+
+            // Chache Update
+            Model_Person.get_byId(person.id);
+
 
             // Vytvářím objekt, který zasílám zpět frontendu
             Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();

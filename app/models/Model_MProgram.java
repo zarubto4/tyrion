@@ -249,17 +249,79 @@ public class Model_MProgram extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission(){  return ( Model_Project.find.where().where().eq("participants.person.id", Controller_Security.get_person().id ).eq("m_projects.id", m_project.id).findUnique().create_permission() ) || Controller_Security.get_person().has_permission("M_Program_create");      }
-    @JsonIgnore   @Transient public boolean read_permission()  {
-        if(Controller_Security.get_person() == null){terminal_logger.warn("read_permission:: Person is null in read_permission");}
-        return ( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) ||
-                Controller_Security.get_person().has_permission("M_Program_read");
+    @JsonIgnore   @Transient public boolean create_permission(){
+
+        if(Controller_Security.get_person().permissions_keys.containsKey("M_Program_create")) return true;
+        return m_project != null ? m_project.update_permission() : false;
+
     }
-    @JsonProperty @Transient public boolean read_qr_token_permission() { return  true; } // TODO pokud uživatel vyloženě nebude chtít zakázat public přístup
-    @JsonProperty @Transient public boolean edit_permission() {return Controller_Security.get_person() != null && ((Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).where().eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("M_Program_edit"));}
-    @JsonProperty @Transient public boolean delete_permission(){
-       if (Controller_Security.get_person() == null) return false;
-        return ( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("M_Program_delete");
+
+    @JsonProperty @Transient public boolean update_permission()  {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("m_program_update_" + id)) return Controller_Security.get_person().permissions_keys.get("m_program_update_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("M_Program_update")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("m_program_update_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("m_program_update_" + id, false);
+        return false;
+
+    }
+    @JsonIgnore   @Transient public boolean read_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("m_program_read_" + id)) return Controller_Security.get_person().permissions_keys.get("m_program_read_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("M_Program_read")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+        if(Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("m_program_read_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("m_program_read_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean edit_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("m_program_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("m_program_edit_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("M_Program_edit")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("m_program_edit_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("edit_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean delete_permission()  {
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("m_program_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("m_program_delete_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("M_Program_delete")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("m_program_delete_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("m_program_delete_" + id, false);
+        return false;
+
     }
 
     public enum permissions{ M_Program_create, M_Program_read, M_Program_edit, M_Program_delete }
