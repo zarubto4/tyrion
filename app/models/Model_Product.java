@@ -648,10 +648,10 @@ public class Model_Product extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore  public boolean create_permission()              {  return true;  }
-    @JsonIgnore  public boolean read_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_read");  }
-                 public boolean edit_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_edit");  }
-                 public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
-    @JsonIgnore  public boolean delete_permission()              {  return Controller_Security.get_person().has_permission("Product_delete");}
+    @JsonIgnore  public boolean read_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().permissions_keys.containsKey("Product_read");  }
+                 public boolean edit_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().permissions_keys.containsKey("Product_edit");  }
+                 public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().permissions_keys.containsKey("Product_act_deactivate"); }
+    @JsonIgnore  public boolean delete_permission()              {  return Controller_Security.get_person().permissions_keys.containsKey("Product_delete");}
     @JsonIgnore  public boolean financial_permission(String action){  return FinancialPermission.check(this, action);}
 
     public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}

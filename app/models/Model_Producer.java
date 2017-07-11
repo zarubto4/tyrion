@@ -74,10 +74,10 @@ public class Model_Producer extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().has_permission("Producer_create"); }
+    @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Producer_create"); }
     @JsonIgnore   @Transient public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("Producer_edit");   }
-    @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().has_permission("Producer_delete"); }
+    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Producer_edit");   }
+    @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Producer_delete"); }
 
     public enum permissions{Producer_create, Producer_edit, Producer_delete}
 

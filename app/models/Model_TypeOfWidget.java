@@ -212,7 +212,7 @@ public class Model_TypeOfWidget extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient   public boolean create_permission()  {return (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfWidget_create");}
+    @JsonIgnore @Transient   public boolean create_permission()  {return (project != null && project.update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("TypeOfWidget_create");}
     @JsonIgnore @Transient   public boolean read_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu

@@ -184,8 +184,8 @@ public class Model_FloatingPersonToken extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().has_permission("FloatingPersonToken_read");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().has_permission("FloatingPersonToken_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().permissions_keys.containsKey("FloatingPersonToken_read");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().permissions_keys.containsKey("FloatingPersonToken_delete"); }
 
     public enum permissions{ FloatingPersonToken_read, FloatingPersonToken_delete }
 

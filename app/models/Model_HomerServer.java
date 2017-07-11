@@ -517,17 +517,10 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User (Admin with privileges) can create public cloud cloud_blocko_server where the system uniformly creating Blocko instantiates or (Customer) can create private cloud_blocko_server for own projects";
 
                                                                       // TODO oprávnění bude komplikovanější až se budou podporovat lokální servery
-    @JsonIgnore                                                       @Transient public boolean create_permission()  {  return Controller_Security.get_person().has_permission("Cloud_Homer_Server_create");  }
-    @JsonIgnore                                                       @Transient public boolean read_permission()    {  return Controller_Security.get_person().has_permission("Cloud_Homer_Server_read");    }
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean edit_permission()    {  return Controller_Security.get_person().has_permission("Cloud_Homer_Server_edit");    }
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean delete_permission()  {  return Controller_Security.get_person().has_permission("Cloud_Homer_Server_delete");  }
-
-    // Speciální řízení oprávnění z důvodů ověřování identit na homer serveru
-    // Tyrion v contextu nemá Http.Context.current().args.get("person"); podle kterého se běžně všude ověřuje identita!!!
-    @JsonIgnore @Transient public boolean create_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_create");  }
-    @JsonIgnore @Transient public boolean read_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_read");    }
-    @JsonIgnore @Transient public boolean edit_permission(Model_Person person)    {  return person.has_permission("Cloud_Homer_Server_edit");    }
-    @JsonIgnore @Transient public boolean delete_permission(Model_Person person)  {  return person.has_permission("Cloud_Homer_Server_delete");  }
+    @JsonIgnore                                                       @Transient public boolean create_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_create");  }
+    @JsonIgnore                                                       @Transient public boolean read_permission()    {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_read");    }
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean edit_permission()    {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_edit");    }
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean delete_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_delete");  }
 
     public enum permissions{Cloud_Homer_Server_create, Cloud_Homer_Server_read, Cloud_Homer_Server_edit, Cloud_Homer_Server_delete}
 

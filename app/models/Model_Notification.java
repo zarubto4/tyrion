@@ -385,8 +385,8 @@ public class Model_Notification extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_delete") ;}
-    @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_confirm") ;}
+    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().permissions_keys.containsKey("Notification_delete") ;}
+    @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().permissions_keys.containsKey("Notification_confirm") ;}
 
 
 

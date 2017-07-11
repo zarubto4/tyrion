@@ -214,11 +214,11 @@ public class Model_BootLoader extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return Controller_Security.get_person().has_permission("BootLoader_create");      }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return Controller_Security.get_person().has_permission("BootLoader_update"); }
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("BootLoader_create");      }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("BootLoader_update"); }
     @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("BootLoader_read"); }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("BootLoader_delete"); }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("BootLoader_read"); }
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("BootLoader_delete"); }
 
     public enum permissions{  BootLoader_create,  BootLoader_update, BootLoader_read ,  BootLoader_edit, BootLoader_delete; }
 

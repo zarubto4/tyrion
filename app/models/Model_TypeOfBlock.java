@@ -204,8 +204,8 @@ public class Model_TypeOfBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient                                      public boolean create_permission()  {
-        return   (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfBlock_create");
+    @JsonIgnore @Transient   public boolean create_permission()  {
+        return   (project != null && project.update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_create");
     }
 
     @JsonIgnore @Transient   public boolean read_permission()    {

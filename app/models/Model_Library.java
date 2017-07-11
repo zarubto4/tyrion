@@ -181,7 +181,7 @@ public class Model_Library extends Model{
 
     @JsonIgnore   @Transient public boolean create_permission(){
         try {
-            if(project_id != null) return Model_Project.get_byId(project_id).update_permission(); return Controller_Security.get_person().has_permission("Library_create");
+            if(project_id != null) return Model_Project.get_byId(project_id).update_permission(); return Controller_Security.get_person().permissions_keys.containsKey("Library_create");
         }catch (NullPointerException exception){
             terminal_logger.warn("create_permission null pointer exception - project is not probably in cache");
             return false;
@@ -192,7 +192,7 @@ public class Model_Library extends Model{
         try {
           
             if (project_id != null) return Model_Project.get_byId(project_id).update_permission();
-            return Controller_Security.get_person().has_permission("Library_edit");
+            return Controller_Security.get_person().permissions_keys.containsKey("Library_edit");
 
         }catch (NullPointerException exception){
             terminal_logger.warn("edit_permission null pointer exception - project is not probably in cache");
@@ -203,7 +203,7 @@ public class Model_Library extends Model{
         try {
 
              if(project_id != null) return Model_Project.get_byId(project_id).update_permission();
-             return Controller_Security.get_person().has_permission("Library_delete");
+             return Controller_Security.get_person().permissions_keys.containsKey("Library_delete");
 
         }catch (NullPointerException exception){
             terminal_logger.warn("delete_permission null pointer exception - project is not probably in cache");
@@ -214,7 +214,7 @@ public class Model_Library extends Model{
         try {
 
             if(project_id != null) return Model_Project.get_byId(project_id).update_permission();
-            return Controller_Security.get_person().has_permission("Library_update");
+            return Controller_Security.get_person().permissions_keys.containsKey("Library_update");
 
         }catch (NullPointerException exception){
             terminal_logger.warn("update_permission null pointer exception - project is not probably in cache");
