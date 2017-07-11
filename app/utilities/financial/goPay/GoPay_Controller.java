@@ -151,7 +151,7 @@ public class GoPay_Controller extends Controller {
         Model_PaymentDetails details = product.payment_details;
 
         GoPay_Contact payerContact = new GoPay_Contact();
-        payerContact.first_name     = details.person.full_name;
+        payerContact.first_name     = details.full_name;
         payerContact.email          = details.invoice_email;
         payerContact.street         = details.street + " " + details.street_number;
         payerContact.postal_code    = details.zip_code;

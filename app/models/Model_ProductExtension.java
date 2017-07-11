@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
@@ -196,17 +197,27 @@ public class Model_ProductExtension extends Model{
     public Long getDailyPrice() {
         try {
 
-            terminal_logger.trace("getActualPrice: Getting price for extension of type {}", this.type.name());
+            terminal_logger.trace("getDailyPrice: Getting price for extension of type {}", this.type.name());
 
-            Extension extension = getExtensionType();
-            if (extension == null) return null;
+            Long price = cache_price.get(id);
+            if (price == null) {
 
-            Object configuration = getConfiguration();
-            if (configuration == null) return null;
+                Extension extension = getExtensionType();
+                if (extension == null) return null;
 
-            terminal_logger.debug("getDailyPrice: Got extension type and configuration.");
+                Object configuration = getConfiguration();
+                if (configuration == null) return null;
 
-            return extension.getDailyPrice(configuration);
+                terminal_logger.debug("getDailyPrice: Got extension type and configuration.");
+
+                price = extension.getDailyPrice(configuration);
+
+                cache_price.put(id, price);
+            } else {
+                terminal_logger.debug("getDailyPrice: Returned from cache");
+            }
+
+            return price;
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -548,10 +559,10 @@ public class Model_ProductExtension extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      @Transient public boolean create_permission()         {  return (product != null && product.payment_details.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_create");}
-    @JsonIgnore                                      @Transient public boolean read_permission()           {  return product == null || product.payment_details.person.id.equals(Controller_Security.get_person_id())   || Controller_Security.get_person().has_permission("ProductExtension_read");  }
-    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean edit_permission()           {  return (product != null && product.payment_details.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_edit");  }
-    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean act_deactivate_permission() {  return (product != null && product.payment_details.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_act_deactivate"); }
+    @JsonIgnore                                      @Transient public boolean create_permission()         {  return (product != null && product.customer.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_create");}
+    @JsonIgnore                                      @Transient public boolean read_permission()           {  return product == null || product.customer.person.id.equals(Controller_Security.get_person_id())   || Controller_Security.get_person().has_permission("ProductExtension_read");  }
+    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean edit_permission()           {  return (product != null && product.customer.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_edit");  }
+    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean act_deactivate_permission() {  return (product != null && product.customer.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_act_deactivate"); }
     @JsonProperty @ApiModelProperty(required = true) @Transient public boolean delete_permission()         {  return Controller_Security.get_person().has_permission("ProductExtension_delete");}
 
     public enum permissions{ProductExtension_create, ProductExtension_read, ProductExtension_edit, ProductExtension_act_deactivate, ProductExtension_delete}
@@ -562,6 +573,10 @@ public class Model_ProductExtension extends Model{
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE_PRICE = Model_ProductExtension.class.getSimpleName() + "_PRICE";
+
+    public static Cache<String, Long> cache_price;
+
     @JsonIgnore
     public static Model_ProductExtension get_byId(String id) {
         return find.where().eq("id", id).eq("removed", false).findUnique();
@@ -569,6 +584,6 @@ public class Model_ProductExtension extends Model{
 
     @JsonIgnore
     public static List<Model_ProductExtension> get_byUser(String person_id) {
-        return find.where().eq("product.payment_details.person.id", person_id).eq("removed", false).findList();
+        return find.where().eq("product.customer.person.id", person_id).eq("removed", false).findList();
     }
 }

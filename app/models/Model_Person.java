@@ -58,7 +58,8 @@ public class Model_Person extends Model {
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public Model_PasswordRecoveryToken passwordRecoveryToken;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public Model_ChangePropertyToken   changePropertyToken;
 
-    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_PaymentDetails>     payment_details      = new ArrayList<>();
+    @JsonIgnore   @OneToOne(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_Customer customer;
+    @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee>           employees            = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant> projects_participant = new ArrayList<>();
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_SecurityRole>   roles                     = new ArrayList<>();

@@ -7,12 +7,14 @@ import models.Model_ProductExtension;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.Configuration;
 import utilities.Server;
 import utilities.enums.Enum_Currency;
 import utilities.enums.Enum_Payment_method;
 import utilities.enums.Enum_Payment_warning;
 import utilities.financial.fakturoid.Fakturoid_Controller;
 import utilities.financial.goPay.GoPay_Controller;
+import utilities.financial.products.Configuration_Alpha;
 import utilities.logger.Class_Logger;
 
 import java.util.Date;
@@ -107,7 +109,19 @@ public class Job_SpendingCredit implements Job {
 
             switch (product.business_model){
                 case alpha:{
-                    terminal_logger.debug("spend: product is ALPHA - nothing happens"); // TODO někdy Alfa asi skončí
+
+                    Date alpha_ending = new Date(Configuration.root().getLong("Financial.alpha_ending"));
+
+                    if (new Date().after(alpha_ending)) {
+                        product.active = false;
+                        product.update();
+
+                        product.notificationDeactivation(" Public Alpha testing has ended.");
+
+                        terminal_logger.debug("spend: product is ALPHA - Alpha has ended on {} - Deactivating product", alpha_ending.toString() );
+                    } else
+                        terminal_logger.debug("spend: product is ALPHA - nothing happens - Alpha ends on {}", alpha_ending.toString());
+
                     break;
                 }
                 case saas:{

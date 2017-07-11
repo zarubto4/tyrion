@@ -37,7 +37,7 @@ public class Model_Tariff extends Model {
                 @JsonIgnore public Integer order_position;
 
                             public boolean company_details_required;
-                            public boolean payment_method_required;
+                            public boolean payment_details_required;
 
                 @JsonIgnore public Long credit_for_beginning; // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
 

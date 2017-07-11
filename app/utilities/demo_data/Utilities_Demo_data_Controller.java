@@ -495,7 +495,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.credit_for_beginning = (long) 0;
 
             tariff_1.company_details_required = false;
-            tariff_1.payment_method_required = false;
+            tariff_1.payment_details_required = false;
 
             tariff_1.credit_card_support = false;
             tariff_1.bank_transfer_support = false;
@@ -566,7 +566,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             geek_tariff.credit_for_beginning = (long) 20000;
 
             geek_tariff.company_details_required = false;
-            geek_tariff.payment_method_required = false;
+            geek_tariff.payment_details_required = false;
 
             geek_tariff.credit_card_support = true;
             geek_tariff.bank_transfer_support = true;
@@ -615,7 +615,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff.credit_for_beginning = (long) 100000;
 
             business_tariff.company_details_required = true;
-            business_tariff.payment_method_required = true;
+            business_tariff.payment_details_required = true;
 
             business_tariff.credit_card_support = true;
             business_tariff.bank_transfer_support = true;
@@ -730,7 +730,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff_2.credit_for_beginning = (long) 500000;
 
             business_tariff_2.company_details_required = true;
-            business_tariff_2.payment_method_required = true;
+            business_tariff_2.payment_details_required = true;
 
             business_tariff_2.credit_card_support = true;
             business_tariff_2.bank_transfer_support = true;
@@ -865,8 +865,12 @@ public class Utilities_Demo_data_Controller extends Controller {
             product.name = "Pepkova velkolepá Alfa";
             product.active  = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.method  = Enum_Payment_method.free;
+
+            Model_Customer customer = new Model_Customer();
+            customer.person = person;
+            product.customer = customer;
+
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
-            payment_details.person = person;
             payment_details.full_name = person.full_name;
             payment_details.invoice_email = person.mail;
             payment_details.company_account = false;

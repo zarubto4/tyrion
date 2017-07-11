@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import utilities.enums.Enum_Participant_status;
 import utilities.logger.Class_Logger;
 
 import javax.persistence.Entity;
@@ -14,24 +15,21 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Customer", description = "Model of Customer")
-public class Model_Customer extends Model{
+public class Model_Employee extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_Customer.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_Employee.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @Id public String id;
-
     @JsonIgnore public Date created;
-    @JsonIgnore public boolean removed_by_user;
 
-    @JsonIgnore public boolean company;
-
-    @JsonIgnore public Model_PaymentDetails payment_details;
+    public Enum_Participant_status status;
 
     @ManyToOne public Model_Person person;
+    @ManyToOne public Model_Customer customer;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -42,7 +40,7 @@ public class Model_Customer extends Model{
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        terminal_logger.debug("save: Creating new Object");
 
         created = new Date();
 
@@ -67,8 +65,7 @@ public class Model_Customer extends Model{
 
         terminal_logger.debug("delete: Delete object Id = {} ", this.id);
 
-        this.removed_by_user = true;
-        this.update();
+        this.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -90,11 +87,11 @@ public class Model_Customer extends Model{
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public static Model_Customer get_byId(String id) {
+    @JsonIgnore public static Model_Employee get_byId(String id) {
         return find.byId(id);
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    private static Finder<String, Model_Customer> find = new Finder<>(Model_Customer.class);
+    private static Finder<String, Model_Employee> find = new Finder<>(Model_Employee.class);
 }

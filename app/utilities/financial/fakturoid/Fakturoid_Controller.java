@@ -104,8 +104,8 @@ public class Fakturoid_Controller extends Controller {
         try {
 
             Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
-            fakturoid_invoice.custom_id = invoice.product.id;
-            fakturoid_invoice.client_name = invoice.product.payment_details.company_account ? invoice.product.payment_details.company_name : invoice.product.payment_details.person.full_name;
+            fakturoid_invoice.custom_id = invoice.getProduct().id;
+            fakturoid_invoice.client_name = invoice.getProduct().customer.company ? invoice.getProduct().payment_details.company_name : invoice.getProduct().customer.person.full_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
             fakturoid_invoice.lines = invoice.invoice_items();
             fakturoid_invoice.proforma = true;
@@ -113,17 +113,15 @@ public class Fakturoid_Controller extends Controller {
 
             if (invoice.product.fakturoid_subject_id == null) {
 
-                terminal_logger.debug("create_proforma:: Client is not registered in Fakturoid");
+                terminal_logger.internalServerError(new NullPointerException("Fakturoid subject id was null. Should not happen. Product ID = " + invoice.getProduct().id));
 
                 // Pokud ne tak ho vytvořím
-                invoice.product.fakturoid_subject_id = create_subject(invoice.product.payment_details);
+                invoice.getProduct().fakturoid_subject_id = create_subject(invoice.getProduct().payment_details);
                 if (invoice.product.fakturoid_subject_id == null) return null;
-                invoice.product.update();
-
-                terminal_logger.debug("create_proforma:: New Client Id in Fakturoid is " + invoice.product.fakturoid_subject_id);
+                invoice.getProduct().update();
             }
 
-            fakturoid_invoice.subject_id = invoice.product.fakturoid_subject_id;
+            fakturoid_invoice.subject_id = invoice.getProduct().fakturoid_subject_id;
 
             terminal_logger.debug("create_proforma::  Sending Proforma to Fakturoid");
 
@@ -181,7 +179,7 @@ public class Fakturoid_Controller extends Controller {
 
                         terminal_logger.debug("create_proforma: Status: 422");
 
-                        // TODO notifikace
+                        invoice.getProduct().archiveEvent("Proforma failed", "Failed to create proforma, something was wrong.", null);
 
                         throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
@@ -205,7 +203,7 @@ public class Fakturoid_Controller extends Controller {
 
             Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
             fakturoid_invoice.custom_id = product.id;
-            fakturoid_invoice.client_name = product.payment_details.company_account ? product.payment_details.company_name : product.payment_details.person.full_name;
+            fakturoid_invoice.client_name = product.customer.company ? product.payment_details.company_name : product.customer.person.full_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
             fakturoid_invoice.lines = invoice.invoice_items;
             fakturoid_invoice.proforma = false;
@@ -274,8 +272,6 @@ public class Fakturoid_Controller extends Controller {
                     case 422: {
 
                         terminal_logger.debug("create_paid_invoice: Status: 422");
-
-                        // TODO notifikace
 
                         throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
@@ -351,7 +347,7 @@ public class Fakturoid_Controller extends Controller {
                     .text("See the attached invoice.")
                     .text("Best regards, Byzance Team")
                     .attachmentPDF(invoice.invoice_number + ".pdf", body)
-                    .send(product.payment_details.invoice_email != null ? product.payment_details.invoice_email : product.payment_details.person.mail , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + " - Reminder" );
+                    .send(product.payment_details.invoice_email != null ? product.payment_details.invoice_email : product.customer.person.mail , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + " - Reminder" );
 
 
         }catch (Exception e){

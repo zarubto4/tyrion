@@ -62,7 +62,7 @@ public class Controller_Finance extends Controller {
             tariff.credit_for_beginning     = (long) (help.credit_for_beginning * 1000);
 
             tariff.company_details_required = help.company_details_required;
-            tariff.payment_method_required  = help.payment_method_required;
+            tariff.payment_details_required = help.payment_method_required;
 
             tariff.credit_card_support      = help.credit_card_support;
             tariff.bank_transfer_support    = help.bank_transfer_support;
@@ -102,7 +102,7 @@ public class Controller_Finance extends Controller {
             tariff.color                    = help.color;
 
             tariff.company_details_required = help.company_details_required;
-            tariff.payment_method_required  = help.payment_method_required;
+            tariff.payment_details_required = help.payment_method_required;
 
             tariff.credit_card_support      = help.credit_card_support;
             tariff.bank_transfer_support    = help.bank_transfer_support;
@@ -981,88 +981,139 @@ public class Controller_Finance extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Product_New> form = Form.form(Swagger_Product_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Product_New help = form.get();
 
             Model_Tariff tariff = Model_Tariff.find.byId(help.tariff_id);
             if(tariff == null) return GlobalResult.result_badRequest("Tariff identifier id: {" + help.tariff_id  + "} not found or not supported now! Use only supported");
 
+            Model_Customer customer;
             Model_Person person;
+            boolean new_customer = false;
 
             if(help.person_id == null) person = Controller_Security.get_person();
             else person = Model_Person.get_byId(help.person_id);
 
             if (person == null) return GlobalResult.result_notFound("Person not found");
 
-            if(Model_Product.get_byNameAndOwner(help.name, person.id) != null) return GlobalResult.result_badRequest("You cannot use same Product name twice!");
+            // Pokud chci produkt založit pod existujícím zákazníkem(firmou)
+            if (help.customer_id == null) {
+
+                // Pokud je to pouze fyzická osoba, zkusím najít v DB existujícího zákazníka(osobu), když nenajdu udělám nového
+                customer = Model_Customer.find.where().eq("person.id", person.id).findUnique();
+                if (customer == null) {
+
+                    customer = new Model_Customer();
+                    new_customer = true;
+                }
+
+            } else {
+
+                // Pokud ho nenajdu vrátím chybu
+                customer = Model_Customer.get_byId(help.customer_id);
+                if (customer == null) return GlobalResult.result_notFound("Customer not found");
+            }
 
             Model_Product product   = new Model_Product();
             product.name            = help.name;
             product.active          = true;
             product.method          = Enum_Payment_method.free;
-            product.business_model  = Enum_BusinessModel.alpha;
+            product.business_model  = tariff.business_model;
+            product.credit          = tariff.credit_for_beginning;
 
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
-            payment_details.person = person;
-            payment_details.company_account = false;
 
-            if (help.full_name != null) payment_details.full_name = help.full_name;
-            else payment_details.full_name = person.full_name;
+            if (help.default_payment_details && customer.payment_details != null) {
+                payment_details = customer.payment_details;
+            } else {
 
-            payment_details.street          = help.street;
-            payment_details.street_number   = help.street_number;
-            payment_details.city            = help.city;
-            payment_details.zip_code        = help.zip_code;
-            payment_details.country         = help.country;
-            payment_details.invoice_email   = help.invoice_email;
+                if (tariff.payment_details_required) {
 
-            if(tariff.company_details_required){
+                    if (help.street == null)
+                        return GlobalResult.result_badRequest("street is required with this tariff");
+                    if (help.street_number == null)
+                        return GlobalResult.result_badRequest("street_number is required with this tariff");
+                    if (help.city == null) return GlobalResult.result_badRequest("city is required with this tariff");
+                    if (help.zip_code == null)
+                        return GlobalResult.result_badRequest("zip_code is required with this tariff");
+                    if (help.country == null)
+                        return GlobalResult.result_badRequest("country is required with this tariff");
+                    if (help.invoice_email == null)
+                        return GlobalResult.result_badRequest("invoice_email is required with this tariff");
+                    if (help.payment_method == null)
+                        return GlobalResult.result_badRequest("payment_method is required with this tariff");
 
-                if(help.registration_no == null && help.vat_number == null) return GlobalResult.result_badRequest("company_registration_no or vat_number is required with this tariff");
-                if(help.company_name == null)               return GlobalResult.result_badRequest("company_name is required with this tariff");
-                if(help.company_authorized_email == null)   return GlobalResult.result_badRequest("company_authorized_email is required with this tariff");
-                if(help.company_authorized_phone == null)   return GlobalResult.result_badRequest("company_authorized_phone is required with this tariff");
-                if(help.company_web == null)                return GlobalResult.result_badRequest("company_web is required with this tariff");
+                    if (tariff.company_details_required) {
 
-                try {
-                    new URL(help.company_web);
-                } catch (MalformedURLException malformedURLException) {
-                    return GlobalResult.result_badRequest("company_web invalid value");
+                        if (help.registration_no == null && help.vat_number == null)
+                            return GlobalResult.result_badRequest("registration_no or vat_number is required with this tariff");
+                        if (help.company_name == null)
+                            return GlobalResult.result_badRequest("company_name is required with this tariff");
+                        if (help.company_authorized_email == null)
+                            return GlobalResult.result_badRequest("company_authorized_email is required with this tariff");
+                        if (help.company_authorized_phone == null)
+                            return GlobalResult.result_badRequest("company_authorized_phone is required with this tariff");
+                        if (help.company_web == null)
+                            return GlobalResult.result_badRequest("company_web is required with this tariff");
+
+                        try {
+                            new URL(help.company_web);
+                        } catch (MalformedURLException malformedURLException) {
+                            return GlobalResult.result_badRequest("company_web invalid value");
+                        }
+
+                        if (new_customer) {
+
+                            Model_Employee employee = new Model_Employee();
+                            employee.person = person;
+                            employee.status = Enum_Participant_status.owner;
+                            customer.employees.add(employee);
+
+                            customer.company = true;
+                        }
+
+
+                        if (help.vat_number != null) payment_details.company_vat_number = help.vat_number;
+                        if (help.registration_no != null)
+                            payment_details.company_registration_no = help.registration_no;
+
+                        payment_details.company_account = true;
+                        payment_details.company_name = help.company_name;
+                        payment_details.company_authorized_email = help.company_authorized_email;
+                        payment_details.company_authorized_phone = help.company_authorized_phone;
+                        payment_details.company_web = help.company_web;
+                    }
                 }
 
-                if(help.vat_number != null) payment_details.company_vat_number = help.vat_number;
+                if (help.full_name != null) payment_details.full_name = help.full_name;
+                else payment_details.full_name = person.full_name;
 
-                if(help.registration_no != null) payment_details.company_registration_no = help.registration_no;
-
-                payment_details.company_account = true;
-                payment_details.company_name             = help.company_name;
-                payment_details.company_authorized_email = help.company_authorized_email;
-                payment_details.company_authorized_phone = help.company_authorized_phone;
-                payment_details.company_web              = help.company_web;
-            }
-
-            terminal_logger.debug("product_create: Payment details are done");
-
-            if(tariff.payment_method_required) {
-
-                terminal_logger.debug("product_create: Payment method Required");
-
-                product.business_model = Enum_BusinessModel.saas;
-
-                if(help.payment_method == null) return GlobalResult.result_badRequest("payment_method is required with this tariff");
+                payment_details.street = help.street;
+                payment_details.street_number = help.street_number;
+                payment_details.city = help.city;
+                payment_details.zip_code = help.zip_code;
+                payment_details.country = help.country;
+                payment_details.invoice_email = help.invoice_email;
 
                 product.method = help.payment_method;
+
+                if (payment_details.isComplete()) {
+
+                    terminal_logger.debug("product_create: Payment details are done");
+
+                    product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
+                    if (product.fakturoid_subject_id == null)
+                        return GlobalResult.result_badRequest("Payment details are invalid.");
+
+                    product.payment_details = payment_details;
+                    customer.payment_details = payment_details;
+                }
+
             }
 
-            payment_details.save();
+            product.customer = customer;
+
             product.save();
-
-            payment_details.product = product;
-            payment_details.update();
-
-            product.payment_details = payment_details;
-            product.credit = tariff.credit_for_beginning;
-            product.update();
 
             // Přidám ty, co vybral uživatel
             if(help.extension_ids.size() > 0) {
@@ -1368,6 +1419,86 @@ public class Controller_Finance extends Controller {
         }
     }
 
+    @ApiOperation(value = "create Product payment details",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "create payments details in Product",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_PaymentDetails_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_PaymentDetails.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result paymentDetails_create(@ApiParam(value = "product_id String query", required = true) String product_id){
+        try{
+
+            // Kontrola Objektu
+            Model_Product product = Model_Product.get_byId(product_id);
+            if(product == null) return GlobalResult.result_notFound("Product not found");
+
+            if (product.payment_details != null) return GlobalResult.result_badRequest("Product already has Payment Details");
+
+            // Vytvoření pomocného Objektu
+            final Form<Swagger_PaymentDetails_New> form = Form.form(Swagger_PaymentDetails_New.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_PaymentDetails_New help = form.get();
+
+            Model_PaymentDetails payment_details = new Model_PaymentDetails();
+            payment_details.street        = help.street;
+            payment_details.street_number = help.street_number;
+            payment_details.city          = help.city;
+            payment_details.zip_code      = help.zip_code;
+            payment_details.country       = help.country;
+            payment_details.invoice_email = help.invoice_email;
+
+            // Pokud je účet business - jsou vyžadovány následující informace
+            if (payment_details.company_account) {
+
+                if (help.vat_number != null) {
+                    if (!Model_PaymentDetails.control_vat_number(help.vat_number))
+                        return GlobalResult.result_badRequest("Prefix code in VatNumber is not valid");
+                    payment_details.company_vat_number   = help.vat_number;
+                }
+
+                payment_details.company_registration_no  = help.registration_no;
+                payment_details.company_name             = help.company_name;
+                payment_details.company_authorized_email = help.company_authorized_email;
+                payment_details.company_authorized_phone = help.company_authorized_phone;
+                payment_details.company_web              = help.company_web;
+            }
+
+            // Oprávnění operace
+            if(!payment_details.create_permission()) return GlobalResult.result_forbidden();
+
+            payment_details.product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
+            if (payment_details.product.fakturoid_subject_id == null) return GlobalResult.result_badRequest("Unable to create your payment details, check provided information.");
+
+            payment_details.save();
+
+            // Vrácení objektu
+            return GlobalResult.result_created(Json.toJson(payment_details));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "edit Product payment details",
             tags = {"Price & Invoice & Tariffs"},
             notes = "edit payments details in Product",
@@ -1379,7 +1510,7 @@ public class Controller_Finance extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_PaymentDetails_Edit",
+                            dataType = "utilities.swagger.documentationClass.Swagger_PaymentDetails_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1398,9 +1529,9 @@ public class Controller_Finance extends Controller {
         try{
 
             // Vytvoření pomocného Objektu
-            final Form<Swagger_PaymentDetails_Edit> form = Form.form(Swagger_PaymentDetails_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_PaymentDetails_Edit help = form.get();
+            final Form<Swagger_PaymentDetails_New> form = Form.form(Swagger_PaymentDetails_New.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_PaymentDetails_New help = form.get();
 
             // Kontrola Objektu
             Model_PaymentDetails payment_details = Model_PaymentDetails.find.byId(payment_details_id);
@@ -1410,12 +1541,13 @@ public class Controller_Finance extends Controller {
             if(!payment_details.edit_permission()) return GlobalResult.result_forbidden();
 
             // úpravy objektu
-            payment_details.street        = help.street;
-            payment_details.street_number = help.street_number;
-            payment_details.city          = help.city;
-            payment_details.zip_code      = help.zip_code;
-            payment_details.country       = help.country;
-            payment_details.invoice_email = help.invoice_email;
+            payment_details.street          = help.street;
+            payment_details.street_number   = help.street_number;
+            payment_details.city            = help.city;
+            payment_details.zip_code        = help.zip_code;
+            payment_details.country         = help.country;
+            payment_details.invoice_email   = help.invoice_email;
+            payment_details.product.method  = help.method;
 
             // Pokud se změní nastavení na true (tedy jde o business účet změní se i objekt v databázi
             if (help.company_account && !payment_details.company_account){
@@ -1435,12 +1567,6 @@ public class Controller_Finance extends Controller {
             // Pokud je účet business - jsou vyžadovány následující informace
             if(payment_details.company_account) {
 
-                if (help.registration_no == null)           return GlobalResult.result_badRequest("company_registration_no is required with this tariff");
-                if (help.company_name == null)              return GlobalResult.result_badRequest("company_name is required with this tariff");
-                if (help.company_authorized_email == null)  return GlobalResult.result_badRequest("company_authorized_email is required with this tariff");
-                if (help.company_authorized_phone == null)  return GlobalResult.result_badRequest("company_authorized_phone is required with this tariff");
-                if (help.company_web == null)               return GlobalResult.result_badRequest("company_web is required with this tariff");
-
                 if (help.vat_number != null) {
                     if (!Model_PaymentDetails.control_vat_number(help.vat_number))
                         return GlobalResult.result_badRequest("Prefix code in VatNumber is not valid");
@@ -1456,15 +1582,18 @@ public class Controller_Finance extends Controller {
 
             if (payment_details.product.fakturoid_subject_id == null) {
 
-
                 payment_details.product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
                 if (payment_details.product.fakturoid_subject_id == null) return GlobalResult.result_badRequest("Unable to update your payment details, check provided information.");
 
                 payment_details.update();
+
+            } else {
+
+                if (!Fakturoid_Controller.update_subject(payment_details))
+                    return GlobalResult.result_badRequest("Unable to update your payment details, check provided information.");
             }
 
-            if (!Fakturoid_Controller.update_subject(payment_details))
-                return GlobalResult.result_badRequest("Unable to update your payment details, check provided information.");
+            payment_details.product.update();
 
             // Vrácení objektu
             return  GlobalResult.result_ok(Json.toJson(payment_details));

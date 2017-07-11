@@ -1,152 +1,93 @@
 
 # --- !Ups
 
+alter table model_tariff
+  rename column payment_method_required to payment_details_required;
+
+create table model_employee (
+  id                        varchar(255) not null,
+  customer_id               varchar(255),
+  created                   timestamp,
+  person_id                 varchar(255),
+  state                     varchar(7),
+  constraint ck_model_employee_state check (state in ('owner','member','invited','admin')),
+  constraint pk_model_employee primary key (id))
+;
+
+create table model_customer (
+  id                        varchar(255) not null,
+  person_id                 varchar(255),
+  created                   timestamp,
+  removed_by_user           boolean,
+  company                   boolean,
+  state                     varchar(7),
+  constraint ck_model_customer_state check (state in ('owner','member','invited','admin')),
+  constraint pk_model_customer primary key (id))
+;
+
+insert into model_customer (id, person_id, created, removed_by_user, company, state) select person_id, person_id, now(), false, false, 'owner' from model_payment_details group by person_id;
+
 alter table model_product
-  add column removed_by_user boolean;
+  add column customer_id varchar(255);
 
-alter table model_project
-  add column removed_by_user boolean;
+update model_product as t set
+  customer_id = c.id
+  from (select id, person_id from model_customer)
+  as c(id, person_id)
+  where (select productidpaymentdetails from model_payment_details where person_id = c.person_id and productidpaymentdetails = t.id) = t.id;
 
-update model_product set removed_by_user = false where removed_by_user isnull;
-update model_project set removed_by_user = false where removed_by_user isnull;
+alter table model_payment_details
+  drop column if exists person_id cascade,
+  add column customer_id varchar(255),
+  drop constraint if exists fk_model_payment_details_pers_61 cascade;
 
-alter table model_homer_instance
-  rename column blocko_instance_name to id;
+drop index if exists ix_model_payment_details_pers_61 cascade;
 
-alter table model_homer_instance
-  add column name varchar(255),
-  add column description text;
+alter table model_customer add constraint fk_model_customer_person_83 foreign key (person_id) references model_person (id);
+create index ix_model_customer_person_83 on model_customer (person_id);
 
-alter table model_board
-  alter column personal_description type varchar(255),
-  alter column generation_description type text;
+alter table model_payment_details add constraint fk_model_payment_details_cust_61 foreign key (customer_id) references model_customer (id);
+create index ix_model_payment_details_cust_61 on model_payment_details (customer_id);
 
-alter table model_board
-  rename column personal_description to name;
+alter table model_product add constraint fk_model_product_customer_82 foreign key (customer_id) references model_customer (id);
+create index ix_model_product_customer_82 on model_product (customer_id);
 
-alter table model_board
-  rename column generation_description to description;
+alter table model_employee add constraint fk_model_employee_customer_84 foreign key (customer_id) references model_customer (id);
+create index ix_model_employee_customer_84 on model_employee (customer_id);
 
-alter table model_board
-  rename column virtual_instance_under_project_blocko_instance_name to virtual_instance_under_project_id;
-
-alter table model_bprogram
-  rename column instance_blocko_instance_name to instance_id;
-
-alter table model_homer_instance_record
-  rename column main_instance_history_blocko_instance_name to main_instance_history_id;
-
-alter table model_homer_instance_record
-  rename column actual_running_instance_blocko_instance_name to actual_running_instance_id;
-
-alter table model_project
-    rename column private_instance_blocko_instance_name to private_instance_id;
-
-drop index if exists ix_model_bprogram_instance_6;
-drop index if exists ix_model_board_virtual_instan_18;
-drop index if exists ix_model_homer_instance_recor_48;
-drop index if exists ix_model_homer_instance_recor_50;
-drop index if exists ix_model_project_private_inst_65;
-
-alter table model_bprogram
-  drop constraint if exists fk_model_bprogram_instance_6,
-  add constraint fk_model_bprogram_instance_6 foreign key (instance_id) references model_homer_instance (id);
-
-create index ix_model_bprogram_instance_6 on model_bprogram (instance_id);
-
-alter table model_board
-  drop constraint if exists fk_model_board_virtual_instan_18,
-  add constraint fk_model_board_virtual_instan_18 foreign key (virtual_instance_under_project_id) references model_homer_instance (id);
-
-create index ix_model_board_virtual_instan_18 on model_board (virtual_instance_under_project_id);
-
-alter table model_homer_instance_record
-  drop constraint if exists fk_model_homer_instance_recor_48,
-  add constraint fk_model_homer_instance_recor_48 foreign key (main_instance_history_id) references model_homer_instance (id);
-
-create index ix_model_homer_instance_recor_48 on model_homer_instance_record (main_instance_history_id);
-
-alter table model_homer_instance_record
-  drop constraint if exists fk_model_homer_instance_recor_50,
-  add constraint fk_model_homer_instance_recor_50 foreign key (actual_running_instance_id) references model_homer_instance (id);
-
-create index ix_model_homer_instance_recor_50 on model_homer_instance_record (actual_running_instance_id);
-
-alter table model_project
-  drop constraint if exists fk_model_project_private_inst_65,
-  add constraint fk_model_project_private_inst_65 foreign key (private_instance_id) references model_homer_instance (id);
-
-create index ix_model_project_private_inst_65 on model_project (private_instance_id);
+alter table model_employee add constraint fk_model_employee_person_85 foreign key (person_id) references model_person (id);
+create index ix_model_employee_person_85 on model_employee (customer_id);
 
 # --- !Downs
 
-alter table model_product drop column if exists removed_by_user;
-alter table model_project drop column if exists removed_by_user;
+alter table model_tariff
+  rename column payment_details_required to payment_method_required;
 
-alter table model_homer_instance
-  rename column id to blocko_instance_name;
+alter table model_payment_details
+  add column person_id varchar(255);
 
-alter table model_homer_instance
-  drop column if exists name,
-  drop column if exists description;
+update model_payment_details as t set
+  person_id = c.person_id
+  from (select id, person_id from model_customer)
+  as c(id, person_id)
+  where t.productidpaymentdetails in (select id from model_product where customer_id = c.id);
 
-alter table model_board
-  rename column name to personal_description;
+drop table if exists model_employee cascade;
+drop table if exists model_customer cascade;
 
-alter table model_board
-  rename column description to generation_description;
+alter table model_payment_details
+  drop column if exists customer_id cascade,
+  drop constraint if exists fk_model_payment_details_cust_61 cascade;
 
-alter table model_board
-  alter column personal_description type text,
-  alter column generation_description type varchar(255);
+alter table model_product
+  drop column if exists customer_id cascade,
+  drop constraint if exists fk_model_product_customer_82 cascade;
 
-alter table model_board
-  rename column virtual_instance_under_project_id to virtual_instance_under_project_blocko_instance_name;
+drop index if exists ix_model_product_customer_82 cascade;
+drop index if exists ix_model_customer_person_83 cascade;
+drop index if exists ix_model_employee_customer_84 cascade;
+drop index if exists ix_model_employee_person_85 cascade;
+drop index if exists ix_model_payment_details_cust_61 cascade;
 
-alter table model_bprogram
-  rename column instance_id to instance_blocko_instance_name;
-
-alter table model_homer_instance_record
-  rename column main_instance_history_id to main_instance_history_blocko_instance_name;
-
-alter table model_homer_instance_record
-  rename column actual_running_instance_id to actual_running_instance_blocko_instance_name;
-
-alter table model_project
-  rename column private_instance_id to private_instance_blocko_instance_name;
-
-drop index if exists ix_model_bprogram_instance_6;
-drop index if exists ix_model_board_virtual_instan_18;
-drop index if exists ix_model_homer_instance_recor_48;
-drop index if exists ix_model_homer_instance_recor_50;
-drop index if exists ix_model_project_private_inst_65;
-
-alter table model_bprogram
-  drop constraint if exists fk_model_bprogram_instance_6,
-  add constraint fk_model_bprogram_instance_6 foreign key (instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-
-create index ix_model_bprogram_instance_6 on model_bprogram (instance_blocko_instance_name);
-
-alter table model_board
-  drop constraint if exists fk_model_board_virtual_instan_18,
-  add constraint fk_model_board_virtual_instan_18 foreign key (virtual_instance_under_project_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-
-create index ix_model_board_virtual_instan_18 on model_board (virtual_instance_under_project_blocko_instance_name);
-
-alter table model_homer_instance_record
-  drop constraint if exists fk_model_homer_instance_recor_48,
-  add constraint fk_model_homer_instance_recor_48 foreign key (main_instance_history_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-
-create index ix_model_homer_instance_recor_48 on model_homer_instance_record (main_instance_history_blocko_instance_name);
-
-alter table model_homer_instance_record
-  drop constraint if exists fk_model_homer_instance_recor_50,
-  add constraint fk_model_homer_instance_recor_50 foreign key (actual_running_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-
-create index ix_model_homer_instance_recor_50 on model_homer_instance_record (actual_running_instance_blocko_instance_name);
-
-alter table model_project
-  drop constraint if exists fk_model_project_private_inst_65,
-  add constraint fk_model_project_private_inst_65 foreign key (private_instance_blocko_instance_name) references model_homer_instance (blocko_instance_name);
-
-create index ix_model_project_private_inst_65 on model_project (private_instance_blocko_instance_name);
+alter table model_payment_details add constraint fk_model_payment_details_pers_61 foreign key (person_id) references model_person (id);
+create index ix_model_payment_details_pers_61 on model_payment_details (person_id);

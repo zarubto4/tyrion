@@ -213,7 +213,8 @@ public class GoPay_PaymentCheck {
                                 invoice.gw_url = null;
                                 invoice.update();
 
-                                // TODO
+                                if (!Fakturoid_Controller.fakturoid_post("/invoices/" + (invoice.proforma ? invoice.proforma_id : invoice.fakturoid_id) + "/fire.json?event=cancel"))
+                                    terminal_logger.internalServerError(new Exception("Error changing status to canceled on Fakturoid. Inconsistent state."));
 
                                 break;
                             }

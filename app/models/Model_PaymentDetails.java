@@ -20,7 +20,7 @@ public class Model_PaymentDetails extends Model {
 
                                            @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public Long id;
 
-    @JsonIgnore @ManyToOne()                                                                        public Model_Person person;
+    @JsonIgnore @OneToOne                                                                           public Model_Customer customer;
     @JsonIgnore @OneToOne(cascade = CascadeType.ALL)   @JoinColumn(name="productidpaymentdetails")  public Model_Product product;
 
                                                                                                     public boolean company_account; // Rozhoduji se zda jde o detaily firemní nebo osobní
@@ -80,7 +80,11 @@ public class Model_PaymentDetails extends Model {
                 case "SE" : {return true;}
                 default: {return false;}
             }
+    }
 
+    @JsonIgnore
+    public boolean isComplete(){
+        return full_name != null && street != null && street_number != null && city != null && zip_code != null && country != null && invoice_email != null;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -93,7 +97,8 @@ public class Model_PaymentDetails extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient  public boolean edit_permission()  {  return true;  }
+    @JsonIgnore     public boolean create_permission()  { return true; }
+    @JsonProperty   public boolean edit_permission()    { return true; }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

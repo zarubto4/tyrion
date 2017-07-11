@@ -60,11 +60,12 @@ public class Model_Product extends Model {
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
                                                                                 public boolean removed_by_user;
 
+                                          @ManyToOne(cascade = CascadeType.ALL) public Model_Customer customer;
+                       @OneToOne(mappedBy="product", cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
+
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Project>          projects    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Invoice>          invoices    = new ArrayList<>();
                 @OneToMany(mappedBy="product", cascade = CascadeType.ALL)                           public List<Model_ProductExtension> extensions  = new ArrayList<>();
-
-                                          @OneToOne(mappedBy="product", cascade = CascadeType.ALL)  public Model_PaymentDetails payment_details;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -478,7 +479,7 @@ public class Model_Product extends Model {
                     .setText(new Notification_Text().setText("Your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was activated."))
-                    .send(this.payment_details.person);
+                    .send(this.customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -486,16 +487,21 @@ public class Model_Product extends Model {
     }
 
     @JsonIgnore
-    public void notificationDeactivation(){
+    public void notificationDeactivation(String... args){
         try {
 
-            new Model_Notification()
+            Model_Notification notification = new Model_Notification()
                     .setImportance(Enum_Notification_importance.normal)
                     .setLevel(Enum_Notification_level.warning)
                     .setText(new Notification_Text().setText("Your product "))
                     .setObject(this)
-                    .setText(new Notification_Text().setText(" was deactivated."))
-                    .send(this.payment_details.person);
+                    .setText(new Notification_Text().setText(" was deactivated."));
+
+            for (String message : args) {
+                notification.setText(new Notification_Text().setText(message));
+            }
+
+            notification.send(this.customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -514,7 +520,7 @@ public class Model_Product extends Model {
                     .setText(new Notification_Text().setText("Credit was uploaded. ").setBoldText())
                     .setText(new Notification_Text().setText(" " + amount + "of credit was added to your product "))
                     .setObject(this)
-                    .send(this.payment_details.person);
+                    .send(this.customer.person);
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationCreditSuccess:", e);
         }
@@ -533,7 +539,7 @@ public class Model_Product extends Model {
                     .setText(new Notification_Text().setText(" Adding" + amount + "of credit to your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was unsuccessful."))
-                    .send(this.payment_details.person);
+                    .send(this.customer.person);
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationCreditFail:", e);
         }
@@ -551,7 +557,7 @@ public class Model_Product extends Model {
                     .setText(new Notification_Text().setText("Credit was removed. ").setBoldText())
                     .setText(new Notification_Text().setText(" " + amount + "of credit was removed from your product "))
                     .setObject(this)
-                    .send(this.payment_details.person);
+                    .send(this.customer.person);
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationCreditRemove:", e);
         }
@@ -578,7 +584,7 @@ public class Model_Product extends Model {
             notification
                     .setObject(this)
                     .setText(new Notification_Text().setText("."))
-                    .send(this.payment_details.person);
+                    .send(this.customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationCreditRemove:", e);
@@ -595,7 +601,7 @@ public class Model_Product extends Model {
                     .setText(new Notification_Text().setText("Refund payment of $" + amount + " for your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was successfully refunded."))
-                    .send(this.payment_details.person);
+                    .send(this.customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationRefundPaymentSuccess:", e);
@@ -612,7 +618,7 @@ public class Model_Product extends Model {
                     .setText(new Notification_Text().setText("Payment $" + amount + " for your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was successful."))
-                    .send(this.payment_details.person);
+                    .send(this.customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationRefundPaymentSuccess:", e);
@@ -648,9 +654,9 @@ public class Model_Product extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore  public boolean create_permission()              {  return true;  }
-    @JsonIgnore  public boolean read_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_read");  }
-                 public boolean edit_permission()                {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_edit");  }
-                 public boolean act_deactivate_permission()      {  return payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
+    @JsonIgnore  public boolean read_permission()                {  return customer.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_read");  }
+                 public boolean edit_permission()                {  return customer.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_edit");  }
+                 public boolean act_deactivate_permission()      {  return customer.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
     @JsonIgnore  public boolean delete_permission()              {  return Controller_Security.get_person().has_permission("Product_delete");}
     @JsonIgnore  public boolean financial_permission(String action){  return FinancialPermission.check(this, action);}
 
@@ -664,23 +670,18 @@ public class Model_Product extends Model {
     }
 
     @JsonIgnore
-    public static Model_Product get_byNameAndOwner(String name, String person_id) {
-        return find.where().eq("name", name).eq("payment_details.person.id", person_id).findUnique();
-    }
-
-    @JsonIgnore
     public static Model_Product get_byInvoice(String invoice_id) {
         return find.where().eq("invoices.id", invoice_id).findUnique();
     }
 
     @JsonIgnore
     public static List<Model_Product> get_byOwner(String owner_id) {
-        return find.where().eq("payment_details.person.id", owner_id).findList();
+        return find.where().eq("customer.person.id", owner_id).findList();
     }
 
     @JsonIgnore
     public static List<Model_Product> get_applicableByOwner(String owner_id) {
-        return find.where().eq("active",true).eq("payment_details.person.id", owner_id).select("id").select("name").findList();
+        return find.where().eq("active",true).eq("customer.person.id", owner_id).select("id").select("name").findList();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

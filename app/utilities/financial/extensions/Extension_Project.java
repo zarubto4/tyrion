@@ -1,7 +1,6 @@
 package utilities.financial.extensions;
 
 import play.Configuration;
-import play.libs.Json;
 import utilities.Server;
 import utilities.financial.extensions.configurations.Configuration_Project;
 
@@ -23,16 +22,6 @@ public class Extension_Project implements Extension {
     public Long getDailyPrice(Object configuration) {
 
         Configuration_Project project = (Configuration_Project) configuration;
-
-        if (project == null) {
-            System.out.println("getDailyPrice: configuration is null");
-            return null;
-        }
-        else System.out.println("getDailyPrice: configuration: " + Json.toJson(configuration).toString());
-
-        System.out.println("getDailyPrice: price: " + project.price);
-        System.out.println("getDailyPrice: count: " + project.count);
-        System.out.println("getDailyPrice: result: " + (project.price * project.count));
 
         return project.price * project.count;
     }

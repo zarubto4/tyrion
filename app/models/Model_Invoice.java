@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.enums.*;
+import utilities.financial.extensions.configurations.*;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
 
@@ -138,8 +139,32 @@ public class Model_Invoice extends Model {
 
             Model_InvoiceItem item = new Model_InvoiceItem();
             item.name = extension.name;
-            item.unit_price = extension.getDailyPrice() * 30; // TODO nacacheovat ceny, getDailyPrice() je potenciálně drahá operace.
-            item.quantity = (long) 1; // TODO
+            item.unit_price = extension.getDailyPrice() * 30;
+
+            switch (extension.type) {
+                case project: {
+                    item.quantity = ((Configuration_Project) extension.getConfiguration()).count;
+                    break;
+                }
+                case log: {
+                    item.quantity = ((Configuration_Log) extension.getConfiguration()).count;
+                    break;
+                }
+                case rest_api: {
+                    item.quantity = ((Configuration_RestApi) extension.getConfiguration()).available_requests;
+                    break;
+                }
+                case instance: {
+                    item.quantity = ((Configuration_Instance) extension.getConfiguration()).count;
+                    break;
+                }
+                case participant: {
+                    item.quantity = ((Configuration_Participant) extension.getConfiguration()).count;
+                    break;
+                }
+                default: item.quantity = 1L;
+            }
+
             item.unit_name = "Pcs";
             item.currency = Enum_Currency.USD;
 
@@ -185,7 +210,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText(" for your product "))
                     .setObject(this.getProduct())
                     .setText(new Notification_Text().setText("."))
-                    .send(this.getProduct().payment_details.person);
+                    .send(this.getProduct().customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationInvoiceNew:", e);
@@ -205,7 +230,7 @@ public class Model_Invoice extends Model {
                     .setObject(this)
                     .setText(new Notification_Text().setText(" and resolve it. "))
                     .setText(new Notification_Text().setText(message))
-                    .send(this.getProduct().payment_details.person);
+                    .send(this.getProduct().customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationInvoiceReminder:", e);
@@ -224,7 +249,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText(" for this product "))
                     .setObject(this.getProduct())
                     .setText(new Notification_Text().setText(" is overdue."))
-                    .send(this.getProduct().payment_details.person);
+                    .send(this.getProduct().customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationInvoiceReminder:", e);
@@ -241,7 +266,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText("It seems, that you did not finish your payment for this invoice "))
                     .setObject(this)
                     .setText(new Notification_Text().setText("."))
-                    .send(this.getProduct().payment_details.person);
+                    .send(this.getProduct().customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationPaymentIncomplete:", e);
@@ -258,7 +283,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText("Payment $" + amount + " for invoice "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was successful."))
-                    .send(this.getProduct().payment_details.person);
+                    .send(this.getProduct().customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationPaymentSuccess:", e);
@@ -275,7 +300,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText("Failed to receive your payment for this invoice "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" Check the payment or contact support."))
-                    .send(this.getProduct().payment_details.person);
+                    .send(this.getProduct().customer.person);
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationPaymentFail:", e);
@@ -288,8 +313,8 @@ public class Model_Invoice extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Invoice_create");}
-    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().payment_details.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Invoice_read");}
+    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().customer.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Invoice_create");}
+    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().customer.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Invoice_read");}
     @JsonIgnore @Transient public boolean remind_permission() {  return true;  }
     @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
     @JsonIgnore @Transient public boolean delete_permission() {  return true;  }

@@ -92,7 +92,7 @@ public class Controller_Project extends Controller {
             project.refresh();
 
             Model_ProjectParticipant participant = new Model_ProjectParticipant();
-            participant.person = product.payment_details.person;
+            participant.person = product.customer.person;
             participant.project = project;
             participant.state = Enum_Participant_status.owner;
 

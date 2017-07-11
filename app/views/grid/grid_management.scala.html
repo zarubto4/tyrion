@@ -26,14 +26,8 @@
       </div>
       <div class="modal-body">
         <form id="newTypeOfWidget">
-          <div style="float: left; width: 30%;">
-            <label>Name</label>
-            <input id="newTypeOfWidgetName" placeholder="Name" style="display: block" type="text" name="name" >
-          </div>
-          <div style="width: 100%;">
-            <label>Description</label>
-            <input id="newTypeOfWidgetDescription" placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
-          </div>
+          <input class="form-control form-group" id="newTypeOfWidgetName" placeholder="Name" title="Name" type="text" name="name" >
+          <input class="form-control form-group" id="newTypeOfWidgetDescription" placeholder="Description" title="Description" type="text" name="description" >
         </form>
         <div id="newTypeOfWidgetModalMessage" style="display: none"><p style="color: red;"></p></div>
       </div>
@@ -55,14 +49,8 @@
       <div class="modal-body">
         <form id="newGridWidget">
           <label id="newGridWidgetTypeOfWidgetName" style="display: block"></label>
-          <div style="float: left; width: 30%;">
-            <label>Name</label>
-            <input placeholder="Name" style="display: block" type="text" name="name" >
-          </div>
-          <div style="width: 100%;">
-            <label>Description</label>
-            <input placeholder="Description" style="display: block; width: 70%;" type="text" name="description" >
-          </div>
+          <input class="form-control form-group" placeholder="Name" title="Name" type="text" name="name" >
+          <input class="form-control form-group" placeholder="Description" title="Description" type="text" name="description" >
           <input id="newGridWidgetTypeOfWidgetId" style="display: none;" type="text" name="type_of_widget_id">
         </form>
         <div id="newGridWidgetModalMessage" style="display: none"><p style="color: red;"></p></div>

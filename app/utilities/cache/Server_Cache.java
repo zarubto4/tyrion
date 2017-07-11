@@ -145,6 +145,18 @@ public class Server_Cache {
                     ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerServer.CACHE")))
                     .withExpiry(Expirations.timeToIdleExpiration(Duration.of(12, TimeUnit.HOURS))).build());
 
+            /*
+            *  Model_ProductExtension
+            *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+            *  Cache for Model_ProductExtension
+            *
+            *  Price for one day
+            */
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Extension price");
+            Model_ProductExtension.cache_price = cacheManager.createCache(Model_ProductExtension.CACHE_PRICE, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Long.class,
+                    ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_ProductExtension.CACHE_PRICE")))
+                    .withExpiry(Expirations.timeToIdleExpiration(Duration.of(5, TimeUnit.MINUTES))).build());
+
         }catch (Exception e){
             terminal_logger.internalServerError("initCache:", e);
         }

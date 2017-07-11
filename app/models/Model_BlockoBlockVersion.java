@@ -49,6 +49,8 @@ public class Model_BlockoBlockVersion extends Model {
     public Swagger_Person_Short_Detail author(){
         try{
 
+            if (author == null) return null;
+
             return this.author.get_short_person();
 
         }catch (Exception e){
