@@ -194,7 +194,7 @@ public class Model_Notification extends Model {
                 element.name = class_name;
                 element.id = board.id;
                 element.text = board.name;
-                element.project_id = board.project != null ? board.project.id : null;
+                element.project_id = board.project_id();
                 break;
             }
             case "CProgram" : {

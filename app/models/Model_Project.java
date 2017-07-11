@@ -170,13 +170,13 @@ public class Model_Project extends Model {
                 }
             }
 
-            List<Model_Board> boards = new ArrayList<>();
+            List<Model_Board> board_list = new ArrayList<>();
 
             for(String board_id : board_ids){
-                boards.add(Model_Board.get_byId(board_id));
+                board_list.add(Model_Board.get_byId(board_id));
             }
 
-            return boards;
+            return board_list;
 
         }catch (Exception e){
             terminal_logger.internalServerError("get_project_boards_not_deleted", e);

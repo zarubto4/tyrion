@@ -211,7 +211,7 @@ public class Model_HomerInstanceRecord extends Model {
 
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
 
-            JsonNode node = actual_running_instance.write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(version_object), 1000 * 3, 0, 2);
+            JsonNode node =  main_instance_history.cloud_homer_server.sender().write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(main_instance_history, version_object), 1000 * 3, 0, 2);
 
             final Form<WS_Message_Instance_upload_blocko_program> form = Form.form(WS_Message_Instance_upload_blocko_program.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Instance_upload_blocko_program: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -254,7 +254,7 @@ public class Model_HomerInstanceRecord extends Model {
             terminal_logger.debug("create_actualization_request:: byl zavolán na Instance Record:: {}" , id);
 
             Model_ActualizationProcedure actualization_procedure = new Model_ActualizationProcedure();
-            actualization_procedure.project_id = actual_running_instance.get_project().id;
+            actualization_procedure.project_id = actual_running_instance.get_project_id();
             actualization_procedure.date_of_create = new Date();
 
             if(running_from != null) actualization_procedure.date_of_planing = running_from;

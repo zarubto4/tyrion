@@ -28,17 +28,19 @@ public class Model_TypeOfBoard extends Model {
     private static final Class_Logger terminal_logger = new Class_Logger(Model_TypeOfBoard.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-                                                         @Id @ApiModelProperty(required = true) public String id;
-                                                             @ApiModelProperty(required = true) public String name;
-                                                             @Column(unique=true)  @JsonIgnore  public String compiler_target_name;
-                                                             @ApiModelProperty(required = true) public String revision;
-                                                                                    @JsonIgnore public String azure_picture_link;
+                                @Id    public String id;
+                                       public String name;
+    @JsonIgnore @Column(unique=true)   public String compiler_target_name;
+                                       public String revision;
+                       @JsonIgnore     public String azure_picture_link;
+   @Column(columnDefinition = "TEXT")  public String description;
 
-                       @Column(columnDefinition = "TEXT")    @ApiModelProperty(required = true) public String description;
-                                                                        @JsonIgnore  @ManyToOne public Model_Producer producer;
-                                                                        @JsonIgnore  @ManyToOne public Model_Processor processor;
-                                                             @ApiModelProperty(required = true) public Boolean connectible_to_internet;
-                                                                          @JsonIgnore @OneToOne public Model_FileRecord picture;
+   @JsonIgnore @ManyToOne public Model_Producer producer;
+   @JsonIgnore @ManyToOne public Model_Processor processor;
+                          public Boolean connectible_to_internet;
+
+   @JsonIgnore @OneToOne  public Model_FileRecord picture;
+
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_Board> boards = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="type_of_board",                                   fetch = FetchType.LAZY)  public List<Model_CProgram> c_programs = new ArrayList<>();
@@ -58,7 +60,7 @@ public class Model_TypeOfBoard extends Model {
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_picture_link;
-    @JsonIgnore @Transient @TyrionCachedList public  String cache_value_bootloader_id;
+    @JsonIgnore @Transient @TyrionCachedList public  String cache_value_main_bootloader_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -68,29 +70,43 @@ public class Model_TypeOfBoard extends Model {
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name(){ return compiler_target_name;}
     @ApiModelProperty(required =true) @Transient @JsonProperty public String picture_link(){
 
-        if( cache_value_picture_link == null) {
+        try {
 
-            if (this.azure_picture_link == null) {
-                return null;
+            if( cache_value_picture_link == null) {
+
+                if (this.azure_picture_link == null) {
+                    return null;
+                }
+
+                terminal_logger.debug("picture_link :: {}{}", Server.azure_blob_Link, azure_picture_link);
+                cache_value_picture_link = Server.azure_blob_Link + azure_picture_link;
             }
 
-            terminal_logger.debug("picture_link :: {}{}", Server.azure_blob_Link, azure_picture_link);
-            cache_value_picture_link = Server.azure_blob_Link + azure_picture_link;
-        }
+            return cache_value_picture_link;
 
-        return cache_value_picture_link;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
 
     @ApiModelProperty(required =true) @Transient @JsonProperty public Model_BootLoader main_boot_loader(){
 
-        if(cache_value_bootloader_id == null){
-            Model_BootLoader main = Model_BootLoader.find.where().eq("main_type_of_board.id", id).select("id").findUnique();
-            cache_value_bootloader_id = main.id.toString();
+        try {
+
+            if (cache_value_main_bootloader_id == null) {
+                Model_BootLoader main = Model_BootLoader.find.where().eq("main_type_of_board.id", id).select("id").findUnique();
+                if(main == null) return null;
+                cache_value_main_bootloader_id = main.id.toString();
+            }
+
+            return Model_BootLoader.get_byId(cache_value_main_bootloader_id);
+
+        }catch (Exception e){
+             terminal_logger.internalServerError(e);
+            return null;
         }
-
-        return Model_BootLoader.get_byId(cache_value_bootloader_id);
-
     }
 
 
@@ -99,12 +115,19 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore @TyrionCachedList
     public Model_Producer get_producer(){
 
-        if(cache_value_producer_id == null){
-            Model_Producer producer = Model_Producer.find.where().eq("type_of_boards.id", id).select("id").findUnique();
-            cache_value_producer_id = producer.id;
-        }
+        try {
 
-        return Model_Producer.get_byId(cache_value_producer_id);
+            if(cache_value_producer_id == null){
+                Model_Producer producer = Model_Producer.find.where().eq("type_of_boards.id", id).select("id").findUnique();
+                cache_value_producer_id = producer.id;
+            }
+
+            return Model_Producer.get_byId(cache_value_producer_id);
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
 

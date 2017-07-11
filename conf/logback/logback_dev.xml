@@ -28,11 +28,11 @@
       The logger name is typically the Java/Scala package name.
       This configures the log level to log at for a package and its children packages.
     -->
-    <logger name="com.avaje.ebean.config.PropertyMapLoader"                 level="TRACE" />
-    <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader"      level="TRACE" />
-    <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread"      level="TRACE" />
+    <logger name="com.avaje.ebean.config.PropertyMapLoader"                 level="WARN" />
+    <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader"      level="WARN" />
+    <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread"      level="WARN" />
     <logger name="com.gargoylesoftware.htmlunit.javascript"                 level="WARN" />
-    <logger name="org.avaje.ebean.SQL"                                      level="TRACE" />
+    <logger name="org.avaje.ebean.SQL"                                      level="WARN" />
     <logger name="org.ehcache.core.EhcacheManager"                          level="WARN" />
     <logger name="org.quartz" level="WARN" />
     <logger name="p.a.d" level="WARN" />

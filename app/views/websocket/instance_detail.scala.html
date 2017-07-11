@@ -89,7 +89,7 @@
                             <div class="box box-primary">
                                 <div class="box-body table-responsive no-padding">
                                     <div class="box-header">
-                                        <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.name </h3>
+                                        <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("") @x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.name </h3>
                                         <h3 class="box-title"> @x.main_board_pair.board.online_state()</h3>
                                     </div>
 
@@ -98,7 +98,7 @@
                                             <div class="btn-group">
 
                                                     @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.main_board_pair.id.toString()  ).findUnique() != null){
-                                                        @if(Model_Board.get_byId( x.main_board_pair.id.toString() ).update_boot_loader_required()) {
+                                                        @if(Model_Board.get_byId( x.main_board_pair.id.toString()).update_boot_loader_required()) {
                                                             <a  onclick="updateBootLoader('@x.main_board_pair.id.toString()')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
                                                         }else {
                                                             <p class="lead text-green">(Actual)</p>

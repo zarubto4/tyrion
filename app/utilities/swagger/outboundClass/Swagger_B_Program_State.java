@@ -13,7 +13,7 @@ public class Swagger_B_Program_State {
     public boolean uploaded;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public Enum_Online_status instance_online;
+    public Enum_Online_status instance_status;
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean server_online;

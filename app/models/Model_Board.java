@@ -16,6 +16,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
 import utilities.Server;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.document_db.document_objects.DM_Board_BackupIncident;
 import utilities.document_db.document_objects.DM_Board_Connect;
 import utilities.document_db.document_objects.DM_Board_Disconnected;
@@ -25,10 +26,7 @@ import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.documentationClass.Swagger_Board_for_fast_upload_detail;
-import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
+import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
@@ -45,93 +43,104 @@ import java.util.concurrent.*;
 @ApiModel(value = "Board", description = "Model of Board")
 public class Model_Board extends Model {
 
-/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+/* DOCUMENTATION -------------------------------------------------------------------------------------------------------*/  
 
+    /*
+        
+        Hardware je zastupující entita, která by měla být natolik univerzální, že dokáže pokrýt veškerý supportovaný hardware 
+        který je Byzance schopna obsluhovat. Rozdílem je Typ desky - který může měnit chování některých metod nebo executiv
+        procedur. 
+        
+        
+     */
+    
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+    
     private static final Class_Logger terminal_logger = new Class_Logger(Model_Board.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                   @Id @ApiModelProperty(required = true)   public String id;                   // Full_Id procesoru přiřazené Garfieldem
-                                       @ApiModelProperty(required = true)   public String hash_for_adding;      // Vygenerovaný Hash pro přidávání a párování s Platformou.
+                                   @Id public String id;                           // Full_Id procesoru přiřazené Garfieldem - // TODO mělo by být nahrazeno UUID a pak samostatně Full_ID hardwaru  
+                                       public String hash_for_adding;              // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru 
 
-                                       @ApiModelProperty(required = true)   public String wifi_mac_address;     // Mac addressa wifi čipu
-                                       @ApiModelProperty(required = true)   public String mac_address;          // Přiřazená MacAdresa z rozsahu Adres
+                                       public String wifi_mac_address;             // Mac addressa wifi čipu
+                                       public String mac_address;                  // Přiřazená MacAdresa z rozsahu Adres
 
-                                       @ApiModelProperty(required = true)   public String name;
-    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String description;
-                                       @JsonIgnore  @ManyToOne              public Model_TypeOfBoard type_of_board;
-                                       @JsonIgnore                          public boolean is_active;
-                                       @JsonIgnore                          public boolean backup_mode;
-                                       @JsonIgnore                          public boolean database_synchronize;
-                                                                            public Date date_of_create;
-                                       @JsonIgnore                          public Date date_of_user_registration;
+                                       public String name;                         // Jméno, které si uživatel pro hardware nasatvil
+    @Column(columnDefinition = "TEXT") public String description;                  // Popisek, který si uživatel na hardwaru nastavil 
 
+                          @JsonIgnore  public boolean is_active;                   // Příznak, že deska byla oživena a je použitelná v platformě
+                          @JsonIgnore  public boolean backup_mode;                 // True znamená automatické zálohování po 5* minutách po nahrátí - verze se označuje mezi hardwarářema jako stabilní  - Opakej je statický backup - vázaný na objekty
+                                       public boolean database_synchronize;        // Defautlní hodnota je True. Je možnost vypnout synchronizaci a to pro případy, že uživatel vypaluje firmwaru lokálně pomocí svého programaátoru a IIDE
+                                       public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru) 
+                                       public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
+                                       public boolean developer_kit;
 
-    @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)   public Model_Project project;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                public Model_TypeOfBoard type_of_board;     // Typ desky - (Cachováno)
+    @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)   public Model_Project project;         // Projekt, pod který Hardware spadá
+    
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_VersionObject actual_c_program_version;               // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_VersionObject actual_backup_c_program_version;        // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_BootLoader    actual_boot_loader;                     // Aktuální bootloader (Cachováno)
 
-                                                                            public boolean developer_kit;
+    @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_BPair> b_pair = new ArrayList<>();    // Vazba firmwaru a Hardwaru - používáno pro snapshoty v Blocku 
+    @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();   // Seznam update procedur s tímto hardware. 
 
-                                                   @JsonIgnore @ManyToOne   public Model_VersionObject actual_c_program_version;
-                                                   @JsonIgnore @ManyToOne   public Model_VersionObject actual_backup_c_program_version;
-                                                   @JsonIgnore @ManyToOne   public Model_BootLoader    actual_boot_loader;
-
-    @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_BPair> b_pair = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
-
-    @JsonIgnore public String connected_server_id; // Latest know Server ID
-    @JsonIgnore public String connected_instance_id; // Latest know Instance ID
+    @JsonIgnore public String connected_server_id;      // Latest know Server ID
+    @JsonIgnore public String connected_instance_id;    // Latest know Instance ID
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
     // For Faster reload
+    @Transient @JsonIgnore @TyrionCachedList public Long   cache_value_latest_online;
 
-    @Transient @JsonIgnore public Long   cache_value_latest_online;
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_id;                      // Type of Board Id
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_name;                    // Type of Board
 
-    @Transient @JsonIgnore public String cache_value_type_of_board_id;                      // Type of Board
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_project_id;                            // Project
 
-    @Transient @JsonIgnore public String cache_value_project_id;                            // Project
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_boot_loader_id;                 // Bootloader
 
-    @Transient @JsonIgnore public String cache_value_actual_boot_loader_id;                 // Bootloader
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_id;                   // C Program
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_version_id;
 
-    @Transient @JsonIgnore public String cache_value_actual_c_program_id;                   // C Program
-    @Transient @JsonIgnore public String cache_value_actual_c_program_version_id;
-
-    @Transient @JsonIgnore public String cache_value_actual_c_program_backup_id;            // Backup
-    @Transient @JsonIgnore public String cache_value_actual_c_program_backup_version_id;
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_id;            // Backup
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_version_id;
 
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty  @Transient  public Enum_Board_BackUpMode backup_mode(){ return backup_mode ? Enum_Board_BackUpMode.AUTO_BACKUP : Enum_Board_BackUpMode.STATIC_BACKUP;}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public Enum_Board_BackUpMode backup_mode(){ return backup_mode ? Enum_Board_BackUpMode.AUTO_BACKUP : Enum_Board_BackUpMode.STATIC_BACKUP;}
+    @JsonProperty  @Transient  public String type_of_board_id()                     { return cache_value_type_of_board_id   != null ? cache_value_type_of_board_id: get_type_of_board().id; }
+    @JsonProperty  @Transient  public String type_of_board_name()                   { return cache_value_type_of_board_name != null ? cache_value_type_of_board_name: get_type_of_board().name ; }
+    @JsonProperty  @Transient  public String project_id()                           { return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }
+    @JsonProperty  @Transient  public String actual_bootloader_version_name()       { return get_actual_bootloader().name; }
+    @JsonProperty  @Transient  public String actual_bootloader_id()                 { return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString();}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_id()   { return type_of_board.id; }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String type_of_board_name() { return type_of_board.name; }
+    @JsonProperty  @Transient  public String available_bootloader_version_name()    { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().name;}
+    @JsonProperty  @Transient  public String available_bootloader_id()              { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().id.toString(); }
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_id()         { return       project == null ? null : project.id; }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String project_name()       { return       project == null ? null : project.name; }
+    @JsonProperty  @Transient  public List<Enum_Board_Alert> alert_list(){
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_version_name()     { return  actual_boot_loader == null ? null : actual_boot_loader.name; }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_bootloader_id()               { return  actual_boot_loader == null ? null : actual_boot_loader.id.toString();}
-
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_version_name()  { return  type_of_board.main_boot_loader()  == null ? null :  type_of_board.main_boot_loader().name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String available_bootloader_id()            { return  type_of_board.main_boot_loader()  == null ? null :  type_of_board.main_boot_loader().id.toString(); }
-
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Enum_Board_Alert> alert_list(){
         try {
+
             List<Enum_Board_Alert> list = new ArrayList<>();
 
-            if(update_boot_loader_required()) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
+            if(available_bootloader_id() != null || !actual_bootloader_id().equals(available_bootloader_id())) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
 
             return list;
         }catch (Exception e){
-            terminal_logger.internalServerError("alert_list:", e);
-            return null;
+            terminal_logger.internalServerError(e);
+            return new ArrayList<>();
         }
+
     }
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
+    @JsonProperty  @Transient  public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
 
         try {
+
             List<Swagger_C_Program_Update_plan_Short_Detail> plans = new ArrayList<>();
 
             for (Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().desc("date_of_create").findList()) {
@@ -144,32 +153,37 @@ public class Model_Board extends Model {
             }
 
             return plans;
+
         }catch (Exception e){
             terminal_logger.internalServerError("updates:", e);
             return null;
         }
     }
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public Model_HomerServer server(){ return Model_HomerServer.get_byId(connected_server_id); }
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public Swagger_Instance_Short_Detail actual_instance(){ return get_instance().get_instance_short_detail();}
+    @JsonProperty  @Transient  public Swagger_HomerServer_public_Detail server(){ try{ if(connected_server_id == null) return null; return Model_HomerServer.get_byId(connected_server_id).get_public_info(); }catch (Exception e){terminal_logger.internalServerError(e); return null;}}
+    @JsonProperty  @Transient @ApiModelProperty(value = "Can be null, if device is not in Instance") public Swagger_Instance_Short_Detail actual_instance(){
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_id(){return actual_c_program_version.c_program.name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_name(){return actual_c_program_version.c_program.name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_description(){return actual_c_program_version.c_program.description;}
+        Model_HomerInstance instance = get_instance();
+        return instance != null  ? instance.get_instance_short_detail() : null;
+    }
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_version_id(){return actual_c_program_version.id;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_version_name(){return actual_c_program_version.version_name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_version_description(){return actual_c_program_version.version_description;}
+    @JsonProperty  @Transient  public String actual_c_program_id(){ return cache_value_actual_c_program_id != null ? cache_value_actual_c_program_id : (get_actual_c_program() == null ? null : get_actual_c_program().id);}
+    @JsonProperty  @Transient  public String actual_c_program_name(){ return get_actual_c_program() == null ? null : get_actual_c_program().name;}
+    @JsonProperty  @Transient  public String actual_c_program_description(){ return get_actual_c_program() == null ? null :  get_actual_c_program().description;}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_backup_id(){return actual_backup_c_program_version.c_program.name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_backup_name(){return actual_backup_c_program_version.c_program.name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_backup_description(){return actual_backup_c_program_version.c_program.description;}
+    @JsonProperty  @Transient  public String actual_c_program_version_id(){ return cache_value_actual_c_program_version_id != null ? cache_value_actual_c_program_version_id : (get_actual_c_program_version() == null ? null : get_actual_c_program_version().id);}
+    @JsonProperty  @Transient  public String actual_c_program_version_name(){ return get_actual_c_program_version() == null ? null : get_actual_c_program_version().version_name;}
+    @JsonProperty  @Transient  public String actual_c_program_version_description(){  return get_actual_c_program_version() == null ? null : get_actual_c_program_version().version_description;}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_backup_version_id(){return actual_backup_c_program_version.id;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_backup_version_name(){return actual_backup_c_program_version.version_name;}
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public String actual_c_program_backup_version_description(){return actual_backup_c_program_version.version_description;}
+    @JsonProperty  @Transient  public String actual_c_program_backup_id(){  return cache_value_actual_c_program_backup_id != null ? cache_value_actual_c_program_backup_id : (get_backup_c_program() == null ? null : get_backup_c_program().id); }
+    @JsonProperty  @Transient  public String actual_c_program_backup_name(){ return get_backup_c_program() == null ? null : get_backup_c_program().name;}
+    @JsonProperty  @Transient  public String actual_c_program_backup_description(){ return get_backup_c_program() == null ? null : get_backup_c_program().description;}
 
-    @JsonProperty  @Transient @ApiModelProperty(required = true) public List<Swagger_C_Program_Update_plan_Short_Detail> required_updates(){
+    @JsonProperty  @Transient  public String actual_c_program_backup_version_id(){ return cache_value_actual_c_program_backup_version_id != null ? cache_value_actual_c_program_backup_version_id : (get_backup_c_program_version() == null ? null :  get_backup_c_program_version().id) ;}
+    @JsonProperty  @Transient  public String actual_c_program_backup_version_name(){ return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().version_name; }
+    @JsonProperty  @Transient  public String actual_c_program_backup_version_description(){return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().version_description;}
+
+    @JsonProperty  @Transient  public List<Swagger_C_Program_Update_plan_Short_Detail> required_updates(){
 
         try {
             List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.where()
@@ -193,7 +207,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true, value = "Value is null, if device status is online.") public Long latest_online(){
+    @JsonProperty  @Transient @ApiModelProperty(value = "Value is null, if device status is online.") public Long latest_online(){
         if(online_state() != Enum_Online_status.online) return null;
         try {
 
@@ -237,7 +251,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public Enum_Online_status online_state(){
+    @JsonProperty  @Transient  public Enum_Online_status online_state(){
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
@@ -289,12 +303,11 @@ public class Model_Board extends Model {
             swagger_board_short_detail.delete_permission = delete_permission();
             swagger_board_short_detail.update_permission = update_permission();
 
-            if(update_boot_loader_required()) swagger_board_short_detail.alert_list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
+            swagger_board_short_detail.alert_list.addAll(alert_list());
+            
+            swagger_board_short_detail.online_state = online_state();
 
-
-            swagger_board_short_detail.board_online_status = online_state();
-
-            if( swagger_board_short_detail.board_online_status != Enum_Online_status.online) swagger_board_short_detail.last_online = latest_online();
+            if( swagger_board_short_detail.online_state != Enum_Online_status.online) swagger_board_short_detail.last_online = latest_online();
 
             return swagger_board_short_detail;
 
@@ -330,22 +343,95 @@ public class Model_Board extends Model {
 
     }
 
-    @Transient @JsonIgnore public Model_HomerServer get_connected_server(){
-        return Model_HomerServer.get_byId(this.connected_server_id);
-    }
+    @Transient @JsonIgnore public Model_HomerServer get_connected_server(){ return Model_HomerServer.get_byId(this.connected_server_id);}
 
-    @JsonIgnore @Transient public boolean update_boot_loader_required(){
-
-        if(type_of_board.main_boot_loader() == null || actual_boot_loader == null) return true;
-        return (!this.type_of_board.cache_value_bootloader_id.equals(this.actual_boot_loader.id.toString()));
-
-    }
-
-    @JsonIgnore @Transient public Model_HomerInstance get_instance() {
+    @JsonIgnore @Transient @TyrionCachedList public Model_HomerInstance get_instance() {
         if(connected_instance_id == null) return null;
         return Model_HomerInstance.get_byId(connected_instance_id);
     }
 
+    @JsonIgnore @Transient @TyrionCachedList public Model_CProgram get_actual_c_program() {
+
+        if(cache_value_actual_c_program_id == null){
+            Model_CProgram program = Model_CProgram.find.where().eq("version_objects.c_program_version_boards.id", id).select("id").findUnique();
+            if(program == null) return null;
+            cache_value_actual_c_program_id = program.id;
+        }
+        
+        return Model_CProgram.get_byId(cache_value_actual_c_program_id);
+    }
+
+    @JsonIgnore @Transient @TyrionCachedList public Model_VersionObject get_actual_c_program_version() {
+
+        if(cache_value_actual_c_program_version_id == null){
+            Model_VersionObject version = Model_VersionObject.find.where().eq("c_program_version_boards.id", id).select("id").findUnique();
+            if(version == null) return null;
+            cache_value_actual_c_program_version_id = version.id;
+        }
+
+        return Model_VersionObject.get_byId(cache_value_actual_c_program_version_id);
+            
+    }
+
+    @JsonIgnore @Transient @TyrionCachedList public Model_BootLoader get_actual_bootloader() {
+
+        if(cache_value_actual_boot_loader_id == null){
+            Model_BootLoader bootLoader = Model_BootLoader.find.where().eq("boards.id", id).select("id").findUnique();
+            if(bootLoader == null) return null;
+            cache_value_actual_boot_loader_id = bootLoader.id.toString();
+        }
+
+        return Model_BootLoader.get_byId(cache_value_actual_boot_loader_id);
+    }
+    
+    @JsonIgnore @Transient @TyrionCachedList public Model_CProgram get_backup_c_program() {
+
+        if(cache_value_actual_c_program_backup_id == null){
+            Model_CProgram program = Model_CProgram.find.where().eq("version_objects.c_program_version_backup_boards.id", id).select("id").findUnique();
+            if(program == null) return null;
+            cache_value_actual_c_program_backup_id = program.id;
+        }
+
+        return Model_CProgram.get_byId(cache_value_actual_c_program_backup_id);
+    }
+    
+    @JsonIgnore @Transient @TyrionCachedList public Model_VersionObject get_backup_c_program_version() {
+
+        if(cache_value_actual_c_program_backup_version_id == null){
+            Model_VersionObject version = Model_VersionObject.find.where().eq("c_program_version_backup_boards.id", id).select("id").findUnique();
+            if(version == null) return null;
+            cache_value_actual_c_program_backup_version_id = version.id;
+        }
+
+        return Model_VersionObject.get_byId(cache_value_actual_c_program_backup_version_id);
+    }
+
+    @JsonIgnore @Transient @TyrionCachedList public Model_TypeOfBoard get_type_of_board() {
+
+        if(cache_value_type_of_board_id == null){
+            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.where().eq("boards.id", id).select("id").select("name").findUnique();
+            cache_value_type_of_board_id = type_of_board.id;
+            cache_value_type_of_board_name = type_of_board.name;
+        }
+
+        return Model_TypeOfBoard.get_byId(cache_value_type_of_board_id);
+    }
+
+    @JsonIgnore @Transient @TyrionCachedList public Model_Project get_project() {
+
+        if(cache_value_project_id == null){
+            Model_Project project = Model_Project.find.where().eq("boards.id", id).select("id").findUnique();
+            if(project == null) return null;
+            cache_value_project_id = project.id;
+        }
+
+        return Model_Project.get_byId(cache_value_project_id);
+    }
+
+    @JsonIgnore @Transient @TyrionCachedList public boolean update_boot_loader_required(){
+        if(get_type_of_board().main_boot_loader == null || get_actual_bootloader() == null) return true;
+        return (!this.get_type_of_board().main_boot_loader.id.equals(get_actual_bootloader().id));
+    }
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/
 
 /* SERVER WEBSOCKET ----------------------------------------------------------------------------------------------------*/
@@ -504,7 +590,7 @@ public class Model_Board extends Model {
 
             if(device == null) throw new Exception("Unregistered Hardware. Id = " + report.device_id);
 
-            Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", report.build_id).findUnique();
+            Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", report.build_id).select("id").findUnique();
             if(c_program_version == null) throw new Exception("Firmware with build ID = " + report.build_id + " was not found in the database!");
 
             device.actual_backup_c_program_version = c_program_version;
@@ -899,15 +985,15 @@ public class Model_Board extends Model {
             terminal_logger.debug("hardware_firmware_state_check: Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
 
             // Nastavím default firmware
-            if(type_of_board.version_scheme.default_main_version != null){
+            if(get_type_of_board().version_scheme.default_main_version != null){
 
-                terminal_logger.debug("hardware_firmware_state_check: Yes, Default Version for Type Of Device {} is set", type_of_board.name);
+                terminal_logger.debug("hardware_firmware_state_check: Yes, Default Version for Type Of Device {} is set", get_type_of_board().name);
 
                 List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                 b_pair.board = this;
-                b_pair.c_program_version = this.type_of_board.version_scheme.default_main_version;
+                b_pair.c_program_version = get_type_of_board().version_scheme.default_main_version;
 
                 b_pairs.add(b_pair);
 
@@ -919,15 +1005,15 @@ public class Model_Board extends Model {
                 return;
 
             }else {
-                terminal_logger.internalServerError(new Exception("Default main code version is not set for Type Of Board " + this.type_of_board.name));
+                terminal_logger.internalServerError(new Exception("Default main code version is not set for Type Of Board " + get_type_of_board().name));
             }
 
         } else {
-            terminal_logger.debug("hardware_firmware_state_check: Actual firmware_id by DB:: " + this.actual_c_program_version.c_compilation.firmware_build_id);
+            terminal_logger.debug("hardware_firmware_state_check: Actual firmware_id by DB:: " + get_actual_c_program_version().c_compilation.firmware_build_id);
         }
 
-        if (this.actual_boot_loader == null)       terminal_logger.debug("hardware_firmware_state_check:: Actual bootloader_id by DB not recognized :: " + overview.bootloader_build_id);
-        else terminal_logger.debug("hardware_firmware_state_check: Actual bootloader_id by DB: " + this.actual_boot_loader.version_identificator);
+        if (get_actual_bootloader() == null)       terminal_logger.debug("hardware_firmware_state_check:: Actual bootloader_id by DB not recognized :: " + overview.bootloader_build_id);
+        else terminal_logger.debug("hardware_firmware_state_check: Actual bootloader_id by DB: " + get_actual_bootloader().version_identificator);
 
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
 
@@ -956,9 +1042,9 @@ public class Model_Board extends Model {
             // Firmware
             terminal_logger.debug("hardware_firmware_state_check: First Check Firmware! ");
             if(overview.firmware_build_id != null) // Hází to null pointer exception při náběhu instancí na homerovi a touhle stupidní kaskádou se hledalo na čem
-                if(this.actual_c_program_version != null)
-                    if(this.actual_c_program_version.c_compilation != null)
-                        if(!overview.firmware_build_id.equals( this.actual_c_program_version.c_compilation.firmware_build_id)){
+                if(get_actual_c_program_version() != null)
+                    if(get_actual_c_program_version().c_compilation != null)
+                        if(!overview.firmware_build_id.equals(get_actual_c_program_version().c_compilation.firmware_build_id)){
 
                             terminal_logger.debug("hardware_firmware_state_check: Different firmware versions versus database");
 
@@ -967,19 +1053,19 @@ public class Model_Board extends Model {
                             // A zároven označit firmware verzi za nestabilní
                             // Nastavit aktuální verzi firmwaru na backup který naběhnul
 
-                            if(this.actual_backup_c_program_version.id.equals(overview.bootloader_build_id)){
+                            if(get_backup_c_program_version().id.equals(overview.bootloader_build_id)){
 
                                 terminal_logger.warn("hardware_firmware_state_check: We have problem with firmware version. Backup is now running");
 
                                 // Notifikace uživatelovi
-                                this.notification_board_unstable_actual_firmware_version(this.actual_c_program_version);
+                                this.notification_board_unstable_actual_firmware_version(get_actual_c_program_version());
 
                                 // Označit firmare za nestabilní
-                                this.actual_c_program_version.c_compilation.status = Enum_Compile_status.hardware_unstable;
-                                this.actual_c_program_version.c_compilation.update();
+                                get_actual_c_program_version().c_compilation.status = Enum_Compile_status.hardware_unstable;
+                                get_actual_c_program_version().c_compilation.update();
 
                                 // Přemapovat hardware
-                                this.actual_c_program_version = this.actual_backup_c_program_version;
+                                actual_c_program_version = get_backup_c_program_version();
                                 this.update();
 
                                 return;
@@ -996,7 +1082,7 @@ public class Model_Board extends Model {
 
                                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                                 b_pair.board = this;
-                                b_pair.c_program_version = this.actual_c_program_version;
+                                b_pair.c_program_version = get_actual_c_program_version();
 
                                 b_pairs.add(b_pair);
 
@@ -1010,10 +1096,8 @@ public class Model_Board extends Model {
             // Bootloader
             terminal_logger.debug("hardware_firmware_state_check::     Second Check Bootloader! ");
             if(overview.bootloader_build_id != null)
-                if(this.actual_boot_loader != null)
-                    if(this.actual_boot_loader != null)
-                        if(this.actual_boot_loader.main_type_of_board != null)
-                            if(!overview.bootloader_build_id.equals(this.actual_boot_loader.id.toString())){
+                        if(get_actual_bootloader().main_type_of_board != null)
+                            if(!overview.bootloader_build_id.equals(actual_bootloader_id())){
 
                                 terminal_logger.debug("hardware_firmware_state_check::     Different bootloader on hardware versus database");
 
@@ -1021,7 +1105,7 @@ public class Model_Board extends Model {
 
                                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                                 b_pair.board = this;
-                                b_pair.bootLoader = this.actual_boot_loader;
+                                b_pair.bootLoader = this.get_actual_bootloader();
 
                                 b_pairs.add(b_pair);
 
@@ -1032,9 +1116,9 @@ public class Model_Board extends Model {
 
             terminal_logger.debug("hardware_firmware_state_check::     Third Check Backup! ");
             if(overview.backup_build_id != null) // Hází to null pointer exception při náběhu instancí na homerovi a touhle stupidní kaskádou se hledalo na čem
-                if(this.actual_backup_c_program_version != null)
-                    if(this.actual_backup_c_program_version.c_compilation != null)
-                        if(!overview.backup_build_id.equals( this.actual_backup_c_program_version.c_compilation.firmware_build_id)){
+                if(get_backup_c_program_version() != null)
+                    if(get_backup_c_program_version().c_compilation != null)
+                        if(!overview.backup_build_id.equals( get_backup_c_program_version().c_compilation.firmware_build_id)){
 
                             terminal_logger.debug("hardware_firmware_state_check::     Inconsistent backup state on hardware with Database - Start new Update Procedure");
 
@@ -1043,7 +1127,7 @@ public class Model_Board extends Model {
 
                             WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                             b_pair.board = this;
-                            b_pair.c_program_version = this.actual_c_program_version;
+                            b_pair.c_program_version = get_actual_c_program_version();
 
                             b_pairs.add(b_pair);
 
@@ -1132,10 +1216,10 @@ public class Model_Board extends Model {
                 // Mám shodu firmwaru oproti očekávánemů
                 if(plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
 
-                    if (plan.board.actual_c_program_version != null) {
+                    if (plan.board.get_backup_c_program_version() != null) {
 
                         // Verze se rovnají
-                        if (plan.board.actual_c_program_version.c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+                        if (plan.board.get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id )) {
 
                             terminal_logger.debug("hardware_firmware_state_check:: Firmware versions are equal. Procedure done");
                             plan.state = Enum_CProgram_updater_state.complete;
@@ -1167,10 +1251,10 @@ public class Model_Board extends Model {
 
                 if(plan.firmware_type == Enum_Firmware_type.BOOTLOADER){
 
-                    if (plan.board.actual_boot_loader != null) {
+                    if (plan.board.get_actual_bootloader() != null) {
 
                         // Verze se rovnají
-                        if (plan.board.actual_boot_loader.version_identificator.equals(plan.bootloader.version_identificator)) {
+                        if (plan.board.get_actual_bootloader().version_identificator.equals(plan.bootloader.version_identificator)) {
 
                             terminal_logger.debug("hardware_firmware_state_check:: Bootloader versions are equal. Procedure done");
                             plan.state = Enum_CProgram_updater_state.complete;
@@ -1201,10 +1285,10 @@ public class Model_Board extends Model {
 
                 if(plan.firmware_type == Enum_Firmware_type.BACKUP) {
 
-                    if (plan.board.actual_backup_c_program_version != null) {
+                    if (plan.board.get_backup_c_program_version() != null) {
 
                         // Verze se rovnají
-                        if (plan.board.actual_backup_c_program_version.c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+                        if (plan.board.get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
 
                             terminal_logger.debug("hardware_firmware_state_check:: Backup versions are equal. Procedure done");
                             plan.state = Enum_CProgram_updater_state.complete;
@@ -1335,7 +1419,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient
     public void notification_board_connect(){
         new Thread( () -> {
-            if (project == null) return;
+            if (project_id() == null) return;
 
             try {
                 new Model_Notification()
@@ -1355,7 +1439,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient
     public void notification_board_disconnect(){
         new Thread( () -> {
-            if(project == null) return;
+            if(project_id() == null) return;
             // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
             try{
 
@@ -1378,7 +1462,7 @@ public class Model_Board extends Model {
         new Thread( () -> {
 
             // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
-            if(project == null) return;
+            if(project_id() == null) return;
 
             try{
 
@@ -1407,7 +1491,7 @@ public class Model_Board extends Model {
         new Thread( () -> {
 
             // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
-            if(project == null) return;
+            if(project_id() == null) return;
 
             try{
 
@@ -1534,12 +1618,12 @@ public class Model_Board extends Model {
                                                                                       " - Or user need combination of static/dynamic permission key and Board.first_connect_permission == true";
     @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
-                                       @JsonIgnore   @Transient public boolean create_permission(){  return  Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_Create"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("Board_edit")) ;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return Controller_Security.has_token() && ((project != null && project.read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_read"));
-    }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_delete"));}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  Controller_Security.has_token() && ((project != null && project.update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_update"));}
+    // TODO Cachování oprávnění - Dá se to tu zlepšít obdobně jako třeba v C_Program
+    @JsonIgnore   @Transient public boolean create_permission() {  return  Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_Create"); }
+    @JsonProperty @Transient  public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("Board_edit")) ;}
+    @JsonProperty @Transient  public boolean read_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_read"));}
+    @JsonProperty @Transient  public boolean delete_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_delete"));}
+    @JsonProperty @Transient  public boolean update_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_update"));}
 
 
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}
@@ -1547,7 +1631,7 @@ public class Model_Board extends Model {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean first_connect_permission(){  return project == null;}
+    @JsonIgnore @Transient public boolean first_connect_permission(){  return project_id() == null;}
 
     @Override
     public void save(){
@@ -1578,7 +1662,7 @@ public class Model_Board extends Model {
         //Cache Update
         cache.put(this.id, this);
 
-        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Board.class, project_id(), this.id))).start();
+        if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Board.class, project_id(), this.id))).start();
 
         //Database Update
         super.update();

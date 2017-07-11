@@ -12,7 +12,6 @@ import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Homer_instance_type;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
@@ -104,7 +103,7 @@ public class Model_BProgram extends Model {
 
             // Je nahrán
             state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
-            state.instance_online = instance.instance_online();
+            state.instance_status = instance.instance_status();
 
             if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
                 // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry

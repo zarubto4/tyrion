@@ -179,7 +179,7 @@ public class Server_Cache {
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Board Models");
             Model_Board.cache = cacheManager.createCache(Model_Board.CACHE,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_Board.class,
-                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_Board.CACHE")))
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." +  Model_Board.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Board status");
@@ -204,7 +204,7 @@ public class Server_Cache {
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Update procedure");
             Model_CProgramUpdatePlan.cache = cacheManager.createCache(Model_CProgramUpdatePlan.CACHE,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_CProgramUpdatePlan.class,
-                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_CProgramUpdatePlan.CACHE")))
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_CProgramUpdatePlan.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(7, TimeUnit.MINUTES))).build());
 
         /*
@@ -217,14 +217,14 @@ public class Server_Cache {
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Instance status");
             Model_HomerInstance.cache_status = cacheManager.createCache(Model_HomerInstance.CACHE_STATUS,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
-                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerInstance.CACHE_STATUS")))
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_HomerInstance.class.getSimpleName() + ".CACHE_STATUS")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(2, TimeUnit.HOURS))).build());
 
 
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Instance status");
             Model_HomerInstance.cache = cacheManager.createCache(Model_HomerInstance.CACHE,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerInstance.class,
-                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerInstance.CACHE")))
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_HomerInstance.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(30, TimeUnit.MINUTES))).build());
 
         /*
@@ -236,12 +236,17 @@ public class Server_Cache {
          *
          */
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Homer Server Models");
-            Model_HomerServer.cache = cacheManager.createCache(Model_HomerServer.CACHE, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerServer.class,
-                    ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_HomerServer.CACHE")))
+            Model_HomerServer.cache = cacheManager.createCache(Model_HomerServer.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_HomerServer.class,
+                    ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_HomerServer.class.getSimpleName() + ".CACHE")))
                     .withExpiry(Expirations.timeToIdleExpiration(Duration.of(12, TimeUnit.HOURS))).build());
 
+
+
         }catch (Exception e){
+            e.printStackTrace();
             terminal_logger.internalServerError("initCache:", e);
+
         }
     }
 

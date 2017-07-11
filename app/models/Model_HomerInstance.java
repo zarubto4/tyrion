@@ -70,7 +70,7 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient @TyrionCachedList private String cache_actual_instance_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_server_name;
     @JsonIgnore @Transient @TyrionCachedList private String cache_server_id;
-
+    @JsonIgnore @Transient @TyrionCachedList private String cache_project_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -147,7 +147,7 @@ public class Model_HomerInstance extends Model {
             return null;
         }
     }
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  Enum_Online_status instance_online() {
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  Enum_Online_status instance_status() {
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
@@ -218,10 +218,12 @@ public class Model_HomerInstance extends Model {
             help.b_program_id = b_program_id();
             help.b_program_name = b_program_name();
             help.b_program_description = b_program_description();
+            help.b_program_version_id = actual_instance.b_program_version_id();
+            help.b_program_version_name = actual_instance.b_program_version_name();
 
             help.server_name = server_id();
             help.server_id = server_id();
-            help.instance_is_online = instance_online();
+            help.instance_status = instance_status();
             help.server_is_online = server_is_online();
             help.update_permission = Model_BProgram.get_byId(b_program_id()).update_permission();
             help.edit_permission = Model_BProgram.get_byId(b_program_id()).edit_permission();
@@ -238,8 +240,22 @@ public class Model_HomerInstance extends Model {
 
 
     @JsonIgnore @Transient  public Model_Project get_project() {
-        return Model_Project.find.where().eq("b_programs.id", b_program.id).findUnique();
+
+        return Model_Project.get_byId(get_project_id());
+
     }
+
+    @JsonIgnore @Transient  public String get_project_id() {
+
+        if(cache_project_id == null) {
+            Model_Project project = Model_Project.find.where().eq("b_programs.id", b_program.id).select("id").findUnique();
+            cache_project_id = project.id;
+        }
+
+        return cache_project_id;
+
+    }
+
 
     @JsonIgnore @Transient  public List<String> get_boards_id_required_by_record() {
         return actual_instance.get_boards_required_by_record();
@@ -325,7 +341,7 @@ public class Model_HomerInstance extends Model {
                     .setObject(this.actual_instance.version_object)
                     .setText(new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.actual_instance.version_object.b_program)
-                    .send_under_project(get_project().id);
+                    .send_under_project(get_project_id());
 
         }catch (Exception e){
             terminal_logger.internalServerError("notification_instance_successful_upload:", e);
@@ -349,7 +365,7 @@ public class Model_HomerInstance extends Model {
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.b_program)
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
-                    .send_under_project(get_project().id);
+                    .send_under_project(get_project_id());
 
         }catch (Exception e){
             terminal_logger.internalServerError("notification_instance_unsuccessful_upload:", e);
@@ -365,7 +381,7 @@ public class Model_HomerInstance extends Model {
                     .setLevel(Enum_Notification_level.info)
                     .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
                     .setObject(this.actual_instance.version_object)
-                    .send_under_project(get_project().id);
+                    .send_under_project(get_project_id());
 
         }catch (Exception e){
             terminal_logger.internalServerError("notification_new_actualization_request_instance:", e);

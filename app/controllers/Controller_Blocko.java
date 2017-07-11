@@ -350,7 +350,7 @@ public class Controller_Blocko extends Controller{
 
                     b_pair.board = Model_Board.get_byId(group.main_board_pair.board_id);
                     if ( b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
-                    if (!b_pair.board.type_of_board.connectible_to_internet)  return GlobalResult.result_badRequest("Main Board must be internet connectible!");
+                    if (!b_pair.board.get_type_of_board().connectible_to_internet)  return GlobalResult.result_badRequest("Main Board must be internet connectible!");
                     if(!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
 
                     b_pair.c_program_version = Model_VersionObject.get_byId(group.main_board_pair.c_program_version_id);
@@ -1098,7 +1098,7 @@ public class Controller_Blocko extends Controller{
             Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
-            if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
+            if (!homer_instance.instance_status()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
 
             WS_Message_Instance_device_set_snap result = homer_instance.set_device_to_instance(list_of_devices);
 
@@ -1121,7 +1121,7 @@ public class Controller_Blocko extends Controller{
             Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
-            if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
+            if (!homer_instance.instance_status()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
 
 
             WS_Message_Instance_device_remove result = homer_instance.remove_device_from_instance(list_of_devices);

@@ -22,6 +22,7 @@ import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.independent_threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
+import utilities.swagger.outboundClass.Swagger_HomerServer_public_Detail;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
 import web_socket.message_objects.common.service_class.WS_Message_Invalid_Message;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
@@ -82,6 +83,17 @@ public class Model_HomerServer extends Model{
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient  public boolean server_is_online(){ return Controller_WebSocket.homer_servers.containsKey(this.unique_identificator);}
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public Swagger_HomerServer_public_Detail get_public_info(){
+
+        Swagger_HomerServer_public_Detail detail = new Swagger_HomerServer_public_Detail();
+        detail.unique_identificator = unique_identificator;
+        detail.personal_server_name =personal_server_name;
+        detail.online_state = server_is_online();
+
+        return detail;
+    }
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
   
