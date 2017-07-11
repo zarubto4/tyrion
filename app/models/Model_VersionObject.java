@@ -19,7 +19,6 @@ import play.libs.ws.WSResponse;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_Library_Record;
@@ -365,7 +364,7 @@ public class Model_VersionObject extends Model {
 
 
         // Když obsahuje chyby - vrátím rovnou Becki
-        if(!compilation.buildErrors.isEmpty()) {
+        if(!compilation.build_errors.isEmpty()) {
 
             terminal_logger.trace("compile_program_procedure:: compilation contains user Errors");
 
@@ -373,13 +372,13 @@ public class Model_VersionObject extends Model {
             c_compilation.update();
 
             Result_CompilationListError result_compilationListError = new Result_CompilationListError();
-            result_compilationListError.errors = compilation.buildErrors;
+            result_compilationListError.errors = compilation.build_errors;
             return result_compilationListError;
         }
 
-        if(compilation.interface_code == null || compilation.buildUrl == null){
+        if(compilation.interface_code == null || compilation.build_url == null){
 
-            terminal_logger.internalServerError(new Exception("Missing fields ('interface_code' or 'buildUrl') in result from Code Server. Result: " + Json.toJson(compilation).toString()));
+            terminal_logger.internalServerError(new Exception("Missing fields ('interface_code' or 'build_url') in result from Code Server. Result: " + Json.toJson(compilation).toString()));
 
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
@@ -411,7 +410,7 @@ public class Model_VersionObject extends Model {
                 terminal_logger.trace("compile_program_procedure:: try to download file");
 
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-                F.Promise<WSResponse> responsePromise = ws.url(compilation.buildUrl)
+                F.Promise<WSResponse> responsePromise = ws.url(compilation.build_url)
                         .setContentType("undefined")
                         .setRequestTimeout(7500)
                         .get();
@@ -429,8 +428,8 @@ public class Model_VersionObject extends Model {
 
                 terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
                 c_compilation.status = Enum_Compile_status.successfully_compiled_and_restored;
-                c_compilation.c_comp_build_url = compilation.buildUrl;
-                c_compilation.firmware_build_id = compilation.buildId;
+                c_compilation.c_comp_build_url = compilation.build_url;
+                c_compilation.firmware_build_id = compilation.build_id;
                 c_compilation.virtual_input_output = compilation.interface_code;
                 c_compilation.date_of_create = new Date();
                 c_compilation.update();
@@ -441,7 +440,7 @@ public class Model_VersionObject extends Model {
 
             }catch (ConnectException e){
 
-                terminal_logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilation.buildUrl, e));
+                terminal_logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilation.build_url, e));
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
 

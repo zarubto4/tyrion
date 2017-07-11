@@ -12,7 +12,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
-import play.libs.Json;
 import utilities.Server;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
@@ -123,7 +122,7 @@ public class Model_CompilationServer extends Model {
             terminal_logger.debug("make_Compilation:: Start of compilation was successful - waiting for result");
 
             WS_Send_message get_compilation = new WS_Send_message(null, null, "compilation_message", 1000 * 35, 0, 1);
-            server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
+            server.sendMessageMap.put( compilation_request.get("build_id").asText(), get_compilation);
 
             ObjectNode node = get_compilation.send_with_response();
 
@@ -136,8 +135,8 @@ public class Model_CompilationServer extends Model {
 
             if(compilation_request.has("interface_code")) compilation.interface_code = compilation_request.get("interface_code").toString();
 
-            if(compilation.buildUrl != null){
-                terminal_logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.buildUrl);
+            if(compilation.build_url != null){
+                terminal_logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.build_url);
                 compilation.status = "success";
             }
 

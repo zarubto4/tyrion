@@ -232,8 +232,8 @@ public class Controller_Board extends Controller {
 
             WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( typeOfBoard ,"only_for_compilation", help.main, includes ));
 
-            // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
-            if (compilation_result.buildUrl != null && compilation_result.status.equals("success")) {
+            // V případě úspěšného buildu obsahuje příchozí JsonNode build_url
+            if (compilation_result.build_url != null && compilation_result.status.equals("success")) {
 
                 Swagger_Cloud_Compilation_Server_CompilationResult result = new Swagger_Cloud_Compilation_Server_CompilationResult();
                 result.interface_code = compilation_result.interface_code;
@@ -242,9 +242,9 @@ public class Controller_Board extends Controller {
             }
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
-            if (!compilation_result.buildErrors.isEmpty()) {
+            if (!compilation_result.build_errors.isEmpty()) {
 
-                return GlobalResult.result_buildErrors(Json.toJson(compilation_result.buildErrors));
+                return GlobalResult.result_buildErrors(Json.toJson(compilation_result.build_errors));
             }
 
             // Nebylo úspěšné ani odeslání requestu - Chyba v konfiguraci a tak vracím defaulní chybz

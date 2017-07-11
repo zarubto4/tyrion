@@ -80,12 +80,12 @@ public class WS_CompilerServer extends WS_Interface_type {
             terminal_logger.trace("WS_CompilerServer:: onMessage:: Incoming message:: " + message);
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
-            if (json.has("buildId") && super.sendMessageMap.containsKey(json.get("buildId").asText())) {
+            if (json.has("build_id") && super.sendMessageMap.containsKey(json.get("build_id").asText())) {
 
                 terminal_logger.trace("WS_CompilerServer:: onMessage:: Message with compiled build");
 
-                super.sendMessageMap.get(json.get("buildId").asText()).insert_result(json);
-                super.sendMessageMap.remove(json.get("buildId").asText());
+                super.sendMessageMap.get(json.get("build_id").asText()).insert_result(json);
+                super.sendMessageMap.remove(json.get("build_id").asText());
                 return;
             }
 
