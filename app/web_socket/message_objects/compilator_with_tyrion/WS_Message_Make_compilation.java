@@ -20,12 +20,11 @@ public class WS_Message_Make_compilation extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    public String interface_code;       // Optional value - Only if there is no build_errors
+    public String interface_code;        // Optional value - Only if there is no build_errors
     public String build_id;              // Optional value - Only if there is no build_errors
     public String build_url;             // Optional value - Only if there is no build_errors
 
     @Valid public List<Swagger_Compilation_Build_Error> build_errors = new ArrayList<>();
-
 
 
 
@@ -39,7 +38,7 @@ public class WS_Message_Make_compilation extends WS_AbstractMessage {
         request.put("message_type",       messageType);
         request.put("message_channel",    Model_CompilationServer.CHANNEL);
         request.put("target",             typeOfBoard.compiler_target_name);
-        request.put("library_version",    "v0"); // TODO longetrm podle verzí komplační knohovny
+        request.put("library_version",    "v0"); // TODO longterm podle verzí komplační knihovny
         request.put("version_id",         version_id);
         request.put("code",               code);
         request.set("includes", includes);

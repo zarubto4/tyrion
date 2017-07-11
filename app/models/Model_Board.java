@@ -112,14 +112,14 @@ public class Model_Board extends Model {
 
     @JsonProperty  @Transient  public Enum_Board_BackUpMode backup_mode(){ return backup_mode ? Enum_Board_BackUpMode.AUTO_BACKUP : Enum_Board_BackUpMode.STATIC_BACKUP;}
 
-    @JsonProperty  @Transient  public String type_of_board_id()                     { return cache_value_type_of_board_id   != null ? cache_value_type_of_board_id: get_type_of_board().id; }
-    @JsonProperty  @Transient  public String type_of_board_name()                   { return cache_value_type_of_board_name != null ? cache_value_type_of_board_name: get_type_of_board().name ; }
-    @JsonProperty  @Transient  public String project_id()                           { return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }
-    @JsonProperty  @Transient  public String actual_bootloader_version_name()       { return get_actual_bootloader().name; }
-    @JsonProperty  @Transient  public String actual_bootloader_id()                 { return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString();}
+    @JsonProperty  @Transient  public String type_of_board_id()                     { try{ return cache_value_type_of_board_id   != null ? cache_value_type_of_board_id: get_type_of_board().id;}catch (NullPointerException e){return  null;}}
+    @JsonProperty  @Transient  public String type_of_board_name()                   { try{ return cache_value_type_of_board_name != null ? cache_value_type_of_board_name: get_type_of_board().name;}catch (NullPointerException e){return  null;}}
+    @JsonProperty  @Transient  public String project_id()                           { try{ return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }catch (NullPointerException e){return  null;}}
+    @JsonProperty  @Transient  public String actual_bootloader_version_name()       { try{ return get_actual_bootloader().name; }catch (NullPointerException e){return  null;}}
+    @JsonProperty  @Transient  public String actual_bootloader_id()                 { try{ return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString(); }catch (NullPointerException e){return  null;}}
 
     @JsonProperty  @Transient  public String available_bootloader_version_name()    { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().name;}
-    @JsonProperty  @Transient  public String available_bootloader_id()              { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().id.toString(); }
+    @JsonProperty  @Transient  public String available_bootloader_id()              { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().id.toString();}
 
     @JsonProperty  @Transient  public List<Enum_Board_Alert> alert_list(){
 
@@ -127,7 +127,7 @@ public class Model_Board extends Model {
 
             List<Enum_Board_Alert> list = new ArrayList<>();
 
-            if(available_bootloader_id() != null || !actual_bootloader_id().equals(available_bootloader_id())) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
+            if( available_bootloader_id() != null && available_bootloader_id() != null && !actual_bootloader_id().equals(available_bootloader_id())) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
 
             return list;
         }catch (Exception e){
