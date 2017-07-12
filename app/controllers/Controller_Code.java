@@ -720,10 +720,8 @@ public class Controller_Code extends Controller{
             // Kontrola oprávnění
             if(!version_object.c_program.delete_permission()) return GlobalResult.result_forbidden();
 
-            version_object.removed_by_user = true;
-
             // Smažu zástupný objekt
-            version_object.update();
+            version_object.delete();
 
             // Vracím potvrzení o smazání
             return GlobalResult.result_ok();

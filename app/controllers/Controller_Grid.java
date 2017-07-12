@@ -716,8 +716,7 @@ public class Controller_Grid extends Controller {
             if (! version_object.m_program.delete_permission() ) return GlobalResult.result_forbidden();
 
             // Smazání objektu
-            version_object.removed_by_user = true;
-            version_object.update();
+            version_object.delete();
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();

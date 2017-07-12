@@ -573,8 +573,7 @@ public class Controller_Blocko extends Controller{
             if (! version_object.b_program.delete_permission() ) return GlobalResult.result_forbidden();
 
             // Smazání objektu
-            version_object.removed_by_user = true;
-            version_object.update();
+            version_object.delete();
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();

@@ -510,11 +510,31 @@ public class Model_VersionObject extends Model {
         super.save();
 
 
+        if(c_program != null){
+            c_program.cache_list_version_objects_ids.add(id);
+        }
+
+        if(b_program != null){
+            b_program.cache_list_version_objects_ids.add(id);
+        }
+
+        if(m_program != null){
+            m_program.cache_list_version_objects_ids.add(id);
+        }
 
         cache.put(id, this);
     }
 
     @JsonIgnore @Override
+    public void update(){
+
+        // TODO informace o změně směr Becki!
+        
+        super.update();
+    }
+
+
+        @JsonIgnore @Override
     public void delete(){
 
         removed_by_user = true;
