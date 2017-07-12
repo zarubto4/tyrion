@@ -106,7 +106,7 @@ public class Model_Project extends Model {
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore @Transient Swagger_Project_Short_Detail project_short_detail(){
+    @JsonIgnore @Transient public Swagger_Project_Short_Detail project_short_detail(){
 
         Swagger_Project_Short_Detail short_detail = new Swagger_Project_Short_Detail();
 
