@@ -54,7 +54,7 @@ public class Model_Project extends Model {
     // TODO - CHCI CACHE INGOR - NA VŠECHNY DB HODNOTY KTERÉ JSOU VÝŠE
     // COŽ ZNAMENÁ ŽE SI CACHE PÚAMATUJE JEN ID REFERENCE
 
-    @JsonIgnore @Transient @TyrionCachedList private List<String> board_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> board_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private List<String> c_program_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private List<String> library_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private List<String> b_program_ids = new ArrayList<>();

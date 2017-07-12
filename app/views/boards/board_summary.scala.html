@@ -352,15 +352,11 @@
          content +="<tr>";
          content +="<th>Board ID</th>";
          content +="<th>Hash for adding</th>";
-         content +="<th>Personal Description</th>";
+         content +="<th>Personal Name</th>";
 
          content +="<th>Online</th>";
          content +="<th>Under Project</th>";
-         content +="<th>Activated?</th>";
-         content +="<th>Backup</th>";
-         content +="<th>Date</th>";
-         content +="<th>Wifi Mac</th>";
-         content +="<th>Mac Adress</th>";
+
          content +="</tr>";
 
 
@@ -373,36 +369,8 @@
              content += "<td>" + v.hash_for_adding +"</td>";
              content += "<td>" + v.name +"</td>";
 
-
-             if(v.status.status == "online") {
-                 content += "<td><span class=\"label label-success\">Online</span></td>";
-             }else{
-                 content += "<td><span class=\"label label-danger\">Offline</span></td>";
-             }
-
-
-             if(v.project_id != null) {
-                 content += "<td><span class=\"label label-success\">True</span></td>";
-             }else{
-                 content += "<td><span class=\"label label-warning\">False</span></td>";
-             }
-
-             if(v.is_active == true) {
-                 content += "<td><span class=\"label label-success\">Online</span></td>";
-             }else{
-                 content += "<td><span class=\"label label-warning\">Not Yet</span></td>";
-             }
-
-             content += "<td>" + v.backup_mode +"</td>";
-             content += "<td>" + new Date(v.date_of_create).toISOString().slice(0, 19) +"</td>";
-
-             if(content.main_board == true){
-                 content += "<td>" + v.wifi_mac_address + "</td>";
-                 content += "<td>" + v.mac_address + "</td>";
-             }else{
-                 content += "<td>No Internet</td>";
-                 content += "<td>No Internet</td>";
-             }
+             content += "<td>v.online_state</td>";
+             content += "<td>v.project_id </td>";
 
              content += "</tr>";
 

@@ -2377,6 +2377,8 @@ public class Controller_Board extends Controller {
             board.project = project;
             board.date_of_user_registration = new Date();
             project.boards.add(board);
+            project.board_ids.add(board.id);
+            
             board.update();
             project.update();
 
