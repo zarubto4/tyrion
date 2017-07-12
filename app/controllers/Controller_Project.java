@@ -23,6 +23,7 @@ import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
+import utilities.swagger.outboundClass.Swagger_Project_Short_Detail;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -116,7 +117,7 @@ public class Controller_Project extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class, responseContainer = "list"),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Project_Short_Detail.class, responseContainer = "list"),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),

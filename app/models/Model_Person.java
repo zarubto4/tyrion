@@ -20,6 +20,7 @@ import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Project_Short_Detail;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
@@ -97,7 +98,7 @@ public class Model_Person extends Model {
 /* JSON IGNOR VALUES ----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public List<Model_Project> get_user_access_projects(){
+    public List<Swagger_Project_Short_Detail> get_user_access_projects(){
 
         // Chache Add Projects
         if(project_ids.isEmpty()) {
@@ -109,10 +110,10 @@ public class Model_Person extends Model {
             }
         }
 
-        List<Model_Project> projects = new ArrayList<>();
+        List<Swagger_Project_Short_Detail> projects = new ArrayList<>();
 
         for(String project_id : project_ids){
-            projects.add(Model_Project.get_byId(project_id));
+            projects.add(Model_Project.get_byId(project_id).project_short_detail());
         }
 
         return projects;

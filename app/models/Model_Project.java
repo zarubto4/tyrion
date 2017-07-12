@@ -105,6 +105,26 @@ public class Model_Project extends Model {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
+
+    @JsonIgnore @Transient Swagger_Project_Short_Detail project_short_detail(){
+
+        Swagger_Project_Short_Detail short_detail = new Swagger_Project_Short_Detail();
+
+        short_detail.project_id = id;
+        short_detail.product_name = name;
+        short_detail.product_name = product_name();
+        short_detail.product_id = product_id();
+
+        short_detail.edit_permission = edit_permission();
+        short_detail.delete_permission = delete_permission();
+
+        short_detail.status = active();
+
+        return short_detail;
+
+    }
+
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save() {
@@ -155,6 +175,7 @@ public class Model_Project extends Model {
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
+
     @JsonIgnore @TyrionCachedList
     public List<Model_Board> get_project_boards_not_deleted(){
         try {

@@ -38,17 +38,13 @@ public class Model_BProgram extends Model {
                         @Column(columnDefinition = "TEXT")   public String description;
     @JsonIgnore @OneToOne(cascade = CascadeType.ALL)         public Model_HomerInstance instance; // TODO - do budoucna více instnací!!!! http://youtrack.byzance.cz/youtrack/issue/TYRION-502
 
-    @ApiModelProperty(required = true,
-                     dataType = "integer", readOnly = true,
-                     value = "UNIX time in ms",
-                     example = "1466163478925")                       public Date last_update;
-    @ApiModelProperty(required = true,
-            dataType = "integer", readOnly = true,
-            value = "UNIX time in ms",
-            example = "1466163478925")                       public Date date_of_create;
-                                    @JsonIgnore @ManyToOne   public Model_Project project;
-                                    @JsonIgnore              public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
-    @JsonIgnore   @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date last_update;
+    @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;
+
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_Project project;
+    @JsonIgnore                                      public boolean removed_by_user;  // Defaultně false - když true - tak se to nemá uživateli vracet!
+
+    @JsonIgnore @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
 
 
 
@@ -59,18 +55,18 @@ public class Model_BProgram extends Model {
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_name;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_name;
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient public String project_id(){
+    @JsonProperty @Transient public String project_id(){
 
         if(cache_value_project_id == null){
             Model_Project project = Model_Project.find.where().eq("c_programs.id", id).select("id").findUnique();
+            if(project == null) return null;
             cache_value_project_id = project.id;
         }
 
         return cache_value_project_id;
-
-
     }
 
     @JsonProperty @Transient public List<Swagger_B_Program_Version_Short_Detail> program_versions() {
@@ -136,6 +132,7 @@ public class Model_BProgram extends Model {
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
+
     @Transient @JsonIgnore public Swagger_B_Program_Short_Detail get_b_program_short_detail(){
         try {
 
@@ -155,12 +152,8 @@ public class Model_BProgram extends Model {
             return null;
         }
     }
-
-/* Private Documentation Class -----------------------------------------------------------------------------------------*/
-
     // Objekt určený k vracení verze
-    @JsonIgnore @Transient
-    public Swagger_B_Program_Version program_version(Model_VersionObject version_object){
+    @JsonIgnore @Transient public Swagger_B_Program_Version program_version(Model_VersionObject version_object){
 
         Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
 
