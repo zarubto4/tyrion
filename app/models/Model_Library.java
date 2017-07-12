@@ -47,7 +47,7 @@ public class Model_Library extends Model{
 
     @ManyToMany public List<Model_TypeOfBoard>  type_of_boards  = new ArrayList<>();
 
-    @JsonIgnore public String project_id; // Jednodušší vazba na Project bez příme ORM vazby
+    @JsonIgnore public String project_id; // Předělat na klasické ORM! s Lazy Loading!
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -137,7 +137,14 @@ public class Model_Library extends Model{
             this.azure_library_link = "libraries/"  + this.id;
             if (find.byId(this.id) == null) break;
         }
+
         super.save();
+
+        if(project_id != null){
+            Model_Project.get_byId(project_id).library_ids.add(id);
+        }
+
+        cache.put(id, this);
     }
 
     @Override
@@ -159,6 +166,12 @@ public class Model_Library extends Model{
         terminal_logger.debug("remove :: Update (hide) object Id: " + this.id);
 
         removed_by_user = true;
+
+        if(project_id != null){
+            Model_Project.get_byId(project_id).library_ids.remove(id);
+        }
+
+        cache.remove(id);
 
         //Database Update
         super.update();

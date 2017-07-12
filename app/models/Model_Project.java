@@ -55,13 +55,13 @@ public class Model_Project extends Model {
     // COŽ ZNAMENÁ ŽE SI CACHE PÚAMATUJE JEN ID REFERENCE
 
     @JsonIgnore @Transient @TyrionCachedList public List<String> board_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private List<String> c_program_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private List<String> library_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private List<String> b_program_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private List<String> m_project_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private List<String> type_of_widgets_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private List<String> type_of_blocks_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private List<String> instance_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> c_program_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> library_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> b_program_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> m_project_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> type_of_widgets_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> type_of_blocks_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> instance_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_product_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -112,7 +112,7 @@ public class Model_Project extends Model {
 
         short_detail.project_id = id;
         short_detail.project_name = name;
-        
+
         short_detail.product_name = product_name();
         short_detail.product_id = product_id();
 

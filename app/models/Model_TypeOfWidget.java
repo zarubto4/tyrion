@@ -143,6 +143,12 @@ public class Model_TypeOfWidget extends Model{
         }
 
         super.save();
+
+        if(project != null){
+            project.type_of_widgets_ids.add(id);
+        }
+
+        cache.put(id, this);
     }
 
     @JsonIgnore @Override public void update() {
@@ -159,9 +165,17 @@ public class Model_TypeOfWidget extends Model{
         removed_by_user = true;
         super.update();
 
+        if(project_id() != null){
+            Model_Project.get_byId(project_id()).type_of_widgets_ids.remove(id);
+        }
+
+        cache.remove(id);
+
         for(Model_GridWidget gridWidget : grid_widgets){
             gridWidget.delete();
         }
+
+
     }
 
 
@@ -313,6 +327,9 @@ public class Model_TypeOfWidget extends Model{
         return type_of_widget;
 
     }
+
+
+    // SQL
 
     @JsonIgnore
     public static List<Model_TypeOfWidget> get_all() {

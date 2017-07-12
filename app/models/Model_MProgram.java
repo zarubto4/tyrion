@@ -200,9 +200,17 @@ public class Model_MProgram extends Model{
             if (Model_MProgram.get_byId(this.id) == null) break;
         }
 
-        if(m_project.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_MProject.class, m_project.project_id(), m_project.id))).start();
+        if(m_project.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_MProject.class, m_project.project_id(), m_project.id))).start();
 
         super.save();
+
+        if(m_project != null){
+            m_project.m_programs_ids.add(id);
+        }
+
+        cache.put(this.id, this);
+
+
     }
 
     @JsonIgnore @Override public void update() {
@@ -222,6 +230,11 @@ public class Model_MProgram extends Model{
         removed_by_user = true;
         super.update();
 
+        if(m_project_id() != null){
+            Model_MProject.get_byId(m_project_id()).m_programs_ids.remove(id);
+        }
+
+        cache.remove(id);
 
         if(m_project.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_MProject.class, m_project.project_id(), m_project.id))).start();
 
@@ -252,7 +265,7 @@ public class Model_MProgram extends Model{
     @JsonIgnore   @Transient public boolean create_permission(){
 
         if(Controller_Security.get_person().permissions_keys.containsKey("M_Program_create")) return true;
-        return m_project != null ? m_project.update_permission() : false;
+        return m_project != null && m_project.update_permission();
 
     }
 

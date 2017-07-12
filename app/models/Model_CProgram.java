@@ -71,6 +71,7 @@ public class Model_CProgram extends Model {
 
         if(cache_value_project_id == null){
             Model_Project project = Model_Project.find.where().eq("c_programs.id", id).select("id").findUnique();
+            if(project == null) return null;
             cache_value_project_id = project.id;
         }
 
@@ -296,34 +297,29 @@ public class Model_CProgram extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
+        this.id = UUID.randomUUID().toString();
+
         // C_Program is Private registred under Project
-        if(project != null){
+        if(project != null) {
 
             terminal_logger.debug("save :: is a private Program");
+            this.azure_c_program_link = project.get_path() + "/c-programs/" + this.id;
 
-            while(true){ // I need Unique Value
-                this.id = UUID.randomUUID().toString();
-                this.azure_c_program_link = project.get_path()  + "/c-programs/"  + this.id;
-                if (Model_CProgram.get_byId(this.id) == null) break;
-            }
-        }
-
-        // C_Program is public C_Program for every users
-        else{
+        }else{    // C_Program is public C_Program for every users
 
             terminal_logger.debug("save :: is a public Program");
+            this.azure_c_program_link = "public-c-programs/"  + this.id;
 
-            while(true){ // I need Unique Value
-                this.id = UUID.randomUUID().toString();
-                this.azure_c_program_link = "public-c-programs/"  + this.id;
-                if (Model_CProgram.get_byId(this.id) == null) break;
-            }
         }
 
         // Call notification about project update
         if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
 
         super.save();
+
+        if(project != null){
+            project.c_program_ids.add(id);
+        }
 
         cache.put(id, this);
     }
@@ -345,6 +341,13 @@ public class Model_CProgram extends Model {
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
         this.removed_by_user = true;
+
+
+        if(project_id() != null){
+            Model_Project.get_byId( project_id() ).c_program_ids.remove(id);
+        }
+
+        cache.remove(id);
 
         // Call notification about project update
         if(get_project() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
@@ -378,7 +381,7 @@ public class Model_CProgram extends Model {
 
         if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_create")) return true;
 
-        return get_project() != null ? project.update_permission() : false;
+        return project != null && project.update_permission();
 
     }
 

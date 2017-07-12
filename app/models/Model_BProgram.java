@@ -212,12 +212,9 @@ public class Model_BProgram extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
-        while(true){ // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            this.azure_b_program_link = project.get_path() + "/b-programs/"  + this.id;
-            if (Model_BProgram.get_byId(this.id) == null) break;
-        }
 
+        this.id = UUID.randomUUID().toString();
+        this.azure_b_program_link = project.get_path() + "/b-programs/"  + this.id;
 
         if(instance == null){
 
@@ -228,9 +225,16 @@ public class Model_BProgram extends Model {
             this.instance = instance;
 
         }
+
         super.save();
 
-        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
+        if(project != null){
+            project.b_program_ids.add(id);
+        }
+
+        cache.put(id, this);
+
+        if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -239,22 +243,28 @@ public class Model_BProgram extends Model {
 
         super.update();
 
-        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BProgram.class, project_id(), id))).start();
+        if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BProgram.class, project_id(), id))).start();
     }
 
     @JsonIgnore @Override public void delete() {
 
-      terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
-      instance.remove_from_cloud();
-      instance.removed_by_user = true;
-      instance.update();
+        instance.remove_from_cloud();
+        instance.removed_by_user = true;
+        instance.update();
 
-      this.removed_by_user = true;
+        this.removed_by_user = true;
 
-      super.update();
+        if(project_id() != null){
+            Model_Project.get_byId( project_id() ).b_program_ids.remove(id);
+        }
 
-     if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
+        cache.remove(id);
+
+        super.update();
+
+        if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
 
     }
 
@@ -295,7 +305,7 @@ public class Model_BProgram extends Model {
     @JsonIgnore   @Transient public boolean create_permission()  {
 
         if(Controller_Security.get_person().permissions_keys.containsKey("B_Program_create")) return true;
-        return (project.update_permission());
+        return project != null && project.update_permission();
 
     }
     @JsonProperty @Transient public boolean update_permission()  {

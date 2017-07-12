@@ -49,12 +49,15 @@ public class Model_MProject extends Model {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
-    @JsonIgnore @Transient @TyrionCachedList private List<String> m_programs_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> m_programs_ids = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String                               project_id() {  return project.id; }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String                               project_id() {
+        return project.id;
+
+    }
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Program_Short_Detail> m_programs() { List<Swagger_M_Program_Short_Detail>   l = new ArrayList<>();    for( Model_MProgram m  :  get_m_programs_not_deleted())    l.add(m.get_m_program_short_detail()); return l;}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -119,13 +122,16 @@ public class Model_MProject extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
-        while(true){ // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            this.azure_m_project_link = project.get_path()  + "/m-projects/"  + this.id;
-            if (Model_MProject.get_byId(this.id) == null) break;
-        }
+        this.id = UUID.randomUUID().toString();
+        this.azure_m_project_link = project.get_path()  + "/m-projects/"  + this.id;
 
         super.save();
+
+        if(project != null){
+            project.m_project_ids.add(id);
+        }
+
+        cache.put(id, this);
 
         if(project != null ) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_Project.class, project_id(), project_id()))).start();
 
@@ -148,7 +154,13 @@ public class Model_MProject extends Model {
         removed_by_user = true;
         super.update();
 
-        if(project != null ) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_Project.class, project_id(), project_id()))).start();
+        if(project_id() != null){
+            Model_Project.get_byId( project_id() ).m_project_ids.remove(id);
+        }
+
+        cache.remove(id);
+
+        if(project_id() != null ) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_Project.class, project_id(), project_id()))).start();
 
     }
 

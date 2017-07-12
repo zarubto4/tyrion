@@ -278,9 +278,12 @@ public class Model_HomerInstance extends Model {
             if (Model_HomerInstance.find.where().eq("id", id).findUnique() == null) break;
         }
 
-
         super.save();
 
+
+        if(project_id != null){
+            Model_Project.get_byId(project_id).instance_ids.add(id);
+        }
 
         cache.put(this.id, this);
     }
@@ -302,7 +305,12 @@ public class Model_HomerInstance extends Model {
         this.removed_by_user = true;
         super.update();
 
-        cache.put(this.id, this);
+        if(project_id != null){
+            Model_Project.get_byId(project_id).instance_ids.remove(id);
+        }
+
+        cache.put(id, this);
+
     }
 
 

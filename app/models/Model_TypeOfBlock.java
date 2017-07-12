@@ -134,11 +134,15 @@ public class Model_TypeOfBlock extends Model {
             order_position = Model_TypeOfBlock.find.where().eq("project.id", project.id).findRowCount() + 1;
         }
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (get_byId(this.id) == null) break;
-        }
+        this.id = UUID.randomUUID().toString();
+
         super.save();
+
+        if(project != null){
+            project.type_of_blocks_ids.add(id);
+        }
+
+        cache.put(id, this);
     }
 
     @JsonIgnore @Override public void update() {
@@ -155,6 +159,12 @@ public class Model_TypeOfBlock extends Model {
 
         removed_by_user = true;
         super.update();
+
+        if(project_id() != null){
+            Model_Project.get_byId(project_id()).type_of_blocks_ids.remove(id);
+        }
+
+        cache.remove(id);
 
     }
 
