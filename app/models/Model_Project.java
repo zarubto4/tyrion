@@ -112,6 +112,7 @@ public class Model_Project extends Model {
 
         short_detail.project_id = id;
         short_detail.project_name = name;
+        short_detail.project_description = description;
 
         short_detail.product_name = product_name();
         short_detail.product_id = product_id();

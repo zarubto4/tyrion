@@ -161,14 +161,16 @@ public class Model_HomerInstance extends Model {
         if(Model_HomerServer.get_byId(server_id()).server_is_online()){
 
             if(cache_status.containsKey(id)){
+
                 return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
+
             }else {
                 // Začnu zjišťovat stav - v separátním vlákně!
                 new Thread( () -> {
                     try {
 
                         WS_Message_Instance_status status = get_instance_status();
-                        cache_status.put(id, status.get_status(id).online_status);
+                        if(status.status.equals("success")) cache_status.put(id, status.get_status(id).online_status);
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError("notification_board_connect:", e);
@@ -178,6 +180,7 @@ public class Model_HomerInstance extends Model {
                 return Enum_Online_status.synchronization_in_progress;
 
             }
+
         } else {
             return Enum_Online_status.unknown_lost_connection_with_server;
         }

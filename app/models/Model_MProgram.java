@@ -66,7 +66,7 @@ public class Model_MProgram extends Model{
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @TyrionCachedList private List<String> cache_list_version_objects_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_version_objects_ids = new ArrayList<>();
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

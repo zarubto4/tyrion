@@ -70,21 +70,21 @@ public class Model_VersionObject extends Model {
             cascade = CascadeType.ALL)                      public List<Model_CProgram> examples = new ArrayList<>();
 
     // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore @ManyToOne()                                                                                    public Model_CProgram c_program;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                              public Model_CProgram c_program;
     @JsonIgnore @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)                                 public Model_CCompilation c_compilation;
 
     @JsonIgnore @ManyToMany @JoinTable(name = "model_c_program_library_version",
             joinColumns = @JoinColumn(name = "library_version_id"),                                             // TODO LEXA ?? K čemu je tahle vazba???
             inverseJoinColumns = @JoinColumn(name = "c_program_version_id"))                                    public List<Model_VersionObject> library_versions = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
-    @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version")                                          public List<Model_Board>  c_program_version_backup_boards  = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
+    @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Board>  c_program_version_backup_boards  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
                                                                                                    @JsonIgnore  public Enum_Approval_state approval_state; // Zda je program schválený veřejný program
                                                                                          @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
     // B_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)                           public Model_BProgram b_program;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public Model_BProgram b_program;
 
     @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)   public List<Model_BPair>   b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
 
@@ -94,16 +94,16 @@ public class Model_VersionObject extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions") public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
 
     // B_Program - Instance
-    @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="version_object", fetch = FetchType.LAZY) public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
 
 
 
     // M_Program --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER) public Model_MProgram m_program;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_MProgram m_program;
                                     @JsonIgnore @Column(columnDefinition = "TEXT")  public String m_program_virtual_input_output;
 
-    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "m_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "m_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -490,8 +490,7 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore public String blob_version_link;
 
-    @JsonIgnore @Transient
-    public String get_path(){
+    @JsonIgnore @Transient public String get_path(){
         return  blob_version_link;
     }
 
@@ -499,21 +498,40 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore @Override public void save() {
 
-        while(true){ // I need Unique Value
-
-            this.id = UUID.randomUUID().toString();
-            this.blob_version_link = "/versions/" + this.id;
-            if (find.byId(this.id) == null) break;
-        }
+        this.id = UUID.randomUUID().toString();
+        this.blob_version_link = "/versions/" + this.id;
 
         try {
-            if(this.author == null)
-                this.author = Controller_Security.get_person();
+            if(this.author == null) this.author = Controller_Security.get_person();
         }catch (Exception e){
             // this.author = null;
         }
 
         super.save();
+
+
+
+        cache.put(id, this);
+    }
+
+    @JsonIgnore @Override
+    public void delete(){
+
+        removed_by_user = true;
+
+        if(c_program != null){
+            c_program.cache_list_version_objects_ids.remove(id);
+        }
+
+        if(b_program != null){
+            b_program.cache_list_version_objects_ids.remove(id);
+        }
+
+        if(m_program != null){
+            m_program.cache_list_version_objects_ids.remove(id);
+        }
+
+        super.update();
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/

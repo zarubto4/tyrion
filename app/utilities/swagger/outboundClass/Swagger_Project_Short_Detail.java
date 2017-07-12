@@ -14,6 +14,7 @@ public class Swagger_Project_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true) public String project_id;
     @ApiModelProperty(required = true, readOnly = true) public String project_name;
+    @ApiModelProperty(required = true, readOnly = true) public String project_description;
 
     @ApiModelProperty(required = true, readOnly = true) public String product_id;
     @ApiModelProperty(required = true, readOnly = true) public String product_name;
