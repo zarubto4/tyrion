@@ -111,7 +111,8 @@ public class Model_Project extends Model {
         Swagger_Project_Short_Detail short_detail = new Swagger_Project_Short_Detail();
 
         short_detail.project_id = id;
-        short_detail.product_name = name;
+        short_detail.project_name = name;
+        
         short_detail.product_name = product_name();
         short_detail.product_id = product_id();
 
