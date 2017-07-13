@@ -1,16 +1,8 @@
 package controllers;
 
-import com.microsoft.azure.storage.*;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
-import com.microsoft.azure.storage.core.PathUtility;
-import com.microsoft.azure.storage.core.Utility;
-import com.microsoft.azure.storage.file.CloudFile;
-import com.microsoft.azure.storage.file.CloudFileShare;
-import com.microsoft.azure.storage.file.SharedAccessFilePermissions;
-import com.microsoft.azure.storage.file.SharedAccessFilePolicy;
 import io.swagger.annotations.*;
 import models.Model_BootLoader;
 import models.Model_HomerServer;
@@ -26,7 +18,6 @@ import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
-import utilities.login_entities.Secured_Admin;
 import utilities.login_entities.Secured_Homer_Server;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_InvalidBody;
@@ -35,12 +26,9 @@ import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Ok;
 import utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.Instant;
 import java.util.*;
 
-@Security.Authenticated(Secured_API.class)
+
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ExternalServer extends Controller {
 
@@ -84,6 +72,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result create_Homer_Server(){
         try{
 
@@ -112,6 +101,7 @@ public class Controller_ExternalServer extends Controller {
     }
 
     @ApiOperation(value = "Homer server - set main server", hidden = true)
+    @Security.Authenticated(Secured_API.class)
     public Result set_main_server(String homer_server_id){
         try{
 
@@ -134,6 +124,7 @@ public class Controller_ExternalServer extends Controller {
     }
 
     @ApiOperation(value = "Homer server - set main server", hidden = true)
+    @Security.Authenticated(Secured_API.class)
     public Result set_backup_server(String homer_server_id){
         try{
 
@@ -189,6 +180,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result edit_Homer_Server(@ApiParam(value = "unique_identifier ", required = true) String unique_identifier ){
         try{
 
@@ -248,6 +240,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result get_All_Homer_Server(){
         try{
 
@@ -281,6 +274,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result delete_Homer_Server(@ApiParam(value = "unique_identificator ", required = true)  String unique_identificator ){
         try{
 

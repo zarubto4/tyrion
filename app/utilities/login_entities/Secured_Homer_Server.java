@@ -40,7 +40,6 @@ public class Secured_Homer_Server extends Security.Authenticator {
 
             terminal_logger.debug("Secured_Homer_Server: X-AUTH-TOKEN:: Token {}", token);
 
-            // Zjistím, zda v Cache už token není Pokud není - vyhledám Token objekt a ověřím jeho platnost
             if(WS_HomerServer.token_hash.containsKey(token)){
 
                 terminal_logger.debug("Secured_Homer_Server: Token found!");
@@ -65,7 +64,7 @@ public class Secured_Homer_Server extends Security.Authenticator {
 
     @Override
     public Result onUnauthorized(Http.Context ctx){
-        return GlobalResult.badRequest("Unauthorized access");
+        return GlobalResult.result_unauthorized();
     }
 
 }
