@@ -331,7 +331,7 @@ public class Controller_ExternalServer extends Controller {
             }
 
 
-            if(version_object.b_program == null){
+            if(version_object.get_b_program() == null){
                 return GlobalResult.result_forbidden();
             }
 
@@ -361,7 +361,12 @@ public class Controller_ExternalServer extends Controller {
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            terminal_logger.debug("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
 
             // Přesměruji na link
             return GlobalResult.redirect(total_link);

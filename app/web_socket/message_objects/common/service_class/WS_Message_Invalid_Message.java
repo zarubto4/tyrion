@@ -21,13 +21,14 @@ public class WS_Message_Invalid_Message {
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public static ObjectNode make_request(String message_type, JsonNode errors_log) {
+    public static ObjectNode make_request(String message_type, String errors_log) {
 
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
-         if(errors_log!=null) request.set("error_log", errors_log);
         request.put("error_code", ErrorCode.INVALID_MESSAGE.error_code());
         request.put("error_message", ErrorCode.INVALID_MESSAGE.error_message());
+
+        if(errors_log!=null) request.put("error_log", errors_log);
 
         return request;
     }

@@ -226,10 +226,7 @@ public class Model_ActualizationProcedure extends Model {
 
         date_of_create = new Date();
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_ActualizationProcedure.get_byId(this.id) == null) break;
-        }
+        this.id = UUID.randomUUID().toString();
 
         this.state = Enum_Update_group_procedure_state.not_start_yet;
 
@@ -237,7 +234,7 @@ public class Model_ActualizationProcedure extends Model {
         super.save();
 
         // Cache
-        cache.put(id, this);
+        cache.put(this.id, this);
 
         // Call notification about model update
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_HomerInstance.class, get_project_id(), this.id))).start();
@@ -535,7 +532,7 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore public static Cache<String, Model_ActualizationProcedure> cache; // Server_cache Override during server initialization
 
     public void change_state(Model_CProgramUpdatePlan plan, Enum_CProgram_updater_state state){
-        cProgram_updater_state.put(plan.id, state);
+        cProgram_updater_state.put(plan.id.toString(), state);
     }
 
 

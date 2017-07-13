@@ -39,6 +39,8 @@ import java.util.UUID;
 
 public class Server_Logger extends Controller {
 
+    static private play.Logger.ALogger default_logger = play.Logger.of("TYRION");
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     @Inject
@@ -47,7 +49,7 @@ public class Server_Logger extends Controller {
     private static String token = "";       // token na youtrack
     private static long tokenExpire = 0;    // kdy expiruje token na youtrack
 
-    private static Interface_Server_Logger logger;                      // Vlastní Loggy objekt definovaný konfigurací
+    private static Interface_Server_Logger logger;  // Vlastní Loggy objekt definovaný konfigurací
 
 
     public static void set_Logger(){
@@ -55,6 +57,7 @@ public class Server_Logger extends Controller {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         try {
+
             JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(context);
             context.reset();
@@ -62,23 +65,31 @@ public class Server_Logger extends Controller {
             // Production Mode
             if (Configuration.root().getString("Server.mode").equals("production")) {
 
-                logger = new Server_Logger_Production();
+                System.out.println("Set Production Tyrion Log Mode");
                 configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.productionSettings")));
+
+                logger = new Server_Logger_Production();
+
+
                 return;
             }
 
             // Developer Mode
             else if(Configuration.root().getString("Server.mode").equals("developer") || Configuration.root().getString("Server.mode").equals("stage") ){
 
-                logger = new Server_Logger_Developer();
+                System.out.println("Set Developer Tyrion Log Mode");
                 configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.developerSettings")));
+
+                logger = new Server_Logger_Developer();
                 return;
             }
 
             System.err.println("ERROR:: Server.mode not found in configuration file!!!");
             System.exit(0);
 
-        } catch (JoranException je) {}
+        } catch (JoranException je) {
+            je.printStackTrace();
+        }
     }
 
 

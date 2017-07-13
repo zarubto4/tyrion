@@ -20,7 +20,7 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Valid public List<InstanceStatus> instance_list = new ArrayList<>();
+    @Valid public List<InstanceStatus> instances = new ArrayList<>();
 
 
     /**
@@ -33,10 +33,10 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
     HashMap<String,InstanceStatus> map = new HashMap<>();
     public InstanceStatus get_status(String instance_id){
 
-        if(map.isEmpty() && instance_list.isEmpty()){
+        if(map.isEmpty() && instances.isEmpty()){
             return null;
         }else if(map.isEmpty()) {
-            for(InstanceStatus status : instance_list){
+            for(InstanceStatus status : instances){
                 map.put(status.instance_id, status);
             }
         }
@@ -66,9 +66,9 @@ public class WS_Message_Instance_status extends WS_AbstractMessage_Instance {
 
         public InstanceStatus(){}
 
-        @Constraints.Required  public String instance_id;
-        @Constraints.Required  public List<String> hardware_ids = new ArrayList<>();
-        public boolean online_status;
+        public String instance_id;
+        public List<String> hardware_ids = new ArrayList<>();
+        public boolean status;
         public String error_code;
 
     }

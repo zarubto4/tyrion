@@ -176,13 +176,13 @@ public class Controller_Blocko extends Controller{
             if (version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
             // Kontrola oprávnění
-            if (version_object.b_program == null) return GlobalResult.result_notFound("Version_Object is not version of B_Program");
+            if (version_object.get_b_program() == null) return GlobalResult.result_notFound("Version_Object is not version of B_Program");
 
             // Kontrola oprávnění
-            if (! version_object.b_program.read_permission() ) return GlobalResult.result_forbidden();
+            if (! version_object.get_b_program().read_permission() ) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version_object.b_program.program_version(version_object)));
+            return GlobalResult.result_ok(Json.toJson(version_object.get_b_program().program_version(version_object)));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -428,7 +428,7 @@ public class Controller_Blocko extends Controller{
             Model_FileRecord.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));
+            return GlobalResult.result_ok(Json.toJson( version_object.get_b_program().program_version(version_object) ));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -525,7 +525,7 @@ public class Controller_Blocko extends Controller{
 
 
             // Kontrola oprávnění
-            if (! version_object.b_program.edit_permission() ) return GlobalResult.result_forbidden();
+            if (! version_object.get_b_program().edit_permission() ) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             version_object.update();
@@ -567,10 +567,10 @@ public class Controller_Blocko extends Controller{
 
             // Kontrola objektu
             if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
-            if (version_object.b_program == null) return GlobalResult.result_badRequest("B_Program not found");
+            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("B_Program not found");
 
             // Kontrola oprávnění
-            if (! version_object.b_program.delete_permission() ) return GlobalResult.result_forbidden();
+            if (! version_object.get_b_program().delete_permission() ) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             version_object.delete();
@@ -687,8 +687,8 @@ public class Controller_Blocko extends Controller{
             if (version_object == null) return GlobalResult.result_notFound("VersionObject not found");
 
             // Kontrola objektu: B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
-            if (version_object.b_program == null) return GlobalResult.result_badRequest("VersionObject is not version of BProgram");
-            Model_BProgram b_program = version_object.b_program;
+            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("VersionObject is not version of BProgram");
+            Model_BProgram b_program = version_object.get_b_program();
 
             // Kontrola oprávnění
             if (!b_program.update_permission()) return GlobalResult.result_forbidden();

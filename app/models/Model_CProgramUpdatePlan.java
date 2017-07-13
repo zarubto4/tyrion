@@ -35,7 +35,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                         @Id @ApiModelProperty(required = true) public String id;
+                                         @Id @ApiModelProperty(required = true) public UUID id;
 
                                                        @JsonIgnore @ManyToOne() public Model_ActualizationProcedure actualization_procedure;
 
@@ -123,7 +123,7 @@ public class Model_CProgramUpdatePlan extends Model {
     @JsonIgnore public Swagger_C_Program_Update_plan_Short_Detail get_short_version_for_board(){
 
         Swagger_C_Program_Update_plan_Short_Detail detail = new Swagger_C_Program_Update_plan_Short_Detail();
-        detail.id = this.id;
+        detail.id = this.id.toString();
         detail.date_of_create = date_of_create;
         detail.date_of_finish = date_of_finish;
         detail.firmware_type = firmware_type;
@@ -150,7 +150,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
             brief_for_homer.actualization_procedure_id = actualization_procedure.id;
-            brief_for_homer.c_program_update_plan_id = id;
+            brief_for_homer.c_program_update_plan_id = id.toString();
             brief_for_homer.device_id = board.id;
 
             if(actualization_procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
@@ -192,13 +192,9 @@ public class Model_CProgramUpdatePlan extends Model {
         if(this.state == null) this.state = Enum_CProgram_updater_state.not_start_yet;
         this.date_of_create = new Date();
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_CProgramUpdatePlan.get_byId(this.id) == null) break;
-        }
         super.save();
 
-        cache.put(id, this);
+        cache.put(id.toString(), this);
     }
 
     @JsonIgnore @Override
@@ -223,7 +219,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
         }
 
-        cache.put(id, this);
+        cache.put(id.toString(), this);
     }
 
     @JsonIgnore @Override public void delete() {

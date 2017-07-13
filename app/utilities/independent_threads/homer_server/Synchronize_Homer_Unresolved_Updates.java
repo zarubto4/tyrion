@@ -1,11 +1,14 @@
 package utilities.independent_threads.homer_server;
 
 import com.avaje.ebean.Expr;
+import com.avaje.ebean.PagedList;
+import models.Model_Board;
 import models.Model_CProgramUpdatePlan;
 import models.Model_HomerServer;
 import utilities.enums.Enum_CProgram_updater_state;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
+import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 import web_socket.services.WS_HomerServer;
 
 import java.util.ArrayList;
@@ -24,7 +27,6 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
     // Umožněno kontrolovat COmpilator i Homer server
     public Synchronize_Homer_Unresolved_Updates(WS_HomerServer ws_homerServer){
         this.ws_homerServer = ws_homerServer;
-
     }
 
 
@@ -35,37 +37,49 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
         try {
 
-            sleep(1000 * 10);
+            System.out.println("5. Spouštím Sycnhronizační proceduru Synchronize_Homer_Unresolved_Updates");
 
-            List<Model_CProgramUpdatePlan> old_not_finished_plans = Model_CProgramUpdatePlan.find.where()
-                    .eq("board.connected_server_id", ws_homerServer.identifikator)
-                    .where()
-                        .disjunction()
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.not_updated))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                            .add(Expr.isNull("state"))
-                        .endJunction()
-                    .findList();
+            int page = 0;
+            int page_size = 100;
+
+            while (true) {
+
+                PagedList<Model_CProgramUpdatePlan> paging_list = Model_CProgramUpdatePlan.find.where()
+                            .eq("board.connected_server_id", ws_homerServer.identifikator)
+                            .disjunction()
+                                .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                                .add(Expr.eq("state", Enum_CProgram_updater_state.not_updated))
+                                .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                                .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                                .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                                .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                                .add(Expr.isNull("state"))
+                            .endJunction()
+                            .findPagedList(page, page_size);
 
 
-            List<Swagger_UpdatePlan_brief_for_homer> tasks = new ArrayList<>();
+                List<Swagger_UpdatePlan_brief_for_homer> tasks = new ArrayList<>();
 
-            if(tasks.isEmpty()){
-                terminal_logger.debug("Zero execution Model_CProgramUpdatePlan for Homer Server");
-                return;
+                for (Model_CProgramUpdatePlan plan : paging_list.getList()) {
+                    tasks.add(plan.get_brief_for_update_homer_server());
+                }
+
+
+                if(!tasks.isEmpty()){
+
+                    WS_Message_Hardware_UpdateProcedure_Command result = Model_HomerServer.get_byId(ws_homerServer.identifikator).update_devices_firmware(tasks);
+                    if(!result.status.equals("success")){
+                        terminal_logger.internalServerError("WS_Message_Hardware_UpdateProcedure_Command incorrect result!",  new Exception());
+                    }
+                }
+
+                // Pokud je počet stránek shodný
+                if( paging_list.getTotalPageCount() == page) break;
+
+                System.out.println("Page == " + page);
+                page++;
+
             }
-
-            for(Model_CProgramUpdatePlan plan : old_not_finished_plans){
-                tasks.add(plan.get_brief_for_update_homer_server());
-            }
-
-
-            Model_HomerServer.get_byId(ws_homerServer.identifikator).update_devices_firmware(tasks);
-
         }catch (Exception e){
             terminal_logger.internalServerError("run:", e);
         }

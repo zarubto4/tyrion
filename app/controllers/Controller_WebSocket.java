@@ -151,19 +151,17 @@ public class Controller_WebSocket extends Controller {
 
             terminal_logger.trace("homer_cloud_server_connection:: Tyrion initialize connection for Homer Server");
             WS_HomerServer server = new WS_HomerServer(homer_server);
-            homer_servers.put(unique_identificator, server);
+            not_synchronize_homer_servers.put(unique_identificator, server);
 
             // Připojím se
             terminal_logger.trace("homer_cloud_server_connection:: Connection is successful");
             WebSocket<String> webSocket = server.connection();
 
-            homer_servers.put(homer_server.unique_identificator, server);
-
             terminal_logger.trace("homer_cloud_server_connection:: Successfully connected");
             return webSocket;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(new Exception("Connection failed.", e));
+            terminal_logger.internalServerError(e);
             return WebSocket.reject(forbidden());
         }
     }
@@ -187,8 +185,8 @@ public class Controller_WebSocket extends Controller {
                     WS_Message_Ping_compilation_server result = ws_compilerServer.server.ping();
                     if (!result.status.equals("success")) {
                         terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
-                        if (homer_servers.containsKey(unique_identificator)) {
-                            homer_servers.get(unique_identificator).onClose();
+                        if (compiler_cloud_servers.containsKey(unique_identificator)) {
+                            compiler_cloud_servers.get(unique_identificator).onClose();
                         }
                         return null;
                     }
@@ -199,7 +197,7 @@ public class Controller_WebSocket extends Controller {
                 }catch (NullPointerException e){
 
                     terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
-                    if(homer_servers.containsKey(unique_identificator)) homer_servers.get(unique_identificator).onClose();
+                    if(compiler_cloud_servers.containsKey(unique_identificator)) compiler_cloud_servers.get(unique_identificator).onClose();
 
                 }
             }
@@ -214,7 +212,7 @@ public class Controller_WebSocket extends Controller {
             return server.connection();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(new Exception("Connection failed.", e));
+            terminal_logger.internalServerError(e);
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
@@ -261,7 +259,7 @@ public class Controller_WebSocket extends Controller {
             return website_connection.connection();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("becki_website_connection:", e);
+            terminal_logger.internalServerError(e);
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
@@ -300,9 +298,7 @@ public class Controller_WebSocket extends Controller {
         terminal_logger.warn("disconnectBeckiApplications:: Trying to safely disconnect all Becki applications");
 
         for (Map.Entry<String, WS_Becki_Website> entry :  Controller_WebSocket.becki_website.entrySet()) {
-            for (Map.Entry<String, WS_Becki_Single_Connection> single : entry.getValue().all_person_Connections.entrySet()) {
-                server_violently_terminate_terminal(single.getValue());
-            }
+            entry.getValue().onClose();
         }
     }
 

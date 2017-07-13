@@ -16,6 +16,7 @@ import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Chec
 import web_socket.services.WS_HomerServer;
 
 import java.nio.channels.ClosedChannelException;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 public class Synchronize_Homer_Synchronize_Settings extends Thread {
@@ -39,15 +40,24 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
         try{
 
+            System.out.println("2. Spouštím Sycnhronizační proceduru Synchronize_Homer_Synchronize_Settings");
 
-            ObjectNode ask_for_configuration = homer_server.write_with_confirmation( new WS_Message_Homer_Get_homer_server_configuration().make_request() , 1000 * 5, 0, 2);
+            System.out.println("2.1 Žádám o nastavení Homera");
+            ObjectNode ask_for_configuration = homer_server.write_with_confirmation( new WS_Message_Homer_Get_homer_server_configuration().make_request() , 1000 * 60, 0, 0);
+
+            System.out.println("2.1 Co jsem obrdžel:: " + ask_for_configuration.toString());
+
             final Form<WS_Message_Homer_Get_homer_server_configuration> form = Form.form(WS_Message_Homer_Get_homer_server_configuration.class).bind(ask_for_configuration);
             if(form.hasErrors()){
 
-                homer_server.write_without_confirmation(ask_for_configuration.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Get_homer_server_configuration.message_type,form.errorsAsJson()));
+                homer_server.write_without_confirmation( ask_for_configuration.has("message_id") ? ask_for_configuration.get("message_id").asText() : UUID.randomUUID().toString(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Get_homer_server_configuration.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
                 terminal_logger.warn("WS_Message_Homer_Get_homer_server_configuration: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                homer_server.close();
 
+                System.out.println("2.1 NEvalidní zpráva! Zavírám spojení");
+
+                homer_server.onClose();
+
+                return;
             }
 
             WS_Message_Homer_Get_homer_server_configuration help = form.get();
@@ -99,11 +109,17 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
             terminal_logger.trace(" " + homer_server.identifikator + "synchronize_configuration: done!");
 
         }catch(ClosedChannelException e){
+            System.out.println("synchronize_configuration: ClosedChannelException");
             terminal_logger.warn("synchronize_configuration: ClosedChannelException");
+            homer_server.onClose();
         }catch (TimeoutException e){
+            System.out.println("synchronize_configuration: TimeoutException");
             terminal_logger.warn("synchronize_configuration: TimeoutException");
+            homer_server.onClose();
         }catch (Exception e){
+            System.out.println("synchronize_configuration: TimeoutException");
             terminal_logger.internalServerError("run", e);
+            homer_server.onClose();
         }
 
 

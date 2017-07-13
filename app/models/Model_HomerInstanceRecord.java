@@ -9,8 +9,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
+import play.libs.Json;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_device_set_snap;
+import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_status;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_add;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_upload_blocko_program;
 
@@ -40,23 +44,29 @@ public class Model_HomerInstanceRecord extends Model {
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date running_to;
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date planed_when;
 
-                                   @JsonIgnore @ManyToOne(cascade=CascadeType.ALL)  public Model_VersionObject version_object;
-                                   @JsonIgnore @OneToOne(cascade=CascadeType.ALL) public Model_HomerInstance actual_running_instance;
+    @JsonIgnore @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)       public Model_VersionObject version_object;
+    @JsonIgnore @OneToOne(cascade=CascadeType.ALL)                                public Model_HomerInstance actual_running_instance;      // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
     @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_main_instance_history_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_version_object_id;
+    @JsonIgnore @Transient @TyrionCachedList private List<String> cache_procedures_ids = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_id()          {  return version_object.id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_name()        {  return version_object.version_name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_description() {  return version_object.version_description;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_id()                  {  return version_object.b_program.id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_name()                {  return version_object.b_program.name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_description()         {  return version_object.b_program.description;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_id()          {  return cache_version_object_id != null ? cache_version_object_id : get_b_program_version().id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_name()        {  return get_b_program_version().version_name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_description() {  return get_b_program_version().version_description;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_id()                  {  return get_b_program_version().get_b_program().id;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_name()                {  return get_b_program_version().get_b_program().name;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_description()         {  return get_b_program_version().get_b_program().description;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String instance_record_id()            {  return this.id;}
 
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_BProgramHwGroup> hardware_group()               {  return version_object.b_program_hw_groups;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_MProjectProgramSnapShot> m_project_snapshot()    {  return version_object.b_program_version_snapshots;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_BProgramHwGroup> hardware_group()               {  return get_b_program_version().b_program_hw_groups;}
+    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_MProjectProgramSnapShot> m_project_snapshot()    {  return get_b_program_version().b_program_version_snapshots;}
     @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public Enum_Homer_instance_record_status status()    {
 
         if(planed_when.getTime() > new Date().getTime()) return Enum_Homer_instance_record_status.FUTURE;
@@ -65,19 +75,57 @@ public class Model_HomerInstanceRecord extends Model {
 
     }
 
+    @JsonProperty(value = "procedures") public List<Model_ActualizationProcedure> getProcedures() {return get_actualization_procedures();}
+
 
 /* JSON IGNORE  ----------------------------------------------------------------------------------------------------*/
-    
-    @ApiModelProperty(required = true, readOnly = true)  @JsonProperty(value = "procedures")
-    public List<Model_ActualizationProcedure> getProcedures() {
-        if(procedures == null) procedures = Model_ActualizationProcedure.find.where().eq("homer_instance_record.id", id).findList();
-        return procedures;
+
+
+    @JsonIgnore @TyrionCachedList
+    public Model_VersionObject get_b_program_version(){
+
+        if(cache_version_object_id == null){
+            Model_VersionObject version = Model_VersionObject.find.where().eq("instance_record.id", id).select("id").findUnique();
+            cache_version_object_id = version.id;
+        }
+
+        return Model_VersionObject.get_byId(cache_version_object_id);
+
+    }
+
+    @JsonIgnore @Transient @TyrionCachedList public List<Model_ActualizationProcedure> get_actualization_procedures() {
+        try{
+
+            if(cache_procedures_ids.isEmpty()){
+
+                List<Model_ActualizationProcedure> procedures = Model_ActualizationProcedure.find.where().eq("homer_instance_record.id", id).select("id").findList();
+
+                // Získání seznamu
+                for (Model_ActualizationProcedure procedure : procedures) {
+                    cache_procedures_ids.add(procedure.id);
+                }
+
+            }
+
+            List<Model_ActualizationProcedure> procedures  = new ArrayList<>();
+
+            for(String procedure_id : cache_procedures_ids){
+                procedures.add(Model_ActualizationProcedure.get_byId(procedure_id));
+            }
+
+            return procedures;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new ArrayList<Model_ActualizationProcedure>();
+        }
     }
 
 
     @JsonIgnore
     public Model_Product getProduct(){
         return this.actual_running_instance.get_project().get_product();
+
     }
 
 
@@ -86,7 +134,7 @@ public class Model_HomerInstanceRecord extends Model {
         List<String> board_ids = new ArrayList<>();
 
         // Contains All Hardware for Update
-        for(Model_BProgramHwGroup group : version_object.b_program_hw_groups) {
+        for(Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
             board_ids.add(group.main_board_pair.id.toString());
             for(Model_BPair model_bPair : group.device_board_pairs){
                 board_ids.add(model_bPair.id.toString());
@@ -101,36 +149,55 @@ public class Model_HomerInstanceRecord extends Model {
 
 
     /**
-     * Nasazení Record Instance do Cloudu - To jest nastavení Recor jako výchozího stavu,
+     * Nasazení Record Instance do Cloudu - To jest nastavení Record jako výchozího stavu,
      * nasazení blocko programu, snchronizace hardaru a verzí atd..
      */
     public void set_record_into_cloud() {
         new Thread(() -> {
 
             // Step 1
-            if(this.main_instance_history == null) this.change_record_as_main();
+            terminal_logger.debug("Set Instance Record into Cloud ");
+            if(this.actual_running_instance == null){
+                terminal_logger.debug("Actual_running_instance its  null - Its required set this intance record as actual running into database");
+                this.change_record_as_main();
+            }
 
-            if(!actual_running_instance.server_is_online()) {
+            if(!main_instance_history.server_is_online()) {
+                terminal_logger.debug("Server je offline  - Its not possible to continue");
                 return;
             }
 
-           if(! actual_running_instance.get_instance_status().get_status(actual_running_instance.id).online_status){
+            WS_Message_Instance_status status = actual_running_instance.get_instance_status();
 
+            System.out.println("Instance_status " + Json.toJson(status) );
+            WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(actual_running_instance.id);
+
+            // Instance status
+           if(!instanceStatus.status){
+
+               System.out.println("Instance " + actual_running_instance.id + " není online a tak jí budu muset nasadit ");
                 // Vytvořím Instanci
                 WS_Message_Homer_Instance_add result_instance   = actual_running_instance.cloud_homer_server.add_instance(actual_running_instance);
                 if(!result_instance.status.equals("success")){
-                    Model_HomerInstance.terminal_logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
+                    terminal_logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
                 }
             }
 
             // Step 2
             WS_Message_Instance_upload_blocko_program result_step_2 = this.upload_blocko_program();
+           if(!result_step_2.status.equals("success")){
+               System.out.println("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_2.error_code);
+           }
 
             // Step 3
-            this.update_device_summary_collection();
+            WS_Message_Instance_device_set_snap result_step_3 =  this.update_device_summary_collection();
+            if(!result_step_3.status.equals("success")){
+                System.out.println("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_3.error_code);
+            }
 
             // Step 4
             this.create_actualization_hardware_request();
+
 
         }).start();
 
@@ -141,15 +208,15 @@ public class Model_HomerInstanceRecord extends Model {
 
         try {
 
-            Model_HomerInstance.terminal_logger.debug("upload_record: thread is running under record ID:: {} ", id);
+            terminal_logger.debug("upload_record: thread is running under record ID:: {} ", id);
 
             Model_HomerInstance instance = main_instance_history;
 
             if( instance.actual_instance != null) {
 
-                Model_HomerInstance.terminal_logger.debug("upload_record Actual Instnace != null -> InstanceRecord ID: {}", instance.actual_instance.id);
+                terminal_logger.debug("upload_record Actual Instnace != null -> InstanceRecord ID: {}", instance.actual_instance.id);
 
-                Model_HomerInstance.terminal_logger.debug("upload_record: Record overwriting previous instance record:: " + instance.actual_instance.id);
+                terminal_logger.debug("upload_record: Record overwriting previous instance record:: " + instance.actual_instance.id);
 
                 Model_HomerInstanceRecord previous_version = instance.actual_instance;
 
@@ -159,7 +226,7 @@ public class Model_HomerInstanceRecord extends Model {
                 previous_version.update();
 
             }else {
-                Model_HomerInstance.terminal_logger.debug("upload_record: First uploading of instance");
+                terminal_logger.debug("upload_record: First uploading of instance");
             }
 
             // Synchronize Grid App settings from last config
@@ -169,7 +236,7 @@ public class Model_HomerInstanceRecord extends Model {
 
             if(latest_version != null){
 
-                for(Model_MProjectProgramSnapShot snap_shot : latest_version.version_object.b_program_version_snapshots){
+                for(Model_MProjectProgramSnapShot snap_shot : latest_version.get_b_program_version().b_program_version_snapshots){
 
                     // Programy
                     for(Model_MProgramInstanceParameter old_parameter : snap_shot.m_program_snapshots()){
@@ -194,11 +261,15 @@ public class Model_HomerInstanceRecord extends Model {
             instance.refresh();
             instance.actual_instance = this;
             this.actual_running_instance = instance;
-            this.update();
+            update();
+            refresh();
+
             instance.update();
+            instance.refresh();
+
 
         }catch (Exception e){
-            Model_HomerInstance.terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError(e);
         }
 
 
@@ -209,9 +280,9 @@ public class Model_HomerInstanceRecord extends Model {
     private WS_Message_Instance_upload_blocko_program upload_blocko_program(){
         try {
 
-            Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
+            Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", get_b_program_version().id).eq("file_name", "program.js").findUnique();
 
-            JsonNode node =  main_instance_history.cloud_homer_server.sender().write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(main_instance_history, version_object), 1000 * 3, 0, 2);
+            JsonNode node =  main_instance_history.cloud_homer_server.sender().write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(main_instance_history, get_b_program_version()), 1000 * 3, 0, 2);
 
             final Form<WS_Message_Instance_upload_blocko_program> form = Form.form(WS_Message_Instance_upload_blocko_program.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Instance_upload_blocko_program: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -221,28 +292,32 @@ public class Model_HomerInstanceRecord extends Model {
         }catch (InterruptedException|TimeoutException e){
             return  new WS_Message_Instance_upload_blocko_program();
         }catch (Exception e){
-            Model_HomerInstance.terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError(e);
             return  new WS_Message_Instance_upload_blocko_program();
         }
     }
 
     //Add Record to cloud Step 3
     @JsonIgnore @Transient
-    private void update_device_summary_collection(){
+    private WS_Message_Instance_device_set_snap update_device_summary_collection(){
         try {
-
 
             // Seznam - který by na instanci měl běžet!
             List<String> hardware_ids_required_by_instance = actual_running_instance.get_boards_id_required_by_record();
 
             // Přidat nový otisk hardwaru
             if(!hardware_ids_required_by_instance.isEmpty()){
-                actual_running_instance.set_device_to_instance(hardware_ids_required_by_instance);
+                return actual_running_instance.set_device_to_instance(hardware_ids_required_by_instance);
+            }else {
+                WS_Message_Instance_device_set_snap result = new WS_Message_Instance_device_set_snap();
+                result.status = "success";
+                return result;
             }
 
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
+            return new WS_Message_Instance_device_set_snap();
         }
     }
 
@@ -273,11 +348,12 @@ public class Model_HomerInstanceRecord extends Model {
 
 
             // Contains All Hardware for Update
-            for(Model_BProgramHwGroup group : version_object.b_program_hw_groups) {
+            for(Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
                 model_bPairs.add(group.main_board_pair);
                 model_bPairs.addAll(group.device_board_pairs);
             }
 
+            actualization_procedure.refresh();
 
             // Projedu seznam HW - podle skupin instancí jak jsou poskládané podle Yody
             for(Model_BPair model_bPair : model_bPairs) {
@@ -310,6 +386,7 @@ public class Model_HomerInstanceRecord extends Model {
                 updates.add(plan_master_board);
 
                 actualization_procedure.updates.addAll(updates);
+                actualization_procedure.update();
 
             }
 

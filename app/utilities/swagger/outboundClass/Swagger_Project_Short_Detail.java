@@ -19,7 +19,7 @@ public class Swagger_Project_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true) public String product_id;
     @ApiModelProperty(required = true, readOnly = true) public String product_name;
 
-    @ApiModelProperty(required = true, readOnly = true) public boolean status;
+    @ApiModelProperty(required = true, readOnly = true) public boolean active_status;
     @ApiModelProperty(required = true, readOnly = true) public boolean edit_permission;
     @ApiModelProperty(required = true, readOnly = true) public boolean delete_permission;
 

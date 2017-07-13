@@ -16,6 +16,7 @@ import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
@@ -57,9 +58,14 @@ public class Model_VersionObject extends Model {
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
             value = "UNIX time in ms", example = "1466163478925")                                      public Date date_of_create;
 
-
-
     @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch=FetchType.EAGER ) public List<Model_FileRecord> files = new ArrayList<>();
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_b_program_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_c_program_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_m_program_id;
 
     // Libraries ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -97,7 +103,6 @@ public class Model_VersionObject extends Model {
     @JsonIgnore  @OneToMany(mappedBy="version_object", fetch = FetchType.LAZY) public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
 
 
-
     // M_Program --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_MProgram m_program;
@@ -119,6 +124,19 @@ public class Model_VersionObject extends Model {
     }
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @JsonIgnore @TyrionCachedList
+    public Model_BProgram get_b_program(){
+
+        if(cache_b_program_id == null){
+            Model_BProgram bProgram = Model_BProgram.find.where().eq("version_objects.id", id).select("id").findUnique();
+            if(bProgram == null) return null;
+            cache_b_program_id = bProgram.id;
+        }
+
+        return Model_BProgram.get_byId(cache_b_program_id);
+
+    }
 
     @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail   get_short_library_version(){
         try {
@@ -173,8 +191,8 @@ public class Model_VersionObject extends Model {
            help.version_id = id;
            help.version_name = version_name;
            help.version_description = version_description;
-           help.delete_permission = b_program.delete_permission();
-           help.update_permission = b_program.update_permission();
+           help.delete_permission = get_b_program().delete_permission();
+           help.update_permission = get_b_program().update_permission();
            help.author = this.author.get_short_person();
 
            return help;
@@ -511,15 +529,15 @@ public class Model_VersionObject extends Model {
 
 
         if(c_program != null){
-            c_program.cache_list_version_objects_ids.add(id);
+            c_program.cache_list_version_objects_ids.add(0, id);
         }
 
-        if(b_program != null){
-            b_program.cache_list_version_objects_ids.add(id);
+        if(get_b_program() != null){
+            get_b_program().cache_list_version_objects_ids.add(0, id);
         }
 
         if(m_program != null){
-            m_program.cache_list_version_objects_ids.add(id);
+            m_program.cache_list_version_objects_ids.add(0, id);
         }
 
         cache.put(id, this);
@@ -529,8 +547,8 @@ public class Model_VersionObject extends Model {
     public void update(){
 
         // TODO informace o změně směr Becki!
-        
         super.update();
+
     }
 
 
@@ -543,8 +561,8 @@ public class Model_VersionObject extends Model {
             c_program.cache_list_version_objects_ids.remove(id);
         }
 
-        if(b_program != null){
-            b_program.cache_list_version_objects_ids.remove(id);
+        if(get_b_program() != null){
+            get_b_program().cache_list_version_objects_ids.remove(id);
         }
 
         if(m_program != null){

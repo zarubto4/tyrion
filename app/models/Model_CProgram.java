@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -132,7 +133,7 @@ public class Model_CProgram extends Model {
 
             List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
 
-            for (Model_VersionObject version : getVersion_objects()) {
+            for (Model_VersionObject version : getVersion_objects().stream().sorted((element1, element2) -> element2.date_of_create.compareTo(element1.date_of_create)).collect(Collectors.toList())) {
                 versions.add(version.get_short_c_program_version());
             }
 

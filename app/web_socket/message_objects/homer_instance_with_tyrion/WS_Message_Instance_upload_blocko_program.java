@@ -31,8 +31,8 @@ public class WS_Message_Instance_upload_blocko_program extends WS_AbstractMessag
         update.instance_id = instance.id;
         update.program_version_id = b_program_version.id;
         update.program_version_name = b_program_version.version_name;
-        update.b_program_id = b_program_version.b_program.id;
-        update.b_program_name = b_program_version.b_program.name;
+        update.b_program_id = b_program_version.get_b_program().id;
+        update.b_program_name = b_program_version.get_b_program().name;
         request_list.add(update);
 
         ObjectNode request = Json.newObject();

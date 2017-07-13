@@ -3,6 +3,7 @@ package web_socket.services;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Becki_Ping;
 
 public class WS_Becki_Single_Connection extends WS_Interface_type {
 
@@ -32,8 +33,9 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
                 terminal_logger.trace("In {}  is identifier: {}", getClass().getSimpleName(), key);
             }
 
-            out.write(" Něco posílám???");
-            return true;
+            ObjectNode status = write_with_confirmation( new WS_Message_Becki_Ping().make_request(), 1000 * 10, 0, 1);
+            return status.get("status").asText().equals("success");
+
         }catch (Exception e){
             return false;
         }
@@ -54,14 +56,13 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
 
         terminal_logger.trace("WS_Becki_Single_Connection::  onClose::  " + identifikator);
 
-        this.close();
+         this.close();
 
         person_connection.all_person_Connections.remove(this.identifikator);
 
         if(person_connection.all_person_Connections.isEmpty()){
             Controller_WebSocket.becki_website.remove(person_connection.identifikator);
         }
-
 
     }
 

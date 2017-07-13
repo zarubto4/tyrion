@@ -11,6 +11,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.WebSocket;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Becki_Ping;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Subscribe_Notifications;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
@@ -52,18 +53,7 @@ public class WS_Becki_Website extends WS_Interface_type {
      */
     @Override
     public boolean is_online() {
-        try {
-
-            for(String key :  Controller_WebSocket.homer_servers.keySet() ){
-                terminal_logger.trace("In {}  is identifier: {}", getClass().getSimpleName(), key);
-            }
-
-            out.write(" Něco posílám???");
-
-            return true;
-        }catch (Exception e){
-            return false;
-        }
+        throw  new IllegalArgumentException("Not supported");
     }
 
     /**
@@ -108,7 +98,6 @@ public class WS_Becki_Website extends WS_Interface_type {
                 // It cannot be in for or while cycle -> Exception type: java.util.ConcurrentModificationException
                 // all_person_Connections.xx.OnClose() changes the contents of the all_person_Connections Array (HashMap) at runtime
                 all_person_Connections.get(keys.iterator().next()).onClose();
-                onClose();
 
             }
         }

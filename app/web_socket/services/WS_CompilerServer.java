@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.Model_CompilationServer;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Homer_Rejection;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Becki_Ping;
 
 public class WS_CompilerServer extends WS_Interface_type {
 
@@ -39,9 +41,9 @@ public class WS_CompilerServer extends WS_Interface_type {
                 System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
             }
 
+            ObjectNode status = write_with_confirmation( new WS_Message_Ping_compilation_server().make_request(), 1000 * 10, 0, 1);
+            return status.get("status").asText().equals("success");
 
-            out.write(" Něco posílám???");
-            return true;
         }catch (Exception e){
             return false;
         }

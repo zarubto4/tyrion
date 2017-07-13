@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
+import play.libs.Json;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
@@ -65,8 +66,6 @@ public class Model_HomerInstance extends Model {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_bprogram_id;
-    @JsonIgnore @Transient @TyrionCachedList private String cache_bprogram_name;
-    @JsonIgnore @Transient @TyrionCachedList private String cache_bprogram_description;
     @JsonIgnore @Transient @TyrionCachedList private String cache_actual_instance_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_server_name;
     @JsonIgnore @Transient @TyrionCachedList private String cache_server_id;
@@ -88,12 +87,7 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {
         try{
 
-            if(cache_bprogram_name != null) {
-                return cache_bprogram_name;
-            }
-
-            cache_bprogram_name = Model_BProgram.get_byId(b_program_id()).name;
-            return cache_bprogram_name;
+            return Model_BProgram.get_byId(b_program_id()).name;
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -103,12 +97,7 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description() {
         try {
 
-            if (cache_bprogram_description != null) {
-                return cache_bprogram_description;
-            }
-
-            cache_bprogram_description = Model_BProgram.get_byId(b_program_id()).description;
-            return cache_bprogram_description;
+            return Model_BProgram.get_byId(b_program_id()).description;
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -170,7 +159,7 @@ public class Model_HomerInstance extends Model {
                     try {
 
                         WS_Message_Instance_status status = get_instance_status();
-                        if(status.status.equals("success")) cache_status.put(id, status.get_status(id).online_status);
+                        if(status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError("notification_board_connect:", e);
@@ -218,11 +207,17 @@ public class Model_HomerInstance extends Model {
             help.id = id;
             help.name = name;
             help.description = description;
-            help.b_program_id = b_program_id();
-            help.b_program_name = b_program_name();
-            help.b_program_description = b_program_description();
-            help.b_program_version_id = actual_instance.b_program_version_id();
-            help.b_program_version_name = actual_instance.b_program_version_name();
+
+            if(b_program_id() != null) {
+                help.b_program_id = b_program_id();
+                help.b_program_name = b_program_name();
+                help.b_program_description = b_program_description();
+            }
+
+            if(actual_instance!= null) {
+                help.b_program_version_id = actual_instance.b_program_version_id();
+                help.b_program_version_name = actual_instance.b_program_version_name();
+            }
 
             help.server_name = server_id();
             help.server_id = server_id();
@@ -283,7 +278,6 @@ public class Model_HomerInstance extends Model {
 
         super.save();
 
-
         if(project_id != null){
             Model_Project.get_byId(project_id).instance_ids.add(id);
         }
@@ -330,10 +324,10 @@ public class Model_HomerInstance extends Model {
                 .setImportance(Enum_Notification_importance.low)
                 .setLevel(Enum_Notification_level.info)
                 .setText( new Notification_Text().setText("Server started creating new Blocko Instance of Blocko Version "))
-                .setText( new Notification_Text().setText(this.actual_instance.version_object.b_program.name).setBoldText())
-                .setObject(this.actual_instance.version_object)
+                .setText( new Notification_Text().setText(this.actual_instance.get_b_program_version().get_b_program().name).setBoldText())
+                .setObject(this.actual_instance.get_b_program_version())
                 .setText( new Notification_Text().setText(" from Blocko program "))
-                .setObject(this.actual_instance.version_object.b_program)
+                .setObject(this.actual_instance.get_b_program_version().get_b_program())
                 .send(Controller_Security.get_person());
 
         }catch (Exception e){
@@ -349,9 +343,9 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.success)
                     .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
-                    .setObject(this.actual_instance.version_object)
+                    .setObject(this.actual_instance.get_b_program_version())
                     .setText(new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.actual_instance.version_object.b_program)
+                    .setObject(this.actual_instance.get_b_program_version().get_b_program())
                     .send_under_project(get_project_id());
 
         }catch (Exception e){
@@ -367,12 +361,12 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.warning)
                     .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
-                    .setText( new Notification_Text().setText(this.actual_instance.version_object.version_name ).setBoldText())
+                    .setText( new Notification_Text().setText(this.actual_instance.get_b_program_version().version_name ).setBoldText())
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setText( new Notification_Text().setText(this.b_program.name).setBoldText())
                     .setText( new Notification_Text().setText(" for reason: ").setBoldText() )
                     .setText( new Notification_Text().setText(reason + " ").setBoldText())
-                    .setObject(this.actual_instance.version_object)
+                    .setObject(this.actual_instance.get_b_program_version())
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.b_program)
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
@@ -391,7 +385,7 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.info)
                     .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
-                    .setObject(this.actual_instance.version_object)
+                    .setObject(this.actual_instance.get_b_program_version())
                     .send_under_project(get_project_id());
 
         }catch (Exception e){
@@ -411,6 +405,7 @@ public class Model_HomerInstance extends Model {
     public static void Messages(WS_HomerServer homer, ObjectNode json){
         new Thread(() -> {
             try {
+
                 switch (json.get("message_type").asText()) {
 
                     case WS_Message_Grid_token_verification.message_type: {
@@ -433,11 +428,20 @@ public class Model_HomerInstance extends Model {
                         return;
                     }
 
-                    default: throw new Exception("Incoming message, chanel tyrion: message_type not recognized -> " + json.get("message_type").asText());
+                    default: {
+                        terminal_logger.warn("Incoming Message not recognized::" + json.toString());
+                        homer.write_without_confirmation(json.put("error_message", "message_type not recognized").put("error_code", 400));
+                    }
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("Messages:", e);
+
+                if(!json.has("message_type")){
+                    homer.write_without_confirmation(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
+                    return;
+                }else {
+                    terminal_logger.internalServerError("Messages:", e);
+                }
             }
         }).start();
     }
@@ -492,12 +496,23 @@ public class Model_HomerInstance extends Model {
                 final Form<WS_Message_Instance_status> form = Form.form(WS_Message_Instance_status.class).bind(node);
                 if(form.hasErrors()) throw new Exception("WS_Message_Instance_status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-                status.instance_list.addAll(form.get().instance_list);
+                System.out.println("Odeslal jsem zprávu o stavu instnace:: a co jsem dostal?? " + node.toString());
+                System.out.println("Odeslal jsem zprávu o stavu instnace:: a co jsem vyseparoval?? " + Json.toJson(form.get().instances).toString());
+
+
+                status.status = "success";
+                status.instances.addAll(form.get().instances);
+
 
             }catch (InterruptedException|TimeoutException e){
+                System.out.println("Došlo zde k průseru???? ");
+
+                terminal_logger.internalServerError(e);
                 return new WS_Message_Instance_status();
             }catch (Exception e){
-                Model_HomerInstance.terminal_logger.internalServerError(e);
+
+                System.out.println("Došlo zde k průseru???? ");
+                terminal_logger.internalServerError(e);
                 return new WS_Message_Instance_status();
             }
         }

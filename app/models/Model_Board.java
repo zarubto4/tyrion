@@ -33,6 +33,7 @@ import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Status;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 import web_socket.services.WS_HomerServer;
+import web_socket.services.helps_class.ParallelTask;
 
 import javax.persistence.*;
 import java.util.*;
@@ -511,12 +512,18 @@ public class Model_Board extends Model {
                     case WS_Message_Hardware_change_server.message_type  : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");}
 
                     default: {
-                        throw new Exception("Incoming message, chanel tyrion: message_type not recognized -> " + json.get("message_type").asText());
+                        terminal_logger.warn("Incoming Message not recognized::" + json.toString());
+                        homer.write_without_confirmation(json.put("error_message", "message_type not recognized").put("error_code", 400));
                     }
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("Messages:", e);
+                if(!json.has("message_type")){
+                    homer.write_without_confirmation(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
+                    return;
+                }else {
+                    terminal_logger.internalServerError("Messages:", e);
+                }
             }
         }).start();
     }
@@ -637,21 +644,34 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient private static List<JsonNode> server_parallel(HashMap<String, ObjectNode> get_result_from_servers, Integer time, Integer delay, Integer number_of_retries){
         try {
 
-            Collection<Callable<JsonNode>> tasks = new ArrayList<Callable<JsonNode>>();
+            System.out.println("Budu odesílat hromadnou zprávu k hardwaru směrem k serverům jejich počet je " + get_result_from_servers.size() );
+
+
+            List<Callable<ObjectNode>> callables = new ArrayList<Callable<ObjectNode>>();
+
             for (String server_id : get_result_from_servers.keySet()) {
-                tasks.add(new Callable<JsonNode>() {
-                    public JsonNode call() throws Exception {
-                        return Model_HomerServer.get_byId(server_id).sender().write_with_confirmation(get_result_from_servers.get(server_id), time, delay, number_of_retries);
-                    }
-                });
+
+                 System.out.println("Server id ve forcyklu je " + server_id);
+
+                 Callable<ObjectNode> callable = new ParallelTask(server_id, get_result_from_servers.get(server_id), time, delay, number_of_retries);
+                 callables.add(callable);
             }
 
-            List<Future<JsonNode>> future_results = Executors.newFixedThreadPool(get_result_from_servers.size()).invokeAll(tasks, time * number_of_retries + 1000, TimeUnit.MILLISECONDS);
+            ExecutorService executor = Executors.newWorkStealingPool();
+
             List<JsonNode> results = new ArrayList<>();
 
-            for (Future<JsonNode> future : future_results) {
-                results.add(future.get());
-            }
+            executor.invokeAll(callables)
+                    .stream()
+                    .map(future -> {
+                        try {
+                            results.add(future.get());
+
+                            return null;
+                        } catch (Exception e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }).forEach(System.out::println);
 
             return results;
 
@@ -660,6 +680,8 @@ public class Model_Board extends Model {
         }
 
     }
+
+
 
     @JsonIgnore @Transient private static HashMap<String, List<String>> server_Separate(List<Model_Board> devices){
 
@@ -753,6 +775,7 @@ public class Model_Board extends Model {
         // Make Parallel Operation
         List<JsonNode> results = server_parallel(request_collection,1000 * 10, 0, 1 );
 
+        System.out.println("Co přišlo ze serverů???" + Json.toJson(results));
 
         // Common Result for fill
         WS_Message_Hardware_overview result = new WS_Message_Hardware_overview();
@@ -1655,6 +1678,7 @@ public class Model_Board extends Model {
     }
 
     @Override
+
     public void update(){
 
         terminal_logger.debug("update :: Update object Id: " + this.id);

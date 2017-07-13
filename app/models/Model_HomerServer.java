@@ -80,7 +80,7 @@ public class Model_HomerServer extends Model{
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient  public boolean server_is_online(){ return Controller_WebSocket.homer_servers.containsKey(this.unique_identificator);}
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient  public boolean server_is_online(){ return Controller_WebSocket.homer_servers.containsKey(unique_identificator);}
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -264,14 +264,18 @@ public class Model_HomerServer extends Model{
                     }
 
                     default: {
-                        terminal_logger.internalServerError(new Exception("Chanel homer-server: message_type not recognized ->" + json.get("message_type").asText()));
-
-                        if (!Model_HomerServer.get_byId(homer.identifikator).server_is_online())
-                            throw new Exception("Chanel homer-server: Prerequisite invalidly terminate of connection.");
+                        terminal_logger.warn("Incoming Message not recognized::" + json.toString());
+                        homer.write_without_confirmation(json.put("error_message", "message_type not recognized").put("error_code", 400));
                     }
                 }
             } catch (Exception e) {
-                terminal_logger.internalServerError("Messages:", e);
+
+                if(!json.has("message_type")){
+                    homer.write_without_confirmation(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
+                    return;
+                }else {
+                    terminal_logger.internalServerError("Messages:", e);
+                }
             }
 
         }).start();
@@ -290,12 +294,15 @@ public class Model_HomerServer extends Model{
 
             if(message.hash_token.equals( Model_HomerServer.get_byId(ws_homer_server.identifikator).hash_certificate)){
 
+                System.out.println("Hash sedí ");
+
                 ws_homer_server.approve_server_verification(message.message_id);
 
-                ws_homer_server.write_without_confirmation(message.message_id, new WS_Message_Homer_Verification_result().make_request(true, ws_homer_server.rest_api_token));
                 return;
 
             }else{
+
+                System.out.println("Hash nesedí ");
 
                 ws_homer_server.security_token_confirm = false;
                 ws_homer_server.rest_api_token =  null;
@@ -335,7 +342,7 @@ public class Model_HomerServer extends Model{
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 15, 0, 2);
             final Form<WS_Message_Homer_Instance_list> form = Form.form(WS_Message_Homer_Instance_list.class).bind(node);
             if(form.hasErrors()){
-                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_list.message_type, form.errorsAsJson()));
+                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
                 terminal_logger.warn("get_homer_server_list_of_instance:: Json Incorrect value");
                 return new WS_Message_Homer_Instance_list();
             }
@@ -352,11 +359,18 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Transient  public WS_Message_Homer_Hardware_list get_homer_server_list_of_hardware(){
         try {
+
+            System.out.println("get_homer_server_list_of_hardware - start");
+
             if(!server_is_online()) throw new InterruptedException();
+
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 15, 0, 2);
+
+            System.out.println("get_homer_server_list_of_hardware server odpověděl: " + node.toString());
+
             final Form<WS_Message_Homer_Hardware_list> form = Form.form(WS_Message_Homer_Hardware_list.class).bind(node);
             if(form.hasErrors()){
-                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Hardware_list.message_type, form.errorsAsJson()));
+                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Hardware_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
                 terminal_logger.warn("get_homer_server_list_of_hardware:: Json Incorrect value");
                 return new WS_Message_Homer_Hardware_list();
             }
@@ -378,7 +392,7 @@ public class Model_HomerServer extends Model{
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_number().make_request(), 1000 * 5, 0, 2);
             final Form<WS_Message_Homer_Instance_number> form = Form.form(WS_Message_Homer_Instance_number.class).bind(node);
             if(form.hasErrors()){
-                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_number.message_type, form.errorsAsJson()));
+                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_number.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
                 terminal_logger.warn("get_homer_server_list_of_hardware:: Json Incorrect value");
                 return new WS_Message_Homer_Instance_number();
             }
@@ -466,6 +480,8 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Transient  public WS_Message_Homer_ping ping(){
         try {
+
+            System.out.println("vyvolávám homer ping ");
 
             if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_ping().make_request(), 1000 * 2, 0, 2);

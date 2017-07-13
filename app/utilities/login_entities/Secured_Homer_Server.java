@@ -38,11 +38,22 @@ public class Secured_Homer_Server extends Security.Authenticator {
                 return null;
             }
 
+            terminal_logger.debug("Secured_Homer_Server: X-AUTH-TOKEN:: Token {}", token);
 
             // Zjistím, zda v Cache už token není Pokud není - vyhledám Token objekt a ověřím jeho platnost
             if(WS_HomerServer.token_hash.containsKey(token)){
-                 return token;
+
+                terminal_logger.debug("Secured_Homer_Server: Token found!");
+                return token;
+
             }else{
+
+                terminal_logger.debug("Secured_Homer_Server: Token not found!");
+
+                for(String key :WS_HomerServer.token_hash.keySet()){
+                    terminal_logger.debug("Secured_Homer_Server: Keys: inside:: " + key);
+                }
+
                 return null;
             }
 

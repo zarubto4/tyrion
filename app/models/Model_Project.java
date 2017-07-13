@@ -120,7 +120,7 @@ public class Model_Project extends Model {
         short_detail.edit_permission = edit_permission();
         short_detail.delete_permission = delete_permission();
 
-        short_detail.status = active();
+        short_detail.active_status = active();
 
         return short_detail;
 

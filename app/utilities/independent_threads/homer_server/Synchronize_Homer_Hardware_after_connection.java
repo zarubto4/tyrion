@@ -33,46 +33,49 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
         try {
 
+            System.out.println("4. Spouštím Sycnhronizační proceduru Synchronize_Homer_Hardware_after_connection");
+
             int page = 0;
             int page_size = 100;
 
-            List<String> device_ids_on_server =  Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_hardware().hardware_ids;
+            System.out.println("4.1 Teď žádám homera o všechen Hardware");
+            List<String> device_ids_on_server = Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_hardware().hardware_ids;
 
+            System.out.println("4.2 Hardware, který by měl běžet ");
             List<String> device_ids_required = new ArrayList<>();
 
             while(true){
 
 
-                PagedList<Model_Board> paging_list = Model_Board.find.where().findPagedList(page, page_size);
+                PagedList<Model_Board> paging_list = Model_Board.find.where().select("id").select("connected_server_id").findPagedList(page, page_size);
 
+                System.out.println("4.3 Jdu kontrolovat seznam z databáze a hledat co na serveru mám navíc");
                 for(Model_Board board : paging_list.getList()){
 
+                    // Přidám do seznamu harwaru, který má na serveru být
                     device_ids_required.add(board.id);
 
                     if(!device_ids_on_server.contains(board.id)){
-                        board.device_relocate_server(Model_HomerServer.get_byId(ws_homerServer.identifikator));
-                    }
 
-                    // TODO dělat něco s overview??
-                    WS_Message_Hardware_overview overview = board.get_devices_overview();
+                        System.out.println("4.3 " + board.id + " Na server není harware který bych očekával - což znamená dvě  věci - je na jiném serveru nebo je offline");
 
-                }
+                        if(board.connected_server_id == null){
+                            System.out.println("4.4 " + board.id + " Device se ještě nikdy nepřipojil ");
+                        }
+                        else if(board.connected_server_id .equals( Model_HomerServer.get_byId( ws_homerServer.get_identificator()).unique_identificator)){
+                             System.out.println("4.4 " + board.id + " Device je ofline a tak na něj seru ");
 
-
-                for(String device_id : device_ids_on_server){
-
-                    if(!device_ids_required.contains(device_id)){
-
-                        terminal_logger.warn("Recolate Hardware required: {}", device_id);
-
-                        try {
-
-                            Model_Board.get_byId(device_id).device_relocate_server(Model_HomerServer.get_byId(Model_Board.get_byId(device_id).connected_server_id)); // TODO
-
-                        }catch (Exception e){
-                            terminal_logger.internalServerError(e);
+                        }else {
+                            System.out.println("4.4 " + board.id + " Device je na špatném serveru a tak ho relokuji!!");
+                            board.device_relocate_server(Model_HomerServer.get_byId(ws_homerServer.identifikator));
                         }
 
+                    }else {
+                        System.out.println("4.3 " + board.id + " Na server hardware je online");
+
+                        // TODO dělat něco s overview??
+                        System.out.println("4.4 Device overview?");
+                        WS_Message_Hardware_overview overview = board.get_devices_overview();
                     }
 
                 }
@@ -81,18 +84,8 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 // Pokud je počet stránek shodný
                 if( paging_list.getTotalPageCount() == page) break;
 
+                System.out.println("Page == " + page);
                 page++;
-
-            }
-
-
-            for(String device_id : device_ids_on_server){
-
-                if(!device_ids_required.contains(device_id)){
-
-                    // TODO Anomalie - přesměrovat na jiný server!
-                    terminal_logger.warn("TODO chybí přesměrování na jiný server {}", device_id);
-                }
 
             }
 

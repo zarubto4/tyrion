@@ -15,7 +15,7 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Synchronize_Homer_Unresolved_Updates.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Synchronize_Homer_Instance_after_connection.class);
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
@@ -31,11 +31,14 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
         try {
 
+            System.out.println("3. Spouštím Sycnhronizační proceduru Synchronize_Homer_Instance_after_connection");
 
             terminal_logger.info("Synchronize_Homer_Instance_after_connection:: run:: Tyrion send to Homer Server request for listInstances");
 
-
+            System.out.println("3.1 Hledám instance co jsou na serveru");
             List<String> instances_required_by_tyrion = required_instance_on_server();
+
+            System.out.println("3.2 Hledám co mají být na server");
             List<String> instances_actual_on_server = actual_on_server();
 
             List<String> instances_for_removing = new ArrayList<>();
@@ -44,12 +47,23 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
 
             for(String instance_id : instances_required_by_tyrion){
-                if(!instances_actual_on_server.contains(instance_id))instances_for_add.add(instance_id);
+
+
+                if(!instances_actual_on_server.contains(instance_id)){
+                    System.out.println("3.4 Našel jsem instanci kterou chci doplnit na server:: " + instance_id);
+                    instances_for_add.add(instance_id);
+                }
             }
 
+
             for(String instance_id : instances_actual_on_server){
-                if(!instances_required_by_tyrion.contains(instance_id))instances_for_removing.add(instance_id);
+                if(!instances_required_by_tyrion.contains(instance_id)){
+                    System.out.println("3.5 Našel jsem instanci kterou chci odstranit ze serveru:: " + instance_id);
+                    instances_for_removing.add(instance_id);
+                }
             }
+
+
 
 
             if (!instances_for_removing.isEmpty()) {
@@ -65,11 +79,18 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
             if(!instances_for_add.isEmpty()){
 
+                System.out.println("3.6 instances_for_add není prázdný " );
+
                 terminal_logger.trace("Synchronize_Homer_Instance_after_connection:: run:: Connection::Starting to upload new instance_ids to cloud_blocko_server. Size: {}" , instances_for_add.size());
 
                 for (String instance_id : instances_for_add) {
                     try {
+
+                        System.out.println("3.7 Nahrávám na server instanci :: " + instance_id);
+
                         Model_HomerInstance.get_byId(instance_id).upload_to_cloud();
+                        sleep(50);
+
                     }catch (Exception e) {
                         terminal_logger.internalServerError(e);
                     }

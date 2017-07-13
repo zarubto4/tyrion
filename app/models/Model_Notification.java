@@ -226,12 +226,12 @@ public class Model_Notification extends Model {
                     element.program_id = versionObject.c_program.id;
                     element.project_id = versionObject.c_program.project_id();
 
-                } else if (versionObject.b_program != null){
+                } else if (versionObject.get_b_program() != null){
 
                     element.name = "B_Program_Version";
                     element.text = versionObject.version_name;
-                    element.program_id = versionObject.b_program.id;
-                    element.project_id = versionObject.b_program.project != null ? versionObject.b_program.project.id : null;
+                    element.program_id = versionObject.get_b_program().id;
+                    element.project_id = versionObject.get_b_program().project != null ? versionObject.get_b_program().project.id : null;
                 }
 
                 break;

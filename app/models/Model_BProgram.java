@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -52,9 +53,7 @@ public class Model_BProgram extends Model {
 
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_version_objects_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_id;
-    @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_name;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
-    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_name;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -75,7 +74,7 @@ public class Model_BProgram extends Model {
 
             List<Swagger_B_Program_Version_Short_Detail> versions = new ArrayList<>();
 
-            for(Model_VersionObject version : getVersion_objects()){
+            for(Model_VersionObject version : getVersion_objects().stream().sorted((element1, element2) -> element2.date_of_create.compareTo(element1.date_of_create)).collect(Collectors.toList())){
                 versions.add(version.get_short_b_program_version());
             }
 
@@ -110,8 +109,8 @@ public class Model_BProgram extends Model {
 
 
             // Jaká verze Blocko Programu?
-            state.version_id = instance.actual_instance.version_object.id;
-            state.version_name = instance.actual_instance.version_object.version_name;
+            state.version_id = instance.actual_instance.get_b_program_version().id;
+            state.version_name = instance.actual_instance.get_b_program_version().version_name;
 
             // Instnace ID
             state.instance_id = instance.id;
@@ -202,7 +201,6 @@ public class Model_BProgram extends Model {
         }
 
     }
-
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

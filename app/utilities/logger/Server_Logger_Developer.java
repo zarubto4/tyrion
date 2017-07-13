@@ -2,6 +2,7 @@ package utilities.logger;
 
 
 import com.google.inject.Singleton;
+import models.Model_Person;
 import play.Configuration;
 import utilities.Server;
 import utilities.enums.Enum_Log_level;
@@ -18,7 +19,6 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     static private play.Logger.ALogger logger = play.Logger.of("TYRION");
-
 /* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
     private static HashMap<String, Log_Pair> list_of_objects_for_logging = new HashMap<>();
@@ -27,21 +27,49 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
     public Server_Logger_Developer(){
 
+        logger.warn("     Logger Settings:: Developer");
+
         // Načtení Všech Log tříd
         for(String group_name :  Configuration.root().getStringList("Loggy.general_log_groups")){
+
             try {
+
+                group_name.replaceAll("\\s+","");
+
+                logger.warn("        Actual Group:: Name               :: " + group_name);
 
                 // Get List of all Groups!
                 ArrayList<String> list = (ArrayList<String>) Configuration.root().getStringList("Loggy.groups." + group_name);
 
                 String group_config = list.get(0);
 
-                Enum_Log_level default_group_log_level = Enum_Log_level.fromString(group_config.split("::")[0]);
-                Color default_group_log_color = Color.getColor(group_config.split("::")[1]);
+                String log_level = group_config.split("::")[0].toLowerCase();
+                String color = group_config.split("::")[1];
+
+                // Log Level
+                Enum_Log_level default_group_log_level = Enum_Log_level.fromString(log_level);
+                if(default_group_log_level == null) default_group_log_level = Enum_Log_level.trace;
+                logger.warn("                    :: Log Level in Group :: " + default_group_log_level.name());
+
+                // Color
+                Color default_group_log_color;
+                if(color.equals("YELLOW")) default_group_log_color = Color.yellow;
+                else if(color.equals("BLUE")) default_group_log_color = Color.blue;
+                else if(color.equals("GREEN")) default_group_log_color = Color.blue;
+                else if(color.equals("ORANGE")) default_group_log_color = Color.orange;
+                else if(color.equals("RED")) default_group_log_color = Color.red;
+                else if(color.equals("PINK")) default_group_log_color = Color.pink;
+                else default_group_log_color = Color.white;
+                logger.warn("                    :: Log Color in Group :: " + color);
 
                 list.remove(0);
 
+
+                logger.warn("                    :: Log Class in Group :: ");
+
                 for (String object_for_log : list) {
+
+                    logger.warn("                                          :: " + object_for_log);
 
                     Log_Pair log_pair = new Log_Pair();
 
@@ -63,17 +91,20 @@ public class Server_Logger_Developer implements Interface_Server_Logger {
 
             }catch (NullPointerException e){
 
-                logger.error("#########################################################################################");
-                logger.error("##                                                                                        ");
+                e.printStackTrace();
+
+                logger.error("############################################################################################");
+                logger.error("##                                                                                        ##");
                 logger.error("## Server_Logger_Developer:: Group " + group_name + " not found in configuration file!    ");
                 logger.error("## -->>>> (Loggy.groups." + group_name + ")                                               ");
-                logger.error("##  Please check log list in project folder in conf.aplication.conf file                  ");
-                logger.error("##  For more details check Tyrion Wiki documentation.                                     ");
-                logger.error("##                                                                                        ");
-                logger.error("#########################################################################################");
+                logger.error("##  Please check log list in project folder in conf.aplication.conf file                  ##");
+                logger.error("##  For more details check Tyrion Wiki documentation.                                     ##");
+                logger.error("##                                                                                        ##");
+                logger.error("############################################################################################");
+                System.out.println();
 
             }catch (Exception e ){
-                logger.error("Error", e);
+                logger.error("Error: ",e);
             }
         }
 

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(description = "Model of M_Program",
@@ -57,10 +58,14 @@ public class Model_MProgram extends Model{
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public  String m_project_id()             {  return m_project.id;}
 
-
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Program_Version_Short_Detail> program_versions() {
+
         List<Swagger_M_Program_Version_Short_Detail> versions = new ArrayList<>();
-        for(Model_VersionObject v : getVersion_objects_not_removed_by_person()) versions.add(v.get_short_m_program_version());
+
+        for(Model_VersionObject v : getVersion_objects_not_removed_by_person().stream().sorted((element1, element2) -> element2.date_of_create.compareTo(element1.date_of_create)).collect(Collectors.toList())){
+            versions.add(v.get_short_m_program_version());
+        }
+
         return versions;
     }
 
