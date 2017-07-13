@@ -888,7 +888,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
                 if(ext.active) {
 
-                    Model_ProductExtension extension = Model_ProductExtension.copyExtension(ext);
+                    Model_ProductExtension extension = ext.copy();
                     extension.product = product;
                     extension.save();
                 }

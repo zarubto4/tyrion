@@ -7,6 +7,8 @@ import com.microtripit.mandrillapp.lutung.view.MandrillMessage.Recipient;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.MergeVar;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.MessageContent;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessageStatus;
+import models.Model_Customer;
+import models.Model_Person;
 import play.Configuration;
 import utilities.logger.Class_Logger;
 
@@ -33,16 +35,20 @@ public class Email {
 
 /* OPERATION ......-----------------------------------------------------------------------------------------------------*/
     
-    public void send(String email, String subject){
+    public void sendBulk(List<String> emails, String subject){
 
         terminal_logger.info("send():: sending email");
 
-        Recipient recipient = new Recipient();
-        recipient.setEmail(email);
-        recipient.setType(Recipient.Type.TO);
-
         List<Recipient> recipients = new ArrayList<>();
-        recipients.add(recipient);
+
+        for (String email : emails){
+
+            Recipient recipient = new Recipient();
+            recipient.setEmail(email);
+            recipient.setType(Recipient.Type.TO);
+
+            recipients.add(recipient);
+        }
 
         globalMergeVars.add(new MergeVar("html_content", emailContentHtml.toString()));
         globalMergeVars.add(new MergeVar("text_content", emailContentText.toString()));
@@ -69,6 +75,47 @@ public class Email {
             terminal_logger.internalServerError("send:",e);
         }
 
+    }
+
+    public void send(List<Model_Person> persons, String subject){
+
+        List<String> emails = new ArrayList<>();
+
+        persons.forEach(person -> emails.add(person.mail));
+
+        sendBulk(emails, subject);
+
+    }
+
+    public void send(Model_Customer customer, String subject){
+
+        List<String> emails = new ArrayList<>();
+
+        if (customer.company) {
+            customer.getEmployees().forEach(employee -> emails.add(employee.person.mail));
+        } else {
+            emails.add(customer.getPerson().mail);
+        }
+
+        sendBulk(emails, subject);
+    }
+
+    public void send(Model_Person person, String subject){
+
+        List<String> emails = new ArrayList<>();
+
+        emails.add(person.mail);
+
+        sendBulk(emails, subject);
+    }
+
+    public void send(String mail, String subject){
+
+        List<String> emails = new ArrayList<>();
+
+        emails.add(mail);
+
+        sendBulk(emails, subject);
     }
 
     public Email attachmentPDF(String name, byte[] file){

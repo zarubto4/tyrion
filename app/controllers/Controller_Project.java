@@ -1,13 +1,7 @@
 package controllers;
 
 import io.swagger.annotations.*;
-import models.Model_Notification;
-import models.Model_Invitation;
-import models.Model_Person;
-import models.Model_CProgram;
-import models.Model_Product;
-import models.Model_Project;
-import models.Model_ProjectParticipant;
+import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -91,12 +85,27 @@ public class Controller_Project extends Controller {
 
             project.refresh();
 
-            Model_ProjectParticipant participant = new Model_ProjectParticipant();
-            participant.person = product.customer.person;
-            participant.project = project;
-            participant.state = Enum_Participant_status.owner;
+            if (product.customer.company) {
 
-            participant.save();
+                for (Model_Employee employee : product.customer.getEmployees()) {
+
+                    Model_ProjectParticipant participant = new Model_ProjectParticipant();
+                    participant.person = employee.person;
+                    participant.project = project;
+                    participant.state = employee.state;
+
+                    participant.save();
+                }
+
+            } else {
+
+                Model_ProjectParticipant participant = new Model_ProjectParticipant();
+                participant.person = product.customer.getPerson();
+                participant.project = project;
+                participant.state = Enum_Participant_status.owner;
+
+                participant.save();
+            }
 
             project.refresh();
 

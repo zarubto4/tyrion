@@ -75,6 +75,7 @@
                                 <th>Paid until</th>
                                 <th>Open</th>
                             </tr>
+                            <tr>Personal</tr>
                             @for( product <- Model_Product.get_byOwner(person.id)) {
                                 <tr>
                                     <td> @product.name</td>
@@ -90,6 +91,8 @@
                                     </td>
                                 </tr>
                             }
+                            <tr>As employee</tr>
+                            @for(product <- Model_Product.)
                         </table>
                     </div>
                 </div>

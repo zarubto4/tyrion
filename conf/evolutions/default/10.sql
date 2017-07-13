@@ -17,6 +17,7 @@ create table model_employee (
 create table model_customer (
   id                        varchar(255) not null,
   person_id                 varchar(255),
+  fakturoid_subject_id      varchar(255),
   created                   timestamp,
   removed_by_user           boolean,
   company                   boolean,
@@ -25,7 +26,7 @@ create table model_customer (
   constraint pk_model_customer primary key (id))
 ;
 
-insert into model_customer (id, person_id, created, removed_by_user, company, state) select person_id, person_id, now(), false, false, 'owner' from model_payment_details group by person_id;
+insert into model_customer (id, person_id, fakturoid_subject_id, created, removed_by_user, company, state) select person_id, person_id, null, now(), false, false, 'owner' from model_payment_details where productidpaymentdetails notnull group by person_id;
 
 alter table model_product
   add column customer_id varchar(255);
@@ -56,7 +57,7 @@ alter table model_employee add constraint fk_model_employee_customer_84 foreign 
 create index ix_model_employee_customer_84 on model_employee (customer_id);
 
 alter table model_employee add constraint fk_model_employee_person_85 foreign key (person_id) references model_person (id);
-create index ix_model_employee_person_85 on model_employee (customer_id);
+create index ix_model_employee_person_85 on model_employee (person_id);
 
 # --- !Downs
 

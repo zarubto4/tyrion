@@ -105,7 +105,7 @@
                                                 @if(product.payment_details.company_account) {
                                                     <tr>
                                                         <td>Owner</td>
-                                                        <td>@product.customer.person.mail</td>
+                                                        <td>@product.customer.getEmployees.get(0).person.mail</td>
                                                     </tr>
 
                                                     <tr>

@@ -210,7 +210,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText(" for your product "))
                     .setObject(this.getProduct())
                     .setText(new Notification_Text().setText("."))
-                    .send(this.getProduct().customer.person);
+                    .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationInvoiceNew:", e);
@@ -230,7 +230,7 @@ public class Model_Invoice extends Model {
                     .setObject(this)
                     .setText(new Notification_Text().setText(" and resolve it. "))
                     .setText(new Notification_Text().setText(message))
-                    .send(this.getProduct().customer.person);
+                    .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationInvoiceReminder:", e);
@@ -249,7 +249,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText(" for this product "))
                     .setObject(this.getProduct())
                     .setText(new Notification_Text().setText(" is overdue."))
-                    .send(this.getProduct().customer.person);
+                    .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationInvoiceReminder:", e);
@@ -266,7 +266,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText("It seems, that you did not finish your payment for this invoice "))
                     .setObject(this)
                     .setText(new Notification_Text().setText("."))
-                    .send(this.getProduct().customer.person);
+                    .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationPaymentIncomplete:", e);
@@ -283,7 +283,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText("Payment $" + amount + " for invoice "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was successful."))
-                    .send(this.getProduct().customer.person);
+                    .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationPaymentSuccess:", e);
@@ -300,7 +300,7 @@ public class Model_Invoice extends Model {
                     .setText(new Notification_Text().setText("Failed to receive your payment for this invoice "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" Check the payment or contact support."))
-                    .send(this.getProduct().customer.person);
+                    .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationPaymentFail:", e);
@@ -313,8 +313,8 @@ public class Model_Invoice extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission() {  return this.getProduct().customer.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Invoice_create");}
-    @JsonIgnore @Transient public boolean read_permission()   {  return this.getProduct().customer.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Invoice_read");}
+    @JsonIgnore @Transient public boolean create_permission() {  return ((getProduct().customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!getProduct().customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Invoice_create");}
+    @JsonIgnore @Transient public boolean read_permission()   {  return ((getProduct().customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!getProduct().customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Invoice_read");}
     @JsonIgnore @Transient public boolean remind_permission() {  return true;  }
     @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
     @JsonIgnore @Transient public boolean delete_permission() {  return true;  }

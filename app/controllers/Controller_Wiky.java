@@ -2,7 +2,9 @@ package controllers;
 
 import io.swagger.annotations.Api;
 import models.Model_Board;
+import models.Model_Customer;
 import models.Model_Product;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.Class_Logger;
@@ -40,9 +42,17 @@ public class Controller_Wiky extends Controller {
     public Result test2(){
         try {
 
-            CustomScheduler.toCron(new Date());
 
-            CustomScheduler.toCron(new Date(new Date().getTime() + 3600000));
+            Model_Product product = Model_Product.find.all().get(0);
+
+            System.out.println("Customer id = " + product.customer.id);
+
+            Model_Customer customer = Model_Customer.find.byId(product.customer.id);
+
+            System.out.println(Json.toJson(customer));
+            System.out.println("From product = " + Json.toJson(product.customer));
+
+            System.err.println(Json.toJson(product));
 
             return ok();
 

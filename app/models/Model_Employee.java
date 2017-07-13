@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@ApiModel(value = "Customer", description = "Model of Customer")
+@ApiModel(value = "Employee", description = "Model of Employee")
 public class Model_Employee extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ public class Model_Employee extends Model{
     @Id public String id;
     @JsonIgnore public Date created;
 
-    public Enum_Participant_status status;
+    public Enum_Participant_status state;
 
     @ManyToOne public Model_Person person;
     @ManyToOne public Model_Customer customer;
@@ -93,5 +93,5 @@ public class Model_Employee extends Model{
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    private static Finder<String, Model_Employee> find = new Finder<>(Model_Employee.class);
+    public static Finder<String, Model_Employee> find = new Finder<>(Model_Employee.class);
 }

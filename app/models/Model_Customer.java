@@ -26,23 +26,46 @@ public class Model_Customer extends Model{
                                                         @JsonIgnore public Date created;
                                                         @JsonIgnore public boolean removed_by_user;
                                                         @JsonIgnore public boolean company;
+                                                                    public String fakturoid_subject_id;
 
          @OneToOne(mappedBy = "customer",cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
-                                                         @OneToOne public Model_Person person;
+                                                          @OneToOne(fetch = FetchType.EAGER) public Model_Person person;
 
-       @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Product>  products  = new ArrayList<>();
+       @JsonIgnore @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Product>  products  = new ArrayList<>();
        @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Employee> employees = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    public Model_Person getPerson(){
+
+        if (this.person == null) this.person = Model_Person.find.where().eq("customer.id", this.id).findUnique();
+
+        return this.person;
+    }
+
+    public List<Model_Employee> getEmployees(){
+
+        if (this.employees.isEmpty()) this.employees = Model_Employee.find.where().eq("customer.id", this.id).findList();
+
+        return this.employees;
+    }
+
+    @JsonIgnore
+    public boolean isEmployee(Model_Person person){
+
+        if (employees.isEmpty()) return Model_Person.find.where().eq("employees.customer.id", this.id).findUnique() != null;
+
+        return employees.stream().anyMatch(e -> e.person.id.equals(person.id));
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        terminal_logger.debug("save: Creating new Object");
 
         created = new Date();
 
@@ -96,5 +119,5 @@ public class Model_Customer extends Model{
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<String, Model_Customer> find = new Finder<>(Model_Customer.class);
+    public static Model.Finder<String, Model_Customer> find = new Model.Finder<>(Model_Customer.class);
 }

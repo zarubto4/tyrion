@@ -21,7 +21,7 @@ public class Model_PaymentDetails extends Model {
                                            @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public Long id;
 
     @JsonIgnore @OneToOne                                                                           public Model_Customer customer;
-    @JsonIgnore @OneToOne(cascade = CascadeType.ALL)   @JoinColumn(name="productidpaymentdetails")  public Model_Product product;
+    @JsonIgnore @OneToOne()   @JoinColumn(name="productidpaymentdetails")  public Model_Product product;
 
                                                                                                     public boolean company_account; // Rozhoduji se zda jde o detaily firemní nebo osobní
 
@@ -83,8 +83,40 @@ public class Model_PaymentDetails extends Model {
     }
 
     @JsonIgnore
+    public Model_PaymentDetails copy(){
+
+        Model_PaymentDetails details = new Model_PaymentDetails();
+        details.full_name       = this.full_name;
+        details.street          = this.street;
+        details.street_number   = this.street_number;
+        details.city            = this.city;
+        details.zip_code        = this.zip_code;
+        details.country         = this.country;
+        details.invoice_email   = this.invoice_email;
+
+        if (company_account) {
+
+            details.company_account             = true;
+            details.company_name                = this.company_name;
+            details.company_web                 = this.company_web;
+            details.company_authorized_email    = this.company_authorized_email;
+            details.company_authorized_phone    = this.company_authorized_phone;
+            details.company_vat_number          = this.company_vat_number;
+            details.company_registration_no     = this.company_registration_no;
+        }
+
+        return details;
+    }
+
+    @JsonIgnore
     public boolean isComplete(){
         return full_name != null && street != null && street_number != null && city != null && zip_code != null && country != null && invoice_email != null;
+    }
+
+    @JsonIgnore
+    public boolean isCompleteCompany(){
+        return street != null && street_number != null && city != null && zip_code != null && country != null && invoice_email != null
+                && company_name != null && company_authorized_email != null && company_authorized_phone != null && (company_vat_number != null || company_registration_no != null);
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

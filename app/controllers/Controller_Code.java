@@ -894,7 +894,7 @@ public class Controller_Code extends Controller{
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
-                                .send(version_old.c_program.project.product.customer.person.mail, "Publishing your program" );
+                                .send(version_old.c_program.project.product.customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError("approve_decision:", e);
@@ -916,7 +916,7 @@ public class Controller_Code extends Controller{
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
-                                .send(version_old.c_program.project.product.customer.person.mail, "Publishing your program" );
+                                .send(version_old.c_program.project.product.customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError("approve_decision:", e);
@@ -942,7 +942,7 @@ public class Controller_Code extends Controller{
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
-                            .send(version_old.c_program.project.product.customer.person.mail, "Publishing your program" );
+                            .send(version_old.c_program.project.product.customer, "Publishing your program" );
 
                 } catch (Exception e) {
                     terminal_logger.internalServerError("approve_decision:", e);

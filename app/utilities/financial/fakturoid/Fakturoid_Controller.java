@@ -105,7 +105,7 @@ public class Fakturoid_Controller extends Controller {
 
             Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
             fakturoid_invoice.custom_id = invoice.getProduct().id;
-            fakturoid_invoice.client_name = invoice.getProduct().customer.company ? invoice.getProduct().payment_details.company_name : invoice.getProduct().customer.person.full_name;
+            fakturoid_invoice.client_name = invoice.getProduct().customer.company ? invoice.getProduct().payment_details.company_name : invoice.getProduct().customer.getPerson().full_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
             fakturoid_invoice.lines = invoice.invoice_items();
             fakturoid_invoice.proforma = true;
@@ -203,7 +203,7 @@ public class Fakturoid_Controller extends Controller {
 
             Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
             fakturoid_invoice.custom_id = product.id;
-            fakturoid_invoice.client_name = product.customer.company ? product.payment_details.company_name : product.customer.person.full_name;
+            fakturoid_invoice.client_name = product.customer.company ? product.payment_details.company_name : product.customer.getPerson().full_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
             fakturoid_invoice.lines = invoice.invoice_items;
             fakturoid_invoice.proforma = false;
@@ -347,7 +347,7 @@ public class Fakturoid_Controller extends Controller {
                     .text("See the attached invoice.")
                     .text("Best regards, Byzance Team")
                     .attachmentPDF(invoice.invoice_number + ".pdf", body)
-                    .send(product.payment_details.invoice_email != null ? product.payment_details.invoice_email : product.customer.person.mail , "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + " - Reminder" );
+                    .send(product.payment_details.invoice_email, "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + " - Reminder" );
 
 
         }catch (Exception e){
@@ -405,8 +405,6 @@ public class Fakturoid_Controller extends Controller {
 
                     response = responsePromise.get(5000);
 
-                    result = response.asJson();
-
                 } catch (Exception e) {
                     terminal_logger.internalServerError("create_subject:", e);
                     Thread.sleep(2500);
@@ -419,13 +417,18 @@ public class Fakturoid_Controller extends Controller {
 
                         terminal_logger.debug("create_subject: Status: 201");
 
-                        details.product.archiveEvent("Subject created", "System created subject in Fakturoid", null);
+                        if (details.product != null) // Produkt někdy ještě nemusí být v tuhle chvíli přiřazen
+                            details.product.archiveEvent("Subject created", "System created subject in Fakturoid", null);
+
+                        result = response.asJson();
 
                         if (result != null && result.has("id")) return result.get("id").asText();
                         else throw new NullPointerException("Response from Fakturoid does not contain ID.");
                     }
 
                     case 400: {
+
+                        result = response.asJson();
 
                         terminal_logger.debug("create_subject: Status: 400");
                         throw new Exception("Fakturoid returned 400 - Bad Request. Response: " + result);
@@ -434,10 +437,12 @@ public class Fakturoid_Controller extends Controller {
                     case 403: {
 
                         terminal_logger.debug("create_subject: Status: 403");
-                        throw new Exception("Fakturoid returned 403 - Forbidden. Response: " + result);
+                        throw new Exception("Fakturoid returned 403 - Forbidden. Probably too many clients." );
                     }
 
                     case 422: {
+
+                        result = response.asJson();
 
                         terminal_logger.debug("create_subject: Status: 422");
 
@@ -446,7 +451,7 @@ public class Fakturoid_Controller extends Controller {
                         throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
 
-                    default: throw new Exception("Fakturoid returned unhandled status: " + response.getStatus() + ". Response: " + result);
+                    default: throw new Exception("Fakturoid returned unhandled status: " + response.getStatus() + ".");
                 }
             }
 

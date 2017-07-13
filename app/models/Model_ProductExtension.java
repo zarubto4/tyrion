@@ -366,16 +366,16 @@ public class Model_ProductExtension extends Model{
     }
 
     @JsonIgnore
-    public static Model_ProductExtension copyExtension(Model_ProductExtension ext) {
+    public Model_ProductExtension copy() {
 
         Model_ProductExtension extension = new Model_ProductExtension();
-        extension.name = ext.name;
-        extension.description = ext.description;
-        extension.color = ext.color;
-        extension.type = ext.type;
+        extension.name = this.name;
+        extension.description = this.description;
+        extension.color = this.color;
+        extension.type = this.type;
         extension.active = true;
         extension.removed = false;
-        extension.configuration = ext.configuration;
+        extension.configuration = this.configuration;
 
         return extension;
     }
@@ -559,11 +559,35 @@ public class Model_ProductExtension extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      @Transient public boolean create_permission()         {  return (product != null && product.customer.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_create");}
-    @JsonIgnore                                      @Transient public boolean read_permission()           {  return product == null || product.customer.person.id.equals(Controller_Security.get_person_id())   || Controller_Security.get_person().has_permission("ProductExtension_read");  }
-    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean edit_permission()           {  return (product != null && product.customer.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_edit");  }
-    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean act_deactivate_permission() {  return (product != null && product.customer.person.id.equals(Controller_Security.get_person_id())) || Controller_Security.get_person().has_permission("ProductExtension_act_deactivate"); }
-    @JsonProperty @ApiModelProperty(required = true) @Transient public boolean delete_permission()         {  return Controller_Security.get_person().has_permission("ProductExtension_delete");}
+    @JsonIgnore
+    public boolean create_permission(){
+        return (product != null && ((product.customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!product.customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))))
+                || Controller_Security.get_person().has_permission("ProductExtension_create");
+    }
+
+    @JsonIgnore
+    public boolean read_permission(){
+        return product == null
+                || ((product.customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!product.customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id())))
+                || Controller_Security.get_person().has_permission("ProductExtension_read");
+    }
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public boolean edit_permission(){
+        return (product != null && ((product.customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!product.customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))))
+                || Controller_Security.get_person().has_permission("ProductExtension_edit");
+    }
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public boolean act_deactivate_permission(){
+        return (product != null && ((product.customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!product.customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))))
+                || Controller_Security.get_person().has_permission("ProductExtension_act_deactivate");
+    }
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public boolean delete_permission(){
+        return Controller_Security.get_person().has_permission("ProductExtension_delete");
+    }
 
     public enum permissions{ProductExtension_create, ProductExtension_read, ProductExtension_edit, ProductExtension_act_deactivate, ProductExtension_delete}
 
