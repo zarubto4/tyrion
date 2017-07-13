@@ -28,7 +28,7 @@ public class WS_Message_Instance_device_set_snap extends WS_AbstractMessage_Inst
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_HomerInstance.CHANNEL);
-        request.set("devices_ids", Json.toJson(devicesId) );
+        request.set("hardware_ids", Json.toJson(devicesId) );
 
         return request;
     }
