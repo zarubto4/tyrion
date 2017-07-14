@@ -23,7 +23,17 @@ public class History {
     /**
      * Last spending of credit
      */
-    public Long last_spending;
+    public Long last_spending = 0L;
+
+    /**
+     * Last spending of credit
+     */
+    public Long average_spending = 0L;
+
+    /**
+     * Last spending of credit
+     */
+    public Long mean_coefficient = 1L;
 
     /**
      * List of HistoryEvents

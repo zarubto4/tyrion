@@ -72,10 +72,9 @@
                                 <th>Fakturoid ID</th>
                                 <th>Go Pay ID</th>
                                 <th>Rem. Credit</th>
-                                <th>Paid until</th>
                                 <th>Open</th>
                             </tr>
-                            <tr>Personal</tr>
+                            <tr><td align="center" colspan="8"><strong>Personal</strong></td></tr>
                             @for( product <- Model_Product.get_byOwner(person.id)) {
                                 <tr>
                                     <td> @product.name</td>
@@ -85,14 +84,26 @@
                                     <td> @product.fakturoid_subject_id</td>
                                     <td> @product.gopay_id</td>
                                     <td> @product.double_credit()</td>
-                                    <td> TODO </td>
                                     <td align="center">
                                         <a href='@routes.Controller_Dashboard.product_detail(product.id)'><button class="btn btn-block btn-info btn-xs" type="button">Open</button></a>
                                     </td>
                                 </tr>
                             }
-                            <tr>As employee</tr>
-                            @for(product <- Model_Product.)
+                            <tr><td align="center" colspan="8"><strong>As employee</strong></td></tr>
+                            @for(product <- Model_Product.find.where.eq("customer.employees.person.id", person.id).findList){
+                                <tr>
+                                    <td> @product.name</td>
+                                    <td> @product.active</td>
+                                    <td> @product.method.name()</td>
+                                    <td> @product.subscription_id</td>
+                                    <td> @product.fakturoid_subject_id</td>
+                                    <td> @product.gopay_id</td>
+                                    <td> @product.double_credit()</td>
+                                    <td align="center">
+                                        <a href='@routes.Controller_Dashboard.product_detail(product.id)'><button class="btn btn-block btn-info btn-xs" type="button">Open</button></a>
+                                    </td>
+                                </tr>
+                            }
                         </table>
                     </div>
                 </div>

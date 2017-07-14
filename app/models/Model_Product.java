@@ -289,12 +289,34 @@ public class Model_Product extends Model {
     }
 
     @JsonIgnore
-    public Long getLastSpending(){
+    public Double getLastSpending(){
         try {
 
-            return getFinancialHistory().last_spending;
+            return ((double) getFinancialHistory().last_spending) / 1000;
         } catch (Exception e){
             terminal_logger.internalServerError("getLastSpending:", e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public Double getAverageSpending(){
+        try {
+
+            return ((double) getFinancialHistory().average_spending) / 1000;
+        } catch (Exception e){
+            terminal_logger.internalServerError("getAverageSpending:", e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public Long getRemainingDays(){
+        try {
+
+            return credit / getFinancialHistory().average_spending;
+        } catch (Exception e){
+            terminal_logger.internalServerError("getRemainingDays:", e);
             return null;
         }
     }
@@ -308,6 +330,10 @@ public class Model_Product extends Model {
 
             History history = getFinancialHistory();
             history.last_spending = credit;
+
+            history.average_spending = (history.average_spending * history.mean_coefficient + credit) / history.mean_coefficient++;
+
+            if (history.mean_coefficient > 30) history.mean_coefficient = 30L;
 
             this.financial_history = Json.toJson(history).toString();
 
