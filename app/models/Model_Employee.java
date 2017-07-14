@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import utilities.enums.Enum_Participant_status;
 import utilities.logger.Class_Logger;
+import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -23,15 +24,19 @@ public class Model_Employee extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id public String id;
-    @JsonIgnore public Date created;
-
-    public Enum_Participant_status state;
-
-    @ManyToOne public Model_Person person;
-    @ManyToOne public Model_Customer customer;
+                            @Id public String id;
+                    @JsonIgnore public Date created;
+                                public Enum_Participant_status state;
+         @JsonIgnore @ManyToOne public Model_Person person;
+         @JsonIgnore @ManyToOne public Model_Customer customer;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+    @JsonProperty
+    public Swagger_Person_Short_Detail person(){
+
+        return this.person.get_short_person();
+    }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 

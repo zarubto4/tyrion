@@ -1042,9 +1042,16 @@ public class Controller_Finance extends Controller {
 
             if (!new_customer && help.default_payment_details && customer.payment_details != null) {
 
+                terminal_logger.debug("product_create: Copying payment details");
+
                 payment_details = customer.payment_details.copy();
 
                 product.fakturoid_subject_id = customer.fakturoid_subject_id;
+
+                if (help.payment_method == null)    return GlobalResult.result_badRequest("payment_method is required with this tariff");
+                product.method = help.payment_method;
+
+                terminal_logger.debug("product_create: Fakturoid subject id set");
 
             } else {
 
@@ -1116,15 +1123,19 @@ public class Controller_Finance extends Controller {
             product.customer = customer;
             product.save();
 
-            if (payment_details.isComplete()) {
+            terminal_logger.debug("product_create: Product saved to DB");
 
-                terminal_logger.debug("product_create: Payment details are done");
+            if (payment_details.isComplete() || payment_details.isCompleteCompany()) {
 
-                product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
-                if (product.fakturoid_subject_id == null)
-                    return GlobalResult.result_badRequest("Payment details are invalid.");
+                if (product.fakturoid_subject_id == null) {
 
-                product.update();
+                    product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
+
+                    if (product.fakturoid_subject_id == null)
+                        return GlobalResult.result_badRequest("Payment details are invalid.");
+
+                    product.update();
+                }
 
                 if (new_customer || customer.payment_details == null) {
 
@@ -1143,9 +1154,13 @@ public class Controller_Finance extends Controller {
 
                 payment_details.product = product;
                 payment_details.save();
+
+                terminal_logger.debug("product_create: Payment details are done");
             }
 
             product.refresh();
+
+            terminal_logger.debug("product_create: Adding extensions");
 
             // Přidám ty, co vybral uživatel
             if(help.extension_ids.size() > 0) {
@@ -1918,6 +1933,64 @@ public class Controller_Finance extends Controller {
             //TODO
             List<Model_Invoice> invoices = Model_Invoice.find.all();
             return GlobalResult.result_ok(Json.toJson(invoices) );
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+// CUSTOMER ############################################################################################################
+
+    public Result customer_createCompany(){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Customer_New> form = Form.form(Swagger_Customer_New.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Customer_New help = form.get();
+
+            Model_Customer customer = new Model_Customer();
+            customer.company = true;
+            customer.save();
+
+            Model_Employee employee = new Model_Employee();
+            employee.person     = Controller_Security.get_person();
+            employee.state      = Enum_Participant_status.owner;
+            employee.customer   = customer;
+            employee.save();
+
+            customer.refresh();
+
+            Model_PaymentDetails details = new Model_PaymentDetails();
+            details.street          = help.street;
+            details.street_number   = help.street_number;
+            details.city            = help.city;
+            details.zip_code        = help.zip_code;
+            details.country         = help.country;
+
+            details.invoice_email   = help.invoice_email;
+
+            details.company_name             = help.company_name;
+            details.company_authorized_phone = help.company_authorized_phone;
+            details.company_authorized_email = help.company_authorized_email;
+            details.company_vat_number       = help.vat_number;
+            details.company_registration_no  = help.registration_no;
+            details.company_web              = help.company_web;
+
+            details.customer = customer;
+            details.company_account = true;
+            details.save();
+
+            customer.refresh();
+
+            customer.fakturoid_subject_id = Fakturoid_Controller.create_subject(details);
+
+            if (customer.fakturoid_subject_id == null)
+                return GlobalResult.result_badRequest("Payment details are invalid.");
+
+            customer.update();
+
+            return GlobalResult.result_ok(Json.toJson(customer));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());

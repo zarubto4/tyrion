@@ -314,7 +314,11 @@ public class Model_Product extends Model {
     public Long getRemainingDays(){
         try {
 
-            return credit / getFinancialHistory().average_spending;
+            History history = getFinancialHistory();
+
+            if (history.average_spending == 0) return null;
+
+            return credit / history.average_spending;
         } catch (Exception e){
             terminal_logger.internalServerError("getRemainingDays:", e);
             return null;

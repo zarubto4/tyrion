@@ -26,10 +26,10 @@ public class Model_Customer extends Model{
                                                         @JsonIgnore public Date created;
                                                         @JsonIgnore public boolean removed_by_user;
                                                         @JsonIgnore public boolean company;
-                                                                    public String fakturoid_subject_id;
+                                                        @JsonIgnore public String fakturoid_subject_id;
 
          @OneToOne(mappedBy = "customer",cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
-                                                          @OneToOne(fetch = FetchType.EAGER) public Model_Person person;
+                                              @JsonIgnore @OneToOne public Model_Person person;
 
        @JsonIgnore @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Product>  products  = new ArrayList<>();
        @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Employee> employees = new ArrayList<>();

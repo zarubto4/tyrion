@@ -107,8 +107,12 @@ PUT       /secure/role/:role_id                                         @control
 
 GET       /secure/person/system_acces/:person_id                        @controllers.Controller_Permission.get_System_Access(person_id)
 
-### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
+### FINANCIAL ############ FINANCIAL ############### FINANCIAL ################ FINANCIAL ################# FINANCIAL ##########################################################
 ################################################################################################################################################################################
+
+#Customer
+
+POST      /company                                                      @controllers.Controller_Finance.customer_createCompany()
 
 #Tarrifs
 GET       /tariff                                                       @controllers.Controller_Finance.tariff_getAll()
@@ -154,6 +158,9 @@ PUT       /invoice/send_remainder/:invoice_id                           @control
 DELETE    /invoice/:invoice_id                                          @controllers.Controller_Finance.invoice_delete(invoice_id)
 PUT       /invoice/refund/:invoice_id                                   @utilities.financial.goPay.GoPay_Controller.payment_refund(invoice_id)
 
+### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
+################################################################################################################################################################################
+
 #Project
 POST      /project                                                      @controllers.Controller_Project.project_create()
 PUT       /project/:project_id                                          @controllers.Controller_Project.project_update(project_id)
@@ -185,8 +192,6 @@ PUT       /instance/update/:instance_id                                 @control
 
 #Instance/Record
 GET       /instance_record/get/:instance_record_id                      @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
-
-
 
 PUT       /instance/command/:instance_id/:target_id/:command            @controllers.Controller_Blocko.send_command_to_instance(instance_id, target_id, command)
 PUT       /instance/program/:instance_id                                @controllers.Controller_Blocko.update_blocko_code_in_instance_with_code(instance_id)

@@ -106,7 +106,7 @@
                                 <div class="col-md-4">
                                     <div class="box box-success">
                                             <table class="table table-bordered table-hover">
-                                                @if(product.payment_details.company_account) {
+                                                @if(product.customer.company) {
                                                     <tr>
                                                         <td>Owner</td>
                                                         <td>@product.customer.getEmployees.get(0).person.mail</td>
