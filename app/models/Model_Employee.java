@@ -3,6 +3,7 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import utilities.enums.Enum_Participant_status;
 import utilities.logger.Class_Logger;
@@ -88,7 +89,9 @@ public class Model_Employee extends Model{
     @JsonIgnore   public boolean create_permission()    {return true;}
     @JsonProperty public boolean update_permission()    {return true;}
     @JsonProperty public boolean edit_permission()      {return true;}
-    @JsonProperty public boolean delete_permission()    {return true;}
+    @JsonProperty public boolean delete_permission()    {return person.id.equals(Controller_Security.get_person_id()) || customer.isEmployee(Controller_Security.get_person()) || Controller_Security.get_person().has_permission("Employee_delete");}
+
+    public enum permissions{Employee_edit, Employee_read, Employee_update, Employee_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

@@ -70,7 +70,6 @@ public class Model_VersionObject extends Model {
     // Libraries ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @JsonIgnore @ManyToOne                                  public Model_Library library;
-    @JsonIgnore @ManyToMany(mappedBy = "library_versions")  public List<Model_VersionObject> c_program_versions = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy = "example_library",
             cascade = CascadeType.ALL)                      public List<Model_CProgram> examples = new ArrayList<>();
@@ -78,10 +77,6 @@ public class Model_VersionObject extends Model {
     // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                              public Model_CProgram c_program;
     @JsonIgnore @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)                                 public Model_CCompilation c_compilation;
-
-    @JsonIgnore @ManyToMany @JoinTable(name = "model_c_program_library_version",
-            joinColumns = @JoinColumn(name = "library_version_id"),                                             // TODO LEXA ?? K čemu je tahle vazba???
-            inverseJoinColumns = @JoinColumn(name = "c_program_version_id"))                                    public List<Model_VersionObject> library_versions = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Board>  c_program_version_backup_boards  = new ArrayList<>();

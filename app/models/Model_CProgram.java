@@ -403,14 +403,16 @@ public class Model_CProgram extends Model {
         return false;
 
     }
-    @JsonIgnore   @Transient public boolean read_permission()    {
+    @JsonIgnore   @Transient public boolean read_permission(){
+
+        if (project_id() == null) return true; // TODO TOM - nevím, jak to máš promyšlené u public programů
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if(Controller_Security.get_person().permissions_keys.containsKey("c_program_read_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_read_"+ id);
         if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).eq("id", id).findRowCount() > 0){
             Controller_Security.get_person().permissions_keys.put("c_program_read_" + id, true);
             return true;
         }

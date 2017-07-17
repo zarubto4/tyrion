@@ -129,12 +129,18 @@ public class Model_Project extends Model {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public boolean isParticipant(Model_Person person){
+
+        return participants.stream().anyMatch(participant -> participant.person.id.equals(person.id));
+    }
+
     @JsonIgnore @Override public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
         while(true){ // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            this.blob_project_link = get_product().get_path() + "/projects/" + this.id;
+            this.blob_project_link = product.get_path() + "/projects/" + this.id;
             if (Model_Project.find.byId(this.id) == null) break;
         }
 
@@ -418,6 +424,8 @@ public class Model_Project extends Model {
 
         if(cache_value_product_id == null){
             Model_Product product = Model_Product.find.where().eq("projects.id", id).select("id").findUnique();
+            if (product == null) return null;
+
             cache_value_product_id = product.id;
         }
 
@@ -506,7 +514,7 @@ public class Model_Project extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore public boolean create_permission() {
-        return get_product().active && get_product().create_permission();
+        return product.active && product.create_permission();
     }
 
     @JsonProperty public boolean update_permission()    {
@@ -633,7 +641,7 @@ public class Model_Project extends Model {
 
     }
 
-    @JsonIgnore public boolean financial_permission() {return this.get_product().financial_permission("project");}
+    @JsonIgnore public boolean financial_permission() {return this.product.financial_permission("project");}
 
     public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin}
 
