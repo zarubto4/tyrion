@@ -52,7 +52,7 @@
                     <div class="col-md-4">
                         <label>Revision: </label> @typeOfBoard.revision <br>
                         <label>Producer: </label> @typeOfBoard.producer_name() <br>
-                        <label>Processor: </label> @typeOfBoard.processor_name()
+                        <label>Processor: </label> @typeOfBoard.processor.processor_name
                     </div>
                 </div>
             </div>
@@ -256,7 +256,7 @@
                     <select title="Producer" class="form-control form-group select2" name="processor_id">
                         <option selected="selected" disabled>Choose producer</option>
                         @for(processor <- Model_Processor.find.all()){
-                            @if(processor.id.equals(typeOfBoard.processor_id())) {
+                            @if(processor.id.equals(typeOfBoard.processor.id)) {
                                 <option selected value="@processor.id">@processor.processor_name</option>
                             } else {
                                 <option value="@processor.id">@processor.processor_name</option>
