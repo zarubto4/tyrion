@@ -393,6 +393,8 @@ public class Controller_Project extends Controller {
 
             for (Model_Person person : listIn) {
 
+                if (project.isParticipant(person)) continue;
+
                 Model_Invitation invitation = Model_Invitation.find.where().eq("mail", person.mail).eq("project.id", project.id).findUnique();
                 if(invitation == null){
                     invitation = new Model_Invitation();

@@ -82,7 +82,7 @@ public class Model_Person extends Model {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public List<String> project_ids = new ArrayList<>();
-    @JsonIgnore @Transient public HashMap<String, Boolean> permissions_keys = new HashMap();
+    @JsonIgnore @Transient public HashMap<String, Boolean> permissions_keys = new HashMap<>();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -214,7 +214,6 @@ public class Model_Person extends Model {
     @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().permissions_keys.containsKey("Byzance_employee");}
 
     public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
-
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

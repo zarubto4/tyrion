@@ -2163,6 +2163,9 @@ public class Controller_Finance extends Controller {
 
             for (Model_Person person : Model_Person.find.where().in("mail", help.mails).findList()) {
 
+                // Abych nepřidával ty co už tam jsou
+                if (customer.employees.stream().anyMatch(employee -> employee.person.id.equals(person.id))) continue;
+
                 Model_Employee employee = new Model_Employee();
                 employee.person     = person;
                 employee.state      = Enum_Participant_status.member;
@@ -2173,6 +2176,70 @@ public class Controller_Finance extends Controller {
             customer.refresh();
 
             return GlobalResult.result_ok(Json.toJson(customer));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "remove employee",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Removes employee from a company.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Removed successfully",      response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result customer_removeEmployee(@ApiParam(value = "employee_id String query", required = true) String employee_id){
+        try{
+
+            Model_Employee employee = Model_Employee.get_byId(employee_id);
+            if (employee == null) return GlobalResult.result_notFound("Employee not found");
+
+            if (!employee.delete_permission()) return GlobalResult.result_forbidden();
+
+            employee.delete();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "delete Company",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Deletes company.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Removed successfully",      response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result customer_deleteCompany(@ApiParam(value = "customer_id String query", required = true) String customer_id){
+        try{
+
+            Model_Customer customer = Model_Customer.get_byId(customer_id);
+            if (customer == null) return GlobalResult.result_notFound("Customer not found");
+
+            if (!customer.delete_permission()) return GlobalResult.result_forbidden();
+
+            customer.delete();
+
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());

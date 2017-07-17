@@ -1,19 +1,15 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import models.Model_Board;
-import models.Model_Customer;
 import models.Model_Product;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.Class_Logger;
-import utilities.scheduler.CustomScheduler;
-import utilities.scheduler.jobs.Job_OldFloatingTokenRemoval;
+import utilities.response.GlobalResult;
 import utilities.scheduler.jobs.Job_SpendingCredit;
-
-import java.util.Date;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Wiky extends Controller {
@@ -45,19 +41,10 @@ public class Controller_Wiky extends Controller {
     public Result test2(){
         try {
 
+            ObjectNode json = Json.newObject();
+            json.put("test", "test");
 
-            Model_Product product = Model_Product.find.all().get(0);
-
-            System.out.println("Customer id = " + product.customer.id);
-
-            Model_Customer customer = Model_Customer.find.byId(product.customer.id);
-
-            System.out.println(Json.toJson(customer));
-            System.out.println("From product = " + Json.toJson(product.customer));
-
-            System.err.println(Json.toJson(product));
-
-            return ok();
+            return GlobalResult.result_ok(json);
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);

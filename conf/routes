@@ -115,6 +115,9 @@ GET       /secure/person/system_acces/:person_id                        @control
 POST      /company                                                      @controllers.Controller_Finance.customer_createCompany()
 GET       /company                                                      @controllers.Controller_Finance.customer_getAll()
 
+POST      /employee/:customer_id                                        @controllers.Controller_Finance.customer_addEmployee(customer_id)
+DELETE    /employee/:employee_id                                        @controllers.Controller_Finance.customer_removeEmployee(employee_id)
+
 #Tarrifs
 GET       /tariff                                                       @controllers.Controller_Finance.tariff_getAll()
 
