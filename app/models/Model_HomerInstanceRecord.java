@@ -13,6 +13,7 @@ import play.libs.Json;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
+import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_device_set_snap;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_status;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_add;
@@ -75,7 +76,16 @@ public class Model_HomerInstanceRecord extends Model {
 
     }
 
-    @JsonProperty(value = "procedures") public List<Model_ActualizationProcedure> getProcedures() {return get_actualization_procedures();}
+    @JsonProperty(value = "procedures") public List<Swagger_ActualizationProcedure_Short_Detail> update_procedures_short_details() {
+
+        List<Swagger_ActualizationProcedure_Short_Detail> procedures_short_details = new ArrayList<>();
+
+        for (Model_ActualizationProcedure procedure : get_actualization_procedures() ) {
+            procedures_short_details.add(procedure.short_detail());
+        }
+    
+        return procedures_short_details;
+    }
 
 
 /* JSON IGNORE  ----------------------------------------------------------------------------------------------------*/
@@ -102,7 +112,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                 // Získání seznamu
                 for (Model_ActualizationProcedure procedure : procedures) {
-                    cache_procedures_ids.add(procedure.id);
+                    cache_procedures_ids.add(procedure.id.toString());
                 }
 
             }
@@ -336,7 +346,7 @@ public class Model_HomerInstanceRecord extends Model {
 
             actualization_procedure.homer_instance_record = this;
             actualization_procedure.type_of_update = Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP;
-            actualization_procedure.save();
+            //actualization_procedure.save();
 
 
             // List Of updates
@@ -385,11 +395,17 @@ public class Model_HomerInstanceRecord extends Model {
                 plan_master_board.c_program_version_for_update = model_bPair.c_program_version;
                 updates.add(plan_master_board);
 
-                actualization_procedure.updates.addAll(updates);
-                actualization_procedure.update();
-
             }
 
+
+
+            if(updates.isEmpty()){
+                terminal_logger.debug("create_actualization_request:: nothing for update");
+                return;
+            }
+
+            actualization_procedure.updates.addAll(updates);
+            actualization_procedure.save();
 
 
             for(Model_CProgramUpdatePlan plan_update : actualization_procedure.updates){
@@ -400,6 +416,7 @@ public class Model_HomerInstanceRecord extends Model {
             }
 
             actualization_procedure.state = Enum_Update_group_procedure_state.successful_complete;
+            actualization_procedure.date_of_finish = actualization_procedure.date_of_create;
             actualization_procedure.update();
 
         }catch (Exception e){

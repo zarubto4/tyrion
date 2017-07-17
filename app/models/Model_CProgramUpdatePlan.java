@@ -149,7 +149,7 @@ public class Model_CProgramUpdatePlan extends Model {
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
-            brief_for_homer.actualization_procedure_id = actualization_procedure.id;
+            brief_for_homer.actualization_procedure_id = actualization_procedure.id.toString();
             brief_for_homer.c_program_update_plan_id = id.toString();
             brief_for_homer.device_id = board.id;
 
@@ -274,7 +274,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
                     notification
                             .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                            .setId(plan.actualization_procedure.id)
+                            .setId(plan.actualization_procedure.id.toString())
                             .setImportance(Enum_Notification_importance.low)
                             .setLevel(Enum_Notification_level.info);
 
@@ -297,7 +297,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
                     notification
                             .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                            .setId(plan.actualization_procedure.id)
+                            .setId(plan.actualization_procedure.id.toString())
                             .setImportance(Enum_Notification_importance.low)
                             .setLevel(Enum_Notification_level.info);
 

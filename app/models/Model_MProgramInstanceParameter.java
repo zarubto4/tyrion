@@ -76,7 +76,7 @@ public class Model_MProgramInstanceParameter extends Model {
           }
 
           // Má předgenerovaný token - který svou platnost pozbývá jen zrušením (přechodem na jiný typ sdílení)
-          return Server.grid_app_main_url + "/m_program/app/token/" + connection_token();
+          return Server.grid_app_main_url  + connection_token();
 
     }
 

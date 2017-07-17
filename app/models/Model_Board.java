@@ -95,17 +95,19 @@ public class Model_Board extends Model {
     // For Faster reload
     @Transient @JsonIgnore @TyrionCachedList public Long   cache_value_latest_online;
 
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_id;                      // Type of Board Id
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_name;                    // Type of Board
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_id;                        // Type of Board Id
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_name;
 
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_project_id;                            // Project
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_producer_id;                             // Producer ID
 
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_boot_loader_id;                 // Bootloader
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_project_id;                              // Project
 
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_id;                   // C Program
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_boot_loader_id;                   // Bootloader
+
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_id;                     // C Program
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_version_id;
 
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_id;            // Backup
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_id;              // Backup
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_version_id;
 
 
@@ -115,6 +117,8 @@ public class Model_Board extends Model {
 
     @JsonProperty  @Transient  public String type_of_board_id()                     { try{ return cache_value_type_of_board_id   != null ? cache_value_type_of_board_id: get_type_of_board().id;}catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String type_of_board_name()                   { try{ return cache_value_type_of_board_name != null ? cache_value_type_of_board_name: get_type_of_board().name;}catch (NullPointerException e){return  null;}}
+    @JsonProperty  @Transient  public String producer_id()                          { try{ return cache_value_producer_id   != null ? cache_value_producer_id: get_producer().id;}catch (NullPointerException e){return  null;}}
+    @JsonProperty  @Transient  public String producer_name()                        { try{ return get_producer().name; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String project_id()                           { try{ return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_version_name()       { try{ return get_actual_bootloader().name; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_id()                 { try{ return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString(); }catch (NullPointerException e){return  null;}}
@@ -345,6 +349,19 @@ public class Model_Board extends Model {
     }
 
     @Transient @JsonIgnore public Model_HomerServer get_connected_server(){ return Model_HomerServer.get_byId(this.connected_server_id);}
+
+    @JsonIgnore @Transient @TyrionCachedList public Model_Producer get_producer(){
+
+        if(cache_value_producer_id == null){
+
+            Model_Producer producer = Model_Producer.find.where().eq("type_of_boards.boards.id", id).select("id").findUnique();
+            if(producer == null) return null;
+            cache_value_producer_id = producer.id;
+
+        }
+
+        return Model_Producer.get_byId(cache_value_producer_id);
+    }
 
     @JsonIgnore @Transient @TyrionCachedList public Model_HomerInstance get_instance() {
         if(connected_instance_id == null) return null;

@@ -12,6 +12,7 @@ import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
@@ -27,7 +28,7 @@ public class Model_ActualizationProcedure extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                                                               @Id  public String id; // Vlastní id je přidělováno
+                                                                                               @Id  public UUID id; // Vlastní id je přidělováno
 
     @ApiModelProperty(required = true, value = "Find description on Model Actual_procedure_State")  public Enum_Update_group_procedure_state state;
 
@@ -71,6 +72,23 @@ public class Model_ActualizationProcedure extends Model {
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public Swagger_ActualizationProcedure_Short_Detail short_detail(){
+        Swagger_ActualizationProcedure_Short_Detail detail = new Swagger_ActualizationProcedure_Short_Detail();
+        detail.date_of_create = date_of_create;
+        detail.date_of_planing = date_of_planing;
+        detail.date_of_finish = date_of_finish;
+
+        detail.state = state();
+        detail.type_of_update = type_of_update;
+        detail.procedure_size_complete = procedure_size_complete();
+        detail.procedure_size_all = procedure_size_all();
+
+        return detail;
+
+    }
+
 
     @JsonIgnore @Transient
     public void update_state(){
@@ -209,7 +227,6 @@ public class Model_ActualizationProcedure extends Model {
         return null;
     }
 
-
     public void execute_update_procedure(){
         Model_Board.execute_update_procedure(this);
     }
@@ -226,18 +243,16 @@ public class Model_ActualizationProcedure extends Model {
 
         date_of_create = new Date();
 
-        this.id = UUID.randomUUID().toString();
-
         this.state = Enum_Update_group_procedure_state.not_start_yet;
 
         // ORM
         super.save();
 
         // Cache
-        cache.put(this.id, this);
+        cache.put(this.id.toString(), this);
 
         // Call notification about model update
-        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_HomerInstance.class, get_project_id(), this.id))).start();
+        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_HomerInstance.class, get_project_id(), this.id.toString()))).start();
     }
 
     @JsonIgnore @Override
@@ -249,10 +264,10 @@ public class Model_ActualizationProcedure extends Model {
         super.update();
 
         // Cache
-        cache.put(id, this);
+        cache.put(id.toString(), this);
 
         // Call notification about model update
-        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_ActualizationProcedure.class, get_project_id(), this.id))).start();
+        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_ActualizationProcedure.class, get_project_id(), this.id.toString()))).start();
     }
 
     @JsonIgnore @Override

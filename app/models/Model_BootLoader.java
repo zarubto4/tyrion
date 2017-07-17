@@ -142,7 +142,7 @@ public class Model_BootLoader extends Model {
                         .setImportance(Enum_Notification_importance.low)
                         .setLevel(Enum_Notification_level.warning)
                         .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                        .setId(plans.get(0).actualization_procedure.id)
+                        .setId(plans.get(0).actualization_procedure.id.toString())
                         .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
                         .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).bootloader.version_identificator + " "))
                         .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))

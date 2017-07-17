@@ -56,7 +56,6 @@ public class WS_Message_Instance_upload_blocko_program extends WS_AbstractMessag
         public String b_program_name;
 
 
-
     }
 
 }
