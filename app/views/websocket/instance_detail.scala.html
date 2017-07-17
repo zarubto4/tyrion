@@ -57,20 +57,6 @@
                             </li>
                         }
 
-                        @if(instance.project != null) {
-
-                            <li class="list-group-item">
-                                <b>Project ID:: </b>
-                                @instance.project.id
-                            </li>
-
-                            <li class="list-group-item">
-                                <b>Project Název:: </b>
-                                @instance.project.name
-                            </li>
-                        }
-
-
 
                         @if(instance.actual_instance != null) {
                             <li class="list-group-item">
@@ -103,16 +89,8 @@
                             <div class="box box-primary">
                                 <div class="box-body table-responsive no-padding">
                                     <div class="box-header">
-                                        <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.name </h3>
-                                        <h3 class="box-title">
-
-                                        @if(x.main_board_pair.board.is_online){
-                                                <p class="text-green"> Online</p>
-                                        }else{
-                                                <p class="text-red"> Offline</p>
-                                        }
-
-                                        </h3>
+                                        <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("") @x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.name </h3>
+                                        <h3 class="box-title"> @x.main_board_pair.board.online_state()</h3>
                                     </div>
 
                                     <div class="box-header">
@@ -120,7 +98,7 @@
                                             <div class="btn-group">
 
                                                     @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.main_board_pair.id.toString()  ).findUnique() != null){
-                                                        @if(Model_Board.get_byId( x.main_board_pair.id.toString() ).update_boot_loader_required()) {
+                                                        @if(Model_Board.get_byId( x.main_board_pair.id.toString()).update_boot_loader_required()) {
                                                             <a  onclick="updateBootLoader('@x.main_board_pair.id.toString()')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
                                                         }else {
                                                             <p class="lead text-green">(Actual)</p>
@@ -130,15 +108,8 @@
                                                         <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b> Missing bootloader</b></a>
                                                     }
 
-                                            <a onclick="executeCommand('@x.main_board_pair.id.toString() ','@Enum_type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
+                                             <a onclick="executeCommand('@x.main_board_pair.id.toString() ','@Enum_type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
 
-                                                @if(Model_Board.find.byId(x.main_board_pair.id.toString()) == null) {
-                                                    <a onclick="showCommandDeviceModal('@x.main_board_pair.id.toString() ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                                }else{
-                                                    <a onclick="showCommandDeviceModal('@x.main_board_pair.id.toString() ', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                                }
-                                            <a onclick="showAddDeviceModal('@x.main_board_pair.id.toString() ')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
-                                            <a onclick="removeMasterDevice('@x.main_board_pair.id.toString() ')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
                                             </div>
                                         </div>
                                     </div>
@@ -162,13 +133,7 @@
                                                 <td> @b_pair.board.type_of_board.name</td>
                                                 <td> @b_pair.board.name</td>
 
-                                                <td>
-                                                @if(b_pair.board.is_online() == true){
-                                                    <p class="text-green">Online</p>
-                                                }else{
-                                                    <p class="text-red">Offline</p>
-                                                }
-                                                </td>
+                                                <td> b_pair.board.online_state() </td>
 
                                                 <td>
                                                 @if(Model_BootLoader.find.where().eq("main_type_of_board.id", b_pair.board.id ).findUnique() != null){
@@ -196,41 +161,6 @@
 
                     }
 
-                }
-            }else {
-                @for(x <- instance.getBoards_in_virtual_instance()){
-                    <div class="box box-primary">
-                        <div class="box-body table-responsive no-padding">
-                            <div class="box-header">
-                                <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("")@x.id ' > @x.id </a>  </h3>
-                                <div class="pull-right">
-                                    <div class="btn-group">
-
-                                        @if(Model_BootLoader.find.where().eq("main_type_of_board.boards.id", x.id  ).findUnique() != null){
-                                            @if(Model_Board.get_byId( x.id ).update_boot_loader_required()) {
-                                                <a  onclick="updateBootLoader('@x.id')" class="btn btn-primary btn-sm" ><b>Update Firmware</b></a>
-                                            }else {
-                                                <p class="lead text-green">(Actual)</p>
-                                                <a class="btn btn-success btn-sm disabled" ><b> Bootloader Up To date </b></a>
-                                            }
-                                        }else{
-                                            <a  onclick="executeCommand('' ,'')" class="btn btn-danger btn-sm disabled" ><b>Missing bootloader</b></a>
-                                        }
-
-                                    <a onclick="executeCommand('@x.id ','@Enum_type_of_command.INFO_STATE.get_command')" class="btn btn-info btn-sm"><b>Ping Yoda</b></a>
-
-                                        @if(Model_Board.find.byId(x.id) == null) {
-                                            <a onclick="showCommandDeviceModal('@x.id ', false, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                        }else{
-                                            <a onclick="showCommandDeviceModal('@x.id ', true, 'Yoda')" class="btn btn-info btn-sm"><b>Open Commander</b></a>
-                                        }
-                                    <a onclick="showAddDeviceModal('@x.id ')" class="btn btn-warning btn-sm"><b>Add new Device</b></a>
-                                    <a onclick="removeMasterDevice('@x.id ')" class="btn btn-danger btn-sm"><b>Remove Yoda</b></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 }
             }
             </div>
@@ -1034,118 +964,8 @@
               })
           }
 
-          function addMasterDevice(){
-
-              var master_device_id = document.getElementById("addMasterDeviceForm").elements.namedItem("master_device_id").value;
-
-              $.ajax({
-                  url: '@routes.Controller_Blocko.instance_add_yoda( instance.id, "")' + master_device_id,
-                  type: 'PUT',
-                  headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken")
-                  },
-                  success:function(e){
-
-                      $("#addMasterDeviceModal").css("display","none");
-                      $('#device_summary_table').load(document.URL +  ' #device_summary_table');
-
-                  },
-                  error:function(data) {
-                      BootstrapDialog.show({
-                          message: syntaxHighlight(data),
-                          type: BootstrapDialog.TYPE_ERROR,
-                          buttons: [{
-                              label: 'Close',
-                              action: function(dialogItself) {
-                                  dialogItself.close();
-                              }
-                          }]
-
-                      });
-                  }
-              })
-          }
-
-          function removeMasterDevice(id){
-
-              $.ajax({
-                  url: '@routes.Controller_Blocko.instance_remove_yoda( instance.id, "" )' + id,
-                  type: 'PUT',
-                  headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken")
-                  },
-                  success:function(e){
-                      $('#device_summary_table').load(document.URL +  ' #device_summary_table');
-                  },
-                  error:function(data) {
-                      BootstrapDialog.show({
-                          message: syntaxHighlight(data),
-                          type: BootstrapDialog.TYPE_ERROR,
-                          buttons: [{
-                              label: 'Close',
-                              action: function(dialogItself) {
-                                  dialogItself.close();
-                              }
-                          }]
-                      });
-                  }
-              })
-          }
-
-          function showUploadBlockoProgram(id){
-              $("#uploadBlockoProgramModal").css("display","block");
-              $('#uploadBlockoProgramButton').val(id);
-              $('#instanceId').text("ID = " + id);
-          }
-
-          function uploadBlockoProgram(instanceId){
-              model_data = $("#uploadBlockoProgram").serializeObject();
-              json = JSON.stringify(model_data);
-
-              console.log(json);
 
 
-              $.ajax({
-                  url: '@routes.Controller_Blocko.update_blocko_code_in_instance_with_code("")' + instanceId,
-                  type: 'PUT',
-                  contentType: 'application/json',
-                  headers: {
-                      "X-AUTH-TOKEN":getCookie("authToken"),
-                      "Content-Type":"application/json"
-                  },
-                  data: JSON.stringify(model_data),
-                  dataType: 'json',
-                  success:function(data, status){
-
-                      $("#uploadBlockoProgram input[type=text]").val("");
-                      $("#uploadBlockoProgramModal").css("display","none");
-
-                      BootstrapDialog.show({
-                          message:  syntaxHighlight("Úpsěšně nahráno na homer do instance"),
-
-                          buttons: [{
-                              label: 'Close',
-                              action: function(dialogItself){
-                                  dialogItself.close();
-                              }
-                          }]
-
-                      });
-                  },
-                  error:function(data) {
-                      BootstrapDialog.show({
-                          message:  syntaxHighlight(data),
-                          type: BootstrapDialog.TYPE_DANGER,
-                          buttons: [{
-                              label: 'Close',
-                              action: function(dialogItself){
-                                  dialogItself.close();
-                              }
-                          }]
-
-                      });
-                  }
-              })}
    </script>
 
 

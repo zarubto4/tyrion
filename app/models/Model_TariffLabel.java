@@ -3,6 +3,7 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
+import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -13,6 +14,8 @@ import java.util.UUID;
 public class Model_TariffLabel extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_TariffLabel.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -93,6 +96,18 @@ public class Model_TariffLabel extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_TariffLabel get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_TariffLabel> find = new Finder<>(Model_TariffLabel.class);

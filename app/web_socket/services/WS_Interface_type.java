@@ -24,7 +24,7 @@ public abstract class WS_Interface_type {
     public WebSocket.Out<String> out;
 
     public abstract void onClose(); //  Určeno pro možnost výběru, přes kterou metodu v controlleru se pokyn vykoná. Především proto, aby na to mohl cloud_blocko_server globálně reagovat, uzavřel ostatní vlákna atd.
-    public void close(){ if(out != null) out.close(); }
+    public void close(){ if(out != null){ out.close(); out = null; onClose();}}
     public abstract void onMessage(ObjectNode json);
     public abstract String get_identificator();
     public boolean isReady(){
@@ -36,23 +36,25 @@ public abstract class WS_Interface_type {
     public void onMessage(String message){
         try {
 
-            terminal_logger.debug("onMessage: Incoming message: " + message);
+
+            terminal_logger.debug("onMessage: Incoming message: {} " , message);
 
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
 
+
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
-            if (json.has("messageId") && sendMessageMap.containsKey(json.get("messageId").asText())) {
-                sendMessageMap.get(json.get("messageId").asText()).insert_result(json);
+            if (json.has("message_id") && sendMessageMap.containsKey(json.get("message_id").asText())) {
+
+                sendMessageMap.get(json.get("message_id").asText()).insert_result(json);
                 return;
             }
 
             onMessage(json);
 
         }catch (JsonParseException e){
-            terminal_logger.internalServerError("onMessage:",e);
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "JsonUnrecognized JsonParseException");
+            result.put("message_type", "JsonUnrecognized JsonParseException");
             webSCtype.write_without_confirmation(result);
 
         }catch (Exception e){
@@ -60,7 +62,7 @@ public abstract class WS_Interface_type {
             terminal_logger.internalServerError("onMessage:",e);
 
             ObjectNode result = Json.newObject();
-            result.put("messageType", "JsonUnrecognized " + e.getClass().getSimpleName());
+            result.put("message_type", "JsonUnrecognized " + e.getClass().getSimpleName());
             webSCtype.write_without_confirmation(result);
 
         }
@@ -96,10 +98,13 @@ public abstract class WS_Interface_type {
 
     public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException {
 
+        terminal_logger.trace("WS_Interface_type:: write_with_confirmation on {} message {}", get_identificator(),  json.toString());
+
         String messageId = UUID.randomUUID().toString();
-        json.put("messageId", messageId );
+        json.put("message_id", messageId );
 
         WS_Send_message send_message = new WS_Send_message(webSCtype, json, messageId, time, delay, number_of_retries);
+
         sendMessageMap.put(messageId, send_message);
 
         // Může vyvolat i vyjímku o nedoručení
@@ -108,12 +113,18 @@ public abstract class WS_Interface_type {
 
     // Odeslání bez nutnosti vyčkat na potvrzení
     public void write_without_confirmation(ObjectNode json){
-        if(!json.has("messageId")) json.put("messageId", UUID.randomUUID().toString() );
+
+        terminal_logger.trace("WS_Interface_type:: write_without_confirmation on {} message {}", get_identificator(),  json.toString());
+
+        if(!json.has("message_id")) json.put("message_id", UUID.randomUUID().toString() );
         out.write( json.toString() );
     }
 
     public void write_without_confirmation(String messageId, ObjectNode json){
-        json.put("messageId", messageId );
+
+        terminal_logger.trace("WS_Interface_type:: write_without_confirmation on {} message {}", get_identificator(),  json.toString());
+
+        json.put("message_id", messageId );
         out.write( json.toString() );
     }
 }

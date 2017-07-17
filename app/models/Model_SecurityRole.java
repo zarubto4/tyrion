@@ -73,12 +73,24 @@ public class Model_SecurityRole extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  return  Controller_Security.get_person().has_permission("SecurityRole_create"); }
-    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return  Controller_Security.get_person().has_permission("SecurityRole_read"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  Controller_Security.get_person().has_permission("SecurityRole_update"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  Controller_Security.get_person().has_permission("SecurityRole_delete");}
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return  Controller_Security.get_person().permissions_keys.containsKey("SecurityRole_create"); }
+    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return  Controller_Security.get_person().permissions_keys.containsKey("SecurityRole_read"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission(){  return  Controller_Security.get_person().permissions_keys.containsKey("SecurityRole_update"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return  Controller_Security.get_person().permissions_keys.containsKey("SecurityRole_delete");}
 
     public enum permissions{SecurityRole_create, SecurityRole_read, SecurityRole_update , SecurityRole_delete}
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_SecurityRole get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

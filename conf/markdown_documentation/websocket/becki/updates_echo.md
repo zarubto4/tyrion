@@ -8,7 +8,7 @@ Model objektu změněn jeho parametr a volána funkce @Override public void upda
      { 
             "messageType":  "object_update",
             "id": "1",                      
-            "messageChannel": "becki",
+            "message_channel": "becki",
          
             "model": "CProgram",
             "model_id": "1231312341234124234231e",

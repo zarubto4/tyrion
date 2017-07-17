@@ -194,7 +194,7 @@ public class Controller_Person extends Controller {
             if (person == null) return GlobalResult.result_notFound("No such user is registered");
             if (person.mailValidated) return GlobalResult.result_badRequest("This user is validated");
 
-            Model_ValidationToken validationToken = Model_ValidationToken.find.byId(help.mail);
+            Model_ValidationToken validationToken = Model_ValidationToken.get_byId(help.mail);
             if (validationToken == null) return GlobalResult.result_notFound("Validation token not found");
 
             String link = Server.tyrion_serverAddress + "/person/mail_authentication/" + validationToken.authToken;
@@ -382,7 +382,7 @@ public class Controller_Person extends Controller {
     public  Result person_get(@ApiParam(value = "person_id String query", required = true)  String person_id){
         try{
 
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if(person == null )  return GlobalResult.result_notFound("Person person_id not found");
             return GlobalResult.result_ok(Json.toJson(person));
 
@@ -443,7 +443,7 @@ public class Controller_Person extends Controller {
     public  Result person_delete(@ApiParam(value = "person_id String query", required = true) String person_id){
         try{
 
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
 
@@ -484,7 +484,7 @@ public class Controller_Person extends Controller {
     public Result person_removeAllConnections(@ApiParam(value = "person_id String query", required = true) String person_id){
         try{
 
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
             if (!person.edit_permission())  return GlobalResult.result_forbidden();
@@ -526,7 +526,7 @@ public class Controller_Person extends Controller {
     public Result person_activate(@ApiParam(value = "person_id String query", required = true) String person_id){
         try{
 
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
             if (!person.activation_permission())  return GlobalResult.result_forbidden();
@@ -571,7 +571,7 @@ public class Controller_Person extends Controller {
     public Result person_deactivate(@ApiParam(value = "person_id String query", required = true) String person_id){
         try{
 
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
             if (!person.activation_permission())  return GlobalResult.result_forbidden();
@@ -618,7 +618,7 @@ public class Controller_Person extends Controller {
     public Result person_validEmail(@ApiParam(value = "person_id String query", required = true) String person_id){
         try{
 
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
 
             if (!person.activation_permission())  return GlobalResult.result_forbidden();
@@ -674,7 +674,7 @@ public class Controller_Person extends Controller {
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Person_Update help = form.get();
 
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if (person == null) return GlobalResult.result_notFound("Person not found");
             if (!person.edit_permission())  return GlobalResult.result_forbidden();
 
@@ -749,7 +749,7 @@ public class Controller_Person extends Controller {
     public  Result remove_Person_Connection(@ApiParam(value = "connection_id String query", required = true) String connection_id){
         try{
 
-            Model_FloatingPersonToken token = Model_FloatingPersonToken.find.byId(connection_id);
+            Model_FloatingPersonToken token = Model_FloatingPersonToken.get_byId(connection_id);
             if(token == null ) return GlobalResult.result_notFound("FloatingPersonToken connection_id not found");
 
             if (!token.delete_permission())  return GlobalResult.result_forbidden();
@@ -984,7 +984,7 @@ public class Controller_Person extends Controller {
     @ApiOperation(value = "Authorization of password or email change", hidden = true)
     public Result person_authorizePropertyChange(String token){
         try{
-            Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.find.byId(token);
+            Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.get_byId(token);
             if(changePropertyToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
 
             if(((new Date()).getTime() - changePropertyToken.time_of_creation.getTime()) > 14400000 ){
@@ -992,7 +992,7 @@ public class Controller_Person extends Controller {
                 return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
             }
 
-            Model_Person person = Model_Person.find.byId(changePropertyToken.person.id);
+            Model_Person person = Model_Person.get_byId(changePropertyToken.person.id);
             if(person == null) return redirect(Server.becki_mainUrl + "/" +  Server.becki_propertyChangeFailed);
 
             switch (changePropertyToken.property){

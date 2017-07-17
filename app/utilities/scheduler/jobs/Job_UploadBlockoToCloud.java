@@ -1,6 +1,5 @@
 package utilities.scheduler.jobs;
 
-import models.Model_HomerInstance;
 import models.Model_HomerInstanceRecord;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -43,13 +42,12 @@ public class Job_UploadBlockoToCloud implements Job {
 
                 if (record_id == null) throw new NullPointerException("Job was instantiated without record_id in the JobExecutionContext or the record_id is null for some reason.");
 
-                Model_HomerInstanceRecord record = Model_HomerInstanceRecord.find.byId(record_id);
+                Model_HomerInstanceRecord record = Model_HomerInstanceRecord.get_byId(record_id);
                 if (record == null) throw new NullPointerException("Cannot find the Instance Record in the DB.");
 
                 terminal_logger.trace("upload_blocko_thread: uploading the record");
 
-                Model_HomerInstance.upload_record(record);
-
+                record.set_record_into_cloud();
 
             } catch (Exception e) {
                 terminal_logger.internalServerError(e);

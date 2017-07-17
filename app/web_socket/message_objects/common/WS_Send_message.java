@@ -8,6 +8,8 @@ import web_socket.services.WS_Interface_type;
 
 import java.util.concurrent.*;
 
+import static java.lang.Thread.sleep;
+
 public class WS_Send_message {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -55,9 +57,10 @@ public class WS_Send_message {
 
     public void insert_result(ObjectNode result) {
 
-        terminal_logger.trace("insert_result:: MessageID:: {}  insert result {} ", result.get("messageId").asText() , result.toString());
 
-        // Pokud existuje zpráva v zásobníku a Json obsahuje messageId - smažu ze zásobníku
+        terminal_logger.trace("insert_result:: MessageID:: {}  insert result {} ", result.get("message_id").asText() , result.toString());
+
+        // Pokud existuje zpráva v zásobníku a Json obsahuje message_id - smažu ze zásobníku
         try {
 
             if(sender_object.sendMessageMap.size() > 10) terminal_logger.internalServerError(new Exception("insert_result:: Map contains " + sender_object.sendMessageMap.size() + " objects"));
@@ -77,7 +80,7 @@ public class WS_Send_message {
         try {
 
             if(this.messageId == null) {
-                terminal_logger.internalServerError(new Exception("messageId is null."));
+                terminal_logger.internalServerError(new Exception("message_id is null."));
             }
 
             if(this.json == null){
@@ -106,21 +109,23 @@ public class WS_Send_message {
         public ObjectNode call() throws Exception {
             try {
 
-                Thread.sleep(delay);
+                // terminal_logger.trace("Spouštím odeslání zprávy {} ",messageId);
+                sleep(delay);
 
-                terminal_logger.trace("thread: ");
+                //terminal_logger.trace("thread: ");
 
                 while (number_of_retries >= 0) {
 
+                    terminal_logger.trace("Spouštím odeslání zprávy {} počet opakování ", number_of_retries);
 
                     if(json != null) {
 
-                        terminal_logger.trace("thread: MessageID: {} , MessageType: {} , Number of RetiresTime: {} , Time to wait: {} ", messageId, json.get("messageType"), number_of_retries, time);
+                        terminal_logger.trace("thread: MessageID: {} , MessageType: {} , Number of RetiresTime: {} , Time to wait: {} ", messageId, json.get("message_type"), number_of_retries, time);
+
 
                         sender_object.out.write(json.toString());
-                        --number_of_retries;
 
-                        Thread.sleep(25);
+                        sleep(25);
 
                         if (result != null) {
                             return result;
@@ -130,29 +135,23 @@ public class WS_Send_message {
                         terminal_logger.trace("thread: MessageID: {}, Waiting for the result", messageId);
                     }
 
-                    Thread.sleep(time);
+                    --number_of_retries;
+
+                    sleep(time);
                 }
 
-                if(!sender_object.is_online())  {
-                    terminal_logger.internalServerError(new Exception("Sender is offline. MessageID: " + messageId + ", MessageType: " + json.get("messageType")));
-                    sender_object.close();
-                }
-
-                terminal_logger.internalServerError(new Exception("Timeout. Responding with Error. Message ID: " + messageId));
+                terminal_logger.warn("Timeout. Responding with Error. Message ID: {} ", messageId);
                 return time_out_exception_error_response();
 
             } catch (NullPointerException e){
 
                 terminal_logger.warn("thread: MessageId = {}, JSON = {}, number of retries = {}, time = {}, delay = {}", messageId, json, number_of_retries, time, delay);
-
-                throw e;
-
-            } catch (InterruptedException|CancellationException e){
-
                 if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
 
                 throw e;
 
+            } catch (InterruptedException|CancellationException e) {
+                return null;
             } catch (Exception e) {
 
                 if(messageId!= null) sender_object.sendMessageMap.remove(messageId);

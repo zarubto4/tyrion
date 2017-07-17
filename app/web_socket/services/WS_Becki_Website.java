@@ -11,6 +11,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.WebSocket;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Becki_Ping;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Subscribe_Notifications;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
@@ -52,18 +53,7 @@ public class WS_Becki_Website extends WS_Interface_type {
      */
     @Override
     public boolean is_online() {
-        try {
-
-            for(String key :  Controller_WebSocket.homer_servers.keySet() ){
-                terminal_logger.trace("In {}  is identifier: {}", getClass().getSimpleName(), key);
-            }
-
-            out.write(" Něco posílám???");
-
-            return true;
-        }catch (Exception e){
-            return false;
-        }
+        throw  new IllegalArgumentException("Not supported");
     }
 
     /**
@@ -108,7 +98,6 @@ public class WS_Becki_Website extends WS_Interface_type {
                 // It cannot be in for or while cycle -> Exception type: java.util.ConcurrentModificationException
                 // all_person_Connections.xx.OnClose() changes the contents of the all_person_Connections Array (HashMap) at runtime
                 all_person_Connections.get(keys.iterator().next()).onClose();
-                onClose();
 
             }
         }
@@ -134,20 +123,20 @@ public class WS_Becki_Website extends WS_Interface_type {
 
         terminal_logger.trace("onMessage " + identifikator + " Incoming message: " + json.toString() );
 
-        if(json.has("messageChannel")) {
+        if(json.has("message_channel")) {
 
-            switch (json.get("messageChannel").asText()) {
+            switch (json.get("message_channel").asText()) {
 
                 case WS_Becki_Website.CHANNEL : {
 
-                    switch (json.get("messageType").asText()) {
+                    switch (json.get("message_type").asText()) {
 
                         case Model_Notification.messageType                   :   {  becki_notification_confirmation_from_becki(json); return;}    // Becki poslala odpověď, že dostala notifikaci
                         case WS_Message_Subscribe_Notifications.messageType   :   {  becki_subscribe_notification(json);               return;}    // Becki poslala odpověď, že ví že subscribe_notification
                         case WS_Message_UnSubscribe_Notifications.messageType :   {  becki_unsubscribe_notification( json);            return;}    // Becki poslala odpověď, že ví že už ne! subscribe_notification
 
                         default: {
-                            terminal_logger.warn("onMessage::  "+ identifikator + " Incoming message on messageChannel \"becki\" has not unknown messageType!!!!" + json.toString());
+                            terminal_logger.warn("onMessage::  "+ identifikator + " Incoming message on message_channel \"becki\" has not unknown message_type!!!!" + json.toString());
 
                         }
                     }
@@ -170,11 +159,11 @@ public class WS_Becki_Website extends WS_Interface_type {
             }
 
         }else {
-            terminal_logger.warn(""+ identifikator + " Incoming message has not messageChannel!!!!" + json.toString());
+            terminal_logger.warn(""+ identifikator + " Incoming message has not message_channel!!!!" + json.toString());
         }
     }
-    
-    public static void Messages_HomerInstance(WS_HomerServer homer, ObjectNode json){
+
+    public static void Messages(WS_HomerServer homer, ObjectNode json){
         terminal_logger.warn("Messages_HomerInstance: Message from Homer server {} Incoming message from server to Becki has not implemented !!!! Message {}", homer.get_identificator(), json.toString());
     }
 
@@ -191,7 +180,7 @@ public class WS_Becki_Website extends WS_Interface_type {
 
             Model_Project.becki_person_id_subscribe(identifikator);
 
-            single_connection.write_without_confirmation( subscribe_notifications.messageId ,  WS_Message_Subscribe_Notifications.approve_result() );
+            single_connection.write_without_confirmation( subscribe_notifications.message_id,  WS_Message_Subscribe_Notifications.approve_result() );
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -211,7 +200,7 @@ public class WS_Becki_Website extends WS_Interface_type {
 
             Model_Project.becki_person_id_unsubscribe(identifikator);
 
-            single_connection.write_without_confirmation(un_subscribe_notifications.messageId, WS_Message_UnSubscribe_Notifications.approve_result() );
+            single_connection.write_without_confirmation(un_subscribe_notifications.message_id, WS_Message_UnSubscribe_Notifications.approve_result() );
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);

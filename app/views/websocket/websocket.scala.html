@@ -96,7 +96,7 @@
                         @for( x <- Controller_WebSocket.becki_website.values()){
 
                                 <tr>
-                                    <th rowspan="@(x.all_person_Connections.size()+1)"> @(Model_Person.find.byId( x.identifikator ).mail ) + Connections:( @x.all_person_Connections.size() )</th>
+                                    <th rowspan="@(x.all_person_Connections.size()+1)"> @(Model_Person.get_byId( x.identifikator ).mail ) + Connections:( @x.all_person_Connections.size() )</th>
                                     <th>instances</th>
                                     <th><button data-toggle="modal" data-target="#testNotificationModal" onclick="email = '@Model_Person.find.byId( x.identifikator ).mail'; " class="btn btn-block btn-primary btn-xs">Test notification</button></th>
                                 </tr>
@@ -168,7 +168,7 @@
 
                                 <td>
                                     @if(x.server_is_online()){
-                                            @x.get_homer_server_number_of_instance().value
+                                            @x.get_homer_server_number_of_instance().count
                                     }else{
                                         <p class="small text-red"> Offline </p>
                                     }

@@ -2,7 +2,6 @@ package controllers;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
@@ -14,7 +13,6 @@ import play.mvc.Security;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
-import utilities.enums.Enum_type_of_command;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -30,8 +28,7 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import web_socket.message_objects.homer_instance.*;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -88,7 +85,7 @@ public class Controller_Blocko extends Controller{
             Swagger_B_Program_New help = form.get();
 
             // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -138,7 +135,7 @@ public class Controller_Blocko extends Controller{
         try{
 
             // Kontrola objektu
-            Model_BProgram b_program = Model_BProgram.find.byId(b_program_id);
+            Model_BProgram b_program = Model_BProgram.get_byId(b_program_id);
             if (b_program == null) return GlobalResult.result_notFound("B_Program id not found");
 
             // Kontrola oprávnění
@@ -175,17 +172,17 @@ public class Controller_Blocko extends Controller{
         try{
 
             // Kontrola objektu
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
             // Kontrola oprávnění
-            if (version_object.b_program == null) return GlobalResult.result_notFound("Version_Object is not version of B_Program");
+            if (version_object.get_b_program() == null) return GlobalResult.result_notFound("Version_Object is not version of B_Program");
 
             // Kontrola oprávnění
-            if (! version_object.b_program.read_permission() ) return GlobalResult.result_forbidden();
+            if (! version_object.get_b_program().read_permission() ) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version_object.b_program.program_version(version_object)));
+            return GlobalResult.result_ok(Json.toJson(version_object.get_b_program().program_version(version_object)));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -233,7 +230,7 @@ public class Controller_Blocko extends Controller{
             Swagger_B_Program_New help = form.get();
 
             // Kontrola objektu
-            Model_BProgram b_program = Model_BProgram.find.byId(b_program_id);
+            Model_BProgram b_program = Model_BProgram.get_byId(b_program_id);
             if (b_program == null) return GlobalResult.result_notFound("B_Program id not found");
 
             // Kontrola oprávěnní
@@ -299,7 +296,7 @@ public class Controller_Blocko extends Controller{
             String file_content =  help.program;
 
             // Ověření programu
-            Model_BProgram b_program = Model_BProgram.find.byId(b_program_id);
+            Model_BProgram b_program = Model_BProgram.get_byId(b_program_id);
             if (b_program == null) return GlobalResult.result_notFound("B_Program id not found");
 
             // Kontrola oprávnění
@@ -318,7 +315,7 @@ public class Controller_Blocko extends Controller{
 
                 for (Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots) {
 
-                    Model_MProject m_project = Model_MProject.find.byId(help_m_project_snap.m_project_id);
+                    Model_MProject m_project = Model_MProject.get_byId(help_m_project_snap.m_project_id);
                     if (m_project == null) return GlobalResult.result_notFound("M_Project not found");
                     if (!m_project.update_permission()) return GlobalResult.result_forbidden();
 
@@ -353,10 +350,10 @@ public class Controller_Blocko extends Controller{
 
                     b_pair.board = Model_Board.get_byId(group.main_board_pair.board_id);
                     if ( b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
-                    if (!b_pair.board.type_of_board.connectible_to_internet)  return GlobalResult.result_badRequest("Main Board must be internet connectible!");
+                    if (!b_pair.board.get_type_of_board().connectible_to_internet)  return GlobalResult.result_badRequest("Main Board must be internet connectible!");
                     if(!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
 
-                    b_pair.c_program_version = Model_VersionObject.find.byId(group.main_board_pair.c_program_version_id);
+                    b_pair.c_program_version = Model_VersionObject.get_byId(group.main_board_pair.c_program_version_id);
                     if ( b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
                     if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
 
@@ -379,12 +376,12 @@ public class Controller_Blocko extends Controller{
 
                         Model_BPair b_pair = new Model_BPair();
 
-                        b_pair.board = Model_Board.find.byId(connected_board.board_id);
+                        b_pair.board = Model_Board.get_byId(connected_board.board_id);
                         if ( b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
                         if(!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
 
 
-                        b_pair.c_program_version = Model_VersionObject.find.byId(connected_board.c_program_version_id);
+                        b_pair.c_program_version = Model_VersionObject.get_byId(connected_board.c_program_version_id);
                         if ( b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
                         if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
 
@@ -431,7 +428,7 @@ public class Controller_Blocko extends Controller{
             Model_FileRecord.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson( version_object.b_program.program_version(version_object) ));
+            return GlobalResult.result_ok(Json.toJson( version_object.get_b_program().program_version(version_object) ));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -462,7 +459,7 @@ public class Controller_Blocko extends Controller{
         try{
 
             // Kontrola objektu
-            Model_BProgram program = Model_BProgram.find.byId(b_program_id);
+            Model_BProgram program = Model_BProgram.get_byId(b_program_id);
             if (program == null) return GlobalResult.result_notFound("B_Program id not found");
 
             // Kontrola oprávění
@@ -521,14 +518,14 @@ public class Controller_Blocko extends Controller{
             Swagger_B_Program_Version_Edit help = form.get();
 
             // Získání objektu
-            Model_VersionObject version_object  = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object  = Model_VersionObject.get_byId(version_id);
 
             version_object.version_name = help.version_name;
             version_object.version_description = help.version_description;
 
 
             // Kontrola oprávnění
-            if (! version_object.b_program.edit_permission() ) return GlobalResult.result_forbidden();
+            if (! version_object.get_b_program().edit_permission() ) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             version_object.update();
@@ -566,18 +563,17 @@ public class Controller_Blocko extends Controller{
         try{
 
             // Získání objektu
-            Model_VersionObject version_object  = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object  = Model_VersionObject.get_byId(version_id);
 
             // Kontrola objektu
             if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
-            if (version_object.b_program == null) return GlobalResult.result_badRequest("B_Program not found");
+            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("B_Program not found");
 
             // Kontrola oprávnění
-            if (! version_object.b_program.delete_permission() ) return GlobalResult.result_forbidden();
+            if (! version_object.get_b_program().delete_permission() ) return GlobalResult.result_forbidden();
 
             // Smazání objektu
-            version_object.removed_by_user = true;
-            version_object.update();
+            version_object.delete();
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();
@@ -687,12 +683,12 @@ public class Controller_Blocko extends Controller{
             Swagger_B_Program_Upload_Instance help = form.get();
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("VersionObject not found");
 
             // Kontrola objektu: B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
-            if (version_object.b_program == null) return GlobalResult.result_badRequest("VersionObject is not version of BProgram");
-            Model_BProgram b_program = version_object.b_program;
+            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("VersionObject is not version of BProgram");
+            Model_BProgram b_program = version_object.get_b_program();
 
             // Kontrola oprávnění
             if (!b_program.update_permission()) return GlobalResult.result_forbidden();
@@ -721,7 +717,7 @@ public class Controller_Blocko extends Controller{
             if(help.upload_time == null){
 
                 terminal_logger.debug("upload_b_Program_ToCloud:: Set the instants immediately");
-                Model_HomerInstance.upload_record(record);
+                record.set_record_into_cloud();
 
             }else {
                 terminal_logger.debug("upload_b_Program_ToCloud:: Set the instants by Time scheduler (not now) ");
@@ -822,9 +818,7 @@ public class Controller_Blocko extends Controller{
             // Proto tento záznam odstraním
             if(homer_instance.actual_instance != null){
 
-                if(homer_instance.instance_online()){
-                    WS_Message_Destroy_instance result = homer_instance.remove_instance_from_server();
-                }
+                WS_Message_Homer_Instance_destroy result = homer_instance.remove_from_cloud();
 
                 homer_instance.actual_instance = null;
                 Model_HomerInstance.cache_status.put(homer_instance.id, false);
@@ -841,7 +835,7 @@ public class Controller_Blocko extends Controller{
                 homer_instance.actual_instance = homer_instance.instance_history.get(0);
                 homer_instance.update();
 
-                homer_instance.update_instance_to_actual_instance_record();
+                homer_instance.actual_instance.set_record_into_cloud();
 
                 return GlobalResult.result_ok();
 
@@ -854,7 +848,7 @@ public class Controller_Blocko extends Controller{
 
     @ApiOperation(value = "get Instances by Project",
             tags = {"Instance"},
-            notes = "get list of instances details under project id",
+            notes = "get list of instance_ids details under project id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -915,7 +909,7 @@ public class Controller_Blocko extends Controller{
     public Result get_b_program_instance(String instance_id){
         try{
 
-            Model_HomerInstance instance = Model_HomerInstance.find.byId(instance_id);
+            Model_HomerInstance instance = Model_HomerInstance.get_byId(instance_id);
             if (instance == null) return GlobalResult.result_notFound("Homer_Instance instance_id not found");
             if(instance.getB_program() == null ) return GlobalResult.result_notFound("Homer_Instance is virtual!!");
 
@@ -1025,7 +1019,7 @@ public class Controller_Blocko extends Controller{
             Swagger_Instance_GridApp_Settings help = form.get();
 
             // Hledám objekt
-            Model_MProgramInstanceParameter program_parameter = Model_MProgramInstanceParameter.find.byId(help.m_program_parameter_id);
+            Model_MProgramInstanceParameter program_parameter = Model_MProgramInstanceParameter.get_byId(help.m_program_parameter_id);
             if (program_parameter == null) return GlobalResult.result_notFound("Object not found");
 
             //Ohlídám oprávnění
@@ -1072,7 +1066,7 @@ public class Controller_Blocko extends Controller{
         try{
 
 
-            Model_HomerInstanceRecord instance = Model_HomerInstanceRecord.find.byId(instance_record_id);
+            Model_HomerInstanceRecord instance = Model_HomerInstanceRecord.get_byId(instance_record_id);
             if (instance == null) return GlobalResult.result_notFound("Homer_Instance instance_id not found");
 
             if(!instance.main_instance_history.getB_program().read_permission()) return GlobalResult.result_forbidden();
@@ -1084,116 +1078,15 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+
+
+    /**
+     *
+     * Aktuální režim Homera to nepodporuje
+     *
+     *
     @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result ping_instance(String instance_name){
-        try{
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id",instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if(!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
-
-            WS_Message_Ping_instance result = homer_instance.ping();
-
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest(Json.toJson(result));
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_add_temporary_instance(){
-        try{
-
-            // Zpracování Json
-            final Form<Swagger_Instance_Temporary> form = Form.form(Swagger_Instance_Temporary.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_Instance_Temporary help = form.get();
-
-            Model_HomerServer server = Model_HomerServer.get_byId(help.unique_identificator);
-            if(server == null) return GlobalResult.result_notFound("Server not found");
-
-                // JsonNode result = server.add_temporary_instance(help.instance_name);
-
-                // if(result.get("status").asText().equals("success")) return GlobalResult.result_ok(result);
-            else return GlobalResult.result_badRequest("");
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "upload B Program (code) to instnace ", hidden = true)
-    public Result update_blocko_code_in_instance_with_code(String instance_name){
-        try{
-
-            // Zpracování Json
-            final Form<Swagger_Instance_UpdateCode> form = Form.form(Swagger_Instance_UpdateCode.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_Instance_UpdateCode help = form.get();
-
-            // JsonNode json = Json.parse(help.code);
-            // System.out.println(json.toString());
-
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id",instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if(!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance is not online");
-
-            // WS_Upload_blocko_program result = homer_instance.upload_blocko_program("fake_program", help.code );
-
-            // if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_add_yoda(String instance_name, String yoda_id){
-        try{
-
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
-
-            WS_Message_Add_yoda_to_instance result = homer_instance.add_Yoda_to_instance( yoda_id);
-
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_remove_yoda(String instance_name, String yoda_id){
-        try{
-
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
-
-            WS_Message_Remove_yoda_from_instance result = homer_instance.remove_Yoda_from_instance(yoda_id);
-
-
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_add_device(String instance_name, String yoda_id, String device_id){
+    public Result instance_add_device(String instance_name, String device_id){
         try{
 
             // Transformace na seznam
@@ -1204,10 +1097,9 @@ public class Controller_Blocko extends Controller{
             Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
-            if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
+            if (!homer_instance.instance_status()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
 
-
-            WS_Message_Add_device_to_instance result = homer_instance.add_Device_to_instance(yoda_id, list_of_devices);
+            WS_Message_Instance_device_set_snap result = homer_instance.set_device_to_instance(list_of_devices);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_badRequest();
@@ -1228,10 +1120,10 @@ public class Controller_Blocko extends Controller{
             Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
-            if (!homer_instance.instance_online()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
+            if (!homer_instance.instance_status()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
 
 
-            WS_Message_Remove_device_from_instance result = homer_instance.remove_Device_from_instance(yoda_id, list_of_devices);
+            WS_Message_Instance_device_remove result = homer_instance.remove_device_from_instance(list_of_devices);
 
             if(result.status.equals("success")) return GlobalResult.result_ok();
             return GlobalResult.result_badRequest();
@@ -1240,34 +1132,7 @@ public class Controller_Blocko extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-    @ApiOperation(value = "send command to instance", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
-    public Result send_command_to_instance(String instance_name, String target_id, String string_command){
-        try{
-
-            // Kontrola oprávnění
-            Model_Board board = Model_Board.get_byId(target_id);
-            if (board == null) return GlobalResult.result_notFound("Board targetId not found");
-
-            // Kontrola objektu
-            Enum_type_of_command command = Enum_type_of_command.getTypeCommand(string_command);
-            if(command == null) return GlobalResult.result_notFound("Command not found!");
-
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            JsonNode result = homer_instance.devices_commands(target_id, command);
-
-            if(result.has("status") && result.get("status").asText().equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest(result);
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-
-    }
+    */
 
 // TYPE OF BLOCK #######################################################################################################
 
@@ -1324,7 +1189,7 @@ public class Controller_Blocko extends Controller{
             if(help.project_id != null){
 
                 // Kontrola objektu
-                Model_Project project = Model_Project.find.byId(help.project_id);
+                Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null) return GlobalResult.result_notFound("Project project_id not found");
                 if(! project.update_permission()) return GlobalResult.result_forbidden();
 
@@ -1450,7 +1315,7 @@ public class Controller_Blocko extends Controller{
             if(help.project_id != null){
 
                 // Kontrola objektu
-                Model_Project project = Model_Project.find.byId(help.project_id);
+                Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
                 // Úprava objektu
@@ -1616,7 +1481,7 @@ public class Controller_Blocko extends Controller{
     public Result typeOfBlock_order_up(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try{
 
-            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.find.byId(blocko_block_id);
+            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.get_byId(blocko_block_id);
             if(typeOfBlocks == null) return GlobalResult.result_notFound("TypeOfBlock not found");
 
             // Kontrola oprávnění
@@ -1649,7 +1514,7 @@ public class Controller_Blocko extends Controller{
     public Result typeOfBlock_order_down(@ApiParam(value = "type_of_block_id String path",   required = true) String type_of_block_id){
         try{
 
-            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.find.byId(type_of_block_id);
+            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.get_byId(type_of_block_id);
             if(typeOfBlocks == null) return GlobalResult.result_notFound("TypeOfBlock not found");
 
             // Kontrola oprávnění
@@ -2240,7 +2105,7 @@ public class Controller_Blocko extends Controller{
             if (! blockoBlock.read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blockoBlock.blocko_versions));
+            return GlobalResult.result_ok(Json.toJson(blockoBlock.get_blocko_block_versions()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -2312,7 +2177,7 @@ public class Controller_Blocko extends Controller{
     public Result blockoBlock_order_up(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
         try{
 
-            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.find.byId(blocko_block_id);
+            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
 
             // Kontrola oprávnění
@@ -2345,7 +2210,7 @@ public class Controller_Blocko extends Controller{
     public Result blockoBlock_order_down(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
         try{
 
-            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.find.byId(blocko_block_id);
+            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
             if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
 
             // Kontrola oprávnění
@@ -2382,9 +2247,9 @@ public class Controller_Blocko extends Controller{
             // Odeslání emailu s důvodem
             try {
                 new Email()
-                        .text("Version of Block " + blockoBlockVersion.blocko_block.name + ": " + Email.bold(blockoBlockVersion.version_name) + " was not approved for this reason: ")
+                        .text("Version of Block " + blockoBlockVersion.get_blocko_block().name + ": " + Email.bold(blockoBlockVersion.version_name) + " was not approved for this reason: ")
                         .text(help.reason)
-                        .send(blockoBlockVersion.blocko_block.author.mail, "Version of Block disapproved" );
+                        .send(blockoBlockVersion.get_blocko_block().get_author().mail, "Version of Block disapproved" );
 
             } catch (Exception e) {
                 terminal_logger.internalServerError("blockoDisapprove:", e);
@@ -2429,7 +2294,7 @@ public class Controller_Blocko extends Controller{
             blockoBlock.name = help.blocko_block_name;
             blockoBlock.description = help.blocko_block_general_description;
             blockoBlock.type_of_block = typeOfBlock;
-            blockoBlock.author = privateBlockoBlockVersion.blocko_block.author;
+            blockoBlock.author = privateBlockoBlockVersion.get_blocko_block().get_author();
             blockoBlock.save();
 
             // Vytvoření objektu
@@ -2443,6 +2308,7 @@ public class Controller_Blocko extends Controller{
             blockoBlockVersion.date_of_create = new Date();
             blockoBlockVersion.save();
 
+
             // Pokud jde o schválení po ediatci
             if(help.state.equals("edit")) {
                 privateBlockoBlockVersion.approval_state = Enum_Approval_state.edited;
@@ -2450,9 +2316,9 @@ public class Controller_Blocko extends Controller{
                 // Odeslání emailu
                 try {
                     new Email()
-                            .text("Version of Block " + blockoBlockVersion.blocko_block.name + ": " + Email.bold(blockoBlockVersion.version_name) + " was edited before publishing for this reason: ")
+                            .text("Version of Block " + blockoBlockVersion.get_blocko_block().name + ": " + Email.bold(blockoBlockVersion.version_name) + " was edited before publishing for this reason: ")
                             .text(help.reason)
-                            .send(blockoBlockVersion.blocko_block.author.mail, "Version of Block edited" );
+                            .send(blockoBlockVersion.get_blocko_block().get_author().mail, "Version of Block edited" );
 
                 } catch (Exception e) {
                     terminal_logger.internalServerError("blockoApproval:", e);

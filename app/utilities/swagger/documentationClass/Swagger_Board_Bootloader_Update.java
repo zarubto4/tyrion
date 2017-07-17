@@ -8,8 +8,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "",
-        value = "Board_Bootloader_Update")
+@ApiModel(description = "", value = "Board_Bootloader_Update")
 public class Swagger_Board_Bootloader_Update {
 
     @Constraints.Required @Valid

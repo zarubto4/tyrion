@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_Blocko_Block_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
@@ -32,39 +34,80 @@ public class Model_TypeOfBlock extends Model {
                                                             @ApiModelProperty(required = true) public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true) public String description;
 
-                                                                        @JsonIgnore @ManyToOne public Model_Project project;
+                                                            @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Project project;
+                                                            @JsonIgnore                                     public Integer order_position;
+                                                            @JsonIgnore                                     public boolean removed_by_user;
 
     @JsonIgnore @OneToMany(mappedBy="type_of_block", cascade=CascadeType.ALL, fetch = FetchType.LAZY) @ApiModelProperty(required = true) public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
 
-    @JsonIgnore  public Integer order_position;
 
-    @JsonIgnore              public boolean removed_by_user;
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
+    @JsonIgnore @Transient @TyrionCachedList private List<String> blocko_block_ids = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!", readOnly = true, required = false)
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient                        public String project_id() {  return project == null ? null : this.project.id; }
+    @ApiModelProperty(value = "This value will be in Json only if TypeOfBlock is private!", readOnly = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient public String project_id() {
 
+        if(cache_value_project_id == null){
+            Model_Project project = Model_Project.find.where().eq("type_of_blocks.id", id).select("id").findUnique();
+            cache_value_project_id = project.id;
+        }
+
+        return cache_value_project_id;
+    }
 
     @JsonProperty @Transient public List<Swagger_Blocko_Block_Short_Detail> blocks() {
-
         try {
 
             List<Swagger_Blocko_Block_Short_Detail> short_detail_blocks = new ArrayList<>();
 
-            for (Model_BlockoBlock block :  Model_BlockoBlock.find.where().eq("type_of_block.id", id).eq("removed_by_user", false).order().asc("order_position").findList()) {
+            for (Model_BlockoBlock block : get_blocko_blocks()) {
                 short_detail_blocks.add( block.get_blocko_block_short_detail() ) ;
             }
 
             return short_detail_blocks;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("blocks:", e);
+            terminal_logger.internalServerError( e);
             return null;
         }
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @TyrionCachedList
+    public List<Model_BlockoBlock> get_blocko_blocks(){
+        try {
+
+            // Cache
+            if(blocko_block_ids.isEmpty()) {
+
+                List<Model_BlockoBlock> blockoBlocks = Model_BlockoBlock.find.where().eq("type_of_block.id", id).eq("removed_by_user", false).order().asc("order_position").select("id").findList();
+
+                // Získání seznamu
+                for (Model_BlockoBlock blockoBlock : blockoBlocks) {
+                    blocko_block_ids.add(blockoBlock.id);
+                }
+            }
+
+            List<Model_BlockoBlock> blockoBlock = new ArrayList<>();
+
+            for(String blockoBlock_id : blocko_block_ids){
+                blockoBlock.add(Model_BlockoBlock.get_byId(blockoBlock_id));
+            }
+
+            return blockoBlock;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new ArrayList<Model_BlockoBlock>();
+        }
+    }
 
     @JsonIgnore @Transient public Swagger_TypeOfBlock_Short_Detail get_type_of_block_short_detail(){
         Swagger_TypeOfBlock_Short_Detail help = new Swagger_TypeOfBlock_Short_Detail();
@@ -91,11 +134,15 @@ public class Model_TypeOfBlock extends Model {
             order_position = Model_TypeOfBlock.find.where().eq("project.id", project.id).findRowCount() + 1;
         }
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (get_byId(this.id) == null) break;
-        }
+        this.id = UUID.randomUUID().toString();
+
         super.save();
+
+        if(project != null){
+            project.type_of_blocks_ids.add(id);
+        }
+
+        cache.put(id, this);
     }
 
     @JsonIgnore @Override public void update() {
@@ -110,9 +157,14 @@ public class Model_TypeOfBlock extends Model {
 
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
-
         removed_by_user = true;
         super.update();
+
+        if(project_id() != null){
+            Model_Project.get_byId(project_id()).type_of_blocks_ids.remove(id);
+        }
+
+        cache.remove(id);
 
     }
 
@@ -162,11 +214,79 @@ public class Model_TypeOfBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient                                      public boolean create_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfBlock_create");}
-    @JsonIgnore @Transient                                      public boolean read_permission()    {return (project == null) || (project != null && project.read_permission())   || Controller_Security.get_person().has_permission("TypeOfBlock_read");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfBlock_update");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {return                      (project != null && project.edit_permission())   || Controller_Security.get_person().has_permission("TypeOfBlock_edit");}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {return                      (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfBlock_delete");}
+    @JsonIgnore @Transient   public boolean create_permission()  {
+        return   (project != null && project.update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_create");
+    }
+
+    @JsonIgnore @Transient   public boolean read_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_read_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_read_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_read")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if(project_id() != null && Model_Project.get_byId(project_id()).read_permission()){
+            Controller_Security.get_person().permissions_keys.put("type_of_block_read_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("type_of_block_read_" + id, false);
+        return false;
+    }
+    @JsonProperty @Transient public boolean update_permission()  {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_update_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_update_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_update")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
+            Controller_Security.get_person().permissions_keys.put("type_of_block_update_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("type_of_block_edit_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean edit_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_edit_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_edit")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
+            Controller_Security.get_person().permissions_keys.put("type_of_block_edit_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("type_of_block_edit_" + id, false);
+        return false;
+    }
+    @JsonProperty @Transient public boolean delete_permission()  {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_delete_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_delete")) return true;
+
+
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
+            Controller_Security.get_person().permissions_keys.put("type_of_block_delete_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("type_of_block_delete_" + id, false);
+        return false;
+    }
+
+
 
     public enum permissions{TypeOfBlock_create, TypeOfBlock_read, TypeOfBlock_edit , TypeOfBlock_delete, TypeOfBlock_update}
 
@@ -176,16 +296,35 @@ public class Model_TypeOfBlock extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE = Model_TypeOfBlock.class.getSimpleName();
+    public static Cache<String, Model_TypeOfBlock> cache = null;               // < Model_CProgram_id, Model_TypeOfBlock>
+
     @JsonIgnore
     public static Model_TypeOfBlock get_byId(String id) {
-        return find.where().eq("id", id).eq("removed_by_user", false).findUnique();
+
+        Model_TypeOfBlock type_of_block = cache.get(id);
+        if (type_of_block == null){
+
+            type_of_block = find.where().eq("id", id).eq("removed_by_user", false).findUnique();
+            if (type_of_block == null){
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            cache.put(id, type_of_block);
+        }
+
+        return type_of_block;
     }
 
     @JsonIgnore
     public static List<Model_TypeOfBlock> get_all() {
 
-        List<Model_TypeOfBlock> typeOfBlocks = find.where().isNull("project").eq("removed_by_user", false).order().asc("order_position").findList();
-        typeOfBlocks.addAll(find.where().eq("project.participants.person.id", Controller_Security.get_person_id()).eq("removed_by_user", false).order().asc("name").findList());
+        // Získání všech dostupných Skupin - Ty jsou cachovány v listu v projektu
+        // A statické (což jsou public zde )
+
+        List<Model_TypeOfBlock> typeOfBlocks = find.where().isNull("project").findList();
+        typeOfBlocks.addAll( find.where().eq("project.participants.person.id", Controller_Security.get_person().id ).eq("removed_by_user", false).order().asc("name").findList() );
+        typeOfBlocks.addAll( find.where().isNull("project").eq("removed_by_user", false).order().asc("order_position").findList());
         return typeOfBlocks;
     }
 

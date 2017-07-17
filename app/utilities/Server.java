@@ -15,7 +15,6 @@ import utilities.financial.fakturoid.Fakturoid_InvoiceCheck;
 import utilities.financial.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.grid_support.utils.IP_Founder;
-import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.logger.Class_Logger;
 import utilities.notifications.NotificationHandler;
 import utilities.scheduler.CustomScheduler;
@@ -278,16 +277,17 @@ public class Server {
      * Výběr nastavení Logbacku podle Server.developerMode
      */
     public static void setLogback() {
+
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         try {
+
             JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(context);
             context.reset();
             if (!Configuration.root().getString("Server.mode").equals("production")) {
                 configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.developerSettings")));
-            }
-            else {
+            } else {
                 configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.productionSettings")));
             }
         } catch (JoranException je) {}
@@ -301,8 +301,6 @@ public class Server {
      * @throws Exception
      */
     public static void setPermission() throws Exception{
-
-        terminal_logger.info("setPermission: Setting Permission");
 
         List<String> permissions = new ArrayList<>();
 
@@ -335,9 +333,6 @@ public class Server {
         for(Enum en : Model_MProject.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_MProgram.permissions.values())                permissions.add(en.name());
 
-
-        terminal_logger.info("setPermission: Number of Static Permissions " + permissions.size() );
-
         for(String permission : permissions) new Model_Permission(permission, "description");
 
     }
@@ -351,9 +346,6 @@ public class Server {
     }
 
     public static void startThreads() {
-
-        //1. Nastartovat aktualizační vlákna
-        Utilities_HW_Updater_Master_thread_updater.start_thread_box();
 
         //1. Nastartovat notifikační vlákno
         NotificationHandler.startNotificationThread();

@@ -7,11 +7,12 @@ public enum Enum_HardwareHomerUpdate_state {
     @EnumValue("WAITING_IN_QUE")                            WAITING_IN_QUE,
     @EnumValue("IN_PROGRESS")                               IN_PROGRESS,
     @EnumValue("SUCCESSFULLY_UPDATE")                       SUCCESSFULLY_UPDATE,
-    @EnumValue("DEVICE_WAS_OFFLINE")                        DEVICE_WAS_OFFLINE,
+    @EnumValue("DEVICE_WAS_OFFLINE")                        DEVICE_WAS_OFFLINE,         //<--- Nahrazuje Deprecated stav YODA_WAS_OFFLINE
     @EnumValue("TRANSMISSION_CRC_ERROR")                    TRANSMISSION_CRC_ERROR,
     @EnumValue("INVALID_DEVICE_STATE")                      INVALID_DEVICE_STATE,
-    @EnumValue("YODA_WAS_OFFLINE")                          YODA_WAS_OFFLINE,
+    @Deprecated @EnumValue("YODA_WAS_OFFLINE")              YODA_WAS_OFFLINE,           // TODO Remove from DB LEXA
     @EnumValue("UPDATE_PROGRESS_STACK")                     UPDATE_PROGRESS_STACK,
+    @EnumValue("OVERWRITTEN")                               OVERWRITTEN,
     @EnumValue("DEVICE_NOT_RECONNECTED")                    DEVICE_NOT_RECONNECTED,
     @EnumValue("DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION")   DEVICE_WAS_NOT_UPDATED_TO_RIGHT_VERSION,
     @EnumValue("ERROR")                                     ERROR;
@@ -23,7 +24,7 @@ public enum Enum_HardwareHomerUpdate_state {
         else if(value.equalsIgnoreCase(SUCCESSFULLY_UPDATE.toString()           ))   return Enum_HardwareHomerUpdate_state.SUCCESSFULLY_UPDATE;
         else if(value.equalsIgnoreCase(DEVICE_WAS_OFFLINE.toString()            ))   return Enum_HardwareHomerUpdate_state.DEVICE_WAS_OFFLINE;
         else if(value.equalsIgnoreCase(INVALID_DEVICE_STATE.toString()          ))   return Enum_HardwareHomerUpdate_state.INVALID_DEVICE_STATE;
-        else if(value.equalsIgnoreCase(YODA_WAS_OFFLINE.toString()              ))   return Enum_HardwareHomerUpdate_state.YODA_WAS_OFFLINE;
+        else if(value.equalsIgnoreCase(OVERWRITTEN.toString()                    ))   return Enum_HardwareHomerUpdate_state.OVERWRITTEN;
 
         else if(value.equalsIgnoreCase(TRANSMISSION_CRC_ERROR.toString()                    ))   return Enum_HardwareHomerUpdate_state.TRANSMISSION_CRC_ERROR;
         else if(value.equalsIgnoreCase(UPDATE_PROGRESS_STACK.toString()                     ))   return Enum_HardwareHomerUpdate_state.UPDATE_PROGRESS_STACK;

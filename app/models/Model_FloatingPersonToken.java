@@ -184,15 +184,28 @@ public class Model_FloatingPersonToken extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().has_permission("FloatingPersonToken_read");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().has_permission("FloatingPersonToken_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().permissions_keys.containsKey("FloatingPersonToken_read");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return ( person.id.equals( Controller_Security.get_person().id) ) || Controller_Security.get_person().permissions_keys.containsKey("FloatingPersonToken_delete"); }
 
     public enum permissions{ FloatingPersonToken_read, FloatingPersonToken_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    // Override in Model_Person
+
+    @JsonIgnore
+    public static Model_FloatingPersonToken get_byId(String id) {
+        return find.byId(id);
+    }
+
+    @JsonIgnore
+    public static Model_Person get_byToken(String id) {
+        return Model_Person.get_byAuthToken(id);
+    }
+
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static final Finder<String, Model_FloatingPersonToken> find = new Finder<>(Model_FloatingPersonToken.class);
+
 }

@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
+import org.springframework.cache.annotation.Cacheable;
 import play.data.validation.Constraints;
 import utilities.Server;
 import utilities.enums.Enum_Notification_action;
@@ -19,10 +20,12 @@ import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Project_Short_Detail;
 
 import javax.persistence.*;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,6 +79,11 @@ public class Model_Person extends Model {
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_Notification>         notifications        = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)     public List<Model_GridTerminal>         grid_terminals       = new ArrayList<>(); // Přihlášený websocket uživatele
 
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public List<String> project_ids = new ArrayList<>();
+    @JsonIgnore @Transient public HashMap<String, Boolean> permissions_keys = new HashMap();
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -90,6 +98,27 @@ public class Model_Person extends Model {
 
 /* JSON IGNOR VALUES ----------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient
+    public List<Swagger_Project_Short_Detail> get_user_access_projects(){
+
+        // Chache Add Projects
+        if(project_ids.isEmpty()) {
+
+            // Získání seznamu
+            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", id).order().asc("name").select("id").findList();
+            for (Model_Project project : projects) {
+                project_ids.add(project.id);
+            }
+        }
+
+        List<Swagger_Project_Short_Detail> projects = new ArrayList<>();
+
+        for(String project_id : project_ids){
+            projects.add(Model_Project.get_byId(project_id).project_short_detail());
+        }
+
+        return projects;
+    }
 
 
 /* Security Tools @ JSON IGNORE -----------------------------------------------------------------------------------------*/
@@ -133,7 +162,6 @@ public class Model_Person extends Model {
     public void setShaPassword(byte[] shaPassword) {
         this.shaPassword = shaPassword;
     }
-
 
     @JsonIgnore @Transient
     public boolean has_permission(String permission){
@@ -180,10 +208,10 @@ public class Model_Person extends Model {
 
     @JsonIgnore   @Transient public boolean create_permission()     {  return true;  }
     @JsonIgnore   @Transient public boolean read_permission()       {  return true;  }
-    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person_id().equals(this.id) || Controller_Security.get_person().has_permission("Person_edit"));}
-    @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().has_permission("Person_activation");}
-    @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().has_permission("Person_delete");}
-    @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().has_permission("Byzance_employee");}
+    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person_id().equals(this.id) || Controller_Security.get_person().permissions_keys.containsKey("Person_edit"));}
+    @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().permissions_keys.containsKey("Person_activation");}
+    @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().permissions_keys.containsKey("Person_delete");}
+    @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().permissions_keys.containsKey("Byzance_employee");}
 
     public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
 
@@ -203,7 +231,13 @@ public class Model_Person extends Model {
         if (person == null){
 
             person = Model_Person.find.byId(id);
-            if (person == null) return null;
+            if (person == null) {
+                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            for(Model_Permission permission : person.person_permissions){
+                person.permissions_keys.put(permission.value, true);
+            }
 
             cache.put(id, person);
         }

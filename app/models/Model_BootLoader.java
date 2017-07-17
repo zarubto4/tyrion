@@ -73,26 +73,25 @@ public class Model_BootLoader extends Model {
     public static void notification_bootloader_procedure_first_information_single(Model_CProgramUpdatePlan plan){
         try {
 
-                        new Model_Notification()
-                                .setImportance(Enum_Notification_importance.low)
-                                .setLevel(Enum_Notification_level.warning)
-                                .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                                .setId(plan.id)
-                                .setText(new Notification_Text().setText("Attention. You have entered the bootloader update command for Bootloader version "))
-                                .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
-                                .setText(new Notification_Text().setText(" for device "))
-                                .setObject(plan.board)
-                                .setText(new Notification_Text().setText(". "))
-                                .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
-                                        "Do not disconnect the device from the power supply during the update. " +
-                                        "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! "))
-                                .setnewLine()
-                                .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
-                                        "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
-                                        "In the details of the instance or hardware overview, you can see the status of each procedures. " +
-                                        "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                                .send_under_project(plan.board.project_id());
-
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.low)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
+                    .setId(plan.id.toString())
+                    .setText(new Notification_Text().setText("Attention. You have entered the bootloader update command for Bootloader version "))
+                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
+                    .setText(new Notification_Text().setText(" for device "))
+                    .setObject(plan.board)
+                    .setText(new Notification_Text().setText(". "))
+                    .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
+                            "Do not disconnect the device from the power supply during the update. " +
+                            "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! "))
+                    .setnewLine()
+                    .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
+                            "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
+                            "In the details of the instance or hardware overview, you can see the status of each procedures. " +
+                            "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
+                    .send_under_project(plan.board.project_id());
 
         } catch (Exception e) {
             terminal_logger.internalServerError("notification_bootloader_procedure_first_information_single:", e);
@@ -108,7 +107,7 @@ public class Model_BootLoader extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.success)
                     .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                    .setId(plan.id)
+                    .setId(plan.id.toString())
                     .setText(new Notification_Text().setText("Success! Bootloader version "))
                     .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
                     .setText(new Notification_Text().setText("  is done for device "))
@@ -143,7 +142,7 @@ public class Model_BootLoader extends Model {
                         .setImportance(Enum_Notification_importance.low)
                         .setLevel(Enum_Notification_level.warning)
                         .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                        .setId(plans.get(0).actualization_procedure.id)
+                        .setId(plans.get(0).actualization_procedure.id.toString())
                         .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
                         .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).bootloader.version_identificator + " "))
                         .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))
@@ -217,13 +216,23 @@ public class Model_BootLoader extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return Controller_Security.get_person().has_permission("BootLoader_create");}
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return Controller_Security.get_person().has_permission("BootLoader_update");}
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("BootLoader_create");}
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("BootLoader_update");}
     @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("BootLoader_read");}
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("BootLoader_delete");}
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("BootLoader_read");}
+    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("BootLoader_delete");}
 
-    public enum permissions {BootLoader_create, BootLoader_update, BootLoader_read, BootLoader_edit, BootLoader_delete}
+    public enum permissions{  BootLoader_create,  BootLoader_update, BootLoader_read ,  BootLoader_edit, BootLoader_delete; }
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_BootLoader get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_BootLoader> find = new Finder<>(Model_BootLoader.class);

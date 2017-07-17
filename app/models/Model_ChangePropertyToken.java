@@ -19,7 +19,7 @@ public class Model_ChangePropertyToken extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
             @Id public String change_property_token;
-    @OneToOne   public Model_Person person;
+    @OneToOne(fetch = FetchType.LAZY)   public Model_Person person;
                 public Date   time_of_creation;
                 public String property;
                 public String value;
@@ -63,6 +63,14 @@ public class Model_ChangePropertyToken extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_ChangePropertyToken get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_ChangePropertyToken> find = new Finder<>(Model_ChangePropertyToken.class);
 

@@ -12,18 +12,16 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
-import play.libs.Json;
 import utilities.Server;
-import utilities.document_db.DocumentDB;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.Enum_Compile_status;
-import utilities.independent_threads.Compilation_After_BlackOut;
+import utilities.independent_threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Class_Logger;
 import web_socket.message_objects.common.WS_Send_message;
 import web_socket.services.WS_CompilerServer;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compilation;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -124,7 +122,7 @@ public class Model_CompilationServer extends Model {
             terminal_logger.debug("make_Compilation:: Start of compilation was successful - waiting for result");
 
             WS_Send_message get_compilation = new WS_Send_message(null, null, "compilation_message", 1000 * 35, 0, 1);
-            server.sendMessageMap.put( compilation_request.get("buildId").asText(), get_compilation);
+            server.sendMessageMap.put( compilation_request.get("build_id").asText(), get_compilation);
 
             ObjectNode node = get_compilation.send_with_response();
 
@@ -137,8 +135,8 @@ public class Model_CompilationServer extends Model {
 
             if(compilation_request.has("interface_code")) compilation.interface_code = compilation_request.get("interface_code").toString();
 
-            if(compilation.buildUrl != null){
-                terminal_logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.buildUrl);
+            if(compilation.build_url != null){
+                terminal_logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.build_url);
                 compilation.status = "success";
             }
 
@@ -152,9 +150,7 @@ public class Model_CompilationServer extends Model {
 
     @JsonIgnore @Transient public WS_Message_Ping_compilation_server ping(){
         try {
-            ObjectNode request = Json.newObject();
-            request.put("messageType", "ping");
-            request.put("messageChannel", CHANNEL);
+
 
             JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
 
@@ -227,12 +223,22 @@ public class Model_CompilationServer extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.get_person().has_permission("Cloud_Compilation_Server_create"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Compilation_Server_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("Cloud_Compilation_Server_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("Cloud_Compilation_Server_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Compilation_Server_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Compilation_Server_delete"); }
 
     public enum permissions{Cloud_Compilation_Server_create, Cloud_Compilation_Server_edit, Cloud_Compilation_Server_delete}
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_CompilationServer get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+    }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

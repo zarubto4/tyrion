@@ -9,12 +9,14 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.io.FileExistsException;
+import org.ehcache.Cache;
 import play.api.Play;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
@@ -23,7 +25,7 @@ import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_Library_Record;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
 import utilities.swagger.outboundClass.*;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compilation;
 
 import javax.persistence.*;
 import java.net.ConnectException;
@@ -31,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import static com.avaje.ebeaninternal.util.SortByClause.ASC;
 
 @Entity
 @ApiModel( value = "Version_Object", description = "Model of Version_Object")
@@ -58,9 +58,14 @@ public class Model_VersionObject extends Model {
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
             value = "UNIX time in ms", example = "1466163478925")                                      public Date date_of_create;
 
-
-
     @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch=FetchType.EAGER ) public List<Model_FileRecord> files = new ArrayList<>();
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_b_program_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_c_program_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_m_program_id;
 
     // Libraries ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -71,21 +76,21 @@ public class Model_VersionObject extends Model {
             cascade = CascadeType.ALL)                      public List<Model_CProgram> examples = new ArrayList<>();
 
     // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore @ManyToOne()                                                                                    public Model_CProgram c_program;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                              public Model_CProgram c_program;
     @JsonIgnore @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)                                 public Model_CCompilation c_compilation;
 
     @JsonIgnore @ManyToMany @JoinTable(name = "model_c_program_library_version",
-            joinColumns = @JoinColumn(name = "library_version_id"),
+            joinColumns = @JoinColumn(name = "library_version_id"),                                             // TODO LEXA ?? K čemu je tahle vazba???
             inverseJoinColumns = @JoinColumn(name = "c_program_version_id"))                                    public List<Model_VersionObject> library_versions = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy="actual_c_program_version")                                                 public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
-    @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version")                                          public List<Model_Board>  c_program_version_backup_boards  = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL)                     public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
+    @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Board>  c_program_version_backup_boards  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
                                                                                                    @JsonIgnore  public Enum_Approval_state approval_state; // Zda je program schválený veřejný program
                                                                                          @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
     // B_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST)                           public Model_BProgram b_program;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public Model_BProgram b_program;
 
     @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)   public List<Model_BPair>   b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
 
@@ -95,16 +100,15 @@ public class Model_VersionObject extends Model {
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions") public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
 
     // B_Program - Instance
-    @JsonIgnore  @OneToMany(mappedBy="version_object") public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
-
+    @JsonIgnore  @OneToMany(mappedBy="version_object", fetch = FetchType.LAZY) public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
 
 
     // M_Program --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER) public Model_MProgram m_program;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_MProgram m_program;
                                     @JsonIgnore @Column(columnDefinition = "TEXT")  public String m_program_virtual_input_output;
 
-    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "m_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "m_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -120,6 +124,19 @@ public class Model_VersionObject extends Model {
     }
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+
+    @JsonIgnore @TyrionCachedList
+    public Model_BProgram get_b_program(){
+
+        if(cache_b_program_id == null){
+            Model_BProgram bProgram = Model_BProgram.find.where().eq("version_objects.id", id).select("id").findUnique();
+            if(bProgram == null) return null;
+            cache_b_program_id = bProgram.id;
+        }
+
+        return Model_BProgram.get_byId(cache_b_program_id);
+
+    }
 
     @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail   get_short_library_version(){
         try {
@@ -174,8 +191,8 @@ public class Model_VersionObject extends Model {
            help.version_id = id;
            help.version_name = version_name;
            help.version_description = version_description;
-           help.delete_permission = b_program.delete_permission();
-           help.update_permission = b_program.update_permission();
+           help.delete_permission = get_b_program().delete_permission();
+           help.update_permission = get_b_program().update_permission();
            help.author = this.author.get_short_person();
 
            return help;
@@ -290,7 +307,7 @@ public class Model_VersionObject extends Model {
 
         for (String lib_id : code_file.imported_libraries) {
 
-            Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
+            Model_VersionObject lib_version = Model_VersionObject.get_byId(lib_id);
             if (lib_version == null){
 
                 Result_BadRequest result = new Result_BadRequest();
@@ -365,7 +382,7 @@ public class Model_VersionObject extends Model {
 
 
         // Když obsahuje chyby - vrátím rovnou Becki
-        if(!compilation.buildErrors.isEmpty()) {
+        if(!compilation.build_errors.isEmpty()) {
 
             terminal_logger.trace("compile_program_procedure:: compilation contains user Errors");
 
@@ -373,13 +390,13 @@ public class Model_VersionObject extends Model {
             c_compilation.update();
 
             Result_CompilationListError result_compilationListError = new Result_CompilationListError();
-            result_compilationListError.errors = compilation.buildErrors;
+            result_compilationListError.errors = compilation.build_errors;
             return result_compilationListError;
         }
 
-        if(compilation.interface_code == null || compilation.buildUrl == null){
+        if(compilation.interface_code == null || compilation.build_url == null){
 
-            terminal_logger.internalServerError(new Exception("Missing fields ('interface_code' or 'buildUrl') in result from Code Server. Result: " + Json.toJson(compilation).toString()));
+            terminal_logger.internalServerError(new Exception("Missing fields ('interface_code' or 'build_url') in result from Code Server. Result: " + Json.toJson(compilation).toString()));
 
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
             c_compilation.update();
@@ -411,7 +428,7 @@ public class Model_VersionObject extends Model {
                 terminal_logger.trace("compile_program_procedure:: try to download file");
 
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-                F.Promise<WSResponse> responsePromise = ws.url(compilation.buildUrl)
+                F.Promise<WSResponse> responsePromise = ws.url(compilation.build_url)
                         .setContentType("undefined")
                         .setRequestTimeout(7500)
                         .get();
@@ -429,8 +446,8 @@ public class Model_VersionObject extends Model {
 
                 terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
                 c_compilation.status = Enum_Compile_status.successfully_compiled_and_restored;
-                c_compilation.c_comp_build_url = compilation.buildUrl;
-                c_compilation.firmware_build_id = compilation.buildId;
+                c_compilation.c_comp_build_url = compilation.build_url;
+                c_compilation.firmware_build_id = compilation.build_id;
                 c_compilation.virtual_input_output = compilation.interface_code;
                 c_compilation.date_of_create = new Date();
                 c_compilation.update();
@@ -441,7 +458,7 @@ public class Model_VersionObject extends Model {
 
             }catch (ConnectException e){
 
-                terminal_logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilation.buildUrl, e));
+                terminal_logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilation.build_url, e));
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
                 c_compilation.update();
 
@@ -491,8 +508,7 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore public String blob_version_link;
 
-    @JsonIgnore @Transient
-    public String get_path(){
+    @JsonIgnore @Transient public String get_path(){
         return  blob_version_link;
     }
 
@@ -500,21 +516,60 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore @Override public void save() {
 
-        while(true){ // I need Unique Value
-
-            this.id = UUID.randomUUID().toString();
-            this.blob_version_link = "/versions/" + this.id;
-            if (find.byId(this.id) == null) break;
-        }
+        this.id = UUID.randomUUID().toString();
+        this.blob_version_link = "/versions/" + this.id;
 
         try {
-            if(this.author == null)
-                this.author = Controller_Security.get_person();
+            if(this.author == null) this.author = Controller_Security.get_person();
         }catch (Exception e){
             // this.author = null;
         }
 
         super.save();
+
+
+        if(c_program != null){
+            c_program.cache_list_version_objects_ids.add(0, id);
+        }
+
+        if(get_b_program() != null){
+            get_b_program().cache_list_version_objects_ids.add(0, id);
+        }
+
+        if(m_program != null){
+            m_program.cache_list_version_objects_ids.add(0, id);
+        }
+
+        cache.put(id, this);
+    }
+
+    @JsonIgnore @Override
+    public void update(){
+
+        // TODO informace o změně směr Becki!
+        super.update();
+
+    }
+
+
+        @JsonIgnore @Override
+    public void delete(){
+
+        removed_by_user = true;
+
+        if(c_program != null){
+            c_program.cache_list_version_objects_ids.remove(id);
+        }
+
+        if(get_b_program() != null){
+            get_b_program().cache_list_version_objects_ids.remove(id);
+        }
+
+        if(m_program != null){
+            m_program.cache_list_version_objects_ids.remove(id);
+        }
+
+        super.update();
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
@@ -523,6 +578,29 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have \"Object\".update_permission = true, you can create / update on this Object - Or you need static/dynamic permission key";
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static final String CACHE = Model_VersionObject.class.getSimpleName();
+
+    public static Cache<String, Model_VersionObject> cache = null; // < ID, Model_VersionObject>
+
+    @JsonIgnore
+    public static Model_VersionObject get_byId(String id) {
+
+        Model_VersionObject version= cache.get(id);
+        if (version == null){
+
+            version = Model_VersionObject.find.byId(id);
+            if (version == null){
+                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
+            }
+            cache.put(id, version);
+        }
+
+        return version;
+    }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

@@ -89,7 +89,7 @@ public class Controller_Library extends Controller {
 
             for (String type_of_board_id : help.type_of_board_ids) {
 
-                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_board_id);
                 if (typeOfBoard != null) {
 
                     library.type_of_boards.add(typeOfBoard);
@@ -134,7 +134,7 @@ public class Controller_Library extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Library library = Model_Library.find.byId(library_id);
+            Model_Library library = Model_Library.get_byId(library_id);
             if(library == null ) return GlobalResult.result_notFound("Library not found");
 
             // Vrácneí objektu
@@ -260,7 +260,7 @@ public class Controller_Library extends Controller {
             Swagger_Library_New help = form.get();
 
             // Vyhledání objektu
-            Model_Library library = Model_Library.find.byId(library_id);
+            Model_Library library = Model_Library.get_byId(library_id);
             if (library == null) return GlobalResult.result_notFound("Library not found");
 
             // Kontrola oprávnění
@@ -304,7 +304,7 @@ public class Controller_Library extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Library library = Model_Library.find.byId(library_id);
+            Model_Library library = Model_Library.get_byId(library_id);
             if(library == null ) return GlobalResult.result_notFound("Library not found");
 
             // Kontrola oprávnění
@@ -367,7 +367,7 @@ public class Controller_Library extends Controller {
             Swagger_Library_Version_New help = form.get();
 
             // Ověření objektu
-            Model_Library library = Model_Library.find.byId(library_id);
+            Model_Library library = Model_Library.get_byId(library_id);
             if(library == null) return GlobalResult.result_notFound("Library library_id not found");
 
             // Zkontroluji oprávnění
@@ -425,7 +425,7 @@ public class Controller_Library extends Controller {
         try {
 
             // Vyhledám Objekt
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if(version_object == null) return GlobalResult.result_notFound("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
@@ -483,7 +483,7 @@ public class Controller_Library extends Controller {
             Swagger_C_Program_Version_Edit help = form.get();
 
             // Ověření objektu
-            Model_VersionObject version_object= Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object= Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
@@ -531,7 +531,7 @@ public class Controller_Library extends Controller {
         try{
 
             // Ověření objektu
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
@@ -540,10 +540,8 @@ public class Controller_Library extends Controller {
             // Kontrola oprávnění
             if(!version_object.library.delete_permission()) return GlobalResult.result_forbidden();
 
-            version_object.removed_by_user = true;
-
             // Smažu zástupný objekt
-            version_object.update();
+            version_object.delete();
 
             // Vracím potvrzení o smazání
             return GlobalResult.result_ok();
@@ -598,7 +596,7 @@ public class Controller_Library extends Controller {
             Swagger_C_Program_Version_New help = form.get();
 
             // Ověření objektu
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Library Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
@@ -609,8 +607,8 @@ public class Controller_Library extends Controller {
 
             Model_CProgram cProgram = Model_CProgram.find.where().eq("example_library.id", version_object.id).eq("name", help.version_name).findUnique();
             if (cProgram != null){
-                if (cProgram.version_objects.size() > 0)
-                    cProgram.version_objects.get(0).delete();
+                if (cProgram.getVersion_objects().size() > 0)
+                    cProgram.getVersion_objects().get(0).delete();
             }else {
                 cProgram = new Model_CProgram();
                 cProgram.name = help.version_name;
@@ -675,7 +673,7 @@ public class Controller_Library extends Controller {
         try{
 
             // Ověření objektu
-            Model_CProgram cProgram = Model_CProgram.find.byId(example_id);
+            Model_CProgram cProgram = Model_CProgram.get_byId(example_id);
             if (cProgram == null) return GlobalResult.result_notFound("Example example_id not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
@@ -686,8 +684,8 @@ public class Controller_Library extends Controller {
             // Kontrola oprávnění
             if(!cProgram.example_library.library.edit_permission()) return GlobalResult.result_forbidden();
 
-            if (cProgram.version_objects.size() > 0)
-                cProgram.version_objects.get(0).delete();
+            if (cProgram.getVersion_objects().size() > 0)
+                cProgram.getVersion_objects().get(0).delete();
 
             cProgram.delete();
 

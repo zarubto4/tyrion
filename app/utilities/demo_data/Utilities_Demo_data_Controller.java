@@ -911,7 +911,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             // Zaregistruji pod ně Yody
             Model_Board yoda_G  = Model_Board.find.where().eq("name","[Q]").findUnique();
             yoda_G.project = project_1;
-            yoda_G.virtual_instance_under_project = project_1.private_instance;
             yoda_G.update();
 
            for(Model_Board board :project_1.boards  ) {

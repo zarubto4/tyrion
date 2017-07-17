@@ -10,8 +10,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public enum Enum_UpdateProcedure_progress_type {
 
     @EnumValue("MAKING_BACKUP")                     MAKING_BACKUP,
-    @EnumValue("TRANSFER_DATA_TO_YODA")             TRANSFER_DATA_TO_YODA,
-    @EnumValue("TRANSFER_DATA_FROM_YODA_TO_DEVICE") TRANSFER_DATA_FROM_YODA_TO_DEVICE,
+    @EnumValue("TRANSFER_DATA_TO_DEVICE")           TRANSFER_DATA_TO_DEVICE,
     @EnumValue("CHECKING_RESULT")                   CHECKING_RESULT;
 
 

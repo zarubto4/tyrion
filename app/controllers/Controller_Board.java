@@ -19,16 +19,14 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
 import utilities.swagger.outboundClass.*;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Make_compilation;
-import web_socket.message_objects.homer_instance.WS_Message_Board_set_autobackup;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compilation;
+import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_autobackup;
+import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")  // Záměrně takto zapsané - Aby ve swaggru nezdokumentované API byly v jedné sekci
@@ -74,7 +72,7 @@ public class Controller_Board extends Controller {
             terminal_logger.debug("Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
-            Model_VersionObject version_object = Model_VersionObject.find.byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if(version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
             // Smažu předchozí kompilaci
@@ -159,7 +157,7 @@ public class Controller_Board extends Controller {
             if (help.type_of_board_id.isEmpty()) return GlobalResult.result_badRequest("type_of_board_id is missing!");
 
             // Ověření objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(help.type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             if(!Model_CompilationServer.is_online()) return GlobalResult.result_externalServerIsOffline("Compilation Server offilne");
@@ -170,7 +168,7 @@ public class Controller_Board extends Controller {
             for (String lib_id : help.imported_libraries) {
 
                 terminal_logger.trace("compile_C_Program_code:: Looking for library Version Id " + lib_id);
-                Model_VersionObject lib_version = Model_VersionObject.find.byId(lib_id);
+                Model_VersionObject lib_version = Model_VersionObject.get_byId(lib_id);
 
                 if (lib_version == null || lib_version.library == null){
 
@@ -234,8 +232,8 @@ public class Controller_Board extends Controller {
 
             WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( typeOfBoard ,"only_for_compilation", help.main, includes ));
 
-            // V případě úspěšného buildu obsahuje příchozí JsonNode buildUrl
-            if (compilation_result.buildUrl != null && compilation_result.status.equals("success")) {
+            // V případě úspěšného buildu obsahuje příchozí JsonNode build_url
+            if (compilation_result.build_url != null && compilation_result.status.equals("success")) {
 
                 Swagger_Cloud_Compilation_Server_CompilationResult result = new Swagger_Cloud_Compilation_Server_CompilationResult();
                 result.interface_code = compilation_result.interface_code;
@@ -244,9 +242,9 @@ public class Controller_Board extends Controller {
             }
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
-            if (!compilation_result.buildErrors.isEmpty()) {
+            if (!compilation_result.build_errors.isEmpty()) {
 
-                return GlobalResult.result_buildErrors(Json.toJson(compilation_result.buildErrors));
+                return GlobalResult.result_buildErrors(Json.toJson(compilation_result.build_errors));
             }
 
             // Nebylo úspěšné ani odeslání requestu - Chyba v konfiguraci a tak vracím defaulní chybz
@@ -297,7 +295,7 @@ public class Controller_Board extends Controller {
             System.out.println("Body " + request().body().asText());
 
             // Vyhledání objektů
-            Board board = Board.find.byId(board_id);
+            Board board = Board.get_byId(board_id);
             if (board == null) return GlobalResult.result_notFound("Board board_id object not found");
 
             if (!board.update_permission()) return GlobalResult.result_forbidden();
@@ -379,9 +377,9 @@ public class Controller_Board extends Controller {
 
 
             ObjectNode request = Json.newObject();
-            request.put("messageChannel", "tyrion");
+            request.put("message_channel", "tyrion");
             request.put("instanceId", instance_id);
-            request.put("messageType", "updateDevice");
+            request.put("message_type", "updateDevice");
             request.put("firmware_type", firmware_type.get_firmwareType());
             request.set("targetIds",  Json.toJson(list));
             request.put("build_id", build_id);
@@ -402,102 +400,7 @@ public class Controller_Board extends Controller {
     }
     */
 
-    @ApiOperation(value = "update Embedded Hardware with C_program compilation",
-            tags = {"C_Program", "Actualization"},
-            notes = "Upload compilation to list of hardware. Compilation is on Version oc C_program. And before uplouding compilation, you must succesfuly compile required version before! " +
-                    "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
-                    "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Board.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Board_update"),
-                    })
-            }
 
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_UploadBinaryFileToBoard",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result uploadCompilationToBoard() {
-        try {
-
-            // Zpracování Json
-            Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_UploadBinaryFileToBoard help = form.get();
-
-
-            List<Model_BPair> b_pairs = new ArrayList<>();
-
-            if(help.board_pairs.isEmpty()) return GlobalResult.result_badRequest("List is Empty");
-
-            for(Swagger_Board_CProgram_Pair board_update_pair : help.board_pairs) {
-
-                // Ověření objektu
-                Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_update_pair.c_program_version_id);
-                if (c_program_version == null) return GlobalResult.result_notFound("Version_Object version_id not found");
-
-                //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
-
-                // Zkontroluji oprávnění
-                if (!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
-
-                //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.c_compilation == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program - Missing compilation File");
-
-                // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-                if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_badRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
-
-                //Zkontroluji zda byla verze už zkompilována
-                if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_badRequest("The program is not yet compiled & Restored");
-
-                // Kotrola objektu
-                Model_Board board = Model_Board.get_byId(board_update_pair.board_id);
-                if (board == null) return GlobalResult.result_notFound("Board board_id not found");
-
-                // Kontrola oprávnění
-                if (!board.edit_permission()) return GlobalResult.result_forbidden();
-
-
-                Model_BPair b_pair = new Model_BPair();
-                b_pair.board = board;
-                b_pair.c_program_version = c_program_version;
-
-                b_pairs.add(b_pair);
-
-            }
-
-
-            Model_Board.update_firmware(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
-
-            // Vracím odpověď
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
     
 ///###################################################################################################################*/
 
@@ -601,7 +504,7 @@ public class Controller_Board extends Controller {
             Swagger_Cloud_Compilation_Server_New help = form.get();
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.find.byId(server_id);
+            Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Zkontroluji oprávnění
@@ -678,7 +581,7 @@ public class Controller_Board extends Controller {
         try{
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.find.byId(server_id);
+            Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -779,7 +682,7 @@ public class Controller_Board extends Controller {
         try {
 
             //Zkontroluji validitu
-            Model_Processor processor = Model_Processor.find.byId(processor_id);
+            Model_Processor processor = Model_Processor.get_byId(processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Vracím objekt
@@ -861,7 +764,7 @@ public class Controller_Board extends Controller {
             Swagger_Processor_New help = form.get();
 
             // Kontroluji validitu
-            Model_Processor processor = Model_Processor.find.byId(processor_id);
+            Model_Processor processor = Model_Processor.get_byId(processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -909,7 +812,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontroluji validitu
-            Model_Processor processor = Model_Processor.find.byId(processor_id);
+            Model_Processor processor = Model_Processor.get_byId(processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
@@ -1065,7 +968,7 @@ public class Controller_Board extends Controller {
             Swagger_Producer_New help = form.get();
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(producer_id);
+            Model_Producer producer = Model_Producer.get_byId(producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontorluji oprávnění těsně před uložením
@@ -1144,7 +1047,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(producer_id);
+            Model_Producer producer = Model_Producer.get_byId(producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Vrácneí objektu
@@ -1181,7 +1084,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(producer_id);
+            Model_Producer producer = Model_Producer.get_byId(producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontorluji oprávnění
@@ -1242,11 +1145,11 @@ public class Controller_Board extends Controller {
             Swagger_TypeOfBoard_New help = form.get();
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(help.producer_id);
+            Model_Producer producer = Model_Producer.get_byId(help.producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontrola objektu
-            Model_Processor processor = Model_Processor.find.byId(help.processor_id);
+            Model_Processor processor = Model_Processor.get_byId(help.processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Tvorba objektu
@@ -1313,15 +1216,15 @@ public class Controller_Board extends Controller {
             Swagger_TypeOfBoard_New help = form.get();
 
             // Kontrola objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_board_id);
             if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.find.byId(help.producer_id);
+            Model_Producer producer = Model_Producer.get_byId(help.producer_id);
             if(producer == null ) return GlobalResult.result_notFound("Producer producer_id not found");
 
             // Kontrola objektu
-            Model_Processor processor = Model_Processor.find.byId(help.processor_id);
+            Model_Processor processor = Model_Processor.get_byId(help.processor_id);
             if(processor == null ) return GlobalResult.result_notFound("Processor processor_id not found");
 
             // Kontorluji oprávnění
@@ -1372,7 +1275,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_board_id);
             if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found") ;
 
             // Kontorluji oprávnění
@@ -1447,7 +1350,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola validity objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_board_id);
             if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
@@ -1465,7 +1368,7 @@ public class Controller_Board extends Controller {
     public Result typeOfBoard_uploadPicture(@ApiParam(required = true) String type_of_board_id){
         try {
 
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
             if (type_of_board == null) return GlobalResult.result_notFound("Type of board does not exist");
 
             // Přijmu soubor
@@ -1540,7 +1443,7 @@ public class Controller_Board extends Controller {
     public Result typeOfBoard_removePicture(@ApiParam(required = true) String type_of_board_id){
         try {
 
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
+            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
             if (type_of_board == null) return GlobalResult.result_notFound("Type of Board does not exist");
 
             if(!(type_of_board.picture == null)) {
@@ -1572,8 +1475,8 @@ public class Controller_Board extends Controller {
             if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BootLoader_New help = form.get();
 
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.byId(type_of_board_id);
-            if (type_of_board == null) return GlobalResult.result_notFound("Type_of_board_not_found");
+            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
+            if(type_of_board == null) return GlobalResult.result_notFound("Type_of_board_not_found");
 
             String identifier = help.version_identificator.replaceAll("\\s+", "");
 
@@ -1654,8 +1557,8 @@ public class Controller_Board extends Controller {
     public Result bootLoader_uploadFile(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
-            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
-            if (boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
+            Model_BootLoader boot_loader = Model_BootLoader.get_byId(boot_loader_id);
+            if(boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
 
             if (!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
 
@@ -1696,7 +1599,7 @@ public class Controller_Board extends Controller {
     public Result bootLoader_markAsMain(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
-            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
+            Model_BootLoader boot_loader = Model_BootLoader.get_byId(boot_loader_id);
             if(boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
 
             if(!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
@@ -1767,25 +1670,39 @@ public class Controller_Board extends Controller {
             List<Model_Board> boards = Model_Board.find.where().in("id", help.device_ids).findList();
             if(boards.isEmpty()) return GlobalResult.result_notFound("Board not found");
 
-            if(help.bootloader_id != null) {
 
-                Model_BootLoader bootLoader = Model_BootLoader.find.byId(help.bootloader_id);
-                if (bootLoader == null) return GlobalResult.result_notFound("BootLoader not found");
 
-                for(Model_Board board : boards) {
-                    if (!board.read_permission()) return GlobalResult.result_forbidden();
+            List<WS_Help_Hardware_Pair> board_for_update = new ArrayList<>();
+
+            for(Model_Board board : boards) {
+
+                if (!board.read_permission()) return GlobalResult.result_forbidden("You have no permission for Device " + board.id);
+
+                WS_Help_Hardware_Pair pair = new WS_Help_Hardware_Pair();
+                pair.board = board;
+
+                if(help.bootloader_id != null) {
+
+                    pair.bootLoader = Model_BootLoader.get_byId(help.bootloader_id);
+                    if (pair.bootLoader == null) return GlobalResult.result_notFound("BootLoader not found");
+
+                } else{
+                    pair.bootLoader = Model_BootLoader.find.where().eq("main_type_of_board.boards.id", board.id).findUnique();
                 }
+            }
 
-                Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards, bootLoader);
 
-            }else {
+            if(!boards.isEmpty()){
+                new Thread( () -> {
+                    try {
 
-                for(Model_Board board : boards) {
-                    if (!board.read_permission()) return GlobalResult.result_forbidden();
-                }
+                        Model_ActualizationProcedure procedure = Model_Board.create_update_procedure(Enum_Firmware_type.BOOTLOADER, Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, board_for_update);
+                        procedure.execute_update_procedure();
 
-                // Aktuální Bootloader ID
-                Model_Board.update_bootloader(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, boards, null);
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError("board_updateBackup:", e);
+                    }
+                }).start();
             }
 
 
@@ -1847,8 +1764,8 @@ public class Controller_Board extends Controller {
             if (Model_Board.find.byId(help.full_id) != null) return GlobalResult.result_badRequest("Board is already registered");
 
             // Kotrola objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.byId(help.type_of_board_id);
-            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard not found");
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId( help.type_of_board_id  );
+            if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
             if (!typeOfBoard.register_new_device_permission()) return GlobalResult.result_forbidden();
@@ -1895,7 +1812,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kotrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if(project == null ) return GlobalResult.result_notFound("Project project not found");
 
             // Kontrola oprávnění
@@ -1974,8 +1891,118 @@ public class Controller_Board extends Controller {
             // Uprava objektu v databázi
             board.update();
 
+            board.set_alias();
+
             // Vrácení upravenéh objektu
             return GlobalResult.result_ok(Json.toJson(board));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "upload C_Program into Hardware",
+            tags = {"C_Program", "Actualization"},
+            notes = "Upload compilation to list of hardware. Compilation is on Version oc C_program. And before uplouding compilation, you must succesfuly compile required version before! " +
+                    "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
+                    "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Board.update_permission", value = "true"),
+                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Board_update"),
+                    })
+            }
+
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_UploadBinaryFileToBoard",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result uploadCompilationToBoard() {
+        try {
+
+            // Zpracování Json
+            Form<Swagger_UploadBinaryFileToBoard> form = Form.form(Swagger_UploadBinaryFileToBoard.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_UploadBinaryFileToBoard help = form.get();
+
+
+            List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
+
+            if(help.board_pairs.isEmpty()) return GlobalResult.result_badRequest("List is Empty");
+
+            for(Swagger_Board_CProgram_Pair board_update_pair : help.board_pairs) {
+
+                // Ověření objektu
+                Model_VersionObject c_program_version = Model_VersionObject.get_byId(board_update_pair.c_program_version_id);
+                if (c_program_version == null) return GlobalResult.result_notFound("Version_Object version_id not found");
+
+                //Zkontroluji validitu Verze zda sedí k C_Programu
+                if (c_program_version.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+
+                // Zkontroluji oprávnění
+                if (!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
+
+                //Zkontroluji validitu Verze zda sedí k C_Programu
+                if (c_program_version.c_compilation == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program - Missing compilation File");
+
+                // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
+                if (c_program_version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) return GlobalResult.result_badRequest("You cannot upload code in state:: " + c_program_version.c_compilation.status.name());
+
+                //Zkontroluji zda byla verze už zkompilována
+                if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_badRequest("The program is not yet compiled & Restored");
+
+                // Kotrola objektu
+                Model_Board board = Model_Board.get_byId(board_update_pair.board_id);
+                if (board == null) return GlobalResult.result_notFound("Board board_id not found");
+
+                // Kontrola oprávnění
+                if (!board.edit_permission()) return GlobalResult.result_forbidden();
+
+
+                WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
+                b_pair.board = board;
+                b_pair.c_program_version = c_program_version;
+
+                b_pairs.add(b_pair);
+
+            }
+
+            if(!b_pairs.isEmpty()){
+                new Thread( () -> {
+                    try {
+
+                        Model_ActualizationProcedure procedure = Model_Board.create_update_procedure(Enum_Firmware_type.FIRMWARE, Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
+                        procedure.execute_update_procedure();
+
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError("board_updateBackup:", e);
+                    }
+                }).start();
+            }
+
+
+            // Vracím odpověď
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -2027,12 +2054,12 @@ public class Controller_Board extends Controller {
 
 
             // Seznam Hardwaru k updatu
-            List<Model_BPair> board_pairs = new ArrayList<>();
+            List<WS_Help_Hardware_Pair> board_pairs = new ArrayList<>();
 
             for(Swagger_Board_Backup_settings.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
 
                 // Kotrola objektu
-                Model_Board board = Model_Board.find.byId(board_backup_pair.board_id);
+                Model_Board board = Model_Board.get_byId(board_backup_pair.board_id);
                 if (board == null) return GlobalResult.result_notFound("Board board_id not found");
 
                 // Kontrola oprávnění
@@ -2046,7 +2073,7 @@ public class Controller_Board extends Controller {
                     if(!board.backup_mode) {
                         terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.board_id);
 
-                        WS_Message_Board_set_autobackup result = Model_Board.set_auto_backup(board);
+                        WS_Message_Hardware_set_autobackup result = Model_Board.set_auto_backup(board);
 
                         board.actual_backup_c_program_version = null;
                         board.backup_mode = true;
@@ -2057,7 +2084,7 @@ public class Controller_Board extends Controller {
 
                         terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has already sat asi  dynamic Backup", board_backup_pair.board_id);
 
-                        WS_Message_Board_set_autobackup result = Model_Board.set_auto_backup(board);
+                        WS_Message_Hardware_set_autobackup result = Model_Board.set_auto_backup(board);
                         if (result.status.equals("success")) {
                             terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} Success of setting of dynamic backup", board_backup_pair.board_id);
 
@@ -2079,7 +2106,7 @@ public class Controller_Board extends Controller {
                     terminal_logger.debug("Controller_Board:: board_update_backup:: To FALSE:: Board Id: {} has dynamic Backup or already set static backup", board_backup_pair.board_id);
 
                     // Uprava desky na statický backup
-                    Model_VersionObject c_program_version = Model_VersionObject.find.byId(board_backup_pair.c_program_version_id);
+                    Model_VersionObject c_program_version = Model_VersionObject.get_byId(board_backup_pair.c_program_version_id);
                     if (c_program_version == null) return GlobalResult.result_notFound("Version_Object c_program_version_id not found");
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
@@ -2097,7 +2124,7 @@ public class Controller_Board extends Controller {
                     //Zkontroluji zda byla verze už zkompilována
                     if (!c_program_version.c_compilation.status.name().equals(Enum_Compile_status.successfully_compiled_and_restored.name())) return GlobalResult.result_badRequest("The program is not yet compiled & Restored");
 
-                    Model_BPair b_pair = new Model_BPair();
+                    WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                     b_pair.board = board;
                     b_pair.c_program_version = c_program_version;
 
@@ -2117,7 +2144,9 @@ public class Controller_Board extends Controller {
                 new Thread( () -> {
 
                     try {
-                        Model_Board.update_backup(Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, board_pairs);
+                        Model_ActualizationProcedure procedure = Model_Board.create_update_procedure(Enum_Firmware_type.BACKUP, Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, board_pairs);
+                        procedure.execute_update_procedure();
+
                     } catch (Exception e) {
                         terminal_logger.internalServerError("board_updateBackup:", e);
                     }
@@ -2244,7 +2273,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kotrola objektu
-            Model_Board board = Model_Board.find.byId(board_id);
+            Model_Board board = Model_Board.get_byId(board_id);
             if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kontrola oprávnění
@@ -2387,7 +2416,7 @@ public class Controller_Board extends Controller {
             if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kotrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -2400,25 +2429,13 @@ public class Controller_Board extends Controller {
             board.project = project;
             board.date_of_user_registration = new Date();
             project.boards.add(board);
+            project.board_ids.add(board.id);
+
             board.update();
             project.update();
 
-
-            if(board.type_of_board.connectible_to_internet){
-
-                terminal_logger.debug("board_connectProject:: Deska je připojitelná k internetu");
-
-                Model_HomerInstance instance = project.private_instance;
-                instance.boards_in_virtual_instance.add(board);
-                board.virtual_instance_under_project = instance;
-                instance.update();
-                board.update();
-                instance.add_Yoda_to_instance(board.id);
-            }
-
-
-             // vrácení objektu
-             return GlobalResult.result_ok(Json.toJson(board));
+            // vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -2499,7 +2516,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
+            Model_Project project = Model_Project.get_byId(project_id);
             if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -2510,7 +2527,7 @@ public class Controller_Board extends Controller {
             boards_for_blocko.add_M_Projects(project.get_m_projects_not_deleted());
             boards_for_blocko.add_C_Programs(project.get_c_programs_not_deleted());
 
-            for (Model_Board board : project.boards) boards_for_blocko.boards.add(board.get_short_board());
+            for (Model_Board board : project.get_project_boards_not_deleted()) boards_for_blocko.boards.add(board.get_short_board());
 
 
             boards_for_blocko.type_of_boards = Model_TypeOfBoard.find.where().eq("boards.project.id", project.id).findList();
@@ -2524,6 +2541,7 @@ public class Controller_Board extends Controller {
         }
     }
 
+    @ApiOperation(value = "Remove Hardware from Database - Only for Administrators", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result board_delete(String board_id){
         try {
@@ -2535,7 +2553,7 @@ public class Controller_Board extends Controller {
             // Kontrola oprávnění
             if(!board.delete_permission()) return GlobalResult.result_forbidden();
 
-            if (board.project != null || board.virtual_instance_under_project != null || board.date_of_user_registration != null)
+            if (board.project != null || board.date_of_user_registration != null)
                 return GlobalResult.result_badRequest("Board is already in use.");
 
             board.delete();

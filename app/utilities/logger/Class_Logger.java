@@ -18,7 +18,6 @@ public class Class_Logger{
      you can use terminal_logger.internalServerError(new Exception("Your message.")).
      New exception creates an stack trace so it is easier to track down errors and it does not pollute DB.
       */
-    @Deprecated
     public void error(String log_message, Object... args) {
         Server_Logger.error(t_class, log_message, args);
     }

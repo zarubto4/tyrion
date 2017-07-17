@@ -9,11 +9,11 @@ import web_socket.services.WS_Becki_Website;
 
 public class WS_Message_Update_model_echo extends WS_AbstractMessage {
 
-    @JsonProperty public static final String messageType = "object_update";
+    @JsonProperty public static final String messageType = "becki_object_update";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public static final String messageChannel =  WS_Becki_Website.CHANNEL;
+    @JsonProperty public static final String message_channel =  WS_Becki_Website.CHANNEL;
 
     //------------------------------------------------------------------
 

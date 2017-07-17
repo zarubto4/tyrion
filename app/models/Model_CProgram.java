@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.libs.Json;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -42,26 +44,88 @@ public class Model_CProgram extends Model {
     @ApiModelProperty(required = false, value = "can be empty") @Column(columnDefinition = "TEXT")      public String description;
     @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)                       public Model_Project project;
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)                     public Model_TypeOfBoard type_of_board;
+    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                      public Model_TypeOfBoard type_of_board;
 
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;
 
     @JsonIgnore  public boolean removed_by_user;
 
-    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)@OrderBy("date_of_create desc")   public List<Model_VersionObject> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  private List<Model_VersionObject> version_objects = new ArrayList<>();
 
-                                                                              @JsonIgnore @OneToOne     public Model_TypeOfBoard type_of_board_default;
-                       @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL)   public Model_VersionObject default_main_version;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                  public Model_TypeOfBoard   type_of_board_default;
+    @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL) public Model_VersionObject default_main_version;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                 public Model_VersionObject example_library;          // Program je příklad pro použití knihovny
 
-                                                                             @JsonIgnore @ManyToOne     public Model_VersionObject example_library; // Program je příklad pro použití knihovny
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_version_objects_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_name;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_name;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient public String project_id()           { return project != null ? project.id : null; }
-    @JsonProperty  @Transient public String project_name()         { return project != null ? project.name : null;}
-    @JsonProperty  @Transient public String type_of_board_id()     { return type_of_board == null ? null : type_of_board.id;}
-    @JsonProperty  @Transient public String type_of_board_name()   { return type_of_board == null ? null : type_of_board.name;}
+    @JsonProperty  @Transient public String project_id()           {
+
+        if(cache_value_project_id == null){
+            Model_Project project = Model_Project.find.where().eq("c_programs.id", id).select("id").findUnique();
+            if(project == null) return null;
+            cache_value_project_id = project.id;
+        }
+
+        return cache_value_project_id;
+
+
+    }
+    @JsonProperty  @Transient public String project_name()         {
+        try {
+
+            if(cache_value_project_name == null){
+                cache_value_project_name = Model_Project.get_byId(project_id()).name;
+            }
+
+            return cache_value_project_name;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @JsonProperty  @Transient public String type_of_board_id()     {
+
+        try {
+
+            if(cache_value_type_of_board_id == null){
+                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", id).select("id").findUnique();
+                cache_value_type_of_board_id = typeOfBoard.id;
+            }
+
+            return cache_value_type_of_board_id;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @JsonProperty  @Transient public String type_of_board_name()   {
+
+        try {
+
+            if(cache_value_type_of_board_name == null){
+                cache_value_type_of_board_name = Model_TypeOfBoard.get_byId(type_of_board_id()).name;
+            }
+
+            return cache_value_type_of_board_name;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+
+    }
 
     @JsonProperty @Transient public List<Swagger_C_Program_Version_Short_Detail> program_versions() {
 
@@ -69,7 +133,7 @@ public class Model_CProgram extends Model {
 
             List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
 
-            for (Model_VersionObject version : getVersion_objects()) {
+            for (Model_VersionObject version : getVersion_objects().stream().sorted((element1, element2) -> element2.date_of_create.compareTo(element1.date_of_create)).collect(Collectors.toList())) {
                 versions.add(version.get_short_c_program_version());
             }
 
@@ -117,8 +181,8 @@ public class Model_CProgram extends Model {
             help.name = name;
             help.description = description;
 
-            if (this.version_objects.size() > 0){
-                for (Model_FileRecord file : this.version_objects.get(0).files){
+            if (this.getVersion_objects().size() > 0){
+                for (Model_FileRecord file : this.getVersion_objects().get(0).files){
 
                     JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
@@ -142,8 +206,33 @@ public class Model_CProgram extends Model {
         }
     }
 
-    @Transient @JsonIgnore public List<Model_VersionObject> getVersion_objects() {
-        return Model_VersionObject.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList();
+    @Transient @JsonIgnore @TyrionCachedList public List<Model_VersionObject> getVersion_objects(){
+
+        try{
+
+            if(cache_list_version_objects_ids.isEmpty()){
+
+                List<Model_VersionObject> versions =  Model_VersionObject.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();;
+
+                // Získání seznamu
+                for (Model_VersionObject version : versions) {
+                    cache_list_version_objects_ids.add(version.id);
+                }
+
+            }
+
+            List<Model_VersionObject> versions  = new ArrayList<>();
+
+            for(String version_id : cache_list_version_objects_ids){
+                versions.add(Model_VersionObject.get_byId(version_id));
+            }
+
+            return versions;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("getVersion_objects", e);
+            return new ArrayList<Model_VersionObject>();
+        }
     }
 
     @Transient @JsonIgnore public List<Model_VersionObject> getVersion_objects_all_For_Admin() {
@@ -173,7 +262,7 @@ public class Model_CProgram extends Model {
 
                 for( String imported_library_version_id : version_new.imported_libraries){
 
-                    Model_VersionObject library_version = Model_VersionObject.find.byId(imported_library_version_id);
+                    Model_VersionObject library_version = Model_VersionObject.get_byId(imported_library_version_id);
 
                     if(library_version == null) continue;
 
@@ -198,6 +287,10 @@ public class Model_CProgram extends Model {
         }
     }
 
+    @Transient @JsonIgnore @TyrionCachedList public Model_Project get_project()           {
+            if(project_id() == null) return null;
+            return Model_Project.get_byId(project_id());
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -205,34 +298,29 @@ public class Model_CProgram extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
+        this.id = UUID.randomUUID().toString();
+
         // C_Program is Private registred under Project
-        if(project != null){
+        if(project != null) {
 
             terminal_logger.debug("save :: is a private Program");
+            this.azure_c_program_link = project.get_path() + "/c-programs/" + this.id;
 
-            while(true){ // I need Unique Value
-                this.id = UUID.randomUUID().toString();
-                this.azure_c_program_link = project.get_path()  + "/c-programs/"  + this.id;
-                if (Model_CProgram.find.byId(this.id) == null) break;
-            }
-        }
-
-        // C_Program is public C_Program for every users
-        else{
+        }else{    // C_Program is public C_Program for every users
 
             terminal_logger.debug("save :: is a public Program");
+            this.azure_c_program_link = "public-c-programs/"  + this.id;
 
-            while(true){ // I need Unique Value
-                this.id = UUID.randomUUID().toString();
-                this.azure_c_program_link = "public-c-programs/"  + this.id;
-                if (Model_CProgram.find.byId(this.id) == null) break;
-            }
         }
 
         // Call notification about project update
         if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
 
         super.save();
+
+        if(project != null){
+            project.c_program_ids.add(id);
+        }
 
         cache.put(id, this);
     }
@@ -242,7 +330,7 @@ public class Model_CProgram extends Model {
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
 
         // Call notification about model update
-        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgram.class, project_id(), this.id))).start();
+        if(get_project() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgram.class, project_id(), this.id))).start();
 
         super.update();
 
@@ -255,8 +343,15 @@ public class Model_CProgram extends Model {
 
         this.removed_by_user = true;
 
+
+        if(project_id() != null){
+            Model_Project.get_byId( project_id() ).c_program_ids.remove(id);
+        }
+
+        cache.remove(id);
+
         // Call notification about project update
-        if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
+        if(get_project() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
 
         this.update();
     }
@@ -283,24 +378,88 @@ public class Model_CProgram extends Model {
     @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user have Project.read_permission = true, you can read C_program on this Project - Or you need static/dynamic permission key";
     @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have Project.update_permission = true, you can create C_program on this Project - Or you need static/dynamic permission key";
 
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){  return project != null ? ( project.update_permission() ) : Controller_Security.get_person().has_permission("C_program_create");      }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean update_permission(){  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_update"); }
-    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean read_permission()  {
-        if(project == null) return true;
-        return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_read");
-    }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean edit_permission()  {  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_edit"); }
-    @JsonProperty @Transient  @ApiModelProperty(required = true) public boolean delete_permission(){  return ( Model_CProgram.find.where().eq("project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0) || Controller_Security.get_person().has_permission("C_program_delete"); }
+    @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){
 
-    public enum permissions{  C_program_create,  C_program_update, C_program_read ,  C_program_edit, C_program_delete; }
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_create")) return true;
+
+        return project != null && project.update_permission();
+
+    }
+
+    @JsonProperty @Transient public boolean update_permission()  {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_update_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_update_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_update")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("c_program_update_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("c_program_update_" + id, false);
+        return false;
+
+    }
+    @JsonIgnore   @Transient public boolean read_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_read_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_read_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_read")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("c_program_read_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("read_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean edit_permission()    {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_edit_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_edit")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("c_program_edit_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("c_program_edit_" + id, false);
+        return false;
+
+    }
+    @JsonProperty @Transient public boolean delete_permission()  {
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_delete_"+ id);
+        if(Controller_Security.get_person().permissions_keys.containsKey("C_Program_delete")) return true;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+            Controller_Security.get_person().permissions_keys.put("c_program_delete_" + id, true);
+            return true;
+        }
+
+        // Přidávám do listu false a vracím false
+        Controller_Security.get_person().permissions_keys.put("c_program_delete_" + id, false);
+        return false;
+
+    }
+
+    public enum permissions{  C_program_create,  C_program_update, C_program_read , C_program_edit, C_program_delete; }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static final String CACHE         = Model_CProgram.class.getSimpleName();
-    public static final String CACHE_VERSION = Model_CProgram.class.getSimpleName() + "_VERSION";
-
     public static Cache<String, Model_CProgram> cache = null;               // < Model_CProgram_id, Model_CProgram>
-    public static Cache<String, Model_VersionObject> cache_versions = null; // < Model_VersionObject_id, Model_VersionObject>
 
     @JsonIgnore
     public static Model_CProgram get_byId(String id) {
@@ -310,32 +469,13 @@ public class Model_CProgram extends Model {
 
             c_program = Model_CProgram.find.byId(id);
             if (c_program == null){
-                Server_Logger.warn( Model_CProgram.class, "get_byId :: This object id:: " + id + " wasn't found.");
-                return null;
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
             }
 
             cache.put(id, c_program);
         }
 
         return c_program;
-    }
-
-    @JsonIgnore
-    public static Model_VersionObject get_version_byId(String id) {
-
-        Model_VersionObject c_program_version = cache_versions.get(id);
-        if (c_program_version == null){
-
-            c_program_version = Model_VersionObject.find.byId(id);
-            if (c_program_version == null){
-                Server_Logger.warn( Model_CProgram.class, "get_version_byId :: This object id:: " + id + " wasn't found.");
-                return null;
-            }
-
-            cache_versions.put(id, c_program_version);
-        }
-
-        return c_program_version;
     }
 
 

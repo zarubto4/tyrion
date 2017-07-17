@@ -87,6 +87,16 @@ public class Model_GridTerminal extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_GridTerminal get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_GridTerminal> find = new Model.Finder<>(Model_GridTerminal.class);
 }

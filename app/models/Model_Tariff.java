@@ -196,6 +196,16 @@ public class Model_Tariff extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Tariff get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_Tariff> find = new Finder<>(Model_Tariff.class);
 

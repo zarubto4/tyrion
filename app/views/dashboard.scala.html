@@ -66,7 +66,7 @@
             <p></p>
             <p>
                 @if(x.server_is_online()) {
-                    Instances: @x.get_homer_server_number_of_instance().value
+                    Instances: @x.get_homer_server_number_of_instance().count
                 }
                 <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  x.unique_identificator )' >
                     <button class="btn btn-block btn-info btn-xs">All Instances</button>

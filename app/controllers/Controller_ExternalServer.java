@@ -1,17 +1,24 @@
 package controllers;
 
+import com.microsoft.azure.storage.blob.CloudAppendBlob;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import io.swagger.annotations.*;
+import models.Model_BootLoader;
 import models.Model_HomerServer;
+import models.Model_VersionObject;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
+import utilities.login_entities.Secured_Homer_Server;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_InvalidBody;
 import utilities.response.response_objects.Result_NotFound;
@@ -19,9 +26,9 @@ import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Ok;
 import utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New;
 
-import java.util.List;
+import java.util.*;
 
-@Security.Authenticated(Secured_API.class)
+
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ExternalServer extends Controller {
 
@@ -65,6 +72,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result create_Homer_Server(){
         try{
 
@@ -93,10 +101,11 @@ public class Controller_ExternalServer extends Controller {
     }
 
     @ApiOperation(value = "Homer server - set main server", hidden = true)
+    @Security.Authenticated(Secured_API.class)
     public Result set_main_server(String homer_server_id){
         try{
 
-            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.get_byId(homer_server_id);
             if(server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
 
             Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
@@ -115,10 +124,11 @@ public class Controller_ExternalServer extends Controller {
     }
 
     @ApiOperation(value = "Homer server - set main server", hidden = true)
+    @Security.Authenticated(Secured_API.class)
     public Result set_backup_server(String homer_server_id){
         try{
 
-            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.get_byId(homer_server_id);
             if(server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
             if(server.server_type != Enum_Cloud_HomerServer_type.public_server) return GlobalResult.result_badRequest("Server must be in public group!");
 
@@ -170,6 +180,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result edit_Homer_Server(@ApiParam(value = "unique_identifier ", required = true) String unique_identifier ){
         try{
 
@@ -229,6 +240,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result get_All_Homer_Server(){
         try{
 
@@ -262,6 +274,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result delete_Homer_Server(@ApiParam(value = "unique_identificator ", required = true)  String unique_identificator ){
         try{
 
@@ -282,5 +295,208 @@ public class Controller_ExternalServer extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+
+/// PRIVATE FILE STORAGE FOR HOMER SERVERS ###########################################################################*/
+
+    @ApiOperation(value = "get B_Program File",
+            tags = {"Homer Server API"},
+            notes = "Required secure Token changed throw websocket",
+            produces = "multipart/form-data",
+            consumes = "text/html",
+            protocols = "https",
+            code = 303
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Homer_Server.class)
+    public Result cloud_file_get_b_program_version(String b_program_version_id){
+        try{
+
+            // Získám soubor
+            Model_VersionObject version_object = Model_VersionObject.get_byId(b_program_version_id);
+
+            if(version_object== null){
+               return GlobalResult.result_notFound("File not found");
+            }
+
+
+            if(version_object.get_b_program() == null){
+                return GlobalResult.result_forbidden();
+            }
+
+            // Separace na Container a Blob
+            int slash = version_object.files.get(0).file_path.indexOf("/");
+            String container_name = version_object.files.get(0).file_path.substring(0,slash);
+            String real_file_path = version_object.files.get(0).file_path.substring(slash+1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.SECOND, 30);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+            System.out.println("sas " + sas);
+            System.out.println("path blobu " +  blob.getUri().getPath());
+
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+
+            // Přesměruji na link
+            return GlobalResult.redirect(total_link);
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get C_Program File",
+            tags = {"Homer Server API"},
+            notes = "Required secure Token changed throw websocket",
+            produces = "multipart/form-data",
+            consumes = "text/html",
+            protocols = "https",
+            code = 303
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Homer_Server.class)
+    public Result cloud_file_get_c_program_version(String b_program_version_id){
+        try{
+
+            // Získám soubor
+            Model_VersionObject version_object = Model_VersionObject.get_byId(b_program_version_id);
+
+            if(version_object== null){
+                return GlobalResult.result_notFound("File not found");
+            }
+
+
+            if(version_object.c_program == null){
+                return GlobalResult.result_forbidden();
+            }
+
+            // Separace na Container a Blob
+            int slash = version_object.files.get(0).file_path.indexOf("/");
+            String container_name = version_object.files.get(0).file_path.substring(0,slash);
+            String real_file_path = version_object.files.get(0).file_path.substring(slash+1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.SECOND, 30);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+            System.out.println("sas " + sas);
+            System.out.println("path blobu " +  blob.getUri().getPath());
+
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.debug("cloud_file_get_c_program_version:: Total Link:: " + total_link);
+
+            // Přesměruji na link
+            return GlobalResult.redirect(total_link);
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Bootloader File",
+            tags = {"Homer Server API"},
+            notes = "Required secure Token changed throw websocket",
+            produces = "multipart/form-data",
+            consumes = "text/html",
+            protocols = "https",
+            code = 303
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Homer_Server.class)
+    public Result cloud_file_get_bootloader(String bootloader_id){
+        try{
+
+            // Získám soubor
+            Model_BootLoader bootLoader = Model_BootLoader.get_byId(bootloader_id);
+
+            if(bootLoader == null){
+                return GlobalResult.result_notFound("File not found");
+            }
+
+            // Separace na Container a Blob
+            int slash = bootLoader.file.file_path.indexOf("/");
+            String container_name = bootLoader.file.file_path.substring(0,slash);
+            String real_file_path = bootLoader.file.file_path.substring(slash+1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.SECOND, 30);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+            System.out.println("sas " + sas);
+            System.out.println("path blobu " +  blob.getUri().getPath());
+
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.debug("cloud_file_get_bootloader_version:: Total Link:: " + total_link);
+
+            // Přesměruji na link
+            return GlobalResult.redirect(total_link);
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+
+
 
 }

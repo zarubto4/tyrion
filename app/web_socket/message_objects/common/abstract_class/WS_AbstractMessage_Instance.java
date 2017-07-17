@@ -15,17 +15,18 @@ public abstract class WS_AbstractMessage_Instance {
  /* VALUE --------------------------------------------------------------------------------------------------------------*/
 
                            public String instanceId;
+                           public String serverId = null;
 
                            public String messageType;
                            public String messageId;
-                           public String messageChannel;
+                           public String message_channel;
                            public String status = "error";
 
     public String error  = null;
-    public Integer errorCode  = null;
+    public Integer error_code = null;
 
     @JsonIgnore @Transient public Model_HomerInstance get_instance(){
 
-        return Model_HomerInstance.find.byId(instanceId);
+        return Model_HomerInstance.get_byId(instanceId);
     }
 }

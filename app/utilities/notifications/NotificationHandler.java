@@ -107,8 +107,8 @@ public class NotificationHandler {
             terminal_logger.trace("sendNotification: sending notification");
 
             ObjectNode message = Json.newObject();
-            message.put("messageType", Model_Notification.messageType);
-            message.put("messageChannel", WS_Becki_Website.CHANNEL);
+            message.put("message_type", Model_Notification.messageType);
+            message.put("message_channel", WS_Becki_Website.CHANNEL);
             message.put("notification_type", notification.notification_type.name());
             message.put("notification_level", notification.notification_level.name());
             message.put("notification_importance", notification.notification_importance.name());

@@ -8,13 +8,15 @@ Homer server je vždy client, a Tyrion Server.
 Každá příchozí nebo odchozí zpráva na Tyrion a z Tyriona obsahuje
 
         {
-            "messageType"    :  "nazev_zpravy"              
-            "messageId"      :  "some_uuid_string"
-            "messageChannel" :  "channel_name"  
+            "message_type"    :  "nazev_zpravy"              
+            "message_id"      :  "some_uuid_string"
+            "message_channel" :  "channel_name"  
         }
 
+Známe 3 kanály. 
 
-Channel Code:: **tyrion**
+ - "homer_server"
+ - "instance"
+ - "hardware"
 
-**List of Json Objects for Communication between Tyrion and Homer Instance**
 

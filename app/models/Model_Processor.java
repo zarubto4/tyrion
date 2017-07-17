@@ -71,13 +71,23 @@ public class Model_Processor extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.get_person().has_permission("Processor_create"); }
+    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Processor_create"); }
     @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("Processor_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("Processor_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Processor_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Processor_delete"); }
 
     public enum permissions{Processor_create, Processor_edit, Processor_delete}
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Processor get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String, Model_Processor> find = new Finder<>(Model_Processor.class);

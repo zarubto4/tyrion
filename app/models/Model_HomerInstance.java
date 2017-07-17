@@ -14,22 +14,22 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
 import utilities.Server;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
-import utilities.hardware_updater.Utilities_HW_Updater_Master_thread_updater;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.swagger.outboundClass.Swagger_Instance_HW_Group;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
+import web_socket.message_objects.homer_hardware_with_tyrion.*;
+import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
+import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 import web_socket.services.WS_HomerServer;
-import web_socket.services.WS_Interface_type;
-import web_socket.message_objects.homer_instance.helps_objects.WS_Message_Help_Yoda_only_hardware_Id_list;
-import web_socket.message_objects.homer_instance.*;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Destroy_instance;
+import web_socket.message_objects.homer_instance_with_tyrion.*;
+
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.nio.channels.ClosedChannelException;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 
@@ -40,15 +40,16 @@ public class Model_HomerInstance extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_HomerInstance.class);
+    public static final Class_Logger terminal_logger = new Class_Logger(Model_HomerInstance.class);
     
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                   @Id               public String id;
-                             @JsonIgnore @ManyToOne()               public Model_HomerServer cloud_homer_server;
+                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer cloud_homer_server;
                                                                     public String name;
                                  @Column(columnDefinition = "TEXT") public String description;
 
+                                                       @JsonIgnore  public String project_id; // Předpřipravené pro další implementaci
 
     @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
@@ -56,25 +57,125 @@ public class Model_HomerInstance extends Model {
 
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
-                                                                                                                   public Enum_Homer_instance_type instance_type;
 
-    @JsonIgnore @OneToOne(mappedBy="private_instance",  cascade = CascadeType.MERGE, fetch = FetchType.LAZY)       public Model_Project project;
+                 public Enum_Homer_instance_type instance_type;
 
-                                                                                          @JsonIgnore              public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
+     @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
-    @JsonIgnore @OneToMany(mappedBy="virtual_instance_under_project", cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Board> boards_in_virtual_instance = new ArrayList<>();
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_bprogram_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_actual_instance_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_server_name;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_server_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_project_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().id           : null;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().name         : null;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description()    {  return  ( instance_type != Enum_Homer_instance_type.VIRTUAL) ? this.getB_program().description  : null;}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_id()             {
 
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {  return cloud_homer_server.personal_server_name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {  return cloud_homer_server.unique_identificator;}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean instance_online()          {  return this.online_state();}
-    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return cloud_homer_server.server_is_online();}
+        if(cache_bprogram_id == null){
+            Model_BProgram b_program = Model_BProgram.find.where().eq("instance.id", id).select("id").findUnique();
+            cache_bprogram_id = b_program.id;
+        }
+
+        return cache_bprogram_id;
+
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_name()           {
+        try{
+
+            return Model_BProgram.get_byId(b_program_id()).name;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String b_program_description() {
+        try {
+
+            return Model_BProgram.get_byId(b_program_id()).description;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_name()              {
+
+        try {
+
+        if (cache_server_name != null) {
+                return cache_server_name;
+            }
+
+            cache_server_name = Model_HomerServer.get_byId(server_id()).personal_server_name;
+            return cache_server_name;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  String server_id()                {
+        try {
+
+            if (cache_server_id == null) {
+                Model_HomerServer homer_server = Model_HomerServer.find.where().eq("cloud_instances.id", id).select("unique_identificator").findUnique();
+                cache_server_id = homer_server.unique_identificator;
+            }
+
+            return cache_server_id;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  Enum_Online_status instance_status() {
+
+        // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
+        // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
+        if(actual_instance == null){
+            return Enum_Online_status.not_yet_first_connected;
+        }
+
+        // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
+        // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
+        // který následně vrací latest know online
+        if(Model_HomerServer.get_byId(server_id()).server_is_online()){
+
+            if(cache_status.containsKey(id)){
+
+                return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
+
+            }else {
+                // Začnu zjišťovat stav - v separátním vlákně!
+                new Thread( () -> {
+                    try {
+
+                        WS_Message_Instance_status status = get_instance_status();
+                        if(status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
+
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError("notification_board_connect:", e);
+                    }
+                }).start();
+
+                return Enum_Online_status.synchronization_in_progress;
+
+            }
+
+        } else {
+            return Enum_Online_status.unknown_lost_connection_with_server;
+        }
+        // return this.online_state();
+    }
+    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return Model_HomerServer.get_byId(server_id()).server_is_online();}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
         try {
@@ -82,9 +183,9 @@ public class Model_HomerInstance extends Model {
             if(actual_instance != null) {
 
                 if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
-                    return "ws://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + id + "/#token";
+                    return "ws://" + Model_HomerServer.get_byId(server_id()).server_url + ":" + Model_HomerServer.get_byId(server_id()).web_view_port + "/" + id + "/#token";
                 }else{
-                    return "wss://" + cloud_homer_server.server_url + ":" + cloud_homer_server.web_view_port + "/" + id + "/#token";
+                    return "wss://" + Model_HomerServer.get_byId(server_id()).server_url + ":" + Model_HomerServer.get_byId(server_id()).web_view_port + "/" + id + "/#token";
                 }
 
             }
@@ -106,16 +207,24 @@ public class Model_HomerInstance extends Model {
             help.id = id;
             help.name = name;
             help.description = description;
-            help.b_program_id = getB_program().id;
-            help.b_program_name = getB_program().name;
-            help.b_program_description = this.getB_program().description;
 
-            help.server_name = cloud_homer_server.unique_identificator;
-            help.server_id = cloud_homer_server.unique_identificator;
-            help.instance_is_online = online_state();
+            if(b_program_id() != null) {
+                help.b_program_id = b_program_id();
+                help.b_program_name = b_program_name();
+                help.b_program_description = b_program_description();
+            }
+
+            if(actual_instance!= null) {
+                help.b_program_version_id = actual_instance.b_program_version_id();
+                help.b_program_version_name = actual_instance.b_program_version_name();
+            }
+
+            help.server_name = server_id();
+            help.server_id = server_id();
+            help.instance_status = instance_status();
             help.server_is_online = server_is_online();
-            help.update_permission = getB_program().update_permission();
-            help.edit_permission = getB_program().edit_permission();
+            help.update_permission = Model_BProgram.get_byId(b_program_id()).update_permission();
+            help.edit_permission = Model_BProgram.get_byId(b_program_id()).edit_permission();
 
             return help;
 
@@ -127,16 +236,33 @@ public class Model_HomerInstance extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore             public Model_BProgram getB_program()   { return b_program;}
-    @JsonIgnore @Transient  public List<Model_Board>  getBoards_in_virtual_instance() {
-        return Model_Board.find.where().eq("virtual_instance_under_project.id", id).findList();
-    }
 
     @JsonIgnore @Transient  public Model_Project get_project() {
-        if(instance_type == Enum_Homer_instance_type.INDIVIDUAL) return Model_Project.find.where().eq("b_programs.instance.id", id).findUnique();
-        else return Model_Project.find.where().eq("private_instance.id", id).findUnique();
+
+        return Model_Project.get_byId(get_project_id());
+
     }
 
+    @JsonIgnore @Transient  public String get_project_id() {
+
+        if(cache_project_id == null) {
+            Model_Project project = Model_Project.find.where().eq("b_programs.id", b_program.id).select("id").findUnique();
+            cache_project_id = project.id;
+        }
+
+        return cache_project_id;
+
+    }
+
+
+    @JsonIgnore @Transient  public List<String> get_boards_id_required_by_record() {
+        return actual_instance.get_boards_required_by_record();
+    }
+
+
+    @JsonIgnore @Transient  public Model_BProgram getB_program(){
+        return Model_BProgram.get_byId(b_program_id());
+    }
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
@@ -150,13 +276,14 @@ public class Model_HomerInstance extends Model {
             if (Model_HomerInstance.find.where().eq("id", id).findUnique() == null) break;
         }
 
-
         super.save();
 
+        if(project_id != null){
+            Model_Project.get_byId(project_id).instance_ids.add(id);
+        }
 
         cache.put(this.id, this);
     }
-
 
     @Override
     public void update(){
@@ -175,13 +302,17 @@ public class Model_HomerInstance extends Model {
         this.removed_by_user = true;
         super.update();
 
-        cache.put(this.id, this);
+        if(project_id != null){
+            Model_Project.get_byId(project_id).instance_ids.remove(id);
+        }
+
+        cache.put(id, this);
+
     }
 
 
-
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -193,10 +324,10 @@ public class Model_HomerInstance extends Model {
                 .setImportance(Enum_Notification_importance.low)
                 .setLevel(Enum_Notification_level.info)
                 .setText( new Notification_Text().setText("Server started creating new Blocko Instance of Blocko Version "))
-                .setText( new Notification_Text().setText(this.actual_instance.version_object.b_program.name).setBoldText())
-                .setObject(this.actual_instance.version_object)
+                .setText( new Notification_Text().setText(this.actual_instance.get_b_program_version().get_b_program().name).setBoldText())
+                .setObject(this.actual_instance.get_b_program_version())
                 .setText( new Notification_Text().setText(" from Blocko program "))
-                .setObject(this.actual_instance.version_object.b_program)
+                .setObject(this.actual_instance.get_b_program_version().get_b_program())
                 .send(Controller_Security.get_person());
 
         }catch (Exception e){
@@ -212,10 +343,10 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.success)
                     .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
-                    .setObject(this.actual_instance.version_object)
+                    .setObject(this.actual_instance.get_b_program_version())
                     .setText(new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.actual_instance.version_object.b_program)
-                    .send_under_project(project.id);
+                    .setObject(this.actual_instance.get_b_program_version().get_b_program())
+                    .send_under_project(get_project_id());
 
         }catch (Exception e){
             terminal_logger.internalServerError("notification_instance_successful_upload:", e);
@@ -230,16 +361,16 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.warning)
                     .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
-                    .setText( new Notification_Text().setText(this.actual_instance.version_object.version_name ).setBoldText())
+                    .setText( new Notification_Text().setText(this.actual_instance.get_b_program_version().version_name ).setBoldText())
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setText( new Notification_Text().setText(this.b_program.name).setBoldText())
                     .setText( new Notification_Text().setText(" for reason: ").setBoldText() )
                     .setText( new Notification_Text().setText(reason + " ").setBoldText())
-                    .setObject(this.actual_instance.version_object)
+                    .setObject(this.actual_instance.get_b_program_version())
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.b_program)
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
-                    .send_under_project(project.id);
+                    .send_under_project(get_project_id());
 
         }catch (Exception e){
             terminal_logger.internalServerError("notification_instance_unsuccessful_upload:", e);
@@ -254,8 +385,8 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.info)
                     .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
-                    .setObject(this.actual_instance.version_object)
-                    .send_under_project(b_program.project_id());
+                    .setObject(this.actual_instance.get_b_program_version())
+                    .send_under_project(get_project_id());
 
         }catch (Exception e){
             terminal_logger.internalServerError("notification_new_actualization_request_instance:", e);
@@ -267,105 +398,17 @@ public class Model_HomerInstance extends Model {
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER-----------------------------------------------------------------------*/
 
     public static final String CHANNEL = "instance";
-    
-    // Messenger
+
+
+    //-- Messenger - Parsarer of Incoming Messages -- //
     @JsonIgnore @Transient
     public static void Messages(WS_HomerServer homer, ObjectNode json){
         new Thread(() -> {
             try {
-                switch (json.get("messageType").asText()) {
 
-                    case WS_Message_Online_states_devices.messageType: {
+                switch (json.get("message_type").asText()) {
 
-                        // TODO asi nic nedělat, zpráva je odchycena jinde?
-
-                        return;
-                    }
-
-                    case WS_Message_Device_connected.messageType: {
-
-                        final Form<WS_Message_Device_connected> form = Form.form(WS_Message_Device_connected.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Device_connected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_Board.device_Connected(homer, form.get());
-                        return;
-                    }
-
-                    case WS_Message_Yoda_connected.messageType: {
-
-                        // Zpracování Json
-                        final Form<WS_Message_Yoda_connected> form = Form.form(WS_Message_Yoda_connected.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Yoda_connected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_Board.master_device_Connected(homer, form.get());
-                        return;
-                    }
-
-                    case WS_Message_Yoda_disconnected.messageType: {
-
-                        final Form<WS_Message_Yoda_disconnected> form = Form.form(WS_Message_Yoda_disconnected.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Yoda_disconnected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_Board.master_device_Disconnected(form.get());
-                        return;
-                    }
-
-                    case WS_Message_Device_disconnected.messageType: {
-
-                        final Form<WS_Message_Device_disconnected> form = Form.form(WS_Message_Device_disconnected.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Device_disconnected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                        
-                        Model_Board.device_Disconnected(form.get());
-                        return;
-                    }
-
-                    case WS_Message_AutoBackUp_progress.messageType: {
-
-                        final Form<WS_Message_AutoBackUp_progress> form = Form.form(WS_Message_AutoBackUp_progress.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_AutoBackUp_progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                        
-                        Model_Board.device_autoBackUp_echo(form.get());
-                        return;
-                    }
-
-                    case WS_Message_UpdateProcedure_progress.messageType: {
-
-                        final Form<WS_Message_UpdateProcedure_progress> form = Form.form(WS_Message_UpdateProcedure_progress.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_UpdateProcedure_progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_CProgramUpdatePlan.update_procedure_progress(form.get());
-                        return;
-                    }
-
-                    case WS_Message_Update_device_firmware.messageType: {
-
-                        final Form<WS_Message_Update_device_firmware> form = Form.form(WS_Message_Update_device_firmware.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Update_device_firmware: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_Board.update_report_from_homer(form.get());
-                        return;
-
-                    }
-
-                    case WS_Message_UpdateProcedure_result.messageType: {
-
-                        final Form<WS_Message_UpdateProcedure_result> form = Form.form(WS_Message_UpdateProcedure_result.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_UpdateProcedure_result: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_CProgramUpdatePlan.update_procedure_state(form.get());
-                        return;
-                    }
-
-                    case WS_Message_Get_summary_information.messageType: {
-
-                        final Form<WS_Message_Get_summary_information> form = Form.form(WS_Message_Get_summary_information.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Get_summary_information: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_HomerInstance.summary_information(homer, form.get());
-                        return;
-                    }
-
-                    case WS_Message_Grid_token_verification.messageType: {
+                    case WS_Message_Grid_token_verification.message_type: {
 
                         final Form<WS_Message_Grid_token_verification> form = Form.form(WS_Message_Grid_token_verification.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_Grid_token_verification: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -385,762 +428,163 @@ public class Model_HomerInstance extends Model {
                         return;
                     }
 
-                    default: throw new Exception("Incoming message, chanel tyrion: messageType not recognized -> " + json.get("messageType").asText());
+                    default: {
+                        terminal_logger.warn("Incoming Message not recognized::" + json.toString());
+                        homer.write_without_confirmation(json.put("error_message", "message_type not recognized").put("error_code", 400));
+                    }
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("Messages:", e);
+
+                if(!json.has("message_type")){
+                    homer.write_without_confirmation(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
+                    return;
+                }else {
+                    terminal_logger.internalServerError("Messages:", e);
+                }
             }
         }).start();
     }
 
-    @JsonIgnore @Transient
-    public WS_Interface_type send_to_instance(){ return Controller_WebSocket.homer_servers.get(this.cloud_homer_server.unique_identificator);}
 
+    //--  Sender -- //
+    @JsonIgnore @Transient
+    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{
+       json.put("instance_id", id);
+       return Controller_WebSocket.homer_servers.get(server_id()).write_with_confirmation(json, time, delay, number_of_retries);
+    }
+
+    @JsonIgnore @Transient
+    public void write_without_confirmation(ObjectNode json) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{
+        json.put("instance_id", id);
+        Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(json);
+    }
+
+
+
+    //-- Instance Status -- //
     @JsonIgnore @Transient
     public WS_Message_Instance_status get_instance_status(){
-        try{
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node =  send_to_instance().write_with_confirmation( new WS_Message_Instance_status().make_request(this), 1000*3, 0, 2);
 
-            final Form<WS_Message_Instance_status> form = Form.form(WS_Message_Instance_status.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Instance_status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+        List<Model_HomerInstance> instances = new ArrayList<>();
+        instances.add(this);
+        return get_instance_status(instances);
 
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Instance_status();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Instance_status();
-        }
     }
-
     @JsonIgnore @Transient
-    public WS_Message_Ping_instance ping() {
-        try{
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Ping_instance().make_request(this), 1000*3, 0, 2);
+    public static WS_Message_Instance_status get_instance_status(List<Model_HomerInstance> instances){
 
-            final Form<WS_Message_Ping_instance> form = Form.form(WS_Message_Ping_instance.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Ping_instance: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+        HashMap<String, List<String>> server_map = new HashMap<>();
 
-            return form.get();
+        for(Model_HomerInstance instance : instances){
 
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Ping_instance();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Ping_instance();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public JsonNode devices_commands(String targetId, Enum_type_of_command command) {
-        try{
-            if(!server_is_online()) throw new InterruptedException();
-           return send_to_instance().write_with_confirmation(new WS_Message_Basic_command_for_device().make_request(this, targetId, command), 1000*10, 0, 4);
-
-        }catch (InterruptedException|TimeoutException e){
-            return null;
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore @Transient
-    public WS_Message_Add_yoda_to_instance add_Yoda_to_instance(String yoda_id){
-        try{
-
-            if(project != null ){
-                // Přidávám Yodu do virutální instance! - skontroluji tedy jestli instance někde běží - virtuální instance
-                // nemusí mít žádného Yodu, třeba na začátku. Pak nemá smysl aby byla zapnutá.
-
-                if(!instance_online()) {
-                    this.add_instance_to_server();
-                }
+            if(!server_map.containsKey(instance.server_id())){
+                server_map.put(instance.server_id(), new ArrayList<String>());
             }
 
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node =  send_to_instance().write_with_confirmation(new WS_Message_Add_yoda_to_instance().make_request(this, yoda_id), 1000*3, 0, 4);
-
-            final Form<WS_Message_Add_yoda_to_instance> form = Form.form(WS_Message_Add_yoda_to_instance.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Add_yoda_to_instance: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Add_yoda_to_instance();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Add_yoda_to_instance();
+            server_map.get(instance.server_id()).add(instance.id);
         }
-    }
-
-    @JsonIgnore @Transient
-    public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(String yoda_id) {
-        try{
-
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_yoda_from_instance().make_request(this, yoda_id), 1000*3, 0, 4);
-
-            final Form<WS_Message_Remove_yoda_from_instance> form = Form.form(WS_Message_Remove_yoda_from_instance.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Remove_yoda_from_instance: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Remove_yoda_from_instance();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Remove_yoda_from_instance();
-        }
-    }
 
 
-    @JsonIgnore @Transient
-    public WS_Message_Remove_yoda_from_instance remove_Yoda_from_instance(Model_Board yoda) {
-        try{
+        WS_Message_Instance_status status = new WS_Message_Instance_status();
 
-            if(!server_is_online()) throw new InterruptedException();
+        for(String unique_identificator : server_map.keySet()){
+            try{
 
-            JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_yoda_from_instance().make_request(this, yoda.id), 1000*3, 0, 4);
+                JsonNode node = Model_HomerServer.get_byId(unique_identificator).sender().write_with_confirmation( new WS_Message_Instance_status().make_request(server_map.get(unique_identificator)), 1000*3, 0, 2);
 
-            final Form<WS_Message_Remove_yoda_from_instance> form = Form.form(WS_Message_Remove_yoda_from_instance.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Remove_yoda_from_instance: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                final Form<WS_Message_Instance_status> form = Form.form(WS_Message_Instance_status.class).bind(node);
+                if(form.hasErrors()) throw new Exception("WS_Message_Instance_status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+                System.out.println("Odeslal jsem zprávu o stavu instnace:: a co jsem dostal?? " + node.toString());
+                System.out.println("Odeslal jsem zprávu o stavu instnace:: a co jsem vyseparoval?? " + Json.toJson(form.get().instances).toString());
 
 
-            if(yoda.virtual_instance_under_project != null){
-                Model_HomerInstance virtual_instance_under_project = yoda.virtual_instance_under_project;
-                yoda.virtual_instance_under_project = null;
-                yoda.update();
+                status.status = "success";
+                status.instances.addAll(form.get().instances);
 
-                virtual_instance_under_project.refresh();
-                if(virtual_instance_under_project.boards_in_virtual_instance.isEmpty()) virtual_instance_under_project.remove_instance_from_server();
+
+            }catch (InterruptedException|TimeoutException e){
+                System.out.println("Došlo zde k průseru???? ");
+
+                terminal_logger.internalServerError(e);
+                return new WS_Message_Instance_status();
+            }catch (Exception e){
+
+                System.out.println("Došlo zde k průseru???? ");
+                terminal_logger.internalServerError(e);
+                return new WS_Message_Instance_status();
             }
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Remove_yoda_from_instance();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Remove_yoda_from_instance();
         }
+
+
+        return status;
+
     }
 
+
+
+    //-- Device IO operations -- //
     @JsonIgnore @Transient
-    public WS_Message_Add_device_to_instance add_Device_to_instance(String yoda_id, List<String> devices_id){
+    public WS_Message_Instance_device_set_snap set_device_to_instance(List<String> device_ids){
         try{
 
-            if(!server_is_online()) throw new InterruptedException();
+            if(!this.server_is_online()) throw new InterruptedException();
+            JsonNode node = this.write_with_confirmation(new WS_Message_Instance_device_set_snap().make_request(device_ids), 1000*3, 0, 4);
 
-            JsonNode node =   send_to_instance().write_with_confirmation(new WS_Message_Add_device_to_instance().make_request(this, yoda_id, devices_id), 1000*3, 0, 4);
-
-            final Form<WS_Message_Add_device_to_instance> form = Form.form(WS_Message_Add_device_to_instance.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Add_device_to_instance: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            final Form<WS_Message_Instance_device_set_snap> form = Form.form(WS_Message_Instance_device_set_snap.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_add: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
+
         }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Add_device_to_instance();
+            return new WS_Message_Instance_device_set_snap();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Add_device_to_instance();
+            Model_HomerInstance.terminal_logger.internalServerError(e);
+            return new WS_Message_Instance_device_set_snap();
         }
     }
 
-    @JsonIgnore @Transient
-    public WS_Message_Remove_device_from_instance remove_Device_from_instance(String yoda_id, List<String> devices_id){
+
+    //-- Instance Summary Information --//
+
+    @JsonIgnore @Transient public WS_Message_Hardware_overview get_hardware_overview(){
         try {
 
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = send_to_instance().write_with_confirmation(new WS_Message_Remove_device_from_instance().make_request(this, yoda_id, devices_id), 1000 * 3, 0, 4);
+            if(!this.server_is_online()) throw new InterruptedException();
+            ObjectNode node = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.get_boards_id_required_by_record()), 1000*5, 0, 1);
 
-            final Form<WS_Message_Remove_device_from_instance> form = Form.form(WS_Message_Remove_device_from_instance.class).bind(node);
-            if (form.hasErrors()) throw new Exception("WS_Message_Remove_device_from_instance: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            final Form<WS_Message_Hardware_overview> form = Form.form(WS_Message_Hardware_overview.class).bind(node);
+            if (form.hasErrors()) throw new Exception("WS_Help_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
         }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Remove_device_from_instance();
+            return new WS_Message_Hardware_overview();
         }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Remove_device_from_instance();
+            Model_HomerInstance.terminal_logger.internalServerError("get_hardware_list:", e);
+            return new WS_Message_Hardware_overview();
         }
     }
 
+    //-- Helper Commands --//
     @JsonIgnore @Transient
-    public WS_Message_Update_device_summary_collection add_instance_to_server() {
-        try{
-
-
-            // Vytvořím Instanci
-            WS_Message_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
-            if(!result_instance.status.equals("success")) return new WS_Message_Update_device_summary_collection();
-
-
-            // Doplním do ní HW
-            this.update_device_summary_collection();
-
-
-            if(instance_type == Enum_Homer_instance_type.VIRTUAL){
-
-                WS_Message_Update_device_summary_collection ws_update_device_summary_collection = new WS_Message_Update_device_summary_collection();
-                ws_update_device_summary_collection.status = "success";
-                return ws_update_device_summary_collection; // Virutální instance nemá blocko!
-            }
-
-
-
-            // Nahraju Blocko Program
-            WS_Message_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
-            if(!result_blocko_program.status.equals("success")) return new WS_Message_Update_device_summary_collection();
-
-            WS_Message_Update_device_summary_collection response = new WS_Message_Update_device_summary_collection();
-            response.status = "success";
-
-            return   response;
-
-
-        }catch (Exception e){
-            terminal_logger.internalServerError("add_instance_to_server:", e);
-            return new WS_Message_Update_device_summary_collection();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public WS_Message_Destroy_instance remove_instance_from_server() {
-        try{
-
-            // In this case - instance was created but never created on homer server - so its nothing to remove
-            if(actual_instance == null){
-                WS_Message_Destroy_instance response = new WS_Message_Destroy_instance();
-                response.status = "success";
-                return response;
-            }
-
-            if(!actual_instance.hardware_group().isEmpty()){
-
-                for(Model_BProgramHwGroup group : actual_instance.hardware_group()){
-
-                    remove_Yoda_from_instance(group.main_board_pair.board.id);
-
-                    group.main_board_pair.board.virtual_instance_under_project = group.main_board_pair.board.project.private_instance;
-                    group.main_board_pair.board.update();
-
-                    group.main_board_pair.board.project.private_instance.add_Yoda_to_instance(group.main_board_pair.board_id());
-
-                }
-            }
-
-            if(!instance_online()) return new WS_Message_Destroy_instance();
-
-            // Vytvořím Instanci
-            WS_Message_Destroy_instance result_instance  = this.cloud_homer_server.remove_instance(this.id);
-
-            if(this.actual_instance != null) {
-                this.actual_instance.running_to = new Date();
-                this.actual_instance.actual_running_instance = null;
-                this.actual_instance.update();
-            }
-
-            this.refresh();
-
-            return result_instance;
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Destroy_instance();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public static void upload_record(Model_HomerInstanceRecord record) {
-
-        new Thread(() -> {
-                try {
-
-                    terminal_logger.debug("upload_record: thread is running under record ID:: " + record.id);
-
-                    Model_HomerInstance instance = record.main_instance_history;
-
-                    if( instance.actual_instance != null) {
-
-                        terminal_logger.debug("upload_record Actual Instnace != null -> InstanceRecord ID: {}", instance.actual_instance.id);
-
-                        terminal_logger.debug("upload_record: Record overwriting previous instance record:: " + instance.actual_instance.id);
-
-                        Model_HomerInstanceRecord previous_version = instance.actual_instance;
-
-                        previous_version.running_to = new Date();
-                        previous_version.actual_running_instance = null;
-
-                        previous_version.update();
-
-                    }else {
-                        terminal_logger.debug("upload_record: First uploading of instance");
-                    }
-
-                    // Synchronize Grid App settings from last config
-                    // Try Find Latest runing Record with latest configuration - it can be instance.actual_instance from previous step or
-                    // record that was turned off and on again.
-                    Model_HomerInstanceRecord latest_version = Model_HomerInstanceRecord.find.where().eq("main_instance_history.id", record.main_instance_history.id).isNotNull("running_to").orderBy().desc("running_to").setMaxRows(1).findUnique();
-
-                    if(latest_version != null){
-
-                        for(Model_MProjectProgramSnapShot snap_shot : latest_version.version_object.b_program_version_snapshots){
-
-                            // Programy
-                            for(Model_MProgramInstanceParameter old_parameter : snap_shot.m_program_snapshots()){
-
-                                Model_MProgramInstanceParameter new_parameter = Model_MProgramInstanceParameter.find.where()
-                                        .eq("m_project_program_snapshot.instance_versions.instance_record.id", record.id)
-                                        .eq("m_program_version.id", old_parameter.m_program_version.id)
-                                        .findUnique();
-
-                                if(new_parameter == null){
-                                    continue;
-                                }
-
-                                new_parameter.connection_token = old_parameter.connection_token;
-                                new_parameter.snapshot_settings = old_parameter.snapshot_settings;
-                                new_parameter.update();
-
-                            }
-                        }
-                    }
-
-                    instance.refresh();
-                    instance.actual_instance = record;
-                    record.actual_running_instance = instance;
-                    record.update();
-                    instance.update();
-
-                    for(Model_BProgramHwGroup group : record.hardware_group()){
-
-                        // Kontrola Yody
-                        if(group.main_board_pair != null ) {
-
-                            Model_Board yoda = group.main_board_pair.board;
-
-                            //1. Pokud už běží v jiné instanci mimo vlastní dočasnou instnaci
-                            if (yoda.virtual_instance_under_project != null) {
-                                yoda.virtual_instance_under_project.remove_Yoda_from_instance(yoda);
-                            }
-                        }
-                    }
-
-                        // Ověřím připojený server
-                    if (!Controller_WebSocket.homer_servers.containsKey(instance.cloud_homer_server.unique_identificator)) {
-                        terminal_logger.warn("Server je offline!! Upload instance will be as soon as possible!!");
-                        return;
-                    }
-
-                    // Server je připojený
-                    try {
-
-                        // Na instanci zavolám nastavení na aktuální Record
-                        instance.update_instance_to_actual_instance_record();
-
-                    } catch (Exception e) {
-                        throw new Exception("Error while upload_record tried upload Instance Record to Homer", e);
-                    }
-
-                }catch (Exception e){
-                    terminal_logger.internalServerError(e);
-                }
-            }
-        ).start();
+    public void upload_to_cloud(){
+        actual_instance.set_record_into_cloud();
     }
 
 
-    // TODO tuto metodu budu volat ve chvíli kdy nějakou časovu známkou prohodím verze - podle času uživatele
     @JsonIgnore @Transient
-    public WS_Message_Update_instance_to_actual_instance_record update_instance_to_actual_instance_record() {
-        try{
+    public WS_Message_Homer_Instance_destroy remove_from_cloud(){
 
-            // Zkontroluji jestli běží server
-            if(!server_is_online()) {
-                terminal_logger.internalServerError(new Exception("Server is offline and some procedure called update_instance_to_actual_instance_record"));
+        List<String> instances = new ArrayList<>();
+        instances.add(id);
 
-                WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
-                response.status = "error";
-                response.error = "Server is offline";
-
-                return response;
-            }
-
-            if(!instance_online()){
-
-                // Vytvořím Instanci
-                WS_Message_Add_new_instance result_instance   = this.cloud_homer_server.add_instance(this);
-                if(!result_instance.status.equals("success")){
-
-                    terminal_logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.errorCode + ". Error: " + result_instance.error));
-                    WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
-                    response.status = result_instance.status;
-                    response.error =  result_instance.error;
-                    response.errorCode =  result_instance.errorCode;
-                    return response;
-                }
-
-            }
-
-
-            // Doplním respektive vymažu HW, který by měl nebo má být v instanci
-            this.update_device_summary_collection();
-
-
-            // Nahraju Blocko Program
-            terminal_logger.debug("update_instance_to_actual_instance_record:: Upload Blocko Program");
-            WS_Message_Upload_blocko_program result_blocko_program  = this.upload_blocko_program();
-
-            if(!result_blocko_program.status.equals("success")){
-
-                terminal_logger.internalServerError(new Exception("upload_blocko_program() failed! ErrorCode: " + result_blocko_program.errorCode + ". Error: " + result_blocko_program.error));
-
-                WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
-                response.status = result_blocko_program.status;
-                response.error =  result_blocko_program.error;
-                response.errorCode =  result_blocko_program.errorCode;
-                return response;
-
-            }
-
-            terminal_logger.debug("update_instance_to_actual_instance_record:: Get Summary Information From Instance");
-            WS_Message_Get_summary_information summary_information = this.get_summary_information();
-
-            terminal_logger.debug("update_instance_to_actual_instance_record:: Co pošlu jako vytvoření aktalizační procedury {}", Json.toJson( summary_information ).toString() );
-
-
-            terminal_logger.debug("update_instance_to_actual_instance_record:: Vytvářím Aktualizační procedury");
-            actual_instance.create_actualization_request(summary_information);
-
-            terminal_logger.debug("update_instance_to_actual_instance_record:: Add new Procedures");
-
-            // Z historických důvodů nepodporováno
-            // cloud_homer_server.get_server_webSocket_connection().check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
-
-
-            actual_instance.refresh();
-            for(Model_ActualizationProcedure procedure : actual_instance.procedures) {
-                terminal_logger.debug("update_instance_to_actual_instance_record: Procedure: Id: {} state: {}",procedure.id , procedure.state);
-                Utilities_HW_Updater_Master_thread_updater.add_new_Procedure(procedure);
-            }
-
-            WS_Message_Update_instance_to_actual_instance_record response = new WS_Message_Update_instance_to_actual_instance_record();
-            response.status = "success";
-
-            return response;
-
-        }catch (Exception e){
-            return  new WS_Message_Update_instance_to_actual_instance_record();
-        }
+       return cloud_homer_server.remove_instance(instances);
     }
 
-    @JsonIgnore @Transient
-    public WS_Message_Upload_blocko_program upload_blocko_program(){
-        try {
-            Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", actual_instance.version_object.id).eq("file_name", "program.js").findUnique();
 
-            if(!server_is_online()) throw new InterruptedException();
-            JsonNode node = this.send_to_instance().write_with_confirmation(new WS_Message_Upload_blocko_program().make_request(this, fileRecord, actual_instance.version_object.id), 1000 * 3, 0, 4);
-
-            final Form<WS_Message_Upload_blocko_program> form = Form.form(WS_Message_Upload_blocko_program.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Upload_blocko_program: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return  new WS_Message_Upload_blocko_program();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return  new WS_Message_Upload_blocko_program();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public void update_device_summary_collection(){
-        try {
-
-            if(!server_is_online()){
-                terminal_logger.debug("update_device_summary_collection:: Server is offline ");
-                throw new InterruptedException();
-            }
-
-            if(!instance_online()){
-                terminal_logger.debug("update_device_summary_collection:: Instance is offline ");
-                throw new InterruptedException();
-            }
-
-            if(actual_instance != null) {
-
-                // Seznam - který by na instanci měl běžet!
-                List<Model_BProgramHwGroup> hardware_groups = Model_BProgramHwGroup.find.where().eq("b_program_version_groups.id", actual_instance.version_object.id).findList();
-
-                // Zkontroluji HW který aktálně v instanci vysí
-                WS_Message_Get_Hardware_list summary_information = this.get_hardware_list();
-
-                if(!summary_information.status.equals("success")) throw new Exception("Failed to get Instance status. ErrorCode: " + summary_information.errorCode + ". Error: "+ summary_information.error);
-
-                List<String> yodas_id_on_instance = new ArrayList<>();
-
-                for(WS_Message_Help_Yoda_only_hardware_Id_list yoda_list : summary_information.hardwareIdList){
-
-                    yodas_id_on_instance.add(yoda_list.deviceId);
-
-                    // Nová instance k nasazení neobsahuje Yodu který v instanci už je!!!
-                    if(!this.actual_instance.contains_HW(yoda_list.deviceId)){
-
-                        for(String devicesId : yoda_list.devicesId){
-
-                            //Model_Board device_board = Model_Board.find.byId(devicesId);
-                            // Můžu změnit nějaký parametr tohoto devicu???
-                            // Notifikaci???
-                            this.remove_Device_from_instance(devicesId, yoda_list.devicesId);
-                        }
-
-                        WS_Message_Remove_yoda_from_instance remove_yoda_from_instance =  this.remove_Yoda_from_instance(yoda_list.deviceId);
-                        if(!remove_yoda_from_instance.status.equals("success")){
-                            terminal_logger.internalServerError(new Exception("Failed to remove Yoda. ErrorCode: " + summary_information.errorCode + ". Error: " + summary_information.error));
-                        }
-
-                        Model_Board master_board = Model_Board.get_byId(yoda_list.deviceId);
-                        if(master_board.virtual_instance_under_project == null){
-                            master_board.virtual_instance_under_project = master_board.project.private_instance;
-                            master_board.virtual_instance_under_project.add_Yoda_to_instance(yoda_list.deviceId);
-                            master_board.update();
-                        }
-
-                        continue;
-                    }
-
-                    Model_BProgramHwGroup group_where_yoda_is = null;
-
-                    for(Model_BProgramHwGroup group :hardware_groups) {
-                        if (group.main_board_pair.board.id.equals(yoda_list.deviceId)) {
-                            group_where_yoda_is = group;
-                            break;
-                        }
-                    }
-
-                    if(group_where_yoda_is == null) {
-                        terminal_logger.internalServerError(new NullPointerException("group_where_yoda_is is Null" ));
-                        continue; // Tohle by se stát nemělo!
-                    }
-
-                    List<String> devicesId_for_removing = new ArrayList<>();
-
-                    for(String deviceId : yoda_list.devicesId){
-
-                        if(!group_where_yoda_is.contains_HW(deviceId)){
-                            devicesId_for_removing.add(deviceId);
-                        }
-                    }
-
-                    // Device je pod špatným Yodou
-
-                    if(devicesId_for_removing.isEmpty()) continue;
-                    WS_Message_Remove_device_from_instance remove_device_from_instance = this.remove_Device_from_instance(yoda_list.deviceId,devicesId_for_removing);
-                    if(!remove_device_from_instance.status.equals("success")) {
-                        terminal_logger.internalServerError(new Exception("Failed to remove Yoda. ErrorCode: " + remove_device_from_instance.errorCode + ". Error: " + remove_device_from_instance.error));
-                    }
-                }
-
-                List<Swagger_Instance_HW_Group> hw_groups = new ArrayList<>();
-
-                terminal_logger.debug("update_device_summary_collection:: Cycle for ADD or Remove to Hardware group for Blocko Instance");
-
-                for (Model_BProgramHwGroup b_program_hw_group : hardware_groups) {
-
-                    terminal_logger.debug("update_device_summary_collection:: Iteration {} (Hardware Group ID) ", b_program_hw_group.id );
-
-                    if (b_program_hw_group.main_board_pair != null) {
-
-                        terminal_logger.debug("update_device_summary_collection:: Iteration {}  Main Board ID:: {} Check. ", b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name);
-
-                        // Neobsahuje Yodu - Tak vytvořím skupinu s Yodou a devicama
-                        if(!yodas_id_on_instance.contains(b_program_hw_group.main_board_pair.board_id())) {
-
-                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Instance not contain this Yoda device -> create new group with Yoda" , b_program_hw_group.id);
-
-                            Swagger_Instance_HW_Group group = new Swagger_Instance_HW_Group();
-                            group.yodaId = b_program_hw_group.main_board_pair.board.id;
-
-                            for (Model_BPair pair : b_program_hw_group.device_board_pairs) {
-                                terminal_logger.debug("update_device_summary_collection:: Iteration {} Instance not contain this Yoda device. Group was created bud Yoda has own MESH device id {} ", b_program_hw_group.id , pair.board.name);
-                                group.devicesId.add(pair.board.id);
-                            }
-
-                            hw_groups.add(group);
-                            continue;
-                        }
-
-                        terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance - it not required add that to new group",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name);
-
-                        // Obsahuje Yodu - takže kontroluji ještě Devices
-                        List<String> devices_id_under_yoda = new ArrayList<>();
-
-                        WS_Message_Help_Yoda_only_hardware_Id_list yodaList = summary_information.getListWithYoda(b_program_hw_group.main_board_pair.board_id());
-
-                        if(yodaList == null){
-                            terminal_logger.internalServerError(new Exception("Iteration " + b_program_hw_group.id + " Yoda " + b_program_hw_group.main_board_pair.board.name + " is already in instance but summary_information (WS_Message_Get_Hardware_list) not contains yodaList!!!"));
-                            continue;
-                        }
-
-                        for(Model_BPair bPair : b_program_hw_group.device_board_pairs){
-                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but summary_information (WS_Message_Get_Hardware_list) not contains yodaList!!!",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name);
-
-                            if(!yodaList.devicesId.contains( bPair.board_id())){
-                                terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {} is already in instance but device {} is also required in group. Device was Add to group. ",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name, bPair.board_id() );
-                                devices_id_under_yoda.add(bPair.board_id());
-                            }
-                        }
-
-                        if(!devices_id_under_yoda.isEmpty()){
-                            terminal_logger.debug("update_device_summary_collection:: Iteration {} Yoda {}. Add device under Yoda immediately on Instance id {} ",  b_program_hw_group.id ,  b_program_hw_group.main_board_pair.board.name, this.id);
-                            add_Device_to_instance(b_program_hw_group.main_board_pair.board_id(), devices_id_under_yoda);
-                        }
-                    }
-                }
-
-
-                if (!hw_groups.isEmpty()) {
-
-                    terminal_logger.debug("update_device_summary_collection:: Now its time to send All Groups to Instance for Synchronize. ");
-
-                    ObjectNode node = send_to_instance().write_with_confirmation( new WS_Message_Update_device_summary_collection().make_request(this, hw_groups), 1000*3, 0, 4);
-
-                    final Form<WS_Message_Update_device_summary_collection> form = Form.form(WS_Message_Update_device_summary_collection.class).bind(node);
-                    if(form.hasErrors()) terminal_logger.internalServerError(new Exception("WS_Update_device_summary_collection: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString()));
-
-                    WS_Message_Update_device_summary_collection rsp = form.get();
-                    if(!rsp.status.equals("success")) {
-                        // Todo - Reakce??
-                        terminal_logger.internalServerError(new Exception("Failed to get update device summary. ErrorCode: " + rsp.errorCode + ". Error: " + rsp.error));
-                    }
-
-                }
-
-                // Virutální instance - kontrola Yodů kteřá tam mají být a kteří ne!
-            }else if(instance_type == Enum_Homer_instance_type.VIRTUAL) {
-
-                List<String> board_id_on_instance = new ArrayList<>();
-
-                // Zkontroluji HW který tam být nemá
-                WS_Message_Get_Hardware_list summary_information = get_hardware_list();
-                if (!summary_information.status.equals("success")) {
-                    terminal_logger.internalServerError(new Exception("Failed to get Instance status. ErrorCode: " + summary_information.errorCode + ". Error: " + summary_information.error));
-                }
-
-                for (WS_Message_Help_Yoda_only_hardware_Id_list yoda_list : summary_information.hardwareIdList) {
-
-                    if (!this.actual_instance.contains_HW(yoda_list.deviceId)) {
-                        terminal_logger.internalServerError(new Exception("Illegal Connected Yoda " + yoda_list.deviceId + " in Virtual instance"));
-                        this.remove_Yoda_from_instance(yoda_list.deviceId);
-                    }
-
-                    board_id_on_instance.add(yoda_list.deviceId);
-                }
-
-                for (Model_Board board : boards_in_virtual_instance) {
-
-                    if (!board_id_on_instance.contains(board.id)) {
-                        terminal_logger.debug("update_device_summary_collection:: Missing Connected Yoda {} in Virtual instance ", board.id);
-                        this.add_Yoda_to_instance(board.id);
-                    }
-                }
-
-            }
-        }catch (InterruptedException|TimeoutException e){
-            terminal_logger.debug("update_device_summary_collection: {}", e.getMessage());
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore @Transient
-    public boolean online_state(){
-        return get_status();
-    }
-
-    @JsonIgnore @Transient
-    public WS_Message_Online_states_devices get_devices_online_state(List<String> device_id){
-        try{
-
-            if(!server_is_online()) throw new InterruptedException();
-
-            terminal_logger.trace("get_devices_online_state: List contains {}", device_id.size());
-
-            JsonNode node = send_to_instance().write_with_confirmation( new WS_Message_Online_states_devices().make_request(this, device_id), 1000 * 5, 0, 3);
-
-            final Form<WS_Message_Online_states_devices> form = Form.form(WS_Message_Online_states_devices.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Online_states_devices: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Online_states_devices();
-        }catch (Exception e){
-            terminal_logger.internalServerError("get_devices_online_state:", e);
-            return new WS_Message_Online_states_devices();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public WS_Message_Get_summary_information get_summary_information(){
-        try {
-
-            if(!server_is_online()) throw new InterruptedException();
-
-            ObjectNode node = send_to_instance().write_with_confirmation(new WS_Message_Get_summary_information().make_request(this), 1000 * 30, 0, 3);
-
-            final Form<WS_Message_Get_summary_information> form = Form.form(WS_Message_Get_summary_information.class).bind(node);
-            if (form.hasErrors()) throw new Exception("WS_Message_Get_summary_information: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Get_summary_information();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Get_summary_information();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public WS_Message_Get_Hardware_list get_hardware_list(){
-        try {
-
-            if(!server_is_online()) throw new InterruptedException();
-            ObjectNode node = send_to_instance().write_with_confirmation( new WS_Message_Get_Hardware_list().make_request(this), 1000*5, 0, 1);
-
-            final Form<WS_Message_Get_Hardware_list> form = Form.form(WS_Message_Get_Hardware_list.class).bind(node);
-            if (form.hasErrors()) throw new Exception("WS_Message_Get_Hardware_list: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Get_Hardware_list();
-        }catch (Exception e){
-            terminal_logger.internalServerError("get_hardware_list:", e);
-            return new WS_Message_Get_Hardware_list();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public static void summary_information(WS_HomerServer homer_server , WS_Message_Get_summary_information summary_information){
-        try {
-
-            homer_server.check_update_for_hw_under_homer_ws.add_new_Procedure(summary_information);
-
-        }catch (Exception e){
-            terminal_logger.internalServerError("summary_information:", e);
-        }
-    }
-
-    // TOKEN verification
+    //-- Verification --//
     @JsonIgnore @Transient
     public void cloud_verification_token_GRID(WS_Message_Grid_token_verification help){
         try {
@@ -1238,11 +682,11 @@ public class Model_HomerInstance extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission()  {  return  b_program.read_permission()   || Controller_Security.get_person().has_permission("B_Program_create");  }
-    @JsonProperty @Transient public boolean update_permission()  {  return  b_program.update_permission() || Controller_Security.get_person().has_permission("Instance_update");  }
-    @JsonIgnore   @Transient public boolean read_permission()    {  return  b_program.read_permission()   || Controller_Security.get_person().has_permission("Instance_read");   }
-    @JsonProperty @Transient public boolean edit_permission()    {  return  b_program.edit_permission()   || Controller_Security.get_person().has_permission("Instance_edit");    }
-    @JsonProperty @Transient public boolean delete_permission()  {  return  b_program.delete_permission() || Controller_Security.get_person().has_permission("Instance_delete");  }
+    @JsonIgnore   @Transient public boolean create_permission()  {  return  getB_program().read_permission()   || Controller_Security.get_person().permissions_keys.containsKey("B_Program_create");  }
+    @JsonProperty @Transient public boolean update_permission()  {  return  getB_program().update_permission() || Controller_Security.get_person().permissions_keys.containsKey("Instance_update");  }
+    @JsonIgnore   @Transient public boolean read_permission()    {  return  getB_program().read_permission()   || Controller_Security.get_person().permissions_keys.containsKey("Instance_read");   }
+    @JsonProperty @Transient public boolean edit_permission()    {  return  getB_program().edit_permission()   || Controller_Security.get_person().permissions_keys.containsKey("Instance_edit");    }
+    @JsonProperty @Transient public boolean delete_permission()  {  return  getB_program().delete_permission() || Controller_Security.get_person().permissions_keys.containsKey("Instance_delete");  }
 
     public enum permissions{ Instance_create, Instance_update, Instance_read, Instance_edit , Instance_delete}
 
@@ -1258,7 +702,6 @@ public class Model_HomerInstance extends Model {
     public static Cache<String, Model_HomerInstance> cache = null; // Server_cache Override during server initialization
     public static Cache<String, Boolean> cache_status = null; // Server_cache Override during server initialization
 
-
     public static Model_HomerInstance get_byId(String id){
 
         Model_HomerInstance instance = cache.get(id);
@@ -1273,14 +716,4 @@ public class Model_HomerInstance extends Model {
         return instance;
     }
 
-    @JsonIgnore public boolean get_status(){
-
-        Boolean status = cache_status.get(this.id);
-        if (status == null){
-
-            status = this.cloud_homer_server.is_instance_exist(this.id);
-        }
-
-        return status;
-    }
 }

@@ -3,6 +3,7 @@ package utilities.swagger.outboundClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_Board_Alert;
+import utilities.enums.Enum_Online_status;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,8 +20,9 @@ public class Swagger_Board_Short_Detail {
 
 
     @ApiModelProperty(required = true, readOnly = true)  public List<Enum_Board_Alert> alert_list = new ArrayList<>();
-    @ApiModelProperty(required = true, readOnly = true)  public boolean board_online_status;
-    @ApiModelProperty(required = true, readOnly = true)  public Date last_online;
+    @ApiModelProperty(required = true, readOnly = true)  public Enum_Online_status online_state;
+
+    @ApiModelProperty(required = true, readOnly = true, value = "Value is null if online_state is online") public Long last_online;
 
     @ApiModelProperty(required = true, readOnly = true)  public String type_of_board_id;
     @ApiModelProperty(required = true, readOnly = true)  public String type_of_board_name;

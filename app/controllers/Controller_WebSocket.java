@@ -21,8 +21,8 @@ import utilities.response.response_objects.Result_Unauthorized;
 import utilities.swagger.outboundClass.Swagger_Websocket_Token;
 import web_socket.message_objects.common.WS_Token;
 import web_socket.message_objects.common.service_class.WS_Message_Tyrion_restart_echo;
-import web_socket.message_objects.compilatorServer_with_tyrion.WS_Message_Ping_compilation_server;
-import web_socket.message_objects.homerServer_with_tyrion.WS_Message_Ping_server;
+import web_socket.message_objects.compilator_with_tyrion.WS_Message_Ping_compilation_server;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_ping;
 import web_socket.services.*;
 
 import java.util.HashMap;
@@ -46,7 +46,8 @@ public class Controller_WebSocket extends Controller {
      *
      *      <Model_HomerServer.unique_identificator, WS_HomerServer>
      */
-    public static Map<String, WS_HomerServer> homer_servers = new HashMap<>();
+    public static Map<String, WS_HomerServer> homer_servers = new HashMap<>();                  // Sem se vkládají servery z not_synchronize_homer_servers, kde úspěšně proběhla synchronizace
+    public static Map<String, WS_HomerServer> not_synchronize_homer_servers = new HashMap<>();  // Sem se vkládají servery, které jsou připojené, ale ještě nejsou synchronizované
 
     /*
      *      Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
@@ -134,7 +135,7 @@ public class Controller_WebSocket extends Controller {
                 terminal_logger.warn("homer_cloud_server_connection::  Server is connected -> Tyrion try to send ping");
 
                 WS_HomerServer ws_blockoServer = homer_servers.get(unique_identificator);
-                WS_Message_Ping_server result = Model_HomerServer.get_byId(ws_blockoServer.identifikator).ping();
+                WS_Message_Homer_ping result = Model_HomerServer.get_byId(ws_blockoServer.identifikator).ping();
                 if(!result.status.equals("success")){
                     terminal_logger.warn("homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
                     if(homer_servers.containsKey(unique_identificator)){
@@ -150,43 +151,17 @@ public class Controller_WebSocket extends Controller {
 
             terminal_logger.trace("homer_cloud_server_connection:: Tyrion initialize connection for Homer Server");
             WS_HomerServer server = new WS_HomerServer(homer_server);
-            homer_servers.put(unique_identificator, server);
+            not_synchronize_homer_servers.put(unique_identificator, server);
 
             // Připojím se
             terminal_logger.trace("homer_cloud_server_connection:: Connection is successful");
             WebSocket<String> webSocket = server.connection();
 
-            // Procedury kontroly - informovat třeba všechny klienty o tom, že se cloud_blocko_server připojil. Kontzrola co tam běží a další píčoviny
-            terminal_logger.trace("homer_cloud_server_connection:: Tyrion have to control what is on the cloud_blocko_server side ");
-
-
-            // Ověřím IDentitiu serveru na jeho long_hash
-            // Separatní vlákno je z důvodů nutnosti nejdříve vrátit (return webSocket) a nezávisle poté spustit ověření
-            Thread check = new Thread() {
-
-                @Override
-                public void run() {
-                    try {
-
-                        sleep(500); //Záměrna hodnota čekání pro strabilizaci komunikace
-                        server.security_token_confirm_procedure();
-
-                    } catch (InterruptedException e) {
-                        terminal_logger.internalServerError("homer_cloud_server_connection:", e);
-                    }
-                }
-            };
-
-            check.start();
-
-
-            homer_servers.put(homer_server.unique_identificator, server);
-
             terminal_logger.trace("homer_cloud_server_connection:: Successfully connected");
             return webSocket;
 
         }catch (Exception e){
-            terminal_logger.internalServerError(new Exception("Connection failed.", e));
+            terminal_logger.internalServerError(e);
             return WebSocket.reject(forbidden());
         }
     }
@@ -210,8 +185,8 @@ public class Controller_WebSocket extends Controller {
                     WS_Message_Ping_compilation_server result = ws_compilerServer.server.ping();
                     if (!result.status.equals("success")) {
                         terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
-                        if (homer_servers.containsKey(unique_identificator)) {
-                            homer_servers.get(unique_identificator).onClose();
+                        if (compiler_cloud_servers.containsKey(unique_identificator)) {
+                            compiler_cloud_servers.get(unique_identificator).onClose();
                         }
                         return null;
                     }
@@ -222,7 +197,7 @@ public class Controller_WebSocket extends Controller {
                 }catch (NullPointerException e){
 
                     terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
-                    if(homer_servers.containsKey(unique_identificator)) homer_servers.get(unique_identificator).onClose();
+                    if(compiler_cloud_servers.containsKey(unique_identificator)) compiler_cloud_servers.get(unique_identificator).onClose();
 
                 }
             }
@@ -237,7 +212,7 @@ public class Controller_WebSocket extends Controller {
             return server.connection();
 
         }catch (Exception e){
-            terminal_logger.internalServerError(new Exception("Connection failed.", e));
+            terminal_logger.internalServerError(e);
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
@@ -261,7 +236,7 @@ public class Controller_WebSocket extends Controller {
 
 
             terminal_logger.trace("becki_website_connection:: Controlling of incoming token "+ security_token);
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.get_byId(person_id);
             if(person == null){
                 terminal_logger.warn("becki_website_connection: Person with this id not exist!");
                 return WebSocket.reject(forbidden());
@@ -284,7 +259,7 @@ public class Controller_WebSocket extends Controller {
             return website_connection.connection();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("becki_website_connection:", e);
+            terminal_logger.internalServerError(e);
             return WebSocket.reject(forbidden("Server side error"));
         }
     }
@@ -323,9 +298,8 @@ public class Controller_WebSocket extends Controller {
         terminal_logger.warn("disconnectBeckiApplications:: Trying to safely disconnect all Becki applications");
 
         for (Map.Entry<String, WS_Becki_Website> entry :  Controller_WebSocket.becki_website.entrySet()) {
-            for (Map.Entry<String, WS_Becki_Single_Connection> single : entry.getValue().all_person_Connections.entrySet()) {
-                server_violently_terminate_terminal(single.getValue());
-            }
+            entry.getValue().onClose();
         }
     }
+
 }

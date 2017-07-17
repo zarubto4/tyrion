@@ -84,7 +84,7 @@ public class Controller_Grid extends Controller {
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_M_Project_New help = form.get();
 
-            Model_Project project = Model_Project.find.byId( project_id );
+            Model_Project project = Model_Project.get_byId( project_id );
             if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             Model_MProject m_project = new Model_MProject();
@@ -131,7 +131,7 @@ public class Controller_Grid extends Controller {
     public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) String m_project_id){
         try {
 
-            Model_MProject m_project = Model_MProject.find.byId(m_project_id);
+            Model_MProject m_project = Model_MProject.get_byId(m_project_id);
             if (m_project == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
             if (!m_project.read_permission())  return GlobalResult.result_forbidden();
@@ -182,7 +182,7 @@ public class Controller_Grid extends Controller {
             Swagger_M_Project_New help = form.get();
 
 
-            Model_MProject m_project = Model_MProject.find.byId(m_project_id);
+            Model_MProject m_project = Model_MProject.get_byId(m_project_id);
             if(m_project == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
             if (!m_project.edit_permission())  return GlobalResult.result_forbidden();
@@ -221,7 +221,7 @@ public class Controller_Grid extends Controller {
     public Result remove_M_Project(@ApiParam(value = "m_project_id String query", required = true)  String m_project_id){
         try{
 
-            Model_MProject m_project = Model_MProject.find.byId(m_project_id);
+            Model_MProject m_project = Model_MProject.get_byId(m_project_id);
             if(m_project == null) return GlobalResult.result_notFound("M_project m_project_id not found");
 
             if (!m_project.delete_permission())  return GlobalResult.result_forbidden();
@@ -262,7 +262,7 @@ public class Controller_Grid extends Controller {
     public Result get_M_Project_Interface_collection(@ApiParam(value = "m_project_id String query", required = true)  String m_project_id) {
         try{
 
-            Model_MProject m_project = Model_MProject.find.byId(m_project_id);
+            Model_MProject m_project = Model_MProject.get_byId(m_project_id);
             if(m_project == null) return GlobalResult.result_notFound("M_project m_project_id not found");
 
             if (!m_project.read_permission())  return GlobalResult.result_forbidden();
@@ -273,7 +273,7 @@ public class Controller_Grid extends Controller {
             m_project_interface.description = m_project.description;
             m_project_interface.id = m_project.id;
 
-            for(Model_MProgram m_program : m_project.m_programs) {
+            for(Model_MProgram m_program : m_project.get_m_programs_not_deleted()) {
 
                 Swagger_M_Program_Interface m_program_interface = new Swagger_M_Program_Interface();
                 m_program_interface.description = m_program.description;
@@ -338,7 +338,7 @@ public class Controller_Grid extends Controller {
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_M_Program_New help = form.get();
 
-            Model_MProject m_project = Model_MProject.find.byId( m_project_id );
+            Model_MProject m_project = Model_MProject.get_byId( m_project_id );
             if(m_project == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
 
@@ -404,7 +404,7 @@ public class Controller_Grid extends Controller {
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_M_Program_Version_New help = form.get();
 
-            Model_MProgram main_m_program = Model_MProgram.find.byId( m_program_id );
+            Model_MProgram main_m_program = Model_MProgram.get_byId( m_program_id );
             if(main_m_program == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
             if (!main_m_program.create_permission()) return GlobalResult.result_forbidden();
@@ -462,7 +462,7 @@ public class Controller_Grid extends Controller {
     @Security.Authenticated(Secured_API.class)
     public Result get_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
         try {
-            Model_MProgram m_program = Model_MProgram.find.byId(m_program_id);
+            Model_MProgram m_program = Model_MProgram.get_byId(m_program_id);
             if (m_program == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
             if (!m_program.read_permission())  return GlobalResult.result_forbidden();
@@ -504,7 +504,7 @@ public class Controller_Grid extends Controller {
 
         try {
             // Kontrola objektu
-            Model_VersionObject version_object = Model_VersionObject.find.byId(m_program_version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(m_program_version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
             // Kontrola oprávnění
@@ -563,7 +563,7 @@ public class Controller_Grid extends Controller {
             Swagger_M_Program_New help = form.get();
 
 
-            Model_MProgram m_program = Model_MProgram.find.byId(m_program_id);
+            Model_MProgram m_program = Model_MProgram.get_byId(m_program_id);
             if (!m_program.edit_permission())  return GlobalResult.result_forbidden();
 
             if(m_program.m_project == null)  return GlobalResult.result_badRequest("You cannot change program on version");
@@ -619,7 +619,7 @@ public class Controller_Grid extends Controller {
             Swagger_M_Program_Version_Edit help = form.get();
 
             // Získání objektu
-            Model_VersionObject version_object  = Model_VersionObject.find.byId(m_program_version_id);
+            Model_VersionObject version_object  = Model_VersionObject.get_byId(m_program_version_id);
 
             // Kontrola objektu
             if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
@@ -664,7 +664,7 @@ public class Controller_Grid extends Controller {
     public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) String m_program_id){
         try {
 
-            Model_MProgram m_program = Model_MProgram.find.byId(m_program_id);
+            Model_MProgram m_program = Model_MProgram.get_byId(m_program_id);
             if (m_program == null) return GlobalResult.result_notFound("M_Project m_project_id not found");
 
             if (!m_program.delete_permission())  return GlobalResult.result_forbidden();
@@ -706,7 +706,7 @@ public class Controller_Grid extends Controller {
         try {
 
             // Získání objektu
-            Model_VersionObject version_object  = Model_VersionObject.find.byId(m_program_version_id);
+            Model_VersionObject version_object  = Model_VersionObject.get_byId(m_program_version_id);
 
             // Kontrola objektu
             if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
@@ -716,8 +716,7 @@ public class Controller_Grid extends Controller {
             if (! version_object.m_program.delete_permission() ) return GlobalResult.result_forbidden();
 
             // Smazání objektu
-            version_object.removed_by_user = true;
-            version_object.update();
+            version_object.delete();
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();
@@ -825,7 +824,7 @@ public class Controller_Grid extends Controller {
             Swagger_Grid_Terminal_Identf help = form.get();
 
 
-            Model_GridTerminal terminal = Model_GridTerminal.find.byId(terminal_id);
+            Model_GridTerminal terminal = Model_GridTerminal.get_byId(terminal_id);
             if(terminal == null){
 
                 terminal = new Model_GridTerminal();
@@ -976,7 +975,7 @@ public class Controller_Grid extends Controller {
             if(help.project_id != null){
 
                 // Kontrola objektu
-                Model_Project project = Model_Project.find.byId(help.project_id);
+                Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null) return GlobalResult.result_notFound("Project project_id not found");
                 if(! project.update_permission()) return GlobalResult.result_forbidden();
 
@@ -1100,7 +1099,7 @@ public class Controller_Grid extends Controller {
             if(help.project_id != null){
 
                 // Kontrola objektu
-                Model_Project project = Model_Project.find.byId(help.project_id);
+                Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null) return GlobalResult.result_notFound("Project project_id not found");
 
                 // Úprava objektu

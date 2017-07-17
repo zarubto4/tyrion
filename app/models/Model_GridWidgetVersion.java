@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.enums.Enum_Approval_state;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
@@ -75,7 +76,7 @@ public class Model_GridWidgetVersion extends Model{
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_GridWidgetVersion.find.byId(this.id) == null) break;
+            if (Model_GridWidgetVersion.get_byId(this.id) == null) break;
         }
         super.save();
     }
@@ -107,18 +108,33 @@ public class Model_GridWidgetVersion extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  grid_widget.update_permission() ||  Controller_Security.get_person().has_permission("GridWidgetVersion_create"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  grid_widget.read_permission()   ||  Controller_Security.get_person().has_permission("GridWidgetVersion_read");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {  return  grid_widget.update_permission() ||  Controller_Security.get_person().has_permission("GridWidgetVersion_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {  return  grid_widget.update_permission() ||  Controller_Security.get_person().has_permission("GridWidgetVersion_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  grid_widget.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("GridWidgetVersion_create"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  grid_widget.read_permission()   ||  Controller_Security.get_person().permissions_keys.containsKey("GridWidgetVersion_read");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {  return  grid_widget.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("GridWidgetVersion_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {  return  grid_widget.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("GridWidgetVersion_delete"); }
 
     public enum permissions{GridWidgetVersion_create, GridWidgetVersion_read, GridWidgetVersion_edit, GridWidgetVersion_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE = Model_GridWidgetVersion.class.getSimpleName();
+    public static Cache<String, Model_GridWidgetVersion> cache = null;               // < ID, Model_GridWidgetVersion>
+
     @JsonIgnore
     public static Model_GridWidgetVersion get_byId(String id) {
-        return find.byId(id);
+
+        Model_GridWidgetVersion grid_widget_version = cache.get(id);
+        if (grid_widget_version == null){
+
+            grid_widget_version = Model_GridWidgetVersion.find.byId(id);
+            if (grid_widget_version == null){
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            cache.put(id, grid_widget_version);
+        }
+
+        return grid_widget_version;
     }
 
     @JsonIgnore

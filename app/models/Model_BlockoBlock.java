@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
@@ -33,46 +35,122 @@ public class Model_BlockoBlock extends Model {
                                                             @ApiModelProperty(required = true)   public String name;
                          @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String description;
 
-                                    @JsonIgnore @ManyToOne                                       public Model_Person author;
-                                    @JsonIgnore @ManyToOne                                       public Model_TypeOfBlock type_of_block;
-                                    @JsonIgnore @ManyToOne                                       public Model_Producer producer;
+                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
+                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_TypeOfBlock type_of_block;
+                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Producer producer;
 
     @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BlockoBlockVersion> blocko_versions = new ArrayList<>();
 
     @JsonIgnore  public Integer order_position;
-
     @JsonIgnore  public boolean removed_by_user;
+
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_block_id;
+    @JsonIgnore @Transient @TyrionCachedList private List<String> cache_value_blocko_versions_id = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_author_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    author_id()         { return author != null ? author.id : null;}
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    author_id()         { return cache_value_author_id != null ? cache_value_author_id : get_author().id;}
 
-    @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    author_nick_name()  { return  author != null ? author.nick_name : null;}
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    author_nick_name()  { return get_author().nick_name; }
 
-    @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    producer_id()       { return producer != null ? producer.id : null;}
 
-    @ApiModelProperty(required = false, readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty                                               public String    producer_name()     { return producer != null ? producer.name : null;}
 
-    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_id()             { return type_of_block.id; }
-    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_name()           { return type_of_block.name; }
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_id()       { return cache_value_producer_id != null ? cache_value_producer_id : get_producer().id;}
+
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_name()     { return get_producer().name;}
+
+
+    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_id()   { return cache_value_type_of_block_id != null ? cache_value_type_of_block_id : get_type_of_block().id; }
+    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_name() { return get_type_of_block().name; }
 
     @Transient  @JsonProperty @ApiModelProperty(required = true) public  List<Swagger_BlockoBlock_Version_Short_Detail> versions(){
 
         List<Swagger_BlockoBlock_Version_Short_Detail> list = new ArrayList<>();
 
-        for( Model_BlockoBlockVersion v : Model_BlockoBlockVersion.find.where().eq("blocko_block.id", id).eq("removed_by_user", false).order().desc("date_of_create").findList()){
+        for( Model_BlockoBlockVersion v : get_blocko_block_versions()){
 
-            if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.get_person().id)))) {
-
+            // TODO Tohle je hrozně komplikovanej shit - nešlo by to jednoduššeji? Víme přece co je private a co je public ne???
+            if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.get_author() != null)&&(this.get_author().id.equals(Controller_Security.get_person().id)))) {
                 list.add(v.get_short_blockoblock_version());
             }
         }
 
         return list;
+    }
+
+
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore @TyrionCachedList
+    public Model_TypeOfBlock get_type_of_block() {
+        if(cache_value_type_of_block_id == null){
+            Model_TypeOfBlock type_of_block = Model_TypeOfBlock.find.where().eq("blocko_blocks.id", id).select("id").findUnique();
+            cache_value_type_of_block_id = type_of_block.id;
+        }
+
+        return Model_TypeOfBlock.get_byId(cache_value_type_of_block_id);
+    }
+
+    @Transient @JsonIgnore @TyrionCachedList
+    public List<Model_BlockoBlockVersion> get_blocko_block_versions(){
+        try{
+
+            if(cache_value_blocko_versions_id.isEmpty()){
+
+                List<Model_BlockoBlockVersion> blocko_versions =  Model_BlockoBlockVersion.find.where().eq("blocko_block.id", id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();
+
+                // Získání seznamu
+                for (Model_BlockoBlockVersion blocko_version : blocko_versions) {
+                    cache_value_blocko_versions_id.add(blocko_version.id);
+                }
+
+            }
+
+            List<Model_BlockoBlockVersion> blocko_versions  = new ArrayList<>();
+
+            for(String version_id : cache_value_blocko_versions_id){
+                blocko_versions.add(Model_BlockoBlockVersion.get_byId(version_id));
+            }
+
+            return blocko_versions;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("getVersion_objects", e);
+            return new ArrayList<Model_BlockoBlockVersion>();
+        }
+
+    }
+
+    @JsonIgnore @TyrionCachedList
+    public Model_Person get_author(){
+
+        if(cache_value_author_id == null){
+            Model_Person person = Model_Person.find.where().eq("blocksAuthor.id", id).select("id").findUnique();
+            cache_value_author_id = person.id;
+        }
+
+        return Model_Person.get_byId(cache_value_author_id);
+    }
+
+    @JsonIgnore @TyrionCachedList
+    public Model_Producer get_producer(){
+
+        if(cache_value_producer_id == null){
+            Model_Producer producer = Model_Producer.find.where().eq("blocko_blocks.id", id).select("id").findUnique();
+            cache_value_producer_id = producer.id;
+        }
+
+        return Model_Producer.get_byId(cache_value_producer_id);
     }
 
     @Transient @JsonIgnore
@@ -111,7 +189,7 @@ public class Model_BlockoBlock extends Model {
         }
         super.save();
 
-        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
+        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -120,7 +198,7 @@ public class Model_BlockoBlock extends Model {
 
         super.update();
 
-        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, type_of_block.project_id(), id))).start();
+        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, type_of_block.project_id(), id))).start();
     }
 
     @JsonIgnore @Override public void delete() {
@@ -130,7 +208,7 @@ public class Model_BlockoBlock extends Model {
         removed_by_user = true;
         super.update();
 
-        if(type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
+        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
     }
 
 /* ORDER ---------------------------------------------------------------------------------------------------------------*/
@@ -185,20 +263,38 @@ public class Model_BlockoBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  @Transient                                     public boolean create_permission() {return  type_of_block.update_permission();}
-    @JsonIgnore  @Transient                                     public boolean read_permission()   {return  type_of_block.read_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  type_of_block.update_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  type_of_block.update_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  type_of_block.delete_permission();}
+    @JsonIgnore  @Transient                                     public boolean create_permission() {return  get_type_of_block().update_permission();}
+    @JsonIgnore  @Transient                                     public boolean read_permission()   {return  get_type_of_block().read_permission();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  get_type_of_block().update_permission();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  get_type_of_block().update_permission();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  get_type_of_block().delete_permission();}
 
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE = Model_BlockoBlock.class.getSimpleName();
+    public static Cache<String, Model_BlockoBlock> cache = null;               // < String id, Model_BlockoBlock>
+
     @JsonIgnore
     public static Model_BlockoBlock get_byId(String id) {
-        return find.where().eq("id", id).eq("removed_by_user", false).findUnique();
+
+        Model_BlockoBlock blocko_block = cache.get(id);
+        if (blocko_block == null){
+
+            blocko_block = find.where().eq("id", id).eq("removed_by_user", false).findUnique();
+            if (blocko_block == null){
+                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+            }
+
+            cache.put(id, blocko_block);
+        }
+
+        return blocko_block;
+
     }
+
+
 
     @JsonIgnore
     public static Model_BlockoBlock get_publicByName(String name) {

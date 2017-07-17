@@ -55,11 +55,11 @@ public class Model_Notification extends Model {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";
-    @ApiModelProperty(required = true, example =  WS_Becki_Website.CHANNEL) @JsonProperty public static final String messageChannel = WS_Becki_Website.CHANNEL;
+    @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";              //TODO DB na message_type
+    @ApiModelProperty(required = true, example =  WS_Becki_Website.CHANNEL) @JsonProperty public static final String messageChannel = WS_Becki_Website.CHANNEL; //TODO DB na message_channel
 
-    @JsonProperty @ApiModelProperty(required = true) public String messageType(){ return messageType;}
-    @JsonProperty @ApiModelProperty(required = true) public String messageChannel(){ return messageChannel;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_type(){ return messageType;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_channel(){ return messageChannel;}
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Swagger_Notification_Element> notification_body(){
@@ -194,7 +194,7 @@ public class Model_Notification extends Model {
                 element.name = class_name;
                 element.id = board.id;
                 element.text = board.name;
-                element.project_id = board.project != null ? board.project.id : null;
+                element.project_id = board.project_id();
                 break;
             }
             case "CProgram" : {
@@ -202,7 +202,7 @@ public class Model_Notification extends Model {
                 element.name = class_name;
                 element.id = cProgram.id;
                 element.text = cProgram.name;
-                element.project_id = cProgram.project != null ? cProgram.project.id : null;
+                element.project_id = cProgram.project_id();
                 break;
             }
             case "BProgram" : {
@@ -224,14 +224,14 @@ public class Model_Notification extends Model {
                     element.name = "C_Program_Version";
                     element.text = versionObject.version_name;
                     element.program_id = versionObject.c_program.id;
-                    element.project_id = versionObject.c_program.project != null ? versionObject.c_program.project.id : null;
+                    element.project_id = versionObject.c_program.project_id();
 
-                } else if (versionObject.b_program != null){
+                } else if (versionObject.get_b_program() != null){
 
                     element.name = "B_Program_Version";
                     element.text = versionObject.version_name;
-                    element.program_id = versionObject.b_program.id;
-                    element.project_id = versionObject.b_program.project != null ? versionObject.b_program.project.id : null;
+                    element.program_id = versionObject.get_b_program().id;
+                    element.project_id = versionObject.get_b_program().project != null ? versionObject.get_b_program().project.id : null;
                 }
 
                 break;
@@ -241,8 +241,7 @@ public class Model_Notification extends Model {
                 Model_HomerInstance homerInstance = (Model_HomerInstance) object;
                 element.name = class_name;
                 element.id = homerInstance.id;
-                if(homerInstance.project != null) element.project_id = homerInstance.project.id;
-                else element.project_id = homerInstance.b_program.project_id();
+                element.project_id = homerInstance.b_program.project_id();
 
                 break;
             }
@@ -250,7 +249,7 @@ public class Model_Notification extends Model {
             case "ActualizationProcedure" : {
                 Model_ActualizationProcedure actualizationProcedure = (Model_ActualizationProcedure) object;
                 element.name = class_name;
-                element.id = actualizationProcedure.id;
+                element.id = actualizationProcedure.id.toString();
                 element.project_id = actualizationProcedure.get_project_id();
                 break;
             }
@@ -386,8 +385,21 @@ public class Model_Notification extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_delete") ;}
-    @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_confirm") ;}
+    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().permissions_keys.containsKey("Notification_delete") ;}
+    @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().permissions_keys.containsKey("Notification_confirm") ;}
+
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Notification get_byId(String id) {
+
+        terminal_logger.warn("CACHE is not implemented - TODO");
+        return find.byId(id);
+
+    }
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

@@ -47,9 +47,9 @@ public class Swagger_Blocko_Block_List {
             help.blocko_block_id = blockoBlock.id;
             help.blocko_block_name = blockoBlock.name;
             help.blocko_block_description = blockoBlock.description;
-            help.blocko_block_version_id = blockoBlock.blocko_versions.size() != 0 ? blockoBlock.blocko_versions.get(0).id : null;
-            help.blocko_block_version_name = blockoBlock.blocko_versions.size() != 0 ? blockoBlock.blocko_versions.get(0).version_name : null;
-            help.blocko_block_version_description = blockoBlock.blocko_versions.size() != 0 ? blockoBlock.blocko_versions.get(0).version_description : null;
+            help.blocko_block_version_id = blockoBlock.get_blocko_block_versions().size() != 0 ? blockoBlock.get_blocko_block_versions().get(0).id : null;
+            help.blocko_block_version_name = blockoBlock.get_blocko_block_versions().size() != 0 ? blockoBlock.get_blocko_block_versions().get(0).version_name : null;
+            help.blocko_block_version_description = blockoBlock.get_blocko_block_versions().size() != 0 ? blockoBlock.get_blocko_block_versions().get(0).version_description : null;
             help.blocko_block_type_of_block_id = blockoBlock.type_of_block.id;
             help.blocko_block_type_of_block_name = blockoBlock.type_of_block.name;
             help.blocko_block_type_of_block_description = blockoBlock.type_of_block.description;
