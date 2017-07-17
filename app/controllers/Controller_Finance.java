@@ -1941,6 +1941,33 @@ public class Controller_Finance extends Controller {
 
 // CUSTOMER ############################################################################################################
 
+    @ApiOperation(value = "create Company",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Creates new Customer (type: company), you can crate new product under Customer(company) or under Customer(person)",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Customer_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Created successfully",      response = Model_Customer.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result customer_createCompany(){
         try{
 
@@ -1951,6 +1978,9 @@ public class Controller_Finance extends Controller {
 
             Model_Customer customer = new Model_Customer();
             customer.company = true;
+
+            if (!customer.create_permission()) return GlobalResult.result_forbidden();
+
             customer.save();
 
             Model_Employee employee = new Model_Employee();
@@ -1989,6 +2019,158 @@ public class Controller_Finance extends Controller {
                 return GlobalResult.result_badRequest("Payment details are invalid.");
 
             customer.update();
+
+            return GlobalResult.result_created(Json.toJson(customer));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get all Companies",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Gets all companies by logged user.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Created successfully",      response = Model_Customer.class, responseContainer = "list"),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result customer_getAll(){
+        try{
+
+            List<Model_Customer> customers = Model_Customer.find.where().eq("employees.person.id", Controller_Security.get_person_id()).findList();
+
+            return GlobalResult.result_created(Json.toJson(customers));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "update Company",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Updates payment details of a company.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Customer_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated successfully",      response = Model_Customer.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result customer_updateCompany(@ApiParam(value = "customer_id String query", required = true) String customer_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Customer_New> form = Form.form(Swagger_Customer_New.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Customer_New help = form.get();
+
+            Model_Customer customer = Model_Customer.get_byId(customer_id);
+            if (customer == null) return GlobalResult.result_notFound("Customer not found");
+
+            if (!customer.update_permission()) return GlobalResult.result_forbidden();
+
+            Model_PaymentDetails details = customer.payment_details;
+            details.street          = help.street;
+            details.street_number   = help.street_number;
+            details.city            = help.city;
+            details.zip_code        = help.zip_code;
+            details.country         = help.country;
+
+            details.invoice_email   = help.invoice_email;
+
+            details.company_name             = help.company_name;
+            details.company_authorized_phone = help.company_authorized_phone;
+            details.company_authorized_email = help.company_authorized_email;
+            details.company_vat_number       = help.vat_number;
+            details.company_registration_no  = help.registration_no;
+            details.company_web              = help.company_web;
+
+            details.update();
+
+            customer.refresh();
+
+            if (!Fakturoid_Controller.update_subject(details))
+                return GlobalResult.result_badRequest("Payment details are invalid.");
+
+            return GlobalResult.result_ok(Json.toJson(customer));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "add employee",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Adds employee to a company.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Customer_Employee",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated successfully",      response = Model_Customer.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result customer_addEmployee(@ApiParam(value = "customer_id String query", required = true) String customer_id){
+        try{
+
+            // Zpracování Json
+            final Form<Swagger_Customer_Employee> form = Form.form(Swagger_Customer_Employee.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Customer_Employee help = form.get();
+
+            Model_Customer customer = Model_Customer.get_byId(customer_id);
+            if (customer == null) return GlobalResult.result_notFound("Customer not found");
+
+            if (!customer.update_permission()) return GlobalResult.result_forbidden();
+
+            for (Model_Person person : Model_Person.find.where().in("mail", help.mails).findList()) {
+
+                Model_Employee employee = new Model_Employee();
+                employee.person     = person;
+                employee.state      = Enum_Participant_status.member;
+                employee.customer   = customer;
+                employee.save();
+            }
+
+            customer.refresh();
 
             return GlobalResult.result_ok(Json.toJson(customer));
 

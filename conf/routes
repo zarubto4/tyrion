@@ -113,6 +113,7 @@ GET       /secure/person/system_acces/:person_id                        @control
 #Customer
 
 POST      /company                                                      @controllers.Controller_Finance.customer_createCompany()
+GET       /company                                                      @controllers.Controller_Finance.customer_getAll()
 
 #Tarrifs
 GET       /tariff                                                       @controllers.Controller_Finance.tariff_getAll()

@@ -1,5 +1,6 @@
 package utilities.swagger.documentationClass;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
@@ -9,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+@ApiModel(value = "Customer_New", description = "Json Model for creating new company.")
 public class Swagger_Customer_New {
 
     @Constraints.Required
