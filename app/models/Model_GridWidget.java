@@ -63,10 +63,10 @@ public class Model_GridWidget extends Model{
 
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_id()       { return cache_value_producer_id != null ? cache_value_producer_id : get_producer().id;}
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_id()       { try{ return cache_value_producer_id != null ? cache_value_producer_id : get_producer().id;}catch (Exception e){return  null;}}
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_name()     { return get_producer().name;}
+    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_name()     { try{ return get_producer().name; }catch (Exception e){return  null;}}
 
 
 
