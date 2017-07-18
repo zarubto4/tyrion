@@ -547,7 +547,7 @@ public class Model_VersionObject extends Model {
     }
 
 
-        @JsonIgnore @Override
+    @JsonIgnore @Override
     public void delete(){
 
         removed_by_user = true;
@@ -566,6 +566,13 @@ public class Model_VersionObject extends Model {
 
         super.update();
     }
+
+    @JsonIgnore
+    public Model_VersionObject cache_refresh(){
+        cache.remove(id);
+        return get_byId(id);
+    }
+
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 

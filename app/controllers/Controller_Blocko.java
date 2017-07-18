@@ -413,7 +413,6 @@ public class Controller_Blocko extends Controller{
             // Uložení objektu
             version_object.save();
 
-
             // Úprava objektu
             b_program.getVersion_objects().add(version_object);
 
@@ -422,7 +421,7 @@ public class Controller_Blocko extends Controller{
             b_program.update();
 
             // Update verze
-            version_object.refresh();
+            version_object = version_object.cache_refresh();
 
             // Nahrání na Azure
             Model_FileRecord.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);

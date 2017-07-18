@@ -35,7 +35,9 @@ import web_socket.services.WS_HomerServer;
 import web_socket.services.WS_Interface_type;
 
 import javax.persistence.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 @Entity
@@ -98,6 +100,10 @@ public class Model_HomerServer extends Model{
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
   
     @JsonIgnore @Override public void save() {
+
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("name", "testEvent");
 
         terminal_logger.debug("save :: Creating new Object");
         
