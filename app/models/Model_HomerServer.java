@@ -559,6 +559,7 @@ public class Model_HomerServer extends Model{
             server = find.byId(id);
             if (server == null){
                 terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
+                return null;
             }
 
             cache.put(id, server);

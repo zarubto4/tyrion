@@ -129,12 +129,7 @@ create index ix_model_payment_details_pers_61 on model_payment_details (person_i
 alter table model_board
   drop column if exists connected_server_id,
   drop column if exists connected_instance_id,
-  drop column if exists database_synchronize,
-  add COLUMN  virtual_instance_under_project_id varchar(255),
-  validate constraint fk_model_board_virtual_instan_18,
-  add constraint fk_model_board_virtual_instan_18 foreign key (virtual_instance_under_project_id) references model_homer_instance (id);
-
-create index ix_model_board_virtual_instan_18 on model_board (virtual_instance_under_project_id);
+  drop column if exists database_synchronize;
 
 alter table public.model_homer_server
   drop column if exists json_additional_parameter;

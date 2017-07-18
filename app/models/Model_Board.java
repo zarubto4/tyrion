@@ -467,7 +467,7 @@ public class Model_Board extends Model {
                     case WS_Message_Hardware_connected.message_type: {
 
                         final Form<WS_Message_Hardware_connected> form = Form.form(WS_Message_Hardware_connected.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_connected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        if (form.hasErrors()){throw new Exception("WS_Message_Hardware_connected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());}
 
                         Model_Board.device_Connected(form.get());
                         return;
@@ -551,23 +551,28 @@ public class Model_Board extends Model {
 
             terminal_logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.hardware_id);
 
-            if(!cache_status.get(help.hardware_id)){
+            if(!cache_status.containsKey(help.hardware_id) || cache_status.get(help.hardware_id)){
 
                 Model_Board device = Model_Board.get_byId(help.hardware_id);
 
-                if(device == null) throw new Exception("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.hardware_id);
+                if(device == null){
+                    terminal_logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.hardware_id);
+                    return;
+                }
 
                 cache_status.put(help.hardware_id, true);
 
                 // Notifikce
                 if(device.developer_kit) {
-                    device.notification_board_connect();
+                    try {
+                        device.notification_board_connect();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
 
                 // Standartní synchronizace
-                synchronize_online_state_with_becki(device.id, true, device.project_id());
-
-
+                if(device.project_id() != null) synchronize_online_state_with_becki(device.id, true, device.project_id());
 
                 if(!device.connected_server_id.equals(help.websocket_identificator)){
                     device.connected_server_id = help.websocket_identificator;

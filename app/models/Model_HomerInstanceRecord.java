@@ -179,13 +179,14 @@ public class Model_HomerInstanceRecord extends Model {
 
             WS_Message_Instance_status status = actual_running_instance.get_instance_status();
 
-            System.out.println("Instance_status " + Json.toJson(status) );
             WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(actual_running_instance.id);
+
+            if(instanceStatus.error_code != null ){
+                terminal_logger.warn("Instance " + actual_running_instance.id + " Instance not set in Homer Server ");
+            }
 
             // Instance status
             if(!instanceStatus.status){
-
-                System.out.println("Instance " + actual_running_instance.id + " není online a tak jí budu muset nasadit ");
                 // Vytvořím Instanci
                 WS_Message_Homer_Instance_add result_instance   = actual_running_instance.cloud_homer_server.add_instance(actual_running_instance);
                 if(!result_instance.status.equals("success")){
@@ -196,13 +197,13 @@ public class Model_HomerInstanceRecord extends Model {
             // Step 2
             WS_Message_Instance_upload_blocko_program result_step_2 = this.upload_blocko_program();
             if(!result_step_2.status.equals("success")){
-                System.out.println("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_2.error_code);
+                terminal_logger.warn("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_2.error_code);
             }
 
             // Step 3
             WS_Message_Instance_device_set_snap result_step_3 =  this.update_device_summary_collection();
             if(!result_step_3.status.equals("success")){
-                System.out.println("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_3.error_code);
+                terminal_logger.warn("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_3.error_code);
             }
 
             // Step 4
