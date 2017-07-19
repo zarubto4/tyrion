@@ -34,10 +34,10 @@ import java.util.Date;
  * contains operations like single payment,
  * on demand payment, refund payment etc.
  */
-public class GoPay_Controller extends Controller {
+public class GoPay extends Controller {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(GoPay_Controller.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(GoPay.class);
 
     /**
      * Hash token used to authenticate the application in GoPay, token has TTL 30 minutes.

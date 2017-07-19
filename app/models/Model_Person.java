@@ -230,9 +230,7 @@ public class Model_Person extends Model {
         if (person == null){
 
             person = Model_Person.find.byId(id);
-            if (person == null) {
-                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (person == null) return null;
 
             for(Model_Permission permission : person.person_permissions){
                 person.permissions_keys.put(permission.value, true);

@@ -285,13 +285,12 @@ public class Model_BProgram extends Model {
     @JsonIgnore
     public static Model_BProgram get_byId(String id) {
 
-        Model_BProgram b_program= cache.get(id);
+        Model_BProgram b_program = cache.get(id);
         if (b_program == null){
 
             b_program = Model_BProgram.find.byId(id);
-            if (b_program == null){
-                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (b_program == null) return null;
+
             cache.put(id, b_program);
         }
 

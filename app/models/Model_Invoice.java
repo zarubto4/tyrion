@@ -139,7 +139,7 @@ public class Model_Invoice extends Model {
 
             Model_InvoiceItem item = new Model_InvoiceItem();
             item.name = extension.name;
-            item.unit_price = extension.getDailyPrice() * 30;
+            item.unit_price = extension.getConfigPrice() * 30;
 
             switch (extension.type) {
                 case project: {
@@ -174,9 +174,9 @@ public class Model_Invoice extends Model {
 
     @JsonIgnore
     public Long total_price() {
-        Long total_price = (long) 0;
+        Long total_price = 0L;
         for(Model_InvoiceItem  item : invoice_items){
-            total_price += item.unit_price;
+            total_price += item.unit_price * item.quantity;
         }
         return total_price;
     }

@@ -146,21 +146,21 @@ PUT       /product/details/:payment_details_id                          @control
 PUT       /product/general/:product_id                                  @controllers.Controller_Finance.product_update(product_id)
 
 #GoPay
-GET       /go_pay/notification                                          @utilities.financial.goPay.GoPay_Controller.payment_notification(id: Long)
-GET       /go_pay/return                                                @utilities.financial.goPay.GoPay_Controller.payment_return(id: Long)
+GET       /go_pay/notification                                          @utilities.financial.goPay.GoPay.payment_notification(id: Long)
+GET       /go_pay/return                                                @utilities.financial.goPay.GoPay.payment_return(id: Long)
 
 #Fakturoid
 GET       /invoice/:invoice_id                                          @controllers.Controller_Finance.invoice_get(invoice_id)
 GET       /invoice/pdf/:kind/:invoice_id                                @controllers.Controller_Finance.invoice_getPdf(kind, invoice_id)
 POST      /invoice/reimbursement/:invoice_id                            @controllers.Controller_Finance.invoice_reimbursement(invoice_id)
 POST      /invoice/resend/:invoice_id                                   @controllers.Controller_Finance.invoice_resend(invoice_id)
-POST      /fakturoid/callback                                           @utilities.financial.fakturoid.Fakturoid_Controller.fakturoid_callback()
+POST      /fakturoid/callback                                           @utilities.financial.fakturoid.Fakturoid.fakturoid_callback()
 
 # Obsluha pouze pro Byzance zaměstnance
 PUT       /invoice/set_pay/:invoice_id                                  @controllers.Controller_Finance.invoice_set_as_paid(invoice_id)
 PUT       /invoice/send_remainder/:invoice_id                           @controllers.Controller_Finance.invoice_reminder(invoice_id)
 DELETE    /invoice/:invoice_id                                          @controllers.Controller_Finance.invoice_delete(invoice_id)
-PUT       /invoice/refund/:invoice_id                                   @utilities.financial.goPay.GoPay_Controller.payment_refund(invoice_id)
+PUT       /invoice/refund/:invoice_id                                   @utilities.financial.goPay.GoPay.payment_refund(invoice_id)
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################

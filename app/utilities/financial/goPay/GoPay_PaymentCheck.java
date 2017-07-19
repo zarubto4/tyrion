@@ -9,7 +9,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.enums.Enum_Payment_status;
-import utilities.financial.fakturoid.Fakturoid_Controller;
+import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.helps_objects.GoPay_Result;
 import utilities.logger.Class_Logger;
 
@@ -98,7 +98,7 @@ public class GoPay_PaymentCheck {
     private static void checkPayment(Long id) {
         try {
 
-            String local_token = GoPay_Controller.getToken();
+            String local_token = GoPay.getToken();
 
             terminal_logger.debug("checkPayment: Asking for payment state: gopay_id - {}", id);
 
@@ -151,7 +151,7 @@ public class GoPay_PaymentCheck {
 
                                 if (invoice.status != Enum_Payment_status.paid) {
 
-                                    if (!Fakturoid_Controller.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
+                                    if (!Fakturoid.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
                                         terminal_logger.internalServerError("checkPayment:", new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
 
                                     invoice.getProduct().credit_upload(help.amount * 10);
@@ -213,7 +213,7 @@ public class GoPay_PaymentCheck {
                                 invoice.gw_url = null;
                                 invoice.update();
 
-                                if (!Fakturoid_Controller.fakturoid_post("/invoices/" + (invoice.proforma ? invoice.proforma_id : invoice.fakturoid_id) + "/fire.json?event=cancel"))
+                                if (!Fakturoid.fakturoid_post("/invoices/" + (invoice.proforma ? invoice.proforma_id : invoice.fakturoid_id) + "/fire.json?event=cancel"))
                                     terminal_logger.internalServerError(new Exception("Error changing status to canceled on Fakturoid. Inconsistent state."));
 
                                 break;
@@ -253,7 +253,7 @@ public class GoPay_PaymentCheck {
 
                 invoice.notificationPaymentFail();
 
-                Fakturoid_Controller.sendInvoiceReminderEmail(invoice, "We were unable to take money from your credit card. " +
+                Fakturoid.sendInvoiceReminderEmail(invoice, "We were unable to take money from your credit card. " +
                         "Please check your payment credentials or contact our support if anything is unclear. " +
                         "You can also pay this invoice manually through your Byzance account.");
             }

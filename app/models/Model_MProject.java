@@ -275,9 +275,8 @@ public class Model_MProject extends Model {
         if (m_project == null){
 
             m_project = Model_MProject.find.byId(id);
-            if (m_project == null){
-                terminal_logger.warn("get Model_MProject cache :: This object id:: " + id + " wasn't found.");
-            }
+            if (m_project == null) return null;
+
             cache.put(id, m_project);
         }
 

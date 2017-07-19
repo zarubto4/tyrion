@@ -64,10 +64,26 @@ public class Model_BlockoBlock extends Model {
 
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_id()       { return cache_value_producer_id != null ? cache_value_producer_id : get_producer().id;}
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public String producer_id(){
+
+        if (cache_value_producer_id != null) return cache_value_producer_id;
+
+        Model_Producer producer = get_producer();
+        if (producer == null) return null;
+
+        return producer.id;
+    }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_name()     { return get_producer().name;}
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public String producer_name(){
+
+        Model_Producer producer = get_producer();
+        if (producer == null) return null;
+
+        return producer.name;
+    }
 
 
     @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_id()   { return cache_value_type_of_block_id != null ? cache_value_type_of_block_id : get_type_of_block().id; }
@@ -147,6 +163,7 @@ public class Model_BlockoBlock extends Model {
 
         if(cache_value_producer_id == null){
             Model_Producer producer = Model_Producer.find.where().eq("blocko_blocks.id", id).select("id").findUnique();
+            if (producer == null) return null;
             cache_value_producer_id = producer.id;
         }
 
@@ -263,7 +280,7 @@ public class Model_BlockoBlock extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  @Transient                                     public boolean create_permission() {return  get_type_of_block().update_permission();}
+    @JsonIgnore  @Transient                                     public boolean create_permission() {return  type_of_block.update_permission();}
     @JsonIgnore  @Transient                                     public boolean read_permission()   {return  get_type_of_block().read_permission();}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  get_type_of_block().update_permission();}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  get_type_of_block().update_permission();}
@@ -282,19 +299,14 @@ public class Model_BlockoBlock extends Model {
         Model_BlockoBlock blocko_block = cache.get(id);
         if (blocko_block == null){
 
-            blocko_block = find.where().eq("id", id).eq("removed_by_user", false).findUnique();
-            if (blocko_block == null){
-                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
-            }
+            blocko_block = find.where().idEq(id).eq("removed_by_user", false).findUnique();
+            if (blocko_block == null) return null;
 
             cache.put(id, blocko_block);
         }
 
         return blocko_block;
-
     }
-
-
 
     @JsonIgnore
     public static Model_BlockoBlock get_publicByName(String name) {

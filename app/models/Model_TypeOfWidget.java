@@ -317,17 +317,13 @@ public class Model_TypeOfWidget extends Model{
         if (type_of_widget == null){
 
             type_of_widget = Model_TypeOfWidget.find.byId(id);
-            if (type_of_widget == null){
-                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (type_of_widget == null) return null;
 
             cache.put(id, type_of_widget);
         }
 
         return type_of_widget;
-
     }
-
 
     // SQL
 

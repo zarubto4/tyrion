@@ -924,7 +924,7 @@ public class Controller_Blocko extends Controller{
 
     @ApiOperation(value = "get Instance with filter parameters",
             tags = { "Instance"},
-            notes = "Get List of Instances. Acording by permission - system return only Instance from project, where is user owner or" +
+            notes = "Get List of Instances. According to permission - system return only Instance from project, where is user owner or" +
                     " all Instances if user have static Permission key",
             produces = "application/json",
             protocols = "https",

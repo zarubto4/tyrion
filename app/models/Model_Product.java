@@ -17,7 +17,7 @@ import utilities.enums.*;
 import utilities.financial.FinancialPermission;
 import utilities.financial.history.History;
 import utilities.financial.history.HistoryEvent;
-import utilities.financial.goPay.GoPay_Controller;
+import utilities.financial.goPay.GoPay;
 import utilities.financial.products.*;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
@@ -145,8 +145,13 @@ public class Model_Product extends Model {
                 this.credit += credit;
 
                 if (!this.active && this.credit > 0) {
+
                     this.active = true;
                     this.notificationActivation();
+
+                } else if (!this.active && this.credit < 0) {
+
+                    this.notificationCreditInsufficient();
                 }
 
                 this.update();
@@ -224,7 +229,7 @@ public class Model_Product extends Model {
     public boolean terminateOnDemand(){
         try {
 
-            GoPay_Controller.terminateOnDemand(this);
+            GoPay.terminateOnDemand(this);
 
             this.gopay_id = null;
             this.on_demand = false;
@@ -475,6 +480,28 @@ public class Model_Product extends Model {
         return receivers;
     }
 
+    @JsonIgnore
+    public boolean isBillingReady(){
+
+        if (payment_details == null) {
+
+            notificationPaymentNeeded("Fill in payment details, otherwise your product will be deactivated soon.");
+
+            return false;
+
+        } else {
+
+            if (fakturoid_subject_id == null) {
+
+                notificationPaymentNeeded("Payment details are probably invalid. Check provided info or contact support.");
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -506,7 +533,6 @@ public class Model_Product extends Model {
         terminal_logger.debug("update :: Update object value: {}",  this.id);
 
         super.update();
-
     }
 
     @JsonIgnore @Override public void delete() {
@@ -514,7 +540,6 @@ public class Model_Product extends Model {
         terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
         throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
     }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -560,6 +585,23 @@ public class Model_Product extends Model {
     }
 
     @JsonIgnore
+    public void notificationPaymentNeeded(String message){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.high)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setText(new Notification_Text().setText("Payment is needed for your product "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(". " + message))
+                    .send(notificationReceivers());
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+    @JsonIgnore
     private void notificationCreditSuccess(Long credit){
         try {
 
@@ -569,7 +611,7 @@ public class Model_Product extends Model {
                     .setImportance(Enum_Notification_importance.normal)
                     .setLevel(Enum_Notification_level.success)
                     .setText(new Notification_Text().setText("Credit was uploaded. ").setBoldText())
-                    .setText(new Notification_Text().setText(" " + amount + "of credit was added to your product "))
+                    .setText(new Notification_Text().setText(" " + amount + " of credit was added to your product "))
                     .setObject(this)
                     .send(notificationReceivers());
         } catch (Exception e) {
@@ -587,7 +629,7 @@ public class Model_Product extends Model {
                     .setImportance(Enum_Notification_importance.high)
                     .setLevel(Enum_Notification_level.error)
                     .setText(new Notification_Text().setText("Failed to upload credit. ").setBoldText())
-                    .setText(new Notification_Text().setText(" Adding" + amount + "of credit to your product "))
+                    .setText(new Notification_Text().setText(" Adding" + amount + " of credit to your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was unsuccessful."))
                     .send(notificationReceivers());
@@ -606,11 +648,28 @@ public class Model_Product extends Model {
                     .setImportance(Enum_Notification_importance.normal)
                     .setLevel(Enum_Notification_level.info)
                     .setText(new Notification_Text().setText("Credit was removed. ").setBoldText())
-                    .setText(new Notification_Text().setText(" " + amount + "of credit was removed from your product "))
+                    .setText(new Notification_Text().setText(" " + amount + " of credit was removed from your product "))
                     .setObject(this)
                     .send(notificationReceivers());
         } catch (Exception e) {
             terminal_logger.internalServerError("notificationCreditRemove:", e);
+        }
+    }
+
+    @JsonIgnore
+    public void notificationCreditInsufficient(){
+        try {
+
+            new Model_Notification()
+                    .setImportance(Enum_Notification_importance.normal)
+                    .setLevel(Enum_Notification_level.warning)
+                    .setText(new Notification_Text().setText("Amount of credit is insufficient. Your credit balance is " + this.credit + ". Credit must be positive, so your product "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" could be activated."))
+                    .send(notificationReceivers());
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -624,12 +683,12 @@ public class Model_Product extends Model {
                 notification
                         .setImportance(Enum_Notification_importance.normal)
                         .setLevel(Enum_Notification_level.success)
-                        .setText(new Notification_Text().setText("On demand payments were canceled on your product"));
+                        .setText(new Notification_Text().setText("On demand payments were canceled on your product "));
             } else {
                 notification
                         .setImportance(Enum_Notification_importance.high)
                         .setLevel(Enum_Notification_level.error)
-                        .setText(new Notification_Text().setText("Failed to cancel on demand payments on your product"));
+                        .setText(new Notification_Text().setText("Failed to cancel on demand payments on your product "));
             }
 
             notification
@@ -688,7 +747,6 @@ public class Model_Product extends Model {
             terminal_logger.internalServerError("get_Container:",e);
             throw new NullPointerException();
         }
-
     }
 
     @JsonIgnore @Transient
@@ -699,8 +757,8 @@ public class Model_Product extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public static final String read_permission_docs   = "read: Bla bla bla";    // TODO
-    public static final String create_permission_docs   = "read: Bla bla bla";  // TODO
+    public static final String read_permission_docs   = "read: If user is customer who owns the product or is employee of a customer(company) which owns it, he can read the product";
+    public static final String create_permission_docs   = "create: Everyone can create personal product and every employee of a customer(company) can create product for the company.";
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

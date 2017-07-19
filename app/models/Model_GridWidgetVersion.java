@@ -127,9 +127,7 @@ public class Model_GridWidgetVersion extends Model{
         if (grid_widget_version == null){
 
             grid_widget_version = Model_GridWidgetVersion.find.byId(id);
-            if (grid_widget_version == null){
-                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (grid_widget_version == null) return null;
 
             cache.put(id, grid_widget_version);
         }

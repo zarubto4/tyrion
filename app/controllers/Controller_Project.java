@@ -79,7 +79,7 @@ public class Controller_Project extends Controller {
 
             // Kontrola oprávnění těsně před uložením
             if (!project.create_permission())  return GlobalResult.result_forbidden();
-            if (!project.financial_permission())  return GlobalResult.result_badRequest("Cannot create new project because of low financial resources.");
+            if (!project.financial_permission())  return GlobalResult.result_badRequest("You cannot create project right now. Buy an extension for projects.");
 
             // Uložení objektu
             project.save();

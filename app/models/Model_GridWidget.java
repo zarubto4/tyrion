@@ -240,7 +240,7 @@ public class Model_GridWidget extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  @Transient                                     public boolean create_permission() {return  get_type_of_widget().update_permission();}
+    @JsonIgnore  @Transient                                     public boolean create_permission() {return  type_of_widget.update_permission();}
     @JsonIgnore  @Transient                                     public boolean read_permission()   {return  get_type_of_widget().read_permission();}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  get_type_of_widget().update_permission();}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  get_type_of_widget().update_permission();}
@@ -267,15 +267,12 @@ public class Model_GridWidget extends Model{
         if (grid_widget == null){
 
             grid_widget = Model_GridWidget.find.byId(id);
-            if (grid_widget == null){
-                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (grid_widget == null) return null;
 
             cache.put(id, grid_widget);
         }
 
         return grid_widget;
-
     }
 
     @JsonIgnore

@@ -203,9 +203,8 @@ public class Model_TypeOfBoard extends Model {
         if (typeOfBoard == null){
 
             typeOfBoard = Model_TypeOfBoard.find.byId(id);
-            if (typeOfBoard == null){
-                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (typeOfBoard == null) return null;
+
             cache.put(id, typeOfBoard);
         }
 
@@ -213,7 +212,6 @@ public class Model_TypeOfBoard extends Model {
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static  Model.Finder<String, Model_TypeOfBoard> find = new Finder<>(Model_TypeOfBoard.class);
-
-
 }

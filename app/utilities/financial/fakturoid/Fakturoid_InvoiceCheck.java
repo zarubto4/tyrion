@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import models.Model_Invoice;
 import play.api.Play;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.F;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
@@ -135,7 +136,7 @@ public class Fakturoid_InvoiceCheck {
 
                         // Binding Json with help object
                         final Form<Fakturoid_ResponseInvoice> form = Form.form(Fakturoid_ResponseInvoice.class).bind(result);
-                        if(form.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form.errorsAsJson().toString());
+                        if(form.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
                         Fakturoid_ResponseInvoice help = form.get();
 
                         // If it has related_id of new invoice, get the new invoice and update our DB
@@ -216,7 +217,7 @@ public class Fakturoid_InvoiceCheck {
                         if (invoice.method == Enum_Payment_method.credit_card) {
 
                             invoice.notificationInvoiceNew();
-                            Fakturoid_Controller.sendInvoiceEmail(invoice, null);
+                            Fakturoid.sendInvoiceEmail(invoice, null);
                         }
 
                         terminal_logger.debug("checkInvoice: set status to 'paid'");

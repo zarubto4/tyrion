@@ -250,9 +250,8 @@ public class Model_Library extends Model{
         if (library == null){
 
             library = Model_Library.find.byId(id);
-            if (library == null){
-                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (library == null) return null;
+
             cache.put(id, library);
         }
 

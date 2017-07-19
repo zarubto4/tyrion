@@ -686,7 +686,7 @@ public class Model_HomerInstance extends Model {
     @JsonProperty @Transient public boolean update_permission()  {  return  getB_program().update_permission() || Controller_Security.get_person().permissions_keys.containsKey("Instance_update");  }
     @JsonIgnore   @Transient public boolean read_permission()    {  return  getB_program().read_permission()   || Controller_Security.get_person().permissions_keys.containsKey("Instance_read");   }
     @JsonProperty @Transient public boolean edit_permission()    {  return  getB_program().edit_permission()   || Controller_Security.get_person().permissions_keys.containsKey("Instance_edit");    }
-    @JsonProperty @Transient public boolean delete_permission()  {  return  getB_program().delete_permission() || Controller_Security.get_person().permissions_keys.containsKey("Instance_delete");  }
+    //@JsonProperty @Transient public boolean delete_permission()  {  return  getB_program().delete_permission() || Controller_Security.get_person().permissions_keys.containsKey("Instance_delete");  }
 
     public enum permissions{ Instance_create, Instance_update, Instance_read, Instance_edit , Instance_delete}
 
@@ -708,12 +708,11 @@ public class Model_HomerInstance extends Model {
         if(instance == null){
 
             instance = Model_HomerInstance.find.byId(id);
-            if (instance == null) return  null;
+            if (instance == null) return null;
             
             cache.put(id, instance);
         }
 
         return instance;
     }
-
 }

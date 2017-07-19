@@ -559,6 +559,7 @@ public class Model_ActualizationProcedure extends Model {
         if(procedure == null){
 
             procedure = Model_ActualizationProcedure.find.byId(id);
+            if (procedure == null) return null;
 
             cache.put(id, procedure);
         }
@@ -567,6 +568,6 @@ public class Model_ActualizationProcedure extends Model {
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_ActualizationProcedure> find = new Model.Finder<>(Model_ActualizationProcedure.class);
 
+    public static Model.Finder<String,Model_ActualizationProcedure> find = new Model.Finder<>(Model_ActualizationProcedure.class);
 }

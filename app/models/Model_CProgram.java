@@ -470,16 +470,13 @@ public class Model_CProgram extends Model {
         if (c_program == null){
 
             c_program = Model_CProgram.find.byId(id);
-            if (c_program == null){
-                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (c_program == null) return null;
 
             cache.put(id, c_program);
         }
 
         return c_program;
     }
-
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Model.Finder<String,Model_CProgram> find = new Finder<>(Model_CProgram.class);

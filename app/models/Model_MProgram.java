@@ -358,20 +358,15 @@ public class Model_MProgram extends Model{
         if (m_program == null){
 
             m_program = Model_MProgram.find.byId(id);
-            if (m_program == null){
-                terminal_logger.warn("get Model_MProgram cache :: This object id:: " + id + " wasn't found.");
-            }
+            if (m_program == null) return null;
+
             cache.put(id, m_program);
         }
 
         return m_program;
     }
 
-
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model.Finder<String,Model_MProgram> find = new Finder<>(Model_MProgram.class);
-
-
 }

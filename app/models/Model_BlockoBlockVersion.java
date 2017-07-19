@@ -165,7 +165,7 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_create"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  blocko_block.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_create"); }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  get_blocko_block().read_permission()   ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_read");   }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_edit");   }
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_delete"); }
@@ -187,10 +187,8 @@ public class Model_BlockoBlockVersion extends Model {
         Model_BlockoBlockVersion blocko_block_version = cache.get(id);
         if (blocko_block_version == null){
 
-            blocko_block_version = Model_BlockoBlockVersion.find.byId(id);
-            if (blocko_block_version == null){
-                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
-            }
+            blocko_block_version = find.where().idEq(id).eq("removed_by_user", false).findUnique();
+            if (blocko_block_version == null) return null;
 
             cache.put(id, blocko_block_version);
         }

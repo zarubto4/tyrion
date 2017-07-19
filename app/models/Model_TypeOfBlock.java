@@ -305,10 +305,8 @@ public class Model_TypeOfBlock extends Model {
         Model_TypeOfBlock type_of_block = cache.get(id);
         if (type_of_block == null){
 
-            type_of_block = find.where().eq("id", id).eq("removed_by_user", false).findUnique();
-            if (type_of_block == null){
-                terminal_logger.warn("get_byId :: This object id:: " + id + " wasn't found.");
-            }
+            type_of_block = find.where().idEq(id).eq("removed_by_user", false).findUnique();
+            if (type_of_block == null) return null;
 
             cache.put(id, type_of_block);
         }

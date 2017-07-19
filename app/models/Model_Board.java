@@ -1733,7 +1733,7 @@ public class Model_Board extends Model {
         Model_Board board = cache.get(id);
         if (board == null) {
 
-            board = Model_Board.find.byId(id);
+            board = find.byId(id);
             if (board == null) return null;
 
             cache.put(id, board);

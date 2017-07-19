@@ -583,13 +583,12 @@ public class Model_VersionObject extends Model {
     @JsonIgnore
     public static Model_VersionObject get_byId(String id) {
 
-        Model_VersionObject version= cache.get(id);
+        Model_VersionObject version = cache.get(id);
         if (version == null){
 
             version = Model_VersionObject.find.byId(id);
-            if (version == null){
-                terminal_logger.warn("get get_version_byId_byId :: This object id:: " + id + " wasn't found.");
-            }
+            if (version == null) return null;
+
             cache.put(id, version);
         }
 

@@ -251,7 +251,29 @@ public class Model_ProductExtension extends Model{
      * @return Real price in Double.
      */
     @JsonIgnore
-    public Double getConfigPrice() {
+    public Double getDoubleConfigPrice() {
+        try {
+
+            terminal_logger.trace("getDoubleConfigPrice: Getting price for extension of type {}", this.type.name());
+
+            Extension extension = getExtensionType();
+            if (extension == null) return null;
+
+            Object configuration = getConfiguration();
+            if (configuration == null) return null;
+
+            terminal_logger.debug("getDoubleConfigPrice: Got extension type and configuration.");
+
+            return ((double) extension.getConfigPrice(configuration)) / 1000;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public Long getConfigPrice() {
         try {
 
             terminal_logger.trace("getConfigPrice: Getting price for extension of type {}", this.type.name());
@@ -264,7 +286,7 @@ public class Model_ProductExtension extends Model{
 
             terminal_logger.debug("getConfigPrice: Got extension type and configuration.");
 
-            return ((double) extension.getConfigPrice(configuration)) / 1000;
+            return extension.getConfigPrice(configuration);
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);

@@ -324,7 +324,6 @@ public class Model_HomerInstanceRecord extends Model {
                 return result;
             }
 
-
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Instance_device_set_snap();
@@ -336,7 +335,7 @@ public class Model_HomerInstanceRecord extends Model {
     private void create_actualization_hardware_request() {
         try {
 
-            terminal_logger.debug("create_actualization_request:: byl zavolán na Instance Record:: {}" , id);
+            terminal_logger.debug("create_actualization_request: Instance Record = {}" , id);
 
             Model_ActualizationProcedure actualization_procedure = new Model_ActualizationProcedure();
             actualization_procedure.project_id = actual_running_instance.get_project_id();
@@ -348,14 +347,11 @@ public class Model_HomerInstanceRecord extends Model {
             actualization_procedure.type_of_update = Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP;
             //actualization_procedure.save();
 
-
             // List Of updates
             List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
 
-
             // List Of hardware for updates
             List<Model_BPair> model_bPairs = new ArrayList<>();
-
 
             // Contains All Hardware for Update
             for(Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
@@ -363,7 +359,7 @@ public class Model_HomerInstanceRecord extends Model {
                 model_bPairs.addAll(group.device_board_pairs);
             }
 
-            actualization_procedure.refresh();
+            //actualization_procedure.refresh();
 
             // Projedu seznam HW - podle skupin instancí jak jsou poskládané podle Yody
             for(Model_BPair model_bPair : model_bPairs) {
@@ -380,10 +376,10 @@ public class Model_HomerInstanceRecord extends Model {
                         .endJunction()
                         .findList();
 
-                terminal_logger.debug("create_actualization_request:: The number still valid update plans for Main Board Id:: {}that must be override:: {}",  model_bPair.board.id , old_plans_main_board.size());
+                terminal_logger.debug("create_actualization_request: The number still valid update plans for Main Board Id:: {}that must be override:: {}",  model_bPair.board.id , old_plans_main_board.size());
 
                 for (Model_CProgramUpdatePlan old_plan : old_plans_main_board) {
-                    terminal_logger.debug("create_actualization_request:: Old plan for override under B_Program in Cloud: {} ", old_plan.id);
+                    terminal_logger.debug("create_actualization_request: Old plan for override under B_Program in Cloud: {} ", old_plan.id);
                     old_plan.state = Enum_CProgram_updater_state.overwritten;
                     old_plan.date_of_finish = new Date();
                     old_plan.update();
@@ -394,19 +390,15 @@ public class Model_HomerInstanceRecord extends Model {
                 plan_master_board.firmware_type = Enum_Firmware_type.FIRMWARE;
                 plan_master_board.c_program_version_for_update = model_bPair.c_program_version;
                 updates.add(plan_master_board);
-
             }
 
-
-
             if(updates.isEmpty()){
-                terminal_logger.debug("create_actualization_request:: nothing for update");
+                terminal_logger.debug("create_actualization_request: nothing for update");
                 return;
             }
 
             actualization_procedure.updates.addAll(updates);
             actualization_procedure.save();
-
 
             for(Model_CProgramUpdatePlan plan_update : actualization_procedure.updates){
                 if(plan_update.state != Enum_CProgram_updater_state.complete){
@@ -423,9 +415,6 @@ public class Model_HomerInstanceRecord extends Model {
             terminal_logger.internalServerError("create_actualization_request:", e);
         }
     }
-
-
-
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
@@ -456,10 +445,9 @@ public class Model_HomerInstanceRecord extends Model {
 
         terminal_logger.warn("CACHE is not implemented - TODO");
         return find.byId(id);
-
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String, Model_HomerInstanceRecord> find = new Finder<>(Model_HomerInstanceRecord.class);
 
+    public static Model.Finder<String, Model_HomerInstanceRecord> find = new Finder<>(Model_HomerInstanceRecord.class);
 }

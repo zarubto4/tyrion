@@ -4,7 +4,6 @@ import com.avaje.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
-import play.db.ebean.Transactional;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -12,8 +11,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.*;
 import utilities.financial.extensions.configurations.*;
-import utilities.financial.fakturoid.Fakturoid_Controller;
-import utilities.financial.goPay.GoPay_Controller;
+import utilities.financial.fakturoid.Fakturoid;
+import utilities.financial.goPay.GoPay;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -1007,6 +1006,8 @@ public class Controller_Finance extends Controller {
                     customer = new Model_Customer();
                     customer.company = true;
 
+                    new_customer = true;
+
                 } else {
 
                     // Pokud je to pouze fyzická osoba, zkusím najít v DB existujícího zákazníka(osobu), když nenajdu udělám nového
@@ -1017,10 +1018,10 @@ public class Controller_Finance extends Controller {
 
                         customer = new Model_Customer();
                         customer.person = person;
+
+                        new_customer = true;
                     }
                 }
-
-                new_customer = true;
 
             } else {
 
@@ -1034,7 +1035,7 @@ public class Controller_Finance extends Controller {
             Model_Product product   = new Model_Product();
             product.name            = help.name;
             product.active          = true;
-            product.method          = Enum_Payment_method.free;
+            product.method          = help.payment_method;
             product.business_model  = tariff.business_model;
             product.credit          = tariff.credit_for_beginning;
 
@@ -1048,9 +1049,6 @@ public class Controller_Finance extends Controller {
 
                 product.fakturoid_subject_id = customer.fakturoid_subject_id;
 
-                if (help.payment_method == null)    return GlobalResult.result_badRequest("payment_method is required with this tariff");
-                product.method = help.payment_method;
-
                 terminal_logger.debug("product_create: Fakturoid subject id set");
 
             } else {
@@ -1063,7 +1061,6 @@ public class Controller_Finance extends Controller {
                     if (help.zip_code == null)          return GlobalResult.result_badRequest("zip_code is required with this tariff");
                     if (help.country == null)           return GlobalResult.result_badRequest("country is required with this tariff");
                     if (help.invoice_email == null)     return GlobalResult.result_badRequest("invoice_email is required with this tariff");
-                    if (help.payment_method == null)    return GlobalResult.result_badRequest("payment_method is required with this tariff");
 
                     if (tariff.company_details_required) {
 
@@ -1099,8 +1096,6 @@ public class Controller_Finance extends Controller {
                 payment_details.zip_code = help.zip_code;
                 payment_details.country = help.country;
                 payment_details.invoice_email = help.invoice_email;
-
-                product.method = help.payment_method;
             }
 
             Ebean.beginTransaction();
@@ -1129,7 +1124,7 @@ public class Controller_Finance extends Controller {
 
                 if (product.fakturoid_subject_id == null) {
 
-                    product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
+                    product.fakturoid_subject_id = Fakturoid.create_subject(payment_details);
 
                     if (product.fakturoid_subject_id == null)
                         return GlobalResult.result_badRequest("Payment details are invalid.");
@@ -1427,12 +1422,12 @@ public class Controller_Finance extends Controller {
 
             invoice.invoice_items.add(invoice_item);
 
-            invoice = Fakturoid_Controller.create_proforma(invoice);
+            invoice = Fakturoid.create_proforma(invoice);
             if (invoice == null) return GlobalResult.result_badRequest("Failed to make an invoice, check your provided payment information");
 
             if (product.method == Enum_Payment_method.credit_card){
 
-                invoice = GoPay_Controller.singlePayment("Credit upload payment", product, invoice);
+                invoice = GoPay.singlePayment("Credit upload payment", product, invoice);
             }
 
             // Return serialized object
@@ -1536,8 +1531,11 @@ public class Controller_Finance extends Controller {
             // Oprávnění operace
             if(!payment_details.create_permission()) return GlobalResult.result_forbidden();
 
-            payment_details.product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
-            if (payment_details.product.fakturoid_subject_id == null) return GlobalResult.result_badRequest("Unable to create your payment details, check provided information.");
+            product.fakturoid_subject_id = Fakturoid.create_subject(payment_details);
+            if (product.fakturoid_subject_id == null) return GlobalResult.result_badRequest("Unable to create your payment details, check provided information.");
+
+            product.method = help.method;
+            product.update();
 
             payment_details.save();
 
@@ -1632,16 +1630,18 @@ public class Controller_Finance extends Controller {
 
             if (payment_details.product.fakturoid_subject_id == null) {
 
-                payment_details.product.fakturoid_subject_id = Fakturoid_Controller.create_subject(payment_details);
+                payment_details.product.fakturoid_subject_id = Fakturoid.create_subject(payment_details);
                 if (payment_details.product.fakturoid_subject_id == null) return GlobalResult.result_badRequest("Unable to update your payment details, check provided information.");
 
                 payment_details.update();
 
             } else {
 
-                if (!Fakturoid_Controller.update_subject(payment_details))
+                if (!Fakturoid.update_subject(payment_details))
                     return GlobalResult.result_badRequest("Unable to update your payment details, check provided information.");
             }
+
+            payment_details.product.method = help.method;
 
             payment_details.product.update();
 
@@ -1799,7 +1799,7 @@ public class Controller_Finance extends Controller {
             if(invoice == null) return GlobalResult.result_notFound("Invoice invoice_id not found");
             if(!invoice.read_permission()) return GlobalResult.result_forbidden();
 
-            Fakturoid_Controller.sendInvoiceEmail(invoice, help.mail);
+            Fakturoid.sendInvoiceEmail(invoice, help.mail);
 
             return GlobalResult.result_ok();
 
@@ -1833,7 +1833,7 @@ public class Controller_Finance extends Controller {
             if( invoice.status.equals(Enum_Payment_status.paid)) return GlobalResult.result_badRequest("Invoice is already paid");
 
             // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
-            invoice = GoPay_Controller.singlePayment("First Payment", invoice.product, invoice);
+            invoice = GoPay.singlePayment("First Payment", invoice.product, invoice);
 
             // Vrácení ID s možností uhrazení
             return GlobalResult.result_ok(Json.toJson(invoice));
@@ -1870,7 +1870,7 @@ public class Controller_Finance extends Controller {
 
             if(!invoice.read_permission()) return GlobalResult.result_forbidden();
 
-            byte[] pdf_in_array = Fakturoid_Controller.download_PDF_invoice(kind, invoice);
+            byte[] pdf_in_array = Fakturoid.download_PDF_invoice(kind, invoice);
 
             return GlobalResult.result_pdfFile(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
 
@@ -1888,7 +1888,7 @@ public class Controller_Finance extends Controller {
             if(invoice == null) return GlobalResult.result_notFound("Invoice not found");
 
             if(!invoice.remind_permission()) return GlobalResult.result_forbidden();
-            Fakturoid_Controller.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
+            Fakturoid.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
 
             return GlobalResult.result_ok();
 
@@ -2013,7 +2013,7 @@ public class Controller_Finance extends Controller {
 
             customer.refresh();
 
-            customer.fakturoid_subject_id = Fakturoid_Controller.create_subject(details);
+            customer.fakturoid_subject_id = Fakturoid.create_subject(details);
 
             if (customer.fakturoid_subject_id == null)
                 return GlobalResult.result_badRequest("Payment details are invalid.");
@@ -2111,7 +2111,7 @@ public class Controller_Finance extends Controller {
 
             customer.refresh();
 
-            if (!Fakturoid_Controller.update_subject(details))
+            if (!Fakturoid.update_subject(details))
                 return GlobalResult.result_badRequest("Payment details are invalid.");
 
             return GlobalResult.result_ok(Json.toJson(customer));

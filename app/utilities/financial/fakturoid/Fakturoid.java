@@ -30,10 +30,10 @@ import java.util.Date;
  * This class is used to interact with Fakturoid or sending emails with invoices.
  * (Creating invoices and subjects or callbacks from Fakturoid.)
  */
-public class Fakturoid_Controller extends Controller {
+public class Fakturoid extends Controller {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Fakturoid_Controller.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Fakturoid.class);
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################
 
@@ -334,7 +334,7 @@ public class Fakturoid_Controller extends Controller {
     public static void sendInvoiceReminderEmail(Model_Invoice invoice, String message){
         try{
 
-            byte[] body = Fakturoid_Controller.download_PDF_invoice(invoice.proforma ? "proforma" : "invoice", invoice);
+            byte[] body = Fakturoid.download_PDF_invoice(invoice.proforma ? "proforma" : "invoice", invoice);
 
             String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
@@ -445,8 +445,6 @@ public class Fakturoid_Controller extends Controller {
                         result = response.asJson();
 
                         terminal_logger.debug("create_subject: Status: 422");
-
-                        // TODO notifikace
 
                         throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
@@ -596,8 +594,6 @@ public class Fakturoid_Controller extends Controller {
 
                         terminal_logger.debug("update_subject: Status: 422");
 
-                        // TODO notifikace
-
                         throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
 
@@ -641,17 +637,19 @@ public class Fakturoid_Controller extends Controller {
      * @return Boolean true if it succeeded or false if it failed.
      */
     public static boolean fakturoid_post (String url){
+
         // Slouží ke změnám faktury - například na změnu stavu na "zaplaceno"
-        terminal_logger.debug("Fakturoid_Controller: fakturoid_post: URL: " + Server.Fakturoid_url + url);
+        terminal_logger.debug("fakturoid_post: URL = " + Server.Fakturoid_url + url);
 
-        for (int trial = 5; trial > 0; trial--){
-            try{
+        try{
 
-                terminal_logger.debug("Fakturoid_Controller: fakturoid_post: Number of remaining tries: {}", trial);
+            WSResponse response;
 
-                WSResponse response;
+            JsonNode result;
 
-                JsonNode result;
+            for (int trial = 5; trial > 0; trial--){
+
+                terminal_logger.debug("fakturoid_post: Number of remaining tries: {}", trial);
 
                 try {
 
@@ -684,10 +682,7 @@ public class Fakturoid_Controller extends Controller {
 
                         terminal_logger.debug("fakturoid_post: Status: 422");
 
-                        // TODO notifikace
-
-                        terminal_logger.internalServerError("fakturoid_post:", new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: "+ result));
-                        return false;
+                        throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: "+ result);
                     }
 
                     default: {
@@ -697,11 +692,12 @@ public class Fakturoid_Controller extends Controller {
                         throw new Exception("Fakturoid returned unhandled. Response: "+ result);
                     }
                 }
-
-            } catch (Exception e) {
-                terminal_logger.internalServerError("fakturoid_post:", e);
             }
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("fakturoid_post:", e);
         }
+
         return false;
     }
 

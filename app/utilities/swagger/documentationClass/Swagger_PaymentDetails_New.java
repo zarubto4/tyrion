@@ -91,6 +91,9 @@ public class Swagger_PaymentDetails_New {
             if (company_name == null) errors.add(new ValidationError("company_name","Required if company_account = true."));
         }
 
+        if (method != Enum_Payment_method.credit_card && method != Enum_Payment_method.bank_transfer)
+            errors.add(new ValidationError("method","Allowable values: 'credit_card', 'bank_transfer'"));
+
         return errors.isEmpty() ? null : errors;
     }
 }

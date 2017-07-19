@@ -10,7 +10,6 @@ public enum Enum_HardwareHomerUpdate_state {
     @EnumValue("DEVICE_WAS_OFFLINE")                        DEVICE_WAS_OFFLINE,         //<--- Nahrazuje Deprecated stav YODA_WAS_OFFLINE
     @EnumValue("TRANSMISSION_CRC_ERROR")                    TRANSMISSION_CRC_ERROR,
     @EnumValue("INVALID_DEVICE_STATE")                      INVALID_DEVICE_STATE,
-    @Deprecated @EnumValue("YODA_WAS_OFFLINE")              YODA_WAS_OFFLINE,           // TODO Remove from DB LEXA
     @EnumValue("UPDATE_PROGRESS_STACK")                     UPDATE_PROGRESS_STACK,
     @EnumValue("OVERWRITTEN")                               OVERWRITTEN,
     @EnumValue("DEVICE_NOT_RECONNECTED")                    DEVICE_NOT_RECONNECTED,
