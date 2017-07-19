@@ -197,7 +197,7 @@ public class Model_BProgram extends Model {
 
         }catch (Exception e){
             terminal_logger.internalServerError("getVersion_objects", e);
-            return new ArrayList<Model_VersionObject>();
+            return new ArrayList<>();
         }
 
     }

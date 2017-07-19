@@ -408,21 +408,9 @@ public class Controller_Blocko extends Controller{
              }
              */
 
-
             terminal_logger.debug("update_b_program_new_version:: Saving version");
             // Uložení objektu
             version_object.save();
-
-
-            // Úprava objektu
-            b_program.getVersion_objects().add(version_object);
-
-            terminal_logger.debug("update_b_program_new_version:: Updating b_program");
-            // Uložení objektu
-            b_program.update();
-
-            // Update verze
-            version_object.refresh();
 
             // Nahrání na Azure
             Model_FileRecord.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
