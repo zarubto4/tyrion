@@ -56,12 +56,26 @@ public class Model_BlockoBlock extends Model {
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    author_id()         { return cache_value_author_id != null ? cache_value_author_id : get_author().id;}
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public String author_id(){
+
+        if (cache_value_author_id != null) return cache_value_author_id;
+
+        Model_Person person = get_author();
+        if (person == null) return null;
+
+        return person.id;
+    }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    author_nick_name()  { return get_author().nick_name; }
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public String author_nick_name(){
 
+        Model_Person person = get_author();
+        if (person == null) return null;
 
+        return person.nick_name;
+    }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
@@ -152,6 +166,8 @@ public class Model_BlockoBlock extends Model {
 
         if(cache_value_author_id == null){
             Model_Person person = Model_Person.find.where().eq("blocksAuthor.id", id).select("id").findUnique();
+            if (person == null) return null;
+
             cache_value_author_id = person.id;
         }
 
@@ -164,6 +180,7 @@ public class Model_BlockoBlock extends Model {
         if(cache_value_producer_id == null){
             Model_Producer producer = Model_Producer.find.where().eq("blocko_blocks.id", id).select("id").findUnique();
             if (producer == null) return null;
+
             cache_value_producer_id = producer.id;
         }
 

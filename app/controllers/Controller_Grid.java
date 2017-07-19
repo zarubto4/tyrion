@@ -1384,7 +1384,7 @@ public class Controller_Grid extends Controller {
             gridWidget.type_of_widget      = typeOfWidget;
 
             // Kontrola oprávnění těsně před uložením
-            if (! gridWidget.create_permission() ) return GlobalResult.result_forbidden();
+            if (!gridWidget.create_permission() ) return GlobalResult.result_forbidden();
 
             // Uložení objektu
             gridWidget.save();

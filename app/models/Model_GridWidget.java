@@ -53,22 +53,49 @@ public class Model_GridWidget extends Model{
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public String author_id(){
+
+        if (cache_value_author_id != null) return cache_value_author_id;
+
+        Model_Person person = get_author();
+        if (person == null) return null;
+
+        return person.id;
+    }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    author_id()         { return cache_value_author_id != null ? cache_value_author_id : get_author().id;}
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public String author_nick_name(){
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    author_nick_name()  { return get_author().nick_name; }
+        Model_Person person = get_author();
+        if (person == null) return null;
 
-
+        return person.nick_name;
+    }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_id()       { return cache_value_producer_id != null ? cache_value_producer_id : get_producer().id;}
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public String producer_id(){
+
+        if (cache_value_producer_id != null) return cache_value_producer_id;
+
+        Model_Producer producer = get_producer();
+        if (producer == null) return null;
+
+        return producer.id;
+    }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Transient  @JsonProperty  public String    producer_name()     { return get_producer().name;}
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public String producer_name(){
 
+        Model_Producer producer = get_producer();
+        if (producer == null) return null;
 
+        return producer.name;
+    }
 
     @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_widget_id()             { return cache_value_type_of_widget_id != null ? cache_value_type_of_widget_id : get_type_of_widget().id; }
     @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_widget_name()           { return get_type_of_widget().name; }
@@ -148,6 +175,7 @@ public class Model_GridWidget extends Model{
 
         if(cache_value_author_id == null){
             Model_Person person = Model_Person.find.where().eq("blocksAuthor.id", id).select("id").findUnique();
+            if (person == null) return null;
             cache_value_author_id = person.id;
         }
 
@@ -159,6 +187,8 @@ public class Model_GridWidget extends Model{
 
         if(cache_value_producer_id == null){
             Model_Producer producer = Model_Producer.find.where().eq("blocko_blocks.id", id).select("id").findUnique();
+            if (producer == null) return null;
+
             cache_value_producer_id = producer.id;
         }
 
@@ -173,7 +203,7 @@ public class Model_GridWidget extends Model{
 
         terminal_logger.debug("save :: Creating new Object");
 
-        order_position = Model_GridWidget.find.where().eq("type_of_widget.id", type_of_widget_id()).findRowCount() + 1;
+        order_position = Model_GridWidget.find.where().eq("type_of_widget.id", type_of_widget.id).findRowCount() + 1;
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
