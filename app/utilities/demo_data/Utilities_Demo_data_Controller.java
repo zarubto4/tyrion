@@ -62,7 +62,7 @@ public class Utilities_Demo_data_Controller extends Controller {
         result = this.test_boards();
         if (result.status() != 200) return result;
 
-        result = this.extendension_servers();
+        result = this.external_servers();
         if (result.status() != 200) return result;
 
         result = this.basic_tariffs();
@@ -388,7 +388,7 @@ public class Utilities_Demo_data_Controller extends Controller {
         }
     }
 
-    public Result extendension_servers() {
+    public Result external_servers() {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
@@ -487,12 +487,13 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_Tariff tariff_1 = new Model_Tariff();
             tariff_1.order_position = 1;
             tariff_1.active = true;
+            tariff_1.business_model = Enum_BusinessModel.alpha;
             tariff_1.name = "Alfa account";
-            tariff_1.description = "Temporary account only for next 3 months";
+            tariff_1.description = "Unlimited account for testing";
             tariff_1.identifier = "alpha";
 
             tariff_1.color = "blue";
-            tariff_1.credit_for_beginning = (long) 0;
+            tariff_1.credit_for_beginning = 0L;
 
             tariff_1.company_details_required = false;
             tariff_1.payment_details_required = false;
@@ -539,7 +540,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_1.removed = false;
             extensions_1.color = "blue-madison";
             extensions_1.tariff_included = tariff_1;
-            extensions_1.configuration = "{\"price\":1000,\"count\":1}";
+            extensions_1.configuration = "{\"price\":1000,\"count\":100}";
             extensions_1.save();
 
             Model_ProductExtension extensions_2 = new Model_ProductExtension();
@@ -555,15 +556,16 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Pro geeky
             Model_Tariff geek_tariff = new Model_Tariff();
-            tariff_1.order_position = 2;
+            geek_tariff.order_position = 2;
             geek_tariff.active = true;
+            geek_tariff.business_model = Enum_BusinessModel.saas;
             geek_tariff.name = "For true Geeks";
             geek_tariff.description = "Temporary account only for next 3 months";
             geek_tariff.identifier = "geek";
 
             geek_tariff.color = "green-jungle";
 
-            geek_tariff.credit_for_beginning = (long) 20000;
+            geek_tariff.credit_for_beginning = 200000L;
 
             geek_tariff.company_details_required = false;
             geek_tariff.payment_details_required = false;
@@ -604,8 +606,9 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Placená
             Model_Tariff business_tariff = new Model_Tariff();
-            tariff_1.order_position = 3;
+            business_tariff.order_position = 3;
             business_tariff.active = true;
+            business_tariff.business_model = Enum_BusinessModel.saas;
             business_tariff.name = "For true Business";
             business_tariff.description = "Best for true business";
             business_tariff.identifier = "business_1";
@@ -719,8 +722,9 @@ public class Utilities_Demo_data_Controller extends Controller {
             // Další placený
 
             Model_Tariff business_tariff_2 = new Model_Tariff();
-            tariff_1.order_position = 4;
+            business_tariff_2.order_position = 4;
             business_tariff_2.active = true;
+            business_tariff_2.business_model = Enum_BusinessModel.saas;
             business_tariff_2.name = "Enterprise";
             business_tariff_2.description = "You know what you need!";
             business_tariff_2.identifier = "business_2";
@@ -858,6 +862,10 @@ public class Utilities_Demo_data_Controller extends Controller {
             token.setDate();
             token.save();
 
+            Model_Customer customer = new Model_Customer();
+            customer.person = person;
+            customer.save();
+
             // Vytvoří tarif
             Model_Product product = new Model_Product();
             product.business_model = Enum_BusinessModel.alpha;
@@ -865,10 +873,8 @@ public class Utilities_Demo_data_Controller extends Controller {
             product.name = "Pepkova velkolepá Alfa";
             product.active  = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
             product.method  = Enum_Payment_method.free;
-
-            Model_Customer customer = new Model_Customer();
-            customer.person = person;
             product.customer = customer;
+            product.save();
 
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
             payment_details.full_name = person.full_name;
@@ -880,8 +886,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             payment_details.zip_code = "12000";
             payment_details.country = "Czech Republic";
             payment_details.product = product;
-            product.payment_details = payment_details;
-            product.save();
+            payment_details.save();
 
              // Okopíruji všechny aktivní, které má Tarrif už v sobě
             for (Model_ProductExtension ext : Model_Tariff.find.where().eq("identifier","alpha").findUnique().extensions_included){

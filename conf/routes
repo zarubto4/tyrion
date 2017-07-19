@@ -526,7 +526,7 @@ GET       /admin/extension/:extension_id                                @control
 GET       /admin/demo_data                                              @controllers.Controller_Dashboard.demo_data()
 PUT       /admin/demo_data/test                                         @utilities.demo_data.Utilities_Demo_data_Controller.test()
 PUT       /admin/demo_data/all_for_becki                                @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
-PUT       /admin/demo_data/extendension_servers                         @utilities.demo_data.Utilities_Demo_data_Controller.extendension_servers()
+PUT       /admin/demo_data/external_servers                             @utilities.demo_data.Utilities_Demo_data_Controller.external_servers()
 PUT       /admin/demo_data/basic_tarifs                                 @utilities.demo_data.Utilities_Demo_data_Controller.basic_tariffs()
 PUT       /admin/demo_data/producers                                    @utilities.demo_data.Utilities_Demo_data_Controller.producers()
 PUT       /admin/demo_data/type_of_board                                @utilities.demo_data.Utilities_Demo_data_Controller.type_of_board()
