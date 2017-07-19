@@ -147,33 +147,38 @@ public class Model_HomerInstance extends Model {
         // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
         // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
         // který následně vrací latest know online
-        if(Model_HomerServer.get_byId(server_id()).server_is_online()){
+        try {
 
-            if(cache_status.containsKey(id)){
+            if ( (Model_HomerServer.get_byId(server_id()) != null) && Model_HomerServer.get_byId(server_id()).server_is_online()) {
 
-                return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
+                if (cache_status.containsKey(id)) {
 
-            }else {
-                // Začnu zjišťovat stav - v separátním vlákně!
-                new Thread( () -> {
-                    try {
+                    return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
 
-                        WS_Message_Instance_status status = get_instance_status();
-                        if(status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
+                } else {
+                    // Začnu zjišťovat stav - v separátním vlákně!
+                    new Thread(() -> {
+                        try {
 
-                    } catch (Exception e) {
-                        terminal_logger.internalServerError("notification_board_connect:", e);
-                    }
-                }).start();
+                            WS_Message_Instance_status status = get_instance_status();
+                            if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
 
-                return Enum_Online_status.synchronization_in_progress;
+                        } catch (Exception e) {
+                            terminal_logger.internalServerError("notification_board_connect:", e);
+                        }
+                    }).start();
 
+                    return Enum_Online_status.synchronization_in_progress;
+
+                }
+
+            } else {
+                return Enum_Online_status.unknown_lost_connection_with_server;
             }
-
-        } else {
-            return Enum_Online_status.unknown_lost_connection_with_server;
+        }catch (Exception e){
+            // Záměrný Exception - Občas se nedosynchronizuje Cach - ale system stejnak po zvalidování dorovná stav
+           return Enum_Online_status.unknown_lost_connection_with_server;
         }
-        // return this.online_state();
     }
     @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return Model_HomerServer.get_byId(server_id()).server_is_online();}
 
