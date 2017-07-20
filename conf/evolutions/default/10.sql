@@ -60,33 +60,27 @@ alter table model_employee add constraint fk_model_employee_person_85 foreign ke
 create index ix_model_employee_person_85 on model_employee (person_id);
 
 alter table model_board
-  add column IF NOT EXISTS connected_server_id varchar(255),
-  add column IF NOT EXISTS connected_instance_id varchar(255),
-  add column IF NOT EXISTS database_synchronize boolean,
+  add column connected_server_id varchar(255),
+  add column connected_instance_id varchar(255),
+  add column database_synchronize boolean,
   drop constraint if exists fk_model_board_virtual_instan_18,
   drop constraint if exists fk_model_board_connected_serv_19,
-  DROP column if exists connected_server_unique_identificator,
-  DROP column if exists virtual_instance_under_project_id;
-
+  drop column if exists connected_server_unique_identificator cascade,
+  drop column if exists virtual_instance_under_project_id cascade;
 
 drop index if exists ix_model_board_virtual_instan_18;
 drop index if exists ix_model_board_connected_serv_19;
 
-
 update model_board set database_synchronize = true where database_synchronize isnull;
 
-
-
 alter table public.model_homer_server
-  add column IF NOT EXISTS json_additional_parameter text;
-
+  add column json_additional_parameter text;
 
 alter table model_homer_instance
-  add column IF NOT EXISTS project_id varchar(255);
-
+  add column project_id varchar(255);
 
 alter table model_project
-  drop column if exists private_instance_blocko_instance_name,
+  drop column if exists private_instance_id cascade,
   drop constraint if exists fk_model_project_private_inst_65,
   drop constraint if exists uq_model_project_private_instanc;
 
@@ -127,9 +121,16 @@ alter table model_payment_details add constraint fk_model_payment_details_pers_6
 create index ix_model_payment_details_pers_61 on model_payment_details (person_id);
 
 alter table model_board
+  add column virtual_instance_under_project_id varchar(255),
+  add column connected_server_unique_identificator varchar(255),
   drop column if exists connected_server_id,
   drop column if exists connected_instance_id,
-  drop column if exists database_synchronize;
+  drop column if exists database_synchronize,
+  add constraint fk_model_board_virtual_instan_18 foreign key (virtual_instance_under_project_id) references model_homer_instance (id),
+  add constraint fk_model_board_connected_serv_19 foreign key (connected_server_unique_identificator) references model_homer_server (unique_identificator);
+
+create index ix_model_board_virtual_instan_18 on model_board (virtual_instance_under_project_id);
+create index ix_model_board_connected_serv_19 on model_board (connected_server_unique_identificator);
 
 alter table public.model_homer_server
   drop column if exists json_additional_parameter;
@@ -137,9 +138,9 @@ alter table public.model_homer_server
 alter table model_homer_instance
   drop column if exists project_id;
 
-
 alter table model_project
-  add constraint fk_model_project_private_inst_65 foreign key (private_instance_id) references model_homer_instance (id);
-
+  add column private_instance_id varchar(255),
+  add constraint fk_model_project_private_inst_65 foreign key (private_instance_id) references model_homer_instance (id),
+  add constraint uq_model_project_private_instanc unique (private_instance_id);
 
 create index ix_model_project_private_inst_65 on model_project (private_instance_id);
