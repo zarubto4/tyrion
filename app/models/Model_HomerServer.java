@@ -35,7 +35,9 @@ import web_socket.services.WS_HomerServer;
 import web_socket.services.WS_Interface_type;
 
 import javax.persistence.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 @Entity
@@ -99,6 +101,10 @@ public class Model_HomerServer extends Model{
   
     @JsonIgnore @Override public void save() {
 
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("name", "testEvent");
+
         terminal_logger.debug("save :: Creating new Object");
         
         this.time_stamp_configuration = new Date();
@@ -110,10 +116,8 @@ public class Model_HomerServer extends Model{
         }
 
         if(unique_identificator == null)    // Určeno pro možnost vytvořit testovací server - manuální doplnění unique_identificator
-        while(true){ // I need Unique Value
-            unique_identificator = UUID. randomUUID().toString().substring(0,10);
-            if (get_byId(unique_identificator) == null) break;
-        }
+
+        unique_identificator = UUID. randomUUID().toString().substring(0,10);
 
         super.save();
 
@@ -533,10 +537,10 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient public static final String create_permission_docs = "create: User (Admin with privileges) can create public cloud cloud_blocko_server where the system uniformly creating Blocko instantiates or (Customer) can create private cloud_blocko_server for own projects";
 
                                                                       // TODO oprávnění bude komplikovanější až se budou podporovat lokální servery
-    @JsonIgnore                                                       @Transient public boolean create_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_create");  }
-    @JsonIgnore                                                       @Transient public boolean read_permission()    {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_read");    }
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean edit_permission()    {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_edit");    }
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient public boolean delete_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_delete");  }
+    @JsonIgnore   @Transient public boolean create_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_create");  }
+    @JsonIgnore   @Transient public boolean read_permission()    {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_read");    }
+    @JsonProperty @Transient public boolean edit_permission()    {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_edit");    }
+    @JsonProperty @Transient public boolean delete_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Cloud_Homer_Server_delete");  }
 
     public enum permissions{Cloud_Homer_Server_create, Cloud_Homer_Server_read, Cloud_Homer_Server_edit, Cloud_Homer_Server_delete}
 

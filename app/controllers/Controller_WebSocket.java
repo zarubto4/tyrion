@@ -123,13 +123,16 @@ public class Controller_WebSocket extends Controller {
 
             terminal_logger.debug("homer_cloud_server_connection:: Incoming connection: Server:  "+ unique_identificator);
 
-            Model_HomerServer homer_server = Model_HomerServer.get_byId(unique_identificator);
-            if(homer_server== null){
 
+
+            Model_HomerServer homer_server = Model_HomerServer.get_byId(unique_identificator);
+
+            if(homer_server== null){
                 // Připojím se
                 terminal_logger.warn("homer_cloud_server_connection:: Incoming connection: Server:  "+ unique_identificator + "is not registred in database!!!!!");
                 return WebSocket.reject(forbidden("Server side error - already connected"));
             }
+
 
             if(homer_servers.containsKey(unique_identificator)) {
                 terminal_logger.warn("homer_cloud_server_connection::  Server is connected -> Tyrion try to send ping");

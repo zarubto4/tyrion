@@ -36,7 +36,7 @@ public class Model_HomerInstanceRecord extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                                @JsonIgnore @Id   public String id;
+    @JsonIgnore @Id   public String id;
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.ALL,  fetch = FetchType.LAZY)     public Model_HomerInstance main_instance_history;
 
@@ -47,7 +47,7 @@ public class Model_HomerInstanceRecord extends Model {
 
     @JsonIgnore @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)       public Model_VersionObject version_object;
     @JsonIgnore @OneToOne(cascade=CascadeType.ALL)                                public Model_HomerInstance actual_running_instance;      // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
-    @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -58,17 +58,17 @@ public class Model_HomerInstanceRecord extends Model {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_id()          {  return cache_version_object_id != null ? cache_version_object_id : get_b_program_version().id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_name()        {  return get_b_program_version().version_name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_version_description() {  return get_b_program_version().version_description;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_id()                  {  return get_b_program_version().get_b_program().id;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_name()                {  return get_b_program_version().get_b_program().name;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String b_program_description()         {  return get_b_program_version().get_b_program().description;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public  String instance_record_id()            {  return this.id;}
+    @Transient @JsonProperty  public  String b_program_version_id()          {  return cache_version_object_id != null ? cache_version_object_id : get_b_program_version().id;}
+    @Transient @JsonProperty  public  String b_program_version_name()        {  return get_b_program_version().version_name;}
+    @Transient @JsonProperty  public  String b_program_version_description() {  return get_b_program_version().version_description;}
+    @Transient @JsonProperty  public  String b_program_id()                  {  return get_b_program_version().get_b_program().id;}
+    @Transient @JsonProperty  public  String b_program_name()                {  return get_b_program_version().get_b_program().name;}
+    @Transient @JsonProperty  public  String b_program_description()         {  return get_b_program_version().get_b_program().description;}
+    @Transient @JsonProperty  public  String instance_record_id()            {  return this.id;}
 
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_BProgramHwGroup> hardware_group()               {  return get_b_program_version().b_program_hw_groups;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public List<Model_MProjectProgramSnapShot> m_project_snapshot()    {  return get_b_program_version().b_program_version_snapshots;}
-    @Transient @JsonProperty @ApiModelProperty(required = true, readOnly = true) public Enum_Homer_instance_record_status status()    {
+    @Transient @JsonProperty  public List<Model_BProgramHwGroup> hardware_group()               {  return get_b_program_version().b_program_hw_groups;}
+    @Transient @JsonProperty  public List<Model_MProjectProgramSnapShot> m_project_snapshot()    {  return get_b_program_version().b_program_version_snapshots;}
+    @Transient @JsonProperty  public Enum_Homer_instance_record_status status()    {
 
         if(planed_when.getTime() > new Date().getTime()) return Enum_Homer_instance_record_status.FUTURE;
         if(actual_running_instance != null) return Enum_Homer_instance_record_status.NOW;
@@ -76,14 +76,14 @@ public class Model_HomerInstanceRecord extends Model {
 
     }
 
-    @JsonProperty(value = "procedures") public List<Swagger_ActualizationProcedure_Short_Detail> update_procedures_short_details() {
+    @Transient  @JsonProperty public List<Swagger_ActualizationProcedure_Short_Detail> procedure_short_details() {
 
         List<Swagger_ActualizationProcedure_Short_Detail> procedures_short_details = new ArrayList<>();
 
         for (Model_ActualizationProcedure procedure : get_actualization_procedures() ) {
             procedures_short_details.add(procedure.short_detail());
         }
-    
+
         return procedures_short_details;
     }
 
@@ -179,13 +179,14 @@ public class Model_HomerInstanceRecord extends Model {
 
             WS_Message_Instance_status status = actual_running_instance.get_instance_status();
 
-            System.out.println("Instance_status " + Json.toJson(status) );
             WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(actual_running_instance.id);
 
-            // Instance status
-           if(!instanceStatus.status){
+            if(instanceStatus.error_code != null ){
+                terminal_logger.warn("Instance " + actual_running_instance.id + " Instance not set in Homer Server ");
+            }
 
-               System.out.println("Instance " + actual_running_instance.id + " není online a tak jí budu muset nasadit ");
+            // Instance status
+            if(!instanceStatus.status){
                 // Vytvořím Instanci
                 WS_Message_Homer_Instance_add result_instance   = actual_running_instance.cloud_homer_server.add_instance(actual_running_instance);
                 if(!result_instance.status.equals("success")){
@@ -195,14 +196,14 @@ public class Model_HomerInstanceRecord extends Model {
 
             // Step 2
             WS_Message_Instance_upload_blocko_program result_step_2 = this.upload_blocko_program();
-           if(!result_step_2.status.equals("success")){
-               System.out.println("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_2.error_code);
-           }
+            if(!result_step_2.status.equals("success")){
+                terminal_logger.warn("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_2.error_code);
+            }
 
             // Step 3
             WS_Message_Instance_device_set_snap result_step_3 =  this.update_device_summary_collection();
             if(!result_step_3.status.equals("success")){
-                System.out.println("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_3.error_code);
+                terminal_logger.warn("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_3.error_code);
             }
 
             // Step 4

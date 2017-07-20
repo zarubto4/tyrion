@@ -2,7 +2,7 @@
 # --- !Ups
 
 alter table model_board
-  add column developer_kit BOOLEAN;
+  add column IF NOT EXISTS developer_kit BOOLEAN;
 
 update model_board set developer_kit = false where developer_kit isnull;
 

@@ -75,7 +75,9 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Transient
     public Swagger_ActualizationProcedure_Short_Detail short_detail(){
+
         Swagger_ActualizationProcedure_Short_Detail detail = new Swagger_ActualizationProcedure_Short_Detail();
+        detail.id = id.toString();
         detail.date_of_create = date_of_create;
         detail.date_of_planing = date_of_planing;
         detail.date_of_finish = date_of_finish;
