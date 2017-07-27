@@ -132,7 +132,7 @@ public class Model_Board extends Model {
 
             List<Enum_Board_Alert> list = new ArrayList<>();
 
-            if( actual_bootloader_id() != null && available_bootloader_id() != null && !actual_bootloader_id().equals(available_bootloader_id())) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
+            if( ( available_bootloader_id() != null &&  actual_bootloader_id() == null ) || ( available_bootloader_id() != null  && !actual_bootloader_id().equals(available_bootloader_id()) )) list.add(Enum_Board_Alert.BOOTLOADER_REQUIRED);
 
             return list;
         }catch (Exception e){
