@@ -280,7 +280,7 @@ public class Controller_WebSocket extends Controller {
 
     public static void disconnectHomerServers() {
 
-        terminal_logger.warn("disconnect_all_Homer_Servers::  Trying to safely disconnect all Homer Servers");
+        terminal_logger.warn("disconnectHomerServers:  Trying to safely disconnect all Homer Servers");
 
         for (Map.Entry<String, WS_HomerServer> entry :  Controller_WebSocket.homer_servers.entrySet()) {
             server_violently_terminate_terminal(entry.getValue());
@@ -289,7 +289,7 @@ public class Controller_WebSocket extends Controller {
 
     public static void disconnectCodeServers() {
 
-        terminal_logger.warn("disconnectCodeServers:: Trying to safely disconnect all Code Servers");
+        terminal_logger.warn("disconnectCodeServers: Trying to safely disconnect all Code Servers");
 
         for (Map.Entry<String, WS_CompilerServer> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet()) {
             server_violently_terminate_terminal(entry.getValue());
@@ -298,7 +298,7 @@ public class Controller_WebSocket extends Controller {
 
     public static void disconnectBeckiApplications() {
 
-        terminal_logger.warn("disconnectBeckiApplications:: Trying to safely disconnect all Becki applications");
+        terminal_logger.warn("disconnectBeckiApplications: Trying to safely disconnect all Becki applications");
 
         for (Map.Entry<String, WS_Becki_Website> entry :  Controller_WebSocket.becki_website.entrySet()) {
             entry.getValue().onClose();

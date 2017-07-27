@@ -30,21 +30,22 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true)    public String id;
-                                                            @ApiModelProperty(required = true)    public String version_name;
-                                                            @ApiModelProperty(required = true)    public String version_description;
-    @Enumerated(EnumType.STRING)                            @ApiModelProperty(required = true)    public Enum_Approval_state approval_state;
+                                                        @Id public String id;
+                                                            public String version_name;
+                                                            public String version_description;
+                               @Enumerated(EnumType.STRING) public Enum_Approval_state approval_state;
 
-                                                         @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Person author;
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
-            value = "UNIX time in ms", example = "1466163478925")                                 public Date date_of_create;
+             @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
 
-                         @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String design_json;
-                         @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
-                                                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)    public Model_BlockoBlock blocko_block;
+    @ApiModelProperty(required = true, dataType = "integer",
+            value = "UNIX time in ms",
+            example = "1466163478925")                      public Date date_of_create;
 
-    @JsonIgnore              public boolean removed_by_user;
+                         @Column(columnDefinition = "TEXT") public String design_json;
+                         @Column(columnDefinition = "TEXT") public String logic_json;
+             @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BlockoBlock blocko_block;
 
+                                                @JsonIgnore public boolean removed_by_user;
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -54,7 +55,7 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty()
+    @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Person_Short_Detail author(){
         try{
 
@@ -165,10 +166,10 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  blocko_block.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_create"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  get_blocko_block().read_permission()   ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_read");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_delete"); }
+    @JsonProperty @ApiModelProperty(required = true) public boolean create_permission()  {  return  blocko_block.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_create"); }
+    @JsonProperty @ApiModelProperty(required = true) public boolean read_permission()    {  return  get_blocko_block().read_permission()   ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_read");   }
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()    {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_edit");   }
+    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_delete"); }
 
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 

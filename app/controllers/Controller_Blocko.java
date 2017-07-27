@@ -76,7 +76,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result new_b_Program(String project_id){
+    public Result bProgram_create(@ApiParam(value = "project_id String path", required = true) String project_id){
         try{
 
             // Zpracování Json
@@ -131,7 +131,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public  Result get_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
+    public Result bProgram_get(@ApiParam(value = "b_program_id String path", required = true) String b_program_id){
         try{
 
             // Kontrola objektu
@@ -149,42 +149,60 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get B Program version",
+    @ApiOperation(value = "get B_Program by Filter",
             tags = {"B_Program"},
-            notes = "get B_Program version object",
+            notes = "get B_Program List",
             produces = "application/json",
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.read_permission", value = "true"),
-                    })
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "B_Program_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_B_Program_Version.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_B_Program_List.class),
+            @ApiResponse(code = 400, message = "Invalid body",          response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
-    public  Result get_b_Program_version(@ApiParam(value = "version_id String path", required = true)  String version_id){
-        try{
+    public Result bProgram_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
+        try {
 
-            // Kontrola objektu
-            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
-            if (version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
+            // Získání JSON
+            final Form<Swagger_B_Program_Filter> form = Form.form(Swagger_B_Program_Filter.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_B_Program_Filter help = form.get();
 
-            // Kontrola oprávnění
-            if (version_object.get_b_program() == null) return GlobalResult.result_notFound("Version_Object is not version of B_Program");
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
+            query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
 
-            // Kontrola oprávnění
-            if (! version_object.get_b_program().read_permission() ) return GlobalResult.result_forbidden();
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if(help.project_id != null){
 
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version_object.get_b_program().program_version(version_object)));
+                query.where().eq("project.id", help.project_id);
+            }
 
-        } catch (Exception e) {
+            // Vytvoření odchozího JSON
+            Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
+
+            // Vrácení výsledku
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -221,7 +239,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result edit_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
+    public Result bProgram_update(@ApiParam(value = "b_program_id String path", required = true) String b_program_id){
         try{
 
             // Zpracování Json
@@ -250,6 +268,49 @@ public class Controller_Blocko extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+    @ApiOperation(value = "remove B Program",
+            tags = {"B_Program"},
+            notes = "remove B_Program object",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result bProgram_delete(@ApiParam(value = "b_program_id String path", required = true) String b_program_id){
+        try{
+
+            // Kontrola objektu
+            Model_BProgram program = Model_BProgram.get_byId(b_program_id);
+            if (program == null) return GlobalResult.result_notFound("B_Program id not found");
+
+            // Kontrola oprávění
+            if (! program.delete_permission() ) return GlobalResult.result_forbidden();
+
+            // Smazání objektu
+            program.delete();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+// B PROGRAM VERSION ###################################################################################################
 
     @ApiOperation(value = "create Version B Program",
             tags = {"B_Program"},
@@ -284,7 +345,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result update_b_Program_new_version(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
+    public Result bProgramVersion_create(@ApiParam(value = "b_program_id String path", required = true) String b_program_id){
         try{
 
             // Zpracování Json
@@ -423,41 +484,40 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "remove B Program",
+    @ApiOperation(value = "get B Program version",
             tags = {"B_Program"},
-            notes = "remove B_Program object",
+            notes = "get B_Program version object",
             produces = "application/json",
-            consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "B_program.read_permission", value = "true"),
                     })
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_B_Program_Version.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public  Result remove_b_Program(@ApiParam(value = "b_program_id String path", required = true)  String b_program_id){
+    public Result bProgramVersion_get(@ApiParam(value = "version_id String path", required = true) String version_id){
         try{
 
             // Kontrola objektu
-            Model_BProgram program = Model_BProgram.get_byId(b_program_id);
-            if (program == null) return GlobalResult.result_notFound("B_Program id not found");
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
+            if (version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
-            // Kontrola oprávění
-            if (! program.delete_permission() ) return GlobalResult.result_forbidden();
+            // Kontrola oprávnění
+            if (version_object.get_b_program() == null) return GlobalResult.result_notFound("Version_Object is not version of B_Program");
 
-            // Smazání objektu
-            program.delete();
+            // Kontrola oprávnění
+            if (! version_object.get_b_program().read_permission() ) return GlobalResult.result_forbidden();
 
-            // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(version_object.get_b_program().program_version(version_object)));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -496,24 +556,23 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public  Result edit_b_Program_version(@ApiParam(value = "version_id String path", required = true) String version_id){
+    public Result bProgramVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id){
         try{
-
 
             // Zpracování Json
             final Form<Swagger_B_Program_Version_Edit> form = Form.form(Swagger_B_Program_Version_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_B_Program_Version_Edit help = form.get();
 
             // Získání objektu
-            Model_VersionObject version_object  = Model_VersionObject.get_byId(version_id);
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
+            if (version_object == null) return GlobalResult.result_notFound("Version not found");
 
             version_object.version_name = help.version_name;
             version_object.version_description = help.version_description;
 
-
             // Kontrola oprávnění
-            if (! version_object.get_b_program().edit_permission() ) return GlobalResult.result_forbidden();
+            if (!version_object.get_b_program().edit_permission()) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             version_object.update();
@@ -547,18 +606,18 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public  Result remove_b_Program_version(@ApiParam(value = "version_id String path", required = true) String version_id){
+    public Result bProgramVersion_delete(@ApiParam(value = "version_id String path", required = true) String version_id){
         try{
 
             // Získání objektu
             Model_VersionObject version_object  = Model_VersionObject.get_byId(version_id);
 
             // Kontrola objektu
-            if (version_object == null) return GlobalResult.result_notFound("Version_Object id not found");
-            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("B_Program not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version not found");
+            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("BProgram not found");
 
             // Kontrola oprávnění
-            if (! version_object.get_b_program().delete_permission() ) return GlobalResult.result_forbidden();
+            if (!version_object.get_b_program().delete_permission()) return GlobalResult.result_forbidden();
 
             // Smazání objektu
             version_object.delete();
@@ -567,64 +626,6 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get B_Program by Filter",
-            tags = {"B_Program"},
-            notes = "get B_Program List",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "B_Program_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
-                    }),
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_B_Program_List.class),
-            @ApiResponse(code = 400, message = "Invalid body",          response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
-    })
-    public Result get_b_Program_by_Filter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
-        try {
-
-            // Získání JSON
-            final Form<Swagger_B_Program_Filter> form = Form.form(Swagger_B_Program_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_B_Program_Filter help = form.get();
-
-            // Získání všech objektů a následné filtrování podle vlastníka
-            Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
-
-            // Pokud JSON obsahuje project_id filtruji podle projektu
-            if(help.project_id != null){
-
-                query.where().eq("project.id", help.project_id);
-            }
-
-            // Vytvoření odchozího JSON
-            Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -662,7 +663,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public  Result upload_b_Program_ToCloud(@ApiParam(value = "version_id String path", required = true) String version_id){
+    public Result bProgramVersion_deploy(@ApiParam(value = "version_id String path", required = true) String version_id){
         try {
 
             // Získání JSON
@@ -672,10 +673,10 @@ public class Controller_Blocko extends Controller{
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
-            if (version_object == null) return GlobalResult.result_notFound("VersionObject not found");
+            if (version_object == null) return GlobalResult.result_notFound("Version not found");
 
             // Kontrola objektu: B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
-            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("VersionObject is not version of BProgram");
+            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("Version is not version of BProgram");
             Model_BProgram b_program = version_object.get_b_program();
 
             // Kontrola oprávnění
@@ -704,11 +705,11 @@ public class Controller_Blocko extends Controller{
             // If immidietly
             if(help.upload_time == null){
 
-                terminal_logger.debug("upload_b_Program_ToCloud:: Set the instants immediately");
+                terminal_logger.debug("bProgramVersion_deploy: Set the instants immediately");
                 record.set_record_into_cloud();
 
             }else {
-                terminal_logger.debug("upload_b_Program_ToCloud:: Set the instants by Time scheduler (not now) ");
+                terminal_logger.debug("bProgramVersion_deploy: Set the instants by Time scheduler (not now) ");
                 CustomScheduler.scheduleBlockoUpload(record);
             }
 
@@ -718,6 +719,8 @@ public class Controller_Blocko extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+// INSTANCE ############################################################################################################
 
     @ApiOperation(value = "updates personal info about instance",
             tags = {"Instance"},
@@ -1065,8 +1068,6 @@ public class Controller_Blocko extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-
 
     /**
      *
@@ -1466,7 +1467,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_order_up(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+    public Result typeOfBlock_orderUp(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
         try{
 
             Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.get_byId(blocko_block_id);
@@ -1499,7 +1500,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_order_down(@ApiParam(value = "type_of_block_id String path",   required = true) String type_of_block_id){
+    public Result typeOfBlock_orderDown(@ApiParam(value = "type_of_block_id String path",   required = true) String type_of_block_id){
         try{
 
             Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.get_byId(type_of_block_id);
@@ -1683,48 +1684,6 @@ public class Controller_Blocko extends Controller{
 
     }
 
-    @ApiOperation(value = "get version of the BlockoBlock",
-            tags = {"Blocko-Block"},
-            notes = "get version (content) from independent BlockoBlock",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_read_permission", value = Model_BlockoBlockVersion.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result blockoBlockVersion_get(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
-        try {
-            // Kontrola objektu
-            Model_BlockoBlockVersion blocko_version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if(blocko_version == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
-
-            // Kontrola oprávnění
-            if (! blocko_version.read_permission() ) return GlobalResult.result_forbidden("You have no permission to get that");
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blocko_version));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-
-    }
-
     @ApiOperation(value = "get BlockoBlock",
             tags = {"Blocko-Block"},
             notes = "get independent BlockoBlock object",
@@ -1865,18 +1824,13 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "delete BlockoBlock version",
+    @ApiOperation(value = "manual order UP for Blocko Block list",
             tags = {"Blocko-Block"},
-            notes = "delete BlockoBlock version",
+            notes = "set up order",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_delete_permission")
-                    })
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -1885,26 +1839,58 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_delete(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
-        try {
+    public Result blockoBlock_orderUp(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
+        try{
 
-            // Kontrola objektu
-            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if(version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
+            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
+            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
 
             // Kontrola oprávnění
-            if (!version.delete_permission()) return GlobalResult.result_forbidden();
+            if (! blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
 
-            // Smazání objektu
-            version.delete();
+            blockoBlock.up();
 
-            // Vrácení potvrzení
             return GlobalResult.result_ok();
 
-        } catch (Exception e) {
+        }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+    @ApiOperation(value = "manual order Down for Blocko Block list",
+            tags = {"Blocko-Block"},
+            notes = "set up order",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result blockoBlock_orderDown(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
+        try{
+
+            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
+            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
+
+            // Kontrola oprávnění
+            if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
+
+            blockoBlock.down();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+// BLOCK VERSION #######################################################################################################
 
     @ApiOperation(value = "create BlockoBlock version",
             tags = {"Blocko-Block"},
@@ -1970,13 +1956,107 @@ public class Controller_Blocko extends Controller{
             version.author = Controller_Security.get_person();
 
             // Kontrola oprávnění
-            if (! version.create_permission()) return GlobalResult.result_forbidden();
+            if (!version.create_permission()) return GlobalResult.result_forbidden();
 
             // Uložení objektu
             version.save();
 
             // Vrácení objektu
             return GlobalResult.result_created(Json.toJson(blockoBlock));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get version of the BlockoBlock",
+            tags = {"Blocko-Block"},
+            notes = "get version (content) from independent BlockoBlock",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion_read_permission", value = Model_BlockoBlockVersion.read_permission_docs ),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result blockoBlockVersion_get(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+        try {
+            // Kontrola objektu
+            Model_BlockoBlockVersion blocko_version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
+            if(blocko_version == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+
+            // Kontrola oprávnění
+            if (! blocko_version.read_permission() ) return GlobalResult.result_forbidden("You have no permission to get that");
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(blocko_version));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+
+    }
+
+    @ApiOperation(value = "get all BlockoBlock version",
+            tags = {"Blocko-Block"},
+            notes = "get all versions (content) from independent BlockoBlock",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "BlockoBlockVersion_read_permission", value = Model_BlockoBlockVersion.read_permission_docs),
+                    }),
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
+                    })
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_BlockoVersion_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result blockoBlockVersion_getAll(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+        try {
+
+            // Kontrola objektu
+            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
+            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+
+            // Kontrola oprávnění
+            if (! blockoBlock.read_permission()) return GlobalResult.result_forbidden();
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(blockoBlock.get_blocko_block_versions()));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -2048,52 +2128,41 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get all BlockoBlock version",
+    @ApiOperation(value = "delete BlockoBlock version",
             tags = {"Blocko-Block"},
-            notes = "get all versions (content) from independent BlockoBlock",
+            notes = "delete BlockoBlock version",
             produces = "application/json",
+            consumes = "text/html",
             protocols = "https",
-            code = 200,
             extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_read_permission", value = Model_BlockoBlockVersion.read_permission_docs),
-                    }),
                     @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
+                            @ExtensionProperty(name = "BlockoBlockVersion.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_delete_permission")
                     })
             }
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_BlockoVersion_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_getAll(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+    public Result blockoBlockVersion_delete(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
         try {
 
             // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
+            if(version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
 
             // Kontrola oprávnění
-            if (! blockoBlock.read_permission()) return GlobalResult.result_forbidden();
+            if (!version.delete_permission()) return GlobalResult.result_forbidden();
 
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blockoBlock.get_blocko_block_versions()));
+            // Smazání objektu
+            version.delete();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -2143,72 +2212,6 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
 
         }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "manual order UP for Blocko Block list",
-            tags = {"Blocko-Block"},
-            notes = "set up order",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result blockoBlock_order_up(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
-        try{
-
-            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
-
-            // Kontrola oprávnění
-            if (! blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
-
-            blockoBlock.up();
-
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "manual order Down for Blocko Block list",
-            tags = {"Blocko-Block"},
-            notes = "set up order",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result blockoBlock_order_down(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
-        try{
-
-            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
-
-            // Kontrola oprávnění
-            if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
-
-            blockoBlock.down();
-
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }

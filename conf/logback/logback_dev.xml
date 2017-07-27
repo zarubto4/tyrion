@@ -49,7 +49,7 @@
     <logger name="com.jolbox.bonecp"    level="INFO" additivity = "false"/>
 
 
-    <logger name="junit.framework.TestCase" level="ERROR" additivity = "false">
+    <logger name="junit.framework.TestCase" level="INFO" additivity = "false">
         <appender-ref ref="testLog" />
         <appender-ref ref="allLog" />
     </logger>

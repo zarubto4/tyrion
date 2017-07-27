@@ -176,16 +176,16 @@ PUT       /project/unshareProject/:project_id                           @control
 PUT       /project/change_participant_state/:project_id                 @controllers.Controller_Project.project_changeParticipantStatus(project_id)
 
 #Program
-POST      /b_program/version/:b_program_id                              @controllers.Controller_Blocko.update_b_Program_new_version(b_program_id)
-PUT       /b_program/version/:version_id                                @controllers.Controller_Blocko.edit_b_Program_version(version_id)
-GET       /b_program/version/:version_id                                @controllers.Controller_Blocko.get_b_Program_version(version_id)
-DELETE    /b_program/version/:version_id                                @controllers.Controller_Blocko.remove_b_Program_version(version_id)
+POST      /b_program/version/:b_program_id                              @controllers.Controller_Blocko.bProgramVersion_create(b_program_id)
+PUT       /b_program/version/:version_id                                @controllers.Controller_Blocko.bProgramVersion_update(version_id)
+GET       /b_program/version/:version_id                                @controllers.Controller_Blocko.bProgramVersion_get(version_id)
+DELETE    /b_program/version/:version_id                                @controllers.Controller_Blocko.bProgramVersion_delete(version_id)
 
-POST      /b_program/:project_id                                        @controllers.Controller_Blocko.new_b_Program(project_id)
-GET       /b_program/:b_program_id                                      @controllers.Controller_Blocko.get_b_Program(b_program_id)
-PUT       /b_program/:b_program_id                                      @controllers.Controller_Blocko.edit_b_Program(b_program_id)
-DELETE    /b_program/:b_program_id                                      @controllers.Controller_Blocko.remove_b_Program(b_program_id)
-PUT       /b_program/list/:page_number                                  @controllers.Controller_Blocko.get_b_Program_by_Filter(page_number:Int )
+POST      /b_program/:project_id                                        @controllers.Controller_Blocko.bProgram_create(project_id)
+GET       /b_program/:b_program_id                                      @controllers.Controller_Blocko.bProgram_get(b_program_id)
+PUT       /b_program/:b_program_id                                      @controllers.Controller_Blocko.bProgram_update(b_program_id)
+DELETE    /b_program/:b_program_id                                      @controllers.Controller_Blocko.bProgram_delete(b_program_id)
+PUT       /b_program/list/:page_number                                  @controllers.Controller_Blocko.bProgram_getByFilter(page_number:Int )
 
 #Instance
 GET       /instance/project/:project_id                                 @controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
@@ -197,13 +197,13 @@ PUT       /instance/update/:instance_id                                 @control
 #Instance/Record
 GET       /instance_record/get/:instance_record_id                      @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
 
-PUT       /instance/uploadToCloud/:version_id                           @controllers.Controller_Blocko.upload_b_Program_ToCloud(version_id)
+PUT       /instance/uploadToCloud/:version_id                           @controllers.Controller_Blocko.bProgramVersion_deploy(version_id)
 PUT       /instance/start_or_shut_down/:instance_id                     @controllers.Controller_Blocko.instance_start_or_shut_down(instance_id)
 
 #Blocks
 POST      /blockoBlock                                                  @controllers.Controller_Blocko.blockoBlock_create()
-PUT       /blockoBlock/order/up/:blocko_block_id                        @controllers.Controller_Blocko.blockoBlock_order_up(blocko_block_id)
-PUT       /blockoBlock/order/down/:blocko_block_id                      @controllers.Controller_Blocko.blockoBlock_order_down(blocko_block_id)
+PUT       /blockoBlock/order/up/:blocko_block_id                        @controllers.Controller_Blocko.blockoBlock_orderUp(blocko_block_id)
+PUT       /blockoBlock/order/down/:blocko_block_id                      @controllers.Controller_Blocko.blockoBlock_orderDown(blocko_block_id)
 PUT       /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_update(blocko_block_id)
 GET       /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_get(blocko_block_id)
 DELETE    /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_delete(blocko_block_id)
@@ -224,8 +224,8 @@ PUT       /blockoBlock/scheme/version                                   @control
 POST      /typeOfBlock                                                  @controllers.Controller_Blocko.typeOfBlock_create()
 GET       /typeOfBlock                                                  @controllers.Controller_Blocko.typeOfBlock_getAll
 PUT       /typeOfBlock/list/:page_number                                @controllers.Controller_Blocko.typeOfBlock_getByFilter(page_number: Int)
-PUT       /typeOfBlock/order/up/:type_of_block_id                       @controllers.Controller_Blocko.typeOfBlock_order_up(type_of_block_id)
-PUT       /typeOfBlock/order/down/:type_of_block_id                     @controllers.Controller_Blocko.typeOfBlock_order_down(type_of_block_id)
+PUT       /typeOfBlock/order/up/:type_of_block_id                       @controllers.Controller_Blocko.typeOfBlock_orderUp(type_of_block_id)
+PUT       /typeOfBlock/order/down/:type_of_block_id                     @controllers.Controller_Blocko.typeOfBlock_orderDown(type_of_block_id)
 GET       /typeOfBlock/:type_of_block_id                                @controllers.Controller_Blocko.typeOfBlock_get(type_of_block_id)
 PUT       /typeOfBlock/:type_of_block_id                                @controllers.Controller_Blocko.typeOfBlock_update(type_of_block_id)
 DELETE    /typeOfBlock/:type_of_block_id                                @controllers.Controller_Blocko.typeOfBlock_delete(type_of_block_id)

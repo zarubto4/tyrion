@@ -148,7 +148,7 @@ public class Global extends GlobalSettings {
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
 
-        terminal_logger.debug("request: " + request.path());
+        terminal_logger.debug("request: " + request.method() + " " + request.path());
         RequestCounter.count(actionMethod.getName());
 
         return super.onRequest(request, actionMethod);

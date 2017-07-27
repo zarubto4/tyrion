@@ -472,7 +472,7 @@
 
         function upTypeOfBlock(id){
           $.ajax({
-            url: '@routes.Controller_Blocko.typeOfBlock_order_up("")' + id,
+            url: '@routes.Controller_Blocko.typeOfBlock_orderUp("")' + id,
             type: 'PUT',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -489,7 +489,7 @@
 
         function downTypeOfBlock(id){
           $.ajax({
-            url: '@routes.Controller_Blocko.typeOfBlock_order_down("")' + id,
+            url: '@routes.Controller_Blocko.typeOfBlock_orderDown("")' + id,
             type: 'PUT',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -508,10 +508,8 @@
 
         function upBlockoBlock(blocko_block_id, type_of_block_id){
 
-          console.log("upBlockoBlock id= ",  blocko_block_id , " type_of_block_id=" , type_of_block_id);
-
           $.ajax({
-            url: '@routes.Controller_Blocko.blockoBlock_order_up("")' + blocko_block_id,
+            url: '@routes.Controller_Blocko.blockoBlock_orderUp("")' + blocko_block_id,
             type: 'PUT',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")
@@ -527,10 +525,8 @@
 
         function downBlockoBlock(blocko_block_id, type_of_block_id){
 
-          console.log("downBlockoBlock id= ",  blocko_block_id , " type_of_block_id=" , type_of_block_id);
-
           $.ajax({
-            url: '@routes.Controller_Blocko.blockoBlock_order_down("")' + blocko_block_id,
+            url: '@routes.Controller_Blocko.blockoBlock_orderDown("")' + blocko_block_id,
             type: 'PUT',
             headers: {
               "X-AUTH-TOKEN":getCookie("authToken")

@@ -530,15 +530,16 @@ public class Model_Product extends Model {
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        terminal_logger.debug("update: Update object value: {}",  this.id);
 
         super.update();
     }
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
-        throw new IllegalAccessError("Delete is not supported under " + getClass().getSimpleName());
+        terminal_logger.debug("delete: Delete object value: {}",  this.id);
+
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

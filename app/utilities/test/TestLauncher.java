@@ -78,10 +78,10 @@ public class TestLauncher extends Controller{
 
 
             StreamGobbler errorGobbler = new
-                    StreamGobbler(pr.getErrorStream(), "ERROR");
+                    StreamGobbler(pr.getErrorStream(), "ERR!");
 
             StreamGobbler outputGobbler = new
-                    StreamGobbler(pr.getInputStream(), "TEST - OUTPUT");
+                    StreamGobbler(pr.getInputStream(), "INFO");
 
             errorGobbler.start();
             outputGobbler.start();

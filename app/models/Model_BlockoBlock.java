@@ -31,20 +31,18 @@ public class Model_BlockoBlock extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true)   public String id;
-                                                            @ApiModelProperty(required = true)   public String name;
-                         @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)   public String description;
+                                                        @Id public String id;
+                                                            public String name;
+                         @Column(columnDefinition = "TEXT") public String description;
 
-                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
-                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_TypeOfBlock type_of_block;
-                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Producer producer;
+             @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
+             @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_TypeOfBlock type_of_block;
+             @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Producer producer;
+
+                                                @JsonIgnore public Integer order_position;
+                                                @JsonIgnore public boolean removed_by_user;
 
     @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BlockoBlockVersion> blocko_versions = new ArrayList<>();
-
-    @JsonIgnore  public Integer order_position;
-    @JsonIgnore  public boolean removed_by_user;
-
-
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 

@@ -60,8 +60,7 @@ public class Model_BProgram extends Model {
     @JsonProperty @Transient public String project_id(){
 
         if(cache_value_project_id == null){
-            Model_Project project = Model_Project.find.where().eq("c_programs.id", id).select("id").findUnique();
-            if(project == null) return null;
+            Model_Project project = Model_Project.find.where().eq("b_programs.id", id).select("id").findUnique();
             cache_value_project_id = project.id;
         }
 

@@ -1,37 +1,164 @@
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import junit.framework.TestCase;
-import models.Model_BlockoBlock;
-import models.Model_BlockoBlockVersion;
-import models.Model_TypeOfBlock;
-import models.Model_Processor;
-import models.Model_Producer;
-import models.Model_TypeOfBoard;
-import models.Model_VersionObject;
-import models.Model_GridWidget;
-import models.Model_GridWidgetVersion;
-import models.Model_TypeOfWidget;
-import models.Model_FloatingPersonToken;
-import models.Model_Invitation;
-import models.Model_Person;
-import models.Model_ValidationToken;
-import models.Model_CProgram;
-import models.Model_Product;
-import models.Model_Project;
-import models.Model_ProjectParticipant;
-import models.Model_Tariff;
-import models.Model_PaymentDetails;
+import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import play.data.validation.ValidationError;
+import play.libs.Json;
+import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import utilities.enums.Enum_Participant_status;
-import utilities.enums.Enum_Payment_mode;
 
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.UUID;
+import java.util.*;
 
 public class TestHelper extends Controller{
 
     static Logger logger = LoggerFactory.getLogger(TestCase.class);
+
+    /**
+     * Method checks if response status was as expected one.
+     * If expected body is provided method checks if response contains all expected values.
+     * @param response from tested endpoint.
+     * @param expectedStatus which should be returned from the endpoint.
+     * @param expectedBody which should be returned from the endpoint. If null, no checks are made.
+     * @throws AssertionError if some value(s) was/were different from expected one(s).
+     */
+    public static void checkResponse(WSResponse response, int expectedStatus, ObjectNode expectedBody) throws AssertionError {
+
+        List<ValidationError> errors = new ArrayList<>();
+
+        if (response.getStatus() != expectedStatus) {
+            errors.add(new ValidationError("status", "expected response status was " + expectedStatus + " but got " + response.getStatus()));
+        }
+
+        // If there is a body that response should contain.
+        if (expectedBody != null) {
+
+            JsonNode result = null;
+
+            try {
+                result = response.asJson();
+            } catch (Exception e) {
+                errors.add(new ValidationError("body", "body is missing"));
+            }
+
+            if (result != null) {
+
+                // if response contains JSON, check its fields
+                errors.addAll(checkBody(result, expectedBody));
+            }
+        }
+
+        // Transforming errors into JSON format
+        if (!errors.isEmpty()) {
+
+            HashMap<String, String> errorMap = new HashMap<>();
+
+            for (ValidationError error : errors) {
+
+                if (errorMap.containsKey(error.key())) {
+                    errorMap.replace(error.key(), errorMap.get(error.key()) + ", " + error.message());
+                } else {
+                    errorMap.put(error.key(), error.message());
+                }
+            }
+
+            throw new AssertionError("Test failed with these errors: \n" + Json.prettyPrint(Json.toJson(errorMap)));
+        }
+    }
+
+    /**
+     * Compares two JSONs, the actual response and expected one.
+     * @param body from actual response.
+     * @param expectedBody that should be returned from the endpoint.
+     * @return List of Validation Errors which can be empty or contain errors from fields.
+     */
+    private static List<ValidationError> checkBody(JsonNode body, JsonNode expectedBody){
+
+        List<ValidationError> errors = new ArrayList<>();
+
+        Iterator<Map.Entry<String, JsonNode>> iterator = expectedBody.fields();
+
+        // Iterate through all fields of expected JSON
+        while (iterator.hasNext()){
+
+            Map.Entry<String, JsonNode> entry = iterator.next();
+
+            String key = entry.getKey();
+            JsonNode value = entry.getValue();
+
+            // If the field is missing
+            if (body.has(key)) {
+
+                JsonNode node = body.get(key);
+
+                // If the type of the field is different from the expected one
+                if (value.getNodeType() == node.getNodeType()) {
+
+                    switch (node.getNodeType()) {
+
+                        case STRING: {
+                            if (!value.asText().equals(node.asText()) && !key.equals("id"))
+                                errors.add(new ValidationError(key, "expected value '" + value.asText() + "' but got '" + node.asText() + "'"));
+                            break;
+                        }
+
+                        case OBJECT: errors.addAll(checkBody(node, value)); break;
+
+                        case ARRAY: {
+
+                            if (!value.elements().equals(node.elements()))
+                                errors.add(new ValidationError(key, "expected array " + value.toString() + " but got " + node.toString()));
+                        }
+
+                        case BOOLEAN: {
+                            if (value.asBoolean() != node.asBoolean())
+                                errors.add(new ValidationError(key, "expected value '" + value.asBoolean() + "' but got '" + node.asBoolean() + "'"));
+                            break;
+                        }
+
+                        case NUMBER: {
+                            if (node.isLong()) {
+                                if (value.isLong()) {
+                                    if (node.asLong() != value.asLong())
+                                        errors.add(new ValidationError(key, "expected value '" + value.asLong() + "' but got '" + node.asLong() + "'"));
+                                } else {
+                                    errors.add(new ValidationError(key, "expected type was different from 'Long'"));
+                                }
+                            }
+
+                            if (node.isDouble()) {
+                                if (value.isDouble()) {
+                                    if (node.asDouble() != value.asDouble())
+                                        errors.add(new ValidationError(key, "expected value '" + value.asDouble() + "' but got '" + node.asDouble() + "'"));
+                                } else {
+                                    errors.add(new ValidationError(key, "expected type was different from 'Double'"));
+                                }
+                            }
+
+                            break;
+                        }
+
+                        case NULL: {
+                            logger.warn("Field '{}' from body: \n{}\n was NULL (could be an expected value, but not necessarily - NULL value is also used, if expected value is unknown, but should be present in the JSON.)", key, Json.prettyPrint(body));
+                            break;
+                        }
+
+                        default: errors.add(new ValidationError(key, "Unknown type of JsonNode = " + node.getNodeType() + ".")); break;
+                    }
+                } else if (value.getNodeType() != JsonNodeType.NULL) {
+
+                    errors.add(new ValidationError(key, "expected type '" + value.getNodeType().name() + "' but got '" + node.getNodeType().name() + "'"));
+                }
+            } else {
+                errors.add(new ValidationError(key, "missing from the body"));
+            }
+        }
+
+        return errors;
+    }
 
     // PERSON ##########################################################################################################
 
@@ -112,15 +239,19 @@ public class TestHelper extends Controller{
     public static Model_Product product_create(Model_Person person){
         try {
 
+            Model_Customer customer = new Model_Customer();
+            customer.person = person;
+            customer.save();
+
             Model_Product product = new Model_Product();
             product.name = UUID.randomUUID().toString();
             product.active = true;
+            product.customer = customer;
 
             product.save();
             product.refresh();
 
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
-            payment_details.person = person;
             payment_details.company_account = false;
 
             payment_details.street = UUID.randomUUID().toString();
@@ -168,7 +299,7 @@ public class TestHelper extends Controller{
             project.refresh();
 
             Model_ProjectParticipant participant = new Model_ProjectParticipant();
-            participant.person = product.payment_details.person;
+            participant.person = product.customer.getPerson();
             participant.project = project;
             participant.state = Enum_Participant_status.owner;
 
@@ -235,37 +366,6 @@ public class TestHelper extends Controller{
         }
     }
 
-    // HOMER ###########################################################################################################
-/*
-    public static Private_Homer_Server homer_create(Project project){
-        try {
-
-            Private_Homer_Server privateHomerServer = new Private_Homer_Server();
-            privateHomerServer.mac_address = UUID.randomUUID().toString();
-            privateHomerServer.type_of_device = UUID.randomUUID().toString();
-            privateHomerServer.project = project;
-
-            privateHomerServer.save();
-            privateHomerServer.refresh();
-
-            return privateHomerServer;
-
-        }catch (Exception e){
-            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
-            return null;
-        }
-    }
-
-    public static void homer_delete(Private_Homer_Server homer){
-        try {
-
-            homer.delete();
-
-        }catch (Exception e){
-            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
-        }
-    }
-*/
     // PRODUCER ########################################################################################################
 
     public static Model_Producer producer_create(){
@@ -420,7 +520,7 @@ public class TestHelper extends Controller{
             Model_VersionObject version_object = new Model_VersionObject();
             version_object.version_name        = UUID.randomUUID().toString();
             version_object.version_description = UUID.randomUUID().toString();
-            version_object.author              = c_program.project.product.payment_details.person;
+            version_object.author              = c_program.project.product.customer.getPerson();
             version_object.date_of_create      = new Date();
             version_object.c_program           = c_program;
             version_object.public_version      = false;
@@ -457,7 +557,6 @@ public class TestHelper extends Controller{
             typeOfBlock.project = project;
 
             typeOfBlock.save();
-            typeOfBlock.refresh();
 
             return typeOfBlock;
 
@@ -484,9 +583,9 @@ public class TestHelper extends Controller{
             blockoBlock.name = UUID.randomUUID().toString();
             blockoBlock.description = UUID.randomUUID().toString();
             blockoBlock.type_of_block = typeOfBlock;
+            blockoBlock.author = typeOfBlock.project.product.customer.getPerson();
 
             blockoBlock.save();
-            blockoBlock.refresh();
 
             return blockoBlock;
 
@@ -512,12 +611,13 @@ public class TestHelper extends Controller{
             Model_BlockoBlockVersion blockoBlockVersion = new Model_BlockoBlockVersion();
             blockoBlockVersion.version_name = UUID.randomUUID().toString();
             blockoBlockVersion.version_description = UUID.randomUUID().toString();
+            blockoBlockVersion.date_of_create = new Date();
             blockoBlockVersion.design_json = UUID.randomUUID().toString();
             blockoBlockVersion.logic_json = UUID.randomUUID().toString();
             blockoBlockVersion.blocko_block = blockoBlock;
+            blockoBlockVersion.author = blockoBlock.author;
 
             blockoBlockVersion.save();
-            blockoBlockVersion.refresh();
 
             return blockoBlockVersion;
         }catch (Exception e){
@@ -536,6 +636,64 @@ public class TestHelper extends Controller{
         }
     }
 
+    public static Model_BProgram b_program_create(Model_Project project){
+        try {
+
+            Model_BProgram bProgram = new Model_BProgram();
+            bProgram.name = UUID.randomUUID().toString();
+            bProgram.description = UUID.randomUUID().toString();
+            bProgram.date_of_create = new Date();
+            bProgram.project = project;
+
+            bProgram.save();
+
+            return bProgram;
+
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void b_program_delete(Model_BProgram bProgram){
+        try {
+
+            bProgram.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
+    public static Model_VersionObject b_program_version_create(Model_BProgram bProgram){
+        try {
+
+            Model_VersionObject version = new Model_VersionObject();
+            version.version_name = UUID.randomUUID().toString();
+            version.version_description = UUID.randomUUID().toString();
+            version.b_program = bProgram;
+            version.date_of_create = new Date();
+            version.author = bProgram.project.product.customer.getPerson();
+
+            version.save();
+
+            return version;
+        }catch (Exception e){
+            logger.error("!!!! Error while setting up test values. Method {} failed! Reason: {}. This is probably the cause, why following tests failed. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+            return null;
+        }
+    }
+
+    public static void b_program_version_delete(Model_VersionObject version){
+        try {
+
+            version.delete();
+
+        }catch (Exception e){
+            logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
+        }
+    }
+
     // GRID ############################################################################################################
 
     public static Model_TypeOfWidget type_of_widget_create(Model_Project project){
@@ -546,8 +704,8 @@ public class TestHelper extends Controller{
             typeOfWidget.description = UUID.randomUUID().toString();
             typeOfWidget.project = project;
 
+
             typeOfWidget.save();
-            typeOfWidget.refresh();
 
             return typeOfWidget;
 
@@ -574,9 +732,9 @@ public class TestHelper extends Controller{
             gridWidget.name = UUID.randomUUID().toString();
             gridWidget.description = UUID.randomUUID().toString();
             gridWidget.type_of_widget = typeOfWidget;
+            gridWidget.author = typeOfWidget.project.product.customer.getPerson();
 
             gridWidget.save();
-            gridWidget.refresh();
 
             return gridWidget;
 
@@ -605,9 +763,9 @@ public class TestHelper extends Controller{
             gridWidgetVersion.design_json = UUID.randomUUID().toString();
             gridWidgetVersion.logic_json = UUID.randomUUID().toString();
             gridWidgetVersion.grid_widget = gridWidget;
+            gridWidgetVersion.author = gridWidget.author;
 
             gridWidgetVersion.save();
-            gridWidgetVersion.refresh();
 
             return gridWidgetVersion;
         }catch (Exception e){
