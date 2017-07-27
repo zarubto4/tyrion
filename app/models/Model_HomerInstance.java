@@ -176,6 +176,7 @@ public class Model_HomerInstance extends Model {
                 return Enum_Online_status.unknown_lost_connection_with_server;
             }
         }catch (Exception e){
+            
             // Záměrný Exception - Občas se nedosynchronizuje Cach - ale system stejnak po zvalidování dorovná stav
            return Enum_Online_status.unknown_lost_connection_with_server;
         }

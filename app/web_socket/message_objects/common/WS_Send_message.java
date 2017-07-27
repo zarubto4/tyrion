@@ -1,9 +1,11 @@
 package web_socket.message_objects.common;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.typesafe.config.ConfigException;
 import play.libs.Json;
 import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
+import web_socket.services.WS_CompilerServer;
 import web_socket.services.WS_Interface_type;
 
 import java.util.concurrent.*;
@@ -79,23 +81,15 @@ public class WS_Send_message {
     public ObjectNode send_with_response() throws TimeoutException, ExecutionException, InterruptedException {
         try {
 
-            if(this.messageId == null) {
+            if (this.messageId == null) {
                 terminal_logger.internalServerError(new Exception("message_id is null."));
             }
 
-            if(this.json == null){
-                terminal_logger.internalServerError(new Exception("JSON is null."));
-            }
+            return future.get();
 
-            terminal_logger.trace("send_with_response: Sending message: {} Message :: {} " , this.messageId, json );
-
-            if(future != null) {
-
-                return future.get();
-            }else {
-                terminal_logger.internalServerError(new Exception("future parameter is null"));
-                throw new TimeoutException();
-            }
+        }catch (NullPointerException e ){
+            terminal_logger.internalServerError(new Exception("future parameter is null"));
+            throw new TimeoutException();
         }catch (CancellationException e){
             terminal_logger.trace("send_with_response:: CancellationException: {} result: {} " , this.messageId ,  result.toString() );
             return result;
