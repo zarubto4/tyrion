@@ -40,7 +40,7 @@ public abstract class WS_Interface_type {
             terminal_logger.debug("onMessage: Incoming message: {} " , message);
 
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);
-
+            json.put("websocket_identificator", get_identificator());
 
             // V případě že zpráva byla odeslaná Tyironem - existuje v zásobníku její objekt
             if (json.has("message_id") && sendMessageMap.containsKey(json.get("message_id").asText())) {

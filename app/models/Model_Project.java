@@ -155,7 +155,6 @@ public class Model_Project extends Model {
 
             if (cache.containsKey(this.id)) cache.replace(this.id, this);
 
-
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }

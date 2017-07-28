@@ -2428,11 +2428,14 @@ public class Controller_Board extends Controller {
             // uprava desky
             board.project = project;
             board.date_of_user_registration = new Date();
-            project.boards.add(board);
             project.board_ids.add(board.id);
 
             board.update();
             project.update();
+
+            if( Model_Board.cache_status.containsKey(board.id)){
+                Model_Board.cache_status.remove(board.id);
+            }
 
             // vrácení objektu
             return GlobalResult.result_ok(Json.toJson(board));

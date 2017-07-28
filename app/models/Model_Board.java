@@ -468,7 +468,6 @@ public class Model_Board extends Model {
 
                         final Form<WS_Message_Hardware_connected> form = Form.form(WS_Message_Hardware_connected.class).bind(json);
                         if (form.hasErrors()){throw new Exception("WS_Message_Hardware_connected: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());}
-
                         Model_Board.device_Connected(form.get());
                         return;
                     }
@@ -551,39 +550,38 @@ public class Model_Board extends Model {
 
             terminal_logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.hardware_id);
 
-            if(!cache_status.containsKey(help.hardware_id) || cache_status.get(help.hardware_id)){
+            Model_Board device = Model_Board.get_byId(help.hardware_id);
 
-                Model_Board device = Model_Board.get_byId(help.hardware_id);
-
-                if(device == null){
-                    terminal_logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.hardware_id);
-                    return;
-                }
-
-                cache_status.put(help.hardware_id, true);
-
-                // Notifikce
-                if(device.developer_kit) {
-                    try {
-                        device.notification_board_connect();
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-                // Standartní synchronizace
-                if(device.project_id() != null) synchronize_online_state_with_becki(device.id, true, device.project_id());
-
-                if(!device.connected_server_id.equals(help.websocket_identificator)){
-                    device.connected_server_id = help.websocket_identificator;
-                    device.update();
-                }
-
-                device.make_log_connect();
-
-                device.hardware_firmware_state_check();
-
+            if(device == null){
+                terminal_logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.hardware_id);
+                return;
             }
+
+            cache_status.put(help.hardware_id, true);
+
+            // Notifikce
+            if(device.developer_kit) {
+                try {
+                    device.notification_board_connect();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            // Standartní synchronizace
+            if(device.project_id() != null) synchronize_online_state_with_becki(device.id, true, device.project_id());
+
+            if(device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator)){
+                terminal_logger.debug("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
+                device.connected_server_id = help.websocket_identificator;
+                device.update();
+            }
+
+            device.make_log_connect();
+
+            device.hardware_firmware_state_check();
+
+
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -596,12 +594,15 @@ public class Model_Board extends Model {
             terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.hardware_id + " on offline ");
             cache_status.put(help.hardware_id, false);
 
-            Model_Board master_device =  Model_Board.get_byId(help.hardware_id);
+            Model_Board device =  Model_Board.get_byId(help.hardware_id);
 
-            if(master_device == null) throw new NullPointerException("Hardware not found: ID = " + help.hardware_id);
+            if(device == null) {
+                terminal_logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
+                return;
+            }
 
-            master_device.notification_board_disconnect();
-            master_device.make_log_disconnect();
+            device.notification_board_disconnect();
+            device.make_log_disconnect();
 
             Model_Board.cache_status.put(help.hardware_id, false);
 
@@ -610,17 +611,19 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient public static void device_autoBackUp_echo(WS_Message_Hardware_autobackup_maked report){
+    @JsonIgnore @Transient public static void device_autoBackUp_echo(WS_Message_Hardware_autobackup_maked help){
         try {
 
-            terminal_logger.debug("device_autoBackUp_echo:: Deive send Echo about backup device ID:: {} ", report.device_id);
+            terminal_logger.debug("device_autoBackUp_echo:: Deive send Echo about backup device ID:: {} ", help.device_id);
 
-            Model_Board device = Model_Board.get_byId(report.device_id);
+            Model_Board device = Model_Board.get_byId(help.device_id);
 
-            if(device == null) throw new Exception("Unregistered Hardware. Id = " + report.device_id);
-
-            Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", report.build_id).select("id").findUnique();
-            if(c_program_version == null) throw new Exception("Firmware with build ID = " + report.build_id + " was not found in the database!");
+            if(device == null) {
+                terminal_logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.device_id);
+                return;
+            }
+            Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", help.build_id).select("id").findUnique();
+            if(c_program_version == null) throw new Exception("Firmware with build ID = " + help.build_id + " was not found in the database!");
 
             device.actual_backup_c_program_version = c_program_version;
             device.update();
@@ -751,10 +754,8 @@ public class Model_Board extends Model {
         // Make Parallel Operation
         List<JsonNode> results = server_parallel(request_collection,1000 * 10, 0, 1 );
 
-
         // Common Result for fill
         WS_Message_Hardware_online_status result = new WS_Message_Hardware_online_status();
-
 
         for(JsonNode json_result : results ) {
             try {
@@ -1361,7 +1362,6 @@ public class Model_Board extends Model {
                 }
             }
         }
-
 
     }catch (Exception e){
         terminal_logger.internalServerError(e);

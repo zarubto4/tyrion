@@ -73,6 +73,10 @@ public class WS_Send_message {
 
         terminal_logger.trace("insert_result: MessageID: {}  saving result to variable " , messageId );
         this.result = result;
+
+        this.result.put("websocket_identificator", sender_object.get_identificator());
+
+
         future.cancel(true);
     }
 
