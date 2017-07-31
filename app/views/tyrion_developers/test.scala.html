@@ -1,4 +1,3 @@
-
 @(fileNames: List[String], log: String)
 
 
@@ -12,6 +11,47 @@
 </section>
 
 <section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Run tests</h3>
+                </div>
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <form id="test_form">
+                                <select id="selectTest" name="tests[]" class="form-control" title="Choose test" multiple>
+                                @for(test_name <- fileNames){
+                                    <option value="@test_name">@test_name</option>
+                                }
+                                </select>
+                            </form>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary btn-block" type="button" onclick="run()">Run Test</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Results</h3>
+                </div>
+                <div id="results" class="box-body">
+                    Run some tests..
+                </div>
+                <div class="box-footer">
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-12">
             <div class="box">
@@ -44,6 +84,30 @@
 </section>
 
 <script>
+
+        function run(){
+            $("#loading_overlay").css("visibility","visible");
+            $.ajax({
+                url: '/admin/test',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken")
+                },
+                dataType: 'json',
+                data: JSON.stringify($("#test_form").serializeObject()),
+                success:function(json){
+                    $("#loading_overlay").css("visibility","hidden");
+                    show_results(json);
+                    refresh_log();
+                },
+                error:function(e) {
+                    $("#loading_overlay").css("visibility","hidden");
+                    alert(JSON.stringify(JSON.parse(e.responseText).message));
+                }
+            })
+        }
+
     function run_test(){
         $("#loading_overlay").css("visibility","visible");
         var cmd = $("#selected_test").val();
@@ -60,13 +124,10 @@
             },
             error:function(e) {
                 $("#loading_overlay").css("visibility","hidden");
-                alert(e.message);
+                alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
     }
-
-</script>
-<script>
 
     function refresh_log(){
         $.ajax({
@@ -86,8 +147,6 @@
         })
     }
 
-</script>
-<script>
 
     function clear_log(){
         $.ajax({
@@ -105,4 +164,53 @@
             }
         })
     }
+
+    $(function () {
+        $('#selectTest').select2({
+            placeholder: "Select multiple",
+            allowClear: false
+        });
+    });
+
+    function show_results(json) {
+
+        var content = "";
+
+        $.each(json.results, function(k, v) {
+            content += "<div class='col-md-2'><label style='font-size: larger'>" + v.name + "</label>  ";
+
+            if (v.successful == true) {
+                content += "<span class='label label-success'>successful</span>";
+            } else {
+                content += "<span class='label label-danger'>failed</span>";
+            }
+
+            content += "</div>" +
+                    "<div class='col-md-2'><label>Duration: </label> " + v.time + " ms</div>" +
+                    "<div class='col-md-2'><label>Total count: </label> " + v.count + " test(s)</div>" +
+                    "<div class='col-md-6'><label>Failed: </label> " + v.failed + " test(s)</div>";
+
+
+            if (v.failures.length > 0) {
+                content += "<div class='col-md-12'></div><div class='col-md-2'></div><div class='col-md-10'><label>Failures: </label> </div>";
+
+                $.each(v.failures, function(key, val) {
+                    content += "<div class='col-md-2'></div><div class='col-md-10'>" + val.name + "</div>";
+
+                    for (var field in val.failure) {
+                        if (val.failure.hasOwnProperty(field)) {
+                            content += "<div class='col-md-3'></div><div class='col-md-9'><label>" + field + ":</label> " + val.failure[field] + "</div>";
+                        }
+                    }
+                });
+            }
+
+            if (k != (json.results.length - 1)){
+                content += "<div class='col-md-12' style='border-bottom: 1px solid #f4f4f4;'></div>";
+            }
+        });
+
+        $("#results").html(content);
+    }
+
 </script>

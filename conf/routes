@@ -536,6 +536,7 @@ PUT       /admin/demo_data/person                                       @utiliti
 GET       /admin/test                                                   @utilities.test.Controller_Test.test()
 
 # Test
+POST      /admin/test                                                   @utilities.test.Controller_Test.test_run()
 GET       /admin/test/run/:cmd                                          @utilities.test.TestLauncher.launch_test(cmd)
 GET       /admin/test/log                                               @utilities.test.TestLog.get_test_log()
 GET       /admin/test/log/clear                                         @utilities.test.TestLog.clear_test_log()

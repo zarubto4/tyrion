@@ -5,6 +5,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.Model_PaymentDetails;
 import models.Model_Product;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.notification.Failure;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -12,6 +14,7 @@ import utilities.financial.fakturoid.Fakturoid;
 import utilities.logger.Class_Logger;
 import utilities.response.GlobalResult;
 import utilities.scheduler.jobs.Job_SpendingCredit;
+import utilities.test.tests.BlockoTest;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Wiky extends Controller {
@@ -43,23 +46,7 @@ public class Controller_Wiky extends Controller {
     public Result test2(){
         try {
 
-            Model_PaymentDetails details = new Model_PaymentDetails();
-            details.company_name = "HAHAHA";
-            details.street = "s";
-            details.street_number = "6";
-            details.city = "a";
-            details.zip_code = "654";
-            details.country = "d";
-            details.company_authorized_phone = "6";
-            details.company_authorized_email = "a@s.cz";
-            details.company_registration_no = "123";
-            details.company_vat_number = "CZ28496639";
-            details.company_web = "haha.cz";
-            details.invoice_email = "s@s.cz";
-
-            details.company_account = true;
-
-            return GlobalResult.result_ok(Fakturoid.create_subject(details));
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
