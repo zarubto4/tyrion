@@ -27,20 +27,23 @@ public class Model_GridWidgetVersion extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true)    public String id;
-                                                            @ApiModelProperty(required = true)    public String version_name;
-                                                            @ApiModelProperty(required = true)    public String version_description;
-                                                            @ApiModelProperty(required = true)    public Enum_Approval_state approval_state;
+                                   @Id public String id;
+                                       public String version_name;
+                                       public String version_description;
+    @Column(columnDefinition = "TEXT") public String design_json;
+    @Column(columnDefinition = "TEXT") public String logic_json;
 
-                                                                        @JsonIgnore @ManyToOne    public Model_Person author;
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
-            value = "UNIX time in ms", example = "1466163478925")                             public Date date_of_create;
+                                       public Enum_Approval_state approval_state;
 
-    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String design_json;
-    @Column(columnDefinition = "TEXT") @ApiModelProperty(required = true)    public String logic_json;
-    @JsonIgnore @ManyToOne                                                   public Model_GridWidget grid_widget;
+                           @JsonIgnore public boolean removed_by_user;
 
-    @JsonIgnore  public boolean removed_by_user;
+    @ApiModelProperty(required = true,
+            dataType = "integer",
+            value = "UNIX time in ms",
+            example = "1466163478925") public Date date_of_create;
+
+                @JsonIgnore @ManyToOne public Model_Person author;
+                @JsonIgnore @ManyToOne public Model_GridWidget grid_widget;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 

@@ -11,6 +11,8 @@ OPTIONS   /*all                                                         @control
 POST      /test                                                         @controllers.Controller_Wiky.test1()
 GET       /test2                                                        @controllers.Controller_Wiky.test2()
 
+POST      /test_online_status                                           @controllers.Controller_Wiky.test3()
+
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
 

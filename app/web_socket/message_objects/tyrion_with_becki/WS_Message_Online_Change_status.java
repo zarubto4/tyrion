@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import play.libs.Json;
 import utilities.enums.Enum_Online_status;
 import web_socket.services.WS_Becki_Website;
 
@@ -50,8 +51,14 @@ public class WS_Message_Online_Change_status {
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
-    public ObjectNode get_request(){
-        return new ObjectMapper().convertValue(this, ObjectNode.class);
+    @JsonIgnore
+    public ObjectNode make_request(){
+        return Json.newObject()
+                .put("message_type", messageType)
+                .put("message_channel", message_channel)
+                .put("model", model)
+                .put("model_id", model_id)
+                .put("online_status", online_status.name());
     }
 
 

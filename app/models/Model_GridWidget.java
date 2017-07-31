@@ -29,19 +29,18 @@ public class Model_GridWidget extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true)   public String id;
-                                                            @ApiModelProperty(required = true)   public String name;
-    @Column(columnDefinition = "TEXT")                      @ApiModelProperty(required = true)   public String description;
+                                               @Id public String id;
+                                                   public String name;
+                @Column(columnDefinition = "TEXT") public String description;
 
-                                                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_Person author;
-                                                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_TypeOfWidget type_of_widget;
-                                                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_Producer producer;
+                                       @JsonIgnore public Integer order_position;
+                                       @JsonIgnore public boolean removed_by_user;
+
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_TypeOfWidget type_of_widget;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Producer producer;
 
     @JsonIgnore @OneToMany(mappedBy="grid_widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("date_of_create desc")  public List<Model_GridWidgetVersion> grid_widget_versions = new ArrayList<>();
-
-    @JsonIgnore  public Integer order_position;
-    @JsonIgnore  public boolean removed_by_user;
-
 
  /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -49,7 +48,6 @@ public class Model_GridWidget extends Model{
     @JsonIgnore @Transient @TyrionCachedList private List<String> cache_value_grid_versions_id = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_author_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
-
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -174,7 +172,7 @@ public class Model_GridWidget extends Model{
     public Model_Person get_author(){
 
         if(cache_value_author_id == null){
-            Model_Person person = Model_Person.find.where().eq("blocksAuthor.id", id).select("id").findUnique();
+            Model_Person person = Model_Person.find.where().eq("widgetsAuthor.id", id).select("id").findUnique();
             if (person == null) return null;
             cache_value_author_id = person.id;
         }
@@ -186,7 +184,7 @@ public class Model_GridWidget extends Model{
     public Model_Producer get_producer(){
 
         if(cache_value_producer_id == null){
-            Model_Producer producer = Model_Producer.find.where().eq("blocko_blocks.id", id).select("id").findUnique();
+            Model_Producer producer = Model_Producer.find.where().eq("grid_widgets.id", id).select("id").findUnique();
             if (producer == null) return null;
 
             cache_value_producer_id = producer.id;

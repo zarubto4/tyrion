@@ -101,7 +101,7 @@ public class Update_echo_handler {
                     // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
                     if (Controller_WebSocket.becki_website.containsKey(person_id)) {
 
-                        WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person_id);
+                        WS_Becki_Website becki = Controller_WebSocket.becki_website.get(person_id);
                         becki.write_without_confirmation(message.get_request());
 
                     }else {

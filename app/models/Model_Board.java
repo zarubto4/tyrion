@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_Security;
+import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -31,7 +32,9 @@ import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Status;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
+import web_socket.services.WS_Becki_Website;
 import web_socket.services.WS_HomerServer;
 import web_socket.services.helps_class.ParallelTask;
 
@@ -600,6 +603,9 @@ public class Model_Board extends Model {
                 terminal_logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
                 return;
             }
+
+            // Standartní synchronizace
+            if(device.project_id() != null) synchronize_online_state_with_becki(device.id, false, device.project_id());
 
             device.notification_board_disconnect();
             device.make_log_disconnect();
@@ -1454,6 +1460,42 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient
     public static void synchronize_online_state_with_becki(String device_id, boolean online_state, String project_id){
 
+        new Thread( () -> {
+            try {
+
+                WS_Message_Online_Change_status message = new WS_Message_Online_Change_status(Model_Board.class, project_id, device_id, online_state ? Enum_Online_status.online : Enum_Online_status.offline);
+
+                List<String> list = Model_Project.get_project_becki_person_ids_list(project_id);
+
+                List<String> toUnsubscribe = new ArrayList<>();
+
+                for (String person_id : list) {
+
+                    terminal_logger.warn("synchronize_online_state_with_becki: person id = {}", person_id);
+
+                    try {
+
+                        // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
+                        if (Controller_WebSocket.becki_website.containsKey(person_id)) {
+
+                            WS_Becki_Website becki = Controller_WebSocket.becki_website.get(person_id);
+                            becki.write_without_confirmation(message.make_request());
+
+                        }else {
+                            toUnsubscribe.add(person_id);
+                        }
+
+                    }catch (Exception e){
+                        terminal_logger.internalServerError(e);
+                    }
+                }
+
+                toUnsubscribe.forEach(Model_Project::becki_person_id_unsubscribe);
+
+            } catch (Exception e) {
+                terminal_logger.internalServerError(e);
+            }
+        }).start();
     }
 
 

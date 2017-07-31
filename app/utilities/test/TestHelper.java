@@ -19,6 +19,10 @@ public class TestHelper extends Controller{
 
     static Logger logger = LoggerFactory.getLogger(TestCase.class);
 
+    public static void checkResponse(WSResponse response, int expectedStatus) throws AssertionError{
+        checkResponse(response, expectedStatus, null);
+    }
+
     /**
      * Method checks if response status was as expected one.
      * If expected body is provided method checks if response contains all expected values.
@@ -102,7 +106,7 @@ public class TestHelper extends Controller{
                     switch (node.getNodeType()) {
 
                         case STRING: {
-                            if (!value.asText().equals(node.asText()) && !key.equals("id"))
+                            if (!value.asText().equals(node.asText()))
                                 errors.add(new ValidationError(key, "expected value '" + value.asText() + "' but got '" + node.asText() + "'"));
                             break;
                         }

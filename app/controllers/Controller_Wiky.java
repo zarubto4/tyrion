@@ -1,20 +1,16 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import models.Model_PaymentDetails;
+import models.Model_Board;
 import models.Model_Product;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.notification.Failure;
-import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.financial.fakturoid.Fakturoid;
 import utilities.logger.Class_Logger;
+import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
 import utilities.scheduler.jobs.Job_SpendingCredit;
-import utilities.test.tests.BlockoTest;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Wiky extends Controller {
@@ -58,10 +54,17 @@ public class Controller_Wiky extends Controller {
     public Result test3(){
         try {
 
-            return ok();
+            JsonNode body = request().body().asJson();
+
+            Model_Board board = Model_Board.get_byId(body.get("full_id").asText());
+            if (board == null) return GlobalResult.result_notFound("Board not found");
+
+            Model_Board.synchronize_online_state_with_becki(board.id, body.get("status").asBoolean(), board.project_id());
+
+            return GlobalResult.result_ok();
         }catch (Exception e){
             e.printStackTrace();
-            return badRequest();
+            return Server_Logger.result_internalServerError(e, request());
         }
     }
 }

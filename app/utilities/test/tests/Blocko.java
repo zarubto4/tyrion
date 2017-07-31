@@ -17,20 +17,12 @@ import play.api.Play;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
-//import play.test.FakeApplication;
-//import play.test.Helpers;
 import utilities.Server;
 import utilities.test.TestHelper;
 
-import javax.inject.Inject;
 import java.util.UUID;
 
-public class BlockoTest extends TestHelper {
-
-    @Inject
-    WSClient ws;
-
-    //public static FakeApplication app;
+public class Blocko extends TestHelper {
 
     public static Model_Product product;
     public static Model_Project project;
@@ -54,9 +46,6 @@ public class BlockoTest extends TestHelper {
 
     @BeforeClass
     public static void startApp() throws Exception{
-
-        //app = Helpers.fakeApplication();
-        //Helpers.start(app);
 
         adminToken = person_login(Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique());
 
@@ -95,7 +84,6 @@ public class BlockoTest extends TestHelper {
         person_delete(secondPerson);
         person_delete(randomPerson);
         person_token_delete(adminToken);
-        //Helpers.stop(app);
     }
 
     Logger logger = LoggerFactory.getLogger(TestCase.class);
@@ -131,12 +119,12 @@ public class BlockoTest extends TestHelper {
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", "id can have any value");
-        expected.put("name", body.get("name").asText() + "ggg");
+        expected.putNull("id");
+        expected.put("name", body.get("name").asText());
         expected.put("description", body.get("description").asText());
         expected.put("project_id", project.id);
         expected.putNull("blocks");
-        expected.put("edit_permission", false);
+        expected.put("edit_permission", true);
         expected.put("update_permission", true);
         expected.put("delete_permission", true);
 
@@ -174,7 +162,7 @@ public class BlockoTest extends TestHelper {
                 .get()
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 
     @Test
@@ -191,13 +179,13 @@ public class BlockoTest extends TestHelper {
                 .put(body)
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 
     @Test
     public void update_type_of_block() {
 
-        Model_TypeOfBlock typeOfBlock = type_of_block_create(project);
+        Model_TypeOfBlock t = type_of_block_create(project);
 
         ObjectNode body = Json.newObject();
 
@@ -205,13 +193,13 @@ public class BlockoTest extends TestHelper {
         body.put("description", UUID.randomUUID().toString());
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.typeOfBlock_update(typeOfBlock.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.typeOfBlock_update(t.id).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .put(body)
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", "id can have any value");
+        expected.put("id", t.id);
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("description").asText());
         expected.put("project_id", project.id);
@@ -220,7 +208,7 @@ public class BlockoTest extends TestHelper {
         expected.put("update_permission", true);
         expected.put("delete_permission", true);
 
-        type_of_block_delete(typeOfBlock);
+        type_of_block_delete(t);
 
         checkResponse(response, OK, expected);
     }
@@ -236,7 +224,7 @@ public class BlockoTest extends TestHelper {
                 .delete()
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 
 /* BLOCKO BLOCK --------------------------------------------------------------------------------------------------------*/
@@ -257,7 +245,7 @@ public class BlockoTest extends TestHelper {
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", "id can have any value");
+        expected.putNull("id");
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("general_description").asText());
         expected.put("type_of_block_id", type_of_block.id);
@@ -343,7 +331,7 @@ public class BlockoTest extends TestHelper {
         expected.put("update_permission", true);
         expected.put("delete_permission", true);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK, expected);
     }
 
     @Test
@@ -357,7 +345,7 @@ public class BlockoTest extends TestHelper {
                 .delete()
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 
 /* BLOCKO BLOCK VERSION ------------------------------------------------------------------------------------------------*/
@@ -441,7 +429,7 @@ public class BlockoTest extends TestHelper {
                 .put("")
                 .get(5000);
 
-        checkResponse(response, OK, null); // TODO expected
+        checkResponse(response, OK); // TODO expected
     }
 
     @Test
@@ -487,7 +475,7 @@ public class BlockoTest extends TestHelper {
                 .delete()
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 
 /* B PROGRAM -----------------------------------------------------------------------------------------------------------*/
@@ -507,7 +495,7 @@ public class BlockoTest extends TestHelper {
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", "id can have any value");
+        expected.putNull("id");
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("description").asText());
         expected.put("project_id", project.id);
@@ -550,7 +538,7 @@ public class BlockoTest extends TestHelper {
                 .put("")
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 
     @Test
@@ -570,7 +558,7 @@ public class BlockoTest extends TestHelper {
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", "id can have any value");
+        expected.put("id", b.id);
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("description").asText());
         expected.put("project_id", project.id);
@@ -593,7 +581,7 @@ public class BlockoTest extends TestHelper {
                 .delete()
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 
 /* B PROGRAM -----------------------------------------------------------------------------------------------------------*/
@@ -614,7 +602,7 @@ public class BlockoTest extends TestHelper {
                 .get(5000);
 
         ObjectNode version_object = Json.newObject();
-        version_object.put("id", "id can have any value");
+        version_object.putNull("id");
         version_object.put("version_name", body.get("version_name").asText());
         version_object.put("version_description", body.get("version_description").asText());
         version_object.putNull("date_of_create");
@@ -668,7 +656,7 @@ public class BlockoTest extends TestHelper {
                 .put(body)
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 
     @Test
@@ -682,6 +670,6 @@ public class BlockoTest extends TestHelper {
                 .delete()
                 .get(5000);
 
-        checkResponse(response, OK, null);
+        checkResponse(response, OK);
     }
 }

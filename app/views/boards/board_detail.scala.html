@@ -70,20 +70,21 @@
                         <div class="box">
                             <div class="box-header with-border">
                                 <h3 class="box-title">Status</h3>
+                                <button class="pull-right btn btn-xs btn-primary" data-toggle="modal" data-target="#onlineStatusModal">Test status</button>
                             </div>
                             <div class="box-body">
                                 <table  class="table table-bordered">
                                     <tr>
                                         <td class="col-md-4">Active </td>
                                         <td class="col-md-8">
-                                            @(board.connected_instance_id != null){
+                                            @if(board.connected_instance_id != null){
                                                  <span class="label label-success">Active</span>
                                             }else{
                                                 <span class="label label-danger">Not Yet Activated</span>
                                             }
                                         </td>
                                     </tr>
-                                    <tr> @board.online_state()</tr>
+                                    <tr><td>Online status</td><td>@board.online_state()</td></tr>
                                     <tr>
                                         <td class="col-md-4">Backup mode</td>
                                         <td class="col-md-8">
@@ -318,6 +319,29 @@
             </div>
 </section>
 
+<div id="onlineStatusModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="onlineStatusModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="onlineStatusModalTitle" class="modal-title">Test status</h4>
+            </div>
+            <div class="modal-body">
+                <form id="online_status_form">
+                    <select name="status" class="form-control select2">
+                        <option value="true">Online</option>
+                        <option value="false">Offline</option>
+                    </select>
+                </form>
+                <div id="onlineStatusModalMessage" style="display: none"><p class="text-red"></p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default pull-left" type="button" data-dismiss="modal">Close</button>
+                <button class="btn btn-primary" type="button" onclick="testStatus()">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="deleteModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalTitle">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -394,6 +418,32 @@
                 error:function(e) {
                     $("#editModalMessage").css("display", "block");
                     $("#editModalMessage p").text(JSON.parse(e.responseText).message);
+                }
+            });
+        }
+
+        function testStatus() {
+
+            var data = $("#online_status_form").serializeObject();
+
+            data.full_id = "@board.id";
+
+            $.ajax({
+                url: '@routes.Controller_Wiky.test3()',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    "X-AUTH-TOKEN":getCookie("authToken"),
+                    "Content-Type":"application/json"
+                },
+                dataType: 'json',
+                data: JSON.stringify(data),
+                success:function(json){
+                    $("#onlineStatusModal").modal('hide');
+                },
+                error:function(e) {
+                    $("#onlineStatusModalMessage").css("display", "block");
+                    $("#onlineStatusModalMessage p").text(JSON.parse(e.responseText).message);
                 }
             });
         }
