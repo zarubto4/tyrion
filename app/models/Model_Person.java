@@ -96,7 +96,7 @@ public class Model_Person extends Model {
         return Server.azure_blob_Link + azure_picture_link;
     }
 
-/* JSON IGNOR VALUES ----------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE VALUES --------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public List<Swagger_Project_Short_Detail> get_user_access_projects(){
@@ -132,16 +132,6 @@ public class Model_Person extends Model {
         help.mail = this.mail;
 
         return help;
-    }
-
-    @JsonIgnore @Override
-    public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_Person.find.byId(this.id) == null) break;
-        }
-        super.save();
     }
 
     @JsonIgnore @Transient
@@ -183,6 +173,39 @@ public class Model_Person extends Model {
             terminal_logger.internalServerError("get_Container:", e);
             throw new NullPointerException();
         }
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public void save() {
+
+        terminal_logger.debug("save: Creating new Object");
+
+        while (true) { // I need Unique Value
+            this.id = UUID.randomUUID().toString();
+            if (find.byId(this.id) == null) break;
+        }
+
+        super.save();
+    }
+
+    @JsonIgnore @Override
+    public void update() {
+
+        terminal_logger.debug("update: ID = {}",  this.id);
+
+        super.update();
+    }
+
+    @JsonIgnore @Override
+    public void delete() {
+
+        terminal_logger.debug("delete: ID = {}", this.id);
+
+        this.customer.delete();
+
+        super.delete();
     }
 
 

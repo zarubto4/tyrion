@@ -83,13 +83,13 @@ public class Code extends TestHelper {
     @Rule
     public TestRule watchman = new TestWatcher() {
         public void starting(Description description) {
-            logger.info("Test {} is running.", description.getMethodName());
+            logger.debug("Test \t<{}>\t is running.", description.getMethodName());
         }
         public void succeeded(Description description) {
-            logger.info("Test {} successfully run.", description.getMethodName());
+            logger.info("Test: \t<{}>\t completed successfully.", description.getMethodName());
         }
         public void failed(Throwable e, Description description) {
-            logger.error("Test {} failed! Reason: {}.", description.getMethodName(), e.getMessage());
+            logger.error("Test \t<{}>\t failed! Reason: {}", description.getMethodName(), e.getMessage());
         }
     };
 
@@ -115,12 +115,53 @@ public class Code extends TestHelper {
         expected.put("description", body.get("description").asText());
         expected.put("project_id", project.id);
         expected.put("type_of_board_id", typeOfBoard.id);
-        expected.put("type_of_board_id", typeOfBoard.name);
+        expected.put("type_of_board_name", typeOfBoard.name);
+        expected.putNull("program_versions");
         expected.put("edit_permission", true);
         expected.put("update_permission", true);
         expected.put("delete_permission", true);
 
         checkResponse(response, CREATED, expected);
+    }
+
+    @Test
+    public void get_c_program() {
+
+        WSResponse response = Play.current().injector().instanceOf(WSClient.class)
+                .url(Server.tyrion_serverAddress + routes.Controller_Code.c_program_get(private_c_program.id).toString())
+                .setHeader("X-AUTH-TOKEN", userToken)
+                .get()
+                .get(5000);
+
+        ObjectNode expected = Json.newObject();
+        expected.put("id", private_c_program.id);
+        expected.put("name", private_c_program.name);
+        expected.put("description", private_c_program.description);
+        expected.put("project_id", project.id);
+        expected.put("type_of_board_id", typeOfBoard.id);
+        expected.put("type_of_board_name", typeOfBoard.name);
+        expected.putNull("program_versions");
+        expected.put("edit_permission", true);
+        expected.put("update_permission", true);
+        expected.put("delete_permission", true);
+
+        checkResponse(response, OK, expected);
+    }
+
+    @Test
+    public void get_c_program_by_filter() {
+
+        ObjectNode body = Json.newObject();
+
+        body.put("project_id", project.id);
+
+        WSResponse response = Play.current().injector().instanceOf(WSClient.class)
+                .url(Server.tyrion_serverAddress + routes.Controller_Code.c_program_getByFilter(1).toString())
+                .setHeader("X-AUTH-TOKEN", userToken)
+                .put(body)
+                .get(5000);
+
+        checkResponse(response, OK);
     }
 
     @Test
@@ -145,43 +186,14 @@ public class Code extends TestHelper {
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("description").asText());
         expected.put("project_id", project.id);
-        expected.putNull("widgets");
+        expected.put("type_of_board_id", typeOfBoard.id);
+        expected.put("type_of_board_name", typeOfBoard.name);
+        expected.putNull("program_versions");
         expected.put("edit_permission", true);
         expected.put("update_permission", true);
         expected.put("delete_permission", true);
 
-        checkResponse(response, CREATED, expected);
-    }
-/*
-    @Test
-    public void get_c_program() {
-
-        RequestBuilder request = new RequestBuilder()
-                .method(GET)
-                .uri(routes.Controller_Code.c_program_get(private_c_program.id).toString())
-                .header("X-AUTH-TOKEN", userToken);
-
-        Result result = route(request);
-
-        assertEquals(OK, result.status());
-    }
-
-    @Test
-    public void get_c_program_by_filter() {
-
-        ObjectNode body = Json.newObject();
-
-        body.put("project_id", project.id);
-
-        RequestBuilder request = new RequestBuilder()
-                .method(PUT)
-                .uri(routes.Controller_Code.c_program_getByFilter(1).toString())
-                .bodyJson(body)
-                .header("X-AUTH-TOKEN", userToken);
-
-        Result result = route(request);
-
-        assertEquals(OK, result.status());
+        checkResponse(response, OK, expected);
     }
 
     @Test
@@ -189,16 +201,15 @@ public class Code extends TestHelper {
 
         Model_CProgram c = private_c_program_create(typeOfBoard, project);
 
-        RequestBuilder request = new RequestBuilder()
-                .method(DELETE)
-                .uri(routes.Controller_Code.c_program_delete(c.id).toString())
-                .header("X-AUTH-TOKEN", userToken);
+        WSResponse response = Play.current().injector().instanceOf(WSClient.class)
+                .url(Server.tyrion_serverAddress + routes.Controller_Code.c_program_delete(c.id).toString())
+                .setHeader("X-AUTH-TOKEN", userToken)
+                .delete()
+                .get(5000);
 
-        Result result = route(request);
-
-        assertEquals(OK, result.status());
+        checkResponse(response, OK);
     }
-
+/*
     @Test
     public void create_c_program_version() {
 

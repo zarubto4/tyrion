@@ -2237,7 +2237,7 @@ public class Controller_Finance extends Controller {
 
             if (!customer.delete_permission()) return GlobalResult.result_forbidden();
 
-            customer.delete();
+            customer.soft_delete();
 
             return GlobalResult.result_ok();
 

@@ -43,7 +43,7 @@ public class Model_Producer extends Model {
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        terminal_logger.debug("save: Creating new Object");
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
@@ -52,16 +52,21 @@ public class Model_Producer extends Model {
         super.save();
     }
 
-    @JsonIgnore @Override public void update() {
+    @JsonIgnore @Override
+    public void update() {
 
-        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        terminal_logger.debug("update: ID = {}",  this.id);
 
         super.update();
 
     }
 
-    @JsonIgnore @Override public void delete() {
-        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
+    @JsonIgnore @Override
+    public void delete() {
+
+        terminal_logger.debug("delete: ID = {}",  this.id);
+
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

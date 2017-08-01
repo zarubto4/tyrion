@@ -43,23 +43,22 @@ public class Model_VersionObject extends Model {
     private static final Class_Logger terminal_logger = new Class_Logger(Model_VersionObject.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-                                                                @Id @ApiModelProperty(required = true) public String id;
-                                                                    @ApiModelProperty(required = true) public String version_name;
-                             @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true) public String version_description;
+                                               @Id public String id;
+                                                   public String version_name;
+                @Column(columnDefinition = "TEXT") public String version_description;
 
-                                                        @ManyToOne(fetch = FetchType.LAZY) @JsonIgnore public Model_Person author;
+                                       @JsonIgnore public boolean public_version;  // Používá se u Gridu, u C_programů atd..
 
+                                       @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
-                                                                                           @JsonIgnore public boolean public_version;  // Používá se u Gridu, u C_programů atd..
+                @ApiModelProperty(required = true,
+                        dataType = "integer",
+                        value = "UNIX time in ms",
+                        example = "1466163478925") public Date date_of_create;
 
-                                                                                           // OBJEKT V KOŠI!! - SLOUŽÍ K ODSTRANĚNÍ Z POHLEDU UŽIVATELE - ALE NIKOLIV Z DATABÁZE!
-                                                                                           @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
+    @ManyToOne(fetch = FetchType.LAZY) @JsonIgnore public Model_Person author;
 
-    @ApiModelProperty(required = true, dataType = "integer", readOnly = true,
-            value = "UNIX time in ms", example = "1466163478925")                                      public Date date_of_create;
-
-    @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch=FetchType.EAGER ) public List<Model_FileRecord> files = new ArrayList<>();
-
+    @JsonIgnore @OneToMany(mappedBy="version_object", cascade=CascadeType.ALL, fetch=FetchType.EAGER) public List<Model_FileRecord> files = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 

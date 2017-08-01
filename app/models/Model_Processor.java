@@ -51,14 +51,17 @@ public class Model_Processor extends Model {
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update :: Update object value: {}",  this.id);
+        terminal_logger.debug("update: ID = {}",  this.id);
 
         super.update();
 
     }
 
     @JsonIgnore @Override public void delete() {
-        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
+
+        terminal_logger.debug("delete: ID = {}",  this.id);
+
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
