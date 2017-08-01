@@ -102,7 +102,7 @@ public class Update_echo_handler {
                     if (Controller_WebSocket.becki_website.containsKey(person_id)) {
 
                         WS_Becki_Website becki = Controller_WebSocket.becki_website.get(person_id);
-                        becki.write_without_confirmation(message.get_request());
+                        becki.write_without_confirmation(message.make_request());
 
                     }else {
                         Model_Project.becki_person_id_unsubscribe(person_id);

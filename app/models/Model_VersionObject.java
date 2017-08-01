@@ -522,6 +522,10 @@ public class Model_VersionObject extends Model {
 
         super.save();
 
+        if(library != null){
+            library.refresh();
+            Model_Library.cache.replace(library.id, library);
+        }
 
         if(c_program != null){
             c_program.cache_list_version_objects_ids.add(0, id);

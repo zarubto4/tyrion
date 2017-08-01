@@ -34,7 +34,7 @@ public class WS_Message_Online_Change_status {
     public WS_Message_Online_Change_status(Class<?> cls, String project_id, String model_id, Enum_Online_status online_status){
 
         this.model_id = model_id;
-        this.model = cls.getSimpleName();
+        this.model = cls.getSimpleName().replace("Model_", "");
         this.project_id = project_id;
         this.online_status = online_status;
 
@@ -43,11 +43,10 @@ public class WS_Message_Online_Change_status {
     public WS_Message_Online_Change_status(Class<?> cls, String project_id, Long model_id, Enum_Online_status online_status){
 
         this.model_id = model_id.toString();
-        this.model = cls.getSimpleName();
+        this.model = cls.getSimpleName().replace("Model_", "");
         this.project_id = project_id;
         this.online_status = online_status;
     }
-
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
@@ -60,6 +59,4 @@ public class WS_Message_Online_Change_status {
                 .put("model_id", model_id)
                 .put("online_status", online_status.name());
     }
-
-
 }

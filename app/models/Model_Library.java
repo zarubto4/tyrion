@@ -153,7 +153,9 @@ public class Model_Library extends Model{
         terminal_logger.debug("update :: Update object Id: " + this.id);
 
         //Cache Update
-        //cache.put(this.id, this);
+        if (cache.get(this.id) != null) {
+            cache.replace(this.id, this);
+        } else cache.put(this.id, this);
 
         if(project_id != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Library.class, project_id, this.id))).start();
 

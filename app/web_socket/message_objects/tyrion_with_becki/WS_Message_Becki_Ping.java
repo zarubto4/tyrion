@@ -31,6 +31,4 @@ public class WS_Message_Becki_Ping extends WS_AbstractMessage_Instance {
 
         return request;
     }
-
-
 }
