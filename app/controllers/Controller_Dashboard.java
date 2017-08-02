@@ -107,7 +107,7 @@ public class Controller_Dashboard extends Controller {
             terminal_logger.debug("show_readme:: Creating show_readme.html content");
 
             String text = "";
-            for (String line : Files.readAllLines(Paths.get("README"), StandardCharsets.UTF_8)) text += line + "\n";
+            for (String line : Files.readAllLines(Paths.get("README.md"), StandardCharsets.UTF_8)) text += line + "\n";
 
             Html readme_html = readme.render(new Html(new PegDownProcessor().markdownToHtml(text)));
 

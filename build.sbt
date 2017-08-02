@@ -43,6 +43,8 @@ libraryDependencies ++= Seq(
 
   "com.graphql-java" % "graphql-java" % "2.4.0",
 
+  "org.mindrot" % "jbcrypt" % "0.3m",
+
   javaJdbc,
   filters,
   javaWs,

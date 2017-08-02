@@ -5,6 +5,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.Model_Board;
 import models.Model_Product;
+import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.Class_Logger;
@@ -41,6 +42,8 @@ public class Controller_Wiky extends Controller {
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test2(){
         try {
+
+            terminal_logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
 
             return GlobalResult.result_ok();
 
