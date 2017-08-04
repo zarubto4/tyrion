@@ -524,14 +524,21 @@ public class Model_Board extends Model {
 
 
                     // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
-                    case WS_Message_Hardware_set_autobackup.message_type : {terminal_logger.warn("WS_Message_Hardware_set_autobackup: A message with a very high delay has arrived.");}
-                    case WS_Message_Hardware_set_alias.message_type      : {terminal_logger.warn("WS_Message_Hardware_set_alias: A message with a very high delay has arrived.");}
-                    case WS_Message_Hardware_Restart.message_type        : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");}
-                    case WS_Message_Hardware_overview.message_type       : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");}
-                    case WS_Message_Hardware_change_server.message_type  : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");}
+                    case WS_Message_Hardware_set_autobackup.message_type : {terminal_logger.warn("WS_Message_Hardware_set_autobackup: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_set_alias.message_type      : {terminal_logger.warn("WS_Message_Hardware_set_alias: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_Restart.message_type        : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_overview.message_type       : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_change_server.message_type  : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
 
                     default: {
+
                         terminal_logger.warn("Incoming Message not recognized::" + json.toString());
+
+                        // Zarážka proti nevadliní odpovědi a zacyklení
+                        if(json.has("status") && json.get("status").asText().equals("error")){
+                            return;
+                        }
+
                         homer.write_without_confirmation(json.put("error_message", "message_type not recognized").put("error_code", 400));
                     }
                 }

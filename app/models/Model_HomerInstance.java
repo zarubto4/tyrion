@@ -434,8 +434,21 @@ public class Model_HomerInstance extends Model {
                         return;
                     }
 
+                    // Ochrana proti zacyklení
+                    case WS_Message_Instance_device_set_snap.message_type           : {terminal_logger.warn("WS_Message_Instance_device_set_snap: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Instance_status.message_type                    : {terminal_logger.warn("WS_Message_Instance_status: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Instance_terminal_set_snap.message_type         : {terminal_logger.warn("WS_Message_Instance_terminal_set_snap: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Instance_upload_blocko_program.message_type     : {terminal_logger.warn("WS_Message_Instance_upload_blocko_program: A message with a very high delay has arrived.");return;}
+
                     default: {
+
                         terminal_logger.warn("Incoming Message not recognized::" + json.toString());
+
+                        // Zarážka proti nevadliní odpovědi a zacyklení
+                        if(json.has("status") && json.get("status").asText().equals("error")){
+                            return;
+                        }
+
                         homer.write_without_confirmation(json.put("error_message", "message_type not recognized").put("error_code", 400));
                     }
                 }

@@ -58,20 +58,18 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         request.put("message_type", message_type);
         request.put("message_channel", Model_Board.CHANNEL);
         request.set("hardware_ids", Json.toJson(devices_ids));
-        request.set("info_keys", Json.toJson(Arrays.asList("target", "alias", "normal_mqtt_connection", "backup_mqtt_connection", "console", "ip",  "firmware_build_id", "backup_build_id", "bootloader_build_id", "autobackup")) );
 
         request.set("info_keys", Json.toJson(Arrays.asList(
-                "target",
-                "alias",
-                "normal_mqtt_connection",
-                "backup_mqtt_connection",
-                "console",
-                "ip",
-                "mac",
-                "firmware_build_id",
-                "backup_build_id",
-                "bootloader_build_id",
-                "autobackup"
+
+                "target",                       // for example: Yoda_G3E
+                "alias",                        // for example: WashingMAchine_31234
+                "normal_mqtt_connection",       // for example: url:port
+                "backup_mqtt_connection",       // for example: url:port
+                "console",                      // Boolean - If device sending logs to Homer
+                "ip",                           // Ip in local network
+                "mac",                          // mac adress of device
+                "binaries"                      // Binaries info of firwmare, bootloader and backup
+
         )));
 
         return request;
@@ -91,14 +89,39 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         @Constraints.Required  public String backup_build_id;              // Číslo Buildu
         @Constraints.Required  public String bootloader_build_id;          // Version name Bootloader
 
+        @Constraints.Required  @Valid public WS_Help_Hardware_board_binaries binaries;
+
         public String ip;
         public boolean console;
 
         public String normal_mqtt_connection;       // ip addressa:port
         public String backup_mqtt_connection;       // ip addressa:port
-        public String state;                        // evíme k řmeu to je
+
         @Constraints.Required   public boolean autobackup;
 
     }
+
+    public static class WS_Help_Hardware_board_binaries {
+
+        public WS_Help_Hardware_board_binaries(){}
+
+        @Constraints.Required @Valid public WS_Help_Hardware_board_IBinaryInfo firmware;
+        @Constraints.Required @Valid public WS_Help_Hardware_board_IBinaryInfo bootloader;
+        @Constraints.Required @Valid public WS_Help_Hardware_board_IBinaryInfo backup;
+        @Constraints.Required @Valid public WS_Help_Hardware_board_IBinaryInfo buffer;
+
+    }
+
+    public static class WS_Help_Hardware_board_IBinaryInfo {
+
+        public String version;
+        public Integer size;
+        public Long timestamp;
+        public String build_id;
+        public String name;
+        public Integer memsize;
+
+    }
+
 
 }
