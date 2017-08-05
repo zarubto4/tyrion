@@ -94,7 +94,7 @@ public class Model_CompilationServer extends Model {
 
 /* SERVER WEBSOCKET  --------------------------------------------------------------------------------------------------*/
 
-    public static String CHANNEL = "compilation-server";
+    public static String CHANNEL = "compilation_server";
 
     @JsonIgnore @Transient public static boolean is_online(){
         return  !Controller_WebSocket.compiler_cloud_servers.isEmpty();
@@ -122,6 +122,7 @@ public class Model_CompilationServer extends Model {
             terminal_logger.debug("make_Compilation:: Start of compilation was successful - waiting for result");
 
             WS_Send_message get_compilation = new WS_Send_message(null, null, "compilation_message", 1000 * 35, 0, 1);
+            get_compilation.set_sender(server);
             server.sendMessageMap.put( compilation_request.get("build_id").asText(), get_compilation);
 
             ObjectNode node = get_compilation.send_with_response();
@@ -150,7 +151,6 @@ public class Model_CompilationServer extends Model {
 
     @JsonIgnore @Transient public WS_Message_Ping_compilation_server ping(){
         try {
-
 
             JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
 

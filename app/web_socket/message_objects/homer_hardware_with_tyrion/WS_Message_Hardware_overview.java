@@ -68,7 +68,9 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
                 "console",                      // Boolean - If device sending logs to Homer
                 "ip",                           // Ip in local network
                 "mac",                          // mac adress of device
-                "binaries"                      // Binaries info of firwmare, bootloader and backup
+                "binaries",                     // Binaries info of firwmare, bootloader and backup
+                "webport",                      // Port, where you can get webserver with device information
+                "webview"                       // Boolean if device support webview
 
         )));
 
@@ -85,10 +87,6 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         @Constraints.Required  public String target;                       // třeba Yoda G3
         @Constraints.Required  public String alias;                        // "pepa"
 
-        @Constraints.Required  public String firmware_build_id;            // Číslo Buildu
-        @Constraints.Required  public String backup_build_id;              // Číslo Buildu
-        @Constraints.Required  public String bootloader_build_id;          // Version name Bootloader
-
         @Constraints.Required  @Valid public WS_Help_Hardware_board_binaries binaries;
 
         public String ip;
@@ -99,6 +97,7 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
 
         @Constraints.Required   public boolean autobackup;
 
+        public Integer error_code;
     }
 
     public static class WS_Help_Hardware_board_binaries {

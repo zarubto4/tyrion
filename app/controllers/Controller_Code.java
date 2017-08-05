@@ -121,7 +121,7 @@ public class Controller_Code extends Controller{
                 version_object.author = Controller_Security.get_person();
                 version_object.date_of_create = new Date();
                 version_object.c_program = c_program;
-                version_object.public_version = (help.c_program_public_admin_create && Controller_Security.get_person().admin_permission());
+                version_object.public_version = help.c_program_public_admin_create;
 
                 // Zkontroluji oprávnění
                 if (!version_object.c_program.update_permission()) return GlobalResult.result_forbidden();
@@ -1020,6 +1020,10 @@ public class Controller_Code extends Controller{
 
             // Uložení C++ Programu
             c_program.save();
+
+            // aktualizuji Cache jen pro jistotu
+            Model_TypeOfBoard.cache.remove(help.type_of_board_id);
+            Model_TypeOfBoard.get_byId(help.type_of_board_id);
 
             return GlobalResult.result_created(Json.toJson(c_program));
 

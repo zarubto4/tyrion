@@ -57,6 +57,11 @@ public class WS_Send_message {
         this.messageId = messageId;
     }
 
+    // Určeno výlučne pro compilátor
+    public void set_sender(WS_Interface_type sender_object){
+        this.sender_object = sender_object;
+    }
+
     public void insert_result(ObjectNode result) {
 
 
@@ -75,7 +80,6 @@ public class WS_Send_message {
         this.result = result;
 
         this.result.put("websocket_identificator", sender_object.get_identificator());
-
 
         future.cancel(true);
     }

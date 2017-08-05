@@ -145,9 +145,9 @@ public class Model_HomerInstanceRecord extends Model {
 
         // Contains All Hardware for Update
         for(Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
-            board_ids.add(group.main_board_pair.id.toString());
+            board_ids.add(group.main_board_pair.board.id);
             for(Model_BPair model_bPair : group.device_board_pairs){
-                board_ids.add(model_bPair.id.toString());
+                board_ids.add(model_bPair.board.id);
             }
         }
 

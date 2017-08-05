@@ -331,8 +331,8 @@
             <div class="modal-body">
                 <form id="newCProgramForm">
                     <input type="text" class="form-control form-group" title="Type of Board" name="type_of_board_id" readonly>
-                    <input type="text" class="form-control form-group" placeholder="Name" name="name">
-                    <input type="text" class="form-control form-group" placeholder="Description" name="description">
+                    <label>Program Name</label><input type="text" class="form-control form-group" placeholder="Name" name="name">
+                    <label>Program Description</label><input type="text" class="form-control form-group" placeholder="Description" name="description">
                     <div class="form-group">
                         <label class="checkbox-inline">
                             <input name="c_program_type_of_board_default" type="checkbox" checked="checked" value="true" disabled="disabled">Public C Program</label>
@@ -704,6 +704,12 @@
                 });
             }
         })
+    }
+
+    function createCProgramModal(type_of_device_id) {
+        $("#newCProgramModal").css("display", "block");
+        $('#newCProgramButton').val(type_of_device_id);
+        $("#newCProgramForm input[name=type_of_board_id]").val(type_of_device_id);
     }
 
     function editCProgram(c_program_id) {
