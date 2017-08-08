@@ -857,7 +857,6 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "create C_Program Default for Type_Of_Board",
             tags = {"Admin-C_Program"},
-            hidden = true,
             notes = "If you want create new C_program in project.id = {project_id}.",
             produces = "application/json",
             protocols = "https",

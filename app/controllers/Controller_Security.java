@@ -275,7 +275,6 @@ public class Controller_Security extends Controller {
                     "to this link and after returning to success page that you filled in ask for token, ask again to this api " +
                     "and server respond with Person Object and with Roles and Permissions lists",
             produces = "application/json",
-            response =  Swagger_Person_All_Details.class,
             protocols = "https",
             code = 200
     )
