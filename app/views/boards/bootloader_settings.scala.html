@@ -756,7 +756,7 @@
         model_data = $("#newCProgramVersionForm").serializeObject();
 
         $.ajax({
-            url: '@routes.Controller_Code.c_programVersion_create("")' + c_program_id ,
+            url: '@routes.Controller_Code.c_program_version_create("")' + c_program_id ,
             type: 'POST',
             contentType: 'application/json',
             headers: {

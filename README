@@ -49,7 +49,7 @@
 # Verze 1.06.6.6 #
 
   * Board
-    přibyla položka v Json - main_board:boolean -> jež říká že je to "yoda" co se může sám připojit k Homer serveru.
+    přibyla položka v Json - main_board:boolean -> jež říká že je to "ioda" co se může sám připojit k Homer serveru.
 
 ## Změny nad objekty ##
 
@@ -63,7 +63,7 @@
 
  * Nyní nově, když se zavolá:
 
-		GET	{{url_Tyriona}}/coreClient/person/person/{person_id}
+		GET	{{url_Tyriona}}/person/person/{person_id}
 
  * Ve vráceném JSONU je položka:
 
@@ -114,8 +114,8 @@
 
  * Nové API pro nahrání obrázku přihlášeného uživatele a odebrání obrázku:
 
-		PUT	{{url_Tyriona}}/coreClient/person/uploadPicture
-		PUT	{{url_Tyriona}}/coreClient/person/removePicture
+		PUT	{{url_Tyriona}}/person/uploadPicture
+		PUT	{{url_Tyriona}}/person/removePicture
 
  * Request musí pouze obsahovat položku "file" typu "multipart/form-data".
  * Obrázek musí být typu .png nebo .jpg, menší než 500 KB a jeho oba rozměry musí být mezi 50 a 400 pixely.
@@ -135,7 +135,7 @@
 
  * Byla vytvořena nová API pro změnu hesla i emailu
 
-		POST	{{url_Tyriona}}/coreClient/person/changeProperty
+		POST	{{url_Tyriona}}/person/changeProperty
 
  * Metoda vyžaduje JSON, který bude vypadat například takto:
 
@@ -187,8 +187,8 @@ V administraci bylo doděláno tlačítko "nahrát default data". Tyriona to nap
 
 ## Změny v kodu podle nové verze homera  0.0.3
 
- * Podpora více Yodů v jedné instanci. Což znamená že je nutné upravit objekt definující B_Program -> version. Už není 1 yoda
-   - ale pole objektů ve kterém je yoda a devices na něm připojené. (Je nutné tutu strukturu mít a po uživateli vyžadovat) aby
+ * Podpora více Yodů v jedné instanci. Což znamená že je nutné upravit objekt definující B_Program -> version. Už není 1 ioda
+   - ale pole objektů ve kterém je ioda a devices na něm připojené. (Je nutné tutu strukturu mít a po uživateli vyžadovat) aby
    mohl Homer server skládat adresu v MQTT. Pro design se doporučuje sturktura jako u složek.
 
             - Yoda ASDFG48948ASFSFDA
@@ -754,7 +754,7 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 
 * Pokud uživatel zapomene heslo, na frontendu bude sekce pro obnovu hesla, vyplní svůj email a klikne na tlačítko pro obnovení hesla. Pomocí metody:
 
-		POST {{url_Tyriona}}/coreClient/mail_person_password_recovery
+		POST {{url_Tyriona}}/mail_person_password_recovery
 
 * si zažádá o zaslaní emailu s linkem na změnu hesla, metoda vyžaduje JSON s obsahem:
 
@@ -766,7 +766,7 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 
  * Na této adrese si uživatel vytvoří nové heslo. Adresu je možné změnit, pokud bude potřeba, stačí říct, teď je vzatá z configu Tyriona. Z frontendu přijde request:
 
-		PUT {{url_Tyriona}}/coreClient/person_password_recovery
+		PUT {{url_Tyriona}}/person_password_recovery
 
  * který bude obsahovat JSON s obsahem:
 
@@ -810,12 +810,12 @@ Value code byla přejmenována na main (Aby korespondovala se strukturou progrma
 ## Změna: Input Validation ##
   Zrušeny následující API: 
 
-		GET  {{url_Tyriona}}/coreClient/person/valid/nicknamewe/:nick_name
-		GET  {{url_Tyriona}}/coreClient/person/valid/mail/:mail
+		GET  {{url_Tyriona}}/person/valid/nicknamewe/:nick_name
+		GET  {{url_Tyriona}}/person/valid/mail/:mail
 
   namísto nich bude univerzální API:
 
-		POST {{url_Tyriona}}/coreClient/person/validate_entity
+		POST {{url_Tyriona}}/person/validate_entity
 
   která vyžaduje JSON:
 
@@ -1668,10 +1668,10 @@ neurčitou. Každopádně každý nápad jak posunout Tyriona kupředu jsou vít
 ### EVIDENCE PŘIHLÁŠENÍ ###
 (připraveno pro implementaci na straně frontend)
 
-      GET      /coreClient/connections
+      GET      /connections
          - Vrátí seznam všech přihlášení, kde je stále platný token - uživatel má možnost ho deaktivovat.
 
-      DELETE   /coreClient/connection/:connection_id
+      DELETE   /connection/:connection_id
          - API pro jeho trvalou deaktivaci (možnost deaktivovat i mobilní zařízení)
          - Je ale nutné Tomášovi specifikovat,jak by měl asi rozlišovat jednotlivá spojení????? Radku?
 

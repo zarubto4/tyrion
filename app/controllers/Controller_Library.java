@@ -34,17 +34,12 @@ public class Controller_Library extends Controller {
 
 ///############################################################################################################š#######*/
     
-    @ApiOperation(value = "create new Library",
+    @ApiOperation(value = "create Library",
             tags = {"Library"},
             notes = "Create Library for C programs ",
             produces = "application/json",
             protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "Library_create" ),
-                    })
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -145,7 +140,7 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "get List of Libraries details by filter",
+    @ApiOperation(value = "get Library Short List by filter",
             tags = {"Library"},
             notes = "if you want to get Libraries filtered by specific parameters. For private Libraries under project set project_id, for all public use empty JSON",
             produces = "application/json",
@@ -204,10 +199,6 @@ public class Controller_Library extends Controller {
                 query.where().isNull("project_id");
             }
 
-
-
-
-
             // Vyvoření odchozího JSON
             Swagger_Library_List result = new Swagger_Library_List(query,page_number);
 
@@ -219,9 +210,9 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "update Library",
+    @ApiOperation(value = "edit Library",
             tags = {"Library"},
-            notes = "Update Library",
+            notes = "Edit Library name and description",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -251,7 +242,7 @@ public class Controller_Library extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result library_update(@ApiParam(value = "library_id String query", required = true)  String library_id) {
+    public Result library_edit(@ApiParam(value = "library_id String query", required = true)  String library_id) {
         try {
 
             // Zpracování Json
@@ -266,6 +257,7 @@ public class Controller_Library extends Controller {
             // Kontrola oprávnění
             if(!library.edit_permission()) return GlobalResult.result_forbidden();
 
+            // Change values
             library.name = help.name;
             library.description = help.description;
 
@@ -325,7 +317,7 @@ public class Controller_Library extends Controller {
 
 /// VERSIONS IN LIBRARIES ##############################################################################################*/
 
-    @ApiOperation(value = "new Version of Library",
+    @ApiOperation(value = "create Library Version",
             tags = {"Library"},
             notes = "If you want add new code to Library",
             produces = "application/json",
@@ -358,7 +350,7 @@ public class Controller_Library extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result libraryVersion_create(@ApiParam(value = "library_id String query", required = true)  String library_id){
+    public Result library_version_create(@ApiParam(value = "library_id String query", required = true)  String library_id){
         try{
 
             // Zpracování Json
@@ -421,7 +413,7 @@ public class Controller_Library extends Controller {
             @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result libraryVersion_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
+    public Result library_version_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
         try {
 
             // Vyhledám Objekt
@@ -474,7 +466,7 @@ public class Controller_Library extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result libraryVersion_update(@ApiParam(value = "version_id String query",   required = true)  String version_id){
+    public Result library_version_edit(@ApiParam(value = "version_id String query",   required = true)  String version_id){
         try{
 
             // Zpracování Json
@@ -507,7 +499,7 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete Version in Library",
+    @ApiOperation(value = "delete Library Version",
             tags = {"Library"},
             notes = "delete Library by query = version_id",
             produces = "application/json",
@@ -527,7 +519,7 @@ public class Controller_Library extends Controller {
             @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result libraryVersion_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id){
+    public Result library_version_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id){
         try{
 
             // Ověření objektu
@@ -552,151 +544,5 @@ public class Controller_Library extends Controller {
     }
 
 
-
-/// EXAMPLES IN LIBRARIES ##############################################################################################*/
-
-    @ApiOperation(value = "upload example to Version of Library",
-            hidden = true,
-            tags = {"Library"},
-            notes = "For linking examples to Version of Library.",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Library_edit"),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Library_Version_Short_Detail.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result libraryVersion_uploadExample(@ApiParam(value = "version_id String query",   required = true)  String version_id){
-        try{
-
-            // Zpracování Json
-            final Form<Swagger_C_Program_Version_New> form = Form.form(Swagger_C_Program_Version_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_C_Program_Version_New help = form.get();
-
-            // Ověření objektu
-            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
-            if (version_object == null) return GlobalResult.result_notFound("Library Version version_id not found");
-
-            // Zkontroluji validitu Verze zda sedí k Library
-            if(version_object.library == null) return GlobalResult.result_badRequest("Version_Object is not version of Library");
-
-            // Kontrola oprávnění
-            if(!version_object.library.edit_permission()) return GlobalResult.result_forbidden();
-
-            Model_CProgram cProgram = Model_CProgram.find.where().eq("example_library.id", version_object.id).eq("name", help.version_name).findUnique();
-            if (cProgram != null){
-                if (cProgram.getVersion_objects().size() > 0)
-                    cProgram.getVersion_objects().get(0).delete();
-            }else {
-                cProgram = new Model_CProgram();
-                cProgram.name = help.version_name;
-                cProgram.description = help.version_description;
-                cProgram.example_library = version_object;
-
-                cProgram.save();
-            }
-
-            cProgram.refresh();
-
-            Model_VersionObject example = new Model_VersionObject();
-            example.version_name = help.version_name;
-            example.version_description = help.version_description;
-            example.c_program = cProgram;
-            example.public_version = true;
-            example.date_of_create = new Date();
-
-            example.save();
-
-            // Nahraje do Azure a připojí do verze soubor
-            ObjectNode  content = Json.newObject();
-            content.put("main", help.main );
-            content.set("files", Json.toJson( help.files) );
-            content.set("imported_libraries", Json.toJson(help.imported_libraries) );
-
-            // Content se nahraje na Azure
-
-            Model_FileRecord.uploadAzure_Version(content.toString(), "code.json" , cProgram.get_path() ,  example);
-            example.update();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version_object.get_short_library_version()));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "remove example from Version of Library",
-            hidden = true,
-            tags = {"Library"},
-            notes = "For deleting examples from Version of Library.",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Library_edit"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @Security.Authenticated(Secured_Admin.class)
-    public Result libraryVersion_removeExample(@ApiParam(value = "example_id String query",   required = true)  String example_id){
-        try{
-
-            // Ověření objektu
-            Model_CProgram cProgram = Model_CProgram.get_byId(example_id);
-            if (cProgram == null) return GlobalResult.result_notFound("Example example_id not found");
-
-            // Zkontroluji validitu Verze zda sedí k Library
-            if(cProgram.example_library == null) return GlobalResult.result_badRequest("Program is not example of Library");
-
-            Model_VersionObject returnObject = cProgram.example_library;
-
-            // Kontrola oprávnění
-            if(!cProgram.example_library.library.edit_permission()) return GlobalResult.result_forbidden();
-
-            if (cProgram.getVersion_objects().size() > 0)
-                cProgram.getVersion_objects().get(0).delete();
-
-            cProgram.delete();
-
-            returnObject.refresh();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(returnObject.get_short_library_version()));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
 
 }

@@ -8,11 +8,8 @@ import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
-import utilities.Server;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
-import utilities.enums.Enum_MProgram_SnapShot_settings;
-import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.errors.Exceptions.Tyrion_Exp_ForbidenPermission;
 import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
 import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
@@ -39,7 +36,7 @@ public class Controller_Grid extends Controller {
 
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "Create new M_Project",
+    @ApiOperation(value = "Create M_Project",
             tags = {"M_Program"},
             notes = "M_Project is package for M_Programs -> presupposition is that you need more control terminal for your IoT project. " +
                     "Different screens for family members, for employee etc.. But of course - you can used that for only one M_program",
@@ -198,7 +195,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "remove M_Project",
+    @ApiOperation(value = "delete M_Project",
             tags = {"M_Program"},
             notes = "remove M_Project by query = m_project_id",
             produces = "application/json",
@@ -234,7 +231,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "get accessible interface from M_Project",
+    @ApiOperation(value = "get M_Project Accessible interface",
             tags = {"M_Program"},
             notes = "get accessible interface from M_Project",
             produces = "application/json",
@@ -294,7 +291,7 @@ public class Controller_Grid extends Controller {
 
 //######################################################################################################################
 
-    @ApiOperation(value = "Create new M_Program",
+    @ApiOperation(value = "Create M_Program",
             tags = {"M_Program"},
             notes = "creating new M_Program",
             produces = "application/json",
@@ -360,7 +357,7 @@ public class Controller_Grid extends Controller {
 
     }
 
-    @ApiOperation(value = "Create new Version of M_Program",
+    @ApiOperation(value = "Create M_Program Version",
             tags = {"M_Program"},
             notes = "creating new Version M_Program",
             produces = "application/json",
@@ -523,7 +520,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "update M_Program",
+    @ApiOperation(value = "edit M_Program",
             tags = {"M_Program"},
             notes = "update m_project - in this case we are not support versions of m_project",
             produces = "application/json",
@@ -641,7 +638,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "remove M_Program",
+    @ApiOperation(value = "delete M_Program",
             tags = {"M_Program"},
             notes = "remove M_Program by quarry = m_program_id",
             produces = "application/json",
@@ -677,7 +674,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "Remove  Version of M_Program",
+    @ApiOperation(value = "delete M_Program Version",
             tags = {"M_Program"},
             notes = "remove version of M_Program",
             produces = "application/json",
@@ -792,7 +789,7 @@ public class Controller_Grid extends Controller {
     }
 
 
-    @ApiOperation(value = "check Terminal terminal_id",
+    @ApiOperation(value = "check Terminal",
             tags = {"APP-Api"},
             notes = "For every app (terminal) opening you have to valid your terminal_id.",
             produces = "application/json",
@@ -850,7 +847,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Terminal terminal_id",
+    @ApiOperation(value = "get Terminal",
             tags = {"APP-Api"},
             notes = "Only for Grid Terminals! Before when you want connect terminal (grid) application with Tyrion throw WebSocker. " +
                     "You need unique identification key. If Person loggs to you application Tyrion connects this device with Person. Try to " +
@@ -919,9 +916,9 @@ public class Controller_Grid extends Controller {
 
 // TYPE_OF_WIDGET ######################################################################################################
 
-    @ApiOperation(value = "create new Type of Widget",
+    @ApiOperation(value = "create Type_Of_Widget",
             tags = {"Type-of-Widget"},
-            notes = "creating group for GridWidgets -> Type of Widget",
+            notes = "creating group for GridWidgets -> Type_Of_Widget",
             produces = "application/json",
             protocols = "https",
             code = 201,
@@ -963,7 +960,7 @@ public class Controller_Grid extends Controller {
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TypeOfWidget_New help = form.get();
 
-            if(Model_TypeOfWidget.get_publicByName(help.name) != null) return GlobalResult.result_badRequest("Type of Widget with this name already exists, type a new one.");
+            if(Model_TypeOfWidget.get_publicByName(help.name) != null) return GlobalResult.result_badRequest("Type_Of_Widget with this name already exists, type a new one.");
 
             // Vytvoření objektu
             Model_TypeOfWidget typeOfWidget = new Model_TypeOfWidget();
@@ -998,7 +995,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "get TypeOfWidget ",
+    @ApiOperation(value = "get Type_Of_Widget",
             tags = {"Type-of-Widget"},
             notes = "get TypeOfWidget",
             produces = "application/json",
@@ -1044,9 +1041,9 @@ public class Controller_Grid extends Controller {
 
     }
 
-    @ApiOperation(value = "edit Type of Widget",
+    @ApiOperation(value = "edit Type_Of_Widget",
             tags = {"Type-of-Widget"},
-            notes = "edit Type of widget object",
+            notes = "edit Type_Of_Widget object",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -1118,9 +1115,9 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete Type of Widget",
+    @ApiOperation(value = "delete Type_Of_Widget",
             tags = {"Type-of-Widget"},
-            notes = "delete group for GridWidgets -> Type of widget",
+            notes = "delete group for GridWidgets -> Type_Of_Widget",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1161,9 +1158,9 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Type of Widget list",
+    @ApiOperation(value = "get Type_Of_Widget All",
             tags = {"Type-of-Widget"},
-            notes = "get all groups for GridWidgets -> Type of widget",
+            notes = "get all groups for GridWidgets -> Type_Of_Widget",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1190,7 +1187,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "get TypeOfWidget by Filter",
+    @ApiOperation(value = "get Type_Of_Widget by Filter",
             tags = {"Type-of-Widget"},
             notes = "get TypeOfWidget List",
             produces = "application/json",
@@ -1206,7 +1203,7 @@ public class Controller_Grid extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Type_Of_Widget_Filter",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfWidget_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1223,9 +1220,9 @@ public class Controller_Grid extends Controller {
         try {
 
             // Získání JSON
-            final Form<Swagger_Type_Of_Widget_Filter> form = Form.form(Swagger_Type_Of_Widget_Filter.class).bindFromRequest();
+            final Form<Swagger_TypeOfWidget_Filter> form = Form.form(Swagger_TypeOfWidget_Filter.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_Type_Of_Widget_Filter help = form.get();
+            Swagger_TypeOfWidget_Filter help = form.get();
 
             // Získání všech objektů a následné odfiltrování soukormých TypeOfWidget
             Query<Model_TypeOfWidget> query = Ebean.find(Model_TypeOfWidget.class);
@@ -1255,8 +1252,8 @@ public class Controller_Grid extends Controller {
     }
 
 
-    @ApiOperation(value = "manual order UP for Type of Block list",
-            tags = {"Type-of-Block"},
+    @ApiOperation(value = "order Type_Of_Widget Up",
+            tags = {"Type-of-Widget"},
             notes = "set up order",
             produces = "application/json",
             consumes = "text/html",
@@ -1288,9 +1285,9 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "manual order Down for Type of Block list",
-            tags = {"Type-of-Block"},
-            notes = "set up order",
+    @ApiOperation(value = "order Type_Of_Widget Down",
+            tags = {"Type-of-Widget"},
+            notes = "set down order in list",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1322,7 +1319,7 @@ public class Controller_Grid extends Controller {
     }
 // GRID_WIDGET #########################################################################################################
 
-    @ApiOperation(value = "create new Widget",
+    @ApiOperation(value = "create Grid_Widget",
             tags = {"Grid-Widget"},
             notes = "creating new independent Widget object for Grid tools",
             produces = "application/json",
@@ -1414,7 +1411,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit basic information of the GridWidget",
+    @ApiOperation(value = "edit Grid_Widget",
             tags = {"Grid-Widget"},
             notes = "update basic information (name, and description) of the independent GridWidget",
             produces = "application/json",
@@ -1485,7 +1482,7 @@ public class Controller_Grid extends Controller {
 
     }
 
-    @ApiOperation(value = "get version of the GridWidget",
+    @ApiOperation(value = "get Grid_Widget_Version",
             tags = {"Grid-Widget"},
             notes = "get version (content) from independent GridWidget",
             produces = "application/json",
@@ -1528,9 +1525,9 @@ public class Controller_Grid extends Controller {
 
     }
 
-    @ApiOperation(value = "get GridWidget",
+    @ApiOperation(value = "get Grid_Widget",
             tags = {"Grid-Widget"},
-            notes = "get independent GridWidget object",
+            notes = "get independent Grid_Widget object",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -1570,7 +1567,7 @@ public class Controller_Grid extends Controller {
 
     }
 
-    @ApiOperation(value = "get GridWidget by Filter",
+    @ApiOperation(value = "get Grid_Widget by Filter",
             tags = {"Grid-Widget"},
             notes = "get GridWidget List",
             produces = "application/json",
@@ -1629,7 +1626,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete GridWidget",
+    @ApiOperation(value = "delete Grid_Widget",
             tags = {"Grid-Widget"},
             notes = "delete GridWidget",
             produces = "application/json",
@@ -1671,7 +1668,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete GridWidget version",
+    @ApiOperation(value = "delete Grid_Widget_Version",
             tags = {"Grid-Widget"},
             notes = "delete GridWidget version",
             produces = "application/json",
@@ -1713,7 +1710,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "create GridWidget version",
+    @ApiOperation(value = "create Grid_Widget_Version",
             tags = {"Grid-Widget"},
             notes = "new GridWidget version",
             produces = "application/json",
@@ -1789,7 +1786,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit GridWidget version",
+    @ApiOperation(value = "edit Grid_Widget_Version",
             tags = {"Grid-Widget"},
             notes = "You can edit only basic information of the version. If you want to update the code, " +
                     "you have to create a new version!",
@@ -1823,7 +1820,7 @@ public class Controller_Grid extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result gridWidgetVersion_update(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
+    public Result gridWidgetVersion_edit(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
         try {
 
             // Zpracování Json
@@ -1853,7 +1850,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all GridWidget version",
+    @ApiOperation(value = "get Grid_Widget_Versions",
             tags = {"Grid-Widget"},
             notes = "get all versions (content) from independent GridWidget",
             produces = "application/json",
@@ -1906,7 +1903,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "make GridWidget version public",
+    @ApiOperation(value = "edit Grid_Widget_Version ask for publication",
             tags = {"Grid-Widget"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
@@ -1954,7 +1951,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "manual order UP for grid Widget list",
+    @ApiOperation(value = "order Grid_Widget Up",
             tags = {"Grid-Widget"},
             notes = "set up order",
             produces = "application/json",
@@ -1987,9 +1984,9 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "manual order Down for  grid Widgetlist",
+    @ApiOperation(value = "order Grid_Widget Down",
             tags = {"Grid-Widget"},
-            notes = "set up order",
+            notes = "set down order",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -2022,57 +2019,40 @@ public class Controller_Grid extends Controller {
 
 // GRID ADMIN ##########################################################################################################
 
-    @ApiOperation(value = "", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
-    public Result grid_widget_public_Disapprove(){
-        try {
-
-            // Získání JSON
-            final Form<Swagger_GridObject_Approval> form = Form.form(Swagger_GridObject_Approval.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_GridObject_Approval help = form.get();
-
-            // Kontrola objektu
-            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_byId(help.object_id);
-            if (gridWidgetVersion == null) return GlobalResult.result_notFound("grid_widget_version not found");
-
-            // Změna stavu schválení
-            gridWidgetVersion.approval_state = Enum_Approval_state.disapproved;
-
-            // Odeslání emailu s důvodem
-            try {
-
-                new Email()
-                        .text("Version of Widget " + gridWidgetVersion.grid_widget.name + ": " + Email.bold(gridWidgetVersion.version_name) + " was not approved for this reason: ")
-                        .text(help.reason)
-                        .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget disapproved" );
-
-            } catch (Exception e) {
-                terminal_logger.internalServerError (e);
+    @ApiOperation(value = "edit Grid_Widget_Version Response publication ",
+            tags = {"Admin-Grid-Widget"},
+            notes = "sets Approval_state to pending",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.GlobalResult",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
             }
-
-            // Uložení změn
-            gridWidgetVersion.update();
-
-            // Vrácení potvrzení
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-
-        }
-    }
-
-    @ApiOperation(value = "", hidden = true)
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridWidgetVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @Security.Authenticated(Secured_Admin.class)
-    public Result grid_widget_public_Approval() {
+    public Result grid_widget_public_response() {
 
         try {
 
             // Získání JSON
-            final Form<Swagger_GridObject_Approve_withChanges> form = Form.form(Swagger_GridObject_Approve_withChanges.class).bindFromRequest();
+            final Form<Swagger_GridWidget_Publish_Response> form = Form.form(Swagger_GridWidget_Publish_Response.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_GridObject_Approve_withChanges help = form.get();
+            Swagger_GridWidget_Publish_Response help = form.get();
 
             // Kontrola názvu
             if(help.grid_widget_version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
@@ -2085,54 +2065,78 @@ public class Controller_Grid extends Controller {
             Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(help.grid_widget_type_of_widget_id);
             if (typeOfWidget == null) return GlobalResult.result_notFound("type_of_widget not found");
 
-            // Vytvoření objektu
-            Model_GridWidget gridWidget = new Model_GridWidget();
-            gridWidget.name = help.grid_widget_name;
-            gridWidget.description = help.grid_widget_description;
-            gridWidget.type_of_widget = typeOfWidget;
-            gridWidget.author = privateGridWidgetVersion.grid_widget.author;
-            gridWidget.save();
+            if(help.decision) {
+                // Vytvoření objektu
+                Model_GridWidget gridWidget = new Model_GridWidget();
+                gridWidget.name = help.grid_widget_name;
+                gridWidget.description = help.grid_widget_description;
+                gridWidget.type_of_widget = typeOfWidget;
+                gridWidget.author = privateGridWidgetVersion.grid_widget.author;
+                gridWidget.save();
 
-            // Vytvoření objektu
-            Model_GridWidgetVersion gridWidgetVersion = new Model_GridWidgetVersion();
-            gridWidgetVersion.version_name = help.grid_widget_version_name;
-            gridWidgetVersion.version_description = help.grid_widget_version_description;
-            gridWidgetVersion.design_json = help.grid_widget_design_json;
-            gridWidgetVersion.logic_json = help.grid_widget_logic_json;
-            gridWidgetVersion.approval_state = Enum_Approval_state.approved;
-            gridWidgetVersion.grid_widget = gridWidget;
-            gridWidgetVersion.date_of_create = new Date();
-            gridWidgetVersion.save();
+                // Vytvoření objektu
+                Model_GridWidgetVersion gridWidgetVersion = new Model_GridWidgetVersion();
+                gridWidgetVersion.version_name = help.grid_widget_version_name;
+                gridWidgetVersion.version_description = help.grid_widget_version_description;
+                gridWidgetVersion.design_json = help.grid_widget_design_json;
+                gridWidgetVersion.logic_json = help.grid_widget_logic_json;
+                gridWidgetVersion.approval_state = Enum_Approval_state.approved;
+                gridWidgetVersion.grid_widget = gridWidget;
+                gridWidgetVersion.date_of_create = new Date();
+                gridWidgetVersion.save();
 
-            // Pokud jde o schválení po ediatci
-            if(help.state.equals("edit")) {
-                privateGridWidgetVersion.approval_state = Enum_Approval_state.edited;
+                // Pokud jde o schválení po ediatci
+                if (help.state.equals("edit")) {
+                    privateGridWidgetVersion.approval_state = Enum_Approval_state.edited;
 
-                // Odeslání emailu
+                    // Odeslání emailu
+                    try {
+
+                        new Email()
+                                .text("Version of Widget " + gridWidgetVersion.grid_widget.name + ": " + Email.bold(gridWidgetVersion.version_name) + " was edited before publishing for this reason: ")
+                                .text(help.reason)
+                                .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget edited");
+
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError("grid_widget_public_Approval:", e);
+                    }
+                } else privateGridWidgetVersion.approval_state = Enum_Approval_state.approved;
+
+                // Uložení úprav
+                privateGridWidgetVersion.update();
+
+                // Vrácení výsledku
+                return GlobalResult.result_ok();
+
+            }else {
+                // Změna stavu schválení
+                privateGridWidgetVersion.approval_state = Enum_Approval_state.disapproved;
+
+                // Odeslání emailu s důvodem
                 try {
 
                     new Email()
-                            .text("Version of Widget " + gridWidgetVersion.grid_widget.name + ": " + Email.bold(gridWidgetVersion.version_name) + " was edited before publishing for this reason: ")
+                            .text("Version of Widget " + privateGridWidgetVersion.grid_widget.name + ": " + Email.bold(privateGridWidgetVersion.version_name) + " was not approved for this reason: ")
                             .text(help.reason)
-                            .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget edited");
+                            .send(privateGridWidgetVersion.grid_widget.author.mail, "Version of Widget disapproved" );
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("grid_widget_public_Approval:", e);
+                    terminal_logger.internalServerError (e);
                 }
+
+                // Uložení změn
+                privateGridWidgetVersion.update();
+
+                // Vrácení výsledku
+                return GlobalResult.result_ok();
             }
-            else privateGridWidgetVersion.approval_state = Enum_Approval_state.approved;
-
-            // Uložení úprav
-            privateGridWidgetVersion.update();
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
+    /**
     @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result gridWidgetVersion_editScheme(){
@@ -2213,4 +2217,5 @@ public class Controller_Grid extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+    **/
 }

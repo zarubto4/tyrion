@@ -13,7 +13,7 @@ Any incoming or outgoing message to Tyrion and from Tyrion contains
             "message_channel" :  "channel_name"  
         }
         
- - yoda_unauthorized_logging 
+ - hardware_unauthorized_logging 
  - checkUserPermission
  - checkPersonToken
  - removePersonLoginToken

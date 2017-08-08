@@ -454,7 +454,7 @@
     function updateTariff(){
         var model_data = $("#tariff_main_form").serializeObject();
         $.ajax({
-            url: '@routes.Controller_Finance.tariff_update()',
+            url: '@routes.Controller_Finance.tariff_edit()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -525,7 +525,7 @@
         var model_data = $("#editLabelForm").serializeObject();
 
         $.ajax({
-            url: '@routes.Controller_Finance.tariffLabel_update()',
+            url: '@routes.Controller_Finance.tariffLabel_edit()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {

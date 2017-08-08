@@ -31,10 +31,10 @@ public class Model_Tariff extends Model {
     @Column(unique = true)  public String identifier;
 
                 @JsonIgnore public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
-                @Enumerated(EnumType.STRING)
-                @JsonIgnore public Enum_BusinessModel business_model;
 
-                @JsonIgnore public Integer order_position;
+    @Enumerated(EnumType.STRING) @JsonIgnore public Enum_BusinessModel business_model;
+
+                            public Integer order_position;
 
                             public boolean company_details_required;
                             public boolean payment_details_required;

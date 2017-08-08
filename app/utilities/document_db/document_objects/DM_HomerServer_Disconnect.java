@@ -28,7 +28,7 @@ public class DM_HomerServer_Disconnect {
         request.put("document_type_sub_type", document_type_sub_type);
         request.put("server_version", Server.server_version);
 
-        request.put("device_id", server_id);
+        request.put("hardware_id", server_id);
         request.put("time", new Date().getTime() );
         return request;
     }

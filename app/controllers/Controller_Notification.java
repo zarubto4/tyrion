@@ -31,7 +31,7 @@ public class Controller_Notification extends Controller {
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################
 
-  @ApiOperation(value = "get latest notification",
+  @ApiOperation(value = "get Notification latest",
           tags = {"Notifications"},
           notes = "Get list of latest user notifications. Server return maximum 25 latest objects. \n\n " +
                   "For get another page (next 25 notifications) call this api with \"page_number\" path parameter. \n\n " +
@@ -63,7 +63,7 @@ public class Controller_Notification extends Controller {
 
 
 
-  @ApiOperation(value = "delete notification",
+  @ApiOperation(value = "delete Notification",
           tags = {"Notifications"},
           notes = "remove notification by id",
           produces = "application/json",
@@ -95,7 +95,7 @@ public class Controller_Notification extends Controller {
     }
   }
 
-  @ApiOperation(value = "mark notifications as read",
+  @ApiOperation(value = "mark Notifications as read",
           tags = {"Notifications"},
           notes = "Mark notifications as read. Send list with ids",
           produces = "application/json",
@@ -143,7 +143,7 @@ public class Controller_Notification extends Controller {
     }
   }
 
-  @ApiOperation(value = "get unconfirmed notifications",
+  @ApiOperation(value = "get Notifications unconfirmed",
           tags = {"Notifications"},
           notes = "This API should by called right after user logs in. Sends notifications which require confirmation via websocket.",
           produces = "application/json",
@@ -175,7 +175,7 @@ public class Controller_Notification extends Controller {
     }
   }
 
-  @ApiOperation(value = "confirm notification",
+  @ApiOperation(value = "confirm Notification",
           tags = {"Notifications"},
           notes = "Confirms notification",
           produces = "application/json",

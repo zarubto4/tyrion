@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model for new Compilation Server",
-        value = "Compilation_Server")
+        value = "Compilation_Server_New")
 public class Swagger_Cloud_Compilation_Server_New {
 
     @Constraints.Required

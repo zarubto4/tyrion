@@ -5,11 +5,7 @@ import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
-import models.Model_FileRecord;
-import models.Model_TypeOfBoard;
-import models.Model_VersionObject;
-import models.Model_CProgram;
-import models.Model_Project;
+import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -26,12 +22,10 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_Version_Public_List;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version_For_Public_Decision;
 
 import java.util.Date;
-import java.util.List;
 
 @Security.Authenticated(Secured_API.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -43,7 +37,7 @@ public class Controller_Code extends Controller{
 
 // C_ Program && Version ###############################################################################################
 
-    @ApiOperation(value = "Create new C_Program",
+    @ApiOperation(value = "create C_Program",
             tags = {"C_Program"},
             notes = "If you want create new C_program in project.id = {project_id}. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
@@ -204,7 +198,7 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "get C_program List",
+    @ApiOperation(value = "get C_program List by Filter",
             tags = {"C_Program"},
             notes = "get all C_Programs that belong to logged person",
             produces = "application/json",
@@ -248,8 +242,15 @@ public class Controller_Code extends Controller{
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if((help.project_id != null)&&!(help.project_id.equals(""))){
-
                 query.where().eq("project.id", help.project_id);
+            }
+
+            if(!help.type_of_board_ids.isEmpty()){
+               query.where().in("type_of_board.id", help.type_of_board_ids);
+            }
+
+            if(help.public_programs){
+                query.where().isNotNull("c_program").eq("public_version", true).ne("approval_state", Enum_Approval_state.pending).ne("approval_state", Enum_Approval_state.disapproved);
             }
 
             // Vyvoření odchozího JSON
@@ -263,97 +264,7 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "get C_program_Version public",
-            tags = {"C_Program"},
-            notes = "get approved or edited C_program public Versions ",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_C_Program_Version_Public_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
-    })
-    public Result c_program_getPublicList(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number){
-        try {
-
-            // Vytřídění objektů
-            Query<Model_VersionObject> query = Ebean.find(Model_VersionObject.class);
-            query.where().isNotNull("c_program").eq("public_version", true).ne("approval_state", Enum_Approval_state.pending).ne("approval_state", Enum_Approval_state.disapproved);
-
-            // Vytvoření výsledku a stránkování
-            Swagger_C_Program_Version_Public_List result = new Swagger_C_Program_Version_Public_List(query,page_number);
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get C_program_Version public",
-            tags = {"C_Program"},
-            hidden = true,
-            notes = "get C_program public Versions by Type of Board",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @Security.Authenticated(Secured_Admin.class)
-    public Result c_program_getPublicByType(String type_of_board_id){
-        try {
-
-            // Vytřídění objektů
-            List<Model_CProgram> programs = Model_CProgram.find.where().isNull("project").eq("type_of_board.id", type_of_board_id).findList();
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(programs));
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get C_program public by Filter",
-            tags = {"C_Program"},
-            hidden = true,
-            notes = "get public C_programs by filter",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @Security.Authenticated(Secured_Admin.class)
-    public Result c_program_getPublicByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number){
-        try {
-
-            final Form<Swagger_C_Program_Filter> form = Form.form(Swagger_C_Program_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_C_Program_Filter help = form.get();
-
-            Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
-
-            query.where().isNull("project");
-
-            if (!help.type_of_board_ids.isEmpty()){
-                query.where().in("type_of_board.id", help.type_of_board_ids);
-            }
-
-            Swagger_C_Program_List result = new Swagger_C_Program_List(query, page_number);
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Edit C_Program",
+    @ApiOperation(value = "edit C_Program",
             tags = {"C_Program"},
             notes = "If you want edit base information about C_program by  query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
@@ -467,40 +378,7 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "get C_program List by Project",
-            tags = {"C_Program"},
-            notes = "get all C_Programs that belong to logged person and given project",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_program.read_permission", value = "Tyrion only returns C_Programs which person owns, there is no need to check person_permissions"),
-                    }),
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-    })
-    public Result get_C_Program_List_by_Project(@ApiParam(value = "project_id String query", required = true) String project_id, @ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) Integer page_number){
-
-        try {
-
-            Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.get_person_id()).eq("project.id",project_id);
-
-            Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
-
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "new Version of C_Program",
+    @ApiOperation(value = "create C_Program Version",
             tags = {"C_Program"},
             notes = "If you want add new code to C_program by query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
@@ -534,7 +412,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result c_programVersion_create(@ApiParam(value = "version_id String query", required = true)  String c_program_id){
+    public Result c_program_version_create(@ApiParam(value = "version_id String query", required = true)  String c_program_id){
         try{
 
             // Zpracování Json
@@ -577,7 +455,7 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "get C_program Version",
+    @ApiOperation(value = "get C_Program_Version",
             tags = {"C_Program"},
             notes = "get Version of C_program by query = version_id",
             produces = "application/json",
@@ -602,7 +480,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_programVersion_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
+    public Result c_program_version_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
         try {
 
             // Vyhledám Objekt
@@ -623,7 +501,7 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "update basic information in Version of C_program",
+    @ApiOperation(value = "edit C_Program_Version information",
             tags = {"C_Program"},
             notes = "For update basic (name and description) information in Version of C_program. If you want update code. You have to create new version. " +
                     "And after that you can delete previous version",
@@ -656,7 +534,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result c_programVersion_update(@ApiParam(value = "version_id String query",   required = true)  String version_id){
+    public Result c_program_version_edit(@ApiParam(value = "version_id String query",   required = true)  String version_id){
         try{
 
             // Zpracování Json
@@ -686,7 +564,7 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "delete Version in C_program",
+    @ApiOperation(value = "delete C_Program_Version",
             tags = {"C_Program"},
             notes = "delete Version.id = version_id in C_program by query = c_program_id, query = version_id",
             produces = "application/json",
@@ -707,7 +585,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_programVersion_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id){
+    public Result c_program_version_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id){
         try{
 
             // Ověření objektu
@@ -731,7 +609,7 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "make C_program_Version public",
+    @ApiOperation(value = "make C_Program_Version public",
             tags = {"C_Program"},
             notes = "Make C_program public, so other users can see it and use it. Attention! Attention! Attention! A user can publish only three programs at the stage waiting for approval.",
             produces = "application/json",
@@ -753,7 +631,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result c_programVersion_makePublic(@ApiParam(value = "version_id String query", required = true)  String version_id){
+    public Result c_program_version_make_public(@ApiParam(value = "version_id String query", required = true)  String version_id){
         try {
 
             // Kontrola objektu
@@ -788,7 +666,7 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
-    public Result get_version_for_decision(String version_id){
+    public Result c_program_get_version_for_decision(String version_id){
         try {
 
             // Vyhledám Objekt
@@ -817,15 +695,39 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "only for Tyrion Front End", hidden = true)
+    @ApiOperation(value = "edit C_Program_Version Response publication",
+            tags = {"Admin-C_Program"},
+            notes = "sets Approval_state to pending",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_Publish_Response",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @Security.Authenticated(Secured_Admin.class)
-    public Result approve_decision(){
+    public Result c_program_public_response(){
         try {
 
             // Získání Json
-            final Form<Swagger_C_Program_Version_Approve_WithChanges> form = Form.form(Swagger_C_Program_Version_Approve_WithChanges.class).bindFromRequest();
+            final Form<Swagger_C_Program_Version_Publish_Response> form = Form.form(Swagger_C_Program_Version_Publish_Response.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_C_Program_Version_Approve_WithChanges help = form.get();
+            Swagger_C_Program_Version_Publish_Response help = form.get();
 
             // Kontrola objektu
             Model_VersionObject version_old = Model_VersionObject.get_byId(help.version_id);
@@ -899,7 +801,7 @@ public class Controller_Code extends Controller{
                     }
 
 
-                    // Admin to schválil ale měl nějaký keci k tomu
+                // Admin to schválil ale měl nějaký keci k tomu
                 }else {
 
                     try {
@@ -921,33 +823,29 @@ public class Controller_Code extends Controller{
                     }
                 }
 
-            }else {
-
-                // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
-                version_old.approval_state = Enum_Approval_state.disapproved;
-                version_old.update();
-
-                try {
-
-                    new Email()
-                            .text("First! Thank you for publishing your program!")
-                            .text(  Email.bold("C Program Name: ") +        c_program_old.name + Email.newLine() +
-                                    Email.bold("C Program Description: ") + c_program_old.name + Email.newLine() +
-                                    Email.bold("Version Name: ") +          c_program_old.name + Email.newLine() +
-                                    Email.bold("Version Description: ") +   c_program_old.name + Email.newLine() )
-                            .divider()
-                            .text("We are sorry, but we found some problems in your program, so we did not publish it. But do not worry and do not give up! " +
-                                    "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
-                            .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
-                            .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
-                            .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
-
-                } catch (Exception e) {
-                    terminal_logger.internalServerError("approve_decision:", e);
-                }
-
             }
+            // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
+            version_old.approval_state = Enum_Approval_state.disapproved;
+            version_old.update();
 
+            try {
+
+                new Email()
+                        .text("First! Thank you for publishing your program!")
+                        .text(  Email.bold("C Program Name: ") +        c_program_old.name + Email.newLine() +
+                                Email.bold("C Program Description: ") + c_program_old.name + Email.newLine() +
+                                Email.bold("Version Name: ") +          c_program_old.name + Email.newLine() +
+                                Email.bold("Version Description: ") +   c_program_old.name + Email.newLine() )
+                        .divider()
+                        .text("We are sorry, but we found some problems in your program, so we did not publish it. But do not worry and do not give up! " +
+                                "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
+                        .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
+                        .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
+                        .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
+
+            } catch (Exception e) {
+                terminal_logger.internalServerError("approve_decision:", e);
+            }
 
             // Potvrzení
             return  GlobalResult.result_ok();
@@ -957,8 +855,8 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "Create new default C_Program for Type of Board",
-            tags = {"C_Program"},
+    @ApiOperation(value = "create C_Program Default for Type_Of_Board",
+            tags = {"Admin-C_Program"},
             hidden = true,
             notes = "If you want create new C_program in project.id = {project_id}.",
             produces = "application/json",

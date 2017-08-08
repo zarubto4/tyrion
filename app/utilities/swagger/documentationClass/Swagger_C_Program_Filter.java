@@ -15,4 +15,7 @@ public class Swagger_C_Program_Filter {
 
     @ApiModelProperty(hidden = true)
     public List<String> type_of_board_ids = new ArrayList<>();
+
+    @ApiModelProperty(hidden = true)
+    public boolean public_programs;
 }

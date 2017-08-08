@@ -13,11 +13,11 @@ import utilities.response.GlobalResult;
 import utilities.scheduler.jobs.Job_SpendingCredit;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_Wiky extends Controller {
+public class Controller_ZZZ_Tester extends Controller {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Wiky.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_ZZZ_Tester.class);
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
      public Result test1(){

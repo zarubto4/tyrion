@@ -20,7 +20,7 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compilation;
-import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_autobackup;
+import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
 import javax.imageio.ImageIO;
@@ -39,9 +39,11 @@ public class Controller_Board extends Controller {
     
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "compile C_program Version",
-            tags = {"C_Program"},
-            notes = "Compile specific version of C_program - before compilation - you have to update (save) version code",
+    @ApiOperation(value = "compile C_program_Version",
+            hidden = true,
+            tags = {"Admin-C_Program"},
+            notes = "Compile specific version of C_program - before compilation - you have to update (save) version code" +
+                    "This appi is udes by Tyrion Calling on own API",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -66,7 +68,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 477, message = "External server is offline",response = Result_ServerOffline.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result compile_C_Program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
+    public Result compile_c_program_version( @ApiParam(value = "version_id String query", required = true) String version_id ){
         try{
 
             terminal_logger.debug("Starting compilation on version_id = " + version_id);
@@ -145,7 +147,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 478, message = "External server side Error",response = Result_ExternalServerSideError.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result compile_C_Program_code() {
+    public Result compile_c_program_code() {
         try {
 
             // Zpracování Json
@@ -402,207 +404,11 @@ public class Controller_Board extends Controller {
 
 
     
-///###################################################################################################################*/
-
-    @ApiOperation(value = "Create new Compilation Server",
-            hidden = true,
-            tags = {"External Server"},
-            notes = "Create new Gate for Compilation Server",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Compilation_Server_create" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_CompilationServer.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result create_Compilation_Server(){
-        try{
-
-            // Zpracování Json
-            Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_Cloud_Compilation_Server_New help = form.get();
-
-
-            // Vytvářím objekt
-            Model_CompilationServer server = new Model_CompilationServer();
-            server.personal_server_name = help.personal_server_name;
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! server.create_permission())  return GlobalResult.result_forbidden();
-
-            // Ukládám objekt
-            server.save();
-
-            // Vracím objekt
-            return GlobalResult.result_created(Json.toJson(server));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "edit Compilation Server",
-            hidden = true,
-            tags = {"External Server"},
-            notes = "Edit basic information Compilation Server",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Compilation_Server_edit" ),
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Update successfuly",        response = Model_CompilationServer.class),
-            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Invalid body",   response = Result_InvalidBody.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Compilation_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
-        try{
-
-            // Zpracování Json
-            Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_Cloud_Compilation_Server_New help = form.get();
-
-            //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
-            if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
-
-            // Zkontroluji oprávnění
-            if(!server.edit_permission()) return GlobalResult.result_forbidden();
-
-            // Upravím objekt
-            server.personal_server_name = help.personal_server_name;
-
-            // Uložím objekt
-            server.update();
-
-            // Vrátím objekt
-            return GlobalResult.result_ok(Json.toJson(server));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get all Compilation Servers",
-            hidden = true,
-            tags = {"External Server"},
-            notes = "get Compilation Servers",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Model_CompilationServer.class, responseContainer = "List "),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result get_All_Compilation_Server(){
-        try{
-
-            // Vyhledám všechny objekty
-            List<Model_CompilationServer> servers = Model_CompilationServer.find.all();
-
-            // Vracím Objekty
-            return GlobalResult.result_ok(Json.toJson(servers));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "remove Compilation Servers",
-            hidden = true,
-            tags = {"External Server"},
-            notes = "remove Compilation Servers",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Compilation_Server_delete" ),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
-    })
-    public Result delete_Compilation_Server( @ApiParam(value = "server_id ", required = true) String server_id ){
-        try{
-
-            //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
-            if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! server.delete_permission())  return GlobalResult.result_forbidden();
-
-            // Smažu objekt
-            server.delete();
-
-            // Vracím odpověď
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
 
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "Create new Processor",
-            hidden = true,
-            tags = {"Processor"},
+    @ApiOperation(value = "create Processor",
+            tags = {"Admin-Processor"},
             notes = "If you want create new Processor. Send required json values and server respond with new object",
             produces = "application/json",
             protocols = "https",
@@ -666,12 +472,7 @@ public class Controller_Board extends Controller {
             notes = "If you get Processor by query processor_id.",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",             response = Model_Processor.class),
@@ -693,17 +494,12 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Processors",
+    @ApiOperation(value = "get Processor All",
             tags = {"Processor"},
-            notes = "If you want get Processor by query processor_id.",
+            notes = "Get list of all Processor by query",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Processor.class, responseContainer = "List"),
@@ -723,7 +519,7 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "update Processor",
+    @ApiOperation(value = "edit Processor",
             tags = {"Processor"},
             notes = "If you want update Processor.id by query = processor_id . Send required json values and server respond with update object",
             produces = "application/json",
@@ -755,7 +551,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result processor_update(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
+    public Result processor_edit(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
         try {
 
             // Zpracování Json
@@ -788,8 +584,7 @@ public class Controller_Board extends Controller {
     }
 
     @ApiOperation(value = "delete Processor",
-            hidden = true,
-            tags = {"Processor"},
+            tags = {"Admin-Processor"},
             notes = "If you want delete Processor by query processor_id.",
             produces = "application/json",
             consumes = "text/html",
@@ -837,8 +632,7 @@ public class Controller_Board extends Controller {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            hidden = true
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_File_Content.class),
@@ -866,9 +660,8 @@ public class Controller_Board extends Controller {
 
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "create new Producer",
-            hidden = true,
-            tags = {"Producer"},
+    @ApiOperation(value = "create Producer",
+            tags = {"Admin-Producer"},
             notes = "if you want create new Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
             protocols = "https",
@@ -926,8 +719,7 @@ public class Controller_Board extends Controller {
     }
 
     @ApiOperation(value = "edit Producer",
-            hidden = true,
-            tags = {"Producer"},
+            tags = {"Admin-Producer"},
             notes = "if you want edit information about Producer. Its company owned physical boards and we used that for filtering",
             produces = "application/json",
             protocols = "https",
@@ -959,7 +751,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result producer_update(@ApiParam(required = true) String producer_id) {
+    public Result producer_update(String producer_id) {
         try {
 
             // Zpracování Json
@@ -989,18 +781,13 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Producers",
+    @ApiOperation(value = "get Producers All",
             tags = {"Producer"},
             notes = "if you want get list of Producers. Its list of companies owned physical boards and we used that for filtering",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Producer.class, responseContainer = "List"),
@@ -1029,12 +816,7 @@ public class Controller_Board extends Controller {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Producer.class),
@@ -1043,7 +825,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result producer_get(@ApiParam(required = true)  String producer_id) {
+    public Result producer_get( String producer_id) {
         try {
 
             // Kontrola objektu
@@ -1059,8 +841,7 @@ public class Controller_Board extends Controller {
     }
 
     @ApiOperation(value = "delete Producer",
-            hidden = true,
-            tags = {"Producer"},
+            tags = {"Admin-Producer"},
             notes = "if you want delete Producer",
             produces = "application/json",
             consumes = "text/html",
@@ -1080,7 +861,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result producer_delete(@ApiParam(required = true) String producer_id) {
+    public Result producer_delete(String producer_id) {
         try {
 
             // Kontrola objektu
@@ -1109,12 +890,7 @@ public class Controller_Board extends Controller {
                     "We using that for compilation, sorting libraries, filtres and more..",
             produces = "application/json",
             protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "TypeOfBoard_create"),
-                    })
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -1207,7 +983,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result typeOfBoard_update(@ApiParam(required = true)  String type_of_board_id) {
+    public Result typeOfBoard_update( String type_of_board_id) {
         try {
 
             // Zpracování Json
@@ -1271,7 +1047,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result typeOfBoard_delete(@ApiParam(required = true)  String type_of_board_id) {
+    public Result typeOfBoard_delete( String type_of_board_id) {
         try {
 
             // Kontrola objektu
@@ -1292,18 +1068,13 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "get list of all TypeOfBoard",
+    @ApiOperation(value = "get TypeOfBoards All",
             tags = { "Type-Of-Board"},
             notes = "if you want get all TypeOfBoard objects",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class, responseContainer = "List"),
@@ -1332,12 +1103,7 @@ public class Controller_Board extends Controller {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class),
@@ -1346,7 +1112,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result typeOfBoard_get(@ApiParam(required = true)  String type_of_board_id) {
+    public Result typeOfBoard_get( String type_of_board_id) {
         try {
 
             // Kontrola validity objektu
@@ -1364,33 +1130,41 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "Upload TypeOfBoard picture", hidden = true)
-    public Result typeOfBoard_uploadPicture(@ApiParam(required = true) String type_of_board_id){
+    @ApiOperation(value = "upload TypeOfBoard picture",
+            tags = { "Admin-Type-Of-Board"},
+            notes = "Upload TypeOfBoard picture",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_BASE64_FILE",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024 * 4)
+    public Result typeOfBoard_uploadPicture(String type_of_board_id){
         try {
+
+            // Získání JSON
+            final Form<Swagger_BASE64_FILE> form = Form.form(Swagger_BASE64_FILE.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_BASE64_FILE help = form.get();
 
             Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
             if (type_of_board == null) return GlobalResult.result_notFound("Type of board does not exist");
-
-            // Přijmu soubor
-            Http.MultipartFormData body = request().body().asMultipartFormData();
-
-            if (body == null) return GlobalResult.result_notFound("Missing picture!");
-
-            Http.MultipartFormData.FilePart file_from_request = body.getFile("file");
-
-            if (file_from_request == null) return GlobalResult.result_notFound("Missing picture!");
-
-            File file = file_from_request.getFile();
-
-            int dot = file_from_request.getFilename().lastIndexOf(".");
-            String file_type = file_from_request.getFilename().substring(dot);
-
-            // Zkontroluji soubor - formát, velikost, rozměry
-            if((!file_type.equals(".jpg"))&&(!file_type.equals(".png"))) return GlobalResult.result_badRequest("Wrong type of File - '.jpg' or '.png' required! ");
-            if( (file.length() / 1024) > 500) return GlobalResult.result_badRequest("Picture is bigger than 500 KB");
-            BufferedImage bimg = ImageIO.read(file);
-
-            //if((bimg.getWidth() < 400 )|| (bimg.getWidth() > 1200)||(bimg.getHeight() < 400)||(bimg.getHeight() > 1200) ) return GlobalResult.result_badRequest("Picture height or width is not between 400 and 800 pixels");
 
             terminal_logger.debug("typeOfBoard_uploadPicture update picture ");
 
@@ -1411,7 +1185,7 @@ public class Controller_Board extends Controller {
                 terminal_logger.debug("typeOfBoard_uploadPicture - type_of_board.azure_picture_link is null ");
 
                 while(true){ // I need Unique Value
-                    String azure_picture_link = type_of_board.get_Container().getName() + "/" + UUID.randomUUID().toString() + file_type;
+                    String azure_picture_link = type_of_board.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".bin";
                     if (Model_TypeOfBoard.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
                         type_of_board.azure_picture_link = azure_picture_link;
                         type_of_board.update();
@@ -1422,15 +1196,17 @@ public class Controller_Board extends Controller {
                 type_of_board.refresh();
             }
 
-            String file_path = type_of_board.azure_picture_link;
+            //  data:image/png;base64,
+            String[] parts = help.file.split(",");
+            String[] type = parts[0].split(":");
+            String[] dataType = type[1].split(";");
 
-            terminal_logger.debug("typeOfBoard_uploadPicture - file path :: " + file_path);
+            terminal_logger.debug("typeOfBoard_uploadPicture:: Data Type:" + dataType[0] + ":::");
+            terminal_logger.debug("typeOfBoard_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
 
-            int slash = file_path.indexOf("/");
-            String file_name = file_path.substring(slash+1);
-
-            type_of_board.picture = Model_FileRecord.uploadAzure_File(file, file_name, file_path);
+            type_of_board.picture  = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], ".bin" , type_of_board.azure_picture_link);
             type_of_board.update();
+
 
             return GlobalResult.result_ok(Json.toJson(type_of_board));
         }catch (Exception e){
@@ -1438,9 +1214,23 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "Remove TypeOfBoard picture", hidden = true)
+    @ApiOperation(value = "delete TypeOfBoard picture",
+            tags = { "Admin-Type-Of-Board"},
+            notes = "Remove picture from TypeOfBoard",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured_Admin.class)
-    public Result typeOfBoard_removePicture(@ApiParam(required = true) String type_of_board_id){
+    public Result typeOfBoard_removePicture(String type_of_board_id){
         try {
 
             Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
@@ -1464,7 +1254,21 @@ public class Controller_Board extends Controller {
 
     // BootLoader ---------------------------------------------------------------------------------------------------------------------
 
-    @ApiOperation(value = "new_boot_loader", hidden = true)
+    @ApiOperation(value = "create Bootloader",
+            tags = { "Admin-Type-Of-Board"},
+            notes = "Create picture from TypeOfBoard",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BootLoader.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result bootLoader_create(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id) {
@@ -1502,7 +1306,21 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit_boot_loader", hidden = true)
+    @ApiOperation(value = "edit Bootloader",
+            tags = { "Admin-Type-Of-Board"},
+            notes = "Create picture from TypeOfBoard",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BootLoader.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result bootLoader_update(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
@@ -1531,9 +1349,24 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete_boot_loader", hidden = true)
+    @ApiOperation(value = "delete Bootloader",
+            tags = { "Admin-Type-Of-Board"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured_Admin.class)
-    public Result bootLoader_delete(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result bootLoader_delete(String boot_loader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
@@ -1552,9 +1385,34 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "Uploud bootloader file", hidden = true)
+    @ApiOperation(value = "upload Bootloader File",
+            tags = {"Admin-Bootloader"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Bootloader_Update",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",      response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.MultipartFormData.class)
-    public Result bootLoader_uploadFile(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+    public Result bootLoader_uploadFile(String boot_loader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.get_byId(boot_loader_id);
@@ -1594,9 +1452,34 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "Mark as main", hidden = true)
+    @ApiOperation(value = "edit Bootloader Set as Main",
+                tags = {"Admin-Bootloader"},
+                notes = "List of Hardware Id for update on latest bootloader version (system used latest bootloader for type of hardware)",
+                produces = "application/json",
+                protocols = "https",
+                code = 200
+            )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Bootloader_Update",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",      response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result bootLoader_markAsMain(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+    public Result bootLoader_markAsMain(String boot_loader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.get_byId(boot_loader_id);
@@ -1631,9 +1514,9 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "update Bootloader",
+    @ApiOperation(value = "update Hardware Bootloader",
             tags = {"Bootloader"},
-            notes = "List of Hardware Id for update on latest bootloader version for specifict type of hardware",
+            notes = "List of Hardware Id for update on latest bootloader version (system used latest bootloader for type of hardware)",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1717,8 +1600,7 @@ public class Controller_Board extends Controller {
     ///###################################################################################################################*/
 
     @ApiOperation(value = "create Board",
-            hidden =  true,
-            tags = { "Board"},
+            tags = { "Admin-Board"},
             notes = "This Api is using only for developing mode, for registration of our Board - in future it will be used only by machine in factory or " +
                     "boards themselves with \"registration procedure\". Its not allowed to delete that! Only deactivate. Classic User can registed that to own " +
                     "project or own account",
@@ -1808,7 +1690,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_getForFastUpload(@ApiParam(required = true)  String project_id){
+    public Result board_getForFastUpload( String project_id){
         try {
 
             // Kotrola objektu
@@ -1836,7 +1718,7 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit Board - update personal description",
+    @ApiOperation(value = "edit Board personal description",
             tags = { "Board"},
             notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Projec\" ",
             produces = "application/json",
@@ -1869,7 +1751,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_update(@ApiParam(required = true)  String board_id){
+    public Result board_update_description( String board_id){
         try {
 
             // Zpracování Json
@@ -1891,7 +1773,95 @@ public class Controller_Board extends Controller {
             // Uprava objektu v databázi
             board.update();
 
-            board.set_alias();
+            // Synchronizace s Homer serverem
+            board.set_alias(board.name);
+
+            // Vrácení upravenéh objektu
+            return GlobalResult.result_ok(Json.toJson(board));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "edit Board developers parameters",
+            tags = { "Board"},
+            notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Projec\" ",
+            produces = "application/json",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Board.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Board_edit"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Personal",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Board.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_update_parameters( String board_id){
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Board_Developer_parameters> form = Form.form(Swagger_Board_Developer_parameters.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_Board_Developer_parameters help = form.get();
+
+            // Kotrola objektu
+            Model_Board board = Model_Board.get_byId(board_id);
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
+
+            // Kontrola oprávnění
+            if(!board.edit_permission()) return GlobalResult.result_forbidden();
+
+
+            switch (help.parameter_type){
+
+                case "developer_kit" :{
+                    // Synchronizace s Homer serverem a databází
+                    board.developer_kit = help.boolean_value;
+                    board.update();
+                }
+
+                case "database_synchronize" :{
+                    // Synchronizace s Homer serverem a databází
+                    board.set_database_synchronize(help.boolean_value);
+                }
+
+                case "web_view" :{
+                    // Synchronizace s Homer serverem a databází
+                    board.set_web_view(help.boolean_value);
+
+                }
+
+                case "web_port" :{
+                    // Synchronizace s Homer serverem a databází
+                    if(help.integer_value < 2001 && help.integer_value > 9999) return GlobalResult.result_badRequest("The port must be between 2001 and 9999. We also recommend not using commonly used ports such as Postgres 5432 and etc ..");
+                    if(help.integer_value == 8502 ) return GlobalResult.result_badRequest("The port is used by some other entity in the system."); // Zde hlídáme aby nedošlo ke kolizím na portech, které má homer server
+                    if(help.integer_value == 8501 ) return GlobalResult.result_badRequest("The port is used by some other entity in the system."); // Zde hlídáme aby nedošlo ke kolizím na portech, které má homer server
+                    board.set_web_port(help.integer_value);
+                }
+
+
+            }
 
             // Vrácení upravenéh objektu
             return GlobalResult.result_ok(Json.toJson(board));
@@ -1902,7 +1872,7 @@ public class Controller_Board extends Controller {
     }
 
     @ApiOperation(value = "upload C_Program into Hardware",
-            tags = {"C_Program", "Actualization"},
+            tags = {"C_Program", "Board", "Actualization"},
             notes = "Upload compilation to list of hardware. Compilation is on Version oc C_program. And before uplouding compilation, you must succesfuly compile required version before! " +
                     "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
@@ -2009,7 +1979,7 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "update Board - update Backup setting",
+    @ApiOperation(value = "update Board Backup",
             tags = { "Board"},
             notes = "",
             produces = "application/json",
@@ -2073,18 +2043,18 @@ public class Controller_Board extends Controller {
                     if(!board.backup_mode) {
                         terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.board_id);
 
-                        WS_Message_Hardware_set_autobackup result = Model_Board.set_auto_backup(board);
-
                         board.actual_backup_c_program_version = null;
                         board.backup_mode = true;
                         board.update();
 
+                        WS_Message_Hardware_set_settings result = board.set_auto_backup();
+
                     // Na devicu už autobackup zapnutý byl - nic nedělám jen překokontroluji???
                     }else {
 
-                        terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has already sat asi  dynamic Backup", board_backup_pair.board_id);
+                        terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has already sat as a dynamic Backup", board_backup_pair.board_id);
 
-                        WS_Message_Hardware_set_autobackup result = Model_Board.set_auto_backup(board);
+                        WS_Message_Hardware_set_settings result = board.set_auto_backup();
                         if (result.status.equals("success")) {
                             terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} Success of setting of dynamic backup", board_backup_pair.board_id);
 
@@ -2249,6 +2219,130 @@ public class Controller_Board extends Controller {
         }
     }
 
+    @ApiOperation(value = "upload Board picture",
+            tags = { "Board"},
+            notes = "Upload Board file",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_BASE64_FILE",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Board.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024 * 4)
+    public Result board_uploadPicture(String board_id){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_BASE64_FILE> form = Form.form(Swagger_BASE64_FILE.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_BASE64_FILE help = form.get();
+
+            Model_Board board = Model_Board.get_byId(board_id);
+
+            if(!board.edit_permission()) return GlobalResult.result_forbidden();
+
+            if(help.file == null || help.file.equals("")){
+                Model_FileRecord fileRecord = board.picture;
+                board.picture = null;
+                board.azure_picture_link = "";
+                board.update();
+                fileRecord.delete();
+            }
+            
+            // Odebrání předchozího obrázku
+            if(board.picture != null){
+                terminal_logger.debug("person_uploadPicture:: Removing previous picture");
+                Model_FileRecord fileRecord = board.picture;
+                board.picture = null;
+                board.azure_picture_link = "";
+                board.update();
+                fileRecord.delete();
+            }
+
+            // Pokud link není, vygeneruje se nový, unikátní
+            if(board.azure_picture_link == null || board.azure_picture_link.equals("")){
+                board.azure_picture_link = board.get_path() + "/" + UUID.randomUUID().toString() + ".png";
+                board.update();
+            }
+
+            // Pouze pro případy, kdy se uživatel registroval skrze sociální síť a Tyrion používá obrázek daného uživatele
+            // Z konrkétní sociální sítě - pak chybí soubor, ale existuje cesta k souboru, kterou zaslí tyrion do Becki
+            // Například:: https://avatars1.githubusercontent.com/u/16296782?v=3
+            // PRoto je nutné na to pamatovat - jinak se pak taková cesta strká do Azure k přepsání předchozího obrázku
+            if(board.azure_picture_link.contains("http")){
+                board.azure_picture_link = board.get_path()+ "/" + UUID.randomUUID().toString() + ".png";
+                board.update();
+            }
+
+            String file_name =  board.azure_picture_link.substring( board.azure_picture_link.indexOf("/") + 1);
+
+            //  data:image/png;base64,
+            String[] parts = help.file.split(",");
+            String[] type = parts[0].split(":");
+            String[] dataType = type[1].split(";");
+
+            terminal_logger.debug("person_uploadPicture:: Data Type:" + dataType[0] + ":::");
+            terminal_logger.debug("person_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
+
+            board.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, board.azure_picture_link);
+            board.update();
+
+            return GlobalResult.result_ok(Json.toJson(board));
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "delete Board picture",
+            tags = {"Board"},
+            notes = "Removes picture of logged person",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result board_removePicture(String board_id){
+        try {
+
+            Model_Board board = Model_Board.get_byId(board_id);
+
+            if(!(board.picture == null)) {
+                Model_FileRecord fileRecord = board.picture;
+                board.picture = null;
+                board.azure_picture_link = null;
+                board.update();
+                fileRecord.delete();
+            }else{
+                return GlobalResult.result_badRequest("There is no picture to remove.");
+            }
+
+            return GlobalResult.result_ok("Picture successfully removed");
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "deactivate Board",
             tags = { "Board"},
             notes = "Permanent exclusion from the system - for some reason it is not allowed to remove the Board from database",
@@ -2269,7 +2363,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_deactivate(@ApiParam(required = true)  String board_id) {
+    public Result board_deactivate( String board_id) {
         try {
 
             // Kotrola objektu
@@ -2316,7 +2410,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_get(@ApiParam(required = true) String board_id) {
+    public Result board_get(String board_id) {
         try {
 
             // Kotrola objektu
@@ -2334,7 +2428,7 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "check Board during registration",
+    @ApiOperation(value = "check Board registration status",
             tags = {"Board"},
             notes = "Check Board state for new Registration. Types of responses in JSON state value" +
                     "[CAN_REGISTER, NOT_EXIST, ALREADY_REGISTERED_IN_YOUR_ACCOUNT, ALREADY_REGISTERED, PERMANENTLY_DISABLED, BROKEN_DEVICE]... \n " +
@@ -2357,7 +2451,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_check(@ApiParam(required = true) String hash_for_adding) {
+    public Result board_check(String hash_for_adding) {
         try {
 
             // Kotrola objektu
@@ -2407,7 +2501,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_connectProject(@ApiParam(required = true) String hash_for_adding, @ApiParam(required = true) String project_id){
+    public Result board_connectProject(String hash_for_adding, String project_id){
         try {
 
             terminal_logger.debug("CompilationControler:: Registrace nového zařízení ");
@@ -2470,7 +2564,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_disconnectProject(@ApiParam(required = true)   String board_id){
+    public Result board_disconnectProject(  String board_id){
         try {
 
             // Kontrola objektu
@@ -2515,7 +2609,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result board_allDetailsForBlocko(@ApiParam(required = true)   String project_id){
+    public Result board_allDetailsForBlocko(  String project_id){
         try {
 
             // Kontrola objektu

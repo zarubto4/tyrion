@@ -878,7 +878,7 @@
                         <label for="addMasterDeviceForm" class="col-sm-2 control-label">Device Id:</label>
 
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" name="device_id" id="device_id">
+                            <input type="text" class="form-control" name="hardware_id" id="hardware_id">
                         </div>
                     </div>
 
@@ -906,11 +906,11 @@
 
           function addDevice(){
 
-              var device_id = document.getElementById("addDeviceForm").elements.namedItem("device_id").value;
+              var hardware_id = document.getElementById("addDeviceForm").elements.namedItem("hardware_id").value;
               var master_board_id = document.getElementById("addDeviceForm").elements.namedItem("master_board_id").value;
 
               $.ajax({
-                  url: '/instance/add_device/' +  '@instance.id' + "/" + master_board_id + "/" + device_id,
+                  url: '/instance/add_device/' +  '@instance.id' + "/" + master_board_id + "/" + hardware_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken"),
@@ -936,10 +936,10 @@
               })
           }
 
-          function removeDevice(master_board_id, device_id){
+          function removeDevice(master_board_id, hardware_id){
 
               $.ajax({
-                  url: '/instance/remove_device/' + '@instance.id' + "/" + master_board_id + "/" + device_id,
+                  url: '/instance/remove_device/' + '@instance.id' + "/" + master_board_id + "/" + hardware_id,
                   type: 'PUT',
                   headers: {
                       "X-AUTH-TOKEN":getCookie("authToken"),

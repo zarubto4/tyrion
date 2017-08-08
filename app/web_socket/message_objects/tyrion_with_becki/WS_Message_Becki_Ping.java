@@ -2,7 +2,6 @@ package web_socket.message_objects.tyrion_with_becki;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_CompilationServer;
 import play.libs.Json;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Instance;
 import web_socket.services.WS_Becki_Website;

@@ -27,7 +27,7 @@ public class DM_Board_VersionChange {
         request.put("document_type_sub_type", document_type_sub_type);
         request.put("server_version", Server.server_version);
 
-        request.put("device_id", board_id);
+        request.put("hardware_id", board_id);
         request.put("firmware_type", firmware_type.name());
         request.put("version_id", version_id);
         request.put("time", new Date().getTime() );

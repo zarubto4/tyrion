@@ -39,9 +39,35 @@ public class Controller_Finance extends Controller {
 
 // ADMIN - TARIFF SETTINGS #############################################################################################
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
+    @ApiOperation(value = "create Tariff",
+            tags = {"Admin-Tariff"},
+            notes = "create new Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Tariff_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariff_create(){
         try {
             final Form<Swagger_Tariff_New> form = Form.form(Swagger_Tariff_New.class).bindFromRequest();
@@ -71,16 +97,41 @@ public class Controller_Finance extends Controller {
 
             tariff.save();
 
-            return GlobalResult.result_ok(Json.toJson(tariff));
+            return GlobalResult.result_created(Json.toJson(tariff));
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
+    @ApiOperation(value = "edit Tariff",
+            tags = {"Admin-Tariff"},
+            notes = "create new Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Tariff_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariff_update(){
+    @Security.Authenticated(Secured_Admin.class)
+    public Result tariff_edit(){
         try {
 
             final Form<Swagger_Tariff_New> form = Form.form(Swagger_Tariff_New.class).bindFromRequest();
@@ -116,7 +167,22 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend ", hidden = true)
+    @ApiOperation(value = "deactivate Tariff",
+            tags = {"Admin-Tariff"},
+            notes = "deactivate Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_Admin.class)
     public Result tariff_deactivate(String tariff_id){
         try {
@@ -137,7 +203,22 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend ", hidden = true)
+    @ApiOperation(value = "activate Tariff",
+            tags = {"Admin-Tariff"},
+            notes = "activate Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_Admin.class)
     public Result tariff_activate(String tariff_id){
         try {
@@ -158,7 +239,22 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "order Tariff Up",
+            tags = {"Admin-Tariff"},
+            notes = "activate Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_Admin.class)
     public Result tariff_up(String tariff_id){
         try{
@@ -175,7 +271,22 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "order Tariff Down",
+            tags = {"Admin-Tariff"},
+            notes = "activate Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_Admin.class)
     public Result tariff_down(String tariff_id){
         try{
@@ -194,9 +305,34 @@ public class Controller_Finance extends Controller {
 
 // ADMIN - TARIFF LABEL ################################################################################################
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
+    @ApiOperation(value = "create Tariff Label",
+            tags = {"Admin-Tariff"},
+            notes = "create new Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TariffLabel_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_create(){
         try {
 
@@ -214,17 +350,44 @@ public class Controller_Finance extends Controller {
             label.icon = help.icon;
             label.save();
 
-            return GlobalResult.result_ok(Json.toJson(label));
+            tariff.refresh();
+
+            return GlobalResult.result_ok(Json.toJson(tariff));
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
+    @ApiOperation(value = "edit Tariff Label",
+            tags = {"Admin-Tariff"},
+            notes = "create new Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TariffLabel_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariffLabel_update(){
+    @Security.Authenticated(Secured_Admin.class)
+    public Result tariffLabel_edit(){
         try {
 
             final Form<Swagger_TariffLabel_New> form = Form.form(Swagger_TariffLabel_New.class).bindFromRequest();
@@ -239,14 +402,28 @@ public class Controller_Finance extends Controller {
             label.icon = help.icon;
             label.update();
 
-            return GlobalResult.result_ok(Json.toJson(label));
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "order Tariff Label Up",
+            tags = {"Admin-Tariff"},
+            notes = "create new Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_up(String label_id){
         try{
@@ -263,7 +440,21 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "order Tariff Label Down",
+            tags = {"Admin-Tariff"},
+            notes = "create new Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_down(String label_id){
         try{
@@ -280,7 +471,21 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "remove label from general Tariffs", hidden = true)
+    @ApiOperation(value = "delete Tariff",
+            tags = {"Admin-Tariff"},
+            notes = "create new Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_delete(String label_id){
         try{
@@ -359,7 +564,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Product Extension by ID",
+    @ApiOperation(value = "get Product Extension",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -374,7 +579,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_get(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+    public Result productExtension_get( String extension_id){
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
@@ -389,7 +594,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Product Extension of logged user",
+    @ApiOperation(value = "get Product Extension List user Own",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -411,7 +616,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Product Extension types",
+    @ApiOperation(value = "get Product Extension types All",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -461,7 +666,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result productExtension_update(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+    public Result productExtension_update(String extension_id){
         try{
 
             final Form<Swagger_ProductExtension_Edit> form = Form.form(Swagger_ProductExtension_Edit.class).bindFromRequest();
@@ -501,7 +706,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_activate(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+    public Result productExtension_activate(String extension_id){
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
@@ -537,7 +742,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_deactivate(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+    public Result productExtension_deactivate(String extension_id){
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
@@ -559,7 +764,7 @@ public class Controller_Finance extends Controller {
     }
 
     @ApiOperation(value = "delete Product Extension",
-            tags = {"Price & Invoice & Tariffs"},
+            tags = {"Admin-Extension"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
             protocols = "https",
@@ -572,7 +777,8 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_delete(@ApiParam(value = "extension_id String query", required = true) String extension_id){
+    @Security.Authenticated(Secured_Admin.class)
+    public Result productExtension_delete(String extension_id){
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
@@ -590,9 +796,35 @@ public class Controller_Finance extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    
+    @ApiOperation(value = "create Tariff Extension",
+            tags = {"Admin-Extension"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ProductExtension_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_ProductExtension.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_create(){
         try{
 
@@ -717,8 +949,35 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "edit Tariff Extension",
+            tags = {"Admin-Extension"},
+            notes = "create new Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ProductExtension_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProductExtension.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_update(){
         try{
 
@@ -836,7 +1095,22 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "up label from general Tariffs", hidden = true)
+    @ApiOperation(value = "order Tariff Extension UP",
+            tags = {"Admin-Extension"},
+            notes = "order Tariff in list",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_up(String extension_id){
         try{
 
@@ -851,7 +1125,24 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "order Tariff Extension Down",
+            tags = {"Admin-Extension"},
+            notes = "order Tariff Extension Down",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+
+    )
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_down(String extension_id){
         try{
 
@@ -867,7 +1158,24 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "deactivate Tariff Extension",
+            tags = {"Admin-Extension"},
+            notes = "order Tariff Extension Down",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+
+    )
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_deactivate(String extension_id){
         try{
 
@@ -884,7 +1192,24 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "active Tariff Extension",
+            tags = {"Admin-Extension"},
+            notes = "order Tariff Extension Down",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+
+    )
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_activate(String extension_id){
         try{
 
@@ -901,7 +1226,24 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "delete Tariff Extension",
+            tags = {"Admin-Extension"},
+            notes = "order Tariff Extension Down",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+
+    )
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_delete(String extension_id){
         try{
 
@@ -919,7 +1261,7 @@ public class Controller_Finance extends Controller {
 
 // USER PRODUCT ########################################################################################################
 
-    @ApiOperation(value = "get all Tariffs",
+    @ApiOperation(value = "get Tariffs all",
             tags = {"Price & Invoice & Tariffs"},
             notes = "get all Tariffs - required for every else action in system. For example: Project is created under the Product which is under some Tariff",
             produces = "application/json",
@@ -942,7 +1284,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "create Product under Tariff",
+    @ApiOperation(value = "create Product",
             tags = {"Price & Invoice & Tariffs"},
             notes = "It is the base object. Peak of Pyramid :). This Api is used for its creation. You can get two kind of response: \n\n" +
                     "First(201):  System create new Object - Product \n\n" +
@@ -1174,7 +1516,7 @@ public class Controller_Finance extends Controller {
                 }
             }
 
-            // Okopíruji všechny aktivní, které má Tarrif už v sobě
+            // Okopíruji všechny aktivní, které má Tariff už v sobě
             for (Model_ProductExtension ext : tariff.extensions_included){
 
                 if(ext.active) {
@@ -1200,7 +1542,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Products with all information's",
+    @ApiOperation(value = "get Products user Own List",
             tags = {"Price & Invoice & Tariffs"},
             notes = "",
             produces = "application/json",
@@ -1254,7 +1596,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_update(@ApiParam(value = "product_id String query", required = true) String product_id){
+    public Result product_update(String product_id){
         try{
 
             // Vytvoření pomocného Objektu
@@ -1284,9 +1626,9 @@ public class Controller_Finance extends Controller {
 
     }
 
-    @ApiOperation(value = "deactivate Product Tariff",
+    @ApiOperation(value = "deactivate Product",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "deactivate product and deactivate all stuff under it",
+            notes = "deactivate product Tariff and deactivate all stuff under it",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1299,7 +1641,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",              response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",             response = Result_InternalServerError.class)
     })
-    public Result product_deactivate(@ApiParam(value = "product_id String query", required = true) String product_id){
+    public Result product_deactivate(String product_id){
         try{
 
             // Kontrola objektu
@@ -1325,9 +1667,9 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "activate Product Tariff",
+    @ApiOperation(value = "activate Product",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "activate product and deactivate all staff around that",
+            notes = "Activate product Tariff and deactivate all staff around that",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1340,7 +1682,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_activate(@ApiParam(value = "product_id String query", required = true) String product_id){
+    public Result product_activate(String product_id){
         try{
 
             // Kontrola objektu
@@ -1366,7 +1708,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "buy credit for given product",
+    @ApiOperation(value = "buy Credit for given product",
             tags = {"Price & Invoice & Tariffs"},
             notes = "creates invoice - credit will be added after payment if payment method is bank transfer or if getting money from credit card is successful",
             produces = "application/json",
@@ -1392,7 +1734,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_credit(@ApiParam(value = "product_id String query", required = true) String product_id){
+    public Result product_credit(String product_id){
         try{
 
             // Binding Json with help object
@@ -1438,8 +1780,21 @@ public class Controller_Finance extends Controller {
         }
 
     }
-
-    @ApiOperation(value = "delete Product Tariff", hidden = true)
+    
+    @ApiOperation(value = "delete Product Tariff",
+            tags = {"Admin"},
+            notes = "get PDF invoice file",
+            produces = "multipartFormData",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
     @Security.Authenticated(Secured_Admin.class)
     public Result product_delete(String product_id){
         try{
@@ -1490,7 +1845,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result paymentDetails_create(@ApiParam(value = "product_id String query", required = true) String product_id){
+    public Result paymentDetails_create(String product_id){
         try{
 
             // Kontrola Objektu
@@ -1573,7 +1928,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result paymentDetails_update(@ApiParam(value = "payment_details_id Long query", required = true) Long payment_details_id){
+    public Result paymentDetails_update(Long payment_details_id){
         try{
 
             // Vytvoření pomocného Objektu
@@ -1653,7 +2008,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all active products that the User can use",
+    @ApiOperation(value = "get Products user can used",
             tags = {"Price & Invoice & Tariffs"},
             notes = "get all the products that the user can use when creating new projects",
             produces = "application/json",
@@ -1703,7 +2058,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_terminateOnDemand(@ApiParam(value = "product_id String query", required = true) String product_id){
+    public Result product_terminateOnDemand(String product_id){
         try{
 
             // Kontrola objektu
@@ -1727,7 +2082,7 @@ public class Controller_Finance extends Controller {
 
 // INVOICE #############################################################################################################
 
-    @ApiOperation(value = "get Invoice with all details",
+    @ApiOperation(value = "get Invoice",
             tags = {"Price & Invoice & Tariffs"},
             notes = "get summary information from invoice",
             produces = "application/json",
@@ -1760,9 +2115,9 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "re-send Invoice to specific email",
+    @ApiOperation(value = "resend Invoice",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "re-send Invoice to specific email",
+            notes = "resend Invoice to specific email",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1808,7 +2163,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "reimbursement of an unpaid invoice",
+    @ApiOperation(value = "send Invoice reimbursement",
             tags = {"Price & Invoice & Tariffs"},
             notes = "reimbursement of an unpaid invoice - with settings from creating product before",
             produces = "application/json",
@@ -1851,13 +2206,12 @@ public class Controller_Finance extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured_API.class)
     public Result invoice_getPdf(String kind, String invoice_id){
         try {
 
@@ -1879,7 +2233,21 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "send Invoice Reminder",
+            tags = {"Admin-Invoice"},
+            notes = "get PDF invoice file",
+            produces = "multipartFormData",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Admin.class)
     public Result invoice_reminder(String invoice_id){
         try{
 
@@ -1897,7 +2265,21 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "delete Invoice",
+            tags = {"Admin-Invoice"},
+            notes = "remove Invoice only with permission",
+            produces = "multipartFormData",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Admin.class)
     public Result invoice_delete(String invoice_id){
         try{
 
@@ -1910,6 +2292,7 @@ public class Controller_Finance extends Controller {
 
             // TODO - Chybí navázání na fakturoid - smazání faktury (nějaký proces?)
             //Fakturoid_Controller.fakturoid_delete()
+            terminal_logger.internalServerError(new IllegalAccessException("unsuported remove from fakturoid!! - TODO "));
 
             // Vykonání operace
             invoice.delete();
@@ -1921,12 +2304,40 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    @ApiOperation(value = "edit Invoice Synchronize with Fakturoid",
+            tags = {"Admin"},
+            notes = "remove Invoice only with permission",
+            produces = "multipartFormData",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_Admin.class)
     public Result invoice_synchronizeFakturoid(String invoice_id){
         return TODO;
     }
-
-    @ApiOperation(value = "Only for Tyrion frontend", hidden = true)
+    
+    @ApiOperation(value = "edit Invoice Set As Paid",
+            tags = {"Admin-Invoice"},
+            notes = "remove Invoice only with permission",
+            produces = "multipartFormData",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
     public Result invoice_set_as_paid(String invoice_id){
         try{
 
@@ -1968,7 +2379,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result customer_createCompany(){
+    public Result customer_create_company(){
         try{
 
             // Zpracování Json
@@ -2027,7 +2438,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Companies",
+    @ApiOperation(value = "get Companies All",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Gets all companies by logged user.",
             produces = "application/json",
@@ -2039,7 +2450,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result customer_getAll(){
+    public Result customer_get_all(){
         try{
 
             List<Model_Customer> customers = Model_Customer.find.where().eq("employees.person.id", Controller_Security.get_person_id()).findList();
@@ -2078,7 +2489,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result customer_updateCompany(@ApiParam(value = "customer_id String query", required = true) String customer_id){
+    public Result customer_update_company(String customer_id){
         try{
 
             // Zpracování Json
@@ -2121,7 +2532,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "add employee",
+    @ApiOperation(value = "add Employee",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Adds employee to a company.",
             produces = "application/json",
@@ -2148,7 +2559,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result customer_addEmployee(@ApiParam(value = "customer_id String query", required = true) String customer_id){
+    public Result customer_add_employee(){
         try{
 
             // Zpracování Json
@@ -2156,7 +2567,7 @@ public class Controller_Finance extends Controller {
             if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Customer_Employee help = form.get();
 
-            Model_Customer customer = Model_Customer.get_byId(customer_id);
+            Model_Customer customer = Model_Customer.get_byId(help.customer_id);
             if (customer == null) return GlobalResult.result_notFound("Customer not found");
 
             if (!customer.update_permission()) return GlobalResult.result_forbidden();
@@ -2182,7 +2593,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "remove employee",
+    @ApiOperation(value = "remove Employee",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Removes employee from a company.",
             produces = "application/json",
@@ -2196,9 +2607,9 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result customer_removeEmployee(@ApiParam(value = "employee_id String query", required = true) String employee_id){
+    public Result customer_remove_employee(String employee_id){
         try{
-
+            
             Model_Employee employee = Model_Employee.get_byId(employee_id);
             if (employee == null) return GlobalResult.result_notFound("Employee not found");
 
@@ -2229,7 +2640,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result customer_deleteCompany(@ApiParam(value = "customer_id String query", required = true) String customer_id){
+    public Result customer_delete_company(String customer_id){
         try{
 
             Model_Customer customer = Model_Customer.get_byId(customer_id);

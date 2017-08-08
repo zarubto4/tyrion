@@ -1,15 +1,21 @@
 package utilities.swagger.documentationClass;
 
 
+import io.swagger.annotations.ApiModel;
 import play.data.validation.Constraints;
 
-public class Swagger_GridObject_Approve_withChanges {
+@ApiModel(description = "Json Model for admin response for publishing GridWidget",
+        value = "GridWidget_Publish_Response")
+public class Swagger_GridWidget_Publish_Response {
 
     @Constraints.Required
     public String object_id;
 
     @Constraints.Required
     public String state;
+
+    @Constraints.Required
+    public boolean decision;
 
     @Constraints.Required
     @Constraints.MinLength(value = 8,  message = "The name must have at least 8 characters.")

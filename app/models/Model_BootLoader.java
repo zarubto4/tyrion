@@ -43,7 +43,7 @@ public class Model_BootLoader extends Model {
 
                                           public String name;
     @Column(columnDefinition = "TEXT")    public String description;
-                                          public String version_identificator; // HW identifikator od kluků ve formátu 255.255.255 -> ex. 0.1.6 || 0.1.77
+                                          public String version_identificator; // HW identifikator od kluků ve formátu b255.255.255 -> ex. b0.1.6 || b0.1.77
     @Column(columnDefinition = "TEXT")    public String changing_note;
 
 

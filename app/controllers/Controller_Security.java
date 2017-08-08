@@ -95,7 +95,7 @@ public class Controller_Security extends Controller {
 
         String person_id = get_person_id();
 
-        return Model_Person.get_byId(person_id);
+        return person_id != null ? Model_Person.get_byId(person_id) : null;
 
     }
 
@@ -268,7 +268,7 @@ public class Controller_Security extends Controller {
 
     // Když se uživatel přihlásí, dostane pouze Token. Ale aby mohl načíst základní projekty, atd. Tato metoda
     // mu výměnou za Token vrátí celkový přehled (práva atd.)
-    @ApiOperation(value = "get Person by token (after Oauth2 Login -> Facebook, GitHub, Twitter)",
+    @ApiOperation(value = "get Person by token",
             tags = {"Access", "Person", "Social-GitHub", "Social-Facebook"},
             notes = "If you want login to system with social networks - you can used facebook, github or twitter api " +
                     "just ask for token, server responds with object where is token and redirection link. Redirect user " +
@@ -286,7 +286,7 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
-    public  Result getPersonByToken(){
+    public  Result person_get_by_token(){
         try{
 
             // Get token from Request
@@ -370,7 +370,7 @@ public class Controller_Security extends Controller {
     // V nějaké fázy je nutné mít mail - pokud ho nedostaneme od sociální služby - mělo by někde v kodu být upozornění pro frontEnd
     // Aby doplnil uživatel svůj mail - hlavní identifikátor!
     @ApiOperation( value = "GET_github_oauth", hidden = true)
-    public Result GET_github_oauth(String url) {
+    public Result github_oauth_get(String url) {
         try {
 
             terminal_logger.debug("GET_github_oauth:: " + url);
@@ -495,7 +495,7 @@ public class Controller_Security extends Controller {
 
 
     @ApiOperation( value = "GET_facebook_oauth", hidden = true)
-    public Result GET_facebook_oauth(String url) {
+    public Result facebook_oauth_get(String url) {
         try {
 
             terminal_logger.debug("GET_facebook_oauth:: URL:: {} ", url);

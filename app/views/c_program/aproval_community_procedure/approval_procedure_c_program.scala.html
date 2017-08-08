@@ -177,7 +177,7 @@
                 "reason" :              document.getElementById('edit_code_reason').value
             };
             $.ajax({
-                url: '@routes.Controller_Code.approve_decision()' ,
+                url: '@routes.Controller_Code.c_program_public_response()' ,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -215,7 +215,7 @@
                 "reason" :              document.getElementById('edit_code_reason').value
             };
             $.ajax({
-                url: '@routes.Controller_Code.approve_decision()' ,
+                url: '@routes.Controller_Code.c_program_public_response()' ,
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -235,7 +235,7 @@
 
         function showEditForm(id){
             $.ajax({
-                url: '@routes.Controller_Code.get_version_for_decision("")' + id,
+                url: '@routes.Controller_Code.c_program_public_response()'
                 type: 'GET',
                 headers: {
                     "X-AUTH-TOKEN":getCookie("authToken")

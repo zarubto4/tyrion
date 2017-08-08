@@ -380,7 +380,7 @@
    function editLibraryVersion(id){
        model_data = $("#editLibraryVersion").serializeObject();
        $.ajax({
-           url: '@routes.Controller_Library.libraryVersion_update("")' + id,
+           url: '@routes.Controller_Library.library_version_edit("")' + id,
            type: 'PUT',
            contentType: 'application/json',
            headers: {
@@ -402,7 +402,7 @@
 
    function removeLibraryVersion(version_id){
        $.ajax({
-           url: '@routes.Controller_Library.libraryVersion_delete("")' + version_id,
+           url: '@routes.Controller_Library.library_version_delete("")' + version_id,
            type: 'DELETE',
            headers: {
                "X-AUTH-TOKEN":getCookie("authToken")

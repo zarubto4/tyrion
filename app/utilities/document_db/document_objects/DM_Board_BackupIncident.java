@@ -30,7 +30,7 @@ public class DM_Board_BackupIncident {
         request.put("document_type_sub_type", document_type_sub_type_succes_backup);
         request.put("server_version", Server.server_version);
 
-        request.put("device_id", board_id);
+        request.put("hardware_id", board_id);
         request.put("time", new Date().getTime() );
         return request;
     }

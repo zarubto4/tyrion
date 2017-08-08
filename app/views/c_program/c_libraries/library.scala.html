@@ -411,7 +411,7 @@
     function editLibrary(){
         model_data = $("#editLibrary").serializeObject();
         $.ajax({
-            url: '@routes.Controller_Library.library_update("")' + openedLibrary.id,
+            url: '@routes.Controller_Library.library_edit("")' + openedLibrary.id,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -472,7 +472,7 @@
 
     function editVersion(){
         $.ajax({
-            url: '@routes.Controller_Library.libraryVersion_update("")' + openedVersion.version_id,
+            url: '@routes.Controller_Library.library_version_edit("")' + openedVersion.version_id,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -532,7 +532,7 @@
         if (typeof version_id == "undefined") version_id = openedVersion.version_id;
 
         $.ajax({
-            url: '@routes.Controller_Library.libraryVersion_delete("")' + version_id,
+            url: '@routes.Controller_Library.library_version_delete("")' + version_id,
             type: 'DELETE',
             headers: {
                 "X-AUTH-TOKEN":getCookie("authToken")

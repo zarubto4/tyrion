@@ -218,7 +218,7 @@
                 model_data = $("#editGeneralTariffLabelForm").serializeObject();
 
                 $.ajax({
-                    url: '@routes.Controller_Finance.tariffLabel_update()',
+                    url: '@routes.Controller_Finance.tariffLabel_edit()',
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {

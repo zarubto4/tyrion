@@ -59,7 +59,7 @@ public class Controller_Actualization extends Controller {
         }
     }
 
-    @ApiOperation(value = "get actualization Procedure by Project",
+    @ApiOperation(value = "get ActualizationProcedure by Project",
             tags = {"Actualization"},
             notes = "get actualization Procedure by Project",
             produces = "application/json",
@@ -93,7 +93,7 @@ public class Controller_Actualization extends Controller {
         }
     }
 
-    @ApiOperation(value = "cancel actualization Procedure",
+    @ApiOperation(value = "cancel ActualizationProcedure",
             tags = {"Actualization"},
             notes = "cancel (terminate) procedure",
             produces = "application/json",

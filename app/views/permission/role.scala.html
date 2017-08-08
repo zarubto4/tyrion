@@ -29,7 +29,7 @@
             function addPerson(){
                 var mail = document.getElementById("addPersonForm").elements.namedItem("mail").value;
                 $.ajax({
-                    url: '@routes.Controller_Permission.add_Role_Person("", "")' + mail +"/"+ @role.id,
+                    url: '@routes.Controller_Permission.role_add_person("", "")' + mail +"/"+ @role.id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -69,7 +69,7 @@
             function removePerson(id){
 
                 $.ajax({
-                    url: '@routes.Controller_Permission.remove_Role_Person("", "")' + id +"/"+ @role.id,
+                    url: '@routes.Controller_Permission.role_remove_person("", "")' + id +"/"+ @role.id,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -134,7 +134,7 @@
     <script>
             function addPermission(id){
                 $.ajax({
-                    url: '@routes.Controller_Permission.add_Permission_to_Role("", "")' + id +"/"+ @role.id,
+                    url: '@routes.Controller_Permission.permission_add_to_role("", "")' + id +"/"+ @role.id,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),
@@ -151,7 +151,7 @@
     <script>
             function removePermission(id){
                 $.ajax({
-                    url: '@routes.Controller_Permission.remove_Permission_from_Role("", "")' + id +"/"+ @role.id,
+                    url: '@routes.Controller_Permission.permission_remove_from_role("", "")' + id +"/"+ @role.id,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken"),

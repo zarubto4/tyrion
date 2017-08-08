@@ -118,8 +118,6 @@ public class WS_Send_message {
 
                 while (number_of_retries >= 0) {
 
-                    terminal_logger.trace("Spouštím odeslání zprávy {} počet opakování ", number_of_retries);
-
                     if(json != null) {
 
                         terminal_logger.trace("thread: MessageID: {} , MessageType: {} , Number of RetiresTime: {} , Time to wait: {} ", messageId, json.get("message_type"), number_of_retries, time);

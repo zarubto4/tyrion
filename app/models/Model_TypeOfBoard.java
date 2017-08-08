@@ -60,6 +60,7 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_picture_link;
     @JsonIgnore @Transient @TyrionCachedList public  String cache_value_main_bootloader_id;
+    @JsonIgnore @Transient @TyrionCachedList public  String cache_main_c_program_id;            //TODO
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -129,6 +130,23 @@ public class Model_TypeOfBoard extends Model {
         }
     }
 
+    @JsonIgnore @TyrionCachedList
+    public Model_CProgram get_main_c_program(){
+
+        try {
+
+            if(cache_main_c_program_id == null){
+                Model_CProgram c_program = Model_CProgram.find.where().eq("type_of_board_default.id", id).select("id").findUnique();
+                cache_main_c_program_id = c_program.id;
+            }
+
+            return Model_CProgram.get_byId(cache_main_c_program_id);
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 

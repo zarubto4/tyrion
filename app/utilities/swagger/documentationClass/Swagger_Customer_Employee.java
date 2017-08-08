@@ -10,4 +10,7 @@ public class Swagger_Customer_Employee {
 
     @Constraints.Required
     public List<String> mails;
+
+    @Constraints.Required
+    public String customer_id;
 }

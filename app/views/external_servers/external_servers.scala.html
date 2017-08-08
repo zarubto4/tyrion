@@ -486,7 +486,7 @@
 function newCompilationServer(){
     model_data = $("#newCompilationServer").serializeObject();
     $.ajax({
-        url: '@routes.Controller_Board.create_Compilation_Server()',
+        url: '@routes.Controller_ExternalServer.compilation_server_create()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -520,7 +520,7 @@ function set_backup_server(){
     model_data = $("#formSetBackupServer").serializeObject();
 
     $.ajax({
-        url: '@routes.Controller_ExternalServer.set_backup_server("")' + model_data.server_id,
+        url: '@routes.Controller_ExternalServer.homer_server_set_backup_server("")' + model_data.server_id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -552,7 +552,7 @@ function set_main_server(){
     model_data = $("#formSetMainServer").serializeObject();
 
     $.ajax({
-        url: '@routes.Controller_ExternalServer.set_main_server("")' + model_data.server_id,
+        url: '@routes.Controller_ExternalServer.homer_server_set_main_server("")' + model_data.server_id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -583,7 +583,7 @@ function editCompilationServer(id){
     model_data = $("#editCompilationServer").serializeObject();
 
     $.ajax({
-        url: '@routes.Controller_Board.edit_Compilation_Server("")' + id,
+        url: '@routes.Controller_ExternalServer.compilation_server_edit("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -613,7 +613,7 @@ function editCompilationServer(id){
 function deleteCompilationServer(id){
 
     $.ajax({
-        url: '@routes.Controller_Board.delete_Compilation_Server("")' + id,
+        url: '@routes.Controller_ExternalServer.compilation_server_delete("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),
@@ -658,7 +658,7 @@ function showCreateFormCompilationServer(){
 function newHomerServer(){
     model_data = $("#newHomerServer").serializeObject();
     $.ajax({
-        url: '@routes.Controller_ExternalServer.create_Homer_Server()',
+        url: '@routes.Controller_ExternalServer.homer_server_create()',
         type: 'POST',
         contentType: 'application/json',
         headers: {
@@ -691,7 +691,7 @@ function editHomerServer(id){
     model_data = $("#editHomerServer").serializeObject();
 
     $.ajax({
-        url: '@routes.Controller_ExternalServer.edit_Homer_Server("")' + id,
+        url: '@routes.Controller_ExternalServer.homer_server_edit("")' + id,
         type: 'PUT',
         contentType: 'application/json',
         headers: {
@@ -723,7 +723,7 @@ function editHomerServer(id){
 function deleteHomerServer(id){
 
     $.ajax({
-        url: '@routes.Controller_ExternalServer.delete_Homer_Server("")' + id,
+        url: '@routes.Controller_ExternalServer.homer_server_delete("")' + id,
         type: 'DELETE',
         headers: {
             "X-AUTH-TOKEN":getCookie("authToken"),

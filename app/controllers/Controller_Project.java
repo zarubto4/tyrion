@@ -34,7 +34,7 @@ public class Controller_Project extends Controller {
     
 // GENERAL PROJECT #####################################################################################################
 
-    @ApiOperation(value = "create new Project",
+    @ApiOperation(value = "create Project",
             tags = {"Project"},
             notes = "create new Project",
             produces = "application/json",
@@ -429,7 +429,7 @@ public class Controller_Project extends Controller {
         }
     }
 
-    @ApiOperation(value = "change participant status",
+    @ApiOperation(value = "change Project participant status",
             tags = {"Project"},
             notes = "Changes participant status ",
             produces = "application/json",

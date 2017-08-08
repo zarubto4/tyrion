@@ -1,10 +1,14 @@
 package utilities.swagger.documentationClass;
 
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-public class Swagger_C_Program_Version_Approve_WithChanges {
+
+@ApiModel(description = "Json Model for admin response for publishing C_Program",
+        value = "C_Program_Version_Publish_Response")
+public class Swagger_C_Program_Version_Publish_Response {
 
     @Constraints.Required
     public String version_id;

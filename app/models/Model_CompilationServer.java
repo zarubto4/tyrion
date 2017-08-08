@@ -32,7 +32,7 @@ import java.util.UUID;
 @Entity
 @Table(name="CompilationServer")
 @ApiModel(description = "Model of CompilationServer",
-        value = "CompilationServer")
+          value = "Compilation_Server")
 public class Model_CompilationServer extends Model {
 
 

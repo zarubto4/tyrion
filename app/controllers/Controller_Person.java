@@ -134,7 +134,32 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "Email verification of registration", hidden = true)
+    @ApiOperation(value = "authenticate Email from registration",
+            tags = {"Admin-Person"},
+            notes = "sends authentication email, if user did not get the first one from the registration",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Authentication",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 404, message = "Not found object",        response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
     public Result person_emailAuthentication(String authToken) {
         try{
 
@@ -156,7 +181,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "send authentication email",
+    @ApiOperation(value = "send Email authentication",
             tags = {"Person"},
             notes = "sends authentication email, if user did not get the first one from the registration",
             produces = "application/json",
@@ -217,7 +242,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "send password recovery email",
+    @ApiOperation(value = "send Email password recovery email",
             tags = {"Access"},
             notes = "sends email with link for changing forgotten password",
             protocols = "https",
@@ -289,7 +314,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "change person password",
+    @ApiOperation(value = "edit Person password",
             tags = {"Access"},
             notes = "changes password if password_recovery_token is not older than 24 hours, deletes all FloatingPersonTokens",
             protocols = "https",
@@ -391,34 +416,8 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "get all Person",
-            tags = {"Person"},
-            notes = "get all Persons",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",               response = Model_Person.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-    })
-    @Security.Authenticated(Secured_API.class)
-    public  Result person_getAll(){
-        try{
-
-            List<Model_Person> persons = Model_Person.find.all();
-            return GlobalResult.result_ok(Json.toJson(persons));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
     @ApiOperation(value = "delete Person",
-            hidden = true,
-            tags = {"Person"},
+            tags = {"Admin-Person"},
             notes = "delete Person by id",
             produces = "application/json",
             consumes = "text/html",
@@ -457,9 +456,8 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "remove all connection tokens",
-            hidden = true,
-            tags = {"Person"},
+    @ApiOperation(value = "remove  Connection_token All",
+            tags = {"Admin-Person"},
             notes = "remove all connection tokens",
             produces = "application/json",
             consumes = "text/html",
@@ -499,8 +497,7 @@ public class Controller_Person extends Controller {
     }
 
     @ApiOperation(value = "activate Person",
-            hidden = true,
-            tags = {"Person"},
+            tags = {"Admin-Person"},
             notes = "activate Person by id",
             produces = "application/json",
             consumes = "text/html",
@@ -544,8 +541,7 @@ public class Controller_Person extends Controller {
     }
 
     @ApiOperation(value = "deactivate Person",
-            hidden = true,
-            tags = {"Person"},
+            tags = {"Admin-Person"},
             notes = "deactivate Person by id",
             produces = "application/json",
             consumes = "text/html",
@@ -591,9 +587,8 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "valid Person email - access to Becki",
-            hidden = true,
-            tags = {"Person"},
+    @ApiOperation(value = "valid Person email",
+            tags = {"Admin-Person"},
             notes = "valid Person email by id",
             produces = "application/json",
             consumes = "text/html",
@@ -634,7 +629,7 @@ public class Controller_Person extends Controller {
     }
 
 
-    @ApiOperation(value = "edit Person basic information",
+    @ApiOperation(value = "edit Person",
             tags = {"Person"},
             notes = "Edit person basic information",
             produces = "application/json",
@@ -696,7 +691,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "get logged connections",
+    @ApiOperation(value = "get Person logged connections",
             tags = {"Person"},
             notes = "get all connections, where user is logged",
             produces = "application/json",
@@ -872,7 +867,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "change person login info",
+    @ApiOperation(value = "edit Person Login info",
             tags = {"Person"},
             notes = "Request password or email change. API does not change password or email, only sends email for authorization of the change and holds values in different object." +
                     "JSON value 'property' contains only 'password' or 'email'",
@@ -981,7 +976,28 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "Authorization of password or email change", hidden = true)
+    @ApiOperation(value = "Authorization Person password or email change",
+            tags = {"Admin-Person"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Person_ChangeProperty",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
     public Result person_authorizePropertyChange(String token){
         try{
             Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.get_byId(token);
@@ -1085,8 +1101,6 @@ public class Controller_Person extends Controller {
 
             if(!person.edit_permission()) return GlobalResult.result_forbidden();
 
-
-
             if(help.file == null || help.file.equals("")){
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
@@ -1094,7 +1108,6 @@ public class Controller_Person extends Controller {
                 person.update();
                 fileRecord.delete();
             }
-
 
             // Odebrání předchozího obrázku
             if(person.picture != null){
@@ -1141,7 +1154,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "remove Person picture",
+    @ApiOperation(value = "delete Person picture",
             tags = {"Person"},
             notes = "Removes picture of logged person",
             produces = "application/json",

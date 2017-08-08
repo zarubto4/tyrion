@@ -77,7 +77,7 @@ public class Controller_WebSocket extends Controller {
 
 /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
-    @ApiOperation(value = "get temporary Connection Token",
+    @ApiOperation(value = "get Websocket Access Token",
             tags = {"Access", "WebSocket"},
             notes = "For connection to websocket, you have to connect with temporary unique token. This Api return Token"+
                     "with a maximum lifetime of 5 seconds. After the token is deactivated. After logging in, or the connection"+

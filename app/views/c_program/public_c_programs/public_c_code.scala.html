@@ -562,7 +562,7 @@
             if (typeof version_id == "undefined") version_id = openedVersion.version_id;
 
             $.ajax({
-                url: '@routes.Controller_Code.c_programVersion_delete("")' + version_id,
+                url: '@routes.Controller_Code.c_program_version_delete("")' + version_id,
                 type: 'DELETE',
                 headers: {
                     "X-AUTH-TOKEN":getCookie("authToken")

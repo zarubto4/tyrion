@@ -41,7 +41,7 @@
         function newRole(){
             model_data = $("#newRole").serializeObject();
             $.ajax({
-                url: '@routes.Controller_Permission.new_Role()',
+                url: '@routes.Controller_Permission.role_create()',
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {

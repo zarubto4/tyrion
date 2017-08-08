@@ -34,8 +34,9 @@ public class Model_FileRecord extends Model {
     @ApiModelProperty(required = true)                          public String file_name;
                                                  @JsonIgnore    public String file_path;
 
-                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Person person;   // personal_picture
+                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Person person;               // personal_picture
                 @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_TypeOfBoard type_of_board;   // type_of_board_picture
+                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Board board;                 // board_picture
                 @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_Log log;
                                     @JsonIgnore @OneToOne()                             public Model_BootLoader boot_loader;
                                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)       public Model_VersionObject version_object;

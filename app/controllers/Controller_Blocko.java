@@ -26,7 +26,6 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Instance_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_scheme;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 
@@ -44,7 +43,7 @@ public class Controller_Blocko extends Controller{
     
 // B PROGRAM ###########################################################################################################
 
-    @ApiOperation(value = "create new B_Program",
+    @ApiOperation(value = "create B_Program",
             tags = {"B_Program"},
             notes = "create new B_Program",
             produces = "application/json",
@@ -112,7 +111,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get B Program",
+    @ApiOperation(value = "get B_Program",
             tags = {"B_Program"},
             notes = "get B_Program object",
             produces = "application/json",
@@ -269,7 +268,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "remove B Program",
+    @ApiOperation(value = "delete B_Program",
             tags = {"B_Program"},
             notes = "remove B_Program object",
             produces = "application/json",
@@ -312,7 +311,7 @@ public class Controller_Blocko extends Controller{
 
 // B PROGRAM VERSION ###################################################################################################
 
-    @ApiOperation(value = "create Version B Program",
+    @ApiOperation(value = "create B_Program Version",
             tags = {"B_Program"},
             notes = "create new vesion in Blocko program",
             produces = "application/json",
@@ -456,20 +455,6 @@ public class Controller_Blocko extends Controller{
                 version_object.b_program_hw_groups.add(b_program_hw_group);
             }
 
-
-            /**
-             logger.debug("update_b_program_new_version:: Saving Snap");
-             for(Model_MProjectProgramSnapShot snap : version_object.b_program_version_snapshots){
-             snap.save();
-             }
-
-             logger.debug("update_b_program_new_version:: Saving b_program_hw_group");
-             for(Model_BProgramHwGroup b_program_hw_group : version_object.b_program_hw_groups){
-             b_program_hw_group.save();
-             }
-             */
-
-            terminal_logger.debug("update_b_program_new_version:: Saving version");
             // Uložení objektu
             version_object.save();
 
@@ -484,7 +469,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get B Program version",
+    @ApiOperation(value = "get B_Program Version",
             tags = {"B_Program"},
             notes = "get B_Program version object",
             produces = "application/json",
@@ -524,7 +509,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "edit Version",
+    @ApiOperation(value = "edit B_Program Version",
             tags = {"B_Program"},
             notes = "edit Version object",
             produces = "application/json",
@@ -585,7 +570,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "remove B Program version",
+    @ApiOperation(value = "remove B_Program Version",
             tags = {"B_Program"},
             notes = "remove B_Program version object",
             produces = "application/json",
@@ -630,9 +615,9 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "upload B Program (version) to cloud",
+    @ApiOperation(value = "upload B_Program Version to cloud",
             tags = {"B_Program"},
-            notes = "upload version of B Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
+            notes = "upload version of B_Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -722,7 +707,7 @@ public class Controller_Blocko extends Controller{
 
 // INSTANCE ############################################################################################################
 
-    @ApiOperation(value = "updates personal info about instance",
+    @ApiOperation(value = "edit Instance",
             tags = {"Instance"},
             notes = "",
             produces = "application/json",
@@ -749,7 +734,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instance_update(@ApiParam(value = "instance_id String path", required = true) String instance_id){
+    public Result instance_edit(@ApiParam(value = "instance_id String path", required = true) String instance_id){
         try{
 
             // Zpracování Json
@@ -837,7 +822,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get Instances by Project",
+    @ApiOperation(value = "get Instances List by Project",
             tags = {"Instance"},
             notes = "get list of instance_ids details under project id",
             produces = "application/json",
@@ -877,7 +862,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get Instance by instance_id",
+    @ApiOperation(value = "get Instance",
             tags = {"Instance"},
             notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instance schema yet",
             produces = "application/json",
@@ -913,7 +898,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get Instance with filter parameters",
+    @ApiOperation(value = "get Instance by Filter",
             tags = { "Instance"},
             notes = "Get List of Instances. According to permission - system return only Instance from project, where is user owner or" +
                     " all Instances if user have static Permission key",
@@ -976,7 +961,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "change settings on Grid App in Instance",
+    @ApiOperation(value = "update Instance Grid Settings",
             tags = { "Instance"},
             notes = "",
             produces = "application/json",
@@ -1039,7 +1024,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get Instance Record by instance_record_id",
+    @ApiOperation(value = "get Instance Record",
             tags = {"Instance"},
             notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instance schema yet",
             produces = "application/json",
@@ -1069,63 +1054,9 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    /**
-     *
-     * Aktuální režim Homera to nepodporuje
-     *
-     *
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_add_device(String instance_name, String device_id){
-        try{
-
-            // Transformace na seznam
-            List<String> list_of_devices = new ArrayList<>();
-            list_of_devices.add(device_id);
-
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if (!homer_instance.instance_status()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
-
-            WS_Message_Instance_device_set_snap result = homer_instance.set_device_to_instance(list_of_devices);
-
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "Only for Tyrion Front End",  hidden = true)
-    public Result instance_remove_device(String instance_name, String yoda_id, String device_id){
-        try{
-            // Transformace na seznam
-            List<String> list_of_devices = new ArrayList<>();
-            list_of_devices.add(device_id);
-
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if (!homer_instance.instance_status()) return GlobalResult.result_notFound("Homer_Instance on Tyrion is not online");
-
-
-            WS_Message_Instance_device_remove result = homer_instance.remove_device_from_instance(list_of_devices);
-
-            if(result.status.equals("success")) return GlobalResult.result_ok();
-            return GlobalResult.result_badRequest();
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-    */
-
 // TYPE OF BLOCK #######################################################################################################
 
-    @ApiOperation(value = "create new Type of Block",
+    @ApiOperation(value = "create TypeOfBlock",
             tags = {"Type-of-Block"},
             notes = "creating group for BlockoBlocks -> Type of block",
             produces = "application/json",
@@ -1187,7 +1118,7 @@ public class Controller_Blocko extends Controller{
 
             }else {
                 if(Model_TypeOfBlock.get_publicByName(help.name) != null)
-                    return GlobalResult.result_badRequest("Type of Block with this name already exists, type a new one.");
+                    return GlobalResult.result_badRequest("TypeOfBlock with this name already exists, type a new one.");
             }
 
             // Kontrola oprávnění těsně před uložením podle standardu
@@ -1204,7 +1135,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get TypeOfBlock ",
+    @ApiOperation(value = "get TypeOfBlock",
             tags = {"Type-of-Block"},
             notes = "get BlockoBlock ",
             produces = "application/json",
@@ -1249,7 +1180,7 @@ public class Controller_Blocko extends Controller{
 
     }
 
-    @ApiOperation(value = "edit Type of Block",
+    @ApiOperation(value = "edit TypeOfBlock",
             tags = {"Type-of-Block"},
             notes = "edit Type of block object",
             produces = "application/json",
@@ -1282,7 +1213,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result typeOfBlock_update(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
+    public Result typeOfBlock_edit(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
         try{
 
             // Zpracování Json
@@ -1322,7 +1253,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "delete Type of Block",
+    @ApiOperation(value = "delete TypeOfBlock",
             tags = {"Type-of-Block"},
             notes = "delete group for BlockoBlocks -> Type of block",
             produces = "application/json",
@@ -1364,32 +1295,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get all Type of Block list",
-            tags = {"Type-of-Block"},
-            notes = "get all groups for BlockoBlocks -> Type of block",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_TypeOfBlock.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result typeOfBlock_getAll(){
-        try {
-
-            // Vrácení seznamu
-            return GlobalResult.result_ok(Json.toJson(Model_TypeOfBlock.get_all()));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get TypeOfBlock by Filter",
+    @ApiOperation(value = "get TypeOfBlocks by Filter",
             tags = {"Type-of-Block"},
             notes = "get TypeOfBlock List",
             produces = "application/json",
@@ -1405,7 +1311,7 @@ public class Controller_Blocko extends Controller{
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Type_Of_Block_Filter",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBlock_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1422,9 +1328,9 @@ public class Controller_Blocko extends Controller{
         try {
 
             // Získání JSON
-            final Form<Swagger_Type_Of_Block_Filter> form = Form.form(Swagger_Type_Of_Block_Filter.class).bindFromRequest();
+            final Form<Swagger_TypeOfBlock_Filter> form = Form.form(Swagger_TypeOfBlock_Filter.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_Type_Of_Block_Filter help = form.get();
+            Swagger_TypeOfBlock_Filter help = form.get();
 
             // Získání všech objektů a následné odfiltrování soukormých TypeOfBlock
             Query<Model_TypeOfBlock> query = Ebean.find(Model_TypeOfBlock.class);
@@ -1452,9 +1358,9 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "manual order UP for Type of Block list",
+    @ApiOperation(value = "order TypeOfBlock Up",
             tags = {"Type-of-Block"},
-            notes = "set up order",
+            notes = "Set order in list one position up",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1485,9 +1391,9 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "manual order Down for Type of Block list",
+    @ApiOperation(value = "order TypeOfBlock Down",
             tags = {"Type-of-Block"},
-            notes = "set up order",
+            notes = "Set order in list one position down",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1520,7 +1426,7 @@ public class Controller_Blocko extends Controller{
 
 // BLOCK ###############################################################################################################
 
-    @ApiOperation(value = "create new Block",
+    @ApiOperation(value = "create BlockoBlock",
             tags = {"Blocko-Block"},
             notes = "creating new independent Block object for Blocko tools",
             produces = "application/json",
@@ -1613,7 +1519,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "edit basic information of the BlockoBlock",
+    @ApiOperation(value = "edit BlockoBlock",
             tags = {"Blocko-Block"},
             notes = "update basic information (name, and description) of the independent BlockoBlock",
             produces = "application/json",
@@ -1824,7 +1730,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "manual order UP for Blocko Block list",
+    @ApiOperation(value = "order BlockoBlock Up",
             tags = {"Blocko-Block"},
             notes = "set up order",
             produces = "application/json",
@@ -1857,7 +1763,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "manual order Down for Blocko Block list",
+    @ApiOperation(value = "order BlockoBlock Down",
             tags = {"Blocko-Block"},
             notes = "set up order",
             produces = "application/json",
@@ -1892,7 +1798,7 @@ public class Controller_Blocko extends Controller{
 
 // BLOCK VERSION #######################################################################################################
 
-    @ApiOperation(value = "create BlockoBlock version",
+    @ApiOperation(value = "create BlockoBlock Version",
             tags = {"Blocko-Block"},
             notes = "new BlockoBlock version",
             produces = "application/json",
@@ -1969,7 +1875,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get version of the BlockoBlock",
+    @ApiOperation(value = "get BlockoBlock Version",
             tags = {"Blocko-Block"},
             notes = "get version (content) from independent BlockoBlock",
             produces = "application/json",
@@ -2011,59 +1917,7 @@ public class Controller_Blocko extends Controller{
 
     }
 
-    @ApiOperation(value = "get all BlockoBlock version",
-            tags = {"Blocko-Block"},
-            notes = "get all versions (content) from independent BlockoBlock",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_read_permission", value = Model_BlockoBlockVersion.read_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_BlockoVersion_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result blockoBlockVersion_getAll(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
-        try {
-
-            // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
-
-            // Kontrola oprávnění
-            if (! blockoBlock.read_permission()) return GlobalResult.result_forbidden();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blockoBlock.get_blocko_block_versions()));
-
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "edit BlockoBlock version",
+    @ApiOperation(value = "edit BlockoBlock Version",
             tags = {"Blocko-Block"},
             notes = "You can edit only basic information of the version. If you want to update the code, " +
                     "you have to create a new version!",
@@ -2128,7 +1982,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "delete BlockoBlock version",
+    @ApiOperation(value = "delete BlockoBlock Version",
             tags = {"Blocko-Block"},
             notes = "delete BlockoBlock version",
             produces = "application/json",
@@ -2169,21 +2023,12 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "make BlockoBlock version public",
+    @ApiOperation(value = "edit BlockoBlock Version ask for publication",
             tags = {"Blocko-Block"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_edit_permission", value = "If user has BlockoBlock.update_permission"),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_edit_permission")
-                    })
-            }
+            code = 200
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
@@ -2218,7 +2063,20 @@ public class Controller_Blocko extends Controller{
 
 // BLOCKO ADMIN ########################################################################################################*/
 
-    @ApiOperation(value = "", hidden = true)
+    @ApiOperation(value = "edit BlockoBlock Version refuse publication",
+            tags = {"Admin-Blocko-Block"},
+            notes = "sets disapproved from pending",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoDisapprove(){
         try {
@@ -2258,7 +2116,20 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "", hidden = true)
+    @ApiOperation(value = "edit BlockoBlock Version accept publication",
+            tags = {"Admin-Blocko-Block"},
+            notes = "sets Approval_state to pending",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoApproval() {
 
@@ -2328,6 +2199,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    /**
     @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
     public Result blockoBlockVersion_editScheme(){
@@ -2352,28 +2224,6 @@ public class Controller_Blocko extends Controller{
 
             // Vrácení výsledku
             return GlobalResult.result_ok();
-        }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
-    public Result blockoBlockVersion_getScheme(){
-
-        try {
-
-            // Kontrola objektu
-            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_scheme();
-            if (blockoBlockVersion == null) return GlobalResult.result_notFound("Scheme not found");
-
-            // Vytvoření výsledku
-            Swagger_BlockoBlock_Version_scheme result = new Swagger_BlockoBlock_Version_scheme();
-            result.design_json = blockoBlockVersion.design_json;
-            result.logic_json = blockoBlockVersion.logic_json;
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(result));
         }catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -2408,4 +2258,5 @@ public class Controller_Blocko extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+    */
 }

@@ -37,10 +37,6 @@ public class WS_CompilerServer extends WS_Interface_type {
     public boolean is_online() {
         try {
 
-            for(String key :  Controller_WebSocket.homer_servers.keySet() ){
-                System.out.println("Mám v " + getClass().getSimpleName() + " Identifikator :: " + key);
-            }
-
             ObjectNode status = write_with_confirmation( new WS_Message_Ping_compilation_server().make_request(), 1000 * 10, 0, 1);
             return status.get("status").asText().equals("success");
 

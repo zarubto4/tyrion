@@ -212,7 +212,7 @@
           model_data = {"object_id": id,
                         "reason": reason};
           $.ajax({
-            url: '@routes.Controller_Grid.grid_widget_public_Disapprove()',
+            url: '@routes.Controller_Grid.grid_widget_public_response()',
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -259,7 +259,7 @@
                 };
             }
           $.ajax({
-            url: '@routes.Controller_Grid.grid_widget_public_Approval()' ,
+            url: '@routes.Controller_Grid.grid_widget_public_response()' ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {

@@ -17,7 +17,7 @@ import java.util.List;
 public class WS_Message_Hardware_UpdateProcedure_Command extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "hardware_update_execution";
+    @JsonIgnore public static final String messageType = "hardware_update";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/

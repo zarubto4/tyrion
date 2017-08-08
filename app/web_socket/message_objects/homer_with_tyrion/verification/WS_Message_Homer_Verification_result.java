@@ -34,9 +34,10 @@ public class WS_Message_Homer_Verification_result extends WS_AbstractMessage {
         }else {
 
             request.put("status", "error");
-            request.put("error_message", ErrorCode.UNAUTHORIZED_CONNECTION.error_message());
-            request.put("error_code", ErrorCode.UNAUTHORIZED_CONNECTION.error_code());
+            request.put("error_message", ErrorCode.TOKEN_IS_INVALID.error_message());
+            request.put("error_code", ErrorCode.TOKEN_IS_INVALID.error_code());
             return request;
+
         }
 
     }

@@ -15,7 +15,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
-import play.libs.Json;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.document_db.document_objects.DM_Board_BackupIncident;
@@ -31,7 +30,6 @@ import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
-import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Status;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 import web_socket.services.WS_Becki_Website;
@@ -73,19 +71,23 @@ public class Model_Board extends Model {
                                        public String name;                         // Jméno, které si uživatel pro hardware nasatvil
     @Column(columnDefinition = "TEXT") public String description;                  // Popisek, který si uživatel na hardwaru nastavil
 
-    
+    @JsonIgnore     public String azure_picture_link;
+    @JsonIgnore @OneToOne  public Model_FileRecord picture;
+
                                          public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
                                        public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
 
     @JsonIgnore  public boolean is_active;                   // Příznak, že deska byla oživena a je použitelná v platformě
 
 
+
     // Parametry konfigurovate uživatelem z frontendu
+    // Pozor v Controller_Board jsou parametry v metodě board_update_parameters používány
                  public boolean developer_kit;
     @JsonIgnore  public boolean backup_mode;                 // True znamená automatické zálohování po 5* minutách po nahrátí - verze se označuje mezi hardwarářema jako stabilní  - Opakej je statický backup - vázaný na objekty
                  public boolean database_synchronize;        // Defautlní hodnota je True. Je možnost vypnout synchronizaci a to pro případy, že uživatel vypaluje firmwaru lokálně pomocí svého programaátoru a IIDE
                  public boolean web_view;                    // Podpora webového rozhraní informací o hardwaru ze strany byzance - neuživatelský webserver
-                 
+                 public Integer web_port;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                public Model_TypeOfBoard type_of_board;     // Typ desky - (Cachováno)
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)   public Model_Project project;         // Projekt, pod který Hardware spadá
@@ -108,6 +110,8 @@ public class Model_Board extends Model {
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_id;                        // Type of Board Id
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_name;
 
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_picture_link;
+
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_producer_id;                             // Producer ID
 
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_project_id;                              // Project
@@ -119,7 +123,7 @@ public class Model_Board extends Model {
 
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_id;              // Backup
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_version_id;
-
+    @Transient @JsonIgnore @TyrionCachedList public String cache_latest_know_ip_adress;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -132,10 +136,44 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient  public String project_id()                           { try{ return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_version_name()       { try{ return get_actual_bootloader().name; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_id()                 { try{ return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString(); }catch (NullPointerException e){return  null;}}
+    @ApiModelProperty(required =true) @Transient @JsonProperty public String picture_link(){
 
+        try {
+
+            if( cache_value_picture_link == null) {
+
+                if (this.azure_picture_link == null) {
+                    return null;
+                }
+
+                terminal_logger.debug("picture_link :: {}{}", Server.azure_blob_Link, azure_picture_link);
+                cache_value_picture_link = Server.azure_blob_Link + azure_picture_link;
+            }
+
+            return cache_value_picture_link;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
     @JsonProperty  @Transient  public String available_bootloader_version_name()    { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().name;}
     @JsonProperty  @Transient  public String available_bootloader_id()              { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().id.toString();}
+    @JsonProperty  @Transient  public String ip_adress(){
+        try{
 
+            if(cache_latest_know_ip_adress != null){
+                return cache_latest_know_ip_adress;
+            }else{
+                return null;
+                // TODO - zjistit!!!! A předat frontendu!
+            }
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
     @JsonProperty  @Transient  public List<Enum_Board_Alert> alert_list(){
 
         try {
@@ -233,7 +271,7 @@ public class Model_Board extends Model {
                 return cache_value_latest_online;
             }
 
-            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.device_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
+            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
             terminal_logger.debug("last_online: number of retrieved documents = {}", documents.size());
 
@@ -253,7 +291,7 @@ public class Model_Board extends Model {
                     record = documents.get(0).toObject(DM_Board_Disconnected.class);
                 }
 
-                terminal_logger.debug("last_online: device_id: {}", record.device_id);
+                terminal_logger.debug("last_online: hardware_id: {}", record.device_id);
 
                 return new Date(record.time).getTime();
             }
@@ -520,19 +558,8 @@ public class Model_Board extends Model {
                     }
 
 
-                    case WS_Message_Hardware_UpdateProcedure_Status.messageType: {
-
-                        final Form<WS_Message_Hardware_UpdateProcedure_Status> form = Form.form(WS_Message_Hardware_UpdateProcedure_Status.class).bind(json);
-                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                        Model_CProgramUpdatePlan.update_procedure_state(form.get());
-                        return;
-                    }
-
-
                     // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
-                    case WS_Message_Hardware_set_autobackup.message_type : {terminal_logger.warn("WS_Message_Hardware_set_autobackup: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_set_alias.message_type      : {terminal_logger.warn("WS_Message_Hardware_set_alias: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_set_settings.message_type      : {terminal_logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");return;}
                     case WS_Message_Hardware_Restart.message_type        : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
                     case WS_Message_Hardware_overview.message_type       : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
                     case WS_Message_Hardware_change_server.message_type  : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
@@ -721,8 +748,6 @@ public class Model_Board extends Model {
 
     }
 
-
-
     @JsonIgnore @Transient private static HashMap<String, List<String>> server_Separate(List<Model_Board> devices){
 
         HashMap<String, List<String>> serverHashMap = new HashMap<>(); // < Model_HomerServer.id, List<Model_Board.id>
@@ -837,25 +862,105 @@ public class Model_Board extends Model {
     }
 
     // Change Hardware Alias  --//
-    @JsonIgnore @Transient public WS_Message_Hardware_set_alias set_alias(){
+    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_alias(String alias){
         try {
 
-            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_alias().make_request(this), 1000 * 3, 0, 2);
+            if(!this.name.equals(alias)){
+                this.name = alias;
+                update();
+            }
 
-            final Form<WS_Message_Hardware_set_alias> form = Form.form(WS_Message_Hardware_set_alias.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_alias: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_alias(Collections.singletonList(this)), 1000 * 5, 0, 2);
+
+            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
         }catch (TimeoutException e){
             terminal_logger.warn("set_auto_backup: Timeout");
-            return new WS_Message_Hardware_set_alias();
+            return new WS_Message_Hardware_set_settings();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
-            return new WS_Message_Hardware_set_alias();
+            return new WS_Message_Hardware_set_settings();
         }
     }
 
+    // Change Hardware autosynchronize --//
+    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_database_synchronize(boolean settings){
+        try {
+
+            if(this.database_synchronize != settings) {
+                this.database_synchronize = settings;
+                update();
+            }
+
+            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_with_database(Collections.singletonList(this)), 1000 * 5, 0, 2);
+
+            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        }catch (TimeoutException e){
+            terminal_logger.warn("set_database_synchronize: Timeout");
+            return new WS_Message_Hardware_set_settings();
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Hardware_set_settings();
+        }
+    }
+
+
+    // Change Hardware web view support --//
+    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_web_view(boolean settings){
+        try {
+
+            if(this.web_view != settings) {
+                this.web_view = settings;
+                update();
+            }
+
+            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_Web_view(Collections.singletonList(this)), 1000 * 5, 0, 2);
+
+            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        }catch (TimeoutException e){
+            terminal_logger.warn("set_database_synchronize: Timeout");
+            return new WS_Message_Hardware_set_settings();
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Hardware_set_settings();
+        }
+    }
+
+    // Change Hardware web view port --//
+    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_web_port(Integer settings){
+        try {
+
+            if(!this.web_port .equals( settings)) {
+                this.web_port = settings;
+                update();
+            }
+
+            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_Web_port(Collections.singletonList(this)), 1000 * 5, 0, 2);
+
+            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        }catch (TimeoutException e){
+            terminal_logger.warn("set_database_synchronize: Timeout");
+            return new WS_Message_Hardware_set_settings();
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Hardware_set_settings();
+        }
+    }
 
     //-- ADD or Remove // Change Server --//
     @JsonIgnore @Transient public void device_relocate_server(Model_HomerServer future_server){
@@ -887,22 +992,22 @@ public class Model_Board extends Model {
 
 
     //-- Set AutoBackup  --//
-    @JsonIgnore @Transient public static WS_Message_Hardware_set_autobackup set_auto_backup(Model_Board board_for_update){
+    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_auto_backup(){
         try{
 
-            JsonNode node = Model_HomerServer.get_byId(board_for_update.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_autobackup().make_request(board_for_update), 1000*3, 0, 4);
+            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_autobackup(Collections.singletonList(this)), 1000*5, 0, 2);
 
-            final Form<WS_Message_Hardware_set_autobackup> form = Form.form(WS_Message_Hardware_set_autobackup.class).bind(node);
+            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
         }catch (TimeoutException e){
             terminal_logger.warn("set_auto_backup: Timeout");
-            return new WS_Message_Hardware_set_autobackup();
+            return new WS_Message_Hardware_set_settings();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
-            return new WS_Message_Hardware_set_autobackup();
+            return new WS_Message_Hardware_set_settings();
         }
     }
 
@@ -1025,7 +1130,7 @@ public class Model_Board extends Model {
 
             terminal_logger.debug("hardware_firmware_state_check: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error);
 
-                if(report.error_code == ErrorCode.YODA_IS_OFFLINE.error_code() || report.error_code == ErrorCode.DEVICE_IS_NOT_ONLINE.error_code()){
+                if(report.error_code.equals(ErrorCode.HARDWARE_IS_OFFLINE.error_code())){
                     terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} is offline" , this.id);
                     return;
                 }
@@ -1074,7 +1179,7 @@ public class Model_Board extends Model {
 
             // Nastavím default firmware podle schématu Tyriona!
             // Defaultní firmware je v v backandu určený výchozí program k typu desky.
-            if (get_type_of_board().version_scheme != null && get_type_of_board().version_scheme.default_main_version != null) {
+            if (get_type_of_board().get_main_c_program() != null && get_type_of_board().get_main_c_program().default_main_version != null) {
 
                 terminal_logger.debug("hardware_firmware_state_check: Yes, Default Version for Type Of Device {} is set", get_type_of_board().name);
 
@@ -1242,14 +1347,13 @@ public class Model_Board extends Model {
 
         List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
                 .disjunction()
-                .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                 .endJunction()
-                .disjunction()
-                .add(Expr.eq("firmware_type", Enum_Firmware_type.BACKUP.name()))
+                .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
                 .lt("actualization_procedure.date_of_planing", new Date().getTime())
                 .order().desc("actualization_procedure.date_of_planing")
                 .findList();
@@ -1574,7 +1678,6 @@ public class Model_Board extends Model {
     public void notification_board_disconnect(){
         new Thread( () -> {
             if(project_id() == null) return;
-            // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
             try{
 
                 new Model_Notification()
@@ -1624,7 +1727,6 @@ public class Model_Board extends Model {
     public void notification_board_not_databased_version(){
         new Thread( () -> {
 
-            // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
             if(project_id() == null) return;
 
             try{
@@ -1815,6 +1917,14 @@ public class Model_Board extends Model {
         super.delete();
     }
 
+/* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public String get_path(){
+
+        return get_project().get_path() + "/hardware/";
+    }
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static final String CACHE        = Model_Board.class.getSimpleName();
@@ -1853,7 +1963,7 @@ public class Model_Board extends Model {
 
                 if( result.status.equals("error")){
 
-                    terminal_logger.debug("is_online:: device_id:: "+  id + " Checking online state! Device is offline");
+                    terminal_logger.debug("is_online:: hardware_id:: "+  id + " Checking online state! Device is offline");
                     cache_status.put(id, false);
                     return false;
 

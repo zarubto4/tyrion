@@ -403,7 +403,7 @@
 
         function editBoard() {
             $.ajax({
-                url: '@routes.Controller_Board.board_update(board.id)',
+                url: '@routes.Controller_Board.board_update_description(board.id)',
                 type: 'PUT',
                 contentType: 'application/json',
                 headers: {
@@ -429,7 +429,7 @@
             data.full_id = "@board.id";
 
             $.ajax({
-                url: '@routes.Controller_Wiky.test3()',
+                url: '@routes.Controller_ZZZ_Tester.test3()',
                 type: 'POST',
                 contentType: 'application/json',
                 headers: {

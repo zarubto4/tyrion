@@ -132,30 +132,11 @@ public class Utilities_Demo_data_Controller extends Controller {
             processor_1.speed = 3000;
             processor_1.save();
 
-            // Nastavím Processor - DRÁT / BEZDRÁT
-            Model_Processor processor_2 = new Model_Processor();
-            processor_2.processor_name = "ARM STM32F";
-            processor_2.description = "030CCT6 GH26J 93 CHN 611";
-            processor_2.processor_code = "STM32F";
-            processor_2.speed = 3000;
-            processor_2.save();
-
-            // Nastavím Processor - Rozbočovat
-            Model_Processor processor_3 = new Model_Processor();
-            processor_3.processor_name = "ARM STM32F070";
-            processor_3.description = "RBT6 GH25T 98 CHN GH 532";
-            processor_3.processor_code = "STM32F070";
-            processor_3.speed = 3000;
-            processor_3.save();
-
-            File file = new File(System.getProperty("user.dir") + "/conf/demo_data/yoda.png");
-
-
             // Nastavím Type of Boards - YODA
             Model_TypeOfBoard typeOfBoard_1 = new Model_TypeOfBoard();
-            typeOfBoard_1.name = "Yoda G2";
+            typeOfBoard_1.name = "IODA G2";
             typeOfBoard_1.description = " Yoda - Master Board with Ethernet and Wifi - second generation";
-            typeOfBoard_1.compiler_target_name = "BYZANCE_YODAG2";
+            typeOfBoard_1.compiler_target_name = "BYZANCE_IODAG2";
             typeOfBoard_1.revision = "12/2015 V1.0 #0000";
             typeOfBoard_1.processor = processor_1;
             typeOfBoard_1.producer = producer;
@@ -164,67 +145,21 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_1.features.add(wifi);
             typeOfBoard_1.save();
 
-
-            typeOfBoard_1.azure_picture_link = typeOfBoard_1.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
-            typeOfBoard_1.update();
-
-            typeOfBoard_1.picture = Model_FileRecord.uploadAzure_File(file,  typeOfBoard_1.azure_picture_link.substring( typeOfBoard_1.azure_picture_link.indexOf("/") +1) , typeOfBoard_1.azure_picture_link);
-            typeOfBoard_1.update();
-
-
-
+            // Nastavím Type of Boards - YODA
             Model_TypeOfBoard typeOfBoard_2 = new Model_TypeOfBoard();
-            typeOfBoard_2.name = "Wireless G2";
-            typeOfBoard_2.description = " Wireless kit second generation";
-            typeOfBoard_2.compiler_target_name = "BYZANCE_WRLSKITG2";
-            typeOfBoard_2.revision = "06/2016 V2.0 #0000";
-            typeOfBoard_2.processor = processor_2;
+            typeOfBoard_2.name = "IODA G3";
+            typeOfBoard_2.description = " Ioda - Master Board with Ethernet and Wifi - third generation";
+            typeOfBoard_2.compiler_target_name = "BYZANCE_IODAG3E";
+            typeOfBoard_2.revision = "12/2015 V1.0 #0000";
+            typeOfBoard_2.processor = processor_1;
             typeOfBoard_2.producer = producer;
-            typeOfBoard_2.connectible_to_internet = false;
-            typeOfBoard_2.features.add(wireless);
+            typeOfBoard_2.connectible_to_internet = true;
+            typeOfBoard_2.features.add(ethernet);
+            typeOfBoard_2.features.add(wifi);
             typeOfBoard_2.save();
 
-            typeOfBoard_2.azure_picture_link = typeOfBoard_2.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
-            typeOfBoard_2.update();
-
-            typeOfBoard_2.picture = Model_FileRecord.uploadAzure_File(file,  typeOfBoard_2.azure_picture_link.substring( typeOfBoard_2.azure_picture_link.indexOf("/") +1) , typeOfBoard_2.azure_picture_link);
-            typeOfBoard_2.update();
 
 
-            Model_TypeOfBoard typeOfBoard_3 = new Model_TypeOfBoard();
-            typeOfBoard_3.name = "BUS G2";
-            typeOfBoard_3.description = " BUS kit second generation";
-            typeOfBoard_3.compiler_target_name = "BYZANCE_BUSKITG2";
-            typeOfBoard_3.revision = "02/2016 V2.0 #0000";
-            typeOfBoard_3.processor = processor_2;
-            typeOfBoard_3.producer = producer;
-            typeOfBoard_3.connectible_to_internet = false;
-            typeOfBoard_3.features.add(bus);
-            typeOfBoard_3.save();
-
-            typeOfBoard_3.azure_picture_link = typeOfBoard_3.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
-            typeOfBoard_3.update();
-
-            typeOfBoard_3.picture = Model_FileRecord.uploadAzure_File(file,  typeOfBoard_3.azure_picture_link.substring( typeOfBoard_3.azure_picture_link.indexOf("/") +1) , typeOfBoard_3.azure_picture_link);
-            typeOfBoard_3.update();
-
-
-            Model_TypeOfBoard typeOfBoard_4 = new Model_TypeOfBoard();
-            typeOfBoard_4.name = "Quad BUS HUB G1";
-            typeOfBoard_4.description = " BUS kit second generation";
-            typeOfBoard_4.compiler_target_name = "BYZANCE_QUADBUSG1";
-            typeOfBoard_4.revision = "12/2015 V1.0 #0000";
-            typeOfBoard_4.processor = processor_3;
-            typeOfBoard_4.producer = producer;
-            typeOfBoard_4.connectible_to_internet = false;
-            typeOfBoard_4.features.add(bus);
-            typeOfBoard_4.save();
-
-            typeOfBoard_4.azure_picture_link = typeOfBoard_4.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
-            typeOfBoard_4.update();
-
-            typeOfBoard_4.picture = Model_FileRecord.uploadAzure_File(file,  typeOfBoard_4.azure_picture_link.substring( typeOfBoard_4.azure_picture_link.indexOf("/") +1) , typeOfBoard_4.azure_picture_link);
-            typeOfBoard_4.update();
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
@@ -248,11 +183,9 @@ public class Utilities_Demo_data_Controller extends Controller {
     public Result test_boards() {
         try {
             // Ochranná zarážka proti znovu vytvoření
-            Model_TypeOfBoard yoda_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG2").findUnique();
+            Model_TypeOfBoard yoda_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_IODAG3").findUnique();
             if (yoda_type == null) return GlobalResult.result_badRequest("Create Type of Boards first");
 
-            Model_TypeOfBoard wireles_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_WRLSKITG2").findUnique();
-            Model_TypeOfBoard buskit_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_BUSKITG2").findUnique();
 
             if (Model_Board.find.where().eq("id", "005300393533510B34353732").findUnique() != null)
                 return GlobalResult.result_badRequest("Its Already done!");
@@ -284,103 +217,6 @@ public class Utilities_Demo_data_Controller extends Controller {
                 yoda.description = "G2.0";
                 yoda.save();
             }
-
-
-            List<Pair> WrlsKitG2 = new ArrayList<>();
-            WrlsKitG2.add(new Pair("001C00074247430D20363439", "[6]"));
-            WrlsKitG2.add(new Pair("001200254247430E20363439", "[7]"));
-            WrlsKitG2.add(new Pair("001C000A4247430D20363439", "[10]"));
-            WrlsKitG2.add(new Pair("001200244247430E20363439", "[11]"));
-            WrlsKitG2.add(new Pair("001200264247430E20363439", "[12]"));
-            WrlsKitG2.add(new Pair("001C00094247430D20363439", "[13]"));
-            WrlsKitG2.add(new Pair("001C00144247430D20363439", "[14]"));
-            WrlsKitG2.add(new Pair("000D00105748430E20303039", "[20]"));
-            WrlsKitG2.add(new Pair("0030000C5748430E20303039", "[21]"));
-            WrlsKitG2.add(new Pair("003000155748430E20303039", "[22]"));
-            WrlsKitG2.add(new Pair("000C800C5748430E20303039", "[23]"));
-            WrlsKitG2.add(new Pair("002A80045748430E20303039", "[24]"));
-            WrlsKitG2.add(new Pair("000D000E5748430E20303039", "[25]"));
-            WrlsKitG2.add(new Pair("003000115748430E20303039", "[26]"));
-            WrlsKitG2.add(new Pair("0030000E5748430E20303039", "[27]"));
-            WrlsKitG2.add(new Pair("002E00155748430E20303039", "[28]"));
-            WrlsKitG2.add(new Pair("000D00085748430E20303039", "[29]"));
-            WrlsKitG2.add(new Pair("001300254247430E20363439", "[30]"));
-            WrlsKitG2.add(new Pair("002A80065748430E20303039", "[31]"));
-            WrlsKitG2.add(new Pair("001300264247430E20363439", "[32]"));
-            WrlsKitG2.add(new Pair("002D00175748430E20303039", "[33]"));
-            WrlsKitG2.add(new Pair("002D000F5748430E20303039", "[34]"));
-            WrlsKitG2.add(new Pair("002D00145748430E20303039", "[35]"));
-            WrlsKitG2.add(new Pair("0012001D4247430E20363439", "[36]"));
-            WrlsKitG2.add(new Pair("003000145748430E20303039", "[37]"));
-            WrlsKitG2.add(new Pair("002F00095748430E20303039", "[38]"));
-            WrlsKitG2.add(new Pair("0030000F5748430E20303039", "[39]"));
-            WrlsKitG2.add(new Pair("002D00155748430E20303039", "[40]"));
-            WrlsKitG2.add(new Pair("000D800D5748430E20303039", "[41]"));
-            WrlsKitG2.add(new Pair("003000135748430E20303039", "[42]"));
-            WrlsKitG2.add(new Pair("002D00185748430E20303039", "[43]"));
-            WrlsKitG2.add(new Pair("002F00075748430E20303039", "[44]"));
-            WrlsKitG2.add(new Pair("002F00155748430E20303039", "[45]"));
-            WrlsKitG2.add(new Pair("001C000E4247430D20363439", "[46]"));
-
-            for (Pair WrlsKitG2_pair : WrlsKitG2) {
-                Model_Board wrls = new Model_Board();
-                wrls.id = WrlsKitG2_pair.id;
-                wrls.name = WrlsKitG2_pair.name;
-                wrls.type_of_board = wireles_type;
-                wrls.date_of_create = new Date();
-                wrls.description = "G2.0";
-                wrls.save();
-            }
-
-
-            List<Pair> BusKitG2 = new ArrayList<>();
-            BusKitG2.add(new Pair("001C00054247430D20363439", "[1]"));
-            BusKitG2.add(new Pair("001300274247430E20363439", "[2]"));
-            BusKitG2.add(new Pair("001C00064247430D20363439", "[3]"));
-            BusKitG2.add(new Pair("001200224247430E20363439", "[4]"));
-            BusKitG2.add(new Pair("001300244247430E20363439", "[5]"));
-            BusKitG2.add(new Pair("001C00104247430D20363439", "[8]"));
-            BusKitG2.add(new Pair("001C000C4247430D20363439", "[9]"));
-            BusKitG2.add(new Pair("001200234247430E20363439", "[15]"));
-            BusKitG2.add(new Pair("001300214247430E20363439", "[16]"));
-            BusKitG2.add(new Pair("001C00084247430D20363439", "[50]"));
-            BusKitG2.add(new Pair("003000125748430E20303039", "[51]"));
-            BusKitG2.add(new Pair("002F00175748430E20303039", "[52]"));
-            BusKitG2.add(new Pair("0030000B5748430E20303039", "[53]"));
-            BusKitG2.add(new Pair("000C800B5748430E20303039", "[54]"));
-            BusKitG2.add(new Pair("002B80045748430E20303039", "[55]"));
-            BusKitG2.add(new Pair("002F000A5748430E20303039", "[56]"));
-            BusKitG2.add(new Pair("002F00165748430E20303039", "[57]"));
-            BusKitG2.add(new Pair("000D80075748430E20303039", "[58]"));
-            BusKitG2.add(new Pair("002D00165748430E20303039", "[59]"));
-            BusKitG2.add(new Pair("001200204247430E20363439", "[60]"));
-            BusKitG2.add(new Pair("002F00035748430E20303039", "[61]"));
-            BusKitG2.add(new Pair("003000105748430E20303039", "[62]"));
-            BusKitG2.add(new Pair("0030000D5748430E20303039", "[63]"));
-            BusKitG2.add(new Pair("001C000D4247430D20363439", "[64]"));
-            BusKitG2.add(new Pair("003000165748430E20303039", "[65]"));
-            BusKitG2.add(new Pair("002D001B5748430E20303039", "[66]"));
-            BusKitG2.add(new Pair("002B80065748430E20303039", "[67]"));
-            BusKitG2.add(new Pair("002F00065748430E20303039", "[68]"));
-            BusKitG2.add(new Pair("002F00185748430E20303039", "[69]"));
-            BusKitG2.add(new Pair("002F00185748430E20303039-0", "[70]")); // OPRAVIT
-            BusKitG2.add(new Pair("002F00185748430E20303039-1", "[71]")); // OPRAVIT
-            BusKitG2.add(new Pair("002F00185748430E20303039-2", "[72]")); // OPRAVIT
-            BusKitG2.add(new Pair("001C000F4247430D20363439", "[73]"));
-            BusKitG2.add(new Pair("002A80075748430E20303039", "[74]"));
-            BusKitG2.add(new Pair("002F00015748430E20303039", "[75]"));
-            BusKitG2.add(new Pair("002D00115748430E20303039", "[76]"));
-
-            for (Pair bskpair : BusKitG2) {
-                Model_Board bsk = new Model_Board();
-                bsk.id = bskpair.id;
-                bsk.name = bskpair.name;
-                bsk.type_of_board = buskit_type;
-                bsk.date_of_create = new Date();
-                bsk.description = "G2.0";
-                bsk.save();
-            }
-
 
             return GlobalResult.result_ok();
         } catch (Exception e) {

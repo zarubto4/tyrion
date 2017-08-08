@@ -304,7 +304,7 @@
             model_data = $("#testNotification").serializeObject();
             model_data.mail = email;
             $.ajax({
-                url: '/notification/individual',
+                url: '/test/notification/individual',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(model_data),
@@ -321,7 +321,7 @@
 
 
             $.ajax({
-                url: '/notification/chain/' + email,
+                url: '/test/notification/chain/' + email,
                 type: 'POST',
                 contentType: 'application/json',
                 data: "{}",

@@ -5,45 +5,44 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum ErrorCode {
 
-    // Homer Nové
-    @EnumValue("UNAUTHORIZED_CONNECTION")               UNAUTHORIZED_CONNECTION( 301, "Homer Server websocket is not authorized"),
-    @EnumValue("INVALID_MESSAGE")                       INVALID_MESSAGE( 400, "Message is not valid. Missing or incorrect type of values"),
-    
+
+    // ---- Instance status -----
+    @EnumValue("INSTANCE_NOT_FOUND")              INSTANCE_NOT_FOUND( 100 , "Instance not found"),
+    @EnumValue("INSTANCE_ALREADY_EXIST")          INSTANCE_ALREADY_EXIST( 101 , "Instance already exist"),
+    @EnumValue("BLOCKO_JSON_ERROR")               BLOCKO_JSON_ERROR( 102 , "Json for Blocko with Blocko program is not supporter by Blocko Engine! Server side Error!"),
+    @EnumValue("HARDWARE_ALREADY_IN_ANOTHER_INSTANCE")  HARDWARE_ALREADY_IN_ANOTHER_INSTANCE( 103 , "Hardware is already registered in instance"),
+    @EnumValue("HARDWARE_ALREADY_ADDED")          HARDWARE_ALREADY_ADDED( 104 , "Hardware is already added into instance"),
+    @EnumValue("HARDWARE_NOT_IN_INSTANCE")        HARDWARE_NOT_IN_INSTANCE( 105 , "Hardware is not registered in instance"),
+
+    // ---- Hardware status -----
+    @EnumValue("HARDWARE_IS_OFFLINE")             HARDWARE_IS_OFFLINE( 200 , "Yoda is not Connected to Homer"),
+    @EnumValue("BINARY_FILE_NOT_VALID")           BINARY_FILE_NOT_VALID( 201 , "Incoming firmware binary file is not valid"),
+    @EnumValue("BINARY_TYPE_NOT_RECOGNIZE")       BINARY_TYPE_NOT_RECOGNIZE( 202 , "Binary type not recognize!"),
+    @EnumValue("BINARY_FILE_NOT_FOUND")           BINARY_FILE_NOT_FOUND( 203 , "Binary file not found"),
+    @EnumValue("UPDATE_PROCEDURE_TIMEOUT")        UPDATE_PROCEDURE_TIMEOUT( 204, "Update was too long"),
+
+
+    // ----- Update status ----
+
+    @EnumValue("NEW_VERSION_DOESNT_MATCH")        NEW_VERSION_DOESNT_MATCH( 501, "Version not match with required"),
+    @EnumValue("NUMBER_OF_ATTEMPTS_EXCEEDED")     NUMBER_OF_ATTEMPTS_EXCEEDED( 502, "Number of attempts exceeded"),
+
+    // ---- Tyrion status ------
+    @EnumValue("TYRION_IS_OFFLINE")               TYRION_IS_OFFLINE( 300, "Tyrion is offline"),
+    @EnumValue("TOKEN_IS_INVALID")                TOKEN_IS_INVALID( 301, "Token is invalid"),
+    @EnumValue("INVALID_MESSAGE")                 INVALID_MESSAGE( 400, "Message is not valid. Missing or incorrect type of values"),
+
+
     @EnumValue("UNKNOWN_TOPIC")                         UNKNOWN_TOPIC                           ( 1, "Undefined Topic on HW"),
     @EnumValue("MISSING_LABEL")                         MISSING_LABEL                           ( 2, "Missing some Label"),
+    @EnumValue("UNKNOWN_LABEL")                         UNKNOWN_LABEL                           ( 3, "Not recognize some Label"),
+    @EnumValue("MALLOC ERROR")                          MALLOC_ERROR                            ( 4, "Not recognize some Label"),
     @EnumValue("ERROR")                                 ERROR                                   ( 50 , "Undefined Error - In Logger"),
-    @EnumValue("INSTANCE_NOT_FOUND")                    INSTANCE_NOT_FOUND                      ( 70 , "Instance not found"),
-    @EnumValue("DEVICE_NOT_FOUND")                      DEVICE_NOT_FOUND                        ( 71 , "Device not found"),
-    @EnumValue("YODA_ALREADY_REGISTERED")               YODA_ALREADY_REGISTERED                 ( 80 , "YODA is already registred"),
-    @EnumValue("YODA_NOT_REGISTERED_UNDER_INSTANCE")    YODA_NOT_REGISTERED_UNDER_INSTANCE      ( 81 , "YODA is not registered under instance"),
 
-    @EnumValue("DEVICE_IS_NOT_REGISTRED_UNDER_INSTANCE")DEVICE_IS_NOT_REGISTRED_UNDER_INSTANCE  ( 202 , "Yoda or Device is not registered under instance"),
-    @EnumValue("DEVICE_IS_NOT_YODA")                    DEVICE_IS_NOT_YODA                      ( 203 , "Device is not Main Board (Yoda)"),
-    @EnumValue("YODA_IS_OFFLINE")                       YODA_IS_OFFLINE                         ( 204 , "Yoda is not Connected to Homer"),
-    @EnumValue("DEVICE_IS_OFFLINE")                     DEVICE_IS_OFFLINE                       ( 205 , "Device is not Connected to Yoda"),
-    @EnumValue("DEVICE_IS_NOT_ONLINE")                  DEVICE_IS_NOT_ONLINE                    ( 206 , "Device is not Connected to Yoda"),
-    @EnumValue("DEVICE_CONNECTION_ERROR")               DEVICE_CONNECTION_ERROR                 ( 207 , "Device is not Connected to Yoda"),
-    @EnumValue("DEVICE_WAS_ILLGL_CONNTD_AND_REMOVER")   DEVICE_WAS_ILLGL_CONNTD_AND_REMOVER     ( 208 , "Device was illegally connected and remover from Yoda"),
-    @EnumValue("DEVICE_NOT_REGISTERED_UNDER_YODA")      DEVICE_NOT_REGISTERED_UNDER_YODA        ( 209 , "Device is connected to yoda, but communication is prohibited by homer"),
-    @EnumValue("DEVICE_NOT_SAVED_UNDER_YODA")           DEVICE_NOT_SAVED_UNDER_YODA             ( 2109 , "Device is Connected to Yoda - but not saved - skipped by Homer"),
-
-    @EnumValue("ADD_DEVICE_YODA_NOT_CONNECTED")         ADD_DEVICE_YODA_NOT_CONNECTED           ( 230 , "Yoda is not connected now, Device will be added as soon as possible"),
-    @EnumValue("REMOVE_DEVICE_YODA_NOT_CONNECTED")      REMOVE_DEVICE_YODA_NOT_CONNECTED        ( 231 , "Yoda is not connected now, Device will be removed as soon as possible"),
-    @EnumValue("NUMBER_OF_ATTEMPTS_EXCEEDED")           NUMBER_OF_ATTEMPTS_EXCEEDED             ( 232 , "Server attempted to do an update procedure on Device. But the maximum number of reps exceeded."),
-
-    @EnumValue("BINARY_FILE_NOT_VALID")                 BINARY_FILE_NOT_VALID                   ( 300 , "Incoming firmware binary file is not valid"),
-
-    @EnumValue("BLOCKO_JSON_ERROR")                     BLOCKO_JSON_ERROR                       ( 570 , "Json for Blocko with Blocko program is not supporter by Blocko Engine! Server side Error!"),
-    @EnumValue("FIRMWARE_NOT_RECOGNIZE")                FIRMWARE_NOT_RECOGNIZE                  ( 580 , "Firmware type not recognize!"),
-    @EnumValue("COMMAND_NOT_RECOGNIZE")                 COMMAND_NOT_RECOGNIZE                   ( 581 ,  "Command type not recognize!"),
-
-    @EnumValue("TYRION_IS_OFFLINE")                     TYRION_IS_OFFLINE                       ( 600 ,  "Tyrion is offline!!!"),
-    @EnumValue("TOKEN_IS_INVALID")                      TOKEN_IS_INVALID                        ( 601 ,  "Token is invalid!!!"),
-
-    @EnumValue("UPDATE_PROCEDURE_TIMEOUT")              UPDATE_PROCEDURE_TIMEOUT                ( 650 ,  "Timeout exception in update procedure"),
-    @EnumValue("WEBSOCKET_TIME_OUT_EXCEPTION")          WEBSOCKET_TIME_OUT_EXCEPTION            ( 670 ,  "Time for sending Message with required response is up!"),
+    @EnumValue("WEBSOCKET_TIME_OUT_EXCEPTION")          WEBSOCKET_TIME_OUT_EXCEPTION ( 670 ,  "Time for sending Message with required response is up!");
 
 
+    /*
     @EnumValue("ERROR_30001")                           ERROR_30001( 30001 , "Unknow full-id"),
     @EnumValue("ERROR_30002")                           ERROR_30002( 30002 , "Unknow shot-id"),
 
@@ -60,7 +59,7 @@ public enum ErrorCode {
     @EnumValue("ERROR_50001")                           ERROR_50001( 50001 , "Device with unknow interface"),
     @EnumValue("ERROR_50002")                           ERROR_50002( 50002 , "Invalid message for device"),
     @EnumValue("ERROR_50003")                           ERROR_50003( 50003 , "Device is not enumerated yet"),
-    @EnumValue("ERROR_50004")                           ERROR_50004( 50004 , "Device id is missing in yoda list"),
+    @EnumValue("ERROR_50004")                           ERROR_50004( 50004 , "Device id is missing in master_hardware list"),
     @EnumValue("ERROR_50005")                           ERROR_50005( 50005 , "Bus critical error - collision on bus cable"),
 
     @EnumValue("ERROR_60001")                           ERROR_60001( 600001 , "Write to external memory failed"),
@@ -72,7 +71,7 @@ public enum ErrorCode {
 
     @EnumValue("JSON_INVALID")                          JSON_INVALID( 10000 , "Missing some Label"),
     @EnumValue("EMPTY_ARRAY")                           EMPTY_ARRAY( 10001 , "Array of commands is empty");
-
+    */
     
 
     @JsonCreator

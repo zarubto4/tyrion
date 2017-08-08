@@ -545,7 +545,7 @@
           model_data = $("#editTypeOfBlock").serializeObject();
 
           $.ajax({
-            url: '@routes.Controller_Blocko.typeOfBlock_update("")'+ id ,
+            url: '@routes.Controller_Blocko.typeOfBlock_edit("")'+ id ,
             type: 'PUT',
             contentType: 'application/json',
             headers: {
@@ -832,70 +832,4 @@
           }
         }
 
-        function showVersionScheme(){
-          $.ajax({
-            url: '@routes.Controller_Blocko.blockoBlockVersion_getScheme()',
-            type: 'GET',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken")
-            },
-            dataType: 'json',
-            success:function(json){
-              $("#editVersionSchemeModal").modal('show');
-              $('#version_scheme_design').val(json.design_json);
-              $('#version_scheme_logic').val(json.logic_json);
-            },
-            error:function(e) {
-              alert(e.responseText);
-            }
-          })}
-
-        function editVersionScheme(){
-          model_data = $("#editVersionScheme").serializeObject();
-          $.ajax({
-            url: '@routes.Controller_Blocko.blockoBlockVersion_editScheme()',
-            type: 'PUT',
-            contentType: 'application/json',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
-            },
-            data: JSON.stringify(model_data),
-            dataType: 'json',
-            success:function(e){
-              $("#editVersionSchemeModalMessage").css("display", "none");
-              $("#editVersionScheme input[type=text]").val("");
-              $("#editVersionSchemeModal").modal('hide');
-            },
-            error:function(e) {
-              $("#editVersionSchemeModalMessage").css("display", "block");
-              $("#editVersionSchemeModalMessage p").text(JSON.parse(e.responseText).message);
-              $("#editVersionSchemeModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
-            }
-          })}
-
-        function createVersionScheme(){
-          model_data = $("#newVersionScheme").serializeObject();
-          $.ajax({
-            url: '@routes.Controller_Blocko.blockoBlockVersion_createScheme()',
-            type: 'POST',
-            contentType: 'application/json',
-            headers: {
-              "X-AUTH-TOKEN":getCookie("authToken"),
-              "Content-Type":"application/json"
-            },
-            data: JSON.stringify(model_data),
-            dataType: 'json',
-            success:function(json){
-              $("#newVersionSchemeModalMessage").css("display", "none");
-              $("#newVersionScheme input[type=text]").val("");
-              $("#newVersionSchemeModal").modal('hide');
-              $("#schemeButton").text("Version scheme").attr("onclick","showVersionScheme()").removeAttr("data-target").removeAttr("data-toggle");
-            },
-            error:function(e) {
-              $("#newVersionSchemeModalMessage").css("display", "block");
-              $("#newVersionSchemeModalMessage p").text(JSON.parse(e.responseText).message);
-              $("#newVersionSchemeModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
-            }
-          })}
 </script>

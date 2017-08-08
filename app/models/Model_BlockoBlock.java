@@ -248,7 +248,7 @@ public class Model_BlockoBlock extends Model {
     @JsonIgnore @Transient
     public void up(){
 
-        terminal_logger.trace("up :: Change Order Position! UP ");
+        terminal_logger.trace("up :: Change Order Position! Up");
 
         Model_BlockoBlock up = Model_BlockoBlock.find.where().eq("order_position", (order_position-1) ).eq("type_of_block.id", type_of_block.id).findUnique();
         if(up == null){

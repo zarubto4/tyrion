@@ -218,12 +218,16 @@ public class Model_ActualizationProcedure extends Model {
         if(project_id != null) return project_id;
 
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
-            return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id", id).select("id").findUnique().id;
+            Model_Project project = Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id", id).select("id").findUnique();
+            project_id = project.id;
+            return project_id;
         }
 
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
             System.out.println("Hledám Project ID pod aktualizačním plánem ID " + id);
-            return Model_Project.find.where().eq("boards.c_program_update_plans.actualization_procedure.id", id).findUnique().id;
+            Model_Project project =  Model_Project.find.where().eq("boards.c_program_update_plans.actualization_procedure.id", id).findUnique();
+            project_id = project.id;
+            return project_id;
         }
 
         return null;

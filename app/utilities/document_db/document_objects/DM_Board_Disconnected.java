@@ -30,7 +30,7 @@ public class DM_Board_Disconnected {
         request.put("server_version", Server.server_version);
 
         //Optional Variables
-        request.put("device_id", board_id);
+        request.put("hardware_id", board_id);
         request.put("time", new Date().getTime() );
         return request;
     }

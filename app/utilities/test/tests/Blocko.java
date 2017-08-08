@@ -154,18 +154,6 @@ public class Blocko extends TestHelper {
     }
 
     @Test
-    public void get_all_type_of_block() {
-
-        WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.typeOfBlock_getAll().toString())
-                .setHeader("X-AUTH-TOKEN", userToken)
-                .get()
-                .get(5000);
-
-        checkResponse(response, OK);
-    }
-
-    @Test
     public void get_by_filter_type_of_block() {
 
         ObjectNode body = Json.newObject();
@@ -193,7 +181,7 @@ public class Blocko extends TestHelper {
         body.put("description", UUID.randomUUID().toString());
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.typeOfBlock_update(t.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.typeOfBlock_edit(t.id).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .put(body)
                 .get(5000);
@@ -404,18 +392,6 @@ public class Blocko extends TestHelper {
         expected.put("delete_permission", true);
 
         checkResponse(response, OK, expected);
-    }
-
-    @Test
-    public void get_blocko_block_blocko_block_version() {
-
-        WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlockVersion_getAll(blocko_block.id).toString())
-                .setHeader("X-AUTH-TOKEN", userToken)
-                .get()
-                .get(5000);
-
-        checkResponse(response, OK, null);
     }
 
     @Test

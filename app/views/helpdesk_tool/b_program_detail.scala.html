@@ -82,7 +82,7 @@
                 model_data = $("#editPerson").serializeObject();
 
                 $.ajax({
-                    url: "@Server.tyrion_serverAddress" + "/coreClient/person/person/" + id ,
+                    url: "@Server.tyrion_serverAddress" + "/person/person/" + id ,
                     type: 'PUT',
                     contentType: 'application/json',
                     headers: {
@@ -104,7 +104,7 @@
             function deletePerson(id){
 
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/remove/" + id ,
+                    url: " @Server.tyrion_serverAddress" + "/person/person/remove/" + id ,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
@@ -120,7 +120,7 @@
             function deactivatePerson(id){
 
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/deactivate/" + id ,
+                    url: " @Server.tyrion_serverAddress" + "/person/person/deactivate/" + id ,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
@@ -136,7 +136,7 @@
             function activatePerson(id){
 
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/activate/" + id ,
+                    url: " @Server.tyrion_serverAddress" + "/person/person/activate/" + id ,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
@@ -153,7 +153,7 @@
             function validPerson(id){
 
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/valid_email/" + id ,
+                    url: " @Server.tyrion_serverAddress" + "/person/person/valid_email/" + id ,
                     type: 'PUT',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
@@ -169,7 +169,7 @@
             function removeAllTokensPerson(id){
 
                 $.ajax({
-                    url: " @Server.tyrion_serverAddress" + "/coreClient/person/person/clean_all_tokens/" + id ,
+                    url: " @Server.tyrion_serverAddress" + "/person/person/clean_all_tokens/" + id ,
                     type: 'DELETE',
                     headers: {
                         "X-AUTH-TOKEN":getCookie("authToken")
