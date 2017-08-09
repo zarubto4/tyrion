@@ -39,17 +39,17 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "create C_Program",
             tags = {"C_Program"},
-            notes = "If you want create new C_program in project.id = {project_id}. Send required json values and cloud_compilation_server respond with new object",
+            notes = "If you want create new C_Program in project.id = {project_id}. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_program.create_permission", value = Model_CProgram.create_permission_docs ),
+                            @ExtensionProperty(name = "C_Program.create_permission", value = Model_CProgram.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "C_program_create" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "C_Program_create" ),
                     })
             }
     )
@@ -57,7 +57,7 @@ public class Controller_Code extends Controller{
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -77,9 +77,9 @@ public class Controller_Code extends Controller{
         try {
 
             // Zpracování Json
-            final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
+            final Form<Swagger_C_Program_New> form = Form.form(Swagger_C_Program_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_C_program_New help = form.get();
+            Swagger_C_Program_New help = form.get();
 
             // Ověření Typu Desky
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(help.type_of_board_id);
@@ -156,20 +156,20 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "get C_program",
+    @ApiOperation(value = "get C_Program",
             tags = {"C_Program"},
-            notes = "get C_program by query = c_program_id",
+            notes = "get C_Program by query = c_program_id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
                     @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_program.read_permission", value = Model_CProgram.read_permission_docs),
+                            @ExtensionProperty(name = "C_Program.read_permission", value = Model_CProgram.read_permission_docs),
                     }),
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_read"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_read"),
                     })
             }
     )
@@ -198,7 +198,7 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "get C_program List by Filter",
+    @ApiOperation(value = "get C_Program List by Filter",
             tags = {"C_Program"},
             notes = "get all C_Programs that belong to logged person",
             produces = "application/json",
@@ -206,7 +206,7 @@ public class Controller_Code extends Controller{
             code = 200,
             extensions = {
                     @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_program.read_permission", value = "Tyrion only returns C_Programs which person owns, there is no need to check person_permissions"),
+                            @ExtensionProperty(name = "C_Program.read_permission", value = "Tyrion only returns C_Programs which person owns, there is no need to check person_permissions"),
                     }),
             }
     )
@@ -266,14 +266,14 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "edit C_Program",
             tags = {"C_Program"},
-            notes = "If you want edit base information about C_program by  query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
+            notes = "If you want edit base information about C_Program by  query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 200,
             extensions = {
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_edit"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_edit"),
                     })
             }
     )
@@ -289,7 +289,7 @@ public class Controller_Code extends Controller{
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -301,9 +301,9 @@ public class Controller_Code extends Controller{
         try {
 
             // Zpracování Json
-            final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
+            final Form<Swagger_C_Program_New> form = Form.form(Swagger_C_Program_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_C_program_New help = form.get();
+            Swagger_C_Program_New help = form.get();
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
@@ -332,9 +332,9 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "delete C_program",
+    @ApiOperation(value = "delete C_Program",
             tags = {"C_Program"},
-            notes = "delete C_program by query = c_program_id, query = version_id",
+            notes = "delete C_Program by query = c_program_id, query = version_id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -342,7 +342,7 @@ public class Controller_Code extends Controller{
             extensions = {
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "C_Program.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_delete"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_delete"),
                     })
             }
     )
@@ -378,16 +378,16 @@ public class Controller_Code extends Controller{
         }
     }
 
-    @ApiOperation(value = "create C_Program Version",
+    @ApiOperation(value = "create C_Program_Version",
             tags = {"C_Program"},
-            notes = "If you want add new code to C_program by query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
+            notes = "If you want add new code to C_Program by query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
             protocols = "https",
             code = 201,
             extensions = {
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "C_Program.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_update"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_update"),
                     })
             }
     )
@@ -457,18 +457,18 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "get C_Program_Version",
             tags = {"C_Program"},
-            notes = "get Version of C_program by query = version_id",
+            notes = "get Version of C_Program by query = version_id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
             code = 200,
             extensions = {
                     @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_program.Version.read_permission", value = Model_VersionObject.read_permission_docs),
+                            @ExtensionProperty(name = "C_Program.Version.read_permission", value = Model_VersionObject.read_permission_docs),
                     }),
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_read"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_read"),
                     })
             }
     )
@@ -503,7 +503,7 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "edit C_Program_Version information",
             tags = {"C_Program"},
-            notes = "For update basic (name and description) information in Version of C_program. If you want update code. You have to create new version. " +
+            notes = "For update basic (name and description) information in Version of C_Program. If you want update code. You have to create new version. " +
                     "And after that you can delete previous version",
             produces = "application/json",
             protocols = "https",
@@ -511,7 +511,7 @@ public class Controller_Code extends Controller{
             extensions = {
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_edit"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_edit"),
                     })
             }
     )
@@ -566,7 +566,7 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "delete C_Program_Version",
             tags = {"C_Program"},
-            notes = "delete Version.id = version_id in C_program by query = c_program_id, query = version_id",
+            notes = "delete Version.id = version_id in C_Program by query = c_program_id, query = version_id",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -574,7 +574,7 @@ public class Controller_Code extends Controller{
             extensions = {
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "C_Program.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_delete"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_delete"),
                     })
             }
     )
@@ -611,7 +611,7 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "make C_Program_Version public",
             tags = {"C_Program"},
-            notes = "Make C_program public, so other users can see it and use it. Attention! Attention! Attention! A user can publish only three programs at the stage waiting for approval.",
+            notes = "Make C_Program public, so other users can see it and use it. Attention! Attention! Attention! A user can publish only three programs at the stage waiting for approval.",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -619,7 +619,7 @@ public class Controller_Code extends Controller{
             extensions = {
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_edit"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_edit"),
                     })
             }
     )
@@ -857,17 +857,17 @@ public class Controller_Code extends Controller{
 
     @ApiOperation(value = "create C_Program Default for Type_Of_Board",
             tags = {"Admin-C_Program"},
-            notes = "If you want create new C_program in project.id = {project_id}.",
+            notes = "If you want create new C_Program in project.id = {project_id}.",
             produces = "application/json",
             protocols = "https",
             code = 201,
             extensions = {
                     @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_program.create_permission", value = Model_CProgram.create_permission_docs ),
+                            @ExtensionProperty(name = "C_Program.create_permission", value = Model_CProgram.create_permission_docs ),
                     }),
                     @Extension( name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "C_program_create" ),
+                            @ExtensionProperty(name = "Static Permission key", value =  "C_Program_create" ),
                     })
             }
     )
@@ -875,7 +875,7 @@ public class Controller_Code extends Controller{
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_program_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -896,9 +896,9 @@ public class Controller_Code extends Controller{
         try {
 
             // Zpracování Json
-            final Form<Swagger_C_program_New> form = Form.form(Swagger_C_program_New.class).bindFromRequest();
+            final Form<Swagger_C_Program_New> form = Form.form(Swagger_C_Program_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_C_program_New help = form.get();
+            Swagger_C_Program_New help = form.get();
 
             // Ověření Typu Desky
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(help.type_of_board_id);

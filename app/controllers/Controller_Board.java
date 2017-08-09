@@ -39,10 +39,10 @@ public class Controller_Board extends Controller {
     
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "compile C_program_Version",
+    @ApiOperation(value = "compile C_Program_Version",
             hidden = true,
             tags = {"Admin-C_Program"},
-            notes = "Compile specific version of C_program - before compilation - you have to update (save) version code" +
+            notes = "Compile specific version of C_Program - before compilation - you have to update (save) version code" +
                     "This appi is udes by Tyrion Calling on own API",
             produces = "application/json",
             consumes = "text/html",
@@ -50,11 +50,11 @@ public class Controller_Board extends Controller {
             code = 200,
             extensions = {
                     @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_program.Version.read_permission", value = Model_VersionObject.read_permission_docs),
+                            @ExtensionProperty(name = "C_Program.Version.read_permission", value = Model_VersionObject.read_permission_docs),
                     }),
                     @Extension(name = "permission_required", properties = {
                             @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "C_program_read"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_read"),
                     })
             }
     )
@@ -114,7 +114,7 @@ public class Controller_Board extends Controller {
 
     }
 
-    @ApiOperation(value = "compile C_program",
+    @ApiOperation(value = "compile C_Program",
             tags = {"C_Program"},
             notes = "Compile code",
             produces = "application/json",
@@ -628,7 +628,7 @@ public class Controller_Board extends Controller {
 
     @ApiOperation(value = "get FileRecord",
             tags = {"File"},
-            notes = "if you want create new SingleLibrary for C_program compilation",
+            notes = "if you want create new SingleLibrary for C_Program compilation",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1873,7 +1873,7 @@ public class Controller_Board extends Controller {
 
     @ApiOperation(value = "upload C_Program into Hardware",
             tags = {"C_Program", "Board", "Actualization"},
-            notes = "Upload compilation to list of hardware. Compilation is on Version oc C_program. And before uplouding compilation, you must succesfuly compile required version before! " +
+            notes = "Upload compilation to list of hardware. Compilation is on Version oc C_Program. And before uplouding compilation, you must succesfuly compile required version before! " +
                     "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
                     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
             produces = "application/json",
@@ -2588,7 +2588,7 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Boards details for integration to Blocko program",
+    @ApiOperation(value = "get B_Program all details for integration",
             tags = {"Blocko", "B_Program"},
             notes = "get all boards that user can integrate to Blocko program",
             produces = "application/json",

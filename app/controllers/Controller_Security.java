@@ -647,7 +647,7 @@ public class Controller_Security extends Controller {
 
 //###### Socilání sítě - a generátory přístupů ########################################################################
 
-    @ApiOperation(value = "GitHub login",
+    @ApiOperation(value = "login GitHub",
             tags = {"Access", "Social-GitHub"},
             notes = "For login via GitHub \n\n "+
                     "If you want login to system with social networks - you can used Facebook, GitHub, Twitter... api " +

@@ -117,7 +117,7 @@ public class Controller_WebSocket extends Controller {
 
 /* WEB-SOCKET CONNECTION -----------------------------------------------------------------------------------------------*/
 
-    @ApiOperation(value = "Homer Server Connection", tags = {"WebSocket"})
+    @ApiOperation(value = "Homer Server Connection", hidden = true, tags = {"WebSocket"})
     public  WebSocket<String>  homer_cloud_server_connection(String unique_identificator){
         try{
 
@@ -169,7 +169,7 @@ public class Controller_WebSocket extends Controller {
         }
     }
 
-    @ApiOperation(value = "Compilation Server Connection", tags = {"WebSocket"})
+    @ApiOperation(value = "Compilation Server Connection", hidden = true, tags = {"WebSocket"})
     public  WebSocket<String> code_server_connection(String unique_identificator){
         try{
 
@@ -220,7 +220,7 @@ public class Controller_WebSocket extends Controller {
         }
     }
 
-    @ApiOperation(value = "FrontEnd Becki Connection", tags = {"WebSocket"})
+    @ApiOperation(value = "FrontEnd Becki Connection", hidden = true, tags = {"WebSocket"})
     public  WebSocket<String>  becki_website_connection (String security_token){
         try{
 

@@ -357,7 +357,7 @@ public class Controller_Grid extends Controller {
 
     }
 
-    @ApiOperation(value = "Create M_Program Version",
+    @ApiOperation(value = "Create M_Program_Version",
             tags = {"M_Program"},
             notes = "creating new Version M_Program",
             produces = "application/json",
@@ -471,9 +471,9 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "get M_Program Version",
+    @ApiOperation(value = "get M_Program_Version",
             tags = {"M_Program"},
-            notes = "get M_Program Version by quarry m_program_version_id",
+            notes = "get M_Program_Version by quarry m_program_version_id",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -577,9 +577,9 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit M_Program Version",
+    @ApiOperation(value = "edit M_Program_Version",
             tags = {"M_Program"},
-            notes = "edit M_Program Version by quarry = m_program_version_id",
+            notes = "edit M_Program_Version by quarry = m_program_version_id",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -674,7 +674,7 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete M_Program Version",
+    @ApiOperation(value = "delete M_Program_Version",
             tags = {"M_Program"},
             notes = "remove version of M_Program",
             produces = "application/json",

@@ -311,7 +311,7 @@ public class Controller_Blocko extends Controller{
 
 // B PROGRAM VERSION ###################################################################################################
 
-    @ApiOperation(value = "create B_Program Version",
+    @ApiOperation(value = "create B_Program_Version",
             tags = {"B_Program"},
             notes = "create new vesion in Blocko program",
             produces = "application/json",
@@ -469,7 +469,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get B_Program Version",
+    @ApiOperation(value = "get B_Program_Version",
             tags = {"B_Program"},
             notes = "get B_Program version object",
             produces = "application/json",
@@ -509,7 +509,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "edit B_Program Version",
+    @ApiOperation(value = "edit B_Program_Version",
             tags = {"B_Program"},
             notes = "edit Version object",
             produces = "application/json",
@@ -570,7 +570,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "remove B_Program Version",
+    @ApiOperation(value = "delete B_Program_Version",
             tags = {"B_Program"},
             notes = "remove B_Program version object",
             produces = "application/json",
@@ -615,7 +615,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "upload B_Program Version to cloud",
+    @ApiOperation(value = "upload B_Program_Version to cloud",
             tags = {"B_Program"},
             notes = "upload version of B_Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
             produces = "application/json",
@@ -760,7 +760,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "start or shutDown Instance",
+    @ApiOperation(value = "set Instance start or shutDown",
             tags = {"Instance"},
             notes = "If instance is not running this Command uploud instance to cloud and starter all procedures. " +
                     "If instance is online, stis Command shutdown instance immidietly with all procedures.",
@@ -1024,7 +1024,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get Instance Record",
+    @ApiOperation(value = "get Instance_Record",
             tags = {"Instance"},
             notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instance schema yet",
             produces = "application/json",
@@ -1798,21 +1798,12 @@ public class Controller_Blocko extends Controller{
 
 // BLOCK VERSION #######################################################################################################
 
-    @ApiOperation(value = "create BlockoBlock Version",
+    @ApiOperation(value = "create BlockoBlock_Version",
             tags = {"Blocko-Block"},
             notes = "new BlockoBlock version",
             produces = "application/json",
             protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_create_permission", value = Model_BlockoBlockVersion.create_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_create_permission" )
-                    })
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -1875,7 +1866,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "get BlockoBlock Version",
+    @ApiOperation(value = "get BlockoBlock_Version",
             tags = {"Blocko-Block"},
             notes = "get version (content) from independent BlockoBlock",
             produces = "application/json",
@@ -1917,7 +1908,7 @@ public class Controller_Blocko extends Controller{
 
     }
 
-    @ApiOperation(value = "edit BlockoBlock Version",
+    @ApiOperation(value = "edit BlockoBlock_Version",
             tags = {"Blocko-Block"},
             notes = "You can edit only basic information of the version. If you want to update the code, " +
                     "you have to create a new version!",
@@ -1982,7 +1973,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "delete BlockoBlock Version",
+    @ApiOperation(value = "delete BlockoBlock_Version",
             tags = {"Blocko-Block"},
             notes = "delete BlockoBlock version",
             produces = "application/json",
@@ -2023,7 +2014,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "edit BlockoBlock Version ask for publication",
+    @ApiOperation(value = "edit BlockoBlock_Version ask for publication",
             tags = {"Blocko-Block"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
@@ -2063,7 +2054,7 @@ public class Controller_Blocko extends Controller{
 
 // BLOCKO ADMIN ########################################################################################################*/
 
-    @ApiOperation(value = "edit BlockoBlock Version refuse publication",
+    @ApiOperation(value = "edit BlockoBlock_Version refuse publication",
             tags = {"Admin-Blocko-Block"},
             notes = "sets disapproved from pending",
             produces = "application/json",
@@ -2116,7 +2107,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "edit BlockoBlock Version accept publication",
+    @ApiOperation(value = "edit BlockoBlock_Version accept publication",
             tags = {"Admin-Blocko-Block"},
             notes = "sets Approval_state to pending",
             produces = "application/json",

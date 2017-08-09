@@ -40,7 +40,7 @@ public class Controller_Person extends Controller {
 
 //######################################################################################################################
 
-    @ApiOperation(value = "register new Person",
+    @ApiOperation(value = "create Person",
             tags = {"Person"},
             notes = "create new Person with unique email and nick_name",
             produces = "application/json",
@@ -314,7 +314,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit Person password",
+    @ApiOperation(value = "restart Person password",
             tags = {"Access"},
             notes = "changes password if password_recovery_token is not older than 24 hours, deletes all FloatingPersonTokens",
             protocols = "https",
@@ -757,7 +757,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "validate some Entity",
+    @ApiOperation(value = "validation Entity",
             tags = {"Person"},
             notes = "for cyclical validation during registration, key contains 'mail' or 'nick_name'. Or can be used for 'vat_number' as a key.",
             produces = "application/json",
@@ -779,7 +779,7 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result person_validateProperty(){
+    public  Result something_validateProperty(){
         try{
             
             final Form<Swagger_Entity_Validation_In> form = Form.form(Swagger_Entity_Validation_In.class).bindFromRequest();
@@ -867,7 +867,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit Person Login info",
+    @ApiOperation(value = "edit Person property",
             tags = {"Person"},
             notes = "Request password or email change. API does not change password or email, only sends email for authorization of the change and holds values in different object." +
                     "JSON value 'property' contains only 'password' or 'email'",
@@ -976,7 +976,7 @@ public class Controller_Person extends Controller {
         }
     }
 
-    @ApiOperation(value = "Authorization Person password or email change",
+    @ApiOperation(value = "email Person approving password or email change",
             tags = {"Admin-Person"},
             notes = "",
             produces = "application/json",

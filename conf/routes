@@ -57,13 +57,14 @@ POST      /test/notification/chain/:email                               @utiliti
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
 
+POST      /validate_entity                                              @controllers.Controller_Person.something_validateProperty()
+
 #Peron CRUD
 POST      /person                                                       @controllers.Controller_Person.person_create()
 PUT       /person/:person_id                                            @controllers.Controller_Person.person_update(person_id)
 GET       /person/:person_id                                            @controllers.Controller_Person.person_get(person_id)
 DELETE    /person/:id                                                   @controllers.Controller_Person.person_delete(id: String)
 
-POST      /person/validate_entity                                       @controllers.Controller_Person.person_validateProperty()
 POST      /person/authentication_email                                  @controllers.Controller_Person.person_authenticationSendEmail()
 
 GET       /person/connection/all                                        @controllers.Controller_Person.person_getAllConnections()
@@ -196,7 +197,7 @@ GET       /instance/project/:project_id                                 @control
 GET       /instance/get/:instance_id                                    @controllers.Controller_Blocko.get_b_program_instance(instance_id)
 PUT       /instance/filter                                              @controllers.Controller_Blocko.get_b_program_instance_by_filter()
 PUT       /instance/grid_app                                            @controllers.Controller_Blocko.instance_change_settings_grid_App()
-PUT       /instance/edit/:instance_id                                 @controllers.Controller_Blocko.instance_edit(instance_id)
+PUT       /instance/edit/:instance_id                                   @controllers.Controller_Blocko.instance_edit(instance_id)
 
 #Instance/Record
 GET       /instance_record/get/:instance_record_id                      @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)

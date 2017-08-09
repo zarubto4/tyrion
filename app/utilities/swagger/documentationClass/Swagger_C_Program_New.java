@@ -7,7 +7,7 @@ import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model for new C_Program",
           value = "C_Program_New")
-public class Swagger_C_program_New {
+public class Swagger_C_Program_New {
 
     @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters.")
     public String project_id;

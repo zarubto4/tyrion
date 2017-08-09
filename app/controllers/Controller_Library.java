@@ -317,7 +317,7 @@ public class Controller_Library extends Controller {
 
 /// VERSIONS IN LIBRARIES ##############################################################################################*/
 
-    @ApiOperation(value = "create Library Version",
+    @ApiOperation(value = "create Library_Version",
             tags = {"Library"},
             notes = "If you want add new code to Library",
             produces = "application/json",
@@ -389,7 +389,7 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Library Version",
+    @ApiOperation(value = "get Library_Version",
             tags = {"Library"},
             notes = "get Version of Library by query = version_id",
             produces = "application/json",
@@ -434,7 +434,7 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit Library Version",
+    @ApiOperation(value = "edit Library_Version",
             tags = {"Library"},
             notes = "For update basic (name and description) information in Version of Library. If you want update code. You have to create new version. " +
                     "And after that you can delete previous version",
@@ -499,7 +499,7 @@ public class Controller_Library extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete Library Version",
+    @ApiOperation(value = "delete Library_Version",
             tags = {"Library"},
             notes = "delete Library by query = version_id",
             produces = "application/json",
