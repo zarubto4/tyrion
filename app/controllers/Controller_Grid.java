@@ -2030,7 +2030,7 @@ public class Controller_Grid extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.GlobalResult",
+                            dataType = "utilities.swagger.documentationClass.Swagger_GridWidget_Publish_Response",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
