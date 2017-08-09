@@ -14,6 +14,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.twirl.api.Html;
+import utilities.Server;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_Admin;
@@ -86,10 +88,11 @@ public class Controller_Test extends Controller {
     public Result test_run(){
         try {
 
+            if (Server.server_mode != Enum_Tyrion_Server_mode.developer) return GlobalResult.result_badRequest("Tests can be run only in dev mode.");
+
             terminal_logger.debug("test_run: Retrieving body");
 
             JsonNode body = request().body().asJson();
-
             if (!body.has("tests")) return GlobalResult.result_badRequest("Field 'tests' is required");
 
             List<String> test_names = new ArrayList<>();

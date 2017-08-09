@@ -80,18 +80,26 @@ public class Model_Customer extends Model{
     @JsonIgnore @Override
     public void update() {
 
-        terminal_logger.debug("update: Update object Id = {}",  this.id);
+        terminal_logger.debug("update: ID = {}",  this.id);
 
+        super.update();
+    }
+
+    @JsonIgnore
+    public void soft_delete(){
+
+        terminal_logger.debug("soft_delete: ID = {}", this.id);
+
+        this.removed_by_user = true;
         super.update();
     }
 
     @JsonIgnore @Override
     public void delete() {
 
-        terminal_logger.debug("delete: Delete object Id = {} ", this.id);
+        terminal_logger.debug("delete: ID = {}", this.id);
 
-        this.removed_by_user = true;
-        this.update();
+        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

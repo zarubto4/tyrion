@@ -17,7 +17,7 @@ import java.util.*;
 
 public class TestHelper extends Controller{
 
-    static Logger logger = LoggerFactory.getLogger(TestCase.class);
+    private static Logger logger = LoggerFactory.getLogger(TestCase.class);
 
     public static void checkResponse(WSResponse response, int expectedStatus) throws AssertionError{
         checkResponse(response, expectedStatus, null);

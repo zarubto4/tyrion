@@ -37,18 +37,15 @@ public class Model_Library extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id @ApiModelProperty(required = true) public String id;
-    @ApiModelProperty(required = true)     public String name;
-    @ApiModelProperty(required = true)     public String description;
-
-                           @JsonIgnore     public boolean removed_by_user;
-
-    @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_VersionObject> versions   = new ArrayList<>();
+            @Id public String id;
+                public String name;
+                public String description;
+    @JsonIgnore public boolean removed_by_user;
+    @JsonIgnore public String project_id; // Předělat na klasické ORM! s Lazy Loading!
 
     @ManyToMany public List<Model_TypeOfBoard>  type_of_boards  = new ArrayList<>();
 
-    @JsonIgnore public String project_id; // Předělat na klasické ORM! s Lazy Loading!
-
+    @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_VersionObject> versions = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -260,10 +257,7 @@ public class Model_Library extends Model{
         return library;
     }
 
-
-
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String, Model_Library> find = new Model.Finder<>(Model_Library.class);
 
+    public static Model.Finder<String, Model_Library> find = new Model.Finder<>(Model_Library.class);
 }

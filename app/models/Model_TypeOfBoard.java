@@ -90,9 +90,8 @@ public class Model_TypeOfBoard extends Model {
         }
     }
 
-
-    @ApiModelProperty(required =true) @Transient @JsonProperty public Model_BootLoader main_boot_loader(){
-
+    @ApiModelProperty(required =true) @JsonProperty
+    public Model_BootLoader main_boot_loader(){
         try {
 
             if (cache_value_main_bootloader_id == null) {
@@ -108,7 +107,6 @@ public class Model_TypeOfBoard extends Model {
             return null;
         }
     }
-
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
