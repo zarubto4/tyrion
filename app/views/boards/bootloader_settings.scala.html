@@ -471,7 +471,7 @@
             success:function(e){
                 location.reload();
             },
-            error:function(data) {
+            error_message:function(data) {
                 BootstrapDialog.show({
                     message:  syntaxHighlight(data),
                     type: BootstrapDialog.TYPE_DANGER,
@@ -496,7 +496,7 @@
             success:function(e){
                 location.replace("/admin/board_settings")
             },
-            error:function(data) {
+            error_message:function(data) {
                 BootstrapDialog.show({
                     message:  syntaxHighlight(data),
                     type: BootstrapDialog.TYPE_DANGER,
@@ -524,7 +524,7 @@
             success: function(data, status) {
                 $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
             },
-            error: function(data) {
+            error_message: function(data) {
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
                     type: BootstrapDialog.TYPE_DANGER,
@@ -554,7 +554,7 @@
                 $('#allCProgramsVersionsWrapper').load(document.URL + ' #allCProgramsVersions');
             },
 
-            error: function(data) {
+            error_message: function(data) {
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
                     type: BootstrapDialog.TYPE_DANGER,
@@ -589,7 +589,7 @@
                 $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
 
             },
-            error: function(data) {
+            error_message: function(data) {
 
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
@@ -625,7 +625,7 @@
                 $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
 
             },
-            error: function(data) {
+            error_message: function(data) {
 
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
@@ -653,7 +653,7 @@
             success: function(json) {
                 $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
             },
-            error: function(data) {
+            error_message: function(data) {
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
                     type: BootstrapDialog.TYPE_DANGER,
@@ -689,7 +689,7 @@
                 $('#firmware_summary_wrapper').load(document.URL + ' #firmware_summary');
 
             },
-            error: function(data) {
+            error_message: function(data) {
 
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
@@ -734,7 +734,7 @@
                 $('#firmware_summary').load(document.URL + ' #firmware_summary');
 
             },
-            error: function(data) {
+            error_message: function(data) {
 
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
@@ -773,7 +773,7 @@
                 $('#allCProgramsVersionsWrapper').load(document.URL + ' #allCProgramsVersions');
 
             },
-            error: function(data) {
+            error_message: function(data) {
 
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
@@ -814,7 +814,7 @@
                 $("#newFileModal").modal('hide')
                 $('#allBootloaderVersionsWrapper').load(document.URL + ' #allBootloaderVersions');
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            error_message: function(jqXHR, textStatus, errorThrown) {
 
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
@@ -863,7 +863,7 @@
                 $('#showPictureRemoveModalButton').prop('disabled', false);
                 $('#showPictureRemoveModalButton').removeClass('disabled');
             },
-            error: function(data) {
+            error_message: function(data) {
 
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
@@ -894,7 +894,7 @@
                 $('#showPictureRemoveModalButton').prop('disabled', true);
                 $('#showPictureRemoveModalButton').addClass('disabled');
             },
-            error: function(data) {
+            error_message: function(data) {
 
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),

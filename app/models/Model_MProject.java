@@ -128,7 +128,7 @@ public class Model_MProject extends Model {
         super.save();
 
         if(project != null){
-            project.m_project_ids.add(id);
+            project.cache_list_m_project_ids.add(id);
         }
 
         cache.put(id, this);
@@ -155,7 +155,7 @@ public class Model_MProject extends Model {
         super.update();
 
         if(project_id() != null){
-            Model_Project.get_byId( project_id() ).m_project_ids.remove(id);
+            Model_Project.get_byId( project_id() ).cache_list_m_project_ids.remove(id);
         }
 
         cache.remove(id);

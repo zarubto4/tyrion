@@ -130,7 +130,7 @@ public class Controller_WebSocket extends Controller {
             if(homer_server== null){
                 // Připojím se
                 terminal_logger.warn("homer_cloud_server_connection:: Incoming connection: Server:  "+ unique_identificator + "is not registred in database!!!!!");
-                return WebSocket.reject(forbidden("Server side error - already connected"));
+                return WebSocket.reject(forbidden("Server side error_message - already connected"));
             }
 
 
@@ -148,7 +148,7 @@ public class Controller_WebSocket extends Controller {
                 }
 
                 terminal_logger.warn("homer_cloud_server_connection:: Connection:: Server is already connected and working!! Its prohibited connected to Tyrion with same name");
-                return WebSocket.reject(forbidden("Server side error - already connected"));
+                return WebSocket.reject(forbidden("Server side error_message - already connected"));
             }
 
 
@@ -177,7 +177,7 @@ public class Controller_WebSocket extends Controller {
 
             terminal_logger.trace("code_server_connection:: Control Server and its unique names!");
             Model_CompilationServer cloud_compilation_server = Model_CompilationServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
-            if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error - unrecognized name"));
+            if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error_message - unrecognized name"));
 
             if(compiler_cloud_servers.containsKey(unique_identificator)) {
 
@@ -195,7 +195,7 @@ public class Controller_WebSocket extends Controller {
                     }
 
                     terminal_logger.warn("code_server_connection:: Server is already connected and working!! Its prohibited connected to Tyrion with same unique name");
-                    return WebSocket.reject(forbidden("Server side error - already connected"));
+                    return WebSocket.reject(forbidden("Server side error_message - already connected"));
 
                 }catch (NullPointerException e){
 
@@ -216,7 +216,7 @@ public class Controller_WebSocket extends Controller {
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
-            return WebSocket.reject(forbidden("Server side error"));
+            return WebSocket.reject(forbidden("Server side error_message"));
         }
     }
 
@@ -263,7 +263,7 @@ public class Controller_WebSocket extends Controller {
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
-            return WebSocket.reject(forbidden("Server side error"));
+            return WebSocket.reject(forbidden("Server side error_message"));
         }
     }
 

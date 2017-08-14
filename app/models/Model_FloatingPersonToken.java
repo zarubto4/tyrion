@@ -78,7 +78,7 @@ public class Model_FloatingPersonToken extends Model {
 
             }
         } catch (Exception e){
-            terminal_logger.error("isValid() :: Error:: ", e);
+            terminal_logger.error_message("isValid() :: Error:: ", e);
             return false;
         }
         */

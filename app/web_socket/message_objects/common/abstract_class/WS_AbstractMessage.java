@@ -9,8 +9,8 @@ public abstract class  WS_AbstractMessage {
     @Constraints.Required public String message_id;
     @Constraints.Required public String message_channel;
 
-    public String status = "error";
-    public String error  = null;
+    public String status = "errore";            // Defaultně eror - pokud není přepsáno příchozím success
+    public String error_message = null;
     public Integer error_code = null;
 
 }

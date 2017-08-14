@@ -23,8 +23,6 @@ import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compila
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.*;
 
@@ -177,8 +175,8 @@ public class Controller_Board extends Controller {
                     terminal_logger.internalServerError(new Exception("Error in reading libraries version not found! Version ID = " + lib_version));
 
                     ObjectNode error = Json.newObject();
-                    error.put("status", "error");
-                    error.put("error", "Error getting libraries - Library not found!");
+                    error.put("status", "error_message");
+                    error.put("error_message", "Error getting libraries - Library not found!");
                     error.put("error_code", 400);
                     return GlobalResult.result_buildErrors(error);
 
@@ -199,8 +197,8 @@ public class Controller_Board extends Controller {
                             terminal_logger.internalServerError(new Exception("Error reading libraries from files! Model_FileRecord ID = " + f.id));
 
                             ObjectNode error = Json.newObject();
-                            error.put("status", "error");
-                            error.put("error", "Error with importing libraries - Library Id: " + lib_id );
+                            error.put("status", "error_message");
+                            error.put("error_message", "Error with importing libraries - Library Id: " + lib_id );
                             error.put("error_code", 400);
                             return GlobalResult.result_buildErrors(error);
                         }
@@ -250,16 +248,16 @@ public class Controller_Board extends Controller {
             }
 
             // Nebylo úspěšné ani odeslání requestu - Chyba v konfiguraci a tak vracím defaulní chybz
-            if (compilation_result.error != null) {
+            if (compilation_result.error_message != null) {
 
                 ObjectNode result_json = Json.newObject();
-                result_json.put("error", compilation_result.error);
+                result_json.put("error_message", compilation_result.error_message);
 
                 return GlobalResult.result_externalServerError(result_json);
             }
 
             // Neznámá chyba se kterou nebylo počítání
-            return GlobalResult.result_badRequest("Unknown error");
+            return GlobalResult.result_badRequest("Unknown error_message");
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -380,7 +378,7 @@ public class Controller_Board extends Controller {
 
             ObjectNode request = Json.newObject();
             request.put("message_channel", "tyrion");
-            request.put("instanceId", instance_id);
+            request.put("instance_id", instance_id);
             request.put("message_type", "updateDevice");
             request.put("firmware_type", firmware_type.get_firmwareType());
             request.set("targetIds",  Json.toJson(list));
@@ -1790,7 +1788,7 @@ public class Controller_Board extends Controller {
 
     @ApiOperation(value = "edit Board developers parameters",
             tags = { "Board"},
-            notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Projec\" ",
+            notes = "Edit Developers parameters [developer_kit, database_synchronize, web_view, web_port]",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -1805,7 +1803,7 @@ public class Controller_Board extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Personal",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Developer_parameters",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1840,20 +1838,23 @@ public class Controller_Board extends Controller {
             switch (help.parameter_type){
 
                 case "developer_kit" :{
+
                     // Synchronizace s Homer serverem a databází
                     board.developer_kit = help.boolean_value;
                     board.update();
+                    break;
                 }
 
                 case "database_synchronize" :{
                     // Synchronizace s Homer serverem a databází
                     board.set_database_synchronize(help.boolean_value);
+                    break;
                 }
 
                 case "web_view" :{
-                    // Synchronizace s Homer serverem a databází
+                    // Synchronizace s Homer serverem a databázíw
                     board.set_web_view(help.boolean_value);
-
+                    break;
                 }
 
                 case "web_port" :{
@@ -1862,8 +1863,13 @@ public class Controller_Board extends Controller {
                     if(help.integer_value == 8502 ) return GlobalResult.result_badRequest("The port is used by some other entity in the system."); // Zde hlídáme aby nedošlo ke kolizím na portech, které má homer server
                     if(help.integer_value == 8501 ) return GlobalResult.result_badRequest("The port is used by some other entity in the system."); // Zde hlídáme aby nedošlo ke kolizím na portech, které má homer server
                     board.set_web_port(help.integer_value);
+                    break;
                 }
 
+                default: {
+                    terminal_logger.warn("parameter_type" + help.parameter_type + "not recognized");
+                    return GlobalResult.result_notFound("parameter_type not recognized");
+                }
 
             }
 
@@ -2264,7 +2270,6 @@ public class Controller_Board extends Controller {
             if(help.file == null || help.file.equals("")){
                 Model_FileRecord fileRecord = board.picture;
                 board.picture = null;
-                board.azure_picture_link = "";
                 board.update();
                 fileRecord.delete();
             }
@@ -2274,27 +2279,9 @@ public class Controller_Board extends Controller {
                 terminal_logger.debug("person_uploadPicture:: Removing previous picture");
                 Model_FileRecord fileRecord = board.picture;
                 board.picture = null;
-                board.azure_picture_link = "";
                 board.update();
                 fileRecord.delete();
             }
-
-            // Pokud link není, vygeneruje se nový, unikátní
-            if(board.azure_picture_link == null || board.azure_picture_link.equals("")){
-                board.azure_picture_link = board.get_path() + "/" + UUID.randomUUID().toString() + ".png";
-                board.update();
-            }
-
-            // Pouze pro případy, kdy se uživatel registroval skrze sociální síť a Tyrion používá obrázek daného uživatele
-            // Z konrkétní sociální sítě - pak chybí soubor, ale existuje cesta k souboru, kterou zaslí tyrion do Becki
-            // Například:: https://avatars1.githubusercontent.com/u/16296782?v=3
-            // PRoto je nutné na to pamatovat - jinak se pak taková cesta strká do Azure k přepsání předchozího obrázku
-            if(board.azure_picture_link.contains("http")){
-                board.azure_picture_link = board.get_path()+ "/" + UUID.randomUUID().toString() + ".png";
-                board.update();
-            }
-
-            String file_name =  board.azure_picture_link.substring( board.azure_picture_link.indexOf("/") + 1);
 
             //  data:image/png;base64,
             String[] parts = help.file.split(",");
@@ -2304,7 +2291,9 @@ public class Controller_Board extends Controller {
             terminal_logger.debug("person_uploadPicture:: Data Type:" + dataType[0] + ":::");
             terminal_logger.debug("person_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
 
-            board.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, board.azure_picture_link);
+            String name = UUID.randomUUID().toString();
+
+            board.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], "board_photo", board.get_path() + name);
             board.update();
 
             return GlobalResult.result_ok(Json.toJson(board));
@@ -2331,13 +2320,12 @@ public class Controller_Board extends Controller {
         try {
 
             Model_Board board = Model_Board.get_byId(board_id);
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             if(!(board.picture == null)) {
-                Model_FileRecord fileRecord = board.picture;
+                board.picture.delete();
                 board.picture = null;
-                board.azure_picture_link = null;
                 board.update();
-                fileRecord.delete();
             }else{
                 return GlobalResult.result_badRequest("There is no picture to remove.");
             }
@@ -2527,7 +2515,7 @@ public class Controller_Board extends Controller {
             // uprava desky
             board.project = project;
             board.date_of_user_registration = new Date();
-            project.board_ids.add(board.id);
+            project.cache_list_board_ids.add(board.id);
 
             board.update();
             project.update();
@@ -2573,17 +2561,27 @@ public class Controller_Board extends Controller {
         try {
 
             // Kontrola objektu
-            Model_Board board = Model_Board.get_byId(board_id);
+            // !!! pozor vyjímka!!!!
+            Model_Board board = Model_Board.find.byId(board_id);
             if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
 
             // Kontrola oprávnění
             if(!board.update_permission()) return GlobalResult.result_forbidden();
+
+            if(board.get_project() == null){
+                return GlobalResult.result_notFound("Board already removed");
+            }
+
+            Model_Project project = board.get_project();
+            project.cache_list_board_ids.remove(board_id);
 
             // Odstraním vazbu
             board.project = null;
 
             // uložím do databáze
             board.update();
+
+            project.refresh();
 
             // vracím upravenou hodnotu
             return GlobalResult.result_ok(Json.toJson(board));

@@ -25,10 +25,7 @@ public class Model_BProgramHwGroup extends Model {
     @OneToMany(mappedBy="device_board_pair",cascade= CascadeType.ALL, fetch = FetchType.EAGER)   public List<Model_BPair> device_board_pairs = new ArrayList<>();
     @OneToOne(mappedBy="main_board_pair",cascade=CascadeType.ALL, fetch = FetchType.EAGER)       public Model_BPair main_board_pair;
 
-
-
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "b_program_hw_groups")  @JoinTable(name = "version_b_group_id") public List<Model_VersionObject> b_program_version_groups = new ArrayList<>();
-
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/

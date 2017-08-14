@@ -356,6 +356,11 @@ public class Model_Notification extends Model {
 
     @JsonIgnore @Transient
     public void send_under_project(String project_id){
+
+        if(project_id == null){
+            return;
+        }
+
         this.list_of_ids_receivers.addAll( Model_Project.get_project_becki_person_ids_list(project_id)); // Přidám z Cashe všechny ID osob, které odebírjí konkrétní projekt
         NotificationHandler.addToQueue(this);
     }

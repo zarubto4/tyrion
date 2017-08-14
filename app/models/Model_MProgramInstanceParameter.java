@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModelProperty;
-import play.Mode;
 import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.Http;
@@ -209,7 +208,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
     @JsonIgnore  @Transient public boolean verify_token_for_homer_grid_connection(WS_Message_Grid_token_verification verification){
 
-       if(!get_instance().id.equals( verification.instanceId)) return false;
+       if(!get_instance().id.equals( verification.instance_id)) return false;
 
        switch (snapshot_settings()){
 

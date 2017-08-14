@@ -13,8 +13,8 @@ import utilities.Server;
 public class Slack {
 
     /**
-     * Posts an error to Byzance Slack, chanel #servers
-     * @param error Model error that is being posted.
+     * Posts an error_message to Byzance Slack, chanel #servers
+     * @param error Model error_message that is being posted.
      */
     public static void post(Model_LoggyError error){
         try {
@@ -22,8 +22,8 @@ public class Slack {
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 /*
             ObjectNode field = Json.newObject();
-            field.put("title", error.summary);
-            field.put("value", error.description);
+            field.put("title", error_message.summary);
+            field.put("value", error_message.description);
             field.put("short", false);
 
             List<ObjectNode> fields = new ArrayList<>();
@@ -32,7 +32,7 @@ public class Slack {
             ObjectNode attachment = Json.newObject();
             attachment.put("fallback", "Internal Server Error");
             attachment.put("pretext", "TEST Error occurred in Tyrion");
-            attachment.put("text", error.description);
+            attachment.put("text", error_message.description);
             attachment.put("color", "danger");
             //attachment.set("fields", Json.toJson(fields));
 

@@ -34,7 +34,7 @@ public class WS_Send_message {
 
 
         ObjectNode request = Json.newObject();
-            json.put("error", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_message());
+            json.put("error_message", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_message());
             json.put("error_code", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_code());
 
         if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
@@ -99,7 +99,6 @@ public class WS_Send_message {
             terminal_logger.internalServerError(new Exception("future parameter is null"));
             throw new TimeoutException();
         }catch (CancellationException e){
-            terminal_logger.trace("send_with_response:: CancellationException: {} result: {} " , this.messageId ,  result.toString() );
             return result;
         }
     }

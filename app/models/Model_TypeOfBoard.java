@@ -64,7 +64,7 @@ public class Model_TypeOfBoard extends Model {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_name(){ return cache_value_producer_id  != null ? cache_value_producer_id : get_producer().name;}
+    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_name(){ return get_producer().name;}
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_id(){ return cache_value_producer_id  != null ? cache_value_producer_id : get_producer().id;}
 
     @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name(){ return compiler_target_name;}

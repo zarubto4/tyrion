@@ -400,7 +400,7 @@
                         <label for="uploadBlockoProgram" class="col-sm-2 control-label">Instance ID:</label>
 
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" name="instanceId" id="instanceId" readonly>
+                            <input type="text" class="form-control" name="instance_id" id="instance_id" readonly>
                         </div>
                     </div>
 
@@ -678,7 +678,7 @@
                         });
 
                     },
-                    error:function (data, status) {
+                    error_message:function (data, status) {
                         BootstrapDialog.show({
                             message:  syntaxHighlight(data),
                             type: BootstrapDialog.TYPE_DANGER,
@@ -727,7 +727,7 @@
                         });
 
                     },
-                    error:function (data, status) {
+                    error_message:function (data, status) {
                         BootstrapDialog.show({
                             message:  syntaxHighlight(data),
                             type: BootstrapDialog.TYPE_DANGER,
@@ -775,7 +775,7 @@
 
                         });
                     },
-                    error:function(data) {
+                    error_message:function(data) {
                         console.log(data);
 
                         BootstrapDialog.show({
@@ -833,7 +833,7 @@
                         <label for="addMasterDeviceForm" class="col-sm-2 control-label">Instance ID:</label>
 
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" name="instanceId" id="instanceId" value="@instance.id" readonly>
+                            <input type="text" class="form-control" name="instance_id" id="instance_id" value="@instance.id" readonly>
                         </div>
                     </div>
 
@@ -920,7 +920,7 @@
                       $("#addDeviceModal").css("display","none");
                       $('#device_summary_table').load(document.URL +  ' #device_summary_table');
                   },
-                  error:function(data) {
+                  error_message:function(data) {
                       BootstrapDialog.show({
                           message: syntaxHighlight(data),
                           type: BootstrapDialog.TYPE_ERROR,
@@ -948,7 +948,7 @@
                       $("#addDeviceModal").css("display","none");
                       $('#device_summary_table').load(document.URL +  ' #device_summary_table');
                   },
-                  error:function(data) {
+                  error_message:function(data) {
                       BootstrapDialog.show({
                           message: syntaxHighlight(data),
                           type: BootstrapDialog.TYPE_ERROR,

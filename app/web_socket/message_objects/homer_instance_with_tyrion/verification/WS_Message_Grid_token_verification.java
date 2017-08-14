@@ -24,8 +24,8 @@ public class WS_Message_Grid_token_verification extends WS_AbstractMessage_Insta
         result.put("message_type", message_type);
         result.put("message_channel", message_channel);
         result.put("token_approve", token_approve);
-        result.put("message_id", messageId);
-        result.put("instanceId", instanceId);
+        result.put("message_id", message_id);
+        result.put("instance_id", instance_id);
         result.put("status" , "success");
         return result;
 

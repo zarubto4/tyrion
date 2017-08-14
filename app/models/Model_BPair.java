@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import utilities.enums.Enum_Online_status;
 import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
@@ -45,6 +46,7 @@ public class Model_BPair extends Model {
     @JsonProperty   @Transient public String board_id()                      { return board.id;}
     @JsonProperty   @Transient public String board_name()                    { return board.name;}
     @JsonProperty   @Transient public String board_description()             { return board.description;}
+    @JsonProperty   @Transient public Enum_Online_status online_state()      { return board.online_state();}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

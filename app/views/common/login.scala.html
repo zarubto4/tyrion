@@ -92,7 +92,7 @@
           document.cookie = "authToken=" + data.authToken + ";path=/";
           window.location.replace('@routes.Controller_Dashboard.index()');
         },
-        error:function(e) {
+        error_message:function(e) {
           $("#messageText").css("display","block");
         }
       })

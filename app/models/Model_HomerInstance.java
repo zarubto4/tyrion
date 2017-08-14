@@ -16,6 +16,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
+import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
@@ -27,10 +28,7 @@ import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homer_instance_with_tyrion.*;
 
 import javax.persistence.*;
-import java.nio.channels.ClosedChannelException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 
 @Entity
@@ -252,7 +250,7 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient  public String get_project_id() {
 
         if(cache_project_id == null) {
-            Model_Project project = Model_Project.find.where().eq("b_programs.id", b_program.id).select("id").findUnique();
+            Model_Project project = Model_Project.find.where().eq("b_programs.id", b_program_id()).select("id").findUnique();
             cache_project_id = project.id;
         }
 
@@ -260,11 +258,9 @@ public class Model_HomerInstance extends Model {
 
     }
 
-
     @JsonIgnore @Transient  public List<String> get_boards_id_required_by_record() {
         return actual_instance.get_boards_required_by_record();
     }
-
 
     @JsonIgnore @Transient  public Model_BProgram getB_program(){
         return Model_BProgram.get_byId(b_program_id());
@@ -285,7 +281,7 @@ public class Model_HomerInstance extends Model {
         super.save();
 
         if(project_id != null){
-            Model_Project.get_byId(project_id).instance_ids.add(id);
+            Model_Project.get_byId(project_id).cache_list_instance_ids.add(id);
         }
 
         cache.put(this.id, this);
@@ -309,7 +305,7 @@ public class Model_HomerInstance extends Model {
         super.update();
 
         if(project_id != null){
-            Model_Project.get_byId(project_id).instance_ids.remove(id);
+            Model_Project.get_byId(project_id).cache_list_instance_ids.remove(id);
         }
 
         cache.put(id, this);
@@ -400,7 +396,6 @@ public class Model_HomerInstance extends Model {
     }
 
 
-
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER-----------------------------------------------------------------------*/
 
     public static final String CHANNEL = "instance";
@@ -420,7 +415,7 @@ public class Model_HomerInstance extends Model {
                         if (form.hasErrors()) throw new Exception("WS_Message_Grid_token_verification: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                         WS_Message_Grid_token_verification help = form.get();
-                        help.get_instance().cloud_verification_token_GRID(help);
+                        help.get_instance().cloud_verification_token_GRID(homer.get_model(), help);
                         return;
                     }
 
@@ -430,7 +425,7 @@ public class Model_HomerInstance extends Model {
                         if (form.hasErrors()) throw new Exception("token_webView_verification: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                         WS_Message_WebView_token_verification help = form.get();
-                        help.get_instance().cloud_verification_token_WEBVIEW(help);
+                        help.get_instance().cloud_verification_token_WEBVIEW(homer.get_model(), help);
                         return;
                     }
 
@@ -445,7 +440,7 @@ public class Model_HomerInstance extends Model {
                         terminal_logger.warn("Incoming Message not recognized::" + json.toString());
 
                         // Zarážka proti nevadliní odpovědi a zacyklení
-                        if(json.has("status") && json.get("status").asText().equals("error")){
+                        if(json.has("status") && json.get("status").asText().equals("error_message")){
                             return;
                         }
 
@@ -465,83 +460,95 @@ public class Model_HomerInstance extends Model {
         }).start();
     }
 
+    // Odesílání zprávy harwaru jde skrze serve, zde je metoda, která pokud to nejde odeslat naplní objekt a vrácí ho
+    @JsonIgnore @Transient public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries){
 
-    //--  Sender -- //
-    @JsonIgnore @Transient
-    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{
-       json.put("instance_id", id);
-       return Controller_WebSocket.homer_servers.get(server_id()).write_with_confirmation(json, time, delay, number_of_retries);
-    }
+        // Response with Error Message
+        if (this.server_id() == null) {
 
-    @JsonIgnore @Transient
-    public void write_without_confirmation(ObjectNode json) throws TimeoutException, ClosedChannelException, ExecutionException, InterruptedException{
+            ObjectNode request = Json.newObject();
+            request.put("message_type", json.get("message_type").asText());
+            request.put("message_channel", Model_HomerInstance.CHANNEL);
+            request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_code());
+            request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_message());
+            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+            request.put("websocket_identificator", "unknown");
+
+            return request;
+        }
+
+        Model_HomerServer server = Model_HomerServer.get_byId(this.server_id());
+        if (server == null) {
+
+            terminal_logger.internalServerError(new Exception("write_with_confirmation:: Instance " + id + ". Server id " + this.server_id() + " not exist!"));
+
+            ObjectNode request = Json.newObject();
+            request.put("message_type", json.get("message_type").asText());
+            request.put("message_channel", Model_HomerInstance.CHANNEL);
+            request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
+            request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
+            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+            request.put("websocket_identificator", "unknown");
+
+            return request;
+        }
+
         json.put("instance_id", id);
-        Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(json);
+        return server.write_with_confirmation(json, time, delay, number_of_retries);
+
     }
 
+    // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
+    @JsonIgnore @Transient private void write_without_confirmation(ObjectNode json){
 
+        Model_HomerServer server = Model_HomerServer.get_byId(this.server_id());
+        if(server == null){
+
+            terminal_logger.internalServerError(new Exception("write_without_confirmation:: Instance " + id + " server not found"));
+
+            return;
+        }
+
+        json.put("instance_id", id);
+        server.write_without_confirmation(json);
+
+    }
+
+    // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
+    @JsonIgnore @Transient public void write_without_confirmation(String message_id, ObjectNode json){
+
+        if(this.server_id() == null){
+            return;
+        }
+
+        Model_HomerServer server = Model_HomerServer.get_byId(this.server_id());
+
+        if(server == null){
+            terminal_logger.internalServerError(new Exception("write_without_confirmation:: Instance " + id + " server not found"));
+            return;
+        }
+
+        json.put("instance_id", id);
+        server.write_without_confirmation(message_id, json);
+    }
 
     //-- Instance Status -- //
     @JsonIgnore @Transient
     public WS_Message_Instance_status get_instance_status(){
+        try {
 
-        List<Model_HomerInstance> instances = new ArrayList<>();
-        instances.add(this);
-        return get_instance_status(instances);
+            JsonNode node = write_with_confirmation(new WS_Message_Instance_status().make_request(Collections.singletonList(id)), 1000 * 3, 0, 2);
 
-    }
-    @JsonIgnore @Transient
-    public static WS_Message_Instance_status get_instance_status(List<Model_HomerInstance> instances){
+            final Form<WS_Message_Instance_status> form = Form.form(WS_Message_Instance_status.class).bind(node);
+            if (form.hasErrors()) throw new Exception("WS_Message_Instance_status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-        HashMap<String, List<String>> server_map = new HashMap<>();
+           return form.get();
 
-        for(Model_HomerInstance instance : instances){
-
-            if(!server_map.containsKey(instance.server_id())){
-                server_map.put(instance.server_id(), new ArrayList<String>());
-            }
-
-            server_map.get(instance.server_id()).add(instance.id);
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Instance_status();
         }
-
-
-        WS_Message_Instance_status status = new WS_Message_Instance_status();
-
-        for(String unique_identificator : server_map.keySet()){
-            try{
-
-                JsonNode node = Model_HomerServer.get_byId(unique_identificator).sender().write_with_confirmation( new WS_Message_Instance_status().make_request(server_map.get(unique_identificator)), 1000*3, 0, 2);
-
-                final Form<WS_Message_Instance_status> form = Form.form(WS_Message_Instance_status.class).bind(node);
-                if(form.hasErrors()) throw new Exception("WS_Message_Instance_status: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                System.out.println("Odeslal jsem zprávu o stavu instnace:: a co jsem dostal?? " + node.toString());
-                System.out.println("Odeslal jsem zprávu o stavu instnace:: a co jsem vyseparoval?? " + Json.toJson(form.get().instances).toString());
-
-
-                status.status = "success";
-                status.instances.addAll(form.get().instances);
-
-
-            }catch (InterruptedException|TimeoutException e){
-                System.out.println("Došlo zde k průseru???? ");
-
-                terminal_logger.internalServerError(e);
-                return new WS_Message_Instance_status();
-            }catch (Exception e){
-
-                System.out.println("Došlo zde k průseru???? ");
-                terminal_logger.internalServerError(e);
-                return new WS_Message_Instance_status();
-            }
-        }
-
-
-        return status;
-
     }
-
-
 
     //-- Device IO operations -- //
     @JsonIgnore @Transient
@@ -556,8 +563,6 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Instance_device_set_snap();
         }catch (Exception e){
             Model_HomerInstance.terminal_logger.internalServerError(e);
             return new WS_Message_Instance_device_set_snap();
@@ -566,7 +571,6 @@ public class Model_HomerInstance extends Model {
 
 
     //-- Instance Summary Information --//
-
     @JsonIgnore @Transient public WS_Message_Hardware_overview get_hardware_overview(){
         try {
 
@@ -578,8 +582,6 @@ public class Model_HomerInstance extends Model {
 
             return form.get();
 
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Hardware_overview();
         }catch (Exception e){
             Model_HomerInstance.terminal_logger.internalServerError("get_hardware_list:", e);
             return new WS_Message_Hardware_overview();
@@ -594,23 +596,28 @@ public class Model_HomerInstance extends Model {
 
 
     @JsonIgnore @Transient
-    public WS_Message_Homer_Instance_destroy remove_from_cloud(){
+    public void remove_from_cloud(){
 
         List<String> instances = new ArrayList<>();
         instances.add(id);
 
-       return cloud_homer_server.remove_instance(instances);
+        Model_HomerServer server = Model_HomerServer.get_byId(server_id());
+        if(server == null){
+            return;
+        }
+
+        server.remove_instance(Collections.singletonList(id));
     }
 
 
     //-- Verification --//
     @JsonIgnore @Transient
-    public void cloud_verification_token_GRID(WS_Message_Grid_token_verification help){
+    public void cloud_verification_token_GRID(Model_HomerServer homer, WS_Message_Grid_token_verification help){
         try {
 
-            terminal_logger.debug("cloud_GRID verification_token::  Checking Token");
-            WS_HomerServer server = Controller_WebSocket.homer_servers.get(server_id());
+            // TOHLE JE Nějaký BULLSHIT!!!!
 
+            terminal_logger.debug("cloud_GRID verification_token::  Checking Token");
 
             Model_GridTerminal terminal = null;
             Model_MProgramInstanceParameter parameter =null;
@@ -621,51 +628,49 @@ public class Model_HomerInstance extends Model {
                     .isNotNull("m_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
                     .findUnique();
 
+            if(terminal == null){
+                terminal_logger.warn("cloud_verification_token:: Grid_Terminal object not found!");
+                homer.write_without_confirmation(help.get_result(false));
+            }
+
+            // Terminal is not null - Its a parameter connection
+            if(parameter != null){
+                homer.write_without_confirmation( help.get_result(parameter.verify_token_for_homer_grid_connection(help)) );
+                return;
+            }
 
             // Terminal is not null - Ita clasic terminal connection
-            if(terminal != null){
+            Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
+            Integer size;
 
-                // TODO TOM - nechybí tu "terminal ="
-                Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
+            if(terminal == null) {
 
-                if(terminal == null){
-                    terminal_logger.warn("cloud_verification_token:: Grid_Terminal object not found!");
-                    Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
-                    return;
-                }
-
-                Integer size;
-
-                if(terminal.person == null) {
+                if (terminal.person == null) {
                     terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
-                    size = Model_HomerInstance.find.where().eq("id", help.instanceId).eq("actual_instance.version_object.public_version", true).findRowCount();
-                }else {
+                    size = Model_HomerInstance.find.where().eq("id", help.instance_id).eq("actual_instance.version_object.public_version", true).findRowCount();
+                } else {
                     terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
-                    size = Model_HomerInstance.find.where().eq("id", help.instanceId)
+                    size = Model_HomerInstance.find.where().eq("id", help.instance_id)
                             .disjunction()
                             .eq("b_program.project.participants.person.id", terminal.person.id)
                             .eq("actual_instance.version_object.public_version", true)
                             .findRowCount();
                 }
 
-                if(size == 0){
+                if (size == 0) {
                     terminal_logger.warn("cloud_verification_token:: Token found but this user has not permission!");
-                    Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+                    homer.write_without_confirmation(help.get_result(false));
                     return;
                 }
 
                 terminal_logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
-                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(true));
+                    homer.write_without_confirmation(help.get_result(true));
+
                 return;
             }
 
-            // Terminal is not null - Its a parameter connection
-            if(parameter != null){
-                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(parameter.verify_token_for_homer_grid_connection(help)));
-            }
-
             terminal_logger.warn("cloud_verification_token_GRID - Token not recognized!");
-            Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+            homer.write_without_confirmation(help.get_result(false));
 
         }catch (Exception e){
             terminal_logger.internalServerError("cloud_verification_token_GRID:", e);
@@ -673,7 +678,7 @@ public class Model_HomerInstance extends Model {
     }
 
     @JsonIgnore @Transient
-    public void cloud_verification_token_WEBVIEW(WS_Message_WebView_token_verification help){
+    public void cloud_verification_token_WEBVIEW(Model_HomerServer server, WS_Message_WebView_token_verification help){
         try {
 
             terminal_logger.debug("cloud_verification_token:: WebView  Checking Token");
@@ -682,12 +687,13 @@ public class Model_HomerInstance extends Model {
 
             if(floatingPersonToken == null){
                 terminal_logger.warn("cloud_verification_token:: FloatingPersonToken not found!");
-                Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(false));
+
+                server.write_without_confirmation(help.get_result(false));
                 return;
             }
 
             terminal_logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
-            Controller_WebSocket.homer_servers.get(server_id()).write_without_confirmation(help.get_result(true));
+            server.write_without_confirmation(help.get_result(true));
             return;
 
         }catch (Exception e){

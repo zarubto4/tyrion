@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_TypeOfWidget_Short_Detail;
 
@@ -145,7 +144,7 @@ public class Model_TypeOfWidget extends Model{
         super.save();
 
         if(project != null){
-            project.type_of_widgets_ids.add(id);
+            project.cache_list_type_of_widgets_ids.add(id);
         }
 
         cache.put(id, this);
@@ -166,7 +165,7 @@ public class Model_TypeOfWidget extends Model{
         super.update();
 
         if(project_id() != null){
-            Model_Project.get_byId(project_id()).type_of_widgets_ids.remove(id);
+            Model_Project.get_byId(project_id()).cache_list_type_of_widgets_ids.remove(id);
         }
 
         cache.remove(id);

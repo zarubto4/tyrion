@@ -232,7 +232,7 @@
             success:function(json){
                 tariffs = json;
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert("Unable to load tariffs, creating new product will probably fail.");
             }
         })
@@ -258,7 +258,7 @@
                 $("#newProductModal").modal('hide');
                 $('#products').load(document.URL +  ' #products_table');
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#newProjectModalMessage").css("display", "block");
                 $("#newProjectModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -280,7 +280,7 @@
                 $("#editPersonModal").modal('hide');
                 $('#personWrapper').load(document.URL +  ' #person');
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#editPersonModalMessage").css("display", "block");
                 $("#editPersonModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -298,7 +298,7 @@
             success:function(e){
                 $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -315,7 +315,7 @@
             success:function(e){
                 $('#personWrapper').load(document.URL +  ' #person');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -332,7 +332,7 @@
             success:function(e){
                 $('#personWrapper').load(document.URL +  ' #person');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -349,7 +349,7 @@
             success:function(e){
                 $('#personWrapper').load(document.URL +  ' #person');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -365,7 +365,7 @@
             success:function(e){
                 $('#personWrapper').load(document.URL +  ' #person');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })

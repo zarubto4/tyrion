@@ -339,7 +339,7 @@
                 $('#activity').removeClass('bg-red').addClass('bg-green').text('true');
                 $('#activationButton').attr('onclick', 'deactivateProduct()').text('Deactivate');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         });
@@ -358,7 +358,7 @@
                 $('#activity').removeClass('bg-green').addClass('bg-red').text('false');
                 $('#activationButton').attr('onclick', 'activateProduct()').text('Activate');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         });
@@ -376,7 +376,7 @@
 
                 $('#gopay_id').text('');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         });
@@ -401,7 +401,7 @@
                 $("#newExtensionModalMessage").css("display", "none");
                 $('#extensionTableWrapper').load(document.URL +  ' #extensionTable');
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#newExtensionModalMessage").css("display", "block");
                 $("#newExtensionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -419,7 +419,7 @@
             success:function(e){
                 $('#extensionTableWrapper').load(document.URL +  ' #extensionTable');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -436,7 +436,7 @@
             success:function(e){
                 $('#extensionTableWrapper').load(document.URL +  ' #extensionTable');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -453,7 +453,7 @@
             success:function(e){
                 $('#extensionTableWrapper').load(document.URL +  ' #extensionTable');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -478,7 +478,7 @@
                 $("#newProjectModalMessage").css("display", "none");
                 $("#newProjectModal").modal('hide');
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#newProjectModalMessage").css("display", "block");
                 $("#newProjectModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }

@@ -179,7 +179,7 @@
                         });
 
                     },
-                    error:function(data) {
+                    error_message:function(data) {
                         BootstrapDialog.show({
                             message: syntaxHighlight(data),
                             type: BootstrapDialog.TYPE_DANGER,
@@ -231,7 +231,7 @@
                         $("#editGeneralTariffExtensionLabelModal").css("display","none");
                         $('#allGeneralsTariffExtensionLabel').load(document.URL +  ' #allGeneralsTariffExtensionLabel');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })
@@ -248,7 +248,7 @@
                     success:function(e){
                         $('#allGeneralsTariffExtensionLabel').load(document.URL +  ' #allGeneralsTariffExtensionLabel');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })
@@ -264,7 +264,7 @@
                     success:function(e){
                         $('#allGeneralsTariffExtensionLabel').load(document.URL +  ' #allGeneralsTariffExtensionLabel');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })
@@ -280,7 +280,7 @@
                     success:function(e){
                         $('#allGeneralsTariffExtensionLabel').load(document.URL +  ' #allGeneralsTariffExtensionLabel');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })

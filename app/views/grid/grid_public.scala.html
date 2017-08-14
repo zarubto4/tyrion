@@ -225,7 +225,7 @@
                     $('#pendingGridWidgetVersion').load(document.URL + ' #pendingGridWidgetVersion');
                     $("#disapproveVersionModal").css("display","none");
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(e.responseText);
             }
           })}
@@ -272,7 +272,7 @@
               $("#editGridWidgetModal").css("display","none");
               $('#pendingGridWidgetVersion').load(document.URL +  ' #pendingGridWidgetVersion');
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(e.responseText);
             }
           })}

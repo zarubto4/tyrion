@@ -199,7 +199,7 @@
                  });
              },
 
-             error: function(e) {
+             error_message: function(e) {
                  $("#newBoardModalMessage").css("display", "block");
                  $("#newBoardModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
              }
@@ -295,7 +295,7 @@
                  makePagination(json.pages)
              },
 
-             error: function(data) {
+             error_message: function(data) {
                  BootstrapDialog.show({
                      message: syntaxHighlight(data),
                      type: BootstrapDialog.TYPE_DANGER,

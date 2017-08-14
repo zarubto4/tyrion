@@ -13,7 +13,6 @@ import play.libs.Json;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
@@ -320,7 +319,7 @@ public class Model_CProgram extends Model {
         super.save();
 
         if(project != null){
-            project.c_program_ids.add(id);
+            project.cache_list_c_program_ids.add(id);
         }
 
         cache.put(id, this);
@@ -346,7 +345,7 @@ public class Model_CProgram extends Model {
 
 
         if(project_id() != null){
-            Model_Project.get_byId( project_id() ).c_program_ids.remove(id);
+            Model_Project.get_byId( project_id() ).cache_list_c_program_ids.remove(id);
         }
 
         cache.remove(id);

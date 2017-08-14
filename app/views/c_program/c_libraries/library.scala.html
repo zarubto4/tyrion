@@ -423,7 +423,7 @@
             success:function(json){
                 location.reload();
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#editLibraryModalMessage").css("display", "block");
                 $("#editLibraryModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -441,7 +441,7 @@
             success:function(json){
                 window.location.reload();
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -464,7 +464,7 @@
            success:function(json){
                openVersion(json);
            },
-           error:function(e) {
+           error_message:function(e) {
                alert(JSON.stringify(JSON.parse(e.responseText).message));
            }
        })
@@ -486,7 +486,7 @@
                 $('#versionsWrapper').load(document.URL +  ' #versions');
                 openVersion(json);
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#editVersionModalMessage").css("display", "block");
                 $("#editVersionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -520,7 +520,7 @@
                 $('#versionsWrapper').load(document.URL +  ' #versions');
                 openVersion(json);
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#newVersionModalMessage").css("display", "block");
                 $("#newVersionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -541,7 +541,7 @@
             success:function(json){
                 location.reload();
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })

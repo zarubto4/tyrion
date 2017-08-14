@@ -55,7 +55,7 @@
                     $("#createRoleModal").css("display","none");
                     $('#allRoles').load(document.URL +  ' #allRoles');
                 },
-                error:function(e) {
+                error_message:function(e) {
                     alert("Unsuccessful.");
                 }
             })
@@ -149,7 +149,7 @@
                                 success:function(e){
                                     $('#allRoles').load(document.URL +  ' #allRoles');
                                 },
-                                error:function(e) {
+                                error_message:function(e) {
                                     alert("Unsuccessful.");
                                 }
                             })}
@@ -177,7 +177,7 @@
                                     $("#editRoleModal").css("display","none");
                                     $('#allRoles').load(document.URL +  ' #allRoles');
                                 },
-                                error:function(e) {
+                                error_message:function(e) {
                                     alert("Unsuccessful.");
                                 }
                             })
@@ -278,7 +278,7 @@
                 $("#editPermissionModal").css("display","none");
                 $('#allPermissions').load(document.URL +  ' #allPermissions');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert("Unsuccessful.");
             }
         })}

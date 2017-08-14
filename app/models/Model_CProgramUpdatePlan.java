@@ -59,8 +59,8 @@ public class Model_CProgramUpdatePlan extends Model {
                                                 @Enumerated(EnumType.STRING)    public Enum_CProgram_updater_state state;
                                                                     @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer error_code;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error_message", required = false)  public String error;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error_message", required = false)  public Integer error_code;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -102,6 +102,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
         Board_detail board_detail = new Board_detail();
         board_detail.board_id = board.id;
+        board_detail.online_state = board.online_state();
         board_detail.name = board.name;
         board_detail.description = board.description;
         board_detail.type_of_board_id = board.get_type_of_board().id;
@@ -253,6 +254,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
     class Board_detail{
         @ApiModelProperty(required = true, readOnly = true) public String board_id;
+        @ApiModelProperty(required = true, readOnly = true) public Enum_Online_status online_state;
         @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String description;
         @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String name;
         @ApiModelProperty(required = true, readOnly = true) public String type_of_board_id;

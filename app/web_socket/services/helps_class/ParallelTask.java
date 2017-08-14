@@ -31,7 +31,14 @@ public class ParallelTask implements Callable<ObjectNode> {
     public ObjectNode call() throws Exception {
         try {
 
-            return Model_HomerServer.get_byId(server_id).sender().write_with_confirmation(message, time, delay, number_of_retries);
+
+            Model_HomerServer server = Model_HomerServer.get_byId(this.server_id);
+
+            if(server == null){
+               throw new Exception("ParallelTask:: call server id" + this.server_id + " not exist");
+            }
+
+            return server.write_with_confirmation(message, time, delay, number_of_retries);
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);

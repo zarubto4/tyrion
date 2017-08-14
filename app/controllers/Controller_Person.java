@@ -26,9 +26,7 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Entity_Validation_Out;
 
-import javax.inject.Inject;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
@@ -1104,7 +1102,7 @@ public class Controller_Person extends Controller {
             if(help.file == null || help.file.equals("")){
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
-                person.azure_picture_link = "";
+                person.alternative_picture_link = "";
                 person.update();
                 fileRecord.delete();
             }
@@ -1114,14 +1112,14 @@ public class Controller_Person extends Controller {
                 terminal_logger.debug("person_uploadPicture:: Removing previous picture");
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
-                person.azure_picture_link = "";
+                person.alternative_picture_link = "";
                 person.update();
                 fileRecord.delete();
             }
 
             // Pokud link není, vygeneruje se nový, unikátní
-            if(person.azure_picture_link == null || person.azure_picture_link.equals("")){
-                    person.azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+            if(person.alternative_picture_link == null || person.alternative_picture_link.equals("")){
+                    person.alternative_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
                     person.update();
             }
 
@@ -1129,12 +1127,12 @@ public class Controller_Person extends Controller {
             // Z konrkétní sociální sítě - pak chybí soubor, ale existuje cesta k souboru, kterou zaslí tyrion do Becki
             // Například:: https://avatars1.githubusercontent.com/u/16296782?v=3
             // PRoto je nutné na to pamatovat - jinak se pak taková cesta strká do Azure k přepsání předchozího obrázku
-            if(person.azure_picture_link.contains("http")){
-                person.azure_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+            if(person.alternative_picture_link.contains("http")){
+                person.alternative_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
                 person.update();
             }
 
-            String file_name =  person.azure_picture_link.substring( person.azure_picture_link.indexOf("/") + 1);
+            String file_name =  person.alternative_picture_link.substring( person.alternative_picture_link.indexOf("/") + 1);
 
             //  data:image/png;base64,
             String[] parts = help.file.split(",");
@@ -1144,7 +1142,7 @@ public class Controller_Person extends Controller {
             terminal_logger.debug("person_uploadPicture:: Data Type:" + dataType[0] + ":::");
             terminal_logger.debug("person_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
 
-            person.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, person.azure_picture_link);
+            person.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, person.alternative_picture_link);
             person.update();
 
 
@@ -1176,7 +1174,7 @@ public class Controller_Person extends Controller {
             if(!(person.picture == null)) {
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
-                person.azure_picture_link = null;
+                person.alternative_picture_link = null;
                 person.update();
                 fileRecord.delete();
             }else{

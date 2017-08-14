@@ -27,7 +27,7 @@ public class Class_Logger{
     }
 
     public void internalServerError(Exception e){
-        String origin = Thread.currentThread().getStackTrace()[2].getMethodName(); // Finds out the caller of this method (where was error logged)
+        String origin = Thread.currentThread().getStackTrace()[2].getMethodName(); // Finds out the caller of this method (where was error_message logged)
         Server_Logger.internalServerError(t_class, origin, e);
     }
 }

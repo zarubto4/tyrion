@@ -39,7 +39,7 @@
                         $("#addPersonModal").css("display","none");
                         $('#allPersons').load(document.URL +  ' #allPersons');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful. " + e );
                     }
                 })}
@@ -77,7 +77,7 @@
                     success:function(e){
                         $('#allPersons').load(document.URL +  ' #allPersons');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })}
@@ -142,7 +142,7 @@
                     success:function(e){
                         $('#allPermissions').load(document.URL +  ' #allPermissions');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful. " + e );
                     }
                 })}
@@ -159,7 +159,7 @@
                     success:function(e){
                         $('#allPermissions').load(document.URL +  ' #allPermissions');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })}

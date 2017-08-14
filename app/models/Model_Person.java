@@ -9,8 +9,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
-import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.cache.annotation.Cacheable;
 import play.data.validation.Constraints;
 import utilities.Server;
 import utilities.enums.Enum_Notification_action;
@@ -49,7 +47,7 @@ public class Model_Person extends Model {
     @ApiModelProperty(required = true)                          public String country;
     @ApiModelProperty(required = true)                          public String gender;
 
-                                                    @JsonIgnore public String azure_picture_link;
+                                                    @JsonIgnore public String alternative_picture_link;   // alternativa k prolinkování obrázku - není na azure!
                                         @JsonIgnore @OneToOne   public Model_FileRecord picture;
 
                                                  @JsonIgnore    public boolean freeze_account; // Zmražený účet - Účty totiž nechceme mazat!
@@ -89,12 +87,9 @@ public class Model_Person extends Model {
 
     @JsonProperty @ApiModelProperty(required = true)
     public String picture_link(){
-        if(this.azure_picture_link == null){
-            return null;
-        }
 
-        if(azure_picture_link.contains("http")) return azure_picture_link;  // Its probably link from GitHub or profile picture from facebook
-        return Server.azure_blob_Link + azure_picture_link;
+        if(this.alternative_picture_link != null && alternative_picture_link.contains("http")) return alternative_picture_link;  // Its probably link from GitHub or profile picture from facebook
+        return picture.file_path;
     }
 
 /* JSON IGNORE VALUES --------------------------------------------------------------------------------------------------*/

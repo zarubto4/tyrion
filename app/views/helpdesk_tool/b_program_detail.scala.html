@@ -96,7 +96,7 @@
                         $("#editPersonModal").modal('hide');
                         $('#person_detail').load(document.URL +  ' #person_detail');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })}
@@ -112,7 +112,7 @@
                     success:function(e){
                         $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })}
@@ -128,7 +128,7 @@
                     success:function(e){
                         $('#person_detail').load(document.URL +  ' #person_detail');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })}
@@ -144,7 +144,7 @@
                     success:function(e){
                         $('#person_detail').load(document.URL +  ' #person_detail');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })}
@@ -161,7 +161,7 @@
                     success:function(e){
                         $('#person_detail').load(document.URL +  ' #person_detail');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })}
@@ -177,7 +177,7 @@
                     success:function(e){
                         $('#person_detail').load(document.URL +  ' #person_detail');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful.");
                     }
                 })}
@@ -209,7 +209,7 @@
                         $("#newProjectModalMessage").css("display", "none");
                         $("#newProjectModal").modal('hide');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         $("#newProjectModalMessage").css("display", "block");
                         $("#newProjectModalMessage p").text(JSON.parse(e.responseText).message);
                         $("#newProjectModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -228,7 +228,7 @@
                     success:function(e){
                         $('#projects').load(document.URL +  ' #projectsInner');
                     },
-                    error:function(e) {
+                    error_message:function(e) {
                         alert("Unsuccessful");
                     }
                 })}

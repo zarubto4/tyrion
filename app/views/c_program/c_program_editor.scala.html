@@ -499,7 +499,7 @@
               libraryFiles = [];
               libraries = [];
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
           })
@@ -516,7 +516,7 @@
             success:function(json){
               openCProgram(json);
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
           });
@@ -534,7 +534,7 @@
 
               openVersion(convertVersion(json));
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
           })
@@ -582,7 +582,7 @@
               $("#selectCProgram option:first").attr('selected','selected');
               openCProgram(json);
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#newCProgramModalMessage").css("display", "block");
               $("#newCProgramModalMessage p").text(JSON.parse(e.responseText).message);
               $("#newCProgramModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -634,7 +634,7 @@
               $("#saveCProgramVersionModalMessage").css("display", "none");
 
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#saveCProgramVersionModalMessage").css("display", "block");
               $("#saveCProgramVersionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -660,7 +660,7 @@
               $("#editCProgramLongDescription").text("");
               openCProgram(json);
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#editCProgramModalMessage").css("display", "block");
               $("#editCProgramModalMessage p").text(JSON.parse(e.responseText).message);
               $("#editCProgramModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -688,7 +688,7 @@
               openedVersion.version_description = json.version_description;
               openVersion(openedVersion);
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#editCProgramVersionModalMessage").css("display", "block");
               $("#editCProgramVersionModalMessage p").text(JSON.parse(e.responseText).message);
               $("#editCProgramVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -707,7 +707,7 @@
             success:function(json){
               window.location.reload();
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
           })
@@ -730,7 +730,7 @@
               });
               openCProgram(openedCProgram);
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
           })
@@ -768,7 +768,7 @@
               updateFiles("library_file",libraryFiles);
               $("#newLibraryModal").modal('hide');
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#newLibraryModalMessage").css("display", "block");
               $("#newLibraryModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }

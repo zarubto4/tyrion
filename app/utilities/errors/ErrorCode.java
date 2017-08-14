@@ -33,13 +33,21 @@ public enum ErrorCode {
     @EnumValue("INVALID_MESSAGE")                 INVALID_MESSAGE( 400, "Message is not valid. Missing or incorrect type of values"),
 
 
+    // ---- Homer status ------
+
+    @EnumValue("HOMER_IS_OFFLINE")                      HOMER_IS_OFFLINE( 502, "Homer is offline"),
+    @EnumValue("WEBSOCKET_TIME_OUT_EXCEPTION")          WEBSOCKET_TIME_OUT_EXCEPTION ( 503 ,  "Time for sending Message with required response is up!"),
+    @EnumValue("HOMER_NOT_EXIST")                       HOMER_NOT_EXIST ( 504 ,  "Server not Exist!"),
+    @EnumValue("HOMER_SERVER_NOT_SET_FOR_HARDWARE")     HOMER_SERVER_NOT_SET_FOR_HARDWARE( 502, "Hardware is never loged before, or Tyrion didnt know where device is"),
+    @EnumValue("HOMER_SERVER_NOT_SET_FOR_INSTANCE")     HOMER_SERVER_NOT_SET_FOR_INSTANCE( 503, "Instance has not set own server location"),
+
     @EnumValue("UNKNOWN_TOPIC")                         UNKNOWN_TOPIC                           ( 1, "Undefined Topic on HW"),
     @EnumValue("MISSING_LABEL")                         MISSING_LABEL                           ( 2, "Missing some Label"),
     @EnumValue("UNKNOWN_LABEL")                         UNKNOWN_LABEL                           ( 3, "Not recognize some Label"),
     @EnumValue("MALLOC ERROR")                          MALLOC_ERROR                            ( 4, "Not recognize some Label"),
-    @EnumValue("ERROR")                                 ERROR                                   ( 50 , "Undefined Error - In Logger"),
+    @EnumValue("ERROR")                                 ERROR                                   ( 50 , "Undefined Error - In Logger");
 
-    @EnumValue("WEBSOCKET_TIME_OUT_EXCEPTION")          WEBSOCKET_TIME_OUT_EXCEPTION ( 670 ,  "Time for sending Message with required response is up!");
+
 
 
     /*
@@ -60,7 +68,7 @@ public enum ErrorCode {
     @EnumValue("ERROR_50002")                           ERROR_50002( 50002 , "Invalid message for device"),
     @EnumValue("ERROR_50003")                           ERROR_50003( 50003 , "Device is not enumerated yet"),
     @EnumValue("ERROR_50004")                           ERROR_50004( 50004 , "Device id is missing in master_hardware list"),
-    @EnumValue("ERROR_50005")                           ERROR_50005( 50005 , "Bus critical error - collision on bus cable"),
+    @EnumValue("ERROR_50005")                           ERROR_50005( 50005 , "Bus critical error_message - collision on bus cable"),
 
     @EnumValue("ERROR_60001")                           ERROR_60001( 600001 , "Write to external memory failed"),
     @EnumValue("ERROR_60002")                           ERROR_60002( 600002 , "Erase of external memory failed"),

@@ -48,6 +48,10 @@ public class WS_HomerServer extends WS_Interface_type {
         super.webSCtype =  this;
     }
 
+    public Model_HomerServer get_model(){
+        return Model_HomerServer.get_byId(identifikator);
+    }
+
 
     @Override
     public boolean is_online() {

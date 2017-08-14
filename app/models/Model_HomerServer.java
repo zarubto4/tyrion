@@ -13,15 +13,15 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
+import play.libs.Json;
 import utilities.Server;
 import utilities.document_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Enum_Log_level;
 import utilities.enums.Enum_Tyrion_Server_mode;
-import utilities.independent_threads.homer_server.Synchronize_Homer_Synchronize_Settings;
+import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
 import utilities.swagger.outboundClass.Swagger_HomerServer_public_Detail;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
 import web_socket.message_objects.common.service_class.WS_Message_Invalid_Message;
@@ -30,14 +30,13 @@ import web_socket.message_objects.homer_with_tyrion.*;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_add;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
-import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Homer_Verification_result;
 import web_socket.services.WS_HomerServer;
-import web_socket.services.WS_Interface_type;
 
 import javax.persistence.*;
-import java.awt.*;
+import java.nio.channels.ClosedChannelException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 @Entity
@@ -248,9 +247,9 @@ public class Model_HomerServer extends Model{
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  public static final String CHANNEL = "homer_server";
+    @JsonIgnore @Transient public static final String CHANNEL = "homer_server";
     
-    @JsonIgnore @Transient  public static void Messages(WS_HomerServer homer, ObjectNode json){
+    @JsonIgnore @Transient public static void Messages(WS_HomerServer homer, ObjectNode json){
 
         new Thread(() -> {
 
@@ -285,11 +284,95 @@ public class Model_HomerServer extends Model{
         }).start();
     }
 
-    @JsonIgnore @Transient  public WS_Interface_type sender(){
-        return Controller_WebSocket.homer_servers.get(this.unique_identificator);
+
+    @JsonIgnore @Transient public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries){
+
+        try {
+
+            if (!Controller_WebSocket.homer_servers.containsKey(this.unique_identificator)) {
+
+                ObjectNode request = Json.newObject();
+                request.put("message_type", json.get("message_type").asText());
+                request.put("message_channel", Model_HomerServer.CHANNEL);
+                request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
+                request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
+                request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+                request.put("websocket_identificator", this.unique_identificator);
+
+                return request;
+            }
+
+            return Controller_WebSocket.homer_servers.get(this.unique_identificator).write_with_confirmation(json, time, delay, number_of_retries);
+
+        }catch (ExecutionException e){
+            terminal_logger.error("Model_HomerServer:: write_with_confirmation ExecutionException");
+
+            ObjectNode request = Json.newObject();
+            request.put("message_type", json.get("message_type").asText());
+            request.put("message_channel",  json.get("message_channel").asText());
+            request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
+            request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
+            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+            request.put("websocket_identificator", this.unique_identificator);
+            return request;
+
+        }catch (InterruptedException e){
+
+            terminal_logger.error("Model_HomerServer:: write_with_confirmation InterruptedException");
+            ObjectNode request = Json.newObject();
+            request.put("message_type", json.get("message_type").asText());
+            request.put("message_channel",  json.get("message_channel").asText());
+            request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
+            request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
+            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+            request.put("websocket_identificator", this.unique_identificator);
+            return request;
+
+        } catch (ClosedChannelException e) {
+
+            terminal_logger.error("Model_HomerServer:: write_with_confirmation ClosedChannelException");
+            ObjectNode request = Json.newObject();
+            request.put("message_type", json.get("message_type").asText());
+            request.put("message_channel",  json.get("message_channel").asText());
+            request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
+            request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
+            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+            request.put("websocket_identificator", this.unique_identificator);
+            return request;
+
+        } catch (TimeoutException e) {
+
+            terminal_logger.error("Model_HomerServer:: write_with_confirmation TimeoutException");
+            ObjectNode request = Json.newObject();
+            request.put("message_type", json.get("message_type").asText());
+            request.put("message_channel",  json.get("message_channel").asText());
+            request.put("error_code", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_code());
+            request.put("error_message", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_message());
+            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+            request.put("websocket_identificator", this.unique_identificator);
+            return  request;
+        }
+    }
+    
+    @JsonIgnore @Transient public void write_without_confirmation(ObjectNode json){
+
+        if(!Controller_WebSocket.homer_servers.containsKey(this.unique_identificator)){
+            return;
+        }
+
+       Controller_WebSocket.homer_servers.get(this.unique_identificator).write_without_confirmation(json);
     }
 
+    @JsonIgnore @Transient public void write_without_confirmation(String message_id, ObjectNode json){
 
+        if(!Controller_WebSocket.homer_servers.containsKey(this.unique_identificator)){
+            return;
+        }
+
+        Controller_WebSocket.homer_servers.get(this.unique_identificator).write_without_confirmation(message_id, json);
+    }
+
+    
     // Permission
 
     @JsonIgnore @Transient public static void aprove_validation_for_homer_server(WS_HomerServer ws_homer_server, WS_Message_Check_homer_server_permission message){
@@ -369,8 +452,6 @@ public class Model_HomerServer extends Model{
             if(!server_is_online()) throw new InterruptedException();
 
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 15, 0, 2);
-
-            System.out.println("get_homer_server_list_of_hardware server odpověděl: " + node.toString());
 
             final Form<WS_Message_Homer_Hardware_list> form = Form.form(WS_Message_Homer_Hardware_list.class).bind(node);
             if(form.hasErrors()){
@@ -458,7 +539,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient public WS_Message_Hardware_UpdateProcedure_Command update_devices_firmware(List<Swagger_UpdatePlan_brief_for_homer> tasks){
         try {
 
-            JsonNode node = sender().write_with_confirmation(new WS_Message_Hardware_UpdateProcedure_Command().make_request(tasks), 1000 * 60, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_UpdateProcedure_Command().make_request(tasks), 1000 * 60, 0, 2);
 
             final Form<WS_Message_Hardware_UpdateProcedure_Command> form = Form.form(WS_Message_Hardware_UpdateProcedure_Command.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Command: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());

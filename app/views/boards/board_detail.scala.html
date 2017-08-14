@@ -394,7 +394,7 @@
                 success:function(json){
                     location.replace("@routes.Controller_Dashboard.board_summary()");
                 },
-                error:function(e) {
+                error_message:function(e) {
                     $("#deleteModalMessage").css("display", "block");
                     $("#deleteModalMessage p").text(JSON.parse(e.responseText).message);
                 }
@@ -415,7 +415,7 @@
                 success:function(json){
                     location.reload();
                 },
-                error:function(e) {
+                error_message:function(e) {
                     $("#editModalMessage").css("display", "block");
                     $("#editModalMessage p").text(JSON.parse(e.responseText).message);
                 }
@@ -441,7 +441,7 @@
                 success:function(json){
                     $("#onlineStatusModal").modal('hide');
                 },
-                error:function(e) {
+                error_message:function(e) {
                     $("#onlineStatusModalMessage").css("display", "block");
                     $("#onlineStatusModalMessage p").text(JSON.parse(e.responseText).message);
                 }
@@ -476,7 +476,7 @@
                         location.reload();
                     },
 
-                    error:function(data) {
+                    error_message:function(data) {
                         console.log(data);
 
                         BootstrapDialog.show({
@@ -528,7 +528,7 @@
                         location.reload();
                     },
 
-                    error:function(data) {
+                    error_message:function(data) {
                         console.log(data);
 
                         BootstrapDialog.show({
@@ -562,7 +562,7 @@
                         showVersions(json);
                     },
 
-                    error:function(data) {
+                    error_message:function(data) {
                         console.log(data);
 
                         BootstrapDialog.show({
@@ -629,7 +629,7 @@
 
                         });
                     },
-                    error:function(data) {
+                    error_message:function(data) {
                         BootstrapDialog.show({
                             message:  syntaxHighlight(data),
                             type: BootstrapDialog.TYPE_DANGER,

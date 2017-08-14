@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value="ExternalServerSideError", description="Unknown Error on external server ")
 public class Result_ExternalServerSideError implements Response_Interface{
 
-    @ApiModelProperty(value = "state", allowableValues = "error", required = true, readOnly = true)
+    @ApiModelProperty(value = "state", allowableValues = "error_message", required = true, readOnly = true)
     public String state = "internal_server_error";
 
     @ApiModelProperty(value = "code", allowableValues = "500", required = true, readOnly = true)

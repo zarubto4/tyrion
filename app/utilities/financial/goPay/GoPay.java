@@ -54,7 +54,7 @@ public class GoPay extends Controller {
     /**
      * Method serves to retrieve the token from GoPay if the local token is expired else it returns local static token.
      * Method tries 5 times to get the token.
-     * @return String token from GoPay or null if error occur.
+     * @return String token from GoPay or null if error_message occur.
      */
     public static String getToken(){
         try {
@@ -230,7 +230,7 @@ public class GoPay extends Controller {
      * This method is used to automatically take money from credit card.
      * The method tries 5 times to get the result.
      * @param invoice Model invoice related to payment.
-     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
+     * @throws Exception Exception is thrown if some error_message occur. (e.g. GoPay does not return status 200 OK)
      */
     public static void onDemandPayment(Model_Invoice invoice) throws Exception{
 
@@ -322,16 +322,16 @@ public class GoPay extends Controller {
 
                 case 409: {
 
-                    invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful due to some validation error", invoice.id);
+                    invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful due to some validation error_message", invoice.id);
 
-                    throw new ValidationException("Payment could not be made due to some validation error. Response: " + result.toString());
+                    throw new ValidationException("Payment could not be made due to some validation error_message. Response: " + result.toString());
                 }
 
                 default: {
 
                     invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful", invoice.id);
 
-                    throw new Exception("Cannot take money from credit card, GoPay service returned error. Response: " + result.toString());
+                    throw new Exception("Cannot take money from credit card, GoPay service returned error_message. Response: " + result.toString());
                 }
             }
         }
@@ -341,7 +341,7 @@ public class GoPay extends Controller {
      * This method serves to cancel on demand payment if user asks for it.
      * The method will try 5 times to get the result.
      * @param product Model product the on demand payment is terminated for.
-     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
+     * @throws Exception Exception is thrown if some error_message occur. (e.g. GoPay does not return status 200 OK)
      */
     public static void terminateOnDemand(Model_Product product) throws Exception{
 
@@ -401,7 +401,7 @@ public class GoPay extends Controller {
      * The method will try 5 times to get the result.
      * @param invoice Model invoice to refund.
      * @param amount Long amount equal or lesser than full amount in invoice.
-     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
+     * @throws Exception Exception is thrown if some error_message occur. (e.g. GoPay does not return status 200 OK)
      */
     private static void refundPayment(Model_Invoice invoice, Long amount) throws Exception{
 

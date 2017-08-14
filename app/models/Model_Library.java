@@ -6,18 +6,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.libs.Json;
-import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
-import utilities.swagger.documentationClass.Swagger_C_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
-import utilities.swagger.documentationClass.Swagger_Library_Library_Version_pair;
 import utilities.swagger.documentationClass.Swagger_Library_Version;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Library_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Library_Version_Short_Detail;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
@@ -138,7 +133,7 @@ public class Model_Library extends Model{
         super.save();
 
         if(project_id != null){
-            Model_Project.get_byId(project_id).library_ids.add(id);
+            Model_Project.get_byId(project_id).cache_list_library_ids.add(id);
         }
 
         cache.put(id, this);
@@ -167,7 +162,7 @@ public class Model_Library extends Model{
         removed_by_user = true;
 
         if(project_id != null){
-            Model_Project.get_byId(project_id).library_ids.remove(id);
+            Model_Project.get_byId(project_id).cache_list_library_ids.remove(id);
         }
 
         cache.remove(id);

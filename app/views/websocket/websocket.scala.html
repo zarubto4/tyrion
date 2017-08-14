@@ -29,7 +29,7 @@
                                         <option value="info">info</option>
                                         <option value="success">success</option>
                                         <option value="warning">warning</option>
-                                        <option value="error">error</option>
+                                        <option value="error_message">error_message</option>
                                     </select>
                                 </td>
                                 <td width="25%">
@@ -285,7 +285,7 @@
                     });
                     $('#homer').load(document.URL +  ' #homer');
                 },
-                error:function(data) {
+                error_message:function(data) {
                     BootstrapDialog.show({
                         message:  syntaxHighlight(data),
                         type: BootstrapDialog.TYPE_DANGER,
@@ -312,7 +312,7 @@
                 success:function(e){
                    // $('#testNotificationModal').modal('hide');
                 },
-                error:function(json){
+                error_message:function(json){
                     alert(json.responseText);
                 }
             })}
@@ -329,7 +329,7 @@
                 success:function(e){
                     //$('#testNotificationModal').modal('hide');
                 },
-                error:function(json){
+                error_message:function(json){
                     alert(json.responseText);
                 }
             })}
@@ -341,7 +341,7 @@
                 success:function(e){
                     $('#becki_table_wrapper').load(document.URL +  ' #becki_table');
                 },
-                error:function(e) {
+                error_message:function(e) {
                     alert("Unsuccessful.");
                 }
             })}
@@ -371,7 +371,7 @@
                     });
                     $('#homer').load(document.URL +  ' #homer');
                 },
-                error:function(data) {
+                error_message:function(data) {
                     BootstrapDialog.show({
                         message:  syntaxHighlight(data),
                         type: BootstrapDialog.TYPE_DANGER,
@@ -409,7 +409,7 @@
                     });
                     $('#homer').load(document.URL +  ' #homer');
                 },
-                error:function(data) {
+                error_message:function(data) {
                     BootstrapDialog.show({
                         message:  syntaxHighlight(data),
                         type: BootstrapDialog.TYPE_DANGER,
@@ -448,7 +448,7 @@
                     $('#homer').load(document.URL +  ' #homer');
                 },
 
-                error:function(e) {
+                error_message:function(e) {
                     BootstrapDialog.show({
                         message:  syntaxHighlight(e),
                         type: BootstrapDialog.TYPE_DANGER,
@@ -487,7 +487,7 @@
                     $('#compilation').load(document.URL +  ' #compilation');
                 },
 
-                error:function(e) {
+                error_message:function(e) {
                     BootstrapDialog.show({
                         message:  syntaxHighlight(e),
                         type: BootstrapDialog.TYPE_DANGER,

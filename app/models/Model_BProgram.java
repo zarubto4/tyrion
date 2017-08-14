@@ -226,7 +226,7 @@ public class Model_BProgram extends Model {
         super.save();
 
         if(project != null){
-            project.b_program_ids.add(id);
+            project.cache_list_b_program_ids.add(id);
         }
 
         cache.put(id, this);
@@ -254,7 +254,7 @@ public class Model_BProgram extends Model {
         this.removed_by_user = true;
 
         if(project_id() != null){
-            Model_Project.get_byId( project_id() ).b_program_ids.remove(id);
+            Model_Project.get_byId( project_id() ).cache_list_b_program_ids.remove(id);
         }
 
         cache.remove(id);

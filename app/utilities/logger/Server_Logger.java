@@ -250,7 +250,7 @@ public class Server_Logger extends Controller {
         try {
             description = request().body().asJson().get("description").asText();
         } catch (Exception e) {
-            System.err.println("[error] - TYRION - Server_Logger:: loggy_report_bug_to_youtrack: Error while reporting bug to YouTrack");
+            System.err.println("[error_message] - TYRION - Server_Logger:: loggy_report_bug_to_youtrack: Error while reporting bug to YouTrack");
         }
 
         return upload_to_youtrack(bug_id, description);
@@ -275,14 +275,14 @@ public class Server_Logger extends Controller {
 /* SERVICES ---------------------------------------------------------------------------------------------------*/
 
     /**
-     * Saves error to database or increments "repetition" and sends it to Slack channel #servers if mode is not "developer".
-     * @param id Identifier of model error
-     * @param summary String title of error
-     * @param description String details of error
+     * Saves error_message to database or increments "repetition" and sends it to Slack channel #servers if mode is not "developer".
+     * @param id Identifier of model error_message
+     * @param summary String title of error_message
+     * @param description String details of error_message
      */
     private static void error(String id, String summary, String description, String stack_trace, String cause) {
 
-        // Just temporary protection, later every error will be unique
+        // Just temporary protection, later every error_message will be unique
         List<Model_LoggyError> errors = Model_LoggyError.find.where().isNotNull("stack_trace").eq("stack_trace", stack_trace).findList();
         if (errors.size() > 1) {
             for (Model_LoggyError e : errors) {

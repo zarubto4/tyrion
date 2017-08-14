@@ -54,14 +54,14 @@ public class Model_Project extends Model {
     // TODO - CHCI CACHE INGOR - NA VŠECHNY DB HODNOTY KTERÉ JSOU VÝŠE
     // COŽ ZNAMENÁ ŽE SI CACHE PÚAMATUJE JEN ID REFERENCE
 
-    @JsonIgnore @Transient @TyrionCachedList public List<String> board_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> c_program_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> library_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> b_program_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> m_project_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> type_of_widgets_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> type_of_blocks_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> instance_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_board_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_c_program_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_library_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_b_program_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_m_project_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_type_of_widgets_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_type_of_blocks_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_instance_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_product_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -188,19 +188,19 @@ public class Model_Project extends Model {
         try {
 
             // Cache
-            if(board_ids.isEmpty()) {
+            if(cache_list_board_ids.isEmpty()) {
 
                 List<Model_Board> boards = Model_Board.find.where().eq("project.id", id).order().asc("date_of_user_registration").select("id").findList();
 
                 // Získání seznamu
                 for (Model_Board board : boards) {
-                    board_ids.add(board.id);
+                    cache_list_board_ids.add(board.id);
                 }
             }
 
             List<Model_Board> board_list = new ArrayList<>();
 
-            for(String board_id : board_ids){
+            for(String board_id : cache_list_board_ids){
                 board_list.add(Model_Board.get_byId(board_id));
             }
 
@@ -217,19 +217,19 @@ public class Model_Project extends Model {
         try {
 
             // Cache
-            if(c_program_ids.isEmpty()){
+            if(cache_list_c_program_ids.isEmpty()){
 
                 List<Model_CProgram> c_programs = Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_CProgram cProgram : c_programs) {
-                    c_program_ids.add(cProgram.id);
+                    cache_list_c_program_ids.add(cProgram.id);
                 }
             }
 
             List<Model_CProgram> c_programs = new ArrayList<>();
 
-            for(String c_program_id : c_program_ids){
+            for(String c_program_id : cache_list_c_program_ids){
                 c_programs.add(Model_CProgram.get_byId(c_program_id));
             }
 
@@ -245,20 +245,20 @@ public class Model_Project extends Model {
     public List<Model_Library> get_c_privates_project_libraries_not_deleted(){
         try {
 
-            if(library_ids.isEmpty()){
+            if(cache_list_library_ids.isEmpty()){
 
                 List<Model_Library> libraries = Model_Library.find.where().eq("project_id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_Library library : libraries) {
-                    library_ids.add(library.id);
+                    cache_list_library_ids.add(library.id);
                 }
 
             }
 
             List<Model_Library> libraries = new ArrayList<>();
 
-            for(String library_id : library_ids){
+            for(String library_id : cache_list_library_ids){
                 libraries.add(Model_Library.get_byId(library_id));
             }
 
@@ -275,20 +275,20 @@ public class Model_Project extends Model {
     public List<Model_BProgram> get_b_programs_not_deleted(){
         try{
 
-            if(b_program_ids.isEmpty()){
+            if(cache_list_b_program_ids.isEmpty()){
 
                 List<Model_BProgram> b_programs = Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_BProgram b_program : b_programs) {
-                    b_program_ids.add(b_program.id);
+                    cache_list_b_program_ids.add(b_program.id);
                 }
 
             }
 
             List<Model_BProgram> b_programs  = new ArrayList<>();
 
-            for(String b_program_id : b_program_ids){
+            for(String b_program_id : cache_list_b_program_ids){
                 b_programs.add(Model_BProgram.get_byId(b_program_id));
             }
 
@@ -304,20 +304,20 @@ public class Model_Project extends Model {
     public List<Model_MProject> get_m_projects_not_deleted(){
         try{
 
-            if(m_project_ids.isEmpty()){
+            if(cache_list_m_project_ids.isEmpty()){
 
                 List<Model_MProject> m_projects = Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_MProject m_project : m_projects) {
-                    m_project_ids.add(m_project.id);
+                    cache_list_m_project_ids.add(m_project.id);
                 }
 
             }
 
             List<Model_MProject> m_projects  = new ArrayList<>();
 
-            for(String m_project_id : m_project_ids){
+            for(String m_project_id : cache_list_m_project_ids){
                 m_projects.add(Model_MProject.get_byId(m_project_id));
             }
 
@@ -333,20 +333,20 @@ public class Model_Project extends Model {
     public List<Model_TypeOfWidget> get_type_of_widgets_not_deleted(){
         try{
 
-            if(type_of_widgets_ids.isEmpty()){
+            if(cache_list_type_of_widgets_ids.isEmpty()){
 
                 List<Model_TypeOfWidget> typeOfWidgets = Model_TypeOfWidget.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_TypeOfWidget typeOfWidget : typeOfWidgets) {
-                    type_of_widgets_ids.add(typeOfWidget.id);
+                    cache_list_type_of_widgets_ids.add(typeOfWidget.id);
                 }
 
             }
 
             List<Model_TypeOfWidget> typeOfWidgets  = new ArrayList<>();
 
-            for(String typeOfWidget_id : type_of_widgets_ids){
+            for(String typeOfWidget_id : cache_list_type_of_widgets_ids){
                 typeOfWidgets.add(Model_TypeOfWidget.get_byId(typeOfWidget_id));
             }
 
@@ -363,20 +363,20 @@ public class Model_Project extends Model {
         try{
 
 
-            if(type_of_blocks_ids.isEmpty()){
+            if(cache_list_type_of_blocks_ids.isEmpty()){
 
                 List<Model_TypeOfBlock> typeOfBlocks = Model_TypeOfBlock.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_TypeOfBlock typeOfBlock : typeOfBlocks) {
-                    type_of_blocks_ids.add(typeOfBlock.id);
+                    cache_list_type_of_blocks_ids.add(typeOfBlock.id);
                 }
 
             }
 
             List<Model_TypeOfBlock> typeOfBlocks  = new ArrayList<>();
 
-            for(String type_of_blocks_id : type_of_blocks_ids){
+            for(String type_of_blocks_id : cache_list_type_of_blocks_ids){
                 typeOfBlocks.add(Model_TypeOfBlock.get_byId(type_of_blocks_id));
             }
 
@@ -393,20 +393,20 @@ public class Model_Project extends Model {
         try{
 
 
-            if(instance_ids.isEmpty()){
+            if(cache_list_instance_ids.isEmpty()){
 
                 List<Model_HomerInstance> instances = Model_HomerInstance.find.where().ne("removed_by_user", true).isNotNull("actual_instance").eq("b_program.project.id", id).select("id").findList();
 
                 // Získání seznamu
                 for (Model_HomerInstance instance : instances) {
-                    instance_ids.add(instance.id);
+                    cache_list_instance_ids.add(instance.id);
                 }
 
             }
 
             List<Model_HomerInstance> instances  = new ArrayList<>();
 
-            for(String type_of_blocks_id : instance_ids){
+            for(String type_of_blocks_id : cache_list_instance_ids){
                 instances.add(Model_HomerInstance.get_byId(type_of_blocks_id));
             }
 

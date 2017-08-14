@@ -32,7 +32,7 @@ class ErrorResponse(@XmlElement var code: Int, @XmlElement var message: String) 
   def setCode(code: Int) = this.code = code
 
   def getType: String = code match {
-    case ErrorResponse.ERROR => "error"
+    case ErrorResponse.ERROR => "error_message"
     case ErrorResponse.WARNING => "warning"
     case ErrorResponse.INFO => "info"
     case ErrorResponse.OK => "ok"

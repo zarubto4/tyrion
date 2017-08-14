@@ -114,8 +114,8 @@ public class Model_CompilationServer extends Model {
 
                 WS_Message_Make_compilation make_compilation = new WS_Message_Make_compilation();
 
-                make_compilation.status = "error";
-                make_compilation.error = "Something was wrong";
+                make_compilation.status = "error_message";
+                make_compilation.error_message = "Something was wrong";
                 return  make_compilation;
             }
 

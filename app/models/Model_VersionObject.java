@@ -400,7 +400,7 @@ public class Model_VersionObject extends Model {
             return result;
         }
 
-        if(compilation.error != null || !compilation.status.equals("success")){
+        if(compilation.error_message != null || !compilation.status.equals("success")){
 
             terminal_logger.internalServerError(new Exception("Error is empty, but status is not 'success' in result from Code Server. Result: " + Json.toJson(compilation).toString()));
 

@@ -83,6 +83,7 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
     public static class WS_Help_Hardware_board_overview {
 
         @Constraints.Required public String hardware_id;
+        @Constraints.Required  public String mac;
 
         @Constraints.Required  public String target;                       // třeba Yoda G3
         @Constraints.Required  public String alias;                        // "pepa"
@@ -91,6 +92,8 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
 
         public String ip;
         public boolean console;
+        public boolean webview;
+        public Integer webport;
 
         public String normal_mqtt_connection;       // ip addressa:port
         public String backup_mqtt_connection;       // ip addressa:port
@@ -111,6 +114,7 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
 
     }
 
+    // Zastupný objekt pro binary
     public static class WS_Help_Hardware_board_IBinaryInfo {
 
         public String version;

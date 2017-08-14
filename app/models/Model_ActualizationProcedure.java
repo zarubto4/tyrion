@@ -75,19 +75,23 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Transient
     public Swagger_ActualizationProcedure_Short_Detail short_detail(){
+        try {
+            Swagger_ActualizationProcedure_Short_Detail detail = new Swagger_ActualizationProcedure_Short_Detail();
+            detail.id = id.toString();
+            detail.date_of_create = date_of_create;
+            detail.date_of_planing = date_of_planing;
+            detail.date_of_finish = date_of_finish;
 
-        Swagger_ActualizationProcedure_Short_Detail detail = new Swagger_ActualizationProcedure_Short_Detail();
-        detail.id = id.toString();
-        detail.date_of_create = date_of_create;
-        detail.date_of_planing = date_of_planing;
-        detail.date_of_finish = date_of_finish;
+            detail.state = state();
+            detail.type_of_update = type_of_update;
+            detail.procedure_size_complete = procedure_size_complete();
+            detail.procedure_size_all = procedure_size_all();
 
-        detail.state = state();
-        detail.type_of_update = type_of_update;
-        detail.procedure_size_complete = procedure_size_complete();
-        detail.procedure_size_all = procedure_size_all();
-
-        return detail;
+            return detail;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
 
     }
 
@@ -159,7 +163,7 @@ public class Model_ActualizationProcedure extends Model {
 
                 state = Enum_Update_group_procedure_state.in_progress;
 
-                new Thread(this::notification_update_procedure_progress).start();
+               notification_update_procedure_progress();
 
                 this.update();
             }
@@ -192,7 +196,7 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Transient
     public void cancel_procedure(){
 
-       terminal_logger.debug("cancel_procedure :: operation");
+       terminal_logger.trace("cancel_procedure :: operation");
 
        List<Model_CProgramUpdatePlan> list = Model_CProgramUpdatePlan.find.where()
                                             .eq("actualization_procedure.id",id).where()
@@ -217,6 +221,10 @@ public class Model_ActualizationProcedure extends Model {
 
         if(project_id != null) return project_id;
 
+        if(type_of_update == Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE){
+            return null;
+        }
+
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
             Model_Project project = Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id", id).select("id").findUnique();
             project_id = project.id;
@@ -224,12 +232,12 @@ public class Model_ActualizationProcedure extends Model {
         }
 
         if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
-            System.out.println("Hledám Project ID pod aktualizačním plánem ID " + id);
-            Model_Project project =  Model_Project.find.where().eq("boards.c_program_update_plans.actualization_procedure.id", id).findUnique();
+            Model_Project project =  Model_Project.find.where().eq("boards.c_program_update_plans.actualization_procedure.id", id).select("id").findUnique();
             project_id = project.id;
             return project_id;
         }
 
+        terminal_logger.internalServerError(new Exception("Model_ActualizationProcedure:: get_project_id Project not found!!"));
         return null;
     }
 
@@ -245,7 +253,7 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        terminal_logger.trace("save :: Creating new Object");
 
         date_of_create = new Date();
 
@@ -258,13 +266,14 @@ public class Model_ActualizationProcedure extends Model {
         cache.put(this.id.toString(), this);
 
         // Call notification about model update
+        if(get_project_id() != null)
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_HomerInstance.class, get_project_id(), this.id.toString()))).start();
     }
 
     @JsonIgnore @Override
     public void update(){
 
-        terminal_logger.debug("update :: Update object Id: " + this.id);
+        terminal_logger.trace("update :: Update object Id: " + this.id);
 
         //ORM
         super.update();
@@ -273,6 +282,7 @@ public class Model_ActualizationProcedure extends Model {
         cache.put(id.toString(), this);
 
         // Call notification about model update
+        if(get_project_id() != null)
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_ActualizationProcedure.class, get_project_id(), this.id.toString()))).start();
     }
 
@@ -294,11 +304,11 @@ public class Model_ActualizationProcedure extends Model {
             terminal_logger.debug("notification_update_procedure_start :: operation ");
 
             Model_Notification notification = new Model_Notification();
-
-            notification.setImportance(Enum_Notification_importance.low)
-                        .setLevel(Enum_Notification_level.info);
+            notification.setImportance(Enum_Notification_importance.low);
+            notification.setLevel(Enum_Notification_level.info);
 
             if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
+
                 notification.setText(new Notification_Text().setText("Your manual update "))
                 .setObject(this);
 
@@ -359,22 +369,26 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_progress(){
         try {
 
-            terminal_logger.debug("notification_update_procedure_progress :: operation ");
+            if(get_project_id() != null)
+                new Thread( () -> {
+                    terminal_logger.debug("notification_update_procedure_progress :: operation ");
 
-            if(state == Enum_Update_group_procedure_state.complete || state == Enum_Update_group_procedure_state.successful_complete  || state == Enum_Update_group_procedure_state.complete_with_error ){
-                terminal_logger.warn("notification_update_procedure_progress ::  called inappropriately (complete) !!!!");
-                return;
-            }
+                    if (state == Enum_Update_group_procedure_state.complete || state == Enum_Update_group_procedure_state.successful_complete || state == Enum_Update_group_procedure_state.complete_with_error) {
+                        terminal_logger.warn("notification_update_procedure_progress ::  called inappropriately (complete) !!!!");
+                        return;
+                    }
 
-            Model_Notification notification = new Model_Notification();
+                    Model_Notification notification = new Model_Notification();
 
-            notification.setId(UUID.randomUUID().toString())
-                        .setImportance( Enum_Notification_importance.low)
-                        .setLevel( Enum_Notification_level.info)
-                        .setText(new Notification_Text().setText("Update of Procedure "))
-                        .setObject(this)
-                        .setText( new Notification_Text().setText(" is done from " +  procedure_size_complete() + "/" + procedure_size_all() + " ." ))
-                        .send_under_project(get_project_id());
+                    notification.setId(UUID.randomUUID().toString())
+                            .setImportance(Enum_Notification_importance.low)
+                            .setLevel(Enum_Notification_level.info)
+                            .setText(new Notification_Text().setText("Update of Procedure "))
+                            .setObject(this)
+                            .setText(new Notification_Text().setText(" is done from " + procedure_size_complete() + "/" + procedure_size_all() + " ."))
+                            .send_under_project(get_project_id());
+
+                }).start();
 
         }catch (Exception e){
             terminal_logger.internalServerError("notification_update_procedure_progress:", e);
@@ -387,78 +401,80 @@ public class Model_ActualizationProcedure extends Model {
 
             terminal_logger.debug("notification_update_procedure_final_report :: operation ");
 
-            Model_Notification notification =  new Model_Notification();
+            if(get_project_id() != null)
+                new Thread( () -> {
+                    Model_Notification notification = new Model_Notification();
+
+                    // Single Update
+                    if (this.updates.size() == 1 && (type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP)) {
+
+                        terminal_logger.debug("notification_update_procedure_final_report :: Notification is for single update");
+
+                        // Bootloader
+                        if (this.updates.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER) {
+
+                            terminal_logger.debug("notification_update_procedure_final_report :: Single Update bootloader");
+
+                            Model_BootLoader.notification_bootloader_procedure_success_information_single(this.updates.get(0));
+                            return;
+                        }
+
+                        // Backup
+                        if (this.updates.get(0).firmware_type == Enum_Firmware_type.BACKUP) {
+
+                            terminal_logger.debug("notification_update_procedure_final_report :: Single Update backup");
+                            terminal_logger.debug("TODOTOTO TODO TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  ");
+
+                        }
 
 
-            // Single Update
-            if(this.updates.size() == 1 && ( type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP) ){
+                    }
 
-                terminal_logger.debug("notification_update_procedure_final_report :: Notification is for single update");
-
-                // Bootloader
-                if(this.updates.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER) {
-
-                    terminal_logger.debug("notification_update_procedure_final_report :: Single Update bootloader");
-
-                    Model_BootLoader.notification_bootloader_procedure_success_information_single(this.updates.get(0));
-                    return;
-                }
-
-                // Backup
-                if(this.updates.get(0).firmware_type == Enum_Firmware_type.BACKUP) {
-
-                    terminal_logger.debug("notification_update_procedure_final_report :: Single Update backup");
-                    terminal_logger.debug("TODOTOTO TODO TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  ");
-
-                }
+                    notification.setImportance(Enum_Notification_importance.low)
+                            .setLevel(Enum_Notification_level.success);
 
 
-            }
+                    int successfully_updated = Model_CProgramUpdatePlan.find.where()
+                            .eq("actualization_procedure.id", id).where()
+                            .eq("state", Enum_CProgram_updater_state.complete)
+                            .findRowCount();
 
+                    int waiting_for_device = Model_CProgramUpdatePlan.find.where()
+                            .eq("actualization_procedure.id", id).where()
+                            .disjunction()
+                            .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                            .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                            .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
+                            .endJunction()
+                            .findRowCount();
 
-            notification.setImportance( Enum_Notification_importance.low )
-                        .setLevel( Enum_Notification_level.success );
+                    int error_device = Model_CProgramUpdatePlan.find.where()
+                            .eq("actualization_procedure.id", id).where()
+                            .disjunction()
+                            .eq("state", Enum_CProgram_updater_state.critical_error)
+                            .eq("state", Enum_CProgram_updater_state.not_updated)
+                            .endJunction()
+                            .findRowCount();
 
+                    notification.setText(new Notification_Text().setText("Update Procedure "))
+                            .setObject(this)
+                            .setText(new Notification_Text().setText(" is complete. \n"))
+                            .setText(new Notification_Text().setText("Number of Total devices for update: " + updates.size() + ". "))
+                            .setText(new Notification_Text().setText("Successfully updated: " + successfully_updated + ". "));
 
-            int successfully_updated = Model_CProgramUpdatePlan.find.where()
-                    .eq("actualization_procedure.id", id).where()
-                    .eq("state", Enum_CProgram_updater_state.complete)
-                    .findRowCount();
+                    if (waiting_for_device != 0) {
+                        notification.setnewLine();
+                        notification.setText(new Notification_Text().setText("-> Unavailable \"offline\" devices: " + waiting_for_device + ". "));
+                    }
 
-            int waiting_for_device = Model_CProgramUpdatePlan.find.where()
-                    .eq("actualization_procedure.id", id).where()
-                    .disjunction()
-                        .eq("state", Enum_CProgram_updater_state.waiting_for_device)
-                        .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
-                        .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
-                    .endJunction()
-                    .findRowCount();
+                    if (error_device != 0) {
+                        notification.setnewLine();
+                        notification.setText(new Notification_Text().setText("-> Unsuccessful updates " + error_device + ". "));
+                    }
 
-            int error_device = Model_CProgramUpdatePlan.find.where()
-                    .eq("actualization_procedure.id", id).where()
-                    .disjunction()
-                        .eq("state", Enum_CProgram_updater_state.critical_error)
-                        .eq("state", Enum_CProgram_updater_state.not_updated)
-                    .endJunction()
-                    .findRowCount();
+                    notification.send_under_project(get_project_id());
 
-            notification.setText(new Notification_Text().setText("Update Procedure "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" is complete. \n"))
-                    .setText(new Notification_Text().setText("Number of Total devices for update: " + updates.size() + ". "))
-                    .setText(new Notification_Text().setText("Successfully updated: " + successfully_updated + ". " ));
-
-            if(waiting_for_device != 0){
-                notification.setnewLine();
-                notification.setText(new Notification_Text().setText("-> Unavailable \"offline\" devices: "  + waiting_for_device + ". " ));
-            }
-
-            if(error_device != 0){
-                notification.setnewLine();
-                notification.setText(new Notification_Text().setText("-> Unsuccessful updates "  + error_device + ". " ));
-            }
-            
-            notification.send_under_project(get_project_id());
+                }).start();
 
         }catch (Exception e){
             terminal_logger.internalServerError("notification_update_procedure_final_report:", e);
@@ -469,6 +485,7 @@ public class Model_ActualizationProcedure extends Model {
     public void notification_update_procedure_complete(){
         try {
 
+            if(get_project_id() != null)
             new Thread( () -> {
 
                 terminal_logger.warn("notification_update_procedure_complete :: operation ");
@@ -521,6 +538,7 @@ public class Model_ActualizationProcedure extends Model {
                 }
 
             }).start();
+
         }catch (Exception e){
             terminal_logger.internalServerError("notification_update_procedure_complete:", e);
         }

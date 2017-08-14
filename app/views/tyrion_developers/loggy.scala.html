@@ -91,7 +91,7 @@
              success:function(json){
                  location.reload();
              },
-             error:function(e) {
+             error_message:function(e) {
                  $("#reportModalMessage").css("display", "block");
                  $("#reportModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
              }

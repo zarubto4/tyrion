@@ -500,7 +500,7 @@ function newCompilationServer(){
             $("#createCompilationServerModal").css("display","none");
             $('#allCompilationServers').load(document.URL +  ' #allCompilationServers');
         },
-        error:function(e) {
+        error_message:function(e) {
             BootstrapDialog.show({
                 message: syntaxHighlight(e),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -532,7 +532,7 @@ function set_backup_server(){
         success:function(e){
             location.reload();
         },
-        error:function(e) {
+        error_message:function(e) {
             BootstrapDialog.show({
                 message: syntaxHighlight(e),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -564,7 +564,7 @@ function set_main_server(){
         success:function(e){
             location.reload();
         },
-        error:function(e) {
+        error_message:function(e) {
             BootstrapDialog.show({
                 message: syntaxHighlight(e),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -595,7 +595,7 @@ function editCompilationServer(id){
         success:function(e){
             location.reload();
         },
-        error:function(e) {
+        error_message:function(e) {
             BootstrapDialog.show({
                 message: syntaxHighlight(e),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -621,7 +621,7 @@ function deleteCompilationServer(id){
         success:function(e){
             location.reload();
         },
-        error:function(e) {
+        error_message:function(e) {
             BootstrapDialog.show({
                 message: syntaxHighlight(e),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -672,7 +672,7 @@ function newHomerServer(){
             $("#createHomerServerModal").css("display","none");
             location.reload();
         },
-        error:function(e) {
+        error_message:function(e) {
             BootstrapDialog.show({
                 message: syntaxHighlight(e),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -705,7 +705,7 @@ function editHomerServer(id){
             $("#editHomerServerModal").css("display","none");
             location.reload();
         },
-        error:function(e) {
+        error_message:function(e) {
             BootstrapDialog.show({
                 message: syntaxHighlight(e),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -731,7 +731,7 @@ function deleteHomerServer(id){
         success:function(e){
             $('#allHomerServers').load(document.URL +  ' #allHomerServers');
         },
-        error:function(e) {
+        error_message:function(e) {
             BootstrapDialog.show({
                 message: syntaxHighlight(e),
                 type: BootstrapDialog.TYPE_DANGER,

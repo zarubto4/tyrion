@@ -305,7 +305,7 @@
               $("#newTypeOfBoardForm input[type=text]").val("");
               $('#typesOfBoardsWrapper').load(document.URL +  ' #typesOfBoards');
             },
-            error:function(data) {
+            error_message:function(data) {
               BootstrapDialog.show({
                 message:  syntaxHighlight(data),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -331,7 +331,7 @@
             success:function(e){
               $('#typesOfBoardsWrapper').load(document.URL +  ' #typesOfBoards');
             },
-            error:function(data) {
+            error_message:function(data) {
               BootstrapDialog.show({
                 message:  syntaxHighlight(data),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -364,7 +364,7 @@
               $("#newProcessorForm input[type=text]").val("");
               $('#processorsWrapper').load(document.URL +  ' #processors');
             },
-            error: function(data) {
+            error_message: function(data) {
               BootstrapDialog.show({
                 message: syntaxHighlight(data),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -395,7 +395,7 @@
               $("#editProcessorModal").modal('hide');
               $('#processorsWrapper').load(document.URL +  ' #processors');
             },
-            error:function(data) {
+            error_message:function(data) {
                 BootstrapDialog.show({
                   message:  syntaxHighlight(data),
                   type: BootstrapDialog.TYPE_DANGER,
@@ -421,7 +421,7 @@
             success:function(e){
               $('#processorsWrapper').load(document.URL +  ' #processors');
             },
-            error:function(data) {
+            error_message:function(data) {
               BootstrapDialog.show({
                 message:  syntaxHighlight(data),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -463,7 +463,7 @@
                 $("#newProducer input[type=text]").val("");
                 $('#producersWrapper').load(document.URL +  ' #producers');
             },
-            error:function(data) {
+            error_message:function(data) {
               BootstrapDialog.show({
                 message:  syntaxHighlight(data),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -494,7 +494,7 @@
                 $("#editProducerModal").modal('hide');
                 $('#producersWrapper').load(document.URL +  ' #producers');
             },
-            error:function(data) {
+            error_message:function(data) {
               BootstrapDialog.show({
                 message:  syntaxHighlight(data),
                 type: BootstrapDialog.TYPE_DANGER,
@@ -519,7 +519,7 @@
             success:function(e){
               $('#producersWrapper').load(document.URL +  ' #producers');
             },
-            error:function(data) {
+            error_message:function(data) {
               BootstrapDialog.show({
                 message:  syntaxHighlight(data),
                 type: BootstrapDialog.TYPE_DANGER,

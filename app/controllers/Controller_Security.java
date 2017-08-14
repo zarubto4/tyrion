@@ -376,9 +376,9 @@ public class Controller_Security extends Controller {
 
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
-            if (map.containsKey("error")) {
+            if (map.containsKey("error_message")) {
 
-                terminal_logger.warn("GET_github_oauth::  contains Error: {} " , map.get("error"));
+                terminal_logger.warn("GET_github_oauth::  contains Error: {} " , map.get("error_message"));
 
                 if (map.containsKey("state")){
 
@@ -435,7 +435,7 @@ public class Controller_Security extends Controller {
                 if (json_response_from_github.has("mail"))   person.mail = json_response_from_github.get("mail").asText();
                 if (json_response_from_github.has("login"))  person.nick_name = json_response_from_github.get("login").asText();
                 if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null"))   person.full_name = json_response_from_github.get("name").asText();
-                if (json_response_from_github.has("avatar_url")) person.azure_picture_link = json_response_from_github.get("avatar_url").asText();
+                if (json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
                 person.update();
 
                 floatingPersonToken.person = person;
@@ -456,7 +456,7 @@ public class Controller_Security extends Controller {
                     person = Model_Person.find.where().eq("mail", json_response_from_github.get("mail").asText()).findUnique();
                     person.github_oauth_id = json_response_from_github.get("id").asText();
                     if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null")) person.full_name = json_response_from_github.get("name").asText();
-                    if (person.picture == null && json_response_from_github.has("avatar_url")) person.azure_picture_link = json_response_from_github.get("avatar_url").asText();
+                    if (person.picture == null && json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
                     person.update();
 
                 }else {
@@ -470,7 +470,7 @@ public class Controller_Security extends Controller {
 
                     if (json_response_from_github.has("login") && Model_Person.find.where().eq("nick_name", json_response_from_github.get("login").asText()).findUnique() == null) person.nick_name = json_response_from_github.get("login").asText();
                     if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null"))  person.full_name = json_response_from_github.get("name").asText();
-                    if (json_response_from_github.has("avatar_url")) person.azure_picture_link = json_response_from_github.get("avatar_url").asText();
+                    if (json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
                     person.save();
                 }
 
@@ -500,7 +500,7 @@ public class Controller_Security extends Controller {
             terminal_logger.debug("GET_facebook_oauth:: URL:: {} ", url);
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
-            if (map.containsKey("error")) {
+            if (map.containsKey("error_message")) {
 
                 terminal_logger.warn("GET_facebook_oauth:: Map Contains Error");
 

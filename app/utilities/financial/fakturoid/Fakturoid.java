@@ -98,7 +98,7 @@ public class Fakturoid extends Controller {
      * If it is a first invoice, that means the product owner is not registered in Fakturoid,
      * method tries to create subject in Fakturoid.
      * @param invoice Model invoice that needs to be synchronized to Fakturoid.
-     * @return invoice with details from Fakturoid or null if error occur.
+     * @return invoice with details from Fakturoid or null if error_message occur.
      */
     public static Model_Invoice create_proforma(Model_Invoice invoice){
         try {
@@ -358,7 +358,7 @@ public class Fakturoid extends Controller {
     /**
      * Method creates subject in Fakturoid. Tries 5 times to get the result.
      * @param details Model PaymentDetails with info about the customer.
-     * @return String id of the subject from Fakturoid. Null if some error occurs.
+     * @return String id of the subject from Fakturoid. Null if some error_message occurs.
      */
     public static String create_subject(Model_PaymentDetails details){
         try {

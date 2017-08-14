@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
+import play.libs.Json;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.document_db.document_objects.DM_Board_BackupIncident;
@@ -37,6 +38,7 @@ import web_socket.services.WS_HomerServer;
 import web_socket.services.helps_class.ParallelTask;
 
 import javax.persistence.*;
+import java.nio.channels.ClosedChannelException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -63,7 +65,7 @@ public class Model_Board extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                    @Id public String id;                           // Full_Id procesoru přiřazené Garfieldem - // TODO mělo by být nahrazeno UUID a pak samostatně Full_ID hardwaru
-                                       public String hash_for_adding;              // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
+                           @JsonIgnore public String hash_for_adding;              // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
 
                                        public String wifi_mac_address;             // Mac addressa wifi čipu
                                        public String mac_address;                  // Přiřazená MacAdresa z rozsahu Adres
@@ -71,14 +73,12 @@ public class Model_Board extends Model {
                                        public String name;                         // Jméno, které si uživatel pro hardware nasatvil
     @Column(columnDefinition = "TEXT") public String description;                  // Popisek, který si uživatel na hardwaru nastavil
 
-    @JsonIgnore     public String azure_picture_link;
-    @JsonIgnore @OneToOne  public Model_FileRecord picture;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_FileRecord picture;
 
-                                         public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
-                                       public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
+                           public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
+                           public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
 
-    @JsonIgnore  public boolean is_active;                   // Příznak, že deska byla oživena a je použitelná v platformě
-
+    @JsonIgnore  public boolean is_active; // Příznak, že deska byla oživena a je použitelná v platformě
 
 
     // Parametry konfigurovate uživatelem z frontendu
@@ -136,18 +136,18 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient  public String project_id()                           { try{ return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_version_name()       { try{ return get_actual_bootloader().name; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_id()                 { try{ return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString(); }catch (NullPointerException e){return  null;}}
-    @ApiModelProperty(required =true) @Transient @JsonProperty public String picture_link(){
+    @JsonProperty  @Transient  public String picture_link(){
 
         try {
 
             if( cache_value_picture_link == null) {
 
-                if (this.azure_picture_link == null) {
-                    return null;
+                Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("board.id",id).select("file_path").findUnique();
+                if (fileRecord != null) {
+                    cache_value_picture_link = Server.azure_blob_Link + fileRecord.file_path;
+                    terminal_logger.debug("picture_link :: {}{}", Server.azure_blob_Link, cache_value_picture_link);
                 }
 
-                terminal_logger.debug("picture_link :: {}{}", Server.azure_blob_Link, azure_picture_link);
-                cache_value_picture_link = Server.azure_blob_Link + azure_picture_link;
             }
 
             return cache_value_picture_link;
@@ -159,7 +159,7 @@ public class Model_Board extends Model {
     }
     @JsonProperty  @Transient  public String available_bootloader_version_name()    { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().name;}
     @JsonProperty  @Transient  public String available_bootloader_id()              { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().id.toString();}
-    @JsonProperty  @Transient  public String ip_adress(){
+    @JsonProperty  @Transient  public String ip_address(){
         try{
 
             if(cache_latest_know_ip_adress != null){
@@ -261,10 +261,9 @@ public class Model_Board extends Model {
     }
 
     @JsonProperty  @Transient @ApiModelProperty(value = "Value is null, if device status is online.") public Long latest_online(){
-        if(online_state() != Enum_Online_status.online) return null;
+        if(online_state() == Enum_Online_status.online) return null;
         try {
 
-            if (this.online_state() == Enum_Online_status.unknown_lost_connection_with_server ) return null;
 
             if(cache_value_latest_online != null){
                 System.out.println("Hodnota je cachovaná ");
@@ -293,7 +292,8 @@ public class Model_Board extends Model {
 
                 terminal_logger.debug("last_online: hardware_id: {}", record.device_id);
 
-                return new Date(record.time).getTime();
+                cache_value_latest_online = new Date(record.time).getTime();
+                return cache_value_latest_online;
             }
 
             return Long.MAX_VALUE;
@@ -306,38 +306,48 @@ public class Model_Board extends Model {
 
     @JsonProperty  @Transient  public Enum_Online_status online_state(){
 
-        // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
-        // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
-        if(connected_server_id == null){
-            return Enum_Online_status.not_yet_first_connected;
-        }
-
-        // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
-        // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
-        // který následně vrací latest know online
-        if(Model_HomerServer.get_byId(connected_server_id).server_is_online()){
-
-            if(cache_status.containsKey(id)){
-                return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
-            }else {
-                // Začnu zjišťovat stav - v separátním vlákně!
-                new Thread( () -> {
-                    try {
-
-                        Model_HomerServer.get_byId(this.connected_server_id).sender().write_without_confirmation( new WS_Message_Hardware_online_status().make_request(new ArrayList<String>() {{add(id);}} ));
-
-                    } catch (Exception e) {
-                        terminal_logger.internalServerError("notification_board_connect:", e);
-                    }
-                }).start();
-
-                return Enum_Online_status.synchronization_in_progress;
-
+        try {
+            // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
+            // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
+            if (connected_server_id == null) {
+                return Enum_Online_status.not_yet_first_connected;
             }
-        } else {
-            return Enum_Online_status.unknown_lost_connection_with_server;
+
+            // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
+            // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
+            // který následně vrací latest know online
+
+            if (Model_HomerServer.get_byId(connected_server_id).server_is_online()) {
+
+                if (cache_status.containsKey(id)) {
+                    return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
+                } else {
+                    // Začnu zjišťovat stav - v separátním vlákně!
+                    new Thread(() -> {
+                        try {
+
+                            write_without_confirmation(new WS_Message_Hardware_online_status().make_request(new ArrayList<String>() {{
+                                add(id);
+                            }}));
+
+                        } catch (Exception e) {
+                            terminal_logger.internalServerError("notification_board_connect:", e);
+                        }
+                    }).start();
+
+                    return Enum_Online_status.synchronization_in_progress;
+
+                }
+            } else {
+                return Enum_Online_status.unknown_lost_connection_with_server;
+            }
+
+        }catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return Enum_Online_status.offline;
         }
     }
+
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -498,6 +508,8 @@ public class Model_Board extends Model {
         if(get_type_of_board().main_boot_loader == null || get_actual_bootloader() == null) return true;
         return (!this.get_type_of_board().main_boot_loader.id.equals(get_actual_bootloader().id));
     }
+
+
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/
 
 /* SERVER WEBSOCKET ----------------------------------------------------------------------------------------------------*/
@@ -569,7 +581,7 @@ public class Model_Board extends Model {
                         terminal_logger.warn("Incoming Message not recognized::" + json.toString());
 
                         // Zarážka proti nevadliní odpovědi a zacyklení
-                        if(json.has("status") && json.get("status").asText().equals("error")){
+                        if(json.has("status") && json.get("status").asText().equals("error_message")){
                             return;
                         }
 
@@ -588,7 +600,7 @@ public class Model_Board extends Model {
         }).start();
     }
 
-    // Kontrola připojení
+    // Kontrola připojení - Echo o připojení
     @JsonIgnore @Transient public static void device_Connected(WS_Message_Hardware_connected help){
         try {
 
@@ -601,6 +613,7 @@ public class Model_Board extends Model {
                 return;
             }
 
+            // Aktualizuji cache status online HW
             cache_status.put(help.hardware_id, true);
 
             // Notifikce
@@ -612,17 +625,21 @@ public class Model_Board extends Model {
                 }
             }
 
-            // Standartní synchronizace
+            // Standartní synchronizace s Becki - že je device online - pokud někdo na frotnendu (uživatel) poslouchá
             if(device.project_id() != null) synchronize_online_state_with_becki(device.id, true, device.project_id());
 
+            // Nastavím server_id - pokud nekoresponduje s tím, který má HW v databázi uložený
             if(device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator)){
                 terminal_logger.debug("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
                 device.connected_server_id = help.websocket_identificator;
                 device.update();
             }
 
+
             device.make_log_connect();
 
+            // ZDe do budoucna udělat synchronizaci jen když to bude opravdu potřeba - ale momentálně je nad lidské síly udělat argoritmus,
+            // který by vyřešil zbytečné dotazování
             device.hardware_firmware_state_check();
 
 
@@ -632,11 +649,15 @@ public class Model_Board extends Model {
         }
     }
 
+    // Echo o odpojení
     @JsonIgnore @Transient public static void device_Disconnected(WS_Message_Hardware_disconnected help){
         try {
 
             terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.hardware_id + " on offline ");
+
+            // CHACHE OFFLINE
             cache_status.put(help.hardware_id, false);
+
 
             Model_Board device =  Model_Board.get_byId(help.hardware_id);
 
@@ -645,10 +666,16 @@ public class Model_Board extends Model {
                 return;
             }
 
+            // Uprava Cache Paměti
+            device.cache_value_latest_online = new Date().getTime();
+
             // Standartní synchronizace
             if(device.project_id() != null) synchronize_online_state_with_becki(device.id, false, device.project_id());
 
+            // Notifikace
             device.notification_board_disconnect();
+
+            // Záznam do DM databáze
             device.make_log_disconnect();
 
             Model_Board.cache_status.put(help.hardware_id, false);
@@ -658,6 +685,7 @@ public class Model_Board extends Model {
         }
     }
 
+    // Device udělal autobackup
     @JsonIgnore @Transient public static void device_autoBackUp_echo(WS_Message_Hardware_autobackup_maked help){
         try {
 
@@ -682,6 +710,7 @@ public class Model_Board extends Model {
         }
     }
 
+    // žádost void o synchronizaci online stavu
     @JsonIgnore @Transient public static void device_online_synchronization(WS_Message_Hardware_online_status report){
         try{
 
@@ -755,6 +784,9 @@ public class Model_Board extends Model {
         // Separate Board Acording servers
         for(Model_Board device : devices){
 
+            // Skip never unconnected device
+            if(device.connected_server_id == null) continue;
+
             // If not collection exist -> create that
             if(!serverHashMap.containsKey(device.connected_server_id)){serverHashMap.put(device.connected_server_id, new ArrayList<String>());}
 
@@ -765,18 +797,96 @@ public class Model_Board extends Model {
         return serverHashMap;
     }
 
-    @JsonIgnore @Transient private static List<Model_Board> make_array(Model_Board device){
-        List<Model_Board> devices = new ArrayList<>();
-        devices.add(device);
-        return  devices;
+    // Odesílání zprávy harwaru jde skrze serve, zde je metoda, která pokud to nejde odeslat naplní objekt a vrácí ho
+    @JsonIgnore @Transient private ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries){
+
+            // Response with Error Message
+            if (this.connected_server_id == null) {
+
+                ObjectNode request = Json.newObject();
+                request.put("message_type", json.get("message_type").asText());
+                request.put("message_channel", Model_Board.CHANNEL);
+                request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_HARDWARE.error_code());
+                request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_HARDWARE.error_message());
+                request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+                request.put("websocket_identificator", "unknown");
+
+                return request;
+            }
+
+            Model_HomerServer server = Model_HomerServer.get_byId(this.connected_server_id);
+            if (server == null) {
+
+                terminal_logger.internalServerError(new Exception("write_with_confirmation:: Hardware " + id + " has not exist server id " + this.connected_server_id + " and it wll be removed!"));
+
+                this.connected_server_id = null;
+                this.update();
+
+                ObjectNode request = Json.newObject();
+                request.put("message_type", json.get("message_type").asText());
+                request.put("message_channel", Model_Board.CHANNEL);
+                request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
+                request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
+                request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+                request.put("websocket_identificator", "unknown");
+
+                return request;
+            }
+
+            return server.write_with_confirmation(json, time, delay, number_of_retries);
+
     }
 
+    // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
+    @JsonIgnore @Transient private void write_without_confirmation(ObjectNode json){
+
+        if(this.connected_server_id == null){
+            return;
+        }
+
+        Model_HomerServer server = Model_HomerServer.get_byId(this.connected_server_id);
+
+        if(server == null){
+
+            terminal_logger.internalServerError(new Exception("write_without_confirmation:: Hardware " + id + " has not exist server id " + this.connected_server_id + " and it wll be removed!"));
+
+            this.connected_server_id = null;
+            this.update();
+
+            return;
+        }
+
+        server.write_without_confirmation(json);
+
+    }
+
+    // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
+    @JsonIgnore @Transient public void write_without_confirmation(String message_id, ObjectNode json){
+
+        if(this.connected_server_id == null){
+            return;
+        }
+
+        Model_HomerServer server = Model_HomerServer.get_byId(this.connected_server_id);
+
+        if(server == null){
+
+            terminal_logger.internalServerError(new Exception("write_without_confirmation::message_id " + message_id + " Hardware " + id + " has not exist server id " + this.connected_server_id + " and it wll be removed!"));
+
+            this.connected_server_id = null;
+            this.update();
+
+            return;
+        }
+
+        server.write_without_confirmation(message_id, json);
+    }
 
     /* Commands ----------------------------------------------------------------------------------------------*/
 
     //-- Online State Hardware  --//
     @JsonIgnore @Transient public WS_Message_Hardware_online_status get_devices_online_state(){
-        return get_devices_online_state(make_array(this));
+        return get_devices_online_state(Collections.singletonList(this));
     }
 
     @JsonIgnore @Transient public static WS_Message_Hardware_online_status get_devices_online_state(List<Model_Board> devices){
@@ -817,11 +927,11 @@ public class Model_Board extends Model {
 
     //-- Over View Hardware  --//
     @JsonIgnore @Transient public WS_Message_Hardware_overview get_devices_overview(){
-        return get_devices_overview(make_array(this));
+        return get_devices_overview(Collections.singletonList(this));
     }
 
     @JsonIgnore @Transient public static WS_Message_Hardware_overview get_devices_overview(Model_Board device){
-        return get_devices_overview(make_array(device));
+        return get_devices_overview(Collections.singletonList(device));
     }
 
     @JsonIgnore @Transient public static WS_Message_Hardware_overview get_devices_overview(List<Model_Board> devices){
@@ -867,19 +977,16 @@ public class Model_Board extends Model {
 
             if(!this.name.equals(alias)){
                 this.name = alias;
-                update();
+                this.update();
             }
 
-            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_alias(Collections.singletonList(this)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_alias(Collections.singletonList(this)), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
-        }catch (TimeoutException e){
-            terminal_logger.warn("set_auto_backup: Timeout");
-            return new WS_Message_Hardware_set_settings();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Hardware_set_settings();
@@ -892,19 +999,18 @@ public class Model_Board extends Model {
 
             if(this.database_synchronize != settings) {
                 this.database_synchronize = settings;
-                update();
+                this.update();
             }
 
-            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_with_database(Collections.singletonList(this)), 1000 * 5, 0, 2);
+            write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_with_database(Collections.singletonList(this)), 1000 * 5, 0, 2);
+
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_with_database(Collections.singletonList(this)), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
-        }catch (TimeoutException e){
-            terminal_logger.warn("set_database_synchronize: Timeout");
-            return new WS_Message_Hardware_set_settings();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Hardware_set_settings();
@@ -918,19 +1024,16 @@ public class Model_Board extends Model {
 
             if(this.web_view != settings) {
                 this.web_view = settings;
-                update();
+                this.update();
             }
 
-            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_Web_view(Collections.singletonList(this)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_Web_view(Collections.singletonList(this)), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
-        }catch (TimeoutException e){
-            terminal_logger.warn("set_database_synchronize: Timeout");
-            return new WS_Message_Hardware_set_settings();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Hardware_set_settings();
@@ -943,19 +1046,16 @@ public class Model_Board extends Model {
 
             if(!this.web_port .equals( settings)) {
                 this.web_port = settings;
-                update();
+                this.update();
             }
 
-            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_Web_port(Collections.singletonList(this)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_Web_port(Collections.singletonList(this)), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
-        }catch (TimeoutException e){
-            terminal_logger.warn("set_database_synchronize: Timeout");
-            return new WS_Message_Hardware_set_settings();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Hardware_set_settings();
@@ -995,16 +1095,13 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_auto_backup(){
         try{
 
-            JsonNode node = Model_HomerServer.get_byId(this.connected_server_id).sender().write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_autobackup(Collections.singletonList(this)), 1000*5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_autobackup(Collections.singletonList(this)), 1000*5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
-        }catch (TimeoutException e){
-            terminal_logger.warn("set_auto_backup: Timeout");
-            return new WS_Message_Hardware_set_settings();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Hardware_set_settings();
@@ -1122,45 +1219,91 @@ public class Model_Board extends Model {
 
     // Kontrola up_to_date harwaru
     @JsonIgnore @Transient  public void hardware_firmware_state_check() {
-    try {
+        try {
 
-        WS_Message_Hardware_overview report = get_devices_overview();
+            WS_Message_Hardware_overview report = get_devices_overview();
 
-        if(report.error != null){
+            if(report.error_message != null){
 
-            terminal_logger.debug("hardware_firmware_state_check: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error);
+                terminal_logger.debug("hardware_firmware_state_check: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
 
-                if(report.error_code.equals(ErrorCode.HARDWARE_IS_OFFLINE.error_code())){
-                    terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} is offline" , this.id);
-                    return;
-                }
+                    if(report.error_code.equals(ErrorCode.HARDWARE_IS_OFFLINE.error_code())){
+                        terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} is offline" , this.id);
+                        return;
+                    }
+            }
+
+            WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview = report.get_device_from_list(this.id);
+
+            if(overview.error_code != null) {
+                terminal_logger.debug("hardware_firmware_state_check: Device is offline Error code:  " , overview.error_code );
+                return;
+            }
+
+            terminal_logger.debug("hardware_firmware_state_check: Summary information of connected master board: ID = {}", this.id);
+
+            terminal_logger.debug("hardware_firmware_state_check: Settings check ",this.id);
+            check_settings(overview);
+
+            terminal_logger.debug("hardware_firmware_state_check: Firmware check ",this.id);
+            check_firmware(overview);
+
+            terminal_logger.debug("hardware_firmware_state_check: Backup check ",this.id);
+            check_backup(overview);
+
+            terminal_logger.debug("hardware_firmware_state_check: Bootloader check ",this.id);
+            check_bootloader(overview);
+
+            check_updates(overview);
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
         }
-
-        WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview = report.get_device_from_list(this.id);
-
-        if(overview.error_code != null) {
-            terminal_logger.debug("hardware_firmware_state_check: Device is offline Error code:  " , overview.error_code );
-            return;
-        }
-
-        terminal_logger.debug("hardware_firmware_state_check: Summary information of connected master board: ID = ", this.id);
-
-        terminal_logger.debug("\n \n hardware_firmware_state_check: Firmware check ",this.id);
-        check_firmware(overview);
-
-        terminal_logger.debug(" \n \n hardware_firmware_state_check: Backup check ",this.id);
-        check_backup(overview);
-
-        terminal_logger.debug(" \n \n hardware_firmware_state_check: Bootloader check ",this.id);
-        check_bootloader(overview);
-
-        check_updates(overview);
-
-    }catch (Exception e){
-        terminal_logger.internalServerError(e);
     }
-}
 
+    /**
+     * Zde se kontroluje jestli je na HW to co na něm reálně být má
+     * @param overview
+     */
+    @JsonIgnore @Transient private void check_settings(WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview){
+
+        // Kontrola zda je stejný
+        if(overview.autobackup != this.backup_mode){
+            terminal_logger.warn("Model_Board:: check_settings:: inconsistent state:: autobackup");
+            set_auto_backup();
+        }
+
+        // Kontrola Backupu
+        if(overview.alias == null || !overview.alias.equals(this.name)){
+            terminal_logger.warn("Model_Board:: check_settings:: inconsistent state:: alias");
+            set_alias(this.name);
+        }
+
+        // Uložení do Cache paměti
+        if(cache_latest_know_ip_adress == null || !cache_latest_know_ip_adress.equals(overview.ip)){
+            cache_latest_know_ip_adress = overview.ip;
+        }
+
+        // Synchronizace mac_adressy pokuk k tomu ještě nedošlo
+        if(mac_address == null){
+            if(overview.mac != null)
+            mac_address = overview.mac;
+            this.update();
+        }
+
+        // Synchronizace webview - což je web stránka kterou generuje hardware pro vývojáře na sledování zátěže, vlákna atd..
+        if(overview.webview != web_view){
+            terminal_logger.warn("Model_Board:: check_settings:: inconsistent state:: web_view");
+            set_web_view(web_view);
+        }
+
+        // Synchronizace portu na kterém běží webview
+        if(overview.webport == null ||  !overview.webport.equals(web_port)){
+            terminal_logger.warn("Model_Board:: check_settings:: inconsistent state:: web_port");
+            set_web_port(web_port);
+        }
+
+    }
     /**
      * Pokud máme odchylku od databáze na hardwaru, to jest nesedí firmware_build_id na hW s tím co říká databáze
      * @param overview
@@ -1623,8 +1766,6 @@ public class Model_Board extends Model {
 
                 for (String person_id : list) {
 
-                    terminal_logger.warn("synchronize_online_state_with_becki: person id = {}", person_id);
-
                     try {
 
                         // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
@@ -1706,7 +1847,7 @@ public class Model_Board extends Model {
                 new Model_Notification()
                         .setImportance( Enum_Notification_importance.high)
                         .setLevel(Enum_Notification_level.error)
-                        .setText(new Notification_Text().setText("Attention! We note the highest critical error on your device "))
+                        .setText(new Notification_Text().setText("Attention! We note the highest critical error_message on your device "))
                         .setObject(this)
                         .setText(new Notification_Text().setText(" There was a collapse of the running firmware "))
                         .setObject(firmware_version.c_program)
@@ -1856,16 +1997,15 @@ public class Model_Board extends Model {
 
     // TODO Cachování oprávnění - Dá se to tu zlepšít obdobně jako třeba v C_Program
     @JsonIgnore   @Transient public boolean create_permission() {  return  Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_Create"); }
-    @JsonProperty @Transient  public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("Board_edit")) ;}
-    @JsonProperty @Transient  public boolean read_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_read"));}
-    @JsonProperty @Transient  public boolean delete_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_delete"));}
-    @JsonProperty @Transient  public boolean update_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_update"));}
+    @JsonProperty @Transient public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("Board_edit")) ;}
+    @JsonProperty @Transient public boolean read_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_read"));}
+    @JsonProperty @Transient public boolean delete_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_delete"));}
+    @JsonProperty @Transient public boolean update_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_update"));}
+    @JsonIgnore   @Transient public boolean first_connect_permission(){ return project_id() == null;}
 
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient public boolean first_connect_permission(){  return project_id() == null;}
 
     @Override
     public void save(){
@@ -1889,7 +2029,6 @@ public class Model_Board extends Model {
     }
 
     @Override
-
     public void update(){
 
         terminal_logger.debug("update :: Update object Id: " + this.id);
@@ -1903,7 +2042,7 @@ public class Model_Board extends Model {
         super.update();
     }
 
-    @JsonIgnore @Override
+    @Override
     public void delete() {
         try {
 
@@ -1916,6 +2055,7 @@ public class Model_Board extends Model {
 
         super.delete();
     }
+
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
@@ -1961,7 +2101,7 @@ public class Model_Board extends Model {
                 WS_Message_Hardware_online_status result = get_devices_online_state();
 
 
-                if( result.status.equals("error")){
+                if( result.status.equals("error_message")){
 
                     terminal_logger.debug("is_online:: hardware_id:: "+  id + " Checking online state! Device is offline");
                     cache_status.put(id, false);

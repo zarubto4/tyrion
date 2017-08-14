@@ -25,8 +25,8 @@ public class WS_Message_WebView_token_verification extends WS_AbstractMessage_In
         result.put("message_type", messageType);
         result.put("message_channel", message_channel);
         result.put("token_approve", token_approve);
-        result.put("message_id", messageId);
-        result.put("instanceId", instanceId);
+        result.put("message_id", message_id);
+        result.put("instance_id", instance_id);
         result.put("status", "success");
         return result;
 

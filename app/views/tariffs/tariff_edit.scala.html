@@ -477,7 +477,7 @@
                 });
 
             },
-            error:function(data) {
+            error_message:function(data) {
                 BootstrapDialog.show({
                     message: syntaxHighlight(data),
                     type: BootstrapDialog.TYPE_DANGER,
@@ -514,7 +514,7 @@
                 $("#newLabelModalMessage").css("display", "none");
                 $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#newLabelModalMessage").css("display", "block");
                 $("#newLabelModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -539,7 +539,7 @@
                 $("#editLabelModalMessage").css("display", "none");
                 $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#editLabelModalMessage").css("display", "block");
                 $("#editLabelModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
 
@@ -557,7 +557,7 @@
             success:function(e){
                 $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -573,7 +573,7 @@
             success:function(e){
                 $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -589,7 +589,7 @@
             success:function(e){
                 $('#allLabelsWrapper').load(document.URL +  ' #allLabels');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -616,7 +616,7 @@
                 $("#newExtensionModalMessage").css("display", "none");
                 $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#newExtensionModalMessage").css("display", "block");
                 $("#newExtensionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -640,7 +640,7 @@
                 $("#editExtensionModalMessage").css("display", "none");
                 $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
-            error:function(e) {
+            error_message:function(e) {
                 $("#editExtensionModalMessage").css("display", "block");
                 $("#editExtensionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
             }
@@ -657,7 +657,7 @@
             success:function(e){
                 $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -673,7 +673,7 @@
             success:function(e){
                 $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -690,7 +690,7 @@
             success:function(e){
                 $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -707,7 +707,7 @@
             success:function(e){
                 $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })
@@ -724,7 +724,7 @@
             success:function(e){
                 $('#allExtensionsWrapper').load(document.URL +  ' #allExtensions');
             },
-            error:function(e) {
+            error_message:function(e) {
                 alert(JSON.stringify(JSON.parse(e.responseText).message));
             }
         })

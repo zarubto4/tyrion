@@ -179,7 +179,7 @@
                      });
                      $('#homer').load(document.URL +  ' #homer');
                  },
-                 error:function(data) {
+                 error_message:function(data) {
                      BootstrapDialog.show({
                          message:  syntaxHighlight(data),
                          type: BootstrapDialog.TYPE_DANGER,
@@ -273,7 +273,7 @@
                         makePagination(json.pages)
                     },
 
-                    error: function(data) {
+                    error_message: function(data) {
                         BootstrapDialog.show({
                             message: syntaxHighlight(data),
                             type: BootstrapDialog.TYPE_DANGER,

@@ -794,7 +794,7 @@ public class Controller_Blocko extends Controller{
             // Proto tento záznam odstraním
             if(homer_instance.actual_instance != null){
 
-                WS_Message_Homer_Instance_destroy result = homer_instance.remove_from_cloud();
+                homer_instance.remove_from_cloud();
 
                 homer_instance.actual_instance = null;
                 Model_HomerInstance.cache_status.put(homer_instance.id, false);

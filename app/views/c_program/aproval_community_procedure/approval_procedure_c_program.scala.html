@@ -191,7 +191,7 @@
                     $('#pendingCode').load(document.URL +  ' #pendingCode');
                     $('#all_c_programs').load(document.URL +  ' #all_c_programs');
                 },
-                error:function(json) {
+                error_message:function(json) {
                     alert(json.message);
                 }
             })}
@@ -228,7 +228,7 @@
                     $("#editCodeModal").css("display","none");
                     $('#pendingCode').load(document.URL +  ' #pendingCode');
                 },
-                error:function(json) {
+                error_message:function(json) {
                     alert(json.responseText);
                 }
             })}
@@ -256,7 +256,7 @@
 
                     $("#editCodeModal").css("display","block");
                 },
-                error:function(e) {
+                error_message:function(e) {
                     alert(e.responseText);
                 }
             })
@@ -279,7 +279,7 @@
                     $("#codeModal").css("display","block");
                     $('#code').text(JSON.parse(JSON.stringify(json.main)));
                 },
-                error:function(e) {
+                error_message:function(e) {
                     alert(e.responseText);
                 }
             })

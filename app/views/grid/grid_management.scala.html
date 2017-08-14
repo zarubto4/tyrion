@@ -396,7 +396,7 @@
               $('#typeOfWidgetTableWrapper').html("").load(document.URL +  ' #allTypesOfWidgets');
               $("#newTypeOfWidgetModalMessage").css("display", "none");
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#newTypeOfWidgetModalMessage").css("display", "block");
               $("#newTypeOfWidgetModalMessage p").text(JSON.parse(e.responseText).message);
               $("#newTypeOfWidgetModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -421,7 +421,7 @@
               $("#newGridWidgetModalMessage").css("display", "none");
               openTypeOfWidget(document.getElementById('type_info_id').textContent)
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#newGridWidgetModalMessage").css("display", "block");
               $("#newGridWidgetModalMessage p").text(JSON.parse(e.responseText).message);
               $("#newGridWidgetModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -447,7 +447,7 @@
               $("#newGridWidgetVersionModalMessage").css("display", "none");
               openGridWidget(document.getElementById('widget_info_id').textContent);
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#newGridWidgetVersionModalMessage").css("display", "block");
               $("#newGridWidgetVersionModalMessage p").text(JSON.parse(e.responseText).message);
               $("#newGridWidgetVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -466,7 +466,7 @@
             success:function(e){
               $('#typeOfWidgetTableWrapper').html("").load(document.URL +  ' #allTypesOfWidgets');
             },
-            error:function(e) {
+            error_message:function(e) {
               alert("Unsuccessful.");
             }
           })
@@ -482,7 +482,7 @@
             success:function(e){
               $('#typeOfWidgetTableWrapper').html("").load(document.URL +  ' #allTypesOfWidgets');
             },
-            error:function(e) {
+            error_message:function(e) {
               alert("Unsuccessful.");
             }
           })
@@ -503,7 +503,7 @@
             success:function(e){
               openTypeOfWidget(type_of_widget_id);
             },
-            error:function(e) {
+            error_message:function(e) {
               alert("Unsuccessful.");
             }
           })
@@ -522,7 +522,7 @@
             success:function(e){
               openTypeOfWidget(type_of_widget_id);
             },
-            error:function(e) {
+            error_message:function(e) {
               alert("Unsuccessful.");
             }
           })
@@ -560,7 +560,7 @@
 
               openGridWidget(id);
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#editTypeOfWidgetModalMessage").css("display", "block");
               $("#editTypeOfWidgetModalMessage p").text(JSON.parse(e.responseText).message);
               $("#editTypeOfWidgetModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -587,7 +587,7 @@
               openTypeOfWidget(json.type_of_widget_id);
               openGridWidget(json.id);
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#editGridWidgetModalMessage").css("display", "block");
               $("#editGridWidgetModalMessage p").text(JSON.parse(e.responseText).message);
               $("#editGridWidgetModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -613,7 +613,7 @@
               $("#editGridWidgetVersionModalMessage").css("display", "none");
               openGridWidgetVersion(document.getElementById('version_info_id').textContent);
             },
-            error:function(e) {
+            error_message:function(e) {
               $("#editGridWidgetVersionModalMessage").css("display", "block");
               $("#editGridWidgetVersionModalMessage p").text(JSON.parse(e.responseText).message);
               $("#editGridWidgetVersionModalMessage p").append(JSON.stringify(JSON.parse(e.responseText).exception));
@@ -640,7 +640,7 @@
               disableButtonGroup('#widget_btn_group', true);
               disableButtonGroup('#version_btn_group', true);
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(e.responseText);
             }
           })}
@@ -657,7 +657,7 @@
               openTypeOfWidget(document.getElementById('type_info_id').textContent);
               $('#grid_widget').text("");
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(e.responseText);
             }
           })}
@@ -674,7 +674,7 @@
               openGridWidget(document.getElementById('widget_info_id').textContent);
               $('#grid_widget_version').text("");
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(e.responseText);
             }
           })}
@@ -749,7 +749,7 @@
               $('#gridWidgets tbody').append(content);
 
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(e.responseText);
             }
           })}
@@ -787,7 +787,7 @@
 
               $('#gridWidgetVersions tbody').append(content);
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(e.responseText);
             }
           })}
@@ -813,7 +813,7 @@
               disableButtonGroup('#version_btn_group', false);
 
             },
-            error:function(e) {
+            error_message:function(e) {
               alert(e.responseText);
             }
           })}

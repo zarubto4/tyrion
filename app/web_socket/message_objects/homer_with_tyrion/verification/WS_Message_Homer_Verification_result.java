@@ -33,7 +33,7 @@ public class WS_Message_Homer_Verification_result extends WS_AbstractMessage {
 
         }else {
 
-            request.put("status", "error");
+            request.put("status", "error_message");
             request.put("error_message", ErrorCode.TOKEN_IS_INVALID.error_message());
             request.put("error_code", ErrorCode.TOKEN_IS_INVALID.error_code());
             return request;

@@ -140,8 +140,7 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
      * rozdělujeme je, aby nikdy nedošlo k záměně a aktualizaci hodnot postupně - nikoliv masivní dávnou.
      */
 
-
-
+    
     class Pair{
         @JsonProperty public String hardware_id;
         @JsonProperty public Settings settings;
