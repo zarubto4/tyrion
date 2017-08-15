@@ -344,7 +344,7 @@ public class Controller_Security extends Controller {
 
                     // Úklid přihlášených websocketů
                     WS_Becki_Website becki_website = (WS_Becki_Website) Controller_WebSocket.becki_website.get(token_model.person.id);
-                    becki_website.onClose();
+                    if(becki_website != null) becki_website.onClose();
 
                     token_model.deleteAuthToken();
                 }
