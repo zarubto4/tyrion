@@ -82,14 +82,21 @@ public class Model_Person extends Model {
 
     @JsonIgnore @Transient public List<String> project_ids = new ArrayList<>();
     @JsonIgnore @Transient public HashMap<String, Boolean> permissions_keys = new HashMap<>();
+    @JsonIgnore @Transient public String cache_picture_link;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true)
+    @JsonProperty @ApiModelProperty(required = true) @Transient
     public String picture_link(){
 
-        if(this.alternative_picture_link != null && alternative_picture_link.contains("http")) return alternative_picture_link;  // Its probably link from GitHub or profile picture from facebook
-        return picture.file_path;
+        if(this.alternative_picture_link != null && alternative_picture_link.contains("http")){
+            cache_picture_link = alternative_picture_link;  // Its probably link from GitHub or profile picture from facebook
+        }
+        else if(picture != null) {
+            cache_picture_link = picture.get_file_path_for_direct_download();
+        }
+        return cache_picture_link;
+
     }
 
 /* JSON IGNORE VALUES --------------------------------------------------------------------------------------------------*/

@@ -1096,6 +1096,11 @@ public class Controller_Person extends Controller {
             Swagger_BASE64_FILE help = form.get();
 
             Model_Person person = Controller_Security.get_person();
+            if(person ==  null) {
+                return GlobalResult.result_badRequest("User not found"); // Just for compiler Error
+            }
+
+            person.cache_picture_link = null;
 
             if(!person.edit_permission()) return GlobalResult.result_forbidden();
 

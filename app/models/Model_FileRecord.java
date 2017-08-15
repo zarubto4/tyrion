@@ -47,6 +47,11 @@ public class Model_FileRecord extends Model {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 
+    @JsonIgnore @Transient public String  get_file_path_for_direct_download(){
+
+        return Server.azure_blob_Link + file_path;
+    }
+
     @JsonIgnore @Transient public String get_fileRecord_from_Azure_inString(){
         try {
 
