@@ -38,7 +38,6 @@ import web_socket.services.WS_HomerServer;
 import web_socket.services.helps_class.ParallelTask;
 
 import javax.persistence.*;
-import java.nio.channels.ClosedChannelException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -551,12 +550,21 @@ public class Model_Board extends Model {
                     }
 
 
-                    case WS_Message_Hardware_autobackup_maked.message_type: {
+                    case WS_Message_Hardware_autobackup_made.message_type: {
 
-                        final Form<WS_Message_Hardware_autobackup_maked> form = Form.form(WS_Message_Hardware_autobackup_maked.class).bind(json);
+                        final Form<WS_Message_Hardware_autobackup_made> form = Form.form(WS_Message_Hardware_autobackup_made.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_AutoBackUp_progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-                        Model_Board.device_autoBackUp_echo(form.get());
+                        Model_Board.device_auto_backup_done_echo(form.get());
+                        return;
+                    }
+
+                    case WS_Message_Hardware_autobackup_making.message_type: {
+
+                        final Form<WS_Message_Hardware_autobackup_making> form = Form.form(WS_Message_Hardware_autobackup_making.class).bind(json);
+                        if (form.hasErrors()) throw new Exception("WS_Message_AutoBackUp_progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+                        Model_Board.device_auto_backup_start_echo(form.get());
                         return;
                     }
 
@@ -685,16 +693,41 @@ public class Model_Board extends Model {
         }
     }
 
-    // Device udělal autobackup
-    @JsonIgnore @Transient public static void device_autoBackUp_echo(WS_Message_Hardware_autobackup_maked help){
+    // Device dělá autobackup
+    @JsonIgnore @Transient public static void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help){
         try {
 
-            terminal_logger.debug("device_autoBackUp_echo:: Deive send Echo about backup device ID:: {} ", help.device_id);
+            terminal_logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.hardware_id);
 
-            Model_Board device = Model_Board.get_byId(help.device_id);
+            Model_Board device = Model_Board.get_byId(help.hardware_id);
 
             if(device == null) {
-                terminal_logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.device_id);
+                terminal_logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
+                return;
+            }
+
+            // TODO notification
+            if(device.developer_kit){
+
+            }
+
+
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+    // Device udělal autobackup
+    @JsonIgnore @Transient public static void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help){
+        try {
+
+            terminal_logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.hardware_id);
+
+            Model_Board device = Model_Board.get_byId(help.hardware_id);
+
+            if(device == null) {
+                terminal_logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
                 return;
             }
             Model_VersionObject c_program_version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", help.build_id).select("id").findUnique();
@@ -703,7 +736,11 @@ public class Model_Board extends Model {
             device.actual_backup_c_program_version = c_program_version;
             device.update();
 
-            return;
+            // TODO notification
+            if(device.developer_kit){
+
+            }
+
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
