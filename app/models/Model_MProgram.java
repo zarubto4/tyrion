@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(description = "Model of M_Program",
         value = "M_Program")
+@Table(name="MProgram")
 public class Model_MProgram extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

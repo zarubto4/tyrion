@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
+@Table(name="Invitation")
 public class Model_Invitation extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

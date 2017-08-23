@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
@@ -30,7 +31,8 @@ import java.util.*;
 
 
 @Entity
-@Table(name = "model_mprogram_instance_paramete")
+@ApiModel( value = "MProgramInstanceParameter", description = "")
+@Table(name="MProgramInstanceParameter")
 public class Model_MProgramInstanceParameter extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

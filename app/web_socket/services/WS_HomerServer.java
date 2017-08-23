@@ -44,7 +44,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
     public WS_HomerServer(Model_HomerServer server) {
         super();
-        identifikator = server != null ? server.unique_identificator : null;
+        identifikator = server.id.toString();
         super.webSCtype =  this;
     }
 

@@ -362,20 +362,7 @@
                                 <i class="fa fa-wrench"></i> <span>Tariff Management</span>
                             </a>
                         </li>
-                    @if(request.contains("external_servers")) {
-                        <li class="active">
-                    } else {
-                        <li>
-                    }
-                            <a href='@routes.Controller_Dashboard.external_servers()'>
-                                <i class="fa fa-wrench"></i> <span>External servers</span>
-                            </a>
-                        </li>
-                    @if(request.contains("permission")) {
-                        <li class="active">
-                    } else {
-                        <li>
-                    }
+
                             <a href='@routes.Controller_Dashboard.permissions_summary()'>
                                 <i class="fa fa-wrench"></i> <span>System Roles & Permissions</span>
                             </a>

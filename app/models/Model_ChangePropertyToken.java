@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
+@Table(name="ChangePropertyToken")
 public class Model_ChangePropertyToken extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

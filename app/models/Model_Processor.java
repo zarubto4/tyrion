@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of Processor",
-        value = "Processor")
+@ApiModel(description = "Model of Processor", value = "Processor")
+@Table(name="Processor")
 public class Model_Processor extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -31,6 +31,8 @@ public class Model_Processor extends Model {
                                                             @ApiModelProperty(required = true)  public int speed;
 
     @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
+
+    @JsonIgnore public boolean removed_by_user;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 

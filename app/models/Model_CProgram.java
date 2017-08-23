@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_Security;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value="C_Program", description="Object represented C_Program in database")
+@Table(name="CProgram")
 public class Model_CProgram extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -52,7 +54,9 @@ public class Model_CProgram extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  private List<Model_VersionObject> version_objects = new ArrayList<>();
 
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                  public Model_TypeOfBoard   type_of_board_default;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_TypeOfBoard type_of_board_default;  // Vazba pokud tento C_Program je výchozí program desky
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_TypeOfBoard type_of_board_test; // Vaza pokud je tento C Program výchozím testovacím programem desky
+
     @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL) public Model_VersionObject default_main_version;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                 public Model_VersionObject example_library;          // Program je příklad pro použití knihovny
 
@@ -302,21 +306,19 @@ public class Model_CProgram extends Model {
 
         // C_Program is Private registred under Project
         if(project != null) {
-
             terminal_logger.debug("save :: is a private Program");
             this.azure_c_program_link = project.get_path() + "/c-programs/" + this.id;
 
         }else{    // C_Program is public C_Program for every users
-
             terminal_logger.debug("save :: is a public Program");
             this.azure_c_program_link = "public-c-programs/"  + this.id;
-
         }
+
+        super.save();
 
         // Call notification about project update
         if(project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
 
-        super.save();
 
         if(project != null){
             project.cache_list_c_program_ids.add(id);
@@ -390,7 +392,7 @@ public class Model_CProgram extends Model {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if(Controller_Security.get_person().permissions_keys.containsKey("c_program_update_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_update_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_update")) return true;
+        if(Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_update.name())) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
@@ -409,7 +411,7 @@ public class Model_CProgram extends Model {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if(Controller_Security.get_person().permissions_keys.containsKey("c_program_read_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_read_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_read")) return true;
+        if(Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_read.name())) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
         if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).eq("id", id).findRowCount() > 0){
@@ -426,7 +428,7 @@ public class Model_CProgram extends Model {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if(Controller_Security.get_person().permissions_keys.containsKey("c_program_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_edit_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_edit")) return true;
+        if(Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_edit.name())) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
@@ -442,7 +444,7 @@ public class Model_CProgram extends Model {
     @JsonProperty @Transient public boolean delete_permission()  {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if(Controller_Security.get_person().permissions_keys.containsKey("c_program_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_delete_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_delete")) return true;
+        if(Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_delete.name())) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
@@ -455,8 +457,12 @@ public class Model_CProgram extends Model {
         return false;
 
     }
+    @JsonProperty @Transient  @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        return Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_community_publishing_permission.name()) ? true : null;
+    }
 
-    public enum permissions{ c_program_create,  c_program_update, c_program_read , c_program_edit, c_program_delete; }
+    public enum permissions{ C_Program_create,  C_Program_update, C_Program_read , C_Program_edit, C_Program_delete, C_Program_community_publishing_permission;}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

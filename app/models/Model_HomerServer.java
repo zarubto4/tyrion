@@ -19,6 +19,7 @@ import utilities.document_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.Enum_Cloud_HomerServer_type;
 import utilities.enums.Enum_Log_level;
+import utilities.enums.Enum_Online_status;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
@@ -40,8 +41,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 @Entity
-@ApiModel(description = "Model of HomerServer",
-        value = "HomerServer")
+@ApiModel(description = "Model of HomerServer", value = "HomerServer")
+@Table(name="HomerServer")
 public class Model_HomerServer extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -50,24 +51,27 @@ public class Model_HomerServer extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                       @Id                      public String unique_identificator;
-                                       @JsonIgnore              public String hash_certificate;
+    @Id          public UUID id;
+    @JsonIgnore  public String connection_identificator;
+    @JsonIgnore  public String hash_certificate;
 
-    @JsonIgnore                                                 public String personal_server_name;
-    @Column(columnDefinition = "TEXT")                          public String json_additional_parameter;
+    @JsonIgnore public Date date_of_create;
 
-    @ApiModelProperty(required = true, readOnly = true)         public Integer mqtt_port;              // Přidává se destination_address + "/" mqtt_port
+                                                                public String personal_server_name;
+    @Column(columnDefinition = "TEXT")                          public String json_additional_parameter;        // DB dokument - smožností rozšíření na cokoliv
+
+    @ApiModelProperty(required = true, readOnly = true)         public Integer mqtt_port;                       // Přidává se destination_address + "/" mqtt_port
     @ApiModelProperty(required = true, readOnly = true)         public String mqtt_username;
     @ApiModelProperty(required = true, readOnly = true)         public String mqtt_password;
 
 
-    @ApiModelProperty(required = true, readOnly = true)         public Integer grid_port;              // Přidává se destination_address + "/" grid_ulr
-    @ApiModelProperty(required = true, readOnly = true)         public Integer web_view_port;           // Přidává se destination_address + "/" web_view_port
-    @ApiModelProperty(required = true, readOnly = true)         public Integer server_remote_port;     // Přidává se destination_address + "/" web_view_port
+    @ApiModelProperty(required = true, readOnly = true)         public Integer grid_port;                       // Přidává se destination_address + "/" grid_ulr
+    @ApiModelProperty(required = true, readOnly = true)         public Integer web_view_port;                   // Přidává se destination_address + "/" web_view_port
+    @ApiModelProperty(required = true, readOnly = true)         public Integer server_remote_port;              // Přidává se destination_address + "/" web_view_port
 
     @ApiModelProperty(required = true, readOnly = true)         public String server_url;  // Může být i IP adresa
 
-                                        @JsonIgnore             public Enum_Cloud_HomerServer_type server_type;  // Určující typ serveru
+                                                                public Enum_Cloud_HomerServer_type server_type;  // Určující typ serveru
                                                                 public Date time_stamp_configuration;
 
                                                                 public Integer days_in_archive;
@@ -76,21 +80,27 @@ public class Model_HomerServer extends Model{
                                                                 public Enum_Log_level log_level;
 
 
-
     @JsonIgnore @OneToMany(mappedBy="cloud_homer_server", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HomerInstance> cloud_instances  = new ArrayList<>();
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient  public boolean server_is_online(){ return Controller_WebSocket.homer_servers.containsKey(unique_identificator);}
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient  public Enum_Online_status online_state(){
+
+        return Controller_WebSocket.homer_servers.containsKey(id.toString()) ? Enum_Online_status.online : Enum_Online_status.offline;
+    }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public Swagger_HomerServer_public_Detail get_public_info(){
 
         Swagger_HomerServer_public_Detail detail = new Swagger_HomerServer_public_Detail();
-        detail.unique_identificator = unique_identificator;
-        detail.personal_server_name =personal_server_name;
-        detail.online_state = server_is_online();
+        detail.id = id.toString();
+        detail.personal_server_name = personal_server_name;
+        detail.server_type = server_type;
+        detail.online_state = online_state();
+        detail.edit_permission   = this.edit_permission();
+        detail.update_permission = false; // TODO: Doplnit až půjde rekonfigurovat server nadálku - Long term task
+        detail.delete_permission = this.delete_permission();
 
         return detail;
     }
@@ -108,28 +118,23 @@ public class Model_HomerServer extends Model{
         
         this.time_stamp_configuration = new Date();
 
-        if(hash_certificate == null)  // Určeno pro možnost vytvořit testovací server - manuální doplnění hash_certificate
-        while(true){ // I need Unique Value
-            hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
-            if (find.where().eq("hash_certificate",hash_certificate).findUnique() == null) break;
-        }
-
-        if(unique_identificator == null)    // Určeno pro možnost vytvořit testovací server - manuální doplnění unique_identificator
-
-        unique_identificator = UUID. randomUUID().toString().substring(0,10);
+        // TODO - ADD SSH public KEY from USER
+        hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+        connection_identificator = UUID. randomUUID().toString() + "-" + UUID. randomUUID().toString() ;
+        date_of_create = new Date();
 
         super.save();
 
         //Cache Update
-        cache.put(this.unique_identificator, this);
+        cache.put(this.id.toString(), this);
     }
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update :: Update object unique_identificator: {}",  this.unique_identificator);
+        terminal_logger.debug("update :: Update object id: {}",  this.id.toString());
 
         //Cache Update
-        cache.put(this.unique_identificator, this);
+        cache.put(this.id.toString(), this);
 
         super.update();
         //this.set_new_configuration_on_homer();
@@ -137,10 +142,10 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.debug("delete :: Delete object unique_identificator: {}",  this.unique_identificator);
+        terminal_logger.debug("delete :: Delete object id: {}",  this.id.toString());
 
         //Cache Update
-        cache.remove(this.unique_identificator);
+        cache.remove(this.id.toString());
 
         super.delete();
     }
@@ -149,15 +154,14 @@ public class Model_HomerServer extends Model{
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public WS_HomerServer get_server_webSocket_connection(){
-        return Controller_WebSocket.homer_servers.get(this.unique_identificator);
+        return Controller_WebSocket.homer_servers.get(this.id.toString());
     }
 
     @JsonIgnore @Transient public static Model_HomerServer get_destination_server(){
 
 
-        String unique_identificator = null;
+        String server_id = null;
         Integer count = null;
-        
 
         if(Server.server_mode == Enum_Tyrion_Server_mode.production){
 
@@ -165,24 +169,24 @@ public class Model_HomerServer extends Model{
 
             for (Object unique_identificator_help : Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findIds()) {
 
-                Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", unique_identificator).findRowCount();
+                Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.id", server_id).findRowCount();
 
                 if (actual_Server_count == 0) {
-                    unique_identificator = unique_identificator_help.toString();
+                    server_id = unique_identificator_help.toString();
                     break;
-                } else if (unique_identificator == null) {
+                } else if (server_id == null) {
 
-                    unique_identificator = unique_identificator_help.toString();
+                    server_id = unique_identificator_help.toString();
                     count = actual_Server_count;
 
                 } else if (actual_Server_count < count) {
-                    unique_identificator = unique_identificator_help.toString();
+                    server_id = unique_identificator_help.toString();
                     count = actual_Server_count;
                 }
             }
 
-            terminal_logger.debug("get_destination_server:: Detination server is " + unique_identificator);
-            return Model_HomerServer.get_byId(unique_identificator);
+            terminal_logger.debug("get_destination_server:: Detination server is " + server_id);
+            return Model_HomerServer.get_byId(server_id);
 
         }
 
@@ -202,24 +206,24 @@ public class Model_HomerServer extends Model{
 
                 for (Object unique_identificator_help : Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.public_server).findIds()) {
 
-                    Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.unique_identificator", unique_identificator).findRowCount();
+                    Integer actual_Server_count = Model_HomerInstance.find.where().eq("cloud_homer_server.id", server_id).findRowCount();
 
                     if (actual_Server_count == 0) {
-                        unique_identificator = unique_identificator_help.toString();
+                        server_id = unique_identificator_help.toString();
                         break;
-                    } else if (unique_identificator == null) {
+                    } else if (server_id == null) {
 
-                        unique_identificator = unique_identificator_help.toString();
+                        server_id = unique_identificator_help.toString();
                         count = actual_Server_count;
 
                     } else if (actual_Server_count < count) {
-                        unique_identificator = unique_identificator_help.toString();
+                        server_id = unique_identificator_help.toString();
                         count = actual_Server_count;
 
                     }
                 }
 
-                return Model_HomerServer.get_byId(unique_identificator);
+                return Model_HomerServer.get_byId(server_id);
             }
         }
 
@@ -289,7 +293,7 @@ public class Model_HomerServer extends Model{
 
         try {
 
-            if (!Controller_WebSocket.homer_servers.containsKey(this.unique_identificator)) {
+            if (!Controller_WebSocket.homer_servers.containsKey( this.id.toString())) {
 
                 ObjectNode request = Json.newObject();
                 request.put("message_type", json.get("message_type").asText());
@@ -297,12 +301,12 @@ public class Model_HomerServer extends Model{
                 request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
                 request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
                 request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-                request.put("websocket_identificator", this.unique_identificator);
+                request.put("websocket_identificator",  this.id.toString());
 
                 return request;
             }
 
-            return Controller_WebSocket.homer_servers.get(this.unique_identificator).write_with_confirmation(json, time, delay, number_of_retries);
+            return Controller_WebSocket.homer_servers.get( this.id.toString()).write_with_confirmation(json, time, delay, number_of_retries);
 
         }catch (ExecutionException e){
             terminal_logger.error("Model_HomerServer:: write_with_confirmation ExecutionException");
@@ -313,7 +317,7 @@ public class Model_HomerServer extends Model{
             request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
             request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", this.unique_identificator);
+            request.put("websocket_identificator",  this.id.toString());
             return request;
 
         }catch (InterruptedException e){
@@ -325,7 +329,7 @@ public class Model_HomerServer extends Model{
             request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
             request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", this.unique_identificator);
+            request.put("websocket_identificator",  this.id.toString());
             return request;
 
         } catch (ClosedChannelException e) {
@@ -337,7 +341,7 @@ public class Model_HomerServer extends Model{
             request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
             request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", this.unique_identificator);
+            request.put("websocket_identificator",  this.id.toString());
             return request;
 
         } catch (TimeoutException e) {
@@ -349,27 +353,27 @@ public class Model_HomerServer extends Model{
             request.put("error_code", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_code());
             request.put("error_message", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", this.unique_identificator);
+            request.put("websocket_identificator",  this.id.toString());
             return  request;
         }
     }
     
     @JsonIgnore @Transient public void write_without_confirmation(ObjectNode json){
 
-        if(!Controller_WebSocket.homer_servers.containsKey(this.unique_identificator)){
+        if(!Controller_WebSocket.homer_servers.containsKey(  this.id.toString().toString())){
             return;
         }
 
-       Controller_WebSocket.homer_servers.get(this.unique_identificator).write_without_confirmation(json);
+       Controller_WebSocket.homer_servers.get(  this.id.toString().toString()).write_without_confirmation(json);
     }
 
     @JsonIgnore @Transient public void write_without_confirmation(String message_id, ObjectNode json){
 
-        if(!Controller_WebSocket.homer_servers.containsKey(this.unique_identificator)){
+        if(!Controller_WebSocket.homer_servers.containsKey(  this.id.toString().toString())){
             return;
         }
 
-        Controller_WebSocket.homer_servers.get(this.unique_identificator).write_without_confirmation(message_id, json);
+        Controller_WebSocket.homer_servers.get( this.id.toString()).write_without_confirmation(message_id, json);
     }
 
     
@@ -425,7 +429,7 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_list get_homer_server_list_of_instance(){
         try {
-            if(!server_is_online()) throw new InterruptedException();
+
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 15, 0, 2);
             final Form<WS_Message_Homer_Instance_list> form = Form.form(WS_Message_Homer_Instance_list.class).bind(node);
             if(form.hasErrors()){
@@ -436,8 +440,6 @@ public class Model_HomerServer extends Model{
 
             return form.get();
 
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Homer_Instance_list();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Homer_Instance_list();
@@ -448,8 +450,6 @@ public class Model_HomerServer extends Model{
         try {
 
             System.out.println("get_homer_server_list_of_hardware - start");
-
-            if(!server_is_online()) throw new InterruptedException();
 
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 15, 0, 2);
 
@@ -463,8 +463,6 @@ public class Model_HomerServer extends Model{
 
             return form.get();
 
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Homer_Hardware_list();
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Homer_Hardware_list();
@@ -473,7 +471,7 @@ public class Model_HomerServer extends Model{
 
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_number get_homer_server_number_of_instance(){
         try {
-            if(!server_is_online()) throw new InterruptedException();
+
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_number().make_request(), 1000 * 5, 0, 2);
             final Form<WS_Message_Homer_Instance_number> form = Form.form(WS_Message_Homer_Instance_number.class).bind(node);
             if(form.hasErrors()){
@@ -483,8 +481,7 @@ public class Model_HomerServer extends Model{
             }
 
             return form.get();
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Homer_Instance_number();
+
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Homer_Instance_number();
@@ -497,7 +494,6 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_add add_instance(Model_HomerInstance instance){
         try {
 
-            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Homer_Instance_add().make_request(instance.id), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Homer_Instance_add> form = Form.form(WS_Message_Homer_Instance_add.class).bind(node);
@@ -506,7 +502,7 @@ public class Model_HomerServer extends Model{
             return form.get();
 
         }catch (InterruptedException|TimeoutException e){
-            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
+            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , id, " is offline!");
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
@@ -517,7 +513,6 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_destroy remove_instance(List<String> instance_ids) {
         try {
 
-            if(!server_is_online()) throw new InterruptedException();
             JsonNode node =  get_server_webSocket_connection().write_with_confirmation( new WS_Message_Homer_Instance_destroy().make_request(instance_ids), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Homer_Instance_destroy> form = Form.form(WS_Message_Homer_Instance_destroy.class).bind(node);
@@ -525,7 +520,7 @@ public class Model_HomerServer extends Model{
             return form.get();
 
         }catch (InterruptedException|TimeoutException e){
-            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , unique_identificator, " is offline!");
+            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , id, " is offline!");
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
@@ -559,16 +554,15 @@ public class Model_HomerServer extends Model{
     // Supported
 
     @JsonIgnore @Transient  public void is_disconnect(){
-        terminal_logger.debug("is_disconnect:: Tyrion lost connection with Homer server: " + unique_identificator);
+        terminal_logger.debug("is_disconnect:: Tyrion lost connection with Homer server: " + id);
         make_log_disconnect();
     }
 
-    @JsonIgnore @Transient  public WS_Message_Homer_ping ping(){
+    @JsonIgnore @Transient public WS_Message_Homer_ping ping(){
         try {
 
             System.out.println("vyvolávám homer ping ");
 
-            if(!server_is_online()) throw new InterruptedException();
             JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_ping().make_request(), 1000 * 2, 0, 2);
 
             final Form<WS_Message_Homer_ping> form = Form.form(WS_Message_Homer_ping.class).bind(node);
@@ -576,10 +570,8 @@ public class Model_HomerServer extends Model{
 
             return form.get();
 
-        }catch (InterruptedException|TimeoutException e){
-            return new WS_Message_Homer_ping();
         }catch (Exception e){
-            terminal_logger.warn("Cloud Homer server {} Id {} is offline!" , personal_server_name , unique_identificator);
+            terminal_logger.warn("Cloud Homer server {} Id {} is offline!" , personal_server_name , id);
             return new WS_Message_Homer_ping();
         }
     }
@@ -591,7 +583,7 @@ public class Model_HomerServer extends Model{
     public void make_log_connect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Connect.make_request(this.unique_identificator), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Connect.make_request( this.id.toString()), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError("make_log_connect:", e);
             }
@@ -601,7 +593,7 @@ public class Model_HomerServer extends Model{
     public void make_log_disconnect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Disconnect.make_request(this.unique_identificator), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Disconnect.make_request( this.id.toString()), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError("make_log_disconnect:", e);
             }

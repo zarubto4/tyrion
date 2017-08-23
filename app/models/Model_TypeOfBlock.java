@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of TypeOfBlock",
-        value = "TypeOfBlock")
+@ApiModel(value = "TypeOfBlock", description = "Model of TypeOfBlock")
+@Table(name="TypeOfBlock")
 public class Model_TypeOfBlock extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

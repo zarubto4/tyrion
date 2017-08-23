@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
+@Table(name="PasswordRecoveryToken")
 public class Model_PasswordRecoveryToken extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

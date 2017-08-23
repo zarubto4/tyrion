@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 @Entity
 @ApiModel(value = "FloatingPersonToken", description = "Model of FloatingPersonToken")
+@Table(name="FloatingPersonToken")
 public class Model_FloatingPersonToken extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

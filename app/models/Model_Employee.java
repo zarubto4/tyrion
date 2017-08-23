@@ -12,11 +12,13 @@ import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Employee", description = "Model of Employee")
+@Table(name="Employee")
 public class Model_Employee extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

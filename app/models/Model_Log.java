@@ -7,12 +7,14 @@ import io.swagger.annotations.ApiModel;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Log",
         value = "Log")
+@Table(name="Log")
 public class Model_Log extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

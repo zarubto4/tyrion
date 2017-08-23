@@ -1,13 +1,12 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import models.Model_Board;
 import models.Model_Product;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utilities._AAA_printer.Printer_Api;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
@@ -57,12 +56,13 @@ public class Controller_ZZZ_Tester extends Controller {
     public Result test3(){
         try {
 
-            JsonNode body = request().body().asJson();
+            System.out.println("Testuji Apu Printer");
 
-            Model_Board board = Model_Board.get_byId(body.get("full_id").asText());
-            if (board == null) return GlobalResult.result_notFound("Board not found");
+            Printer_Api api = new Printer_Api();
 
-            Model_Board.synchronize_online_state_with_becki(board.id, body.get("status").asBoolean(), board.project_id());
+            // Test of printer
+            // new Label_65_mm();
+
 
             return GlobalResult.result_ok();
         }catch (Exception e){

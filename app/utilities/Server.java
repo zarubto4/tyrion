@@ -93,6 +93,11 @@ public class Server {
 
     //-------------------------------------------------------------------
 
+    public static String PrintNode_url;
+    public static String PrintNode_apiKey;
+
+    //-------------------------------------------------------------------
+
     public static String GoPay_api_url;
     public static String GoPay_client_id;
 
@@ -185,6 +190,11 @@ public class Server {
         Fakturoid_url           = Configuration.root().getString("Fakturoid." + server_mode.name()  +".url");
         Fakturoid_user_agent    = Configuration.root().getString("Fakturoid." + server_mode.name()  +".userAgent");
         Fakturoid_secret_combo  = Configuration.root().getString("Fakturoid." + server_mode.name()  +".secret_combo");
+
+        //  PrintNode Config ------------------------------------------------------------------------------------------------------------
+
+        PrintNode_apiKey        = Configuration.root().getString("PrintNode." + server_mode.name()  +".apiKey");
+        PrintNode_url           = Configuration.root().getString("PrintNode." + server_mode.name()  +".url");
 
         //  GitHub Config -------------------------------------------------------------------------------------------------------------
 

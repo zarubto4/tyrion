@@ -44,7 +44,7 @@ public class Swagger_GridWidget_List {
 
             Swagger_GridWidget_Short_Detail help = new Swagger_GridWidget_Short_Detail();
 
-            help.id                 = gridWidget.id;
+            help.id                 = gridWidget.id.toString();
             help.name               = gridWidget.name;
             help.description        = gridWidget.description;
             help.delete_permission  = gridWidget.delete_permission();

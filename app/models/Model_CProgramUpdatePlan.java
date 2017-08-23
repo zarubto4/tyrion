@@ -28,6 +28,7 @@ import java.util.UUID;
 @Entity
 @ApiModel(description = "Model of CProgramUpdatePlan",
         value = "CProgramUpdatePlan")
+@Table(name="CProgramUpdatePlan")
 public class Model_CProgramUpdatePlan extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -165,7 +166,7 @@ public class Model_CProgramUpdatePlan extends Model {
             }
 
             if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP){
-                binary.download_id =  c_program_version_for_update.c_compilation.id;
+                binary.download_id =  c_program_version_for_update.c_compilation.id.toString();
                 binary.build_id =  c_program_version_for_update.c_compilation.firmware_build_id;
                 binary.program_name = c_program_version_for_update.c_program.name;
                 binary.program_version_name = c_program_version_for_update.version_name;
@@ -177,7 +178,7 @@ public class Model_CProgramUpdatePlan extends Model {
             else{
                 terminal_logger.internalServerError(new IllegalAccessException("Unsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
                 binary.download_id = binary_file.file_path;
-                binary.build_id = "TODO";
+                binary.build_id = "TODO"; // TODO ???
             }
 
             return brief_for_homer;

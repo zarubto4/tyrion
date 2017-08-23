@@ -22,6 +22,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel( value = "FileRecord", description = "Model of FileRecord")
+@Table(name="FileRecord")
 public class Model_FileRecord extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -38,10 +39,10 @@ public class Model_FileRecord extends Model {
                 @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_TypeOfBoard type_of_board;   // type_of_board_picture
                 @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Board board;                 // board_picture
                 @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_Log log;
-                                    @JsonIgnore @OneToOne()                             public Model_BootLoader boot_loader;
-                                   @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)       public Model_VersionObject version_object;
-             @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)      public List<Model_CProgramUpdatePlan> c_program_update_plan  = new ArrayList<>();
-    @JsonIgnore @OneToOne(mappedBy="bin_compilation_file")                              public Model_CCompilation c_compilations_binary_file;
+                @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                           public Model_BootLoader boot_loader;
+                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_VersionObject version_object;
+                @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)   public List<Model_CProgramUpdatePlan> c_program_update_plan  = new ArrayList<>();
+                @JsonIgnore @OneToOne(mappedBy="bin_compilation_file")                  public Model_CCompilation c_compilations_binary_file;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/

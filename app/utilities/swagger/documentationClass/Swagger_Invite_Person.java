@@ -7,9 +7,9 @@ import play.data.validation.Constraints;
 import java.util.List;
 
 
-@ApiModel(description = "Json Model for sharing project with Persons",
-          value = "ShareProject_Person")
-public class Swagger_ShareProject_Person {
+@ApiModel(description = "Json Model for sharing project with Persons, invite to permission group etc..",
+          value = "Invite_Person")
+public class Swagger_Invite_Person {
 
 
     @Constraints.Required

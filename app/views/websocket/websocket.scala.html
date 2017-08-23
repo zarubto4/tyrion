@@ -157,36 +157,25 @@
                         @for( x <- Model_HomerServer.get_all()){
                             <tr>
                                 <td> @x.personal_server_name </td>
-                                <td> @x.unique_identificator </td>
+                                <td> @x.id </td>
                                 <td>
-                                    @if(!x.server_is_online()){
-                                        <p class="small text-red"> Offline </p>
-                                    }else{
-                                        <p class="small text-green"> Online </p>
-                                    }
+
                                 </td>
 
                                 <td>
-                                    @if(x.server_is_online()){
-                                            @x.get_homer_server_number_of_instance().count
-                                    }else{
-                                        <p class="small text-red"> Offline </p>
-                                    }
+                                    
                                 </td>
 
                                 <td align="center">
-                                    <a href=' @routes.Controller_Dashboard.show_websocket_server_detail(  x.unique_identificator )' >
-                                        <button class="btn btn-block btn-info btn-xs">All Instancies</button>
-                                    </a>
                                 </td>
 
 
                                 <td align="center">
-                                    <button onclick="ping_Blocko_Server('@x.unique_identificator')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                    <button onclick="ping_Blocko_Server('@x.id')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="disconnect_Blocko_Server('@x.unique_identificator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    <button onclick="disconnect_Blocko_Server('@x.id')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
                             </tr>
                         }
@@ -224,20 +213,16 @@
                                 <td> @x.personal_server_name </td>
 
                                 <td>
-                                    @if(!x.server_is_online()){
-                                        <p class="small text-red"> Offline </p>
-                                    }else{
-                                        <p class="small text-green"> Online </p>
-                                    }
+
                                 </td>
 
 
                                 <td align="center">
-                                    <button onclick="ping_Compilation_Server('@x.unique_identificator')" class="btn btn-block btn-info btn-xs">Ping</button>
+                                    <button onclick="ping_Compilation_Server('@x.id')" class="btn btn-block btn-info btn-xs">Ping</button>
                                 </td>
 
                                 <td align="center">
-                                    <button onclick="disconnect_Compilation_Server('@x.unique_identificator')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
+                                    <button onclick="disconnect_Compilation_Server('@x.id')" class="btn btn-block btn-danger btn-xs">Disconnect</button>
                                 </td>
                             </tr>
                         }

@@ -15,7 +15,7 @@ import java.util.List;
 public class WS_Message_Make_compilation extends WS_AbstractMessage {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "compilator_build";
+    @JsonIgnore public static final String message_type = "compilator_build";
 
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ public class WS_Message_Make_compilation extends WS_AbstractMessage {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("message_type",       messageType);
+        request.put("message_type", message_type);
         request.put("message_channel",    Model_CompilationServer.CHANNEL);
         request.put("target",             typeOfBoard.compiler_target_name);
         request.put("library_version",    "v0"); // TODO longterm podle verzí komplační knihovny

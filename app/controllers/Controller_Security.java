@@ -201,7 +201,10 @@ public class Controller_Security extends Controller {
 
             // Ověření Person - Heslo a email
             Model_Person person = Model_Person.findByEmailAddressAndPassword(help.mail, help.password);
-            if (person == null) return GlobalResult.result_forbidden("Email or password are wrong");
+            if (person == null){
+                terminal_logger.trace("Email {} or password are wrong", help.mail);
+                return GlobalResult.result_forbidden("Email or password are wrong");
+            }
 
             // Kontrola validity - jestli byl ověřen přes email
             // Jestli není účet blokován
@@ -300,7 +303,7 @@ public class Controller_Security extends Controller {
             result.roles = person.roles;
 
             List<String> permissions = new ArrayList<>();
-            for( Model_Permission m :  Model_Permission.find.where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.value);
+            for( Model_Permission m :  Model_Permission.find.where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.permission_key);
 
             result.permissions = permissions;
 

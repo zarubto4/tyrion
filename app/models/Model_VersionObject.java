@@ -36,6 +36,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel( value = "Version_Object", description = "Model of Version_Object")
+@Table(name="VersionObject")
 public class Model_VersionObject extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -132,7 +133,7 @@ public class Model_VersionObject extends Model {
 
     }
 
-    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail   get_short_library_version(){
+    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail  get_short_library_version(){
         try {
 
             Swagger_Library_Version_Short_Detail help = new Swagger_Library_Version_Short_Detail();
@@ -163,11 +164,18 @@ public class Model_VersionObject extends Model {
             help.update_permission = c_program.update_permission();
             help.author = this.author.get_short_person();
 
+            // Compilation status
             if(this.c_compilation != null){
                 help.status = this.c_compilation.status;
             }else {
                 help.status = Enum_Compile_status.file_with_code_not_found;
             }
+
+            // Main status
+            if(this.default_program != null){
+                help.main_mark = true;
+            }
+
 
             return help;
 
@@ -547,6 +555,7 @@ public class Model_VersionObject extends Model {
         // TODO informace o změně směr Becki!
         super.update();
 
+        cache_refresh();
     }
 
 

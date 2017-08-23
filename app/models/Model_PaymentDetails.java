@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Entity
 @ApiModel(description = "Model of Payment_Details",
         value = "Payment_Details")
+@Table(name="PaymentDetails")
 public class Model_PaymentDetails extends Model {
 
     // Logger

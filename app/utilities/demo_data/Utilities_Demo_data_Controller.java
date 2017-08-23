@@ -13,11 +13,9 @@ import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 
 @Api(value = "Dashboard Private Api", hidden = true)
@@ -277,20 +275,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_4.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_4.save();
 
-            // Testovací server
-            Model_HomerServer cloud_server_5 = new Model_HomerServer();
-            cloud_server_5.unique_identificator = "aaaaaaaaaaaaaaa";
-            cloud_server_5.hash_certificate = "bbbbbbbbbbbbbbb";
-            cloud_server_5.personal_server_name = "Developer-Demo";
-            cloud_server_5.server_url = "localhost";
-            cloud_server_5.grid_port = 8500;
-            cloud_server_5.mqtt_port = 1881;
-            cloud_server_5.mqtt_password = "pass";
-            cloud_server_5.mqtt_username = "User";
-            cloud_server_5.web_view_port = 8501;
-            cloud_server_5.server_type = Enum_Cloud_HomerServer_type.test_server;
-            cloud_server_5.save();
-
             // Nastavím kompilační servery
             Model_CompilationServer compilation_server_1 = new Model_CompilationServer();
             compilation_server_1.personal_server_name = "Perseus";
@@ -299,12 +283,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_CompilationServer compilation_server_2 = new Model_CompilationServer();
             compilation_server_2.personal_server_name = "Pegas";
             compilation_server_2.save();
-
-            Model_CompilationServer compilation_server_3 = new Model_CompilationServer();
-            compilation_server_3.personal_server_name = "Test Server";
-            compilation_server_3.unique_identificator = "test";
-            compilation_server_3.hash_certificate = "testHash";
-            compilation_server_3.save();
 
             return GlobalResult.result_ok();
         } catch (Exception e) {

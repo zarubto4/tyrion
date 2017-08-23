@@ -15,8 +15,8 @@ import java.util.UUID;
 
 
 @Entity
-@ApiModel(description = "Model of Producer",
-        value = "Producer")
+@ApiModel(value = "Producer", description = "Model of Producer")
+@Table(name="Producer")
 public class Model_Producer extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -33,6 +33,7 @@ public class Model_Producer extends Model {
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_GridWidget>  grid_widgets = new ArrayList<>();
 
+    @JsonIgnore public boolean removed_by_user;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 

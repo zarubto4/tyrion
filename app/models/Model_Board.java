@@ -44,6 +44,7 @@ import java.util.concurrent.*;
 
 @Entity
 @ApiModel(value = "Board", description = "Model of Board")
+@Table(name="Board")
 public class Model_Board extends Model {
 
 /* DOCUMENTATION -------------------------------------------------------------------------------------------------------*/
@@ -316,7 +317,7 @@ public class Model_Board extends Model {
             // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
             // který následně vrací latest know online
 
-            if (Model_HomerServer.get_byId(connected_server_id).server_is_online()) {
+            if (Model_HomerServer.get_byId(connected_server_id).online_state() == Enum_Online_status.online) {
 
                 if (cache_status.containsKey(id)) {
                     return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
@@ -1212,7 +1213,7 @@ public class Model_Board extends Model {
                     server_device_sort.put(plan.board.connected_server_id, new ArrayList<Model_CProgramUpdatePlan>());
                 }
 
-                if(!Model_HomerServer.get_byId(plan.board.connected_server_id).server_is_online()){
+                if(Model_HomerServer.get_byId(plan.board.connected_server_id).online_state() != Enum_Online_status.online){
                     terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.get_byId(plan.board.connected_server_id).personal_server_name);
                     plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
                     plan.update();
@@ -1367,7 +1368,7 @@ public class Model_Board extends Model {
 
                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                 b_pair.board = this;
-                b_pair.c_program_version = get_type_of_board().version_scheme.default_main_version;
+                b_pair.c_program_version = get_type_of_board().get_main_c_program().default_main_version;
 
                 b_pairs.add(b_pair);
 

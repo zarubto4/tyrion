@@ -23,8 +23,8 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of C_Compilation",
-        value = "C_Compilation")
+@ApiModel(value = "C_Compilation", description = "Model of C_Compilation")
+@Table(name="CCompilation")
 public class Model_CCompilation extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -33,11 +33,11 @@ public class Model_CCompilation extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                                         @Id public String id;
-                                                                 @JsonIgnore public Date date_of_create;
+    @Id public UUID id;
 
-    @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-                                   @JoinColumn(name="c_compilation_version") public Model_VersionObject version_object;
+    @JsonIgnore public Date date_of_create;
+
+    @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinColumn(name="c_compilation_version") public Model_VersionObject version_object;
 
                                                                 @JsonIgnore  public Enum_Compile_status status;
 
@@ -70,11 +70,8 @@ public class Model_CCompilation extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_CCompilation.find.byId(this.id) == null) break;
-        }
-        this.date_of_create = new Date();
+        date_of_create = new Date();
+
         super.save();
     }
 
@@ -86,6 +83,7 @@ public class Model_CCompilation extends Model {
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_VersionObject.class, version_object.c_program.project_id(), version_object.id))).start();
 
         super.update();
+        this.version_object.cache_refresh();
     }
 
 

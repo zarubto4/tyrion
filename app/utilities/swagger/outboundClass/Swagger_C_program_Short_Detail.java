@@ -3,6 +3,8 @@ package utilities.swagger.outboundClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.constraints.NotNull;
+
 @ApiModel(description = "Json Model with details of C_program>",
         value = "C_program_Short_Detail")
 public class Swagger_C_program_Short_Detail {
@@ -30,4 +32,5 @@ public class Swagger_C_program_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean delete_permission;
+
 }

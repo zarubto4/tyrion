@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Customer", description = "Model of Customer")
+@Table(name="Customer")
 public class Model_Customer extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

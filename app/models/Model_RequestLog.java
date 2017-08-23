@@ -8,11 +8,13 @@ import utilities.logger.Class_Logger;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "RequestLog", description = "Model of RequestLog")
+@Table(name="RequestLog")
 public class Model_RequestLog extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

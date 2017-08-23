@@ -10,6 +10,7 @@ import utilities.logger.Class_Logger;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Date;
 
@@ -21,8 +22,8 @@ import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 @Entity
-@ApiModel(description = "Model for MacAdress Controling",
-          value = "MacAddressRegisterRecord")
+@ApiModel(value = "MacAddressRegisterRecord", description = "Model for MacAdress Controling")
+@Table(name="MacAddressRegisterRecord")
 public class Model_MacAddressRegisterRecord extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

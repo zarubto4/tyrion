@@ -8,6 +8,10 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.logger.Class_Logger;
+import utilities.swagger.outboundClass.Swagger_C_program_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Person_Middle_Detail;
+import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_Role_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -17,6 +21,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "SecurityRole", description = "Model of SecurityRole")
+@Table(name="SecurityRole")
 public class Model_SecurityRole extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -28,16 +33,34 @@ public class Model_SecurityRole extends Model {
         @ApiModelProperty(required = true) public String name;
         @ApiModelProperty(required = true) public String description;
 
-    @JsonIgnore @ManyToMany(mappedBy = "roles")  @JoinTable(name = "person_roles") public List<Model_Person> persons = new ArrayList<>();
-    @JsonIgnore @ManyToMany() public List<Model_Permission> person_permissions = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "roles",fetch = FetchType.LAZY)  @JoinTable(name = "person_roles") public List<Model_Person> persons = new ArrayList<>();
+    @ManyToMany() @OrderBy(value ="permission_key") public List<Model_Permission> person_permissions = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> persons_id()           {  List<String> l = new ArrayList<>();  for( Model_Person m  : persons)   l.add(m.id); return l;  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<String> person_permissions_id(){  List<String> l = new ArrayList<>();  for( Model_Permission m   : person_permissions)   l.add(m.value); return l;  }
-
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Person_Middle_Detail> persons() {  List<Swagger_Person_Middle_Detail> l = new ArrayList<>();  for( Model_Person m  : persons)   l.add(m.get_private_short_person()); return l;  }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Swagger_Role_Short_Detail get_group_short_detail(){
+
+        try {
+            Swagger_Role_Short_Detail help = new Swagger_Role_Short_Detail();
+
+            help.id = id;
+            help.name = name;
+            help.description = description;
+
+            help.delete_permission = delete_permission();
+            help.update_permission = update_permission();
+
+            return help;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+
+        }
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -60,6 +83,13 @@ public class Model_SecurityRole extends Model {
     }
 
     @JsonIgnore @Override public void delete() {
+
+        this.persons = null;
+        this.update();
+
+        this.refresh();
+        super.delete();
+
         terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
     }
 

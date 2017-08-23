@@ -12,7 +12,7 @@ import java.util.List;
 public class Swagger_Instance_Filter {
 
     @ApiModelProperty(required = false) public String project_id;
-    @ApiModelProperty(required = false) public List<String> server_unique_names = new ArrayList<>();
+    @ApiModelProperty(required = false) public List<String> server_unique_ids = new ArrayList<>();
     @ApiModelProperty(required = false) public List<String> instance_types = new ArrayList<>();
 
     @ApiModelProperty(value = "page_number from 1 to N ", required = false)

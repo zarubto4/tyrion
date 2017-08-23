@@ -28,6 +28,7 @@ import java.util.concurrent.TimeoutException;
 
 @Entity
 @ApiModel( value = "HomerInstanceRecord", description = "Model of HomerInstanceRecord")
+@Table(name="HomerInstanceRecord")
 public class Model_HomerInstanceRecord extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -172,7 +173,7 @@ public class Model_HomerInstanceRecord extends Model {
                 this.change_record_as_main();
             }
 
-            if(!main_instance_history.server_is_online()) {
+            if(main_instance_history.server_online_state() != Enum_Online_status.online) {
                 terminal_logger.debug("Server je offline  - Its not possible to continue");
                 return;
             }

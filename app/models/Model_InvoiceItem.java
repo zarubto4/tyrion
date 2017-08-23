@@ -10,8 +10,8 @@ import utilities.enums.Enum_Currency;
 import javax.persistence.*;
 
 @Entity
-@ApiModel(description = "Model of InvoiceItem",
-        value = "InvoiceItem")
+@ApiModel(value = "InvoiceItem", description = "Model of InvoiceItem")
+@Table(name="InvoiceItem")
 public class Model_InvoiceItem extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

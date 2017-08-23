@@ -26,23 +26,7 @@
 
 
     <script>
-            function addPerson(){
-                var mail = document.getElementById("addPersonForm").elements.namedItem("mail").value;
-                $.ajax({
-                    url: '@routes.Controller_Permission.role_add_person("", "")' + mail +"/"+ @role.id,
-                    type: 'PUT',
-                    headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
-                    },
-                    success:function(e){
-                        $("#addPerson input[type=text]").val("");
-                        $("#addPersonModal").css("display","none");
-                        $('#allPersons').load(document.URL +  ' #allPersons');
-                    },
-                    error_message:function(e) {
-                        alert("Unsuccessful. " + e );
-                    }
-                })}
+
     </script>
 
     <div id="addPersonModal" style="display: none;" class="modal">
@@ -132,20 +116,7 @@
 
 
     <script>
-            function addPermission(id){
-                $.ajax({
-                    url: '@routes.Controller_Permission.permission_add_to_role("", "")' + id +"/"+ @role.id,
-                    type: 'PUT',
-                    headers: {
-                        "X-AUTH-TOKEN":getCookie("authToken"),
-                    },
-                    success:function(e){
-                        $('#allPermissions').load(document.URL +  ' #allPermissions');
-                    },
-                    error_message:function(e) {
-                        alert("Unsuccessful. " + e );
-                    }
-                })}
+
     </script>
 
     <script>
@@ -181,16 +152,16 @@
 
                         @for(permission <- Model_Permission.find.all()) {
                             <tr>
-                                <td>@permission.value</td>
+                                <td>@permission.permission_key</td>
                                 <td>@permission.description</td>
 
-                                @if( Model_SecurityRole.find.where().eq("person_permissions.value", permission.value).eq("id", role.id).findUnique() == null) {
+                                @if( Model_SecurityRole.find.where().eq("person_permissions.value", permission.permission_key).eq("id", role.id).findUnique() == null) {
                                     <td>
-                                        <button class="btn btn-block btn-info" type="button" onclick="addPermission('@permission.value')">Add</button>
+                                        <button class="btn btn-block btn-info" type="button" onclick="addPermission('@permission.permission_key')">Add</button>
                                     </td>
                                 }else{
                                     <td>
-                                        <button class="btn btn-block btn-warning" type="button" onclick="removePermission('@permission.value')">Remove</button>
+                                        <button class="btn btn-block btn-warning" type="button" onclick="removePermission('@permission.permission_key')">Remove</button>
                                     </td>
                                 }
                             </tr>

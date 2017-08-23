@@ -22,6 +22,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel( value = "BlockoBlockVersion", description = "Model of BlockoBlockVersion")
+@Table(name="BlockoBlockVersion")
 public class Model_BlockoBlockVersion extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

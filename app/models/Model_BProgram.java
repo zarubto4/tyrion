@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value = "BProgram", description = "Model of BProgram")
+@Table(name="BProgram")
 public class Model_BProgram extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -117,7 +118,7 @@ public class Model_BProgram extends Model {
             // Informace o Serveru
             state.server_id = instance.server_id();
             state.server_name = instance.server_name();
-            state.server_online = instance.server_is_online();
+            state.server_online_state = instance.server_online_state();
 
             return state;
 

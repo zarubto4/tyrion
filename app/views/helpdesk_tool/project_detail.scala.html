@@ -268,11 +268,11 @@
                                 @for(participant <- project.participants){
                                     <tr>
                                         <td>@participant.id</td>
-                                        <td>@participant.user_email()</td>
+                                        <td>@participant.mail()</td>
                                         <td>@participant.full_name()</td>
                                         <td>@participant.state.name()</td>
                                         <td>
-                                            <a href="/admin/helpdesk_tool?email=@participant.user_email()"><button class="btn btn-xs btn-primary btn-block" type="button" title="Open Person"><i class="fa fa-wrench"></i></button></a>
+                                            <a href="/admin/helpdesk_tool?email=@participant.mail()"><button class="btn btn-xs btn-primary btn-block" type="button" title="Open Person"><i class="fa fa-wrench"></i></button></a>
                                         </td>
                                     </tr>
                                 }

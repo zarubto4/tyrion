@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "M_Project_SnapShot_Detail",  description = "Model of Snapshot of versions of M_Project Snapshots")
+@Table(name="MProjectProgramSnapShot")
 public class Model_MProjectProgramSnapShot extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

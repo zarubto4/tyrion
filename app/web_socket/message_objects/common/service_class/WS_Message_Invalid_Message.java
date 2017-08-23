@@ -12,7 +12,7 @@ import utilities.errors.ErrorCode;
 public class WS_Message_Invalid_Message {
 
     // MessageType
-    //  @JsonIgnore public static final String messageType = "tyrionRestartEcho";
+    //  @JsonIgnore public static final String message_type = "tyrionRestartEcho";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 

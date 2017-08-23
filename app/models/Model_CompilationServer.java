@@ -16,18 +16,17 @@ import utilities.Server;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.Enum_Compile_status;
+import utilities.enums.Enum_Online_status;
 import utilities.independent_threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Class_Logger;
+import utilities.swagger.outboundClass.Swagger_CompilerServer_public_Detail;
 import web_socket.message_objects.common.WS_Send_message;
 import web_socket.services.WS_CompilerServer;
 import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compilation;
 import web_socket.message_objects.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name="CompilationServer")
@@ -42,52 +41,66 @@ public class Model_CompilationServer extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                      @Id @ApiModelProperty(required = true)     public String unique_identificator;
+                      @Id @ApiModelProperty(required = true)     public UUID id;
      @Column(unique=true) @ApiModelProperty(required = true)     public String personal_server_name;
-                          @JsonIgnore                            public String hash_certificate;
-    
+
+    @JsonIgnore public String connection_identificator;
+    @JsonIgnore public String hash_certificate;
+
+    @JsonIgnore public Date date_of_create;
 
     @ApiModelProperty(required = true, readOnly = true) @Column(unique=true) public String server_url;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online(){
-        return Controller_WebSocket.compiler_cloud_servers.containsKey(this.unique_identificator);
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty @Transient  public Enum_Online_status online_state(){
+
+        return  Controller_WebSocket.compiler_cloud_servers.containsKey( this.id.toString()) ? Enum_Online_status.online : Enum_Online_status.offline;
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public Swagger_CompilerServer_public_Detail get_public_info(){
+
+        Swagger_CompilerServer_public_Detail detail = new Swagger_CompilerServer_public_Detail();
+        detail.id = this.id.toString();
+        detail.personal_server_name = personal_server_name;
+        detail.online_state = online_state();
+        detail.edit_permission   = this.edit_permission();
+        detail.update_permission = false; // TODO: Doplnit až půjde rekonfigurovat server nadálku - Long term task
+        detail.delete_permission = this.delete_permission();
+
+
+        return detail;
+    }
+
+
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void save(){
 
         terminal_logger.debug("save :: Creating new Object");
-        
-        if(hash_certificate == null)
-        while(true){ // I need Unique Value
-            hash_certificate = UUID.randomUUID().toString();
-            if (Model_CompilationServer.find.where().eq("hash_certificate",hash_certificate).findUnique() == null) break;
-        }
 
-        if(unique_identificator == null)
-        while(true){ // I need Unique Value
-            unique_identificator = UUID. randomUUID().toString().substring(0,6);
-            if (Model_CompilationServer.find.where().eq("unique_identificator",unique_identificator).findUnique() == null) break;
-        }
+        // TODO - ADD SSH public KEY from USER
+        hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+        connection_identificator = UUID. randomUUID().toString() + "-" + UUID. randomUUID().toString() ;
+        date_of_create = new Date();
 
         super.save();
     }
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update :: Update object unique_identificator: {}",  this.unique_identificator);
+        terminal_logger.debug("update :: Update object id: {}",   this.id.toString());
         
         super.update();
     }
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.debug("update :: Delete object unique_identificator: {} ", this.unique_identificator);
+        terminal_logger.debug("update :: Delete object id: {} ",  this.id.toString());
         super.delete();
     }
 
@@ -152,7 +165,7 @@ public class Model_CompilationServer extends Model {
     @JsonIgnore @Transient public WS_Message_Ping_compilation_server ping(){
         try {
 
-            JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get(this.unique_identificator).write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
+            JsonNode node =  Controller_WebSocket.compiler_cloud_servers.get( this.id.toString()).write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(), 1000 * 3, 0, 3);
 
             final Form<WS_Message_Ping_compilation_server> form = Form.form(WS_Message_Ping_compilation_server.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Ping_compilation_server: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")));
@@ -166,7 +179,7 @@ public class Model_CompilationServer extends Model {
     }
 
     @JsonIgnore @Transient public void compiler_server_is_disconnect(){
-        terminal_logger.debug("compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + unique_identificator + " name " + personal_server_name);
+        terminal_logger.debug("compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + id + " name " + personal_server_name);
         make_log_disconnect();
     }
 
@@ -198,7 +211,7 @@ public class Model_CompilationServer extends Model {
     public void make_log_connect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request(this.unique_identificator), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request( this.id.toString()), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }
@@ -208,7 +221,7 @@ public class Model_CompilationServer extends Model {
     public void make_log_disconnect(){
         new Thread( () -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request(this.unique_identificator), null, true);
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request( this.id.toString()), null, true);
             } catch (DocumentClientException e) {
                 terminal_logger.internalServerError(e);
             }

@@ -21,6 +21,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel( value = "GridWidget", description = "Model of GridWidget")
+@Table(name="GridWidget")
 public class Model_GridWidget extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -29,7 +30,7 @@ public class Model_GridWidget extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                               @Id public String id;
+                                               @Id public UUID id;
                                                    public String name;
                 @Column(columnDefinition = "TEXT") public String description;
 
@@ -40,7 +41,8 @@ public class Model_GridWidget extends Model{
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_TypeOfWidget type_of_widget;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Producer producer;
 
-    @JsonIgnore @OneToMany(mappedBy="grid_widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("date_of_create desc")  public List<Model_GridWidgetVersion> grid_widget_versions = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="grid_widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("date_of_create desc")
+    public List<Model_GridWidgetVersion> grid_widget_versions = new ArrayList<>();
 
  /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -52,7 +54,7 @@ public class Model_GridWidget extends Model{
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public String author_id(){
 
         if (cache_value_author_id != null) return cache_value_author_id;
@@ -64,7 +66,7 @@ public class Model_GridWidget extends Model{
     }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public String author_nick_name(){
 
         Model_Person person = get_author();
@@ -74,7 +76,7 @@ public class Model_GridWidget extends Model{
     }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public String producer_id(){
 
         if (cache_value_producer_id != null) return cache_value_producer_id;
@@ -86,7 +88,7 @@ public class Model_GridWidget extends Model{
     }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public String producer_name(){
 
         Model_Producer producer = get_producer();
@@ -117,7 +119,7 @@ public class Model_GridWidget extends Model{
 
     @Transient @JsonIgnore public Swagger_GridWidget_Short_Detail get_grid_widget_short_detail(){
         Swagger_GridWidget_Short_Detail help = new Swagger_GridWidget_Short_Detail();
-        help.id = id;
+        help.id = id.toString();
         help.name = name;
         help.description = description;
         help.versions    = versions();
@@ -168,7 +170,7 @@ public class Model_GridWidget extends Model{
 
     }
 
-    @JsonIgnore @TyrionCachedList
+    @Transient @JsonIgnore @TyrionCachedList
     public Model_Person get_author(){
 
         if(cache_value_author_id == null){
@@ -180,7 +182,7 @@ public class Model_GridWidget extends Model{
         return Model_Person.get_byId(cache_value_author_id);
     }
 
-    @JsonIgnore @TyrionCachedList
+    @Transient @JsonIgnore @TyrionCachedList
     public Model_Producer get_producer(){
 
         if(cache_value_producer_id == null){
@@ -196,29 +198,24 @@ public class Model_GridWidget extends Model{
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
+    @Transient @JsonIgnore @Override public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
 
         order_position = Model_GridWidget.find.where().eq("type_of_widget.id", type_of_widget.id).findRowCount() + 1;
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (get_byId(this.id) == null) break;
-        }
         super.save();
+
     }
 
-    @JsonIgnore @Override public void update() {
+    @Transient @JsonIgnore @Override public void update() {
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
         super.update();
 
     }
 
-
-    @JsonIgnore @Override public void delete() {
+    @Transient @JsonIgnore @Override public void delete() {
 
         terminal_logger.debug("delete :: Delete object Id: {}",  this.id);
 
@@ -268,8 +265,8 @@ public class Model_GridWidget extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  @Transient                                     public boolean create_permission() {return  type_of_widget.update_permission();}
-    @JsonIgnore  @Transient                                     public boolean read_permission()   {return  get_type_of_widget().read_permission();}
+    @JsonIgnore   @Transient                                    public boolean create_permission() {return  type_of_widget.update_permission();}
+    @JsonIgnore   @Transient                                    public boolean read_permission()   {return  get_type_of_widget().read_permission();}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  get_type_of_widget().update_permission();}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  get_type_of_widget().update_permission();}
     @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  get_type_of_widget().delete_permission();}
@@ -288,7 +285,7 @@ public class Model_GridWidget extends Model{
     public static final String CACHE = Model_GridWidget.class.getSimpleName();
     public static Cache<String, Model_GridWidget> cache = null;               // < ID, Model_GridWidget>
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static Model_GridWidget get_byId(String id) {
 
         Model_GridWidget grid_widget = cache.get(id);
@@ -303,7 +300,7 @@ public class Model_GridWidget extends Model{
         return grid_widget;
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static Model_GridWidget get_publicByName(String name) {
         return find.where().isNull("type_of_widget.project").eq("name", name).findUnique();
     }

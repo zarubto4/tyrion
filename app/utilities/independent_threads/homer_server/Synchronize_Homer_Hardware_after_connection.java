@@ -1,11 +1,9 @@
 package utilities.independent_threads.homer_server;
 
-import com.avaje.ebean.Model;
 import com.avaje.ebean.PagedList;
 import models.*;
 import utilities.logger.Class_Logger;
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_overview;
-import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Hardware_list;
 import web_socket.services.WS_HomerServer;
 
 import java.util.ArrayList;
@@ -62,7 +60,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                         if(board.connected_server_id == null){
                             System.out.println("4.4 " + board.id + " Device se ještě nikdy nepřipojil ");
                         }
-                        else if(board.connected_server_id .equals( Model_HomerServer.get_byId( ws_homerServer.get_identificator()).unique_identificator)){
+                        else if(board.connected_server_id .equals( Model_HomerServer.get_byId( ws_homerServer.get_identificator()).id)){
                              System.out.println("4.4 " + board.id + " Device je ofline a tak na něj seru ");
 
                         }else {

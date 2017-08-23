@@ -6,16 +6,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.logger.Class_Logger;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
 
 @Entity
 @ApiModel(value = "Grid_Terminal", description = "Model of Grid_Terminal")
+@Table(name="GridTerminal")
 public class Model_GridTerminal extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

@@ -12,7 +12,8 @@ import java.util.UUID;
 
 
 @Entity
-@ApiModel(description = "Model of BPair", value = "BPair")
+@ApiModel(value = "BPair", description = "Model of BPair")
+@Table(name="BPair")
 public class Model_BPair extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

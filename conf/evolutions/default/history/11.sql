@@ -2,7 +2,7 @@
 # --- !Ups
 
 alter table model_board
-  add column developer_kit boolean;
+  ADD COLUMN IF NOT EXISTS developer_kit boolean;
 
 update model_board set developer_kit = false where developer_kit isnull;
 
@@ -13,7 +13,7 @@ drop table if exists model_c_program_library_version cascade;
 alter table model_board
   drop column if exists developer_kit;
 
-create table model_c_program_library_version (
+create table  model_c_program_library_version (
   library_version_id             varchar(255) not null,
   c_program_version_id           varchar(255) not null,
   constraint pk_model_c_program_library_version primary key (library_version_id, c_program_version_id))

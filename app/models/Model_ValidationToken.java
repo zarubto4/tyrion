@@ -7,12 +7,14 @@ import utilities.logger.Class_Logger;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "ValidationToken", description = "Model of Validation of REST-API Token")
+@Table(name="ValidationToken")
 public class Model_ValidationToken extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

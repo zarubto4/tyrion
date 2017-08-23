@@ -28,6 +28,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "ProductExtension", description = "Model of ProductExtension")
+@Table(name="ProductExtension")
 public class Model_ProductExtension extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

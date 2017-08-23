@@ -14,4 +14,6 @@ public class Swagger_Cloud_Compilation_Server_New {
     @ApiModelProperty(value = "Unique name For Compiler cloud_blocko_server, The name length must be between 6 and 60 characters", required = true)
     public String personal_server_name;
 
+    public String server_url;
+
 }

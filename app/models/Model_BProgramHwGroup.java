@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Hardware_group") // POZOR - Je zde záměrně sjednocen objekt s dokumentační třídou pro swagger Hardware_group.class
+@Table(name="BProgramHwGroup")
 public class Model_BProgramHwGroup extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

@@ -507,7 +507,7 @@ public class Controller_Board extends Controller {
         try {
 
             //Vyhledám objekty
-           List<Model_Processor> processors = Model_Processor.find.all();
+           List<Model_Processor> processors = Model_Processor.find.where().eq("removed_by_user", false).order().asc("processor_name").findList();
 
             // Vracím seznam objektů
            return GlobalResult.result_ok(Json.toJson(processors));
@@ -799,7 +799,7 @@ public class Controller_Board extends Controller {
         try {
 
             // Získání seznamu
-            List<Model_Producer> producers = Model_Producer.find.all();
+            List<Model_Producer> producers = Model_Producer.find.where().eq("removed_by_user", false).order().asc("name").findList();
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(producers));
@@ -945,6 +945,29 @@ public class Controller_Board extends Controller {
             // Uložení objektu do DB
             typeOfBoard.save();
 
+            // Vytvoříme defaultní C_Program pro snížení počtu kroků pro nastavení desky
+            Model_CProgram c_program = new Model_CProgram();
+            c_program.name =  typeOfBoard.name + " default program";
+            c_program.description = "Default program for this device type";
+            c_program.type_of_board_default = typeOfBoard;
+            c_program.type_of_board =  typeOfBoard;
+            c_program.save();
+
+            typeOfBoard.refresh();
+
+            // Vytvoříme testovací C_Program pro snížení počtu kroků pro nastavení desky
+            Model_CProgram c_program_test = new Model_CProgram();
+            c_program_test.name =  typeOfBoard.name + " test program";
+            c_program_test.description = "Test program for this device type";
+            c_program_test.type_of_board_test = typeOfBoard;
+            c_program_test.type_of_board =  typeOfBoard;
+
+            c_program_test.save();
+
+            typeOfBoard.refresh();
+
+            // TODO přidat do cache
+
             return GlobalResult.result_created(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
@@ -1088,8 +1111,9 @@ public class Controller_Board extends Controller {
     public Result typeOfBoard_getAll() {
         try {
 
+            // TODO dá se cachovat
             // Získání seznamu
-            List<Model_TypeOfBoard> typeOfBoards = Model_TypeOfBoard.find.all();
+            List<Model_TypeOfBoard> typeOfBoards = Model_TypeOfBoard.find.where().eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
 
             // Vrácení seznamu
             return  GlobalResult.result_ok(Json.toJson(typeOfBoards));
@@ -1181,23 +1205,6 @@ public class Controller_Board extends Controller {
                 fileRecord.delete();
             }
 
-            // Pokud link není, vygeneruje se nový, unikátní
-            if(type_of_board.azure_picture_link == null){
-
-                terminal_logger.debug("typeOfBoard_uploadPicture - type_of_board.azure_picture_link is null ");
-
-                while(true){ // I need Unique Value
-                    String azure_picture_link = type_of_board.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".bin";
-                    if (Model_TypeOfBoard.find.where().eq("azure_picture_link", azure_picture_link ).findUnique() == null) {
-                        type_of_board.azure_picture_link = azure_picture_link;
-                        type_of_board.update();
-                        break;
-                    }
-                }
-
-                type_of_board.refresh();
-            }
-
             //  data:image/png;base64,
             String[] parts = help.file.split(",");
             String[] type = parts[0].split(":");
@@ -1206,7 +1213,7 @@ public class Controller_Board extends Controller {
             terminal_logger.debug("typeOfBoard_uploadPicture:: Data Type:" + dataType[0] + ":::");
             terminal_logger.debug("typeOfBoard_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
 
-            type_of_board.picture  = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], ".bin" , type_of_board.azure_picture_link);
+            type_of_board.picture  = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], ".bin" , type_of_board.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png");
             type_of_board.update();
 
 
@@ -1240,7 +1247,6 @@ public class Controller_Board extends Controller {
 
             if(!(type_of_board.picture == null)) {
                 Model_FileRecord fileRecord = type_of_board.picture;
-                type_of_board.azure_picture_link = null;
                 type_of_board.picture = null;
                 type_of_board.update();
                 fileRecord.delete();
@@ -1263,6 +1269,15 @@ public class Controller_Board extends Controller {
             consumes = "text/html",
             protocols = "https",
             code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_BootLoader_New",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_BootLoader.class),
@@ -1292,7 +1307,7 @@ public class Controller_Board extends Controller {
             Model_BootLoader boot_loader = new Model_BootLoader();
             boot_loader.date_of_create = new Date();
             boot_loader.name = help.name;
-            boot_loader.changing_note =  help.changing_notes;
+            boot_loader.changing_note =  help.changing_note;
             boot_loader.description = help.description;
             boot_loader.version_identificator = identifier;
             boot_loader.type_of_board = type_of_board;
@@ -1315,6 +1330,15 @@ public class Controller_Board extends Controller {
             consumes = "text/html",
             protocols = "https",
             code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_BootLoader_Edit",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_BootLoader.class),
@@ -1339,8 +1363,9 @@ public class Controller_Board extends Controller {
             if (!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
 
             boot_loader.name = help.name;
-            boot_loader.changing_note = help.changing_notes;
+            boot_loader.changing_note = help.changing_note;
             boot_loader.description = help.description;
+            boot_loader.version_identificator = help.version_identificator;
 
             boot_loader.update();
 
@@ -1395,15 +1420,13 @@ public class Controller_Board extends Controller {
             code = 200
     )
     @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Bootloader_Update",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_BASE64_FILE",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
     )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",      response = Result_Ok.class),
@@ -1413,9 +1436,14 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.MultipartFormData.class)
+    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024 * 5)
     public Result bootLoader_uploadFile(String boot_loader_id) {
         try {
+
+            // Získání JSON
+            final Form<Swagger_BASE64_FILE> form = Form.form(Swagger_BASE64_FILE.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_BASE64_FILE help = form.get();
 
             Model_BootLoader boot_loader = Model_BootLoader.get_byId(boot_loader_id);
             if(boot_loader == null) return GlobalResult.result_notFound("BootLoader boot_loader_id not found");
@@ -1425,23 +1453,10 @@ public class Controller_Board extends Controller {
             if (boot_loader.file != null) boot_loader.file.delete();
                 // return GlobalResult.result_badRequest("You cannot upload file twice!");
 
-            Http.MultipartFormData body = request().body().asMultipartFormData();
-            List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
-
-            //Bin FILE
-            File file = files_from_request.get(0).getFile();
-            if (file == null) return GlobalResult.result_badRequest("File not found!");
-            if (file.length() < 1) return GlobalResult.result_badRequest("File is Empty!");
-
-            int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
-            String file_type = files_from_request.get(0).getFilename().substring(dot);
-
             // Zkontroluji soubor
-            if (!file_type.equals(".bin")) return GlobalResult.result_badRequest("Wrong type of File - \"Bin\" required! ");
-            if ((file.length() / 1024) > 500) return GlobalResult.result_badRequest("File is bigger than 500Kb");
+            if ((help.file.length() / 1024) > 500) return GlobalResult.result_badRequest("File is bigger than 500Kb");
 
-            String binary_file = Model_FileRecord.get_encoded_binary_string_from_File(file);
-            Model_FileRecord file_record = Model_FileRecord.create_Binary_file(boot_loader.get_path(), binary_file, "bootloader.bin");
+            Model_FileRecord file_record = Model_FileRecord.create_Binary_file(boot_loader.get_path(), help.file, "bootloader.bin");
 
             file_record.boot_loader = boot_loader;
             file_record.update();
@@ -1461,17 +1476,6 @@ public class Controller_Board extends Controller {
                 protocols = "https",
                 code = 200
             )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Board_Bootloader_Update",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",      response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),

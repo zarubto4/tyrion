@@ -24,6 +24,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Library", description = "Model of Library")
+@Table(name="Library")
 public class Model_Library extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

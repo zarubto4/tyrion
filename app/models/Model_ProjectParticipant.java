@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Project_participant", description = "Model of Project_participant")
+@Table(name="ProjectParticipant")
 public class Model_ProjectParticipant extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -30,7 +31,7 @@ public class Model_ProjectParticipant extends Model{
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public String id()          { if (person == null) return null; return person.id;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String user_email()  { if (person == null) return this.user_email; return person.mail;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public String mail()  { if (person == null) return this.user_email; return person.mail;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public String full_name()   { if (person == null) return "Unregistered user"; return person.full_name;}
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/

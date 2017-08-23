@@ -20,6 +20,7 @@ import java.util.*;
 
 @Entity
 @ApiModel(value = "ActualizationProcedure", description = "Model of ActualizationProcedure")
+@Table(name="ActualizationProcedure")
 public class Model_ActualizationProcedure extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

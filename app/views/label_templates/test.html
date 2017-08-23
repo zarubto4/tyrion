@@ -1,0 +1,98 @@
+
+@(
+mac: String,
+processor_id: String,
+database_id: String,
+ean_number: String
+)
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+</head>
+<body style="font-family:tahoma">
+<div style="border:2mm solid black; width: 60mm;">
+
+    <!-- Device Name header -->
+    <p style="font-size: medium; margin-top: 0in; margin-bottom: 0.07in; font-size: medium; text-align: center;vertical-align: middle; font-weight: bold;">
+        YODA G3E
+    </p>
+
+    <hr style=" margin-top: -3px;border-top: solid  black; margin-bottom: 0px;"/>
+
+    <!-- Production Number Name header -->
+    <!--  <br /> musí být párové kvuli zastaralé knihovně louskání do PDF -->
+
+    <table style="width: 60mm;">
+        <tr>
+            <td style="vertical-align: text-top; width: 30mm;">
+                <span style="font-size: 7px"><strong>Code: </strong>BYZANCE_YODA_G3E</span><br/>
+                <span style="font-size: 7px"><strong>Product Revision: </strong>R.1</span><br/>
+                <span style="font-size: 7px"><strong>Production batch: </strong>E1-1-112</span><br/>
+                <span style="font-size: 7px"><strong>Made: </strong>24.9.2017</span><br/>
+            </td>
+            <td style="vertical-align: text-top; width: 30mm;">
+                <span style="font-size: 7px"><strong>Tested: </strong>1.10.2017</span><br/>
+                <span style="font-size: 7px"><strong>FW Test Version: </strong>1.0.3</span><br/>
+                <span style="font-size: 7px"><strong>FW Prod Version: </strong>1.4.3</span><br/>
+                <span style="font-size: 7px"><strong>Who tested it: </strong>Tomáš Záruba</span><br/>
+            </td>
+        </tr>
+    </table>
+
+    <table style="width: 60mm;">
+        <tr>
+            <td style="width: 30mm; text-align: center">
+                <ean type="CODE128_UCC" value="@mac"/><br />
+                <span style="font-size: 7px"> <strong>Mac Address: </strong>@mac</span>
+            </td>
+            <td style="width: 30mm; text-align: center">
+                <ean type="CODE128_UCC" value="@processor_id"/><br />
+                <span style="font-size: 8px"><strong>Processor ID: </strong>@processor_id</span>
+            </td>
+        </tr>
+    </table>
+
+    <ean type="POSTNET" value="@mac"/><br />
+    <ean type="CODE128" value="@mac"/><br />
+    <ean type="CODE128_UCC" value="@mac"/><br />
+    <ean type="CODE128_RAW" value="@mac"/><br />
+    <ean type="CODABAR" value="@mac"/><br />
+
+
+    <table style="width: 60mm;">
+        <tr>
+
+            <td style="width: 30mm; text-align: center">
+                <!-- can be used -->
+            </td>
+
+            <td style="width: 30mm; text-align: center">
+                <ean type="EAN13" value="@ean_number"/><br />
+                <span style="font-size: 8px">EAN Number</span>
+            </td>
+        </tr>
+    </table>
+
+    <p style="text-align: center; margin-top: 2px; margin-bottom: 2px">
+        <ean type="CODE128_UCC" value="@database_id"/><br /><br />
+        <span style="font-size: 8px"><strong>Device ID: </strong>@database_id</span>
+    </p>
+
+    <!-- Patička -->
+
+    <hr style=" margin-top: 0px;border-top: solid  black; margin-bottom: -3px;" />
+
+    <p style="font-size: medium; margin-top: 0.0in; margin-bottom: 0.00in; font-size: 12px; text-align: center;vertical-align: middle; font-weight: bold;">
+        Byzance IoT solution s.r.o
+    </p>
+
+    <p style="text-align: center; margin-top: 0.0in; margin-bottom: 0.07in; font-size: 10px; margin-top: 2px; margin-bottom: 2px">
+        Proudly Made in Czech Republic
+    </p>
+
+</div>
+</body>
+</html>

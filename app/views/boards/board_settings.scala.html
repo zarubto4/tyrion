@@ -91,7 +91,7 @@
                   }
                   </td>
                   <td>
-                  @if(typeOfBoard.version_scheme == null){
+                  @if(typeOfBoard.get_main_c_program() == null){
                     <span class="label label-danger">MAIN FIRMWARE NOT SET!</span>
                   }else{
                     <span class="label label-success">FIRMWARE set</span>

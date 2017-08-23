@@ -244,9 +244,9 @@
 
                         @for(permission <- Model_Permission.find.all()) {
                             <tr>
-                                <td>@permission.value</td>
+                                <td>@permission.permission_key</td>
                                 <td>@permission.description</td>
-                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormPermission('@permission.value', '@permission.description')">Edit</button></td>
+                                <td><button class="btn btn-block btn-info" type="button" onclick="showEditFormPermission('@permission.permission_key', '@permission.description')">Edit</button></td>
 
                             </tr>
                         }

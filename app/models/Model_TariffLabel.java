@@ -9,8 +9,8 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of TariffLabel",
-        value = "TariffLabel")
+@ApiModel(value = "TariffLabel", description = "Model of TariffLabel")
+@Table(name="TariffLabel")
 public class Model_TariffLabel extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

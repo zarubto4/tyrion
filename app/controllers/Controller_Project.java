@@ -314,7 +314,7 @@ public class Controller_Project extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_ShareProject_Person",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Invite_Person",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -335,9 +335,9 @@ public class Controller_Project extends Controller {
         try {
 
             // Zpracování Json
-            final Form<Swagger_ShareProject_Person> form = Form.form(Swagger_ShareProject_Person.class).bindFromRequest();
+            final Form<Swagger_Invite_Person> form = Form.form(Swagger_Invite_Person.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_ShareProject_Person help = form.get();
+            Swagger_Invite_Person help = form.get();
 
             // Kontrola objektu
             Model_Project project = Model_Project.get_byId(project_id);
@@ -503,7 +503,7 @@ public class Controller_Project extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_ShareProject_Person",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Invite_Person",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -523,9 +523,9 @@ public class Controller_Project extends Controller {
         try {
 
             // Zpracování Json
-            final Form<Swagger_ShareProject_Person> form = Form.form(Swagger_ShareProject_Person.class).bindFromRequest();
+            final Form<Swagger_Invite_Person> form = Form.form(Swagger_Invite_Person.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_ShareProject_Person help = form.get();
+            Swagger_Invite_Person help = form.get();
 
             //Kontrola objektu
             Model_Project project = Model_Project.get_byId(project_id);

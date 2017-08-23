@@ -19,6 +19,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel( value = "GridWidgetVersion", description = "Model of GridWidgetVersion")
+@Table(name="GridWidgetVersion")
 public class Model_GridWidgetVersion extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

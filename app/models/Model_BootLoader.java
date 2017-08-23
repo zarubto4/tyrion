@@ -23,8 +23,8 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 
 @Entity
-@ApiModel(description = "Model of BootLoader",
-        value = "BootLoader")
+@ApiModel( value = "BootLoader", description = "Model of BootLoader")
+@Table(name="BootLoader")
 public class Model_BootLoader extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -33,8 +33,7 @@ public class Model_BootLoader extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Id
-    @ApiModelProperty(required = true)    public UUID id;
+    @Id @ApiModelProperty(required = true)    public UUID id;
 
     @ApiModelProperty(required = true,
             dataType = "integer", readOnly = true,
@@ -53,11 +52,15 @@ public class Model_BootLoader extends Model {
                                                            @JsonIgnore  @OneToOne()                public Model_TypeOfBoard main_type_of_board;
 
     @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader")                                         public List<Model_Board> boards  = new ArrayList<>();
-
-                     @JsonIgnore  @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)   public Model_FileRecord file;
+                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_FileRecord file;
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+    @Transient @JsonProperty public boolean main_bootloader(){ return main_type_of_board != null;}
+    @Transient @JsonProperty public String  file_path(){ return file != null ? file.get_file_path_for_direct_download() : null;}
+
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

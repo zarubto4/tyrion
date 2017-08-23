@@ -439,26 +439,6 @@
                     "</div></div></div></div></li></ul>");
         }
 
-        function editCode(){
-            $.ajax({
-                url: '@routes.Controller_Code.c_program_update("")' + id,
-                type: 'PUT',
-                contentType: 'application/json',
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
-                    "Content-Type":"application/json"
-                },
-                data: JSON.stringify($("#editCode").serializeObject()),
-                dataType: 'json',
-                success:function(json){
-                    location.reload();
-                },
-                error_message:function(e) {
-                    $("#editCodeModalMessage").css("display", "block");
-                    $("#editCodeModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
-                }
-            })
-        }
 
         function removeCode(){
             $.ajax({
@@ -496,29 +476,6 @@
                 },
                 error_message:function(e) {
                     alert(JSON.stringify(JSON.parse(e.responseText).message));
-                }
-            })
-        }
-
-        function editVersion(){
-            $.ajax({
-                url: '@routes.Controller_Code.c_program_update("")' + openedVersion.version_id,
-                type: 'PUT',
-                contentType: 'application/json',
-                headers: {
-                    "X-AUTH-TOKEN":getCookie("authToken"),
-                    "Content-Type":"application/json"
-                },
-                data: JSON.stringify($("#editVersion").serializeObject()),
-                dataType: 'json',
-                success:function(json){
-                    $("#editVersionModal").modal('hide');
-                    $('#versionsWrapper').load(document.URL +  ' #versions');
-                    openVersion(json);
-                },
-                error_message:function(e) {
-                    $("#editVersionModalMessage").css("display", "block");
-                    $("#editVersionModalMessage p").text(JSON.parse(e.responseText).message).append(JSON.stringify(JSON.parse(e.responseText).exception));
                 }
             })
         }

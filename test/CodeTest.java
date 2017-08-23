@@ -131,7 +131,7 @@ public class CodeTest extends TestHelper {
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.Controller_Code.c_program_update(private_c_program.id).toString())
+                .uri(routes.Controller_Code.c_program_edit(private_c_program.id).toString())
                 .bodyJson(body)
                 .header("X-AUTH-TOKEN", userToken);
 

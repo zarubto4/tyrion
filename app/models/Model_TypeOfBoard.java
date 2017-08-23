@@ -1,7 +1,9 @@
 package models;
 
 import com.avaje.ebean.Model;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.Controller_Security;
@@ -11,16 +13,20 @@ import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
+import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_C_program_Short_Detail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 
 @Entity
-@ApiModel(description = "Model of TypeOfBoard",
-        value = "TypeOfBoard")
+@ApiModel(value = "TypeOfBoard", description = "Model of TypeOfBoard")
+@Table(name="TypeOfBoard")
 public class Model_TypeOfBoard extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -30,9 +36,8 @@ public class Model_TypeOfBoard extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
                                 @Id    public String id;
                                        public String name;
-    @JsonIgnore @Column(unique=true)   public String compiler_target_name;
+                  @Column(unique=true) public String compiler_target_name;
                                        public String revision;
-                       @JsonIgnore     public String azure_picture_link;
    @Column(columnDefinition = "TEXT")  public String description;
 
    @JsonIgnore @ManyToOne public Model_Producer producer;
@@ -45,41 +50,49 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_Board> boards = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="type_of_board",                                   fetch = FetchType.LAZY)  public List<Model_CProgram> c_programs = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_BootLoader> boot_loaders = new ArrayList<>();
-    @JsonIgnore @OneToOne (mappedBy="main_type_of_board",                              fetch = FetchType.LAZY)  public Model_BootLoader main_boot_loader;
-    @JsonIgnore @OneToOne(mappedBy="type_of_board_default", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public Model_CProgram version_scheme;
 
-    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",                               fetch = FetchType.LAZY)  public List<Model_TypeOfBoardFeatures> features = new ArrayList<>();
-    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards",                               fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BootLoader> boot_loaders = new ArrayList<>();
 
-    @JsonIgnore              public boolean removed_by_user;
+    @JsonIgnore @OneToOne (mappedBy="main_type_of_board", fetch = FetchType.LAZY) public Model_BootLoader main_boot_loader;
+
+    @JsonIgnore @OneToOne(mappedBy="type_of_board_default", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram main_c_program;
+    @JsonIgnore @OneToOne(mappedBy="type_of_board_test",    cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram test_program;
+
+
+    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards", fetch = FetchType.LAZY)  public List<Model_TypeOfBoardFeatures> features = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards", fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
+
+    @JsonIgnore public boolean removed_by_user;
 
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_processor_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_picture_link;
     @JsonIgnore @Transient @TyrionCachedList public  String cache_value_main_bootloader_id;
-    @JsonIgnore @Transient @TyrionCachedList public  String cache_main_c_program_id;            //TODO
+
+    @JsonIgnore @Transient @TyrionCachedList public  String cache_main_c_program_version_id;    // Výchozí defaault firmware chache
+    @JsonIgnore @Transient @TyrionCachedList public  String cache_main_c_program_id;
+    @JsonIgnore @Transient @TyrionCachedList public  String cache_test_program_version_id;      // testovací firmware chache
+    @JsonIgnore
+    @Transient @TyrionCachedList public  String cache_test_c_program_id;
+
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_name(){ return get_producer().name;}
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String producer_id(){ return cache_value_producer_id  != null ? cache_value_producer_id : get_producer().id;}
+    @Transient @JsonProperty public String producer_name(){ return get_producer().name;}
+    @Transient @JsonProperty public String producer_id(){ return cache_value_producer_id  != null ? cache_value_producer_id : get_producer().id;}
+    @Transient @JsonProperty public String processor_name(){ return get_processor().processor_name;}
+    @Transient @JsonProperty public String processor_id(){ return cache_value_processor_id  != null ? cache_value_processor_id : get_processor().id;}
 
-    @ApiModelProperty(readOnly =true) @Transient @JsonProperty public String target_name(){ return compiler_target_name;}
-    @ApiModelProperty(required =true) @Transient @JsonProperty public String picture_link(){
-
+    @Transient @JsonProperty @TyrionCachedList
+    public String picture_link(){
         try {
 
             if( cache_value_picture_link == null) {
-
-                if (this.azure_picture_link == null) {
-                    return null;
-                }
-
-                terminal_logger.debug("picture_link :: {}{}", Server.azure_blob_Link, azure_picture_link);
-                cache_value_picture_link = Server.azure_blob_Link + azure_picture_link;
+                Model_FileRecord file = Model_FileRecord.find.where().eq("type_of_board.id", id).select("id").findUnique();
+                if(file != null) cache_value_picture_link = file.get_file_path_for_direct_download();
             }
 
             return cache_value_picture_link;
@@ -90,7 +103,7 @@ public class Model_TypeOfBoard extends Model {
         }
     }
 
-    @ApiModelProperty(required =true) @JsonProperty
+    @JsonProperty @TyrionCachedList
     public Model_BootLoader main_boot_loader(){
         try {
 
@@ -103,7 +116,52 @@ public class Model_TypeOfBoard extends Model {
             return Model_BootLoader.get_byId(cache_value_main_bootloader_id);
 
         }catch (Exception e){
-             terminal_logger.internalServerError(e);
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @Transient @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<Model_BootLoader> boot_loaders(){
+        if(!bootloader_edit_permission()) return null;
+        return Model_BootLoader.find.where().eq("type_of_board.id",id).findList();
+    }
+
+    @Transient @JsonProperty(required = false) @ApiModelProperty(required = false) @TyrionCachedList @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Model_CProgram main_c_program(){
+        try {
+
+            if (cache_main_c_program_id == null) {
+                Model_CProgram c_program = Model_CProgram.find.where().eq("type_of_board_default.id", id).select("id").findUnique();
+                if(c_program == null) return null;
+                cache_main_c_program_id = c_program.id;
+            }
+
+            return Model_CProgram.get_byId(cache_main_c_program_id);
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
+    @Transient @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Model_CProgram main_test_c_program(){
+        try {
+
+            if(!test_c_program_edit_permission()) return null;
+
+            if (cache_test_c_program_id == null) {
+                Model_CProgram c_program = Model_CProgram.find.where().eq("type_of_board_test.id", id).select("id").findUnique();
+                if(c_program == null) return null;
+                cache_test_c_program_id = c_program.id;
+            }
+
+            return Model_CProgram.get_byId(cache_test_c_program_id);
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -121,6 +179,24 @@ public class Model_TypeOfBoard extends Model {
             }
 
             return Model_Producer.get_byId(cache_value_producer_id);
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonIgnore @TyrionCachedList
+    public Model_Processor get_processor(){
+
+        try {
+
+            if(cache_value_processor_id == null){
+                Model_Processor processor = Model_Processor.find.where().eq("type_of_boards.id", id).select("id").findUnique();
+                cache_value_processor_id = processor.id;
+            }
+
+            return Model_Processor.get_byId(cache_value_processor_id);
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -165,6 +241,7 @@ public class Model_TypeOfBoard extends Model {
 
         terminal_logger.debug("update :: Update object value: {}",  this.id);
 
+        cache.put(id, this);
         super.update();
 
     }
@@ -174,7 +251,9 @@ public class Model_TypeOfBoard extends Model {
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
         removed_by_user = true;
+        cache.remove(id);
         super.update();
+
     }
 
 
@@ -201,10 +280,14 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_create"); }
     @JsonIgnore   @Transient public boolean read_permission()  {  return true; }
     @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_edit");   }
+    @JsonProperty @Transient public boolean update_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_update");   }
     @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_delete"); }
     @JsonProperty @Transient public boolean register_new_device_permission(){ return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_register_new_device"); }
+    @JsonProperty @Transient public boolean bootloader_edit_permission(){ return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_bootloader"); }
+    @JsonProperty @Transient public boolean default_c_program_edit_permission(){ return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_c_program_edit_permission"); }
+    @JsonProperty @Transient public boolean test_c_program_edit_permission(){ return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_test_c_program_edit_permission"); }
 
-    public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_delete, TypeOfBoard_register_new_device}
+    public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_update, TypeOfBoard_delete, TypeOfBoard_register_new_device, TypeOfBoard_bootloader,  TypeOfBoard_c_program_edit_permission, TypeOfBoard_test_c_program_edit_permission}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -214,6 +297,8 @@ public class Model_TypeOfBoard extends Model {
 
     @JsonIgnore
     public static Model_TypeOfBoard get_byId(String id) {
+
+        if(id == null) return null;
 
         Model_TypeOfBoard typeOfBoard= cache.get(id);
         if (typeOfBoard == null){

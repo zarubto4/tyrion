@@ -11,8 +11,8 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@ApiModel(description = "Model of TypeOfBoard Features ",
-         value = "BoardFeature")
+@ApiModel(value = "BoardFeature", description = "Model of TypeOfBoard Features ")
+@Table(name="BoardFeature")
 public class Model_TypeOfBoardFeatures extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

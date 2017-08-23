@@ -12,7 +12,7 @@ OPTIONS   /*all                                                         @control
 ### DEVELOPERS TEST ############ DEVELOPERS TEST ############### DEVELOPERS TEST ################ DEVELOPERS TEST ###################################################
 POST      /test                                                         @controllers.Controller_ZZZ_Tester.test1()
 GET       /test2                                                        @controllers.Controller_ZZZ_Tester.test2()
-POST      /test_online_status                                           @controllers.Controller_ZZZ_Tester.test3()
+POST      /test3                                                        @controllers.Controller_ZZZ_Tester.test3()
 
 
 
@@ -98,17 +98,19 @@ DELETE    /secure/permission/person/:person_id/:permission_id           @control
 PUT       /secure/permission/:permission_id                             @controllers.Controller_Permission.permission_edit(permission_id)
 
 GET       /secure/permission/all                                        @controllers.Controller_Permission.permission_get_all()
-GET       /secure/role/all                                              @controllers.Controller_Permission.role_get_all()
 
-PUT       /secure/role/permission/:permission_id/:role_id               @controllers.Controller_Permission.permission_add_to_role(permission_id,role_id)
+
+PUT       /secure/role/permission/:role_id                               @controllers.Controller_Permission.permission_add_to_role(role_id)
 DELETE    /secure/role/permission/:permission_id/:role_id               @controllers.Controller_Permission.permission_remove_from_role(permission_id,role_id)
 
-PUT       /secure/role/person/:mail/:role_id                            @controllers.Controller_Permission.role_add_person(mail,role_id)
-DELETE    /secure/role/person/:person_id/:role_id                       @controllers.Controller_Permission.role_remove_person(person_id,role_id)
+PUT       /secure/role/person/:role_id                                  @controllers.Controller_Permission.role_add_person(role_id)
+DELETE    /secure/role/person/:role_id/:person_id                       @controllers.Controller_Permission.role_remove_person(role_id, person_id)
 
 POST      /secure/role                                                  @controllers.Controller_Permission.role_create()
 DELETE    /secure/role/:role_id                                         @controllers.Controller_Permission.role_delete(role_id)
 PUT       /secure/role/:role_id                                         @controllers.Controller_Permission.role_edit(role_id)
+GET       /secure/role/:role_id                                         @controllers.Controller_Permission.role_get(role_id)
+GET       /secure/roles                                                 @controllers.Controller_Permission.role_get_all()
 
 GET       /secure/person/system_acces/:person_id                        @controllers.Controller_Permission.system_access_get_everything(person_id)
 
@@ -242,11 +244,14 @@ GET       /blocko/all_details/:project_id                               @control
 #Public Clasic Rest-Api
 
 POST      /homer_server                                                 @controllers.Controller_ExternalServer.homer_server_create()
-PUT       /homer_server/edit/:server_id                                 @controllers.Controller_ExternalServer.homer_server_edit(server_id)
+
 PUT       /homer_server/set_backup/:server_id                           @controllers.Controller_ExternalServer.homer_server_set_backup_server(server_id)
-PUT       /homer_server/set_main/:server_id                             @controllers.Controller_ExternalServer.homer_server_set_main_server(server_id)
-GET       /homer_server                                                 @controllers.Controller_ExternalServer.homer_server_get_all()
-DELETE    /homer_server/:server_id                                      @controllers.Controller_ExternalServer.homer_server_delete(server_id)
+PUT       /homer_server//set_main/:server_id                             @controllers.Controller_ExternalServer.homer_server_set_main_server(server_id)
+
+GET       /homer_server/all                                             @controllers.Controller_ExternalServer.homer_server_get_all()
+DELETE    /homer_server/server/:server_id                               @controllers.Controller_ExternalServer.homer_server_delete(server_id)
+PUT       /homer_server/server/edit/:server_id                          @controllers.Controller_ExternalServer.homer_server_edit(server_id)
+GET       /homer_server/server/:server_id                               @controllers.Controller_ExternalServer.homer_server_get(server_id)
 
 #Super Private API (Secured by Server Hash-token)
 GET       /cloud/homer_server/file/b_program/:b_program_version_id      @controllers.Controller_ExternalServer.cloud_file_get_b_program_version(b_program_version_id)
@@ -257,6 +262,7 @@ GET       /cloud/homer_server/file/bootloader/:bootloader_version_id    @control
 POST      /compilation_server                                           @controllers.Controller_ExternalServer.compilation_server_create()
 PUT       /compilation_server/:server_id                                @controllers.Controller_ExternalServer.compilation_server_edit(server_id)
 GET       /compilation_server                                           @controllers.Controller_ExternalServer.compilation_server_get_all()
+GET       /compilation_server/:server_id                                @controllers.Controller_ExternalServer.compilation_server_get(server_id)
 DELETE    /compilation_server/:server_id                                @controllers.Controller_ExternalServer.compilation_server_delete(server_id)
 
 
@@ -273,9 +279,9 @@ GET       /actualization_procedure/:actualization_procedure_id          @control
 #C_Program
 POST      /c_program/create                                             @controllers.Controller_Code.c_program_create()
 GET       /c_program/get/:c_program_id                                  @controllers.Controller_Code.c_program_get(c_program_id)
-PUT       /c_program/filter:page_number                                 @controllers.Controller_Code.c_program_getByFilter(page_number: Int)
+PUT       /c_program/filter/:page_number                                @controllers.Controller_Code.c_program_getByFilter(page_number: Int)
 
-PUT       /c_program/:c_program_id                                      @controllers.Controller_Code.c_program_update(c_program_id)
+PUT       /c_program/:c_program_id                                      @controllers.Controller_Code.c_program_edit(c_program_id)
 DELETE    /c_program/:c_program_id                                      @controllers.Controller_Code.c_program_delete(c_program_id)
 
 POST      /c_program/version/create/:c_program_id                       @controllers.Controller_Code.c_program_version_create(c_program_id)
@@ -286,11 +292,9 @@ DELETE    /c_program/version/delete/:version_id                         @control
 POST      /c_program/version/compile                                    @controllers.Controller_Board.compile_c_program_code()
 PUT       /c_program/version/compile/:version_id                        @controllers.Controller_Board.compile_c_program_version(version_id)
 
-POST      /c_program/create_default/scheme                              @controllers.Controller_Code.c_program_createDefault()
-PUT       /c_program/default/mark/:c_program_id/:version_id             @controllers.Controller_Code.c_program_markScheme(c_program_id,version_id)
+PUT       /c_program/default/mark/:version_id                           @controllers.Controller_Code.c_program_markScheme(version_id)
 
 #C_Program/Public
-GET       /c_program/version_for_decision/:version_id                   @controllers.Controller_Code.c_program_get_version_for_decision(version_id)
 PUT       /c_program/version_for_aprove/approve_decision                @controllers.Controller_Code.c_program_public_response()
 PUT       /c_program/version/make_public/:version_id                    @controllers.Controller_Code.c_program_version_make_public(version_id)
 
@@ -421,6 +425,15 @@ DELETE    /type_of_widget/:type_of_widget_id                            @control
 
 
 
+### GARFIELD ############ GARFIELD ############### GARFIELD ################ GARFIELD ##########################################################################################
+################################################################################################################################################################################
+
+POST      /garfiled                                                      @controllers.Controller_Garfield.create_Garfield()
+GET       /garfield                                                      @controllers.Controller_Garfield.get_Garfield_list()
+PUT       /garfiled/:garfield_id                                         @controllers.Controller_Garfield.edit_Garfield(garfield_id)
+DELETE    /garfiled/:garfield_id                                         @controllers.Controller_Garfield.remove_Garfield(garfield_id)
+GET       /garfiled/:garfield_id                                         @controllers.Controller_Garfield.get_Garfield(garfield_id)
+
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
@@ -446,6 +459,7 @@ PUT       /admin/embedded_hardware/result                               @utiliti
 
 # Basic Page Requests
 GET       /                                                             @controllers.Controller_Dashboard.index()
+GET       /admin/report/dashboard                                       @controllers.Controller_Report.report_admin_dashboard()
 GET       /admin/login                                                  @controllers.Controller_Security.admin_login()
 GET       /admin/bugs                                                   @utilities.logger.Server_Logger.show_all_logs()
 GET       /admin/websocket/summary                                      @controllers.Controller_Dashboard.show_web_socket_stats()
@@ -467,9 +481,6 @@ GET       /admin/board_summary                                          @control
 GET       /admin/board_detail/:board_id                                 @controllers.Controller_Dashboard.board_detail(board_id)
 GET       /admin/mac_address_generator                                  @controllers.Controller_Dashboard.mac_address_generator()
 GET       /admin/bootloader_settings/:type_of_board_id                  @controllers.Controller_Dashboard.bootloader_management(type_of_board_id)
-
-# Admin - External Servers
-GET       /admin/external_servers                                       @controllers.Controller_Dashboard.external_servers()
 
 # Admin - Help Desk
 GET       /admin/helpdesk_tool                                          @controllers.Controller_Dashboard.user_summary(email: String?="")

@@ -115,7 +115,7 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
         // Přidám všechny reálné instance, které mají běžet.
         instances_in_database_for_uploud.addAll(
                 Model_HomerInstance.find.where()
-                        .eq("cloud_homer_server.unique_identificator", ws_homerServer.identifikator)
+                        .eq("cloud_homer_server.id", ws_homerServer.identifikator)
                         .ne("removed_by_user", true)
                         .eq("instance_type", Enum_Homer_instance_type.INDIVIDUAL)
                         .isNotNull("actual_instance")

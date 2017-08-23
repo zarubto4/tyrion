@@ -48,10 +48,10 @@
                                 <td>
                                     <div>
                                         <select id="selectServers" name="server_unique_names[]" class="form-control" multiple>
-                                            <option selected="selected" value="@homer_server.unique_identificator"> @homer_server.personal_server_name ( @homer_server.unique_identificator )</option>
+                                            <option selected="selected" value="@homer_server.id"> @homer_server.personal_server_name ( @homer_server.id )</option>
 
                                             @for(server <- Model_HomerServer.get_all()) {
-                                                <option value="@server.unique_identificator"> @server.personal_server_name ( @server.unique_identificator )</option>
+                                                <option value="@server.id"> @server.personal_server_name ( @server.id )</option>
                                             }
                                         </select>
                                     </div>

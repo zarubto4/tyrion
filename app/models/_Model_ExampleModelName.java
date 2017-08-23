@@ -15,6 +15,7 @@ import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Date;
 import java.util.UUID;
@@ -25,6 +26,7 @@ import java.util.UUID;
 
 // @Entity   (We do not want to have it unnecessarily stored in the database in case of Example Model Class)
 @ApiModel(value = "ExampleModelName", description = "Model of ExampleModelName - Swagger annotation documentation")
+// @Table(name="ExampleModelName") (We do not want to have it unnecessarily stored in the database in case of Example Model Class)
 public class _Model_ExampleModelName extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

@@ -27,7 +27,7 @@ public class Controller_Actualization extends Controller {
 
 // REST - API ----------------------------------------------------------------------------------------------------------
 
-    @ApiOperation(value = "get actualization Procedure",
+    @ApiOperation(value = "get actualizationProcedure",
             tags = {"Actualization"},
             notes = "get Actualization Procedure by ID",
             produces = "application/json",

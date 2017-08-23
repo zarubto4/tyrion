@@ -176,7 +176,7 @@ public class Code extends TestHelper {
         body.put("type_of_board_id", typeOfBoard.id);
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Code.c_program_update(c.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Code.c_program_edit(c.id).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .put(body)
                 .get(5000);

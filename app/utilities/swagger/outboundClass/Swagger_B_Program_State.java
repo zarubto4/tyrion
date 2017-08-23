@@ -16,7 +16,7 @@ public class Swagger_B_Program_State {
     public Enum_Online_status instance_status;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public boolean server_online;
+    public Enum_Online_status server_online_state;
 
     @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -25,7 +25,6 @@ public class Swagger_B_Program_State {
     @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String version_name;
-
 
     // Instance Informace
     @ApiModelProperty(required = false, readOnly = true, value = "Id of Instance -its independent object!")
@@ -47,11 +46,6 @@ public class Swagger_B_Program_State {
     @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String server_id;
-
-
-    @ApiModelProperty(required = false, readOnly = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String unique_identificator;
 
 }
 

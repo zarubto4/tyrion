@@ -22,6 +22,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel( value = "M_Project", description = "Model of M_Project")
+@Table(name="MProject")
 public class Model_MProject extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

@@ -31,7 +31,6 @@ import views.html.c_program.c_libraries.library_version;
 import views.html.c_program.public_c_programs.public_c_code;
 import views.html.c_program.public_c_programs.public_c_code_list;
 import views.html.demo_data.demo_data_main;
-import views.html.external_servers.external_servers;
 import views.html.grid.grid_management;
 import views.html.grid.grid_public;
 import views.html.hardware_generator.generator_main;
@@ -285,10 +284,10 @@ public class Controller_Dashboard extends Controller {
     }
 
 
-    public Result ping_homer_server(String unique_identificator) {
+    public Result ping_homer_server(String server_id) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.get_byId(unique_identificator);
+            Model_HomerServer server = Model_HomerServer.get_byId(server_id);
 
             return GlobalResult.result_ok(Json.toJson(server.ping()));
         }catch (Exception e){
@@ -299,7 +298,7 @@ public class Controller_Dashboard extends Controller {
     public Result ping_compilation_server(String identificator) {
         try {
 
-            Model_CompilationServer server = Model_CompilationServer.find.where().eq("unique_identificator", identificator).findUnique();
+            Model_CompilationServer server = Model_CompilationServer.find.where().eq("id", identificator).findUnique();
             WS_Message_Ping_compilation_server result = server.ping();
 
             return GlobalResult.result_ok(Json.toJson(result));
@@ -409,18 +408,6 @@ public class Controller_Dashboard extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-    public Result external_servers(){
-        try {
-
-            Html external_servers_content = external_servers.render();
-            return return_page(external_servers_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
 
     public Result user_summary(String user_email){
         try {

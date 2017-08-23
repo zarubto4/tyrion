@@ -200,7 +200,7 @@ public class Utilities_Hardware_generator_Controller extends Controller {
                 result.features                 = typeOfBoard.features;
                 result.mac_address              = record.mac_address;
 
-                result.type_of_board            = typeOfBoard.target_name();
+                result.type_of_board            = typeOfBoard.compiler_target_name;
 
                 result.firmware_version_id      = firmware.c_compilations_binary_file.version_object.id;
                 result.bootloader_id            = bootloader.boot_loader.id.toString();

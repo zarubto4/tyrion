@@ -44,7 +44,7 @@ public class Controller_WebSocket extends Controller {
      *      a několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
      *      je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
      *
-     *      <Model_HomerServer.unique_identificator, WS_HomerServer>
+     *      <Model_HomerServer.id, WS_HomerServer>
      */
     public static Map<String, WS_HomerServer> homer_servers = new HashMap<>();                  // Sem se vkládají servery z not_synchronize_homer_servers, kde úspěšně proběhla synchronizace
     public static Map<String, WS_HomerServer> not_synchronize_homer_servers = new HashMap<>();  // Sem se vkládají servery, které jsou připojené, ale ještě nejsou synchronizované
@@ -52,7 +52,7 @@ public class Controller_WebSocket extends Controller {
     /*
      *      Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
      *
-     *      <Model_CompilationServer.unique_identificator, WS_CompilerServer>
+     *      <Model_CompilationServer.id, WS_CompilerServer>
      */
     public static Map<String, WS_CompilerServer> compiler_cloud_servers = new HashMap<>();
 
@@ -118,31 +118,32 @@ public class Controller_WebSocket extends Controller {
 /* WEB-SOCKET CONNECTION -----------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "Homer Server Connection", hidden = true, tags = {"WebSocket"})
-    public  WebSocket<String>  homer_cloud_server_connection(String unique_identificator){
+    public  WebSocket<String>  homer_cloud_server_connection(String connection_identificator){
         try{
 
-            terminal_logger.debug("homer_cloud_server_connection:: Incoming connection: Server:  "+ unique_identificator);
+            terminal_logger.debug("homer_cloud_server_connection:: Incoming connection: Server:  "+ connection_identificator);
+
+            //Find object (only ID)
+            Model_HomerServer homer_server_selected = Model_HomerServer.find.where().eq("connection_identificator", connection_identificator).select("id").findUnique();
 
 
-
-            Model_HomerServer homer_server = Model_HomerServer.get_byId(unique_identificator);
-
-            if(homer_server== null){
+            if(homer_server_selected== null){
                 // Připojím se
-                terminal_logger.warn("homer_cloud_server_connection:: Incoming connection: Server:  "+ unique_identificator + "is not registred in database!!!!!");
+                terminal_logger.warn("homer_cloud_server_connection:: Incoming connection: Server:  "+ connection_identificator + "is not registred in database!!!!!");
                 return WebSocket.reject(forbidden("Server side error_message - already connected"));
             }
 
+            // Get Object from Cache
+            Model_HomerServer homer_server =  Model_HomerServer.get_byId(homer_server_selected.id.toString());
 
-            if(homer_servers.containsKey(unique_identificator)) {
+            if(homer_servers.containsKey(homer_server.id.toString())) {
                 terminal_logger.warn("homer_cloud_server_connection::  Server is connected -> Tyrion try to send ping");
 
-                WS_HomerServer ws_blockoServer = homer_servers.get(unique_identificator);
-                WS_Message_Homer_ping result = Model_HomerServer.get_byId(ws_blockoServer.identifikator).ping();
+                WS_Message_Homer_ping result = homer_server.ping();
                 if(!result.status.equals("success")){
                     terminal_logger.warn("homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
-                    if(homer_servers.containsKey(unique_identificator)){
-                        homer_servers.get(unique_identificator).onClose();
+                    if(homer_servers.containsKey(homer_server.id.toString())){
+                        homer_servers.get(homer_server.id.toString()).onClose();
                     }
                     return null;
                 }
@@ -154,7 +155,7 @@ public class Controller_WebSocket extends Controller {
 
             terminal_logger.trace("homer_cloud_server_connection:: Tyrion initialize connection for Homer Server");
             WS_HomerServer server = new WS_HomerServer(homer_server);
-            not_synchronize_homer_servers.put(unique_identificator, server);
+            not_synchronize_homer_servers.put(homer_server.id.toString(), server);
 
             // Připojím se
             terminal_logger.trace("homer_cloud_server_connection:: Connection is successful");
@@ -170,26 +171,35 @@ public class Controller_WebSocket extends Controller {
     }
 
     @ApiOperation(value = "Compilation Server Connection", hidden = true, tags = {"WebSocket"})
-    public  WebSocket<String> code_server_connection(String unique_identificator){
+    public  WebSocket<String> code_server_connection(String connection_identificator){
         try{
 
-            terminal_logger.debug("code_server_connection:: Server is connecting. Server: "+ unique_identificator);
+            terminal_logger.debug("code_server_connection:: Server is connecting. Server: "+ connection_identificator);
 
             terminal_logger.trace("code_server_connection:: Control Server and its unique names!");
-            Model_CompilationServer cloud_compilation_server = Model_CompilationServer.find.where().eq("unique_identificator", unique_identificator).findUnique();
-            if(cloud_compilation_server == null) return WebSocket.reject(forbidden("Server side error_message - unrecognized name"));
 
-            if(compiler_cloud_servers.containsKey(unique_identificator)) {
+            //Find object (only ID)
+            Model_CompilationServer cloud_compilation_server_selected = Model_CompilationServer.find.where().eq("connection_identificator", connection_identificator).select("id").findUnique();
+
+            if(cloud_compilation_server_selected == null) {
+                terminal_logger.warn("code_server_connection:: unrecognized identificator {}", connection_identificator);
+                return WebSocket.reject(forbidden("Server side error_message - unrecognized name"));
+            }
+
+            Model_CompilationServer cloud_compilation_server =  Model_CompilationServer.get_byId(cloud_compilation_server_selected.id.toString());
+
+
+            if(compiler_cloud_servers.containsKey(cloud_compilation_server.id.toString())) {
 
                 try {
                     terminal_logger.warn("code_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
 
-                    WS_CompilerServer ws_compilerServer = compiler_cloud_servers.get(unique_identificator);
+                    WS_CompilerServer ws_compilerServer = compiler_cloud_servers.get(cloud_compilation_server.id.toString());
                     WS_Message_Ping_compilation_server result = ws_compilerServer.server.ping();
                     if (!result.status.equals("success")) {
                         terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
-                        if (compiler_cloud_servers.containsKey(unique_identificator)) {
-                            compiler_cloud_servers.get(unique_identificator).onClose();
+                        if (compiler_cloud_servers.containsKey(cloud_compilation_server.id.toString())){
+                            compiler_cloud_servers.get(cloud_compilation_server.id.toString()).onClose();
                         }
                         return null;
                     }
@@ -200,7 +210,7 @@ public class Controller_WebSocket extends Controller {
                 }catch (NullPointerException e){
 
                     terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
-                    if(compiler_cloud_servers.containsKey(unique_identificator)) compiler_cloud_servers.get(unique_identificator).onClose();
+                    if(compiler_cloud_servers.containsKey(cloud_compilation_server.id.toString())) compiler_cloud_servers.get(cloud_compilation_server.id.toString()).onClose();
 
                 }
             }

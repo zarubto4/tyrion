@@ -4,8 +4,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
+import java.util.List;
+
 @ApiModel(description = "Json Model for new Blocko Server",
-          value = "Cloud_Homer_Server")
+          value = "Cloud_Homer_Server_New")
 public class Swagger_Cloud_Homer_Server_New {
 
     @Constraints.Required
@@ -14,13 +16,12 @@ public class Swagger_Cloud_Homer_Server_New {
     @ApiModelProperty(value = "Personal name For Homer cloud_homer_server. Length must be between 6 and 60 characters", required = true)
     public String personal_server_name;
 
+    @Constraints.Required
     public int mqtt_port;
-
 
     @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
     @Constraints.MaxLength(value = 40, message = "The name must not have more than 5 characters")
     public String mqtt_username;
-
 
     @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
     @Constraints.MaxLength(value = 40, message = "The name must not have more than 5 characters")
@@ -33,4 +34,9 @@ public class Swagger_Cloud_Homer_Server_New {
     @Constraints.MaxLength(value = 60, message = "The name must have at least 60 characters")
     public String server_url;
 
+    @ApiModelProperty(value = "Optiona value - only for private server")
+    public String tarriff_id;
+
+    @ApiModelProperty(value = "Optiona value - only for private server")
+    public List<String> projects_id;
 }

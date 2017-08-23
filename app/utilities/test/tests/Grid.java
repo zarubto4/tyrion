@@ -255,13 +255,13 @@ public class Grid extends TestHelper {
     public void get_grid_widget() {
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidget_get(grid_widget.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidget_get(grid_widget.id.toString().toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .get()
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", grid_widget.id);
+        expected.put("id", grid_widget.id.toString());
         expected.put("name", grid_widget.name);
         expected.put("description",grid_widget.description);
         expected.put("type_of_widget_id", type_of_widget.id);
@@ -304,13 +304,13 @@ public class Grid extends TestHelper {
         body.put("type_of_widget_id", type_of_widget.id);
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidget_update(g.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidget_update(g.id.toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .put(body)
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", g.id);
+        expected.put("id", g.id.toString());
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("description").asText());
         expected.put("type_of_widget_id", type_of_widget.id);
@@ -331,7 +331,7 @@ public class Grid extends TestHelper {
         Model_GridWidget g = grid_widget_create(type_of_widget);
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidget_delete(g.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidget_delete(g.id.toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .delete()
                 .get(5000);
@@ -352,13 +352,13 @@ public class Grid extends TestHelper {
         body.put("design_json", UUID.randomUUID().toString());
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidgetVersion_create(grid_widget.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidgetVersion_create(grid_widget.id.toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .post(body)
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", grid_widget.id);
+        expected.put("id", grid_widget.id.toString());
         expected.put("name", grid_widget.name);
         expected.put("description", grid_widget.description);
         expected.put("type_of_widget_id", type_of_widget.id);
@@ -402,7 +402,7 @@ public class Grid extends TestHelper {
     public void get_grid_widget_grid_widget_version() {
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidgetVersion_getAll(grid_widget.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidgetVersion_getAll(grid_widget.id.toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .get()
                 .get(5000);

@@ -137,30 +137,30 @@
             <div class="box-header with-border">
                 <h3 class="box-title">Default Device Program - FirstVersion of C_Program && First Firmware in Device! </h3>
                 <div class="pull-right">
-                    @if(typeOfBoard.version_scheme == null) {
+                    @if(typeOfBoard.get_main_c_program() == null) {
                         <button class="btn btn-xs btn-block btn-success" type="button" data-toggle="modal" data-target="#newCProgramModal" onclick="createCProgramModal('@typeOfBoard.id')">Create default program</button>
                     }else{
 
-                        <a href="/admin/c_program/public/@typeOfBoard.version_scheme.id" class="btn btn-info btn-xs"><i class="fa fa-wrench"></i></a>
+                        <a href="/admin/c_program/public/@typeOfBoard.get_main_c_program().id" class="btn btn-info btn-xs"><i class="fa fa-wrench"></i></a>
 
                     }
                 </div>
             </div>
             <div class="box-body">
 
-                @if(typeOfBoard.version_scheme != null) {
+                @if(typeOfBoard.get_main_c_program() != null) {
 
                     <div class="row invoice-info">
                         <div class="col-sm-4 invoice-col">
                             <address>
-                                <strong>Name: </strong>  @typeOfBoard.version_scheme.name<br>
-                                <strong>ID:   </strong>  @typeOfBoard.version_scheme.id<br>
-                                <strong>Date: </strong>  @typeOfBoard.version_scheme.date_of_create<br>
+                                <strong>Name: </strong>  @typeOfBoard.get_main_c_program().name<br>
+                                <strong>ID:   </strong>  @typeOfBoard.get_main_c_program().id<br>
+                                <strong>Date: </strong>  @typeOfBoard.get_main_c_program().date_of_create<br>
                             </address>
                         </div>
                         <div class="col-sm-4 invoice-col">
                             <address>
-                                <strong>Description: </strong>  @typeOfBoard.version_scheme.description
+                                <strong>Description: </strong>  @typeOfBoard.get_main_c_program().description
                             </address>
                         </div>
                     </div>
@@ -189,11 +189,11 @@
                                     }
                                 </td>
                                 <td>
-                                    @if(typeOfBoard.version_scheme != null && typeOfBoard.version_scheme.default_main_version != null && typeOfBoard.version_scheme.default_main_version.id == version.id) {
+                                    @if(typeOfBoard.get_main_c_program() != null && typeOfBoard.get_main_c_program().default_main_version != null && typeOfBoard.get_main_c_program().default_main_version.id == version.id) {
                                         <p class="lead text-green">(ITS Main)</p>
                                     }
                                     @if(version.default_program == null && (version.c_compilation.status == Enum_Compile_status.successfully_compiled_and_restored)){
-                                        <button class="btn btn-xs btn-block btn-warning" type="button" onclick="setVersionAsMain('@typeOfBoard.version_scheme.id','@version.id')" > Set as Main </button>
+                                        <button class="btn btn-xs btn-block btn-warning" type="button" onclick="setVersionAsMain('@typeOfBoard.get_main_c_program().id','@version.id')" > Set as Main </button>
                                     }
                                     @if(version.default_program == null && (version.c_compilation.status != Enum_Compile_status.successfully_compiled_and_restored) ){
                                         <p class="text-red"> @version.c_compilation.status</p>
@@ -669,42 +669,6 @@
         })
     }
 
-    function createNewCProgram() {
-
-        $.ajax({
-            url: '@routes.Controller_Code.c_program_createDefault()',
-            type: 'POST',
-            contentType: 'application/json',
-            headers: {
-                "X-AUTH-TOKEN": getCookie("authToken"),
-                "Content-Type": "application/json"
-            },
-            data: JSON.stringify($("#newCProgramForm").serializeObject()),
-            dataType: 'json',
-
-            success: function(data, status) {
-
-                $("#newCProgramForm input[type=text]").val("");
-                $("#newCProgramModal").modal('hide');
-                $('#firmware_summary_wrapper').load(document.URL + ' #firmware_summary');
-
-            },
-            error_message: function(data) {
-
-                BootstrapDialog.show({
-                    message: syntaxHighlight(data),
-                    type: BootstrapDialog.TYPE_DANGER,
-                    buttons: [{
-                        label: 'Close',
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                        }
-                    }]
-
-                });
-            }
-        })
-    }
 
     function createCProgramModal(type_of_device_id) {
         $("#newCProgramModal").css("display", "block");
@@ -712,83 +676,6 @@
         $("#newCProgramForm input[name=type_of_board_id]").val(type_of_device_id);
     }
 
-    function editCProgram(c_program_id) {
-
-        model_data = $("#editCProgramForm").serializeObject();
-
-        $.ajax({
-            url: '@routes.Controller_Code.c_program_update("")' + c_program_id,
-            type: 'PUT',
-            contentType: 'application/json',
-            headers: {
-                "X-AUTH-TOKEN": getCookie("authToken"),
-                "Content-Type": "application/json"
-            },
-            data: JSON.stringify(model_data),
-            dataType: 'json',
-
-            success: function(data, status) {
-
-                $("#editCProgramForm input[type=text]").val("");
-                $("#editCProgramModal").modal('hide');
-                $('#firmware_summary').load(document.URL + ' #firmware_summary');
-
-            },
-            error_message: function(data) {
-
-                BootstrapDialog.show({
-                    message: syntaxHighlight(data),
-                    type: BootstrapDialog.TYPE_DANGER,
-                    buttons: [{
-                        label: 'Close',
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                        }
-                    }]
-
-                });
-            }
-        })
-    }
-
-    function createNewCProgramVersion(c_program_id) {
-
-        model_data = $("#newCProgramVersionForm").serializeObject();
-
-        $.ajax({
-            url: '@routes.Controller_Code.c_program_version_create("")' + c_program_id ,
-            type: 'POST',
-            contentType: 'application/json',
-            headers: {
-                "X-AUTH-TOKEN": getCookie("authToken"),
-                "Content-Type": "application/json"
-            },
-            data: JSON.stringify(model_data),
-            dataType: 'json',
-
-            success: function(data, status) {
-
-                $("#newCProgramVersionForm input[type=text]").val("");
-                $("#newCProgramVersionModal").modal('hide');
-                $('#allCProgramsVersionsWrapper').load(document.URL + ' #allCProgramsVersions');
-
-            },
-            error_message: function(data) {
-
-                BootstrapDialog.show({
-                    message: syntaxHighlight(data),
-                    type: BootstrapDialog.TYPE_DANGER,
-                    buttons: [{
-                        label: 'Close',
-                        action: function(dialogItself) {
-                            dialogItself.close();
-                        }
-                    }]
-
-                });
-            }
-        })
-    }
 
     function uploadBootLoaderFile(boot_loader_id) {
 

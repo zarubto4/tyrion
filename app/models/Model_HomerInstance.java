@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
-import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -23,7 +22,6 @@ import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
-import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homer_instance_with_tyrion.*;
 
@@ -32,8 +30,8 @@ import java.util.*;
 
 
 @Entity
-@ApiModel(description = "Model of HomerInstance",
-        value = "HomerInstance")
+@ApiModel(description = "Model of HomerInstance", value = "HomerInstance")
+@Table(name="HomerInstance")
 public class Model_HomerInstance extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -123,8 +121,8 @@ public class Model_HomerInstance extends Model {
         try {
 
             if (cache_server_id == null) {
-                Model_HomerServer homer_server = Model_HomerServer.find.where().eq("cloud_instances.id", id).select("unique_identificator").findUnique();
-                cache_server_id = homer_server.unique_identificator;
+                Model_HomerServer homer_server = Model_HomerServer.find.where().eq("cloud_instances.id", id).select("id").findUnique();
+                cache_server_id = homer_server.id.toString();
             }
 
             return cache_server_id;
@@ -147,7 +145,7 @@ public class Model_HomerInstance extends Model {
         // který následně vrací latest know online
         try {
 
-            if ( (Model_HomerServer.get_byId(server_id()) != null) && Model_HomerServer.get_byId(server_id()).server_is_online()) {
+            if ( (Model_HomerServer.get_byId(server_id()) != null) && Model_HomerServer.get_byId(server_id()).online_state() == Enum_Online_status.online) {
 
                 if (cache_status.containsKey(id)) {
 
@@ -179,7 +177,7 @@ public class Model_HomerInstance extends Model {
            return Enum_Online_status.unknown_lost_connection_with_server;
         }
     }
-    @Transient @JsonProperty @ApiModelProperty(required = true) public boolean server_is_online()         {  return Model_HomerServer.get_byId(server_id()).server_is_online();}
+    @Transient @JsonProperty @ApiModelProperty(required = true) public Enum_Online_status server_online_state()         {  return Model_HomerServer.get_byId(server_id()).online_state();}
 
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
         try {
@@ -226,7 +224,7 @@ public class Model_HomerInstance extends Model {
             help.server_name = server_id();
             help.server_id = server_id();
             help.instance_status = instance_status();
-            help.server_is_online = server_is_online();
+            help.server_online_state = server_online_state();
             help.update_permission = Model_BProgram.get_byId(b_program_id()).update_permission();
             help.edit_permission = Model_BProgram.get_byId(b_program_id()).edit_permission();
 
@@ -555,7 +553,6 @@ public class Model_HomerInstance extends Model {
     public WS_Message_Instance_device_set_snap set_device_to_instance(List<String> device_ids){
         try{
 
-            if(!this.server_is_online()) throw new InterruptedException();
             JsonNode node = this.write_with_confirmation(new WS_Message_Instance_device_set_snap().make_request(device_ids), 1000*3, 0, 4);
 
             final Form<WS_Message_Instance_device_set_snap> form = Form.form(WS_Message_Instance_device_set_snap.class).bind(node);
@@ -574,7 +571,6 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient public WS_Message_Hardware_overview get_hardware_overview(){
         try {
 
-            if(!this.server_is_online()) throw new InterruptedException();
             ObjectNode node = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.get_boards_id_required_by_record()), 1000*5, 0, 1);
 
             final Form<WS_Message_Hardware_overview> form = Form.form(WS_Message_Hardware_overview.class).bind(node);

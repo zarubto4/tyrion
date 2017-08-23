@@ -22,6 +22,8 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New;
 import utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New;
+import utilities.swagger.outboundClass.Swagger_CompilerServer_public_Detail;
+import utilities.swagger.outboundClass.Swagger_HomerServer_public_Detail;
 
 import java.util.*;
 
@@ -54,7 +56,7 @@ public class Controller_ExternalServer extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Model_HomerServer.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_Cloud_Homer_Server_New.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
@@ -73,6 +75,15 @@ public class Controller_ExternalServer extends Controller {
             Model_HomerServer server = new Model_HomerServer();
             server.personal_server_name = help.personal_server_name;
             server.server_type = Enum_Cloud_HomerServer_type.public_server;
+
+            server.mqtt_password = help.mqtt_password;
+            server.mqtt_port = help.mqtt_port;
+            server.mqtt_username = help.mqtt_username;
+
+            server.grid_port = help.grid_port;
+            server.web_view_port = help.web_view_port;
+
+            server.server_url = help.server_url;
 
             // Kontrola oprávnění
             if(!server.create_permission()) return GlobalResult.result_forbidden();
@@ -236,7 +247,7 @@ public class Controller_ExternalServer extends Controller {
 
     @ApiOperation(value = "get Homer_Servers List",
             tags = {"Admin-External-Server"},
-            notes = "get all Blocko Servers",
+            notes = "get all Homer Servers",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -252,7 +263,7 @@ public class Controller_ExternalServer extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Model_HomerServer.class, responseContainer = "List "),
+            @ApiResponse(code = 200, message = "Ok Result",      response = Swagger_HomerServer_public_Detail.class, responseContainer = "List"),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -263,8 +274,45 @@ public class Controller_ExternalServer extends Controller {
             // Získání seznamu
             List<Model_HomerServer> servers = Model_HomerServer.get_all();
 
+            // Vylistování informací
+            List<Swagger_HomerServer_public_Detail> servers_short = new ArrayList<>();
+            for(Model_HomerServer server : servers) servers_short.add(server.get_public_info());
+
             // Vrácení seznamu
-            return GlobalResult.result_ok(Json.toJson(servers));
+            return GlobalResult.result_ok(Json.toJson(servers_short));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Homer_Server",
+            tags = {"Admin-External-Server"},
+            notes = "get all Homer Servers",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",  response = Model_HomerServer.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result homer_server_get(String server_id){
+        try{
+
+            // Získání seznamu
+            Model_HomerServer serves = Model_HomerServer.get_byId(server_id);
+            if (serves == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
+
+            if(!serves.read_permission()) return GlobalResult.result_forbidden();
+
+
+            // Vrácení seznamu
+            return GlobalResult.result_ok(Json.toJson(serves));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -291,11 +339,11 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result homer_server_delete(String unique_identificator ){
+    public Result homer_server_delete(String server_id){
         try{
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.get_byId(unique_identificator);
+            Model_HomerServer server = Model_HomerServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Kontrola oprávnění
@@ -344,6 +392,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result compilation_server_create(){
         try{
@@ -357,6 +406,7 @@ public class Controller_ExternalServer extends Controller {
             // Vytvářím objekt
             Model_CompilationServer server = new Model_CompilationServer();
             server.personal_server_name = help.personal_server_name;
+            server.server_url = help.server_url;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
             if(! server.create_permission())  return GlobalResult.result_forbidden();
@@ -402,6 +452,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result compilation_server_edit(String server_id ){
         try{
@@ -441,17 +492,61 @@ public class Controller_ExternalServer extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Model_CompilationServer.class, responseContainer = "List "),
+            @ApiResponse(code = 200, message = "Ok Result",      response = Swagger_CompilerServer_public_Detail.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result compilation_server_get_all(){
         try{
 
             // Vyhledám všechny objekty
             List<Model_CompilationServer> servers = Model_CompilationServer.find.all();
 
+            // Vylistování informací
+            List<Swagger_CompilerServer_public_Detail> servers_short = new ArrayList<>();
+            for(Model_CompilationServer server : servers) servers_short.add(server.get_public_info());
+
             // Vracím Objekty
-            return GlobalResult.result_ok(Json.toJson(servers));
+            return GlobalResult.result_ok(Json.toJson(servers_short));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Compilation_Server",
+            tags = {"Admin-External-Server"},
+            notes = "get Compilation_Servers",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Compilation_Server_delete" ),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CompilationServer.class),
+            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result compilation_server_get(String server_id ){
+        try{
+
+            //Zkontroluji validitu
+            Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
+            if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
+
+            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
+            if(! server.read_permission())  return GlobalResult.result_forbidden();
+
+            // Vracím odpověď
+            return GlobalResult.result_ok(Json.toJson(server));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -478,6 +573,7 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @Security.Authenticated(Secured_API.class)
     public Result compilation_server_delete(String server_id ){
         try{
 

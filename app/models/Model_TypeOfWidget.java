@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel(  value = "TypeOfWidget", description = "Model of TypeOfWidget")
+@ApiModel( value = "TypeOfWidget", description = "Model of TypeOfWidget")
+@Table(name="TypeOfWidget")
 public class Model_TypeOfWidget extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -35,7 +36,8 @@ public class Model_TypeOfWidget extends Model{
                                                 @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Project project;
                                                                                    @JsonIgnore  public Integer order_position;
 
-    @JsonIgnore @OneToMany(mappedBy="type_of_widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @ApiModelProperty(required = true) public List<Model_GridWidget> grid_widgets = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="type_of_widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @ApiModelProperty(required = true)
+    public List<Model_GridWidget> grid_widgets = new ArrayList<>();
 
 
     @JsonIgnore              public boolean removed_by_user;
@@ -81,28 +83,28 @@ public class Model_TypeOfWidget extends Model{
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @TyrionCachedList
+    @JsonIgnore @TyrionCachedList @Transient
     public List<Model_GridWidget> get_grid_widgets(){
         try {
 
             // Cache
             if(grid_widgets_ids.isEmpty()) {
 
-                List<Model_GridWidget> blockoBlocks = Model_GridWidget.find.where().eq("type_of_widget.id", id).eq("removed_by_user", false).order().asc("order_position").select("id").findList();
+                List<Model_GridWidget> gridWidgets = Model_GridWidget.find.where().eq("type_of_widget.id", id).eq("removed_by_user", false).order().asc("order_position").select("id").findList();
 
                 // Získání seznamu
-                for (Model_GridWidget blockoBlock : blockoBlocks) {
-                    grid_widgets_ids.add(blockoBlock.id);
+                for (Model_GridWidget gridWidget : gridWidgets) {
+                    grid_widgets_ids.add(gridWidget.id.toString());
                 }
             }
 
-            List<Model_GridWidget> blockoBlock = new ArrayList<>();
+            List<Model_GridWidget> gridWidgets = new ArrayList<>();
 
             for(String blockoBlock_id : grid_widgets_ids){
-                blockoBlock.add(Model_GridWidget.get_byId(blockoBlock_id));
+                gridWidgets.add(Model_GridWidget.get_byId(blockoBlock_id));
             }
 
-            return blockoBlock;
+            return gridWidgets;
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -124,7 +126,7 @@ public class Model_TypeOfWidget extends Model{
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
+    @JsonIgnore @Override @Transient
     public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
@@ -150,14 +152,14 @@ public class Model_TypeOfWidget extends Model{
         cache.put(id, this);
     }
 
-    @JsonIgnore @Override public void update() {
+    @JsonIgnore @Override @Transient public void update() {
 
         terminal_logger.debug("update :: Update object value: {}",  this.id);
         super.update();
 
     }
 
-    @JsonIgnore @Override public void delete() {
+    @JsonIgnore @Override @Transient public void delete() {
 
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
@@ -309,7 +311,7 @@ public class Model_TypeOfWidget extends Model{
     public static final String CACHE = Model_TypeOfWidget.class.getSimpleName();
     public static Cache<String, Model_TypeOfWidget> cache = null;               // < Model_CProgram_id, Model_TypeOfWidget>
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static Model_TypeOfWidget get_byId(String id) {
 
         Model_TypeOfWidget type_of_widget = cache.get(id);
@@ -325,8 +327,7 @@ public class Model_TypeOfWidget extends Model{
     }
 
     // SQL
-
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static List<Model_TypeOfWidget> get_all() {
 
         List<Model_TypeOfWidget> typeOfWidgets = find.where().isNull("project").findList();
@@ -336,12 +337,8 @@ public class Model_TypeOfWidget extends Model{
         return typeOfWidgets;
     }
 
-    @JsonIgnore
-    public static Model_TypeOfWidget get_publicByName(String name) {
-        return find.where().isNull("project").eq("name",name).findUnique();
-    }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static List<Model_TypeOfWidget> get_public() {
         return find.where().isNull("project").order().asc("order_position").findList();
     }

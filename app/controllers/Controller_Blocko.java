@@ -945,8 +945,8 @@ public class Controller_Blocko extends Controller{
             }
 
 
-            if(!help.server_unique_names.isEmpty()){
-                query.where().in("cloud_homer_server.unique_identificator", help.server_unique_names);
+            if(!help.server_unique_ids.isEmpty()){
+                query.where().in("cloud_homer_server.id", help.server_unique_ids);
             }
 
             // Vytvářím seznam podle stránky

@@ -960,7 +960,8 @@ public class Controller_Grid extends Controller {
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TypeOfWidget_New help = form.get();
 
-            if(Model_TypeOfWidget.get_publicByName(help.name) != null) return GlobalResult.result_badRequest("Type_Of_Widget with this name already exists, type a new one.");
+
+            if(   Model_TypeOfWidget.find.where().isNull("project").eq("name",help.name).findRowCount() > 0) return GlobalResult.result_badRequest("Type_Of_Widget with this name already exists, type a new one.");
 
             // Vytvoření objektu
             Model_TypeOfWidget typeOfWidget = new Model_TypeOfWidget();

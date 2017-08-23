@@ -18,6 +18,7 @@ import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.swagger.outboundClass.Swagger_Person_Middle_Detail;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Project_Short_Detail;
 
@@ -30,6 +31,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Person", description = "Model of Person")
+@Table(name="Person")
 public class Model_Person extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -126,7 +128,7 @@ public class Model_Person extends Model {
 
 /* Security Tools @ JSON IGNORE -----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public Swagger_Person_Short_Detail get_short_person() {
 
         Swagger_Person_Short_Detail help = new Swagger_Person_Short_Detail();
@@ -137,7 +139,20 @@ public class Model_Person extends Model {
         return help;
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
+    public Swagger_Person_Middle_Detail get_private_short_person() {
+
+        Swagger_Person_Middle_Detail help = new Swagger_Person_Middle_Detail();
+        help.id = this.id;
+        help.nick_name = this.nick_name;
+        help.full_name = this.full_name;
+        help.mail = this.mail;
+
+        return help;
+    }
+
+
+    @JsonIgnore @Transient
     public void setPassword(String password){
         //this.shaPassword = BCrypt.hashpw(password, BCrypt.gensalt());
     }
@@ -165,8 +180,8 @@ public class Model_Person extends Model {
     public boolean has_permission(String permission){
         try {
 
-            return Model_Permission.find.where().eq("value", permission).eq("roles.persons.id", this.id).findRowCount() +
-                    Model_Permission.find.where().eq("value", permission).eq("persons.id", this.id).findRowCount() > 0;
+            return Model_Permission.find.where().eq("permission_key", permission).eq("roles.persons.id", this.id).findRowCount() +
+                    Model_Permission.find.where().eq("permission_key", permission).eq("persons.id", this.id).findRowCount() > 0;
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return false;
@@ -185,7 +200,7 @@ public class Model_Person extends Model {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
+    @Transient  @JsonIgnore @Override
     public void save() {
 
         terminal_logger.debug("save: Creating new Object");
@@ -198,7 +213,7 @@ public class Model_Person extends Model {
         super.save();
     }
 
-    @JsonIgnore @Override
+    @Transient @JsonIgnore @Override
     public void update() {
 
         terminal_logger.debug("update: ID = {}",  this.id);
@@ -206,7 +221,7 @@ public class Model_Person extends Model {
         super.update();
     }
 
-    @JsonIgnore @Override
+    @Transient @JsonIgnore @Override
     public void delete() {
 
         terminal_logger.debug("delete: ID = {}", this.id);
@@ -221,7 +236,7 @@ public class Model_Person extends Model {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @Transient @JsonIgnore
     public void notification_error(String text){
 
         new Model_Notification()
@@ -254,7 +269,7 @@ public class Model_Person extends Model {
     public static  Cache<String, Model_Person> cache = null; // < Person_id, Person>
     public static  Cache<String, String> token_cache = null; // < Token_Key, Person_is>
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static Model_Person get_byId(String id) {
 
         Model_Person person = cache.get(id);
@@ -264,7 +279,7 @@ public class Model_Person extends Model {
             if (person == null) return null;
 
             for(Model_Permission permission : person.person_permissions){
-                person.permissions_keys.put(permission.value, true);
+                person.permissions_keys.put(permission.permission_key, true);
             }
 
             cache.put(id, person);
@@ -273,7 +288,7 @@ public class Model_Person extends Model {
         return person;
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public static Model_Person get_byAuthToken(String authToken) {
 
         String person_id = token_cache.get(authToken);
@@ -296,7 +311,7 @@ public class Model_Person extends Model {
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-
+    @Transient @JsonIgnore
     public static Model_Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.where().eq("mail", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();}
 
     public static Model.Finder<String,Model_Person>  find = new Model.Finder<>(Model_Person.class);

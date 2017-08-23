@@ -45,6 +45,10 @@ libraryDependencies ++= Seq(
 
   "org.mindrot" % "jbcrypt" % "0.3m",
 
+  "com.itextpdf" % "itextpdf" % "5.5.12",
+  "com.itextpdf" % "barcodes" % "7.0.4",
+  "com.itextpdf.tool" % "xmlworker" % "5.5.12",
+
   javaJdbc,
   filters,
   javaWs,

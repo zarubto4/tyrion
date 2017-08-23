@@ -15,6 +15,7 @@ import java.util.List;
 
 @Entity
 @ApiModel( value = "Permission", description = "Model of Permission")
+@Table(name="Permission")
 public class Model_Permission extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -24,7 +25,7 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(value = "Permission key - \"(static key)\"", required = true, readOnly = true)
-    @Id      public String value;
+    @Id      public String permission_key;
 
     @ApiModelProperty(value = "Description for \"(static key)\"", required = true, readOnly = true)
              public String description;
@@ -40,7 +41,7 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
     @JsonIgnore
     public Model_Permission(String key, String description){
         if(Model_Permission.find.byId(key) != null) return;
-        this.value = key;
+        this.permission_key = key;
         this.description = description;
         this.save();
     }
@@ -60,7 +61,7 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update :: Update object value: {}",  this.value);
+        terminal_logger.debug("update :: Update object value: {}",  this.permission_key);
 
         super.update();
 

@@ -8,7 +8,6 @@ import models.Model_CompilationServer;
 import utilities.logger.Class_Logger;
 import web_socket.message_objects.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Homer_Rejection;
-import web_socket.message_objects.tyrion_with_becki.WS_Message_Becki_Ping;
 
 public class WS_CompilerServer extends WS_Interface_type {
 
@@ -19,17 +18,15 @@ public class WS_CompilerServer extends WS_Interface_type {
 /* VALUES  -------------------------------------------------------------------------------------------------------------*/
 
     public String server_address;
-    //public Map<String, ObjectNode> compilation_results = new HashMap<>();
-    //public Map<String, ObjectNode> compilation_request = new HashMap<>();
     public Model_CompilationServer server;
-    public boolean security_token_confirm = true;
+    private boolean security_token_confirm = true;
     public String identifikator;
 
     public WS_CompilerServer(Model_CompilationServer server) {
         super();
         this.server = server;
         this.server_address = server.server_url;
-        identifikator = server.unique_identificator;
+        identifikator = server.id.toString();
         super.webSCtype = this;
     }
 
