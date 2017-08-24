@@ -332,6 +332,7 @@ public class Server {
         for(Enum en : Model_Permission.permissions.values())              permissions.add(en.name());
         for(Enum en : Model_GridWidget.permissions.values())              permissions.add(en.name());
         for(Enum en : Model_GridWidgetVersion.permissions.values())       permissions.add(en.name());
+        for(Enum en : Model_Garfield.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_TypeOfWidget.permissions.values())            permissions.add(en.name());
         for(Enum en : Model_BProgram.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_HomerInstance.permissions.values())           permissions.add(en.name());

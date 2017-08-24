@@ -7,6 +7,10 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import scala.Int;
+import utilities._AAA_printer.Printer_Api;
+import utilities._AAA_printer.labels.Label_65_mm;
+import utilities._AAA_printer.printNodeModels.Printer;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -245,6 +249,102 @@ public class Controller_Garfield extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+// Printer TASK --------------------------------------------------------------------------------------------------------
+
+    @ApiOperation(value = "get_Online_State Printer",
+            tags = {"Garfield"},
+            notes = "get online state Printer by ID",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Printer.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result online_state_Printer(@ApiParam(required = true) String garfield_id, @ApiParam(required = true) Integer printer_id){
+        try {
+
+            // Kontrola objektu
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
+            if (garfield == null) return GlobalResult.result_notFound("Garfield not found");
+
+            // Kontrola oprávnění
+            if (! garfield.read_permission()) return GlobalResult.result_forbidden();
+
+
+            if(! ( garfield.print_label_id_1.equals(printer_id) || garfield.print_label_id_2.equals(printer_id) || garfield.print_sticker_id.equals(printer_id))){
+
+                return GlobalResult.result_forbidden();
+            }
+
+            Printer printer =  Printer_Api.get_printer(printer_id);
+
+            if(printer == null) return GlobalResult.result_notFound("Printer not found");
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(printer));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "test_printing Printer",
+            tags = {"Garfield"},
+            notes = "Random Generated Print test",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result print_test_Printer(@ApiParam(required = true) String garfield_id, @ApiParam(required = true) Integer printer_id){
+        try {
+
+            // Kontrola objektu
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
+            if (garfield == null) return GlobalResult.result_notFound("Garfield not found");
+
+            // Kontrola oprávnění
+            if (! garfield.read_permission()) return GlobalResult.result_forbidden();
+
+
+            if(garfield.print_label_id_1.equals(printer_id)) {
+                // TODO Lexa - odzkoušet a naimlementovat tiskárny P750W
+            }
+
+            if(garfield.print_label_id_2.equals(printer_id)) {
+
+                // TODO Lexa - odzkoušet a naimlementovat tiskárny P750W
+            }
+
+            if(garfield.print_sticker_id.equals(printer_id)) {
+
+                Printer_Api api = new Printer_Api();
+                Label_65_mm label_65_mm = new Label_65_mm();
+
+                api.printFile(printer_id, 1, "test", label_65_mm.get_label() );
+
+            }
+
+            // Vrácení objektu
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
 
 
 // REST - BURN TASK ----------------------------------------------------------------------------------------------------

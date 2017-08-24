@@ -1,5 +1,7 @@
 package utilities._AAA_printer.printNodeModels;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.validation.Valid;
 
 /**
@@ -10,7 +12,7 @@ public class Computer {
 
     public Computer(){}
 
-    private int id;
+    @JsonIgnore public int id;
     public String name = null;
     public String inet = null;
     public String inet6 = null;

@@ -625,9 +625,9 @@ public class Controller_Board extends Controller {
 
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "get FileRecord",
-            tags = {"File"},
-            notes = "if you want create new SingleLibrary for C_Program compilation",
+    @ApiOperation(value = "get Bootloader FileRecord",
+            tags = {"File", "Garfield"},
+            notes = "",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -640,17 +640,60 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result fileRecord_get(@ApiParam(value = "file_record_id String query", required = true)  String file_record_id){
+    public Result fileRecord_get_bootLoader(@ApiParam(value = "file_record_id String query", required = true)  String bootloader_id){
+        try {
+
+            Model_BootLoader boot_loader = Model_BootLoader.find.byId(bootloader_id);
+            if (boot_loader == null) return GlobalResult.result_notFound("BootLoader not found");
+
+            if (!boot_loader.read_permission()) return GlobalResult.result_forbidden();
+
+            // Swagger_File_Content - Zástupný dokumentační objekt
+            Swagger_File_Content content = new Swagger_File_Content();
+            content.file_in_base64 = boot_loader.file.get_fileRecord_from_Azure_inString();
+
+            // Vracím content
+            return GlobalResult.result_ok(Json.toJson(content));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get CProgram_Version FileRecord",
+            tags = { "File" , "Garfield"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_File_Content.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result fileRecord_get_firmware(@ApiParam(value = "file_record_id String query", required = true)  String version_id){
         try {
 
             // Kontrola validity objektu
-            Model_FileRecord fileRecord = Model_FileRecord.find.fetch("version_object").where().eq("id", file_record_id).findUnique();
-            if (fileRecord == null) return GlobalResult.result_notFound("FileRecord file_record_id not found");
+            Model_VersionObject versionObject = Model_VersionObject.find.byId(version_id);
+            if (versionObject == null) return GlobalResult.result_notFound("FileRecord file_record_id not found");
 
             // Swagger_File_Content - Zástupný dokumentační objekt
+            if (versionObject.c_program == null) return GlobalResult.badRequest();
+
+            // Kontrola oprávnění
+            if (!versionObject.c_program.read_permission()) return GlobalResult.badRequest();
+
+            // Swagger_File_Content - Zástupný dokumentační objekt
+            Swagger_File_Content content = new Swagger_File_Content();
+            content.file_in_base64 = versionObject.c_compilation.bin_compilation_file.get_fileRecord_from_Azure_inString();
 
             // Vracím content
-            return GlobalResult.result_ok(Json.toJson( fileRecord.get_fileRecord_from_Azure_inString()));
+            return GlobalResult.result_ok(Json.toJson(content));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());

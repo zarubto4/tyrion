@@ -6,4 +6,5 @@ import io.swagger.annotations.ApiModel;
         value = "File_Content")
 public class Swagger_File_Content {
 
+    public String file_in_base64;
 }

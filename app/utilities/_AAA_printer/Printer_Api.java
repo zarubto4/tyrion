@@ -32,15 +32,6 @@ public class Printer_Api {
     public Printer_Api() {
         try {
 
-            System.out.println("Počet počítačů: " + get_computers().size());
-            System.out.println("Počet tiskáren: " + get_printers().size());
-
-            Integer printID = 279211;
-
-            Label_65_mm label_65_mm = new Label_65_mm();
-
-            printFile(printID, 1, "test", label_65_mm.get_label() );
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -57,13 +48,13 @@ public class Printer_Api {
         printTask.qty = quantity;
         printTask.source = "Tyrion Generated Print Task";
 
-        return printer_post("/printjobs", Json.toJson(printTask));
+        return post("/printjobs", Json.toJson(printTask));
     }
 
 
     public List<Computer> get_computers(){
 
-        JsonNode request = printer_get("/computers");
+        JsonNode request = get("/computers");
 
         ObjectNode request_list = Json.newObject();
         request_list.set("computer_list", request);
@@ -77,9 +68,9 @@ public class Printer_Api {
     }
 
 
-    public List<Printer> get_printers(){
+    public static List<Printer> get_printers(){
 
-        JsonNode request = printer_get("/printers");
+        JsonNode request = get("/printers");
 
         ObjectNode request_list = Json.newObject();
         request_list.set("printer_list", request);
@@ -92,12 +83,30 @@ public class Printer_Api {
         return form.get().printer_list;
     }
 
+    public static Printer get_printer(Integer printer_id){
+
+        JsonNode request = get("/printers/" + printer_id);
+
+        ObjectNode request_list = Json.newObject();
+        request_list.set("printer_list", request);
+
+        final Form<PrinterList> form = Form.form(PrinterList.class).bind(request_list);
+        if (form.hasErrors()) {
+            terminal_logger.internalServerError( new Exception("PrinterList: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString()));
+        }
+
+
+        List<Printer> printers = form.get().printer_list;
+
+        return printers.isEmpty() ? null : form.get().printer_list.get(0);
+    }
+
 
 
 
 // - REST API HELP METHOD --------------------------------------------------------------------------------------------------------------
 
-    public static JsonNode printer_put(String url, JsonNode node) {
+    private static JsonNode put(String url, JsonNode node) {
 
         terminal_logger.debug("Printer_Api_put:: PUT: URL: " + Server.PrintNode_url + url + "  Json: " + node.toString());
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.PrintNode_url + url)
@@ -113,7 +122,7 @@ public class Printer_Api {
 
     }
 
-    public static JsonNode printer_post(String url, JsonNode node) {
+    private static JsonNode post(String url, JsonNode node) {
 
         terminal_logger.debug("Printer_Api_put:: POST: URL: " + Server.PrintNode_url + url + "  Json: " + node.toString());
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.PrintNode_url + url)
@@ -129,7 +138,7 @@ public class Printer_Api {
 
     }
 
-    public static JsonNode printer_get(String url) {
+    private static JsonNode get(String url) {
 
         terminal_logger.debug("Printer_Api_put:: GET: URL: " + Server.PrintNode_url + url);
         F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.PrintNode_url + url)

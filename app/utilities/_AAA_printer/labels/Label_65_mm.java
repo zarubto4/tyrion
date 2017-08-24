@@ -35,7 +35,7 @@ public class Label_65_mm {
     private String company  =   "Byzance IoT solution s.r.o";
     private String made  =   "Proudly Made in Czech Republic";
 
-    private String type_of_board = "24.9.2017";
+    private String type_of_board = "Byzance_YodaG3E";
     private String revision ="Revision: R.";
     private String batch =  "E1-1-112";
     private String test_time = "24.9.2017";
@@ -67,8 +67,6 @@ public class Label_65_mm {
 
     private ByteArrayOutputStream make_label(){
         try {
-
-            System.out.println("convertTest");
 
             // step 2: Create Document
             Document document = new Document(Label_65_mm_Antistatic_Package, Utilities.millimetersToPoints(2), Utilities.millimetersToPoints(2), Utilities.millimetersToPoints(3), Utilities.millimetersToPoints(2));
@@ -174,7 +172,7 @@ public class Label_65_mm {
             Paragraph p_who_tested = new Paragraph("Who tested it: ", bold);
                       p_who_tested.add(new Chunk(who_tested, regular));
 
-            Paragraph station = new Paragraph("Who tested it: ", bold);
+            Paragraph station = new Paragraph("Test Station: ", bold);
                       station.add(new Chunk(station_id, regular));
 
         cell_Left.addElement(p_tested);

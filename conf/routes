@@ -362,7 +362,8 @@ PUT       /bootloader/:boot_loader_id                                   @control
 DELETE    /bootloader/:boot_loader_id                                   @controllers.Controller_Board.bootLoader_delete(boot_loader_id)
 
 #File // Skryto ve swaggeru
-GET       /file/fileRecord/:file_record_id                              @controllers.Controller_Board.fileRecord_get(file_record_id)
+GET       /file/bootloader/:bootloader_id                               @controllers.Controller_Board.fileRecord_get_bootLoader(bootloader_id)
+GET       /file/cprogram_version/:version_id                            @controllers.Controller_Board.fileRecord_get_firmware(version_id)
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
 ################################################################################################################################################################################
@@ -433,6 +434,9 @@ GET       /garfield                                                      @contro
 PUT       /garfiled/:garfield_id                                         @controllers.Controller_Garfield.edit_Garfield(garfield_id)
 DELETE    /garfiled/:garfield_id                                         @controllers.Controller_Garfield.remove_Garfield(garfield_id)
 GET       /garfiled/:garfield_id                                         @controllers.Controller_Garfield.get_Garfield(garfield_id)
+
+GET       /printer/printer/:garfield_id/:printer_id                      @controllers.Controller_Garfield.online_state_Printer(garfield_id, printer_id: Integer)
+POST      /printer/test/:garfield_id/:printer_id                         @controllers.Controller_Garfield.print_test_Printer(garfield_id, printer_id: Integer)
 
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
