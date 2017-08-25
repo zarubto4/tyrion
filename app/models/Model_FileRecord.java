@@ -183,13 +183,13 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_File(String file, String contentType, String file_name, String file_path) throws Exception{
 
-        terminal_logger.debug("uploadAzure_File:: Azure file:"+ file.substring(0,50));
+        //terminal_logger.debug("uploadAzure_File:: Azure file:"+ file.substring(0,50));
 
         byte[] bytes = Model_FileRecord.get_decoded_binary_string_from_Base64(file);
 
-        terminal_logger.trace("Azure load:"+ file_path);
-        terminal_logger.trace("Azure name:" + file_name);
-        terminal_logger.trace("Azure contentType:" + contentType);
+        terminal_logger.trace("Azure file path  ::" + file_path);
+        terminal_logger.trace("Azure file name  ::" + file_name);
+        terminal_logger.trace("Azure contentType::" + contentType);
 
         String container_name = file_path.substring(0,file_path.indexOf("/"));
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);

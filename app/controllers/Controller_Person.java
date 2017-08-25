@@ -1099,17 +1099,34 @@ public class Controller_Person extends Controller {
                 return GlobalResult.result_badRequest("User not found"); // Just for compiler Error
             }
 
-            person.cache_picture_link = null;
-
+            // Kontzrola oprávnění
             if(!person.edit_permission()) return GlobalResult.result_forbidden();
 
+          // Odeberu cache - jen projistotu
+            person.cache_picture_link = null;
+
+            // Pokud tu byl nějaký soubor - smažu ho - prázdný soubor je příkaz ke smazání
             if(help.file == null || help.file.equals("")){
                 Model_FileRecord fileRecord = person.picture;
                 person.picture = null;
                 person.alternative_picture_link = "";
                 person.update();
+                fileRecord.refresh();
                 fileRecord.delete();
+
+                return GlobalResult.result_ok();
             }
+
+            //  data:image/png;base64,
+            //  data:image/png;base64,
+            String[] parts = help.file.split(",");
+            String[] type = parts[0].split(":");
+            String[] content_type = type[1].split(";");
+            String dataType = content_type[0].split("/")[1];
+
+            terminal_logger.debug("bootLoader_uploadFile:: Cont Type:" + content_type[0] + ":::");
+            terminal_logger.debug("bootLoader_uploadFile:: Data Type:" + dataType + ":::");
+            terminal_logger.debug("bootLoader_uploadFile:: Data: " + parts[1].substring(0, 10) + "......");
 
             // Odebrání předchozího obrázku
             if(person.picture != null){
@@ -1123,8 +1140,8 @@ public class Controller_Person extends Controller {
 
             // Pokud link není, vygeneruje se nový, unikátní
             if(person.alternative_picture_link == null || person.alternative_picture_link.equals("")){
-                    person.alternative_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
-                    person.update();
+                person.alternative_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+                person.update();
             }
 
             // Pouze pro případy, kdy se uživatel registroval skrze sociální síť a Tyrion používá obrázek daného uživatele
@@ -1132,21 +1149,18 @@ public class Controller_Person extends Controller {
             // Například:: https://avatars1.githubusercontent.com/u/16296782?v=3
             // PRoto je nutné na to pamatovat - jinak se pak taková cesta strká do Azure k přepsání předchozího obrázku
             if(person.alternative_picture_link.contains("http")){
-                person.alternative_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+                person.alternative_picture_link = null;
                 person.update();
             }
 
-            String file_name =  person.alternative_picture_link.substring( person.alternative_picture_link.indexOf("/") + 1);
 
-            //  data:image/png;base64,
-            String[] parts = help.file.split(",");
-            String[] type = parts[0].split(":");
-            String[] dataType = type[1].split(";");
+            String file_name =  UUID.randomUUID().toString() + ".jpg";
+            String file_path =  person.get_Container().getName() + "/" +file_name;
 
-            terminal_logger.debug("person_uploadPicture:: Data Type:" + dataType[0] + ":::");
-            terminal_logger.debug("person_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
+            terminal_logger.debug("person_uploadPicture::  File Name " + file_name );
+            terminal_logger.debug("person_uploadPicture::  File Path " + file_path );
 
-            person.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name, person.alternative_picture_link);
+            person.picture = Model_FileRecord.uploadAzure_File( parts[1], content_type[0], file_name, file_path);
             person.update();
 
 

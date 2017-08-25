@@ -1217,7 +1217,7 @@ public class Controller_Board extends Controller {
             )
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -1235,7 +1235,12 @@ public class Controller_Board extends Controller {
             Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
             if (type_of_board == null) return GlobalResult.result_notFound("Type of board does not exist");
 
+
+            if(!type_of_board.edit_permission()) return GlobalResult.result_forbidden();
+
             terminal_logger.debug("typeOfBoard_uploadPicture update picture ");
+
+            type_of_board.cache_value_picture_link = null;
 
             // Odebrání předchozího obrázku
             if(!(type_of_board.picture == null)){
@@ -1253,14 +1258,20 @@ public class Controller_Board extends Controller {
             String[] type = parts[0].split(":");
             String[] dataType = type[1].split(";");
 
-            terminal_logger.debug("typeOfBoard_uploadPicture:: Data Type:" + dataType[0] + ":::");
-            terminal_logger.debug("typeOfBoard_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
+            terminal_logger.debug("typeOfBoard_uploadPicture:: Type     :: " + dataType[0]);
+            terminal_logger.debug("typeOfBoard_uploadPicture:: Data     :: " + parts[1].substring(0, 10) + "......");
 
-            type_of_board.picture  = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], ".bin" , type_of_board.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png");
+            String file_name =  UUID.randomUUID().toString() + "." + dataType[0];
+            String file_path =  type_of_board.get_Container().getName() + "/" + file_name;
+
+            terminal_logger.debug("typeOfBoard_uploadPicture:: File Name:: " + file_name );
+            terminal_logger.debug("typeOfBoard_uploadPicture:: File Path:: " + file_path );
+
+            type_of_board.picture  = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name , file_path);
             type_of_board.update();
 
 
-            return GlobalResult.result_ok(Json.toJson(type_of_board));
+            return GlobalResult.result_ok("Picture successfully uploaded");
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -1493,16 +1504,34 @@ public class Controller_Board extends Controller {
 
             if (!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
 
-            if (boot_loader.file != null) boot_loader.file.delete();
-                // return GlobalResult.result_badRequest("You cannot upload file twice!");
+            //  data:image/png;base64,
+            String[] parts = help.file.split(",");
+            String[] type = parts[0].split(":");
+            String[] content_type = type[1].split(";");
+            String dataType = content_type[0].split("/")[1];
 
-            // Zkontroluji soubor
-            if ((help.file.length() / 1024) > 500) return GlobalResult.result_badRequest("File is bigger than 500Kb");
+            terminal_logger.debug("bootLoader_uploadFile:: Cont Type:" + content_type[0]);
+            terminal_logger.debug("bootLoader_uploadFile:: Data Type:" + dataType);
+            terminal_logger.debug("bootLoader_uploadFile:: Data: " + parts[1].substring(0, 10) + "......");
 
-            Model_FileRecord file_record = Model_FileRecord.create_Binary_file(boot_loader.get_path(), help.file, "bootloader.bin");
+            if (boot_loader.file != null) {
+                boot_loader.file.delete();
+            }
 
-            file_record.boot_loader = boot_loader;
-            file_record.update();
+            String file_name =  UUID.randomUUID().toString() + "." + "bin";
+            String file_path =  boot_loader.get_Container().getName() + "/" +file_name;
+
+            terminal_logger.debug("bootLoader_uploadFile::  File Name " + file_name );
+            terminal_logger.debug("bootLoader_uploadFile::  File Path " + file_path );
+
+            boot_loader.file = Model_FileRecord.uploadAzure_File( parts[1], content_type[0], file_name, file_path);
+            boot_loader.update();
+
+            // Nefungovalo to korektně občas - tak se to ukládá oboustraně!
+            boot_loader.file.boot_loader = boot_loader;
+            boot_loader.file.update();
+
+            boot_loader.refresh();
 
             // Vracím seznam
             return GlobalResult.result_ok(Json.toJson(boot_loader));

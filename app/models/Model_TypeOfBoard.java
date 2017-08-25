@@ -69,7 +69,7 @@ public class Model_TypeOfBoard extends Model {
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_processor_id;
-    @JsonIgnore @Transient @TyrionCachedList private String cache_value_picture_link;
+    @JsonIgnore @Transient @TyrionCachedList public  String cache_value_picture_link;
     @JsonIgnore @Transient @TyrionCachedList public  String cache_value_main_bootloader_id;
 
     @JsonIgnore @Transient @TyrionCachedList public  String cache_main_c_program_version_id;    // Výchozí defaault firmware chache
