@@ -31,7 +31,5 @@ public class Swagger_Board_Filter {
     @ApiModelProperty(value = "Unix in millis - date_of_create - end_time", required = false)
     public Date end_time;
 
-    @ApiModelProperty(value = "page_number from 1 to N ", required = false)
-    public int page_number;
 
 }

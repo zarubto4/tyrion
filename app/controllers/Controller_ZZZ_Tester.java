@@ -6,7 +6,7 @@ import models.Model_Product;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities._AAA_printer.Printer_Api;
+import utilities.lablel_printer_service.Printer_Api;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
@@ -61,7 +61,7 @@ public class Controller_ZZZ_Tester extends Controller {
             Printer_Api api = new Printer_Api();
 
             // Test of printer
-            // new Label_65_mm();
+            // new Label_62_mm();
 
 
             return GlobalResult.result_ok();

@@ -9,16 +9,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Json Model for create new Board",
-          value = "Board_New")
-public class Swagger_Board_New {
+          value = "Board_New_Garfield")
+public class Swagger_Board_New_Garfield {
 
-        @Constraints.Required
-        @ApiModelProperty(value = "Required valid type_of_post_id", required = true)
+        @Constraints.Required @ApiModelProperty(value = "Required valid type_of_post_id", required = true)
         public String type_of_board_id;
+
+        @Constraints.Required @ApiModelProperty(value = "Required valid type_of_post_id", required = true)
+        public String type_of_board_batch_id;
+
+        @Constraints.Required @ApiModelProperty(required = true) public String garfield_station_id;
 
         @ApiModelProperty(value = "Must be unique!!!, The hardware_id must have 24 hexadecimal characters!", required = true)
         @Constraints.Required
-        public String full_id;
+        public String full_id; // Processor ID
 
         public List<ValidationError> validate() {
 

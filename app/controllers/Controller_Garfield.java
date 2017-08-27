@@ -1,16 +1,18 @@
 package controllers;
 
 import io.swagger.annotations.*;
+import models.Model_Board;
 import models.Model_Garfield;
+import models.Model_TypeOfBoard_Batch;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import scala.Int;
-import utilities._AAA_printer.Printer_Api;
-import utilities._AAA_printer.labels.Label_65_mm;
-import utilities._AAA_printer.printNodeModels.Printer;
+import utilities.lablel_printer_service.Printer_Api;
+import utilities.lablel_printer_service.labels.Label_12_mm;
+import utilities.lablel_printer_service.labels.Label_62_mm;
+import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -23,6 +25,7 @@ import utilities.swagger.documentationClass.Swagger_Garfield_Edit;
 import utilities.swagger.documentationClass.Swagger_Garfield_New;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by zaruba on 23.08.17.
@@ -326,14 +329,38 @@ public class Controller_Garfield extends Controller {
             if(garfield.print_label_id_2.equals(printer_id)) {
 
                 // TODO Lexa - odzkoušet a naimlementovat tiskárny P750W
+                Model_Board board = new Model_Board();
+                board.id = "123456789123456789123456";
+                board.hash_for_adding = UUID.randomUUID().toString();
+
+                Printer_Api api = new Printer_Api();
+                Label_12_mm label_12_mm = new Label_12_mm(board);
+                api.printFile(printer_id, 1, "test", label_12_mm.get_label() );
+
             }
 
             if(garfield.print_sticker_id.equals(printer_id)) {
 
-                Printer_Api api = new Printer_Api();
-                Label_65_mm label_65_mm = new Label_65_mm();
+                Model_Board board = new Model_Board();
+                board.id = "123456789123456789123456";
+                board.hash_for_adding = UUID.randomUUID().toString();
 
-                api.printFile(printer_id, 1, "test", label_65_mm.get_label() );
+                Model_TypeOfBoard_Batch info = new Model_TypeOfBoard_Batch();
+                info.revision = "1.9.9";
+                info.production_batch = "1.9.9";
+                info.date_of_assembly = "1.9.9";
+                info.pcb_manufacture_name = "1.9.9";
+                info.pcb_manufacture_id = "1.9.9";
+                info.assembly_manufacture_name = "1.9.9";
+                info.assembly_manufacture_id = "1.9.9";
+                info.customer_product_name = "1.9.9";
+                info.customer_company_name = "1.9.9";
+                info.customer_company_made_description = "1.9.9";
+
+                Printer_Api api = new Printer_Api();
+                Label_62_mm label_62_mm = new Label_62_mm(board, info, garfield);
+
+                api.printFile(printer_id, 1, "test", label_62_mm.get_label() );
 
             }
 

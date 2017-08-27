@@ -323,12 +323,13 @@ PUT       /processor/:processor_id                                      @control
 DELETE    /processor/:processor_id                                      @controllers.Controller_Board.processor_delete(processor_id)
 
 #Board
-POST      /board                                                        @controllers.Controller_Board.board_create()
+POST      /board/manual_registration                                    @controllers.Controller_Board.board_create_manual()
+POST      /board/automatic_registration                                 @controllers.Controller_Board.board_create_garfield()
 PUT       /board/userDescription/:board_id                              @controllers.Controller_Board.board_update_description(board_id)
 PUT       /board/parameters/:board_id                                   @controllers.Controller_Board.board_update_parameters(board_id)
 PUT       /board/backup                                                 @controllers.Controller_Board.board_updateBackup()
 
-PUT       /board/filter                                                 @controllers.Controller_Board.board_getByFilter()
+PUT       /board/filter/:page_number                                    @controllers.Controller_Board.board_getByFilter(page_number: Int)
 GET       /board/check/:hash_for_adding                                 @controllers.Controller_Board.board_check(hash_for_adding)
 GET       /board/:board_id                                              @controllers.Controller_Board.board_get(board_id)
 DELETE    /board/deactivateBoard/:board_id                              @controllers.Controller_Board.board_deactivate(board_id)
@@ -347,11 +348,14 @@ DELETE    /producer/:producer_id                                        @control
 #TypeOfBoard
 POST      /typeOfBoard                                                  @controllers.Controller_Board.typeOfBoard_create()
 PUT       /typeOfBoard/picture_up/:type_of_board_id                     @controllers.Controller_Board.typeOfBoard_uploadPicture(type_of_board_id)
-PUT       /typeOfBoard/picture_remove/:type_of_board_id                 @controllers.Controller_Board.typeOfBoard_removePicture(type_of_board_id)
 PUT       /typeOfBoard/:type_of_board_id                                @controllers.Controller_Board.typeOfBoard_update(type_of_board_id)
 DELETE    /typeOfBoard/:type_of_board_id                                @controllers.Controller_Board.typeOfBoard_delete(type_of_board_id)
 GET       /typeOfBoard/all                                              @controllers.Controller_Board.typeOfBoard_getAll()
 GET       /typeOfBoard/:type_of_board_id                                @controllers.Controller_Board.typeOfBoard_get(type_of_board_id)
+
+POST      /typeOfBoardBatch/:type_of_board_id                           @controllers.Controller_Board.typeOfBoardBatch_create(type_of_board_id)
+PUT       /typeOfBoardBatch/:type_of_board_batch_id                     @controllers.Controller_Board.typeOfBoardBatch_edit(type_of_board_batch_id)
+DELETE    /typeOfBoardBatch/:type_of_board_batch_id                     @controllers.Controller_Board.typeOfBoardBatch_delete(type_of_board_batch_id)
 
 #Bootloader
 POST      /bootloader/:type_of_board_id                                 @controllers.Controller_Board.bootLoader_create(type_of_board_id)
@@ -452,11 +456,6 @@ GET       /assets/*file                                                 controll
 GET       /assets/*file                                                 controllers.Assets.versioned(path="/public", file: Asset)
 GET       /.well-known/acme-challenge/:file                             @utilities.certificate.CertificateCheck.check(file)
 
-### HARDWARE - GENERATOR ############ HARDWARE - GENERATOR ############### HARDWARE - GENERATOR ################ HARDWARE - GENERATOR ###########################################
-###################################################################################f#############################################################################################
-
-PUT       /admin/embedded_hardware/request                              @utilities.hardware_generator.Utilities_Hardware_generator_Controller.new_hardware_request()
-PUT       /admin/embedded_hardware/result                               @utilities.hardware_generator.Utilities_Hardware_generator_Controller.new_hardware_result()
 
 ### PUBLIC - ADMIN ############ PUBLIC  - ADMIN ############### PUBLIC  - ADMIN ################ PUBLIC  - ADMIN ################################################################
 ###################################################################################f#############################################################################################
@@ -478,61 +477,17 @@ GET       /admin/show_diff_on_Api/                                      @control
 GET       /admin/request_stats                                          @utilities.request_counter.RequestCounter.get_request_stats()
 DELETE    /admin/request_stats                                          @utilities.request_counter.RequestCounter.reset_request_stats()
 
-# Admin - Hardware
-DELETE    /admin/board/:board_id                                        @controllers.Controller_Board.board_delete(board_id)
-GET       /admin/board_settings                                         @controllers.Controller_Dashboard.basic_board_management()
-GET       /admin/board_summary                                          @controllers.Controller_Dashboard.board_summary()
-GET       /admin/board_detail/:board_id                                 @controllers.Controller_Dashboard.board_detail(board_id)
-GET       /admin/mac_address_generator                                  @controllers.Controller_Dashboard.mac_address_generator()
-GET       /admin/bootloader_settings/:type_of_board_id                  @controllers.Controller_Dashboard.bootloader_management(type_of_board_id)
-
 # Admin - Help Desk
 GET       /admin/helpdesk_tool                                          @controllers.Controller_Dashboard.user_summary(email: String?="")
 GET       /admin/helpdesk_tool/product/:product_id                      @controllers.Controller_Dashboard.product_detail(product_id)
 GET       /admin/helpdesk_tool/project/:project_id                      @controllers.Controller_Dashboard.project_detail(project_id)
 GET       /admin/helpdesk_tool/invoice/:invoice_id                      @controllers.Controller_Dashboard.invoice(invoice_id)
 
-
-# Admin - Permission
-GET       /admin/permission/permission_summary                          @controllers.Controller_Dashboard.permissions_summary()
-GET       /admin/permission/role/:role_id                               @controllers.Controller_Dashboard.role(role_id)
-
-# Admin - Blocko
-GET       /admin/blocko_objects                                         @controllers.Controller_Dashboard.blocko_objects()
-GET       /admin/blocko_management                                      @controllers.Controller_Dashboard.blocko_management()
-
-# Admin - Grid
-GET       /admin/grid_public                                            @controllers.Controller_Dashboard.grid_public()
-GET       /admin/grid_management                                        @controllers.Controller_Dashboard.grid_management()
-
-# Admin - C_code
-GET       /admin/c_program/public/list                                  @controllers.Controller_Dashboard.public_c_code_list()
-GET       /admin/c_program/public/:c_program_id                         @controllers.Controller_Dashboard.public_c_code(c_program_id)
-
-GET       /admin/c_program/aprove/list                                  @controllers.Controller_Dashboard.public_code_approve_procedure_list()
-GET       /admin/c_program/aprove/:c_program_id                         @controllers.Controller_Dashboard.public_code_approve_procedure(c_program_id)
-
-# Admin - Libraries
-GET       /admin/library/libraries                                      @controllers.Controller_Dashboard.public_libraries()
-GET       /admin/library/:library_id                                    @controllers.Controller_Dashboard.public_library(library_id)
-GET       /admin/library/version/:version_id                            @controllers.Controller_Dashboard.public_library_version(version_id)
-
-
 # Admin - Tariff Management
 GET       /admin/tariff                                                 @controllers.Controller_Dashboard.tariffs()
 GET       /admin/tariff/:tariff_id                                      @controllers.Controller_Dashboard.tariff_edit(tariff_id)
 GET       /admin/extension/:extension_id                                @controllers.Controller_Dashboard.extension_edit(extension_id)
 
-# Demo Data
-GET       /admin/demo_data                                              @controllers.Controller_Dashboard.demo_data()
-PUT       /admin/demo_data/test                                         @utilities.demo_data.Utilities_Demo_data_Controller.test()
-PUT       /admin/demo_data/all_for_becki                                @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
-PUT       /admin/demo_data/external_servers                             @utilities.demo_data.Utilities_Demo_data_Controller.external_servers()
-PUT       /admin/demo_data/basic_tarifs                                 @utilities.demo_data.Utilities_Demo_data_Controller.basic_tariffs()
-PUT       /admin/demo_data/producers                                    @utilities.demo_data.Utilities_Demo_data_Controller.producers()
-PUT       /admin/demo_data/type_of_board                                @utilities.demo_data.Utilities_Demo_data_Controller.type_of_board()
-PUT       /admin/demo_data/test_boards                                  @utilities.demo_data.Utilities_Demo_data_Controller.test_boards()
-PUT       /admin/demo_data/person                                       @utilities.demo_data.Utilities_Demo_data_Controller.person_test_user()
 
 GET       /admin/test                                                   @utilities.test.Controller_Test.test()
 

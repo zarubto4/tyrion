@@ -1,4 +1,4 @@
-package utilities._AAA_printer.printNodeModels;
+package utilities.lablel_printer_service.printNodeModels;
 
 import javax.validation.Valid;
 import java.util.List;

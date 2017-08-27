@@ -18,7 +18,7 @@ import utilities.Server;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
-import utilities.login_entities.Secured_Admin;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import views.html.tyrion_developers.test;
 
@@ -35,7 +35,7 @@ import java.util.List;
 
 
 @Api(value = "Private Admin Api", hidden = true)
-@Security.Authenticated(Secured_Admin.class)
+@Security.Authenticated(Secured_API.class)
 public class Controller_Test extends Controller {
 
 

@@ -5,9 +5,6 @@ import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 
-/**
- * Created by zaruba on 25.05.17.
- */
 public class IP_Founder {
 
     public static InetAddress getLocalHostLANAddress() throws UnknownHostException {

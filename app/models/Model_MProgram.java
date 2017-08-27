@@ -35,7 +35,7 @@ public class Model_MProgram extends Model{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_MacAddressRegisterRecord.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Model_MProgram.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 

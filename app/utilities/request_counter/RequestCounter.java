@@ -6,7 +6,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.logger.Server_Logger;
-import utilities.login_entities.Secured_Admin;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 
 import java.util.HashMap;
@@ -15,6 +15,7 @@ import java.util.Map;
 /**
  * Used for endpoint usage statistics.
  */
+@Security.Authenticated(Secured_API.class)
 public class RequestCounter extends Controller{
 
     /**
@@ -46,7 +47,7 @@ public class RequestCounter extends Controller{
      * Serves to show data in Tyrion administration.
      * @return Result list of models RequestLog
      */
-    @Security.Authenticated(Secured_Admin.class)
+
     public Result get_request_stats() {
 
         try {
@@ -62,7 +63,6 @@ public class RequestCounter extends Controller{
      * Resets all stats about requests, deletes all RequestLog objects from DB.
      * @return Result ok
      */
-    @Security.Authenticated(Secured_Admin.class)
     public Result reset_request_stats() {
 
         try {

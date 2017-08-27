@@ -38,14 +38,15 @@ public class Model_TypeOfBoard extends Model {
                                        public String name;
                   @Column(unique=true) public String compiler_target_name;
                                        public String revision;
-   @Column(columnDefinition = "TEXT")  public String description;
+    @Column(columnDefinition = "TEXT")  public String description;
 
-   @JsonIgnore @ManyToOne public Model_Producer producer;
-   @JsonIgnore @ManyToOne public Model_Processor processor;
+    @JsonIgnore @ManyToOne public Model_Producer producer;
+    @JsonIgnore @ManyToOne public Model_Processor processor;
                           public Boolean connectible_to_internet;
 
-   @JsonIgnore @OneToOne  public Model_FileRecord picture;
+    @JsonIgnore @OneToOne  public Model_FileRecord picture;
 
+    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,  fetch = FetchType.LAZY) public List<Model_TypeOfBoard_Batch> batchs = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_Board> boards = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="type_of_board",                                   fetch = FetchType.LAZY)  public List<Model_CProgram> c_programs = new ArrayList<>();
@@ -82,9 +83,9 @@ public class Model_TypeOfBoard extends Model {
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @Transient @JsonProperty public String producer_name(){ return get_producer().name;}
-    @Transient @JsonProperty public String producer_id(){ return cache_value_producer_id  != null ? cache_value_producer_id : get_producer().id;}
+    @Transient @JsonProperty public String producer_id(){ return cache_value_producer_id  != null ? cache_value_producer_id : get_producer().id.toString();}
     @Transient @JsonProperty public String processor_name(){ return get_processor().processor_name;}
-    @Transient @JsonProperty public String processor_id(){ return cache_value_processor_id  != null ? cache_value_processor_id : get_processor().id;}
+    @Transient @JsonProperty public String processor_id(){ return cache_value_processor_id  != null ? cache_value_processor_id : get_processor().id.toString();}
 
     @Transient @JsonProperty @TyrionCachedList
     public String picture_link(){
@@ -166,6 +167,20 @@ public class Model_TypeOfBoard extends Model {
         }
     }
 
+    // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
+    @Transient @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<Model_TypeOfBoard_Batch> batchs (){
+        try {
+
+            if(!test_c_program_edit_permission()) return null;
+            return Model_TypeOfBoard_Batch.find.where().eq("type_of_board.id", this.id).eq("removed_by_user", false).findList();
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @TyrionCachedList
@@ -175,7 +190,7 @@ public class Model_TypeOfBoard extends Model {
 
             if(cache_value_producer_id == null){
                 Model_Producer producer = Model_Producer.find.where().eq("type_of_boards.id", id).select("id").findUnique();
-                cache_value_producer_id = producer.id;
+                cache_value_producer_id = producer.id.toString();
             }
 
             return Model_Producer.get_byId(cache_value_producer_id);
@@ -193,7 +208,7 @@ public class Model_TypeOfBoard extends Model {
 
             if(cache_value_processor_id == null){
                 Model_Processor processor = Model_Processor.find.where().eq("type_of_boards.id", id).select("id").findUnique();
-                cache_value_processor_id = processor.id;
+                cache_value_processor_id = processor.id.toString();
             }
 
             return Model_Processor.get_byId(cache_value_processor_id);

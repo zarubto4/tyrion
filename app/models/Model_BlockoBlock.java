@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_BlockoBlock_Type;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
@@ -42,6 +43,8 @@ public class Model_BlockoBlock extends Model {
 
                                                 @JsonIgnore public Integer order_position;
                                                 @JsonIgnore public boolean removed_by_user;
+
+    @JsonIgnore public Enum_BlockoBlock_Type block_type;    // Mark for Public, Default or something else
 
     @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BlockoBlockVersion> blocko_versions = new ArrayList<>();
 
@@ -85,7 +88,7 @@ public class Model_BlockoBlock extends Model {
         Model_Producer producer = get_producer();
         if (producer == null) return null;
 
-        return producer.id;
+        return producer.id.toString();
     }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
@@ -180,7 +183,7 @@ public class Model_BlockoBlock extends Model {
             Model_Producer producer = Model_Producer.find.where().eq("blocko_blocks.id", id).select("id").findUnique();
             if (producer == null) return null;
 
-            cache_value_producer_id = producer.id;
+            cache_value_producer_id = producer.id.toString();
         }
 
         return Model_Producer.get_byId(cache_value_producer_id);

@@ -24,7 +24,7 @@ public class Model_Processor extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true)  public String id;
+                                                        @Id @ApiModelProperty(required = true)  public UUID id;
                                                             @ApiModelProperty(required = true)  public String processor_name;
                 @Column(columnDefinition = "TEXT")          @ApiModelProperty(required = true)  public String description;
                                                             @ApiModelProperty(required = true)  public String processor_code;
@@ -44,10 +44,6 @@ public class Model_Processor extends Model {
     @JsonIgnore @Override
     public void save() {
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_Processor.find.byId(this.id) == null) break;
-        }
         super.save();
     }
 

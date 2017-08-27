@@ -9,7 +9,7 @@ import play.mvc.Security;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
-import utilities.login_entities.Secured_Admin;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
@@ -19,7 +19,7 @@ import java.util.List;
 
 
 @Api(value = "Dashboard Private Api", hidden = true)
-@Security.Authenticated(Secured_Admin.class)
+@Security.Authenticated(Secured_API.class)
 public class Utilities_Demo_data_Controller extends Controller {
 
 // LOGGER ##############################################################################################################

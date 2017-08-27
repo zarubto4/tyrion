@@ -16,7 +16,6 @@ import utilities.enums.Enum_MProgram_SnapShot_settings;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
-import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.scheduler.CustomScheduler;
@@ -2068,7 +2067,6 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result blockoDisapprove(){
         try {
 
@@ -2121,7 +2119,6 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result blockoApproval() {
 
         try {

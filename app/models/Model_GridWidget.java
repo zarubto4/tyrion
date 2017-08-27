@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_BlockoBlock_Type;
+import utilities.enums.Enum_GridWidget_Type;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
@@ -40,6 +42,8 @@ public class Model_GridWidget extends Model{
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_TypeOfWidget type_of_widget;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Producer producer;
+
+    @JsonIgnore public Enum_GridWidget_Type block_type;    // Mark for Public, Default or something else
 
     @JsonIgnore @OneToMany(mappedBy="grid_widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("date_of_create desc")
     public List<Model_GridWidgetVersion> grid_widget_versions = new ArrayList<>();
@@ -84,7 +88,7 @@ public class Model_GridWidget extends Model{
         Model_Producer producer = get_producer();
         if (producer == null) return null;
 
-        return producer.id;
+        return producer.id.toString();
     }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
@@ -189,7 +193,7 @@ public class Model_GridWidget extends Model{
             Model_Producer producer = Model_Producer.find.where().eq("grid_widgets.id", id).select("id").findUnique();
             if (producer == null) return null;
 
-            cache_value_producer_id = producer.id;
+            cache_value_producer_id = producer.id.toString();
         }
 
         return Model_Producer.get_byId(cache_value_producer_id);

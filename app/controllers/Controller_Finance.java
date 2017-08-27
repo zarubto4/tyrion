@@ -16,7 +16,6 @@ import utilities.financial.goPay.GoPay;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
-import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -67,7 +66,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariff_create(){
         try {
             final Form<Swagger_Tariff_New> form = Form.form(Swagger_Tariff_New.class).bindFromRequest();
@@ -130,7 +128,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariff_edit(){
         try {
 
@@ -183,7 +180,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariff_deactivate(String tariff_id){
         try {
 
@@ -219,7 +215,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariff_activate(String tariff_id){
         try {
 
@@ -255,7 +250,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariff_up(String tariff_id){
         try{
 
@@ -287,7 +281,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariff_down(String tariff_id){
         try{
 
@@ -332,7 +325,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_create(){
         try {
 
@@ -386,7 +378,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_edit(){
         try {
 
@@ -424,7 +415,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_up(String label_id){
         try{
 
@@ -455,7 +445,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_down(String label_id){
         try{
 
@@ -486,7 +475,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffLabel_delete(String label_id){
         try{
 
@@ -777,7 +765,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result productExtension_delete(String extension_id){
         try{
 
@@ -824,7 +811,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_create(){
         try{
 
@@ -977,7 +963,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_update(){
         try{
 
@@ -1110,7 +1095,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_up(String extension_id){
         try{
 
@@ -1142,7 +1126,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_down(String extension_id){
         try{
 
@@ -1175,7 +1158,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_deactivate(String extension_id){
         try{
 
@@ -1209,7 +1191,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_activate(String extension_id){
         try{
 
@@ -1243,7 +1224,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result tariffExtension_delete(String extension_id){
         try{
 
@@ -1795,7 +1775,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result product_delete(String product_id){
         try{
 
@@ -2247,7 +2226,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result invoice_reminder(String invoice_id){
         try{
 
@@ -2279,7 +2257,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result invoice_delete(String invoice_id){
         try{
 
@@ -2318,7 +2295,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result invoice_synchronizeFakturoid(String invoice_id){
         return TODO;
     }

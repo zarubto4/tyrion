@@ -51,9 +51,11 @@ create table BlockoBlock (
   description               TEXT,
   author_id                 varchar(255),
   type_of_block_id          varchar(255),
-  producer_id               varchar(255),
+  producer_id               varchar(40),
   order_position            integer,
   removed_by_user           boolean,
+  block_type                varchar(7),
+  constraint ck_BlockoBlock_block_type check (block_type in ('DEFAULT')),
   constraint pk_BlockoBlock primary key (id))
 ;
 
@@ -80,8 +82,10 @@ create table Board (
   name                      varchar(255),
   description               TEXT,
   picture_id                varchar(255),
-  date_of_create            timestamp,
   date_of_user_registration timestamp,
+  date_of_create            timestamp,
+  batch                     varchar(255),
+  ean_number                bigint,
   is_active                 boolean,
   developer_kit             boolean,
   backup_mode               boolean,
@@ -275,7 +279,9 @@ create table GridWidget (
   removed_by_user           boolean,
   author_id                 varchar(255),
   type_of_widget_id         varchar(255),
-  producer_id               varchar(255),
+  producer_id               varchar(40),
+  block_type                varchar(7),
+  constraint ck_GridWidget_block_type check (block_type in ('DEFAULT')),
   constraint pk_GridWidget primary key (id))
 ;
 
@@ -460,19 +466,6 @@ create table MProjectProgramSnapShot (
   constraint pk_MProjectProgramSnapShot primary key (id))
 ;
 
-create table MacAddressRegisterRecord (
-  uuid_request_number       varchar(255) not null,
-  mac_address               varchar(255),
-  date_of_create            timestamp,
-  type_of_board             varchar(255),
-  full_id                   varchar(255),
-  bootloader_id             varchar(255),
-  firmware_version_id       varchar(255),
-  state                     varchar(13),
-  constraint ck_MacAddressRegisterRecord_state check (state in ('unknown_error','in_progress','complete','broken_device')),
-  constraint pk_MacAddressRegisterRecord primary key (uuid_request_number))
-;
-
 create table Notification (
   id                        varchar(255) not null,
   notification_level        varchar(13),
@@ -551,7 +544,7 @@ create table Person (
 ;
 
 create table Processor (
-  id                        varchar(255) not null,
+  id                        varchar(40) not null,
   processor_name            varchar(255),
   description               TEXT,
   processor_code            varchar(255),
@@ -561,7 +554,7 @@ create table Processor (
 ;
 
 create table Producer (
-  id                        varchar(255) not null,
+  id                        varchar(40) not null,
   name                      varchar(255),
   description               TEXT,
   removed_by_user           boolean,
@@ -688,8 +681,8 @@ create table TypeOfBoard (
   compiler_target_name      varchar(255),
   revision                  varchar(255),
   description               TEXT,
-  producer_id               varchar(255),
-  processor_id              varchar(255),
+  producer_id               varchar(40),
+  processor_id              varchar(40),
   connectible_to_internet   boolean,
   picture_id                varchar(255),
   removed_by_user           boolean,
@@ -702,6 +695,27 @@ create table BoardFeature (
   id                        varchar(255) not null,
   name                      varchar(255),
   constraint pk_BoardFeature primary key (id))
+;
+
+create table TypeOfBoardBatch (
+  id                        varchar(40) not null,
+  revision                  varchar(255),
+  production_batch          varchar(255),
+  date_of_assembly          varchar(255),
+  pcb_manufacture_name      varchar(255),
+  pcb_manufacture_id        varchar(255),
+  assembly_manufacture_name varchar(255),
+  assembly_manufacture_id   varchar(255),
+  customer_product_name     varchar(255),
+  customer_company_name     varchar(255),
+  customer_company_made_description varchar(255),
+  mac_address_start         bigint,
+  mac_address_end           bigint,
+  latest_used_mac_address   bigint,
+  ean_number                bigint,
+  type_of_board_id          varchar(255),
+  removed_by_user           boolean,
+  constraint pk_TypeOfBoardBatch primary key (id))
 ;
 
 create table TypeOfWidget (
@@ -940,20 +954,22 @@ alter table TypeOfBoard add constraint fk_TypeOfBoard_processor_75 foreign key (
 create index ix_TypeOfBoard_processor_75 on TypeOfBoard (processor_id);
 alter table TypeOfBoard add constraint fk_TypeOfBoard_picture_76 foreign key (picture_id) references FileRecord (id);
 create index ix_TypeOfBoard_picture_76 on TypeOfBoard (picture_id);
-alter table TypeOfWidget add constraint fk_TypeOfWidget_project_77 foreign key (project_id) references Project (id);
-create index ix_TypeOfWidget_project_77 on TypeOfWidget (project_id);
-alter table VersionObject add constraint fk_VersionObject_author_78 foreign key (author_id) references Person (id);
-create index ix_VersionObject_author_78 on VersionObject (author_id);
-alter table VersionObject add constraint fk_VersionObject_library_79 foreign key (library_id) references Library (id);
-create index ix_VersionObject_library_79 on VersionObject (library_id);
-alter table VersionObject add constraint fk_VersionObject_c_program_80 foreign key (c_program_id) references CProgram (id);
-create index ix_VersionObject_c_program_80 on VersionObject (c_program_id);
-alter table VersionObject add constraint fk_VersionObject_default_prog_81 foreign key (default_program_id) references CProgram (id);
-create index ix_VersionObject_default_prog_81 on VersionObject (default_program_id);
-alter table VersionObject add constraint fk_VersionObject_b_program_82 foreign key (b_program_id) references BProgram (id);
-create index ix_VersionObject_b_program_82 on VersionObject (b_program_id);
-alter table VersionObject add constraint fk_VersionObject_m_program_83 foreign key (m_program_id) references MProgram (id);
-create index ix_VersionObject_m_program_83 on VersionObject (m_program_id);
+alter table TypeOfBoardBatch add constraint fk_TypeOfBoardBatch_type_of_b_77 foreign key (type_of_board_id) references TypeOfBoard (id);
+create index ix_TypeOfBoardBatch_type_of_b_77 on TypeOfBoardBatch (type_of_board_id);
+alter table TypeOfWidget add constraint fk_TypeOfWidget_project_78 foreign key (project_id) references Project (id);
+create index ix_TypeOfWidget_project_78 on TypeOfWidget (project_id);
+alter table VersionObject add constraint fk_VersionObject_author_79 foreign key (author_id) references Person (id);
+create index ix_VersionObject_author_79 on VersionObject (author_id);
+alter table VersionObject add constraint fk_VersionObject_library_80 foreign key (library_id) references Library (id);
+create index ix_VersionObject_library_80 on VersionObject (library_id);
+alter table VersionObject add constraint fk_VersionObject_c_program_81 foreign key (c_program_id) references CProgram (id);
+create index ix_VersionObject_c_program_81 on VersionObject (c_program_id);
+alter table VersionObject add constraint fk_VersionObject_default_prog_82 foreign key (default_program_id) references CProgram (id);
+create index ix_VersionObject_default_prog_82 on VersionObject (default_program_id);
+alter table VersionObject add constraint fk_VersionObject_b_program_83 foreign key (b_program_id) references BProgram (id);
+create index ix_VersionObject_b_program_83 on VersionObject (b_program_id);
+alter table VersionObject add constraint fk_VersionObject_m_program_84 foreign key (m_program_id) references MProgram (id);
+create index ix_VersionObject_m_program_84 on VersionObject (m_program_id);
 
 
 
@@ -1061,8 +1077,6 @@ drop table if exists MProjectProgramSnapShot cascade;
 
 drop table if exists b_program_version_snapshots cascade;
 
-drop table if exists MacAddressRegisterRecord cascade;
-
 drop table if exists Notification cascade;
 
 drop table if exists PasswordRecoveryToken cascade;
@@ -1106,6 +1120,8 @@ drop table if exists TypeOfBoard cascade;
 drop table if exists BoardFeature_TypeOfBoard cascade;
 
 drop table if exists BoardFeature cascade;
+
+drop table if exists TypeOfBoardBatch cascade;
 
 drop table if exists TypeOfWidget cascade;
 

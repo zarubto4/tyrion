@@ -16,7 +16,6 @@ import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
-import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -2045,7 +2044,6 @@ public class Controller_Grid extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result grid_widget_public_response() {
 
         try {
@@ -2139,7 +2137,6 @@ public class Controller_Grid extends Controller {
 
     /**
     @ApiOperation(value = "", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
     public Result gridWidgetVersion_editScheme(){
 
         try {
@@ -2168,7 +2165,6 @@ public class Controller_Grid extends Controller {
     }
 
     @ApiOperation(value = "", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
     public Result gridWidgetVersion_getScheme(){
 
         try {
@@ -2190,7 +2186,6 @@ public class Controller_Grid extends Controller {
     }
 
     @ApiOperation(value = "", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
     public Result gridWidgetVersion_createScheme(){
 
         try {

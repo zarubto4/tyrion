@@ -21,7 +21,7 @@ import utilities.enums.Enum_Recurrence_cycle;
 import utilities.financial.goPay.helps_objects.*;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
-import utilities.login_entities.Secured_Admin;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.swagger.documentationClass.Swagger_Payment_Refund;
 
@@ -34,6 +34,7 @@ import java.util.Date;
  * contains operations like single payment,
  * on demand payment, refund payment etc.
  */
+@Security.Authenticated(Secured_API.class)
 public class GoPay extends Controller {
 
     // Logger
@@ -464,7 +465,6 @@ public class GoPay extends Controller {
      * @param invoice_id String id of the invoice that is being refunded.
      * @return Result ok if request was successful.
      */
-    @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result payment_refund(String invoice_id){
         try {

@@ -9,7 +9,7 @@ import play.data.validation.Constraints;
 public class Swagger_Cloud_Compilation_Server_New {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 6, message = "The name must have at least 6 characters")
+    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
     @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters")
     @ApiModelProperty(value = "Unique name For Compiler cloud_blocko_server, The name length must be between 6 and 60 characters", required = true)
     public String personal_server_name;

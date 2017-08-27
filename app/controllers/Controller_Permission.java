@@ -14,7 +14,6 @@ import play.mvc.Security;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
-import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_Forbidden;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured_Admin.class)
+@Security.Authenticated(Secured_API.class)
 public class Controller_Permission extends Controller {
 
 // LOGGER ##############################################################################################################

@@ -1,7 +1,4 @@
-package utilities._AAA_printer.printNodeModels;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.printnode.api.*;
+package utilities.lablel_printer_service.printNodeModels;
 
 import javax.validation.Valid;
 

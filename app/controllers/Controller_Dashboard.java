@@ -12,35 +12,16 @@ import play.mvc.Security;
 import play.twirl.api.Html;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
+import utilities.login_entities.Secured_API;
 import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.Swagger_diff_Controller;
 import utilities.swagger.swagger_diff_tools.servise_class.Swagger_Diff;
 import views.html.*;
-import views.html.blocko.blocko_management;
-import views.html.blocko.blocko_objects;
-import views.html.boards.board_detail;
-import views.html.boards.board_settings;
-import views.html.boards.board_summary;
-import views.html.boards.bootloader_settings;
-import views.html.c_program.aproval_community_procedure.approval_procedure_c_program;
-import views.html.c_program.aproval_community_procedure.approval_procedure_list;
-import views.html.c_program.c_libraries.library;
-import views.html.c_program.c_libraries.library_list;
-import views.html.c_program.c_libraries.library_version;
-import views.html.c_program.public_c_programs.public_c_code;
-import views.html.c_program.public_c_programs.public_c_code_list;
-import views.html.demo_data.demo_data_main;
-import views.html.grid.grid_management;
-import views.html.grid.grid_public;
-import views.html.hardware_generator.generator_main;
 import views.html.helpdesk_tool.project_detail;
 import views.html.helpdesk_tool.product_detail;
 import views.html.helpdesk_tool.user_summary;
 import views.html.helpdesk_tool.invoice;
-import views.html.permission.permissions_summary;
-import views.html.permission.role;
-import views.html.c_program.c_program_editor;
 import views.html.common.main;
 import views.html.tariffs.extension_edit;
 import views.html.tariffs.tariff_edit;
@@ -352,62 +333,8 @@ public class Controller_Dashboard extends Controller {
         return return_page(content);
     }
 
-    public Result basic_board_management(){
-        try {
-
-            Html content = board_settings.render();
-            return return_page ( content );
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
 
 
-    public Result board_summary(){
-        try {
-
-            Html content = board_summary.render();
-            return return_page ( content );
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-
-    public Result board_detail(String board_id){
-        try {
-
-            Model_Board board = Model_Board.get_byId(board_id);
-            if (board == null) return GlobalResult.result_notFound("Board not found");
-
-            Html content = board_detail.render(board);
-            return return_page(content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result bootloader_management(String type_of_board_id){
-        try {
-
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
-
-            if(type_of_board == null) {
-
-                return GlobalResult.result_notFound("Type of Board not found!");
-
-            }else {
-                Html content = bootloader_settings.render(type_of_board);
-                return return_page(content);
-            }
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
 
     public Result user_summary(String user_email){
         try {
@@ -424,187 +351,6 @@ public class Controller_Dashboard extends Controller {
 
             Html user_summary_content = user_summary.render( person );
             return return_page(user_summary_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-
-    public Result permissions_summary(){
-        try {
-
-            Html permissions_content = permissions_summary.render();
-            return return_page(permissions_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-
-    public Result role(String role_id){
-        try {
-
-            Model_SecurityRole role_object = Model_SecurityRole.get_byId(role_id);
-
-            Html permissions_content = role.render(role_object);
-            return return_page(permissions_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-
-    public Result blocko_objects(){
-        try {
-
-            Html blocko_objects_content = blocko_objects.render();
-            return return_page(blocko_objects_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result blocko_management(){
-        try {
-
-            Html blocko_management_content = blocko_management.render();
-            return return_page(blocko_management_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-
-    public Result public_c_code_list(){
-        try {
-
-            Html public_code_content = public_c_code_list.render();
-            return return_page(public_code_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result public_c_code(String c_program_id){
-        try {
-
-            Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
-
-            Html public_code_content = public_c_code.render(c_program);
-            return return_page(public_code_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result public_code_management(){
-        try {
-
-            Html public_code_content = c_program_editor.render();
-            return return_page(public_code_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result public_code_approve_procedure_list(){
-        try {
-
-            Html public_code_content = approval_procedure_list.render();
-            return return_page(public_code_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result public_code_approve_procedure(String c_program_id){
-        try {
-
-            Model_CProgram c_program = Model_CProgram.get_byId(c_program_id);
-
-            Html public_code_content = approval_procedure_c_program.render(c_program);
-            return return_page(public_code_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-
-    public Result public_libraries(){
-        try {
-
-            Html libraries_content = library_list.render();
-            return return_page(libraries_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result public_library(String library_id){
-        try {
-
-            Model_Library model_library = Model_Library.get_byId(library_id);
-
-            Html libraries_content = library.render(model_library);
-            return return_page(libraries_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result public_library_version(String version_id){
-        try {
-
-            Model_VersionObject version = Model_VersionObject.get_byId(version_id);
-            if (version == null) return GlobalResult.result_notFound("Version not found");
-
-            Html content = library_version.render(version);
-            return return_page(content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result grid_public(){
-        try {
-
-            Html grid_public_content = grid_public.render();
-            return return_page(grid_public_content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result mac_address_generator(){
-        try {
-
-            Html content = generator_main.render();
-            return return_page(content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result grid_management(){
-        try {
-
-            Html grid_management_content = grid_management.render();
-            return return_page(grid_management_content);
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -647,17 +393,6 @@ public class Controller_Dashboard extends Controller {
 
             Html content = invoice.render(inv);
             return return_page(content);
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    public Result demo_data(){
-        try {
-
-            Html test_content = demo_data_main.render();
-            return return_page(test_content);
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());

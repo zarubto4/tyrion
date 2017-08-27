@@ -42,9 +42,7 @@ public class Secured_Admin extends Security.Authenticator {
 
 
                 Model_FloatingPersonToken model_token = Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique();
-
                 if(model_token == null || !model_token.isValid()){
-
                     terminal_logger.debug("Security Token:: " + token + " is not t is no longer valid according time");
                     return null;
                 }

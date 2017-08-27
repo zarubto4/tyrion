@@ -1,9 +1,7 @@
-package utilities._AAA_printer;
+package utilities.lablel_printer_service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.printnode.api.PrintJobJson;
-import models.Model_Board;
 import play.api.Play;
 import play.data.Form;
 import play.i18n.Lang;
@@ -12,13 +10,10 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
-import utilities._AAA_printer.labels.Label_65_mm;
-import utilities._AAA_printer.printNodeModels.*;
+import utilities.lablel_printer_service.printNodeModels.*;
 import utilities.logger.Class_Logger;
-import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
 
@@ -29,13 +24,6 @@ public class Printer_Api {
 
     private String apiKey = "6aa35f3ae351e4664417ac894d99dbd4c35a0b95";
 
-    public Printer_Api() {
-        try {
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 // - Object API  --------------------------------------------------------------------------------------------------------------------
 

@@ -95,7 +95,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href='@routes.Controller_Dashboard.demo_data()' >
+                            <a href='' >
                                 <i class="fa fa-bomb"></i> <span>Demo Data</span>
                             </a>
                         </li>
@@ -226,7 +226,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.basic_board_management()' >
+                                    <a href='' >
                                         <i class="fa fa-wrench"></i> <span>Boards Type Management</span>
                                     </a>
                                 </li>
@@ -236,7 +236,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.board_summary()' >
+                                    <a href='' >
                                         <i class="fa fa-wrench"></i> <span>Boards summary</span>
                                     </a>
                                 </li>
@@ -245,7 +245,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.mac_address_generator()' >
+                                    <a href='' >
                                         <i class="fa fa-wrench"></i> <span>Mac Address Generator</span>
                                     </a>
                                 </li>
@@ -267,7 +267,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.grid_management()' >
+                                    <a href='' >
                                         <i class="fa fa-wrench"></i> <span>Grid Object Settings</span>
                                     </a>
                                 </li>
@@ -276,7 +276,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.grid_public()' >
+                                    <a href='' >
                                         <i class="fa fa-wrench"></i> <span>Public Object Approval</span>
                                     </a>
                                 </li>
@@ -297,7 +297,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.blocko_management()' >
+                                    <a href='' >
                                         <i class="fa fa-wrench"></i> <span>Blocko Object Settings</span>
                                     </a>
                                 </li>
@@ -306,7 +306,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.blocko_objects()' >
+                                    <a href='' >
                                         <i class="fa fa-wrench"></i> <span>Public Object Approval</span>
                                     </a>
                                 </li>
@@ -327,7 +327,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.public_c_code_list()'>
+                                    <a href=''>
                                         <i class="fa fa-wrench"></i> <span>Public Firmware Code</span>
                                     </a>
                                 </li>
@@ -337,7 +337,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.public_code_approve_procedure_list()'>
+                                    <a href=''>
                                         <i class="fa fa-wrench"></i> <span>Approval Community Code</span>
                                     </a>
                                 </li>
@@ -347,7 +347,7 @@
                             } else {
                                 <li>
                             }
-                                    <a href='@routes.Controller_Dashboard.public_libraries()' >
+                                    <a href='' >
                                         <i class="fa fa-wrench"></i> <span>Public Libraries</span>
                                     </a>
                                 </li>
@@ -362,8 +362,21 @@
                                 <i class="fa fa-wrench"></i> <span>Tariff Management</span>
                             </a>
                         </li>
-
-                            <a href='@routes.Controller_Dashboard.permissions_summary()'>
+                    @if(request.contains("external_servers")) {
+                        <li class="active">
+                    } else {
+                        <li>
+                    }
+                            <a href=''>
+                                <i class="fa fa-wrench"></i> <span>External servers</span>
+                            </a>
+                        </li>
+                    @if(request.contains("permission")) {
+                        <li class="active">
+                    } else {
+                        <li>
+                    }
+                            <a href=''>
                                 <i class="fa fa-wrench"></i> <span>System Roles & Permissions</span>
                             </a>
                         </li>

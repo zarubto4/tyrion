@@ -338,7 +338,9 @@ public class Controller_Security extends Controller {
                 String token = request().getHeader("X-AUTH-TOKEN");
                 if(token == null) return GlobalResult.result_ok();
 
+                String person_id = Model_Person.token_cache.get(token);
                 Model_Person.token_cache.remove(token);
+                Model_Person.cache.remove(person_id);
 
                 Model_FloatingPersonToken token_model = Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique();
 

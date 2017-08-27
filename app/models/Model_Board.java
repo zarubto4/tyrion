@@ -55,7 +55,7 @@ public class Model_Board extends Model {
         který je Byzance schopna obsluhovat. Rozdílem je Typ desky - který může měnit chování některých metod nebo executiv
         procedur.
 
-
+        Batch je z Type OfBoards výrobní kolekce, nebo šarže tak aby se dalo trackovat kdo co vyrobil, kdy osadil atd..
      */
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -64,21 +64,23 @@ public class Model_Board extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                   @Id public String id;                           // Full_Id procesoru přiřazené Garfieldem - // TODO mělo by být nahrazeno UUID a pak samostatně Full_ID hardwaru
-                           @JsonIgnore public String hash_for_adding;              // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
+                                        @Id public String id;                  // Full_Id procesoru přiřazené garfieldem Garfieldem
+    @JsonIgnore public String hash_for_adding;                                      // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
 
-                                       public String wifi_mac_address;             // Mac addressa wifi čipu
-                                       public String mac_address;                  // Přiřazená MacAdresa z rozsahu Adres
+                                       public String wifi_mac_address;              // Mac addressa wifi čipu
+                                       public String mac_address;                   // Přiřazená MacAdresa z rozsahu Adres
 
-                                       public String name;                         // Jméno, které si uživatel pro hardware nasatvil
-    @Column(columnDefinition = "TEXT") public String description;                  // Popisek, který si uživatel na hardwaru nastavil
+                                       public String name;                          // Jméno, které si uživatel pro hardware nasatvil
+    @Column(columnDefinition = "TEXT") public String description;                   // Popisek, který si uživatel na hardwaru nastavil
 
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_FileRecord picture;
+                                        public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
 
-                           public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
-                           public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
-
-    @JsonIgnore  public boolean is_active; // Příznak, že deska byla oživena a je použitelná v platformě
+    // Parametry při výrobě a osazení a registraci
+    @JsonIgnore public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
+    @JsonIgnore public String batch; // Výrobní šarže
+    @JsonIgnore public Long ean_number;                 // Datum vytvoření objektu (vypálení dat do procesoru)
+    @JsonIgnore public boolean is_active; // Příznak, že deska byla oživena a je použitelná v platformě
 
 
     // Parametry konfigurovate uživatelem z frontendu
@@ -123,7 +125,7 @@ public class Model_Board extends Model {
 
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_id;              // Backup
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_version_id;
-    @Transient @JsonIgnore @TyrionCachedList public String cache_latest_know_ip_adress;
+    @Transient @JsonIgnore @TyrionCachedList public String cache_latest_know_ip_address;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -131,7 +133,7 @@ public class Model_Board extends Model {
 
     @JsonProperty  @Transient  public String type_of_board_id()                     { try{ return cache_value_type_of_board_id   != null ? cache_value_type_of_board_id: get_type_of_board().id;}catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String type_of_board_name()                   { try{ return cache_value_type_of_board_name != null ? cache_value_type_of_board_name: get_type_of_board().name;}catch (NullPointerException e){return  null;}}
-    @JsonProperty  @Transient  public String producer_id()                          { try{ return cache_value_producer_id   != null ? cache_value_producer_id: get_producer().id;}catch (NullPointerException e){return  null;}}
+    @JsonProperty  @Transient  public String producer_id()                          { try{ return cache_value_producer_id   != null ? cache_value_producer_id: get_producer().id.toString();}catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String producer_name()                        { try{ return get_producer().name; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String project_id()                           { try{ return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_version_name()       { try{ return get_actual_bootloader().name; }catch (NullPointerException e){return  null;}}
@@ -162,8 +164,8 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient  public String ip_address(){
         try{
 
-            if(cache_latest_know_ip_adress != null){
-                return cache_latest_know_ip_adress;
+            if(cache_latest_know_ip_address != null){
+                return cache_latest_know_ip_address;
             }else{
                 return null;
                 // TODO - zjistit!!!! A předat frontendu!
@@ -414,7 +416,7 @@ public class Model_Board extends Model {
 
             Model_Producer producer = Model_Producer.find.where().eq("type_of_boards.boards.id", id).select("id").findUnique();
             if(producer == null) return null;
-            cache_value_producer_id = producer.id;
+            cache_value_producer_id = producer.id.toString();
 
         }
 
@@ -1318,8 +1320,8 @@ public class Model_Board extends Model {
         }
 
         // Uložení do Cache paměti
-        if(cache_latest_know_ip_adress == null || !cache_latest_know_ip_adress.equals(overview.ip)){
-            cache_latest_know_ip_adress = overview.ip;
+        if(cache_latest_know_ip_address == null || !cache_latest_know_ip_address.equals(overview.ip)){
+            cache_latest_know_ip_address = overview.ip;
         }
 
         // Synchronizace mac_adressy pokuk k tomu ještě nedošlo
@@ -2053,12 +2055,7 @@ public class Model_Board extends Model {
         //Default starting state
         database_synchronize = true;
 
-        while(true){ // I need Unique Value
-
-            String UUDID = UUID.randomUUID().toString().substring(0,14);
-            this.hash_for_adding = UUDID.substring(0, 4) + "-" + UUDID.substring(4, 8) + "-" + UUDID.substring(9, 13);
-            if (Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique() == null) break;
-        }
+        this.hash_for_adding = UUID.randomUUID().toString();
 
         super.save();
 
@@ -2099,7 +2096,6 @@ public class Model_Board extends Model {
 
     @JsonIgnore @Transient
     public String get_path(){
-
         return get_project().get_path() + "/hardware/";
     }
 

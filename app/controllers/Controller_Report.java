@@ -10,13 +10,13 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.logger.Server_Logger;
-import utilities.login_entities.Secured_Admin;
+import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.outboundClass.Swagger_Report_Admin_Dashboard;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured_Admin.class)
+@Security.Authenticated(Secured_API.class)
 public class Controller_Report extends Controller {
 
 

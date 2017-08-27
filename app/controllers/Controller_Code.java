@@ -17,7 +17,6 @@ import utilities.enums.Enum_Approval_state;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
-import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -709,7 +708,6 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
     public Result c_program_public_response(){
         try {
 
@@ -862,7 +860,6 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
-    @Security.Authenticated(Secured_Admin.class)
     public Result c_program_markScheme(@ApiParam(value = "version_id", required = true) String version_id) {
         try {
 

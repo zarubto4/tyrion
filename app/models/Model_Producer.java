@@ -25,7 +25,7 @@ public class Model_Producer extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true)  public String id;
+                                                        @Id @ApiModelProperty(required = true)  public UUID id;
                                                             @ApiModelProperty(required = true)  public String name;
                      @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String description;
 
@@ -46,10 +46,6 @@ public class Model_Producer extends Model {
 
         terminal_logger.debug("save: Creating new Object");
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_Producer.find.byId(this.id) == null) break;
-        }
         super.save();
     }
 

@@ -89,8 +89,7 @@
                             <div class="box box-primary">
                                 <div class="box-body table-responsive no-padding">
                                     <div class="box-header">
-                                        <h3 class="box-title"> Yoda: <a href='@routes.Controller_Dashboard.board_detail("") @x.main_board_pair.board.id' > @x.main_board_pair.board.id</a> Name: @x.main_board_pair.board.name </h3>
-                                        <h3 class="box-title"> @x.main_board_pair.board.online_state()</h3>
+                                         <h3 class="box-title"> @x.main_board_pair.board.online_state()</h3>
                                     </div>
 
                                     <div class="box-header">
@@ -129,8 +128,7 @@
                                         @for(b_pair <- x.device_board_pairs) {
 
                                             <tr>
-                                                <td> <a href='@routes.Controller_Dashboard.board_detail("")@b_pair.board.id' > @b_pair.board.id</a>  </td>
-                                                <td> @b_pair.board.type_of_board.name</td>
+                                                 <td> @b_pair.board.type_of_board.name</td>
                                                 <td> @b_pair.board.name</td>
 
                                                 <td> b_pair.board.online_state() </td>
@@ -191,8 +189,7 @@
                             @for(x <- instance.actual_instance.hardware_group()) {
                                 <tr>
                                     <td>@x.main_board_pair.board.type_of_board.name</td>
-                                    <td>  <a href='@routes.Controller_Dashboard.board_detail("")@x.main_board_pair.board.id' > @x.main_board_pair.board.id </a>  </td>
-                                    <td>@if(x.main_board_pair.board.actual_c_program_version != null) {
+                                     <td>@if(x.main_board_pair.board.actual_c_program_version != null) {
                                         @x.main_board_pair.board.actual_c_program_version.id
                                     } else {
                                         Not Yet Databased

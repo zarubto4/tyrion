@@ -9,11 +9,13 @@ import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
+import utilities.lablel_printer_service.Printer_Api;
+import utilities.lablel_printer_service.labels.Label_12_mm;
+import utilities.lablel_printer_service.labels.Label_62_mm;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
-import utilities.login_entities.Secured_Admin;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
@@ -23,7 +25,6 @@ import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compila
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
-import java.io.File;
 import java.util.*;
 
 
@@ -1277,44 +1278,202 @@ public class Controller_Board extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete TypeOfBoard picture",
-            tags = { "Admin-Type-Of-Board"},
-            notes = "Remove picture from TypeOfBoard",
+// Type Of Board - Batch ###############################################################################################
+
+    @ApiOperation(value = "create TypeOfBoardBatch",
+            tags = { "Type-Of-Board"},
+            notes = "Create new Production Batch for Type Of Board",
             produces = "application/json",
-            consumes = "text/html",
             protocols = "https",
-            code = 200
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBoardBatch_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_TypeOfBoard.class),
-            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_TypeOfBoard_Batch.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_Admin.class)
-    public Result typeOfBoard_removePicture(String type_of_board_id){
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result typeOfBoardBatch_create(String type_of_board_id) {
         try {
 
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.get_byId(type_of_board_id);
-            if (type_of_board == null) return GlobalResult.result_notFound("Type of Board does not exist");
+            // Zpracování Json
+            final Form<Swagger_TypeOfBoardBatch_New> form = Form.form(Swagger_TypeOfBoardBatch_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_TypeOfBoardBatch_New help = form.get();
 
-            if(!(type_of_board.picture == null)) {
-                Model_FileRecord fileRecord = type_of_board.picture;
-                type_of_board.picture = null;
-                type_of_board.update();
-                fileRecord.delete();
-            }else{
-                return GlobalResult.result_badRequest("There is no picture to remove.");
-            }
+            // Kontrola objektu
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_board_id);
+            if(typeOfBoard == null ) return GlobalResult.result_notFound("Model_TypeOfBoard type_of_board_id not found");
 
-            return GlobalResult.result_ok("Picture successfully removed");
-        }catch (Exception e){
+            // Tvorba objektu
+            Model_TypeOfBoard_Batch batch = new Model_TypeOfBoard_Batch();
+            batch.type_of_board = typeOfBoard;
+
+            batch.revision = help.revision;
+            batch.production_batch = help.production_batch;
+
+            batch.date_of_assembly = help.date_of_assembly;
+
+            batch.pcb_manufacture_name = help.pcb_manufacture_name;
+            batch.pcb_manufacture_id = help.pcb_manufacture_id;
+
+            batch.assembly_manufacture_name = help.assembly_manufacture_name;
+            batch.assembly_manufacture_id = help.assembly_manufacture_id;
+
+            batch.customer_product_name = help.customer_product_name;
+
+            batch.customer_company_name = help.customer_company_name;
+            batch.customer_company_made_description = help.customer_company_made_description;
+
+            batch.mac_address_start = help.mac_address_start;
+            batch.mac_address_end = help.mac_address_end;
+
+            batch.ean_number = help.ean_number;
+
+            // Kontorluji oprávnění
+            if(!batch.create_permission()) return GlobalResult.result_forbidden();
+
+            // Uložení objektu do DB
+            batch.save();
+
+            return GlobalResult.result_created(Json.toJson(batch));
+
+        } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
-    // BootLoader ---------------------------------------------------------------------------------------------------------------------
+    @ApiOperation(value = "delete TypeOfBoardBatch",
+            tags = { "Type-Of-Board"},
+            notes = "if you want delete TypeOfBoard Batch object by query = type_of_board_id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfBoard.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "TypeOfBoard_delete"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result typeOfBoardBatch_delete( String type_of_board_batch_id) {
+        try {
+
+            // Kontrola objektu
+            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.get_byId(type_of_board_batch_id);
+            if(batch == null ) return GlobalResult.result_notFound("Model_TypeOfBoard_Batch type_of_board_batch_id not found") ;
+
+            // Kontorluji oprávnění
+            if(! batch.delete_permission()) return GlobalResult.result_forbidden();
+
+            // Smazání objektu
+            batch.delete();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "edit TypeOfBoardBatch",
+            tags = { "Type-Of-Board"},
+            notes = "Create new Production Batch for Type Of Board",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBoardBatch_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_TypeOfBoard_Batch.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result typeOfBoardBatch_edit(String type_of_board_id) {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_TypeOfBoardBatch_New> form = Form.form(Swagger_TypeOfBoardBatch_New.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_TypeOfBoardBatch_New help = form.get();
+
+            // Kontrola objektu
+            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.get_byId(type_of_board_id);
+            if(batch == null ) return GlobalResult.result_notFound("Model_TypeOfBoard type_of_board_id not found");
+
+            // Tvorba objektu
+            batch.revision = help.revision;
+            batch.production_batch = help.production_batch;
+
+            batch.date_of_assembly = help.date_of_assembly;
+
+            batch.pcb_manufacture_name = help.pcb_manufacture_name;
+            batch.pcb_manufacture_id = help.pcb_manufacture_id;
+
+            batch.assembly_manufacture_name = help.assembly_manufacture_name;
+            batch.assembly_manufacture_id = help.assembly_manufacture_id;
+
+            batch.customer_product_name = help.customer_product_name;
+
+            batch.customer_company_name = help.customer_company_name;
+            batch.customer_company_made_description = help.customer_company_made_description;
+
+            batch.mac_address_start = help.mac_address_start;
+            batch.mac_address_end = help.mac_address_end;
+
+            batch.ean_number = help.ean_number;
+
+            // Kontorluji oprávnění
+            if(!batch.create_permission()) return GlobalResult.result_forbidden();
+
+            // Uložení objektu do DB
+            batch.save();
+
+            return GlobalResult.result_created(Json.toJson(batch));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+// BootLoader ##########################################################################################################
 
     @ApiOperation(value = "create Bootloader",
             tags = { "Admin-Type-Of-Board"},
@@ -1340,7 +1499,6 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result bootLoader_create(@ApiParam(value = "type_of_board_id", required = true) String type_of_board_id) {
         try {
@@ -1401,7 +1559,6 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result bootLoader_update(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
@@ -1445,7 +1602,6 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @Security.Authenticated(Secured_Admin.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result bootLoader_delete(String boot_loader_id) {
         try {
@@ -1677,11 +1833,11 @@ public class Controller_Board extends Controller {
 
     ///###################################################################################################################*/
 
-    @ApiOperation(value = "create Board",
+    @ApiOperation(value = "create Board manual Registration",
             tags = { "Admin-Board"},
             notes = "This Api is using only for developing mode, for registration of our Board - in future it will be used only by machine in factory or " +
-                    "boards themselves with \"registration procedure\". Its not allowed to delete that! Only deactivate. Classic User can registed that to own " +
-                    "project or own account",
+                    "boards themselves with \"registration procedure\". Hardware is not allowed to delete! Only deactivate. Classic User can only register that to own " +
+                    "project or own to account",
             produces = "application/json",
             protocols = "https",
             code = 201,
@@ -1696,7 +1852,7 @@ public class Controller_Board extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Board_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_New_Manual",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1712,13 +1868,13 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_create() {
+    public Result board_create_manual() {
         try {
 
             // Zpracování Json
-            final Form<Swagger_Board_New> form = Form.form(Swagger_Board_New.class).bindFromRequest();
+            final Form<Swagger_Board_New_Manual> form = Form.form(Swagger_Board_New_Manual.class).bindFromRequest();
             if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Board_New help = form.get();
+            Swagger_Board_New_Manual help = form.get();
 
             // Kotrola objektu
             if (Model_Board.find.byId(help.full_id) != null) return GlobalResult.result_badRequest("Board is already registered");
@@ -1738,6 +1894,129 @@ public class Controller_Board extends Controller {
 
             // Uložení desky do DB
             board.save();
+
+            // Vracím seznam zařízení k registraci
+            return GlobalResult.result_created(Json.toJson(board));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "create Board automatic Garfield",
+            tags = { "Admin-Board"},
+            notes = "This Api is using for Board automatic registration adn Testing. Hardware is not allowed to delete! Only deactivate. Classic User can only register that to own " +
+                    "project or own to account",
+            produces = "application/json",
+            protocols = "https",
+            code = 201,
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "TypeOfBoard.register_new_device_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "Board_create"),
+                    }),
+            }
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Board_New_Garfield",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_Hardware_New_Settings_Result.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_create_garfield() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Board_New_Garfield> form = Form.form(Swagger_Board_New_Garfield.class).bindFromRequest();
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Board_New_Garfield help = form.get();
+
+            // Kotrola objektu
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId( help.type_of_board_id  );
+            if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
+
+            // Kontorluji oprávnění
+            if (!typeOfBoard.register_new_device_permission()) return GlobalResult.result_forbidden();
+
+            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.get_byId( help.type_of_board_batch_id  );
+            if(batch == null ) return GlobalResult.result_notFound("TypeOfBoard_Batch type_of_board_batch_id not found");
+
+            // Kontrola Objektu
+            Model_Garfield garfiled = Model_Garfield.get_byId(help.garfield_station_id);
+            if (garfiled == null) return GlobalResult.result_notFound("Garfield Station not found");
+
+            Model_Board board = Model_Board.find.byId(help.full_id);
+
+            // Pokud neexistuje vytvořím
+            if (board == null) {
+                board = new Model_Board();
+                board.id = help.full_id;
+                board.is_active = false;
+                board.date_of_create = new Date();
+                board.type_of_board = typeOfBoard;
+                board.batch = batch.id.toString();
+                board.mac_address = batch.get_new_MacAddress();
+                board.ean_number = batch.ean_number;
+
+                board.save();
+                board.refresh();
+            }
+
+            // Vytisknu štítky
+
+            Printer_Api api = new Printer_Api();
+
+            // Label 62 mm
+            Label_62_mm label_62_mm = new Label_62_mm(board, batch , garfiled);
+            api.printFile(garfiled.print_sticker_id, 1, "Garfield Print Label", label_62_mm.get_label());
+
+            // Label qith QR kode on Ethernet connector
+            Label_12_mm label_12_mm = new Label_12_mm(board);
+            api.printFile(garfiled.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm.get_label());
+
+
+            if(typeOfBoard.connectible_to_internet) {
+
+                // Najdu backup_server
+                Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.backup_server).findUnique();
+                if (backup_server == null) return GlobalResult.result_notFound("Backup server not found!!!");
+
+                // Najdu Main_server
+                Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
+                if (main_server == null) return GlobalResult.result_notFound("Main server not found!!!");
+
+                Swagger_Hardware_New_Settings_Result result = new Swagger_Hardware_New_Settings_Result();
+                result.full_id = board.id;
+                result.normal_mqtt_hostname = main_server.server_url;
+                result.normal_mqtt_port = main_server.mqtt_port;
+                result.normal_mqtt_username = main_server.mqtt_username;
+                result.normal_mqtt_password = main_server.mqtt_password;
+
+                result.backup_mqtt_hostname = backup_server.server_url;
+                result.backup_mqtt_port = backup_server.mqtt_port;
+                result.backup_mqtt_username = backup_server.mqtt_username;
+                result.backup_mqtt_password = backup_server.mqtt_password;
+
+                result.bootloader_report = false;
+                result.auto_backup = true;
+                result.mac_address = board.mac_address;
+
+                return GlobalResult.result_created(Json.toJson(result));
+            }
 
             // Vracím seznam zařízení k registraci
             return GlobalResult.result_created(Json.toJson(board));
@@ -2251,7 +2530,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_getByFilter() {
+    public Result board_getByFilter(Integer page_number) {
         try {
 
             // Zpracování Json
@@ -2296,7 +2575,7 @@ public class Controller_Board extends Controller {
             }
 
             // Vytvářím seznam podle stránky
-            Swagger_Board_List result = new Swagger_Board_List(query, help.page_number);
+            Swagger_Board_List result = new Swagger_Board_List(query, page_number);
 
             // Vracím seznam
             return GlobalResult.result_ok(Json.toJson(result));
@@ -2342,6 +2621,8 @@ public class Controller_Board extends Controller {
             Model_Board board = Model_Board.get_byId(board_id);
 
             if(!board.edit_permission()) return GlobalResult.result_forbidden();
+
+            if(board.get_project() == null ) return GlobalResult.result_badRequest("Hardware is not in project!");
 
             if(help.file == null || help.file.equals("")){
                 Model_FileRecord fileRecord = board.picture;
@@ -2718,7 +2999,6 @@ public class Controller_Board extends Controller {
     }
 
     @ApiOperation(value = "Remove Hardware from Database - Only for Administrators", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
     public Result board_delete(String board_id){
         try {
 
