@@ -37,7 +37,6 @@ import utilities.swagger.outboundClass.Swagger_SocialNetwork_Result;
 import utilities.swagger.outboundClass.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.outboundClass.Swagger_Login_Token;
 import utilities.swagger.outboundClass.Swagger_Person_All_Details;
-import views.html.common.login;
 import web_socket.services.WS_Becki_Website;
 
 import java.util.ArrayList;
@@ -244,30 +243,6 @@ public class Controller_Security extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-
-
-    // LOGIN ###############################################################################################################
-
-    @ApiOperation(value = "login",
-            tags = {"Access", "Person"},
-            notes = "Get access Token",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            hidden = true
-    )
-    public Result admin_login(){
-        try {
-
-            terminal_logger.debug("admin_login:: Trying to get login page");
-            return ok(login.render());
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
 
     // Když se uživatel přihlásí, dostane pouze Token. Ale aby mohl načíst základní projekty, atd. Tato metoda
     // mu výměnou za Token vrátí celkový přehled (práva atd.)

@@ -43,7 +43,7 @@ public class Controller_Finance extends Controller {
             notes = "create new Tariff",
             produces = "application/json",
             protocols = "https",
-            code = 200
+            code = 201
 
     )
     @ApiImplicitParams(
@@ -87,11 +87,11 @@ public class Controller_Finance extends Controller {
 
             tariff.company_details_required = help.company_details_required;
             tariff.payment_details_required = help.payment_method_required;
+            tariff.payment_details_required = help.payment_method_required;
 
-            tariff.credit_card_support      = help.credit_card_support;
-            tariff.bank_transfer_support    = help.bank_transfer_support;
+            tariff.active                   = false;
 
-            tariff.active                   = true;
+            if(!tariff.create_permission()) return GlobalResult.result_forbidden();
 
             tariff.save();
 
@@ -128,20 +128,20 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariff_edit(){
+    public Result tariff_edit(String tariff_id){
         try {
 
             final Form<Swagger_Tariff_New> form = Form.form(Swagger_Tariff_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Tariff_New help = form.get();
 
-            if (help.id == null) return GlobalResult.result_badRequest("Tariff id is required");
-
-            Model_Tariff tariff = Model_Tariff.get_byId(help.id);
+            Model_Tariff tariff = Model_Tariff.get_byId(tariff_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
-            if (Model_Tariff.find.where().ne("id", help.id).eq("identifier", help.identifier).findUnique() != null)
+            if (Model_Tariff.find.where().ne("id", tariff_id).eq("identifier", help.identifier).findUnique() != null)
                 return GlobalResult.result_badRequest("Identifier must be unique!");
+
+            if(!tariff.edit_permission()) return GlobalResult.result_forbidden();
 
             tariff.name                     = help.name;
             tariff.identifier               = help.identifier;
@@ -151,9 +151,6 @@ public class Controller_Finance extends Controller {
 
             tariff.company_details_required = help.company_details_required;
             tariff.payment_details_required = help.payment_method_required;
-
-            tariff.credit_card_support      = help.credit_card_support;
-            tariff.bank_transfer_support    = help.bank_transfer_support;
 
             tariff.update();
 
@@ -187,6 +184,8 @@ public class Controller_Finance extends Controller {
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
             if (!tariff.active) return GlobalResult.result_badRequest("Tariff is already deactivated");
+
+            if(!tariff.update_permission()) return GlobalResult.result_forbidden();
 
             tariff.active = false;
 
@@ -223,6 +222,8 @@ public class Controller_Finance extends Controller {
 
             if (tariff.active) return GlobalResult.result_badRequest("Tariff is already activated");
 
+            if(!tariff.update_permission()) return GlobalResult.result_forbidden();
+
             tariff.active = true;
 
             tariff.update();
@@ -256,6 +257,8 @@ public class Controller_Finance extends Controller {
             Model_Tariff tariff =  Model_Tariff.get_byId(tariff_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
+            if(!tariff.edit_permission()) return GlobalResult.result_forbidden();
+
             tariff.up();
 
             return GlobalResult.result_ok();
@@ -287,6 +290,8 @@ public class Controller_Finance extends Controller {
             Model_Tariff tariff =  Model_Tariff.get_byId(tariff_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
+            if(!tariff.edit_permission()) return GlobalResult.result_forbidden();
+
             tariff.down();
 
             return GlobalResult.result_ok();
@@ -296,9 +301,42 @@ public class Controller_Finance extends Controller {
         }
     }
 
-// ADMIN - TARIFF LABEL ################################################################################################
+    @ApiOperation(value = "delete Tariff",
+            tags = {"Admin-Tariff"},
+            notes = "activate Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result tariff_delete(String tariff_id){
+        try{
 
-    @ApiOperation(value = "create Tariff Label",
+            Model_Tariff tariff =  Model_Tariff.get_byId(tariff_id);
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
+
+            if(!tariff.delete_permission()) return GlobalResult.result_forbidden();
+
+            tariff.delete();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+// ADMIN - Tariff_Label ################################################################################################
+
+    @ApiOperation(value = "create Tariff_Label",
             tags = {"Admin-Tariff"},
             notes = "create new Tariff",
             produces = "application/json",
@@ -351,7 +389,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit Tariff Label",
+    @ApiOperation(value = "edit Tariff_Label",
             tags = {"Admin-Tariff"},
             notes = "create new Tariff",
             produces = "application/json",
@@ -400,7 +438,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "order Tariff Label Up",
+    @ApiOperation(value = "order Tariff_Label Up",
             tags = {"Admin-Tariff"},
             notes = "create new Tariff",
             produces = "application/json",
@@ -430,7 +468,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "order Tariff Label Down",
+    @ApiOperation(value = "order Tariff_Label Down",
             tags = {"Admin-Tariff"},
             notes = "create new Tariff",
             produces = "application/json",
@@ -460,7 +498,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete Tariff",
+    @ApiOperation(value = "delete Tariff_Label",
             tags = {"Admin-Tariff"},
             notes = "create new Tariff",
             produces = "application/json",
@@ -492,7 +530,7 @@ public class Controller_Finance extends Controller {
 
 // USER -  EXTENSION PACKAGES ##########################################################################################
 
-    @ApiOperation(value = "create Product Extension",
+    @ApiOperation(value = "create Product_Extension",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -552,7 +590,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Product Extension",
+    @ApiOperation(value = "get Product_Extension",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -582,7 +620,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Product Extension List user Own",
+    @ApiOperation(value = "get Product_Extension List user Own",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -604,7 +642,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "get Product Extension types All",
+    @ApiOperation(value = "get Product_Extension All types",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -627,7 +665,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "update Product Extension",
+    @ApiOperation(value = "update Product_Extension",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Updates extension. User can change name, description or color.",
             produces = "application/json",
@@ -679,7 +717,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "activate Product Extension",
+    @ApiOperation(value = "activate Product_Extension",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -715,7 +753,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "deactivate Product Extension",
+    @ApiOperation(value = "deactivate Product_Extension",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -751,7 +789,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete Product Extension",
+    @ApiOperation(value = "delete Product_Extension",
             tags = {"Admin-Extension"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
@@ -784,7 +822,7 @@ public class Controller_Finance extends Controller {
         }
     }
     
-    @ApiOperation(value = "create Tariff Extension",
+    @ApiOperation(value = "create Tariff_Extension",
             tags = {"Admin-Extension"},
             notes = "",
             produces = "application/json",
@@ -935,7 +973,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit Tariff Extension",
+    @ApiOperation(value = "edit Tariff_Extension",
             tags = {"Admin-Extension"},
             notes = "create new Tariff",
             produces = "application/json",
@@ -1080,7 +1118,7 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "order Tariff Extension UP",
+    @ApiOperation(value = "order Tariff_Extension UP",
             tags = {"Admin-Extension"},
             notes = "order Tariff in list",
             produces = "application/json",
@@ -1109,9 +1147,9 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "order Tariff Extension Down",
+    @ApiOperation(value = "order Tariff_Extension Down",
             tags = {"Admin-Extension"},
-            notes = "order Tariff Extension Down",
+            notes = "order Tariff_Extension Down",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1141,9 +1179,9 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "deactivate Tariff Extension",
+    @ApiOperation(value = "deactivate Tariff_Extension",
             tags = {"Admin-Extension"},
-            notes = "order Tariff Extension Down",
+            notes = "order Tariff_Extension Down",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1174,9 +1212,9 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "active Tariff Extension",
+    @ApiOperation(value = "active Tariff_Extension",
             tags = {"Admin-Extension"},
-            notes = "order Tariff Extension Down",
+            notes = "order Tariff_Extension Down",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1207,9 +1245,9 @@ public class Controller_Finance extends Controller {
         }
     }
 
-    @ApiOperation(value = "delete Tariff Extension",
+    @ApiOperation(value = "delete Tariff_Extension",
             tags = {"Admin-Extension"},
-            notes = "order Tariff Extension Down",
+            notes = "order Tariff_Extension Down",
             produces = "application/json",
             protocols = "https",
             code = 200

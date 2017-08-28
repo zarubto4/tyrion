@@ -7,7 +7,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
-import controllers.Controller_Dashboard;
 import controllers.Controller_Security;
 import models.Model_LoggyError;
 import org.slf4j.LoggerFactory;
@@ -27,8 +26,6 @@ import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.helps_objects.Interface_Server_Logger;
 import utilities.response.GlobalResult;
 import utilities.slack.Slack;
-import views.html.tyrion_developers.loggy;
-import views.html.common.main;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -46,9 +43,6 @@ public class Server_Logger extends Controller {
 
     @Inject
     private static WSClient wsClient; // používat přes getWSClient()
-
-    @Inject
-    Controller_Dashboard dashboard;
 
     private static String token = "";       // token na youtrack
     private static long tokenExpire = 0;    // kdy expiruje token na youtrack
@@ -235,12 +229,6 @@ public class Server_Logger extends Controller {
 
 /* CONTROLLER OERATION ---------------------------------------------------------------------------------------------------*/
 
-
-    // Vykreslí šablonu s bugy
-    public Result show_all_logs() {
-        Html content = loggy.render( Server_Logger.getErrors() );
-        return dashboard.return_page(content);
-    }
 
     // Nahraje konkrétní bug na Youtrack
     public Result loggy_report_bug_to_youtrack(String bug_id) {

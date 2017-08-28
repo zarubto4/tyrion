@@ -1,12 +1,13 @@
 package utilities.swagger.documentationClass;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
 import play.data.validation.Constraints;
 
-@Api(hidden = true)
+@ApiModel(description = "Json Model for creating new tariff.",
+        value = "Tariff_New")
 public class Swagger_Tariff_New {
 
-    public String id;
     @Constraints.Required public String name;
     @Constraints.Required public String identifier;
     @Constraints.Required public String description;
@@ -15,9 +16,8 @@ public class Swagger_Tariff_New {
 
     @Constraints.Required public boolean company_details_required;
     @Constraints.Required public boolean payment_method_required;
-
-    @Constraints.Required public boolean credit_card_support;
-    @Constraints.Required public boolean bank_transfer_support;
+    @Constraints.Required public boolean payment_details_required;
 
     @Constraints.Required public Double  credit_for_beginning;
+    @Constraints.Required public Double  monthly_estimate_cost;
 }

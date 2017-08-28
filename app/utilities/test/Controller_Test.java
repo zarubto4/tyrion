@@ -3,7 +3,6 @@ package utilities.test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.Controller_Dashboard;
 import io.swagger.annotations.Api;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.notification.Failure;
@@ -20,7 +19,6 @@ import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
-import views.html.tyrion_developers.test;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -44,45 +42,7 @@ public class Controller_Test extends Controller {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Dashboard.class);
-
-
-    public Result test(){
-        try {
-
-
-            List<String> fileNames = new ArrayList<>();
-            File[] files = new File(application.path() + "/app/utilities/test/tests").listFiles();
-
-            for (File file : files) {
-
-                if(file.getName().equals(".DS_Store")) continue;
-                if(file.getName().equals("resources")) continue;
-
-                fileNames.add((file.getName().substring(0, file.getName().lastIndexOf('.'))));
-            }
-
-            Path path;
-
-            try {
-                path = Paths.get(application.path() + "/logs/test.log");
-            }catch (Exception e){
-                File file = new File(application.path() + "/logs/test.log");
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-                path = Paths.get(application.path() + "/logs/test.log");
-            }
-
-            String log =  new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-
-            Html test_content = test.render(fileNames, log);
-            return new Controller_Dashboard().return_page(test_content);
-
-        }catch (Exception e){
-            terminal_logger.internalServerError("test", e);
-            return ok();
-        }
-    }
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Test.class);
 
     @BodyParser.Of(BodyParser.Json.class)
     public Result test_run(){

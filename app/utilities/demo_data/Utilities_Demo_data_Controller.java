@@ -312,8 +312,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.company_details_required = false;
             tariff_1.payment_details_required = false;
 
-            tariff_1.credit_card_support = false;
-            tariff_1.bank_transfer_support = false;
 
             tariff_1.save();
             tariff_1.refresh();
@@ -384,9 +382,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             geek_tariff.company_details_required = false;
             geek_tariff.payment_details_required = false;
 
-            geek_tariff.credit_card_support = true;
-            geek_tariff.bank_transfer_support = true;
-
             geek_tariff.save();
             geek_tariff.refresh();
 
@@ -434,8 +429,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff.company_details_required = true;
             business_tariff.payment_details_required = true;
 
-            business_tariff.credit_card_support = true;
-            business_tariff.bank_transfer_support = true;
 
             business_tariff.save();
             business_tariff.refresh();
@@ -549,9 +542,6 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             business_tariff_2.company_details_required = true;
             business_tariff_2.payment_details_required = true;
-
-            business_tariff_2.credit_card_support = true;
-            business_tariff_2.bank_transfer_support = true;
 
             business_tariff_2.save();
             business_tariff_2.refresh();

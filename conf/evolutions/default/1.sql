@@ -646,10 +646,10 @@ create table Tariff (
   order_position            integer,
   company_details_required  boolean,
   payment_details_required  boolean,
+  payment_method_required   boolean,
   credit_for_beginning      bigint,
   color                     varchar(255),
-  bank_transfer_support     boolean,
-  credit_card_support       boolean,
+  awesome_icon              varchar(255),
   constraint ck_Tariff_business_model check (business_model in ('saas','alpha','fee','integration','integrator','cal')),
   constraint uq_Tariff_identifier unique (identifier),
   constraint pk_Tariff primary key (id))

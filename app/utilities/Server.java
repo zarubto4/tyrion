@@ -339,6 +339,7 @@ public class Server {
         for(Enum en : Model_CProgram.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_Project.permissions.values())                 permissions.add(en.name());
         for(Enum en : Model_Invoice.permissions.values())                 permissions.add(en.name());
+        for(Enum en : Model_Tariff.permissions.values())                  permissions.add(en.name());
         for(Enum en : Model_Product.permissions.values())                 permissions.add(en.name());
         for(Enum en : Model_ProductExtension.permissions.values())        permissions.add(en.name());
         for(Enum en : Model_MProject.permissions.values())                permissions.add(en.name());

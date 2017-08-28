@@ -292,7 +292,7 @@ public class Model_TypeOfBoard extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_create"); }
+       @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_create"); }
     @JsonIgnore   @Transient public boolean read_permission()  {  return true; }
     @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_edit");   }
     @JsonProperty @Transient public boolean update_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_update");   }

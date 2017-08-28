@@ -2,7 +2,9 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.Enum_BusinessModel;
@@ -39,13 +41,12 @@ public class Model_Tariff extends Model {
 
                             public boolean company_details_required;
                             public boolean payment_details_required;
+                            public boolean payment_method_required;
 
-                @JsonIgnore public Long credit_for_beginning; // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
+                @JsonIgnore public Long credit_for_beginning;  // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
 
                             public String color;
-
-                @JsonIgnore public boolean bank_transfer_support;
-                @JsonIgnore public boolean credit_card_support;
+                            public String awesome_icon;
 
                 @OneToMany(mappedBy="tariff",          cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<Model_TariffLabel> labels = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_included = new ArrayList<>();
@@ -58,12 +59,17 @@ public class Model_Tariff extends Model {
 
         List<Pair> methods = new ArrayList<>();
 
-        if(bank_transfer_support) methods.add( new Pair( Enum_Payment_method.bank_transfer.name(), "Bank transfers") );
-        if(credit_card_support)   methods.add( new Pair( Enum_Payment_method.credit_card.name()  , "Credit Card Payment"));
-        //if(free_tariff)           methods.add( new Pair( Enum_Payment_method.free.name()         , "I want it free"));
+        methods.add( new Pair( Enum_Payment_method.bank_transfer.name(), "Bank transfers") );
+        methods.add( new Pair( Enum_Payment_method.credit_card.name()  , "Credit Card Payment"));
 
         return methods;
     }
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient public Long credit_for_beginning(){
+        if(!this.edit_permission()) return null;
+        return credit_for_beginning;
+    }
+
 
     @JsonProperty public List<String> payment_currency(){
 
@@ -96,6 +102,7 @@ public class Model_Tariff extends Model {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    @JsonProperty
     public Double total_per_month(){
         Long total_price = 0L;
         for(Model_ProductExtension extension : this.extensions_included){
@@ -106,6 +113,10 @@ public class Model_Tariff extends Model {
         }
         return (double) total_price * 30 / 1000;
     }
+
+
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
@@ -129,8 +140,10 @@ public class Model_Tariff extends Model {
 
     @JsonIgnore @Override
     public void delete(){
-        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
+        terminal_logger.debug("delete :: Update object Id: {}",  this.id);
+        super.delete();
     }
+
 
 /* ORDER ---------------------------------------------------------------------------------------------------------------*/
 
@@ -196,6 +209,15 @@ public class Model_Tariff extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_create");}
+    @JsonIgnore   @Transient public boolean read_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_read") || active;}
+    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_edit");}
+    @JsonProperty @Transient public boolean update_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_update");}
+    @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_delete");}
+
+    public enum permissions{Tariff_create, Tariff_read, Tariff_edit, Tariff_update, Tariff_delete, Tariff_register_new_device, Tariff_bootloader,  Tariff_c_program_edit_permission, Tariff_test_c_program_edit_permission}
+
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
