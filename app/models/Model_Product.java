@@ -81,7 +81,7 @@ public class Model_Product extends Model {
     public Double remaining_credit(){
 
         if (this.business_model == Enum_BusinessModel.saas && this.method != Enum_Payment_method.free)
-            return ((double) this.credit) / 1000;
+            return ((double) this.credit);
 
         return null;
     }
@@ -130,7 +130,7 @@ public class Model_Product extends Model {
 
     @JsonIgnore
     public Double double_credit(){
-        return ((double) this.credit) / 1000;
+        return ((double) this.credit);
     }
 
     @JsonIgnore
@@ -167,12 +167,12 @@ public class Model_Product extends Model {
 
                 if (this.credit - credit_before == credit) {
 
-                    this.archiveEvent("Credit Upload", ((double) credit) / 1000 + " of credit was successfully added to this product", null);
+                    this.archiveEvent("Credit Upload", ((double) credit) + " of credit was successfully added to this product", null);
                     this.notificationCreditSuccess(credit);
 
                 } else {
 
-                    this.archiveEvent("Credit Upload", "Fail to add " + ((double) credit) / 1000 + " of credit to this product", null);
+                    this.archiveEvent("Credit Upload", "Fail to add " + ((double) credit)  + " of credit to this product", null);
                     this.notificationCreditFail(credit);
                 }
             }
@@ -212,12 +212,12 @@ public class Model_Product extends Model {
 
                 if (credit_before - this.credit == credit) {
 
-                    this.archiveEvent("Credit Remove", ((double) credit) / 1000 + " of credit was removed from this product", null);
+                    this.archiveEvent("Credit Remove", ((double) credit) + " of credit was removed from this product", null);
                     this.notificationCreditRemove(credit);
 
                 } else {
 
-                    this.archiveEvent("Credit Remove", "Fail to remove " + ((double) credit) / 1000 + " of credit from this product", null);
+                    this.archiveEvent("Credit Remove", "Fail to remove " + ((double) credit) + " of credit from this product", null);
                 }
             }
 
@@ -298,7 +298,7 @@ public class Model_Product extends Model {
     public Double getLastSpending(){
         try {
 
-            return ((double) getFinancialHistory().last_spending) / 1000;
+            return ((double) getFinancialHistory().last_spending) ;
         } catch (Exception e){
             terminal_logger.internalServerError("getLastSpending:", e);
             return null;
@@ -309,7 +309,7 @@ public class Model_Product extends Model {
     public Double getAverageSpending(){
         try {
 
-            return ((double) getFinancialHistory().average_spending) / 1000;
+            return ((double) getFinancialHistory().average_spending) ;
         } catch (Exception e){
             terminal_logger.internalServerError("getAverageSpending:", e);
             return null;
@@ -607,7 +607,7 @@ public class Model_Product extends Model {
     private void notificationCreditSuccess(Long credit){
         try {
 
-            Double amount = ((double) credit) / 1000;
+            Double amount = ((double) credit) ;
 
             new Model_Notification()
                     .setImportance(Enum_Notification_importance.normal)
@@ -625,7 +625,7 @@ public class Model_Product extends Model {
     private void notificationCreditFail(Long credit){
         try {
 
-            Double amount = ((double) credit) / 1000;
+            Double amount = ((double) credit) ;
 
             new Model_Notification()
                     .setImportance(Enum_Notification_importance.high)
@@ -644,7 +644,7 @@ public class Model_Product extends Model {
     private void notificationCreditRemove(Long credit){
         try {
 
-            Double amount = ((double) credit) / 1000;
+            Double amount = ((double) credit);
 
             new Model_Notification()
                     .setImportance(Enum_Notification_importance.normal)

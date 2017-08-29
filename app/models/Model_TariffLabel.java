@@ -19,8 +19,7 @@ public class Model_TariffLabel extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                         @JsonIgnore @Id public String id;
-
+                                                                    @Id  public String id;
                                                 @JsonIgnore @ManyToOne   public Model_Tariff tariff;
 
                                                                          public String label;

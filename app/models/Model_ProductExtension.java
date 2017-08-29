@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
@@ -12,7 +13,7 @@ import play.i18n.Lang;
 import play.libs.Json;
 import play.mvc.Result;
 import utilities.enums.Enum_ExtensionType;
-import utilities.financial.extensions.Extension;
+import utilities.financial.extensions.extensions.Extension;
 import utilities.financial.extensions.configurations.*;
 import utilities.logger.Class_Logger;
 import utilities.swagger.documentationClass.Swagger_ProductExtension_New;
@@ -59,21 +60,44 @@ public class Model_ProductExtension extends Model{
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public Price price(){
+    @JsonProperty @ApiModelProperty(required = true) @Transient
+    public Double price(){
         try {
-            Price price = new Price();
-            price.USD = getDoubleDailyPrice();
-            return price;
+            return getDoubleDailyPrice();
         } catch (Exception e) {
             return null;
         }
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty @ApiModelProperty(required = true, value = "Only for Administration used") @Transient  @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean include(){
+        try {
+            if(edit_permission()) return tariff_included!= null;
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonProperty @ApiModelProperty(required = false, value = "only with edit permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String config(){
+        try {
+            if(!edit_permission()) return null;
+            return  Json.toJson(Configuration.getConfiguration(type, configuration)).toString();
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
     @JsonIgnore @Override
     public void save(){
+
+        created = new Date();
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString().substring(0,8);
@@ -124,8 +148,12 @@ public class Model_ProductExtension extends Model{
         super.delete();
     }
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
     @JsonIgnore
     public void up(){
+
+        if(order_position == 1) return;
 
         if(tariff_included != null) {
             tariff_included.extensions_included.get(order_position - 2).order_position = this.order_position;
@@ -142,6 +170,7 @@ public class Model_ProductExtension extends Model{
 
     @JsonIgnore
     public void down(){
+
 
         if(tariff_included != null){
 
@@ -238,7 +267,7 @@ public class Model_ProductExtension extends Model{
             Long price = getDailyPrice();
             if (price == null) return null;
 
-            return (double) price / 1000;
+            return (double) price;
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -265,7 +294,7 @@ public class Model_ProductExtension extends Model{
 
             terminal_logger.debug("getDoubleConfigPrice: Got extension type and configuration.");
 
-            return ((double) extension.getConfigPrice(configuration)) / 1000;
+            return ((double) extension.getConfigPrice(configuration));
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -344,49 +373,6 @@ public class Model_ProductExtension extends Model{
         return extension.getDescription();
     }
 
-    /**
-     * Prerequisite is an assigned type of Extension.
-     * Gets the default daily price, this price is used when new extension is created.
-     * @return Long price of given extension type.
-     */
-    @JsonIgnore
-    public Long getExtensionTypePrice(){
-
-        Extension extension = getExtensionType();
-        if (extension == null) return null;
-
-        return extension.getDefaultDailyPrice();
-    }
-
-    @JsonIgnore
-    public static List<Swagger_ProductExtension_Type> getExtensionTypes() {
-        try {
-
-            List<Swagger_ProductExtension_Type> types = new ArrayList<>();
-
-            for (Enum_ExtensionType e : Enum_ExtensionType.values()){
-
-                Class<? extends Extension> clazz = e.getExtensionClass();
-                if (clazz != null) {
-                    Extension extension = clazz.newInstance();
-
-                    Swagger_ProductExtension_Type type = new Swagger_ProductExtension_Type();
-                    type.name = extension.getName();
-                    type.description = extension.getDescription();
-                    type.monthly_price = extension.getDefaultMonthlyPrice();
-
-                    types.add(type);
-                }
-
-            }
-
-            return types;
-
-        } catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new ArrayList<>();
-        }
-    }
 
     @JsonIgnore
     public Model_ProductExtension copy() {
@@ -403,175 +389,17 @@ public class Model_ProductExtension extends Model{
         return extension;
     }
 
+
     @JsonIgnore
     public Object getConfiguration(){
         try {
 
-            terminal_logger.trace("getConfiguration: Binding JSON: {}", this.configuration);
-
-            Form<?> form;
-
-            switch (type) {
-
-                case project:{
-                    form = Form.form(Configuration_Project.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case database:{
-                    form = Form.form(Configuration_Database.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case log:{
-                    form = Form.form(Configuration_Log.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case rest_api:{
-                    form = Form.form(Configuration_RestApi.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case support:{
-                    form = Form.form(Configuration_Support.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case instance:{
-                    form = Form.form(Configuration_Instance.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case homer_server:{
-                    form = Form.form(Configuration_HomerServer.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case participant:{
-                    form = Form.form(Configuration_Participant.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                default: throw new Exception("Extension type is unknown.");
-            }
-
-            if(form.hasErrors()) throw new Exception("Error parsing product configuration. Errors: " + form.errorsAsJson(Lang.forCode("en-US")));
-
-            terminal_logger.debug("getConfiguration: Seems like the configuration is ok");
-
-            return form.get();
+          return  Configuration.getConfiguration(type, configuration);
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return null;
         }
-    }
-
-    @JsonIgnore
-    public Result setConfiguration(Swagger_ProductExtension_New help) throws Exception{
-
-        Object configuration;
-
-        switch (type) {
-
-            case project:{
-
-                Configuration_Project project = new Configuration_Project();
-                project.count = help.count;
-                project.price = getExtensionTypePrice();
-
-                configuration = project;
-                break;
-            }
-
-            case database:{
-
-                Configuration_Database database = new Configuration_Database();
-                database.price = getExtensionTypePrice();
-
-                configuration = database;
-                break;
-            }
-
-            case log:{
-
-                Configuration_Log log = new Configuration_Log();
-                log.count = help.count;
-                log.price = getExtensionTypePrice();
-
-                configuration = log;
-                break;
-            }
-
-            case rest_api:{
-
-                Configuration_RestApi restApi = new Configuration_RestApi();
-                restApi.available_requests = help.count;
-                restApi.price = getExtensionTypePrice();
-
-                configuration = restApi;
-                break;
-            }
-
-            case support:{
-
-                Configuration_Support support = new Configuration_Support();
-                support.nonstop = help.nonstop;
-                support.price = getExtensionTypePrice();
-
-                configuration = support;
-                break;
-            }
-
-            case instance:{
-
-                Configuration_Instance instance = new Configuration_Instance();
-                instance.count = 5L;
-                instance.price = getExtensionTypePrice();
-
-                configuration = instance;
-                break;
-            }
-
-            case homer_server:{
-
-                Configuration_HomerServer homerServer = new Configuration_HomerServer();
-                homerServer.price = getExtensionTypePrice();
-
-                configuration = homerServer;
-                break;
-            }
-
-            case participant:{
-
-                Configuration_Participant participant = new Configuration_Participant();
-                participant.count = help.count;
-                participant.price = getExtensionTypePrice();
-
-                configuration = participant;
-                break;
-            }
-
-            default: throw new Exception("Extension type is unknown.");
-        }
-
-        this.configuration = Json.toJson(configuration).toString();
-
-        return null;
-    }
-
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
-    public class Price {
-        @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK")
-        public Double CZK = 0.0;
-
-        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show €")
-        public Double EUR  = 0.0;
-
-        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $")
-        public Double USD = 0.0;
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

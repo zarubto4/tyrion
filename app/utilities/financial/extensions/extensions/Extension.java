@@ -1,4 +1,6 @@
-package utilities.financial.extensions;
+package utilities.financial.extensions.extensions;
+
+import utilities.enums.Enum_ExtensionType;
 
 /**
  * Defines common behavior of every product Extension.
@@ -28,20 +30,12 @@ public interface Extension {
      */
     Long getConfigPrice(Object configuration);
 
-    /**
-     * Gets the default monthly price based on the type of the extension.
-     * Method should not serve for calculating the price,
-     * on the contrary it should be called just for information purposes.
-     * @return Long default daily price multiplied by thirty.
-     */
-    Long getDefaultMonthlyPrice();
 
     /**
-     * Gets the default daily price based on the type of the extension.
-     * Called when creating new ProductExtension.
-     * @return Long default daily price.
+     * Gets the name of an extension loaded from application.conf.
+     * @return The String name of the Extension.
      */
-    Long getDefaultDailyPrice();
+    Enum_ExtensionType getType();
 
     /**
      * Gets the name of an extension loaded from application.conf.
@@ -54,4 +48,6 @@ public interface Extension {
      * @return The String description of the Extension.
      */
     String getDescription();
+
+
 }

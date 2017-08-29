@@ -1,7 +1,7 @@
 package utilities.enums;
 
 import com.avaje.ebean.annotation.EnumValue;
-import utilities.financial.extensions.*;
+import utilities.financial.extensions.extensions.*;
 import utilities.logger.Class_Logger;
 
 public enum Enum_ExtensionType {

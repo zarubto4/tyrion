@@ -13,11 +13,11 @@ public class Swagger_Tariff_New {
     @Constraints.Required public String description;
 
     @Constraints.Required public String color;
+    @Constraints.Required public String awesome_icon;
 
     @Constraints.Required public boolean company_details_required;
     @Constraints.Required public boolean payment_method_required;
     @Constraints.Required public boolean payment_details_required;
 
     @Constraints.Required public Double  credit_for_beginning;
-    @Constraints.Required public Double  monthly_estimate_cost;
 }

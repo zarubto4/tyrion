@@ -115,7 +115,7 @@ public class Model_Invoice extends Model {
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public double price() {
-        return ((double)this.total_price()) / 1000;
+        return ((double)this.total_price());
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

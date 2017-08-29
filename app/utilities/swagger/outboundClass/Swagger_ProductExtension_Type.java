@@ -8,11 +8,12 @@ import io.swagger.annotations.ApiModelProperty;
 public class Swagger_ProductExtension_Type {
 
     @ApiModelProperty(required = true, readOnly = true)
+    public String type;
+
+    @ApiModelProperty(required = true, readOnly = true)
     public String name;
 
     @ApiModelProperty(required = true, readOnly = true)
     public String description;
 
-    @ApiModelProperty(required = true, readOnly = true)
-    public double monthly_price;
 }

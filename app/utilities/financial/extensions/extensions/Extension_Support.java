@@ -1,15 +1,15 @@
-package utilities.financial.extensions;
+package utilities.financial.extensions.extensions;
 
 import play.Configuration;
 import utilities.Server;
+import utilities.enums.Enum_ExtensionType;
 import utilities.financial.extensions.configurations.Configuration_Support;
 
 public class Extension_Support implements Extension {
 
-    public static final String name = Configuration.root().getString("Financial.extensions.support.name");
-    public static final String description = Configuration.root().getString("Financial.extensions.support.description");
-    public static final Long price = Configuration.root().getLong("Financial.extensions.support.price");
-
+    public static final Enum_ExtensionType enum_type = Enum_ExtensionType.support;
+    public static final String name = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".name");
+    public static final String description = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".description");
     /*
      !!!Important!!!
      Final calculated price must be divided by Server.financial_spendDailyPeriod.
@@ -33,12 +33,8 @@ public class Extension_Support implements Extension {
         return support.price;
     }
 
-    public Long getDefaultMonthlyPrice() {
-        return price * 30;
-    }
-
-    public Long getDefaultDailyPrice() {
-        return price;
+    public Enum_ExtensionType getType() {
+        return enum_type;
     }
 
     public String getName() {

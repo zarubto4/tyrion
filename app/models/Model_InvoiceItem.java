@@ -33,14 +33,14 @@ public class Model_InvoiceItem extends Model {
 
     @JsonProperty @Transient public String vat_rate(){
 
-        Long v = vat / 1000;
+        Long v = vat ;
 
         return v.toString();
     }
 
     @JsonProperty @Transient public Double unit_price_without_vat(){ return  ((double) (unit_price  - (unit_price * (vat / (100 + vat))))) / 1000;}
 
-    @JsonProperty public Double unit_price() { return ((double) unit_price) / 1000;}
+    @JsonProperty public Double unit_price() { return ((double) unit_price);}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

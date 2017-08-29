@@ -33,7 +33,7 @@ public class Model_Tariff extends Model {
                             public String description;
     @Column(unique = true)  public String identifier;
 
-                @JsonIgnore public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
+                            public boolean active; // Tarify nejdou mazat ale jdou Hidnout!!!
 
     @Enumerated(EnumType.STRING) @JsonIgnore public Enum_BusinessModel business_model;
 
@@ -71,22 +71,13 @@ public class Model_Tariff extends Model {
     }
 
 
-    @JsonProperty public List<String> payment_currency(){
-
-        List<String> payment_currency = new ArrayList<>();
-        payment_currency.add("CZK");
-        payment_currency.add("EUR");
-        payment_currency.add("USD");
-
-        return payment_currency;
-    }
-
-    @JsonProperty public Price price(){
-
-        Price price = new Price();
-        price.USD = total_per_month();
-        return price;
-
+    @JsonProperty public Double price(){
+        try{
+            return total_per_month();
+        } catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
@@ -102,16 +93,17 @@ public class Model_Tariff extends Model {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonProperty
+    @JsonIgnore
     public Double total_per_month(){
         Long total_price = 0L;
+
         for(Model_ProductExtension extension : this.extensions_included){
             Long price = extension.getDailyPrice();
 
             if(price != null)
                 total_price += price;
         }
-        return (double) total_price * 30 / 1000;
+        return (double) total_price;
     }
 
 
@@ -176,17 +168,6 @@ public class Model_Tariff extends Model {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    public class Price {
-        @ApiModelProperty(required = true, readOnly = true, value = "in Double - show CZK")
-        public Double CZK = 0.0;
-
-        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show €")
-        public Double EUR  = 0.0;
-
-        @ApiModelProperty(required = true, readOnly = true,  value = "in Double - show $")
-        public Double USD = 0.0;
-    }
-
     public class Pair {
 
         public Pair(String json_identifier, String user_description){
@@ -216,7 +197,7 @@ public class Model_Tariff extends Model {
     @JsonProperty @Transient public boolean update_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_update");}
     @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_delete");}
 
-    public enum permissions{Tariff_create, Tariff_read, Tariff_edit, Tariff_update, Tariff_delete, Tariff_register_new_device, Tariff_bootloader,  Tariff_c_program_edit_permission, Tariff_test_c_program_edit_permission}
+    public enum permissions{Tariff_create, Tariff_read, Tariff_edit, Tariff_update, Tariff_delete,}
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

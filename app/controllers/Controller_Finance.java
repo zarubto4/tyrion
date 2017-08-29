@@ -2,8 +2,10 @@ package controllers;
 
 import com.avaje.ebean.Ebean;
 import io.swagger.annotations.*;
+import io.swagger.annotations.Extension;
 import models.*;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -11,6 +13,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.*;
 import utilities.financial.extensions.configurations.*;
+import utilities.financial.extensions.extensions.*;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Class_Logger;
@@ -22,10 +25,12 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Product_Active;
 import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
 import utilities.swagger.outboundClass.Swagger_ProductExtension_Type;
+import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -82,12 +87,13 @@ public class Controller_Finance extends Controller {
             tariff.description              = help.description;
 
             tariff.color                    = help.color;
+            tariff.awesome_icon             = help.awesome_icon;
 
-            tariff.credit_for_beginning     = (long) (help.credit_for_beginning * 1000);
+            tariff.credit_for_beginning     = (long) (help.credit_for_beginning * 1);
 
             tariff.company_details_required = help.company_details_required;
-            tariff.payment_details_required = help.payment_method_required;
-            tariff.payment_details_required = help.payment_method_required;
+            tariff.payment_details_required = help.payment_details_required;
+            tariff.payment_method_required = help.payment_method_required;
 
             tariff.active                   = false;
 
@@ -148,9 +154,13 @@ public class Controller_Finance extends Controller {
             tariff.description              = help.description;
 
             tariff.color                    = help.color;
+            tariff.awesome_icon             = help.awesome_icon;
 
+            tariff.payment_details_required = help.payment_details_required;
+            tariff.payment_method_required  = help.payment_method_required;
             tariff.company_details_required = help.company_details_required;
-            tariff.payment_details_required = help.payment_method_required;
+
+            tariff.credit_for_beginning     = (long) (help.credit_for_beginning * 1);
 
             tariff.update();
 
@@ -176,7 +186,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result tariff_deactivate(String tariff_id){
         try {
 
@@ -213,7 +222,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result tariff_activate(String tariff_id){
         try {
 
@@ -250,7 +258,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result tariff_up(String tariff_id){
         try{
 
@@ -283,7 +290,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result tariff_down(String tariff_id){
         try{
 
@@ -316,7 +322,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result tariff_delete(String tariff_id){
         try{
 
@@ -328,6 +333,37 @@ public class Controller_Finance extends Controller {
             tariff.delete();
 
             return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Tariff",
+            tags = {"Admin-Tariff"},
+            notes = "activate Tariff",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result tariff_get(String tariff_id){
+        try{
+
+            Model_Tariff tariff =  Model_Tariff.get_byId(tariff_id);
+            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
+
+            if(!tariff.read_permission()) return GlobalResult.result_forbidden();
+
+
+            return GlobalResult.result_ok(Json.toJson(tariff));
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -557,27 +593,34 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result productExtension_create(){
+    public Result productExtension_create(String product_id){
         try{
 
             final Form<Swagger_ProductExtension_New> form = Form.form(Swagger_ProductExtension_New.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ProductExtension_New help = form.get();
 
-            Model_Product product = Model_Product.get_byId(help.product_id);
+            Model_Product product = Model_Product.get_byId(product_id);
             if(product == null) return GlobalResult.result_notFound("Product not found");
+
+            try {
+                Enum_ExtensionType type = Enum_ExtensionType.valueOf(help.extension_type);
+            }catch (Exception e){
+                return GlobalResult.result_notFound("Extension Type not found");
+            }
 
             Model_ProductExtension extension = new Model_ProductExtension();
             extension.name = help.name;
             extension.description = help.description;
             extension.color = help.color;
-            extension.type = help.type;
+
+            extension.type = Enum_ExtensionType.valueOf(help.extension_type);
             extension.active = true;
             extension.removed = false;
             extension.product = product;
 
-            Result configuration_result = extension.setConfiguration(help);
-            if(configuration_result != null) return configuration_result;
+            Object config = Configuration.getConfiguration( extension.type , help.config);
+            extension.configuration = Json.toJson(config).toString();
 
             if (!extension.create_permission()) return GlobalResult.result_forbidden();
 
@@ -585,6 +628,8 @@ public class Controller_Finance extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(extension));
 
+        }catch (IllegalStateException e){
+            return GlobalResult.result_badRequest("Illegal or not Valid Config");
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -605,7 +650,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_get( String extension_id){
+    public Result productExtension_get(String extension_id){
         try{
 
             Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
@@ -636,29 +681,6 @@ public class Controller_Finance extends Controller {
         try{
 
             return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.get_byUser(Controller_Security.get_person_id())));
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get Product_Extension All types",
-            tags = {"Price & Invoice & Tariffs"},
-            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ProductExtension_Type.class, responseContainer = "list"),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
-    })
-    public Result productExtension_getAllTypes(){
-        try{
-
-            return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.getExtensionTypes()));
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -821,7 +843,9 @@ public class Controller_Finance extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-    
+
+// tariffExtension ########################################################################################################
+
     @ApiOperation(value = "create Tariff_Extension",
             tags = {"Admin-Extension"},
             notes = "",
@@ -833,7 +857,7 @@ public class Controller_Finance extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_ProductExtension_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TariffExtension_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -849,114 +873,35 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariffExtension_create(){
-        try{
+    public Result tariffExtension_create(String tariff_id){
+        try {
 
-            final Form<Swagger_ProductExtension_New> form = Form.form(Swagger_ProductExtension_New.class).bindFromRequest();
+            final Form<Swagger_TariffExtension_New> form = Form.form(Swagger_TariffExtension_New.class).bindFromRequest();
             if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_ProductExtension_New help = form.get();
+            Swagger_TariffExtension_New help = form.get();
 
-            Model_Tariff tariff = Model_Tariff.get_byId(help.product_id);
-            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
+            Model_Tariff tariff = Model_Tariff.get_byId(tariff_id);
+            if (tariff == null) return GlobalResult.result_notFound("Tariff not found");
+
+            try {
+                Enum_ExtensionType type = Enum_ExtensionType.valueOf(help.extension_type);
+            } catch (Exception e) {
+                return GlobalResult.result_notFound("Extension Type not found");
+            }
 
             Model_ProductExtension extension = new Model_ProductExtension();
             extension.name = help.name;
             extension.description = help.description;
             extension.color = help.color;
-            extension.type = help.type;
+            extension.type = Enum_ExtensionType.valueOf(help.extension_type);
             extension.active = true;
 
-            Object configuration;
 
-            if (help.price == null) return GlobalResult.result_badRequest("Price is required.");
-            Long price = (long) (help.price * 1000);
+            // Config Validation
+            Object config = Configuration.getConfiguration(extension.type, help.config);
+            extension.configuration = Json.toJson(config).toString();
 
-            switch (extension.type) {
-
-                case project:{
-
-                    Configuration_Project project = new Configuration_Project();
-                    project.count = help.count;
-                    project.price = price;
-
-                    configuration = project;
-                    break;
-                }
-
-                case database:{
-
-                    Configuration_Database database = new Configuration_Database();
-                    database.price = price;
-
-                    configuration = database;
-                    break;
-                }
-
-                case log:{
-
-                    Configuration_Log log = new Configuration_Log();
-                    log.count = help.count;
-                    log.price = price;
-
-                    configuration = log;
-                    break;
-                }
-
-                case rest_api:{
-
-                    Configuration_RestApi restApi = new Configuration_RestApi();
-                    restApi.available_requests = help.count;
-                    restApi.price = price;
-
-                    configuration = restApi;
-                    break;
-                }
-
-                case support:{
-
-                    Configuration_Support support = new Configuration_Support();
-                    support.nonstop = true;
-                    support.price = price;
-
-                    configuration = support;
-                    break;
-                }
-
-                case instance:{
-
-                    Configuration_Instance instance = new Configuration_Instance();
-                    instance.count = 5L;
-                    instance.price = price;
-
-                    configuration = instance;
-                    break;
-                }
-
-                case homer_server:{
-
-                    Configuration_HomerServer homerServer = new Configuration_HomerServer();
-                    homerServer.price = price;
-
-                    configuration = homerServer;
-                    break;
-                }
-
-                case participant:{
-
-                    Configuration_Participant participant = new Configuration_Participant();
-                    participant.count = help.count;
-                    participant.price = price;
-
-                    configuration = participant;
-                    break;
-                }
-
-                default: throw new Exception("Extension type is unknown.");
-            }
-
-            extension.configuration = Json.toJson(configuration).toString();
-
-            if (help.included){
+            if (help.included) {
                 extension.tariff_included = tariff;
             } else {
                 extension.tariff_optional = tariff;
@@ -968,6 +913,8 @@ public class Controller_Finance extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(extension));
 
+        }catch (IllegalStateException e){
+            return GlobalResult.result_badRequest("Illegal or not Valid Config");
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -985,7 +932,7 @@ public class Controller_Finance extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_ProductExtension_New",
+                            dataType = "utilities.swagger.documentationClass.Swagger_TariffExtension_Edit",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1001,113 +948,38 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariffExtension_update(){
+    public Result tariffExtension_update(String extension_id){
         try{
 
-            final Form<Swagger_ProductExtension_New> form = Form.form(Swagger_ProductExtension_New.class).bindFromRequest();
+            final Form<Swagger_TariffExtension_Edit> form = Form.form(Swagger_TariffExtension_Edit.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_ProductExtension_New help = form.get();
+            Swagger_TariffExtension_Edit help = form.get();
 
-            Model_ProductExtension extension = Model_ProductExtension.get_byId(help.product_id);
+            Model_ProductExtension extension = Model_ProductExtension.get_byId(extension_id);
             if(extension == null) return GlobalResult.result_notFound("Extension not found");
 
             if (!extension.edit_permission()) return GlobalResult.result_forbidden();
 
             extension.name = help.name;
             extension.description = help.description;
-            extension.type = help.type;
             extension.color = help.color;
             extension.active = true;
 
-            Object configuration;
+            // Config Validation
+            Object config = Configuration.getConfiguration(extension.type, help.config);
 
-            if (help.price == null) return GlobalResult.result_badRequest("Price is required.");
-            Long price = (long) (help.price * 1000);
+            extension.configuration = Json.toJson(config).toString();
 
-            switch (extension.type) {
+            Model_Tariff tariff =   extension.tariff_optional;
+            if(tariff == null) tariff = extension.tariff_included;
 
-                case project:{
-
-                    Configuration_Project project = new Configuration_Project();
-                    project.count = help.count;
-                    project.price = price;
-
-                    configuration = project;
-                    break;
-                }
-
-                case database:{
-
-                    Configuration_Database database = new Configuration_Database();
-                    database.price = price;
-
-                    configuration = database;
-                    break;
-                }
-
-                case log:{
-
-                    Configuration_Log log = new Configuration_Log();
-                    log.count = help.count;
-                    log.price = price;
-
-                    configuration = log;
-                    break;
-                }
-
-                case rest_api:{
-
-                    Configuration_RestApi restApi = new Configuration_RestApi();
-                    restApi.available_requests = help.count;
-                    restApi.price = price;
-
-                    configuration = restApi;
-                    break;
-                }
-
-                case support:{
-
-                    Configuration_Support support = new Configuration_Support();
-                    support.nonstop = true;
-                    support.price = price;
-
-                    configuration = support;
-                    break;
-                }
-
-                case instance:{
-
-                    Configuration_Instance instance = new Configuration_Instance();
-                    instance.count = 5L;
-                    instance.price = price;
-
-                    configuration = instance;
-                    break;
-                }
-
-                case homer_server:{
-
-                    Configuration_HomerServer homerServer = new Configuration_HomerServer();
-                    homerServer.price = price;
-
-                    configuration = homerServer;
-                    break;
-                }
-
-                case participant:{
-
-                    Configuration_Participant participant = new Configuration_Participant();
-                    participant.count = help.count;
-                    participant.price = price;
-
-                    configuration = participant;
-                    break;
-                }
-
-                default: throw new Exception("Extension type is unknown.");
+            if (help.included) {
+                extension.tariff_optional = null;
+                extension.tariff_included = tariff;
+            } else {
+                extension.tariff_included = null;
+                extension.tariff_optional = tariff;
             }
-
-            extension.configuration = Json.toJson(configuration).toString();
 
             extension.update();
 
@@ -1277,6 +1149,47 @@ public class Controller_Finance extends Controller {
         }
     }
 
+    @ApiOperation(value = "get Tariff All types",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ProductExtension_Type.class, responseContainer = "list"),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+    })
+    public Result tariff_getAllTypes(){
+        try{
+
+
+            List<Swagger_ProductExtension_Type> types = new ArrayList<>();
+
+            for (Enum_ExtensionType e : Enum_ExtensionType.values()){
+
+                Class<? extends utilities.financial.extensions.extensions.Extension> clazz = e.getExtensionClass();
+                if (clazz != null) {
+                    utilities.financial.extensions.extensions.Extension extension = clazz.newInstance();
+
+                    Swagger_ProductExtension_Type type = new Swagger_ProductExtension_Type();
+                    type.type = extension.getType().name();
+                    type.name = extension.getName();
+                    type.description = extension.getDescription();
+
+                    types.add(type);
+                }
+
+            }
+            return GlobalResult.result_ok(Json.toJson(types));
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
 // USER PRODUCT ########################################################################################################
 
     @ApiOperation(value = "get Tariffs all",
@@ -1294,8 +1207,16 @@ public class Controller_Finance extends Controller {
     public Result tariff_getAll(){
         try{
 
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(Model_Tariff.find.where().eq("active", true).order().asc("order_position").findList()));
+            // Pokud má uživatel oprávnění vracím upravený SQL
+            if(Controller_Security.get_person().permissions_keys.containsKey(Model_Tariff.permissions.Tariff_edit.name())){
+
+                return GlobalResult.result_ok(Json.toJson(Model_Tariff.find.where().order().asc("order_position").findList()));
+
+            }else {
+
+                return GlobalResult.result_ok(Json.toJson(Model_Tariff.find.where().eq("active", true).order().asc("order_position").findList()));
+
+            }
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -2653,7 +2574,6 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result customer_delete_company(String customer_id){
         try{
 
