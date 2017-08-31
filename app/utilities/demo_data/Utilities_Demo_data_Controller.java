@@ -316,33 +316,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.save();
             tariff_1.refresh();
 
-            Model_TariffLabel label_1 = new Model_TariffLabel();
-            label_1.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_1.icon = "fa-bullhorn";
-            label_1.label = "Super koment bla bla bla";
-            label_1.tariff = tariff_1;
-            label_1.save();
-
-            Model_TariffLabel label_2 = new Model_TariffLabel();
-            label_2.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_2.icon = "fa-bullhorn";
-            label_2.label = "Super koment 2";
-            label_2.tariff = tariff_1;
-            label_2.save();
-
-            Model_TariffLabel label_3 = new Model_TariffLabel();
-            label_3.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_3.icon = "fa-bullhorn";
-            label_3.label = "Super koment 3 ";
-            label_3.tariff = tariff_1;
-            label_3.save();
-
-            Model_TariffLabel label_4 = new Model_TariffLabel();
-            label_4.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_4.icon = "fa-bullhorn";
-            label_4.label = "Super koment 4";
-            label_4.tariff = tariff_1;
-            label_4.save();
 
             Model_ProductExtension extensions_1 = new Model_ProductExtension();
             extensions_1.name = "Extension 1";
@@ -385,34 +358,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             geek_tariff.save();
             geek_tariff.refresh();
 
-            Model_TariffLabel label_5 = new Model_TariffLabel();
-            label_5.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_5.icon = "fa-bullhorn";
-            label_5.label = "Super koment bla bla bla";
-            label_5.tariff = geek_tariff;
-            label_5.save();
-
-            Model_TariffLabel label_6 = new Model_TariffLabel();
-            label_6.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_6.icon = "fa-bullhorn";
-            label_6.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
-            label_6.tariff = geek_tariff;
-            label_6.save();
-
-            Model_TariffLabel label_7 = new Model_TariffLabel();
-            label_7.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_7.icon = "fa-bullhorn";
-            label_7.label = "Super koment 3 ";
-            label_7.tariff = geek_tariff;
-            label_7.save();
-
-            Model_TariffLabel label_8 = new Model_TariffLabel();
-            label_8.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_8.icon = "fa-bullhorn";
-            label_8.label = "Super koment 4";
-            label_8.tariff = geek_tariff;
-            label_8.save();
-
             // Placená
             Model_Tariff business_tariff = new Model_Tariff();
             business_tariff.order_position = 3;
@@ -433,54 +378,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff.save();
             business_tariff.refresh();
 
-            Model_TariffLabel label_9 = new Model_TariffLabel();
-            label_9.description = "Kredit zdarma Trololo!";
-            label_9.icon = "fa-bullhorn";
-            label_9.label = "Super koment bla bla bla";
-            label_9.tariff = business_tariff;
-            label_9.save();
 
-            Model_TariffLabel label_10 = new Model_TariffLabel();
-            label_10.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_10.icon = "fa-bullhorn";
-            label_10.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
-            label_10.tariff = business_tariff;
-            label_10.save();
-
-            Model_TariffLabel label_11 = new Model_TariffLabel();
-            label_11.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_11.icon = "fa-bullhorn";
-            label_11.label = "Super koment 3 ";
-            label_11.tariff = business_tariff;
-            label_11.save();
-
-            Model_TariffLabel label_12 = new Model_TariffLabel();
-            label_12.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_12.icon = "fa-bullhorn";
-            label_12.label = "Super koment 4";
-            label_12.tariff = business_tariff;
-            label_12.save();
-
-            Model_TariffLabel label_13 = new Model_TariffLabel();
-            label_13.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_13.icon = "fa-bullhorn";
-            label_13.label = "Super koment 4";
-            label_13.tariff = business_tariff;
-            label_13.save();
-
-            Model_TariffLabel label_14 = new Model_TariffLabel();
-            label_14.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_14.icon = "fa-bullhorn";
-            label_14.label = "Super koment 4";
-            label_14.tariff = business_tariff;
-            label_14.save();
-
-            Model_TariffLabel label_15 = new Model_TariffLabel();
-            label_15.description = "Všechno bude dobré, uvidíte!! Toto je dlouhý komentář, který se zobrazí po najetí myškou";
-            label_15.icon = "fa-bullhorn";
-            label_15.label = "Super koment 4";
-            label_15.tariff = business_tariff;
-            label_15.save();
 
             Model_ProductExtension business_tariff_extensions_4 = new Model_ProductExtension();
             business_tariff_extensions_4.name = "Extension Project";
@@ -545,34 +443,6 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             business_tariff_2.save();
             business_tariff_2.refresh();
-
-            Model_TariffLabel label_16 = new Model_TariffLabel();
-            label_16.description = "Už prvního měsíce je to placený";
-            label_16.icon = "fa-bullhorn";
-            label_16.label = "Super koment bla bla bla";
-            label_16.tariff = business_tariff_2;
-            label_16.save();
-
-            Model_TariffLabel label_17 = new Model_TariffLabel();
-            label_17.description = "Tento tarif je na odzkoušení kreditky";
-            label_17.icon = "fa-bullhorn";
-            label_17.label = "Super koment 2ln ljhljk ljk hllkjhlkj";
-            label_17.tariff = business_tariff_2;
-            label_17.save();
-
-            Model_TariffLabel label_18 = new Model_TariffLabel();
-            label_18.description = "kreditkaaa!!!";
-            label_18.icon = "fa-bullhorn";
-            label_18.label = "Super koment 3 ";
-            label_18.tariff = business_tariff_2;
-            label_18.save();
-
-            Model_TariffLabel label_19 = new Model_TariffLabel();
-            label_19.description = "Kreditkaaaaa";
-            label_19.icon = "fa-bullhorn";
-            label_19.label = "Super koment 4";
-            label_19.tariff = business_tariff_2;
-            label_19.save();
 
             Model_ProductExtension business_tariff2_extensions_5 = new Model_ProductExtension();
             business_tariff2_extensions_5.name = "Extension saasa";

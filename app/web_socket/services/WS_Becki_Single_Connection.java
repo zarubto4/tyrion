@@ -2,6 +2,7 @@ package web_socket.services;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
+import models.Model_Garfield;
 import utilities.logger.Class_Logger;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Becki_Ping;
 
@@ -69,7 +70,9 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
 
     @Override
     public void onMessage(ObjectNode json) {
+
         json.put("single_connection_token", this.identifikator);
+
         person_connection.onMessage(json);
     }
 }

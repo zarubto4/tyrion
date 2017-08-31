@@ -1,14 +1,16 @@
 package utilities.swagger.documentationClass;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
 import play.data.validation.Constraints;
 
-@Api(hidden = true)
-public class Swagger_TariffLabel_New {
+@ApiModel(description = "Json Model for getting Type_Of_Block Filter List",
+          value = "TariffLabel")
+public class Swagger_TariffLabel {
 
-    @Constraints.Required public String id;
+    public Swagger_TariffLabel(){}
+
     @Constraints.Required public String description;
-    @Constraints.Required public String label;
     @Constraints.Required public String icon;
 
 }

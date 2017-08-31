@@ -59,7 +59,7 @@ public class Model_Product extends Model {
 
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String financial_history;
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
-                                                                                public boolean removed_by_user;
+                                                                    @JsonIgnore public boolean removed_by_user; // může jenom administrátor
 
                               @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Customer customer;
                        @OneToOne(mappedBy="product", cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
@@ -758,17 +758,16 @@ public class Model_Product extends Model {
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    public static final String read_permission_docs   = "read: If user is customer who owns the product or is employee of a customer(company) which owns it, he can read the product";
-    public static final String create_permission_docs   = "create: Everyone can create personal product and every employee of a customer(company) can create product for the company.";
+    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user is customer who owns the product or is employee of a customer(company) which owns it, he can read the product";
+    @JsonIgnore @Transient public static final String create_permission_docs   = "create: Everyone can create personal product and every employee of a customer(company) can create product for the company.";
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  public boolean create_permission()              {  return true;  }
-    @JsonIgnore  public boolean read_permission()                {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_read");  }
-                 public boolean edit_permission()                {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_edit");  }
-                 public boolean act_deactivate_permission()      {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_act_deactivate"); }
-    @JsonIgnore  public boolean delete_permission()              {  return Controller_Security.get_person().has_permission("Product_delete");}
+    @JsonIgnore  public boolean create_permission()               {  return true;  }
+    @JsonIgnore  public boolean read_permission()                 {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_read");  }
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()                {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_edit");  }
+    @JsonProperty @ApiModelProperty(required = true) public boolean act_deactivate_permission()      {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_act_deactivate"); }
+    @JsonIgnore  public boolean delete_permission()               {  return Controller_Security.get_person().has_permission("Product_delete");}
     @JsonIgnore  public boolean financial_permission(String action){  return FinancialPermission.check(this, action);}
 
     public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}

@@ -95,6 +95,9 @@ public class Controller_Finance extends Controller {
             tariff.payment_details_required = help.payment_details_required;
             tariff.payment_method_required = help.payment_method_required;
 
+            tariff.labels_json = Json.toJson(help.labels).toString();
+
+
             tariff.active                   = false;
 
             if(!tariff.create_permission()) return GlobalResult.result_forbidden();
@@ -161,6 +164,8 @@ public class Controller_Finance extends Controller {
             tariff.company_details_required = help.company_details_required;
 
             tariff.credit_for_beginning     = (long) (help.credit_for_beginning * 1);
+
+            tariff.labels_json = Json.toJson(help.labels).toString();
 
             tariff.update();
 
@@ -370,199 +375,6 @@ public class Controller_Finance extends Controller {
         }
     }
 
-// ADMIN - Tariff_Label ################################################################################################
-
-    @ApiOperation(value = "create Tariff_Label",
-            tags = {"Admin-Tariff"},
-            notes = "create new Tariff",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_TariffLabel_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result tariffLabel_create(){
-        try {
-
-            final Form<Swagger_TariffLabel_New> form = Form.form(Swagger_TariffLabel_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_TariffLabel_New help = form.get();
-
-            Model_Tariff tariff = Model_Tariff.get_byId(help.id);
-            if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
-
-            Model_TariffLabel label = new Model_TariffLabel();
-            label.tariff = tariff;
-            label.description = help.description;
-            label.label = help.label;
-            label.icon = help.icon;
-            label.save();
-
-            tariff.refresh();
-
-            return GlobalResult.result_ok(Json.toJson(tariff));
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "edit Tariff_Label",
-            tags = {"Admin-Tariff"},
-            notes = "create new Tariff",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_TariffLabel_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result tariffLabel_edit(){
-        try {
-
-            final Form<Swagger_TariffLabel_New> form = Form.form(Swagger_TariffLabel_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_TariffLabel_New help = form.get();
-
-            Model_TariffLabel label = Model_TariffLabel.get_byId(help.id);
-            if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
-
-            label.description = help.description;
-            label.label = help.label;
-            label.icon = help.icon;
-            label.update();
-
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "order Tariff_Label Up",
-            tags = {"Admin-Tariff"},
-            notes = "create new Tariff",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result tariffLabel_up(String label_id){
-        try{
-
-            Model_TariffLabel label =  Model_TariffLabel.get_byId(label_id);
-            if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
-
-            label.up();
-
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "order Tariff_Label Down",
-            tags = {"Admin-Tariff"},
-            notes = "create new Tariff",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result tariffLabel_down(String label_id){
-        try{
-
-            Model_TariffLabel label =  Model_TariffLabel.get_byId(label_id);
-            if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
-
-            label.down();
-
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "delete Tariff_Label",
-            tags = {"Admin-Tariff"},
-            notes = "create new Tariff",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result tariffLabel_delete(String label_id){
-        try{
-
-            Model_TariffLabel label =  Model_TariffLabel.get_byId(label_id);
-            if(label == null) return GlobalResult.result_notFound("TariffLabel not found");
-
-            label.delete();
-
-            return GlobalResult.result_ok();
-
-        }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
 
 // USER -  EXTENSION PACKAGES ##########################################################################################
 
@@ -898,6 +710,15 @@ public class Controller_Finance extends Controller {
 
 
             // Config Validation
+            try {
+
+                Object config = Configuration.getConfiguration(extension.type, help.config);
+
+            } catch (Exception e){
+                terminal_logger.warn("Tariff Extension Create - Invalid Json Format ");
+                return GlobalResult.result_badRequest("Invalid Configuration Json");
+            }
+
             Object config = Configuration.getConfiguration(extension.type, help.config);
             extension.configuration = Json.toJson(config).toString();
 
@@ -911,7 +732,7 @@ public class Controller_Finance extends Controller {
 
             extension.save();
 
-            return GlobalResult.result_ok(Json.toJson(extension));
+            return GlobalResult.result_created(Json.toJson(extension));
 
         }catch (IllegalStateException e){
             return GlobalResult.result_badRequest("Illegal or not Valid Config");
@@ -966,9 +787,15 @@ public class Controller_Finance extends Controller {
             extension.active = true;
 
             // Config Validation
-            Object config = Configuration.getConfiguration(extension.type, help.config);
+            try {
 
-            extension.configuration = Json.toJson(config).toString();
+                Object config = Configuration.getConfiguration(extension.type, help.config);
+            } catch (Exception e){
+                terminal_logger.warn("Tariff Extension Create - Invalid Json Format ");
+                return GlobalResult.result_badRequest("Invalid Configuration Json");
+            }
+
+            extension.configuration = Json.toJson(Configuration.getConfiguration(extension.type, help.config)).toString();
 
             Model_Tariff tariff =   extension.tariff_optional;
             if(tariff == null) tariff = extension.tariff_included;
@@ -982,6 +809,7 @@ public class Controller_Finance extends Controller {
             }
 
             extension.update();
+            extension.refresh();
 
             return GlobalResult.result_ok(Json.toJson(extension));
 

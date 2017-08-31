@@ -20,5 +20,4 @@ public class Computer {
     public String createTimestamp = null;
     public String state = null;
 
-
 }

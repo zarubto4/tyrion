@@ -650,19 +650,10 @@ create table Tariff (
   credit_for_beginning      bigint,
   color                     varchar(255),
   awesome_icon              varchar(255),
+  labels_json               varchar(255),
   constraint ck_Tariff_business_model check (business_model in ('saas','alpha','fee','integration','integrator','cal')),
   constraint uq_Tariff_identifier unique (identifier),
   constraint pk_Tariff primary key (id))
-;
-
-create table TariffLabel (
-  id                        varchar(255) not null,
-  tariff_id                 varchar(255),
-  label                     varchar(255),
-  description               varchar(255),
-  icon                      varchar(255),
-  order_position            integer,
-  constraint pk_TariffLabel primary key (id))
 ;
 
 create table TypeOfBlock (
@@ -944,32 +935,30 @@ alter table ProjectParticipant add constraint fk_ProjectParticipant_project_70 f
 create index ix_ProjectParticipant_project_70 on ProjectParticipant (project_id);
 alter table ProjectParticipant add constraint fk_ProjectParticipant_person_71 foreign key (person_id) references Person (id);
 create index ix_ProjectParticipant_person_71 on ProjectParticipant (person_id);
-alter table TariffLabel add constraint fk_TariffLabel_tariff_72 foreign key (tariff_id) references Tariff (id);
-create index ix_TariffLabel_tariff_72 on TariffLabel (tariff_id);
-alter table TypeOfBlock add constraint fk_TypeOfBlock_project_73 foreign key (project_id) references Project (id);
-create index ix_TypeOfBlock_project_73 on TypeOfBlock (project_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_producer_74 foreign key (producer_id) references Producer (id);
-create index ix_TypeOfBoard_producer_74 on TypeOfBoard (producer_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_processor_75 foreign key (processor_id) references Processor (id);
-create index ix_TypeOfBoard_processor_75 on TypeOfBoard (processor_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_picture_76 foreign key (picture_id) references FileRecord (id);
-create index ix_TypeOfBoard_picture_76 on TypeOfBoard (picture_id);
-alter table TypeOfBoardBatch add constraint fk_TypeOfBoardBatch_type_of_b_77 foreign key (type_of_board_id) references TypeOfBoard (id);
-create index ix_TypeOfBoardBatch_type_of_b_77 on TypeOfBoardBatch (type_of_board_id);
-alter table TypeOfWidget add constraint fk_TypeOfWidget_project_78 foreign key (project_id) references Project (id);
-create index ix_TypeOfWidget_project_78 on TypeOfWidget (project_id);
-alter table VersionObject add constraint fk_VersionObject_author_79 foreign key (author_id) references Person (id);
-create index ix_VersionObject_author_79 on VersionObject (author_id);
-alter table VersionObject add constraint fk_VersionObject_library_80 foreign key (library_id) references Library (id);
-create index ix_VersionObject_library_80 on VersionObject (library_id);
-alter table VersionObject add constraint fk_VersionObject_c_program_81 foreign key (c_program_id) references CProgram (id);
-create index ix_VersionObject_c_program_81 on VersionObject (c_program_id);
-alter table VersionObject add constraint fk_VersionObject_default_prog_82 foreign key (default_program_id) references CProgram (id);
-create index ix_VersionObject_default_prog_82 on VersionObject (default_program_id);
-alter table VersionObject add constraint fk_VersionObject_b_program_83 foreign key (b_program_id) references BProgram (id);
-create index ix_VersionObject_b_program_83 on VersionObject (b_program_id);
-alter table VersionObject add constraint fk_VersionObject_m_program_84 foreign key (m_program_id) references MProgram (id);
-create index ix_VersionObject_m_program_84 on VersionObject (m_program_id);
+alter table TypeOfBlock add constraint fk_TypeOfBlock_project_72 foreign key (project_id) references Project (id);
+create index ix_TypeOfBlock_project_72 on TypeOfBlock (project_id);
+alter table TypeOfBoard add constraint fk_TypeOfBoard_producer_73 foreign key (producer_id) references Producer (id);
+create index ix_TypeOfBoard_producer_73 on TypeOfBoard (producer_id);
+alter table TypeOfBoard add constraint fk_TypeOfBoard_processor_74 foreign key (processor_id) references Processor (id);
+create index ix_TypeOfBoard_processor_74 on TypeOfBoard (processor_id);
+alter table TypeOfBoard add constraint fk_TypeOfBoard_picture_75 foreign key (picture_id) references FileRecord (id);
+create index ix_TypeOfBoard_picture_75 on TypeOfBoard (picture_id);
+alter table TypeOfBoardBatch add constraint fk_TypeOfBoardBatch_type_of_b_76 foreign key (type_of_board_id) references TypeOfBoard (id);
+create index ix_TypeOfBoardBatch_type_of_b_76 on TypeOfBoardBatch (type_of_board_id);
+alter table TypeOfWidget add constraint fk_TypeOfWidget_project_77 foreign key (project_id) references Project (id);
+create index ix_TypeOfWidget_project_77 on TypeOfWidget (project_id);
+alter table VersionObject add constraint fk_VersionObject_author_78 foreign key (author_id) references Person (id);
+create index ix_VersionObject_author_78 on VersionObject (author_id);
+alter table VersionObject add constraint fk_VersionObject_library_79 foreign key (library_id) references Library (id);
+create index ix_VersionObject_library_79 on VersionObject (library_id);
+alter table VersionObject add constraint fk_VersionObject_c_program_80 foreign key (c_program_id) references CProgram (id);
+create index ix_VersionObject_c_program_80 on VersionObject (c_program_id);
+alter table VersionObject add constraint fk_VersionObject_default_prog_81 foreign key (default_program_id) references CProgram (id);
+create index ix_VersionObject_default_prog_81 on VersionObject (default_program_id);
+alter table VersionObject add constraint fk_VersionObject_b_program_82 foreign key (b_program_id) references BProgram (id);
+create index ix_VersionObject_b_program_82 on VersionObject (b_program_id);
+alter table VersionObject add constraint fk_VersionObject_m_program_83 foreign key (m_program_id) references MProgram (id);
+create index ix_VersionObject_m_program_83 on VersionObject (m_program_id);
 
 
 
@@ -1110,8 +1099,6 @@ drop table if exists RequestLog cascade;
 drop table if exists SecurityRole cascade;
 
 drop table if exists Tariff cascade;
-
-drop table if exists TariffLabel cascade;
 
 drop table if exists TypeOfBlock cascade;
 

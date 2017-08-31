@@ -4,14 +4,24 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import play.data.Form;
+import play.i18n.Lang;
+import play.libs.Json;
 import utilities.enums.Enum_BusinessModel;
 import utilities.enums.Enum_Payment_method;
+import utilities.financial.extensions.configurations.Configuration_Project;
+import utilities.lablel_printer_service.printNodeModels.Printer;
+import utilities.lablel_printer_service.printNodeModels.PrinterList;
 import utilities.logger.Class_Logger;
+import utilities.swagger.documentationClass.Swagger_TariffLabel;
+import utilities.swagger.documentationClass.Swagger_TariffLabelList;
 
 import javax.persistence.*;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -47,9 +57,9 @@ public class Model_Tariff extends Model {
 
                             public String color;
                             public String awesome_icon;
+                @JsonIgnore public String labels_json;
 
-                @OneToMany(mappedBy="tariff",          cascade = CascadeType.ALL, fetch = FetchType.EAGER) @OrderBy("order_position ASC") public List<Model_TariffLabel> labels = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_included = new ArrayList<>();
+   @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_included = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
 
 
@@ -76,34 +86,63 @@ public class Model_Tariff extends Model {
             return total_per_month();
         } catch (Exception e){
             terminal_logger.internalServerError(e);
-            return null;
+            return 0d;
+        }
+    }
+
+    @JsonProperty public List<Swagger_TariffLabel> labels(){
+        try{
+
+            if(labels_json== null || labels_json.length() < 4) return new ArrayList<>();
+
+            ObjectNode request_list = Json.newObject();
+            request_list.set("labels", Json.parse(labels_json));
+
+            final Form<Swagger_TariffLabelList> form = Form.form(Swagger_TariffLabelList.class).bind(request_list);
+            if (form.hasErrors()) {
+                terminal_logger.internalServerError( new Exception("Swagger_TariffLabelList: Parsing Json  has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString()));
+            }
+
+            return form.get().labels;
+
+        } catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new ArrayList<>();
         }
     }
 
     @JsonProperty
     public List<Model_ProductExtension> extensions_included(){
-        return  Model_ProductExtension.find.where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
+        if(!edit_permission()) return  Model_ProductExtension.find.where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
+        else return  Model_ProductExtension.find.where().eq("tariff_included.id", id).orderBy("order_position").findList();
     }
-
 
     @JsonProperty
     public List<Model_ProductExtension> extensions_optional(){
-        return  Model_ProductExtension.find.where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
+        if(!edit_permission())  return  Model_ProductExtension.find.where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
+        else return  Model_ProductExtension.find.where().eq("tariff_optional.id", id).orderBy("order_position").findList();
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public Double total_per_month(){
-        Long total_price = 0L;
 
-        for(Model_ProductExtension extension : this.extensions_included){
-            Long price = extension.getDailyPrice();
+        try {
+            Long total_price = 0L;
 
-            if(price != null)
-                total_price += price;
+            for (Model_ProductExtension extension : this.extensions_included) {
+                Long price = extension.getDailyPrice();
+
+                if (price != null)
+                    total_price += price;
+            }
+            return (double) total_price;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return 0d;
         }
-        return (double) total_price;
     }
 
 

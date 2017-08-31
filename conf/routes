@@ -175,8 +175,6 @@ PUT       /invoice/send_remainder/:invoice_id                           @control
 DELETE    /invoice/:invoice_id                                          @controllers.Controller_Finance.invoice_delete(invoice_id)
 PUT       /invoice/refund/:invoice_id                                   @utilities.financial.goPay.GoPay.payment_refund(invoice_id)
 
-# Tariff
-
 #Tarrifs
 GET       /tariff                                                       @controllers.Controller_Finance.tariff_getAll()
 POST      /admin/tariff                                                 @controllers.Controller_Finance.tariff_create()
@@ -188,12 +186,6 @@ PUT       /admin/tariff/up/:tariff_id                                   @control
 PUT       /admin/tariff/down/:tariff_id                                 @controllers.Controller_Finance.tariff_down(tariff_id)
 DELETE    /admin/tariff/:tariff_id                                      @controllers.Controller_Finance.tariff_delete(tariff_id)
 GET       /admin/tariff/types                                           @controllers.Controller_Finance.tariff_getAllTypes()
-
-POST      /admin/label/tariff                                           @controllers.Controller_Finance.tariffLabel_create()
-PUT       /admin/label                                                  @controllers.Controller_Finance.tariffLabel_edit()
-PUT       /admin/label/up/:label_id                                     @controllers.Controller_Finance.tariffLabel_up(label_id)
-PUT       /admin/label/down/:label_id                                   @controllers.Controller_Finance.tariffLabel_down(label_id)
-DELETE    /admin/label/:label_id                                        @controllers.Controller_Finance.tariffLabel_delete(label_id)
 
 
 

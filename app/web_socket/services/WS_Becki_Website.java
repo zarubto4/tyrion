@@ -3,10 +3,7 @@ package web_socket.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
-import models.Model_HomerServer;
-import models.Model_Notification;
-import models.Model_Person;
-import models.Model_Project;
+import models.*;
 import play.data.Form;
 import play.i18n.Lang;
 import play.mvc.WebSocket;
@@ -15,6 +12,7 @@ import web_socket.message_objects.tyrion_with_becki.WS_Message_Becki_Ping;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Subscribe_Notifications;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -140,6 +138,21 @@ public class WS_Becki_Website extends WS_Interface_type {
 
                         }
                     }
+                }
+
+                // Podpora Garfielda - Přeposílání mezi Websockety
+                case Model_Garfield.CHANNEL : {
+
+                    // Není komu co zasílat - zahazuji - Je připojen jen tento kanál
+                    if(all_person_Connections.size() < 2){
+                        return;
+                    }
+
+                    for (String key : all_person_Connections.keySet()) {
+                        if(key.equals(json.get("single_connection_token").asText())) continue;
+                        all_person_Connections.get(key).write_without_confirmation(json);
+                    }
+
                 }
 
                 case Model_HomerServer.CHANNEL : {

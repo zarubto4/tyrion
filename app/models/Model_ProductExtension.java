@@ -12,6 +12,7 @@ import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
 import play.mvc.Result;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_ExtensionType;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.financial.extensions.configurations.*;
@@ -48,7 +49,7 @@ public class Model_ProductExtension extends Model{
                             @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
                                         @ApiModelProperty(required = true) public Integer order_position;
 
-                                        @ApiModelProperty(required = true) public boolean active;
+    @JsonProperty  @ApiModelProperty(required = true) public boolean active;
                                                                @JsonIgnore public boolean removed;
 
                                         @ApiModelProperty(required = true) public Date created;
@@ -57,6 +58,11 @@ public class Model_ProductExtension extends Model{
 
                                                     @JsonIgnore @ManyToOne public Model_Tariff tariff_included;
                                                     @JsonIgnore @ManyToOne public Model_Tariff tariff_optional;
+
+
+
+  /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -83,12 +89,13 @@ public class Model_ProductExtension extends Model{
     @JsonProperty @ApiModelProperty(required = false, value = "only with edit permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
     public String config(){
         try {
+
             if(!edit_permission()) return null;
-            return  Json.toJson(Configuration.getConfiguration(type, configuration)).toString();
+            return Json.toJson(Configuration.getConfiguration(type, configuration)).toString();
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
-            return null;
+            return "{\"error\":\"config file error\"}";
         }
     }
 
@@ -148,6 +155,13 @@ public class Model_ProductExtension extends Model{
         super.delete();
     }
 
+    @JsonIgnore @Override
+    public void update(){
+
+        cache_price.put(this.id, this.getDailyPrice());
+        super.update();
+    }
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -174,12 +188,12 @@ public class Model_ProductExtension extends Model{
 
         if(tariff_included != null){
 
-            tariff_included.extensions_included.get(order_position).order_position = tariff_included.labels.get(order_position).order_position - 1;
+            tariff_included.extensions_included.get(order_position).order_position = tariff_included.order_position - 1;
             tariff_included.extensions_included.get(order_position).update();
 
         }else{
 
-            tariff_optional.extensions_optional.get(order_position).order_position = tariff_optional.labels.get(order_position).order_position - 1;
+            tariff_optional.extensions_optional.get(order_position).order_position = tariff_optional.order_position - 1;
             tariff_optional.extensions_optional.get(order_position).update();
         }
 
@@ -251,7 +265,7 @@ public class Model_ProductExtension extends Model{
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
-            return null;
+            return 0l;
         }
     }
 
@@ -271,7 +285,7 @@ public class Model_ProductExtension extends Model{
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
-            return null;
+            return 0d;
         }
     }
 
@@ -448,7 +462,7 @@ public class Model_ProductExtension extends Model{
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static final String CACHE_PRICE = Model_ProductExtension.class.getSimpleName() + "_PRICE";
+    @JsonIgnore @Transient @TyrionCachedList public static final String CACHE_PRICE = Model_ProductExtension.class.getSimpleName() + "_PRICE";
 
     public static Cache<String, Long> cache_price;
 

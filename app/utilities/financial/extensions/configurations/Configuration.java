@@ -59,7 +59,9 @@ public interface Configuration {
             default: throw new IllegalStateException("Extension type is unknown.");
         }
 
-        if(form.hasErrors()) throw new IllegalStateException("Error parsing product configuration. Errors: " + form.errorsAsJson(Lang.forCode("en-US")));
+        if(form.hasErrors()) {
+            throw new IllegalStateException("Error parsing product configuration. Errors: " + form.errorsAsJson(Lang.forCode("en-US")));
+        }
 
         return form.get();
 

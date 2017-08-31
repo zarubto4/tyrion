@@ -33,8 +33,8 @@ public class Swagger_Product_New {
     @ApiModelProperty(required = true, value =  "The name length must be between 4 and 60 characters")
     public String name;
 
-    @ApiModelProperty(required = false, value = "Allowable values =>[bank_transfer, credit_card], default: bank_transfer")
-    public Enum_Payment_method payment_method = Enum_Payment_method.bank_transfer;
+    @ApiModelProperty(required = false, value = "Allowable values =>[bank_transfer, credit_card], default: credit_card")
+    public Enum_Payment_method payment_method = Enum_Payment_method.credit_card;
 
     @Constraints.MinLength(value = 4, message = "The full_name must have at least 4 characters")
     @ApiModelProperty(required = false)
